@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
@@ -20,7 +21,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener
+    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -55,6 +56,7 @@ namespace Avalonia.Controls
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -70,7 +72,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsControl()
         {
-            PseudoClasses.Add(":empty");
+            UpdatePseudoClasses(0);
             SubscribeToItems(_items);
         }
 
@@ -144,11 +146,28 @@ namespace Avalonia.Controls
             protected set;
         }
 
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
+            if (Presenter is IChildIndexProvider oldInnerProvider)
+            {
+                oldInnerProvider.ChildIndexChanged -= PresenterChildIndexChanged;
+            }
+
             Presenter = presenter;
             ItemContainerGenerator.Clear();
+
+            if (Presenter is IChildIndexProvider innerProvider)
+            {
+                innerProvider.ChildIndexChanged += PresenterChildIndexChanged;
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+            }
         }
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
@@ -323,6 +342,16 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ItemCountProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<int>());
+            }
+        }
+
         /// <summary>
         /// Called when the <see cref="Items"/> property changes.
         /// </summary>
@@ -371,10 +400,6 @@ namespace Avalonia.Controls
             }
 
             Presenter?.ItemsChanged(e);
-
-            var collection = sender as ICollection;
-            PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
-            PseudoClasses.Set(":singleitem", collection != null && collection.Count == 1);
         }
 
         /// <summary>
@@ -431,9 +456,6 @@ namespace Avalonia.Controls
         /// <param name="items">The items collection.</param>
         private void SubscribeToItems(IEnumerable items)
         {
-            PseudoClasses.Set(":empty", items == null || items.Count() == 0);
-            PseudoClasses.Set(":singleitem", items != null && items.Count() == 1);
-
             if (items is INotifyCollectionChanged incc)
             {
                 CollectionChangedEventManager.Instance.AddListener(incc, this);
@@ -469,6 +491,12 @@ namespace Avalonia.Controls
             }
         }
 
+        private void UpdatePseudoClasses(int itemCount)
+        {
+            PseudoClasses.Set(":empty", itemCount == 0);
+            PseudoClasses.Set(":singleitem", itemCount == 1);
+        }
+
         protected static IInputElement GetNextControl(
             INavigableContainer container,
             NavigationDirection direction,
@@ -495,6 +523,29 @@ namespace Avalonia.Controls
             } while (c != null && c != from);
 
             return null;
+        }
+
+        private void PresenterChildIndexChanged(object sender, ChildIndexChangedEventArgs e)
+        {
+            _childIndexChanged?.Invoke(this, e);
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return Presenter is IChildIndexProvider innerProvider
+                ? innerProvider.GetChildIndex(child) : -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            if (Presenter is IChildIndexProvider presenter
+                && presenter.TryGetTotalCount(out count))
+            {
+                return true;
+            }
+
+            count = ItemCount;
+            return true;
         }
     }
 }

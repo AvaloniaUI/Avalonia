@@ -75,7 +75,9 @@ namespace Avalonia.Input
                 throw new InvalidOperationException("Control is not attached to visual tree.");
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var rootPoint = relativeTo.VisualRoot.PointToClient(Position);
+#pragma warning restore CS0618 // Type or member is obsolete
             var transform = relativeTo.VisualRoot.TransformToVisual(relativeTo);
             return rootPoint * transform!.Value;
         }
@@ -377,7 +379,7 @@ namespace Avalonia.Input
                 e.Source = element;
                 e.Handled = false;
                 element.RaiseEvent(e);
-                element = (IInputElement)element.VisualParent;
+                element = (IInputElement?)element.VisualParent;
             }
             
             root.PointerOverElement = null;
@@ -435,7 +437,7 @@ namespace Avalonia.Input
 
             IInputElement? branch = null;
 
-            var el = element;
+            IInputElement? el = element;
 
             while (el != null)
             {
@@ -444,7 +446,7 @@ namespace Avalonia.Input
                     branch = el;
                     break;
                 }
-                el = (IInputElement)el.VisualParent;
+                el = (IInputElement?)el.VisualParent;
             }
 
             el = root.PointerOverElement;
@@ -460,7 +462,7 @@ namespace Avalonia.Input
                 e.Source = el;
                 e.Handled = false;
                 el.RaiseEvent(e);
-                el = (IInputElement)el.VisualParent;
+                el = (IInputElement?)el.VisualParent;
             }            
 
             el = root.PointerOverElement = element;
@@ -471,7 +473,7 @@ namespace Avalonia.Input
                 e.Source = el;
                 e.Handled = false;
                 el.RaiseEvent(e);
-                el = (IInputElement)el.VisualParent;
+                el = (IInputElement?)el.VisualParent;
             }
         }
 

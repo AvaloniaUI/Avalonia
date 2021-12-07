@@ -36,7 +36,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="FormattedText"/> class.
         /// </summary>
         /// <param name="text"></param>
         /// <param name="typeface"></param>
@@ -45,7 +45,7 @@ namespace Avalonia.Media
         /// <param name="textWrapping"></param>
         /// <param name="constraint"></param>
         public FormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
-            TextWrapping textWrapping, Size constraint)
+            TextWrapping textWrapping, Size constraint) : this()
         {
             _text = text;
 
@@ -200,7 +200,7 @@ namespace Avalonia.Media
 
         private void Set<T>(ref T field, T value)
         {
-            if (field != null && field.Equals(value))
+            if (EqualityComparer<T>.Default.Equals(field, value))
             {
                 return;
             }

@@ -60,4 +60,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/SplitView.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/DatePicker.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/TimePicker.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/FlyoutPresenter.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/MenuFlyoutPresenter.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/ManagedFileChooser.xaml"/>
 </Styles>

@@ -31,7 +31,6 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.AutoCompleteBox.Populated" />
     /// event.
     /// </summary>
-    [PseudoClasses(":dropdownopen")]
     public class PopulatedEventArgs : EventArgs
     {
         /// <summary>
@@ -253,6 +252,7 @@ namespace Avalonia.Controls
     /// drop-down that contains possible matches based on the input in the text
     /// box.
     /// </summary>
+    [PseudoClasses(":dropdownopen")]
     public class AutoCompleteBox : TemplatedControl
     {
         /// <summary>
@@ -483,7 +483,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, object>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v);
+                (o, v) => o.SelectedItem = v,
+                defaultBindingMode: BindingMode.TwoWay,
+                enableDataValidation: true);
 
         /// <summary>
         /// Identifies the
@@ -1333,7 +1335,7 @@ namespace Avalonia.Controls
 
             base.OnApplyTemplate(e);
         }
-        
+
         /// <summary>
         /// Called to update the validation state for properties for which data validation is
         /// enabled.
@@ -1342,7 +1344,7 @@ namespace Avalonia.Controls
         /// <param name="value">The new binding value for the property.</param>
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
-            if (property == TextProperty)
+            if (property == TextProperty || property == SelectedItemProperty)
             {
                 DataValidationErrors.SetError(this, value.Error);
             }
@@ -2003,7 +2005,7 @@ namespace Avalonia.Controls
             // The TextBox.TextChanged event was not firing immediately and
             // was causing an immediate update, even with wrapping. If there is
             // a selection currently, no update should happen.
-            if (IsTextCompletionEnabled && TextBox != null && TextBoxSelectionLength > 0 && TextBoxSelectionStart != TextBox.Text.Length)
+            if (IsTextCompletionEnabled && TextBox != null && TextBoxSelectionLength > 0 && TextBoxSelectionStart != (TextBox.Text?.Length ?? 0))
             {
                 return;
             }
@@ -2092,7 +2094,21 @@ namespace Avalonia.Controls
                 bool inResults = !(stringFiltering || objectFiltering);
                 if (!inResults)
                 {
-                    inResults = stringFiltering ? TextFilter(text, FormatValue(item)) : ItemFilter(text, item);
+                    if (stringFiltering)
+                    {
+                        inResults = TextFilter(text, FormatValue(item));
+                    }
+                    else
+                    {
+                        if (ItemFilter is null)
+                        {
+                            throw new Exception("ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+                        }
+                        else
+                        {
+                            inResults = ItemFilter(text, item);
+                        }
+                    }
                 }
 
                 if (view_count > view_index && inResults && _view[view_index] == item)
@@ -2301,7 +2317,7 @@ namespace Avalonia.Controls
             {
                 if (IsTextCompletionEnabled && TextBox != null && userInitiated)
                 {
-                    int currentLength = TextBox.Text.Length;
+                    int currentLength = TextBox.Text?.Length ?? 0;
                     int selectionStart = TextBoxSelectionStart;
                     if (selectionStart == text.Length && selectionStart > _textSelectionStart)
                     {

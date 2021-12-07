@@ -75,7 +75,9 @@ namespace Avalonia.Input
                 // If control is null, set focus to the topmost focus scope.
                 foreach (var scope in GetFocusScopeAncestors(Current).Reverse().ToList())
                 {
-                    if (_focusScopes.TryGetValue(scope, out var element) && element != null)
+                    if (scope != Scope &&
+                        _focusScopes.TryGetValue(scope, out var element) &&
+                        element != null)
                     {
                         Focus(element, method);
                         return;
@@ -88,6 +90,17 @@ namespace Avalonia.Input
                     SetFocusedElement(Scope, null);
                 }
             }
+        }
+
+        public IInputElement? GetFocusedElement(IInputElement e)
+        {
+            if (e is IFocusScope scope)
+            {
+                _focusScopes.TryGetValue(scope, out var result);
+                return result;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -148,6 +161,24 @@ namespace Avalonia.Input
             Scope = scope;
             Focus(e);
         }
+
+        public void RemoveFocusScope(IFocusScope scope)
+        {
+            scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            
+            if (_focusScopes.TryGetValue(scope, out _))
+            {
+                SetFocusedElement(scope, null);
+                _focusScopes.Remove(scope);
+            }
+
+            if (Scope == scope)
+            {
+                Scope = null;
+            }
+        }
+
+        public static bool GetIsFocusScope(IInputElement e) => e is IFocusScope;
 
         /// <summary>
         /// Checks if the specified element can be focused.

@@ -11,13 +11,25 @@ namespace Avalonia.Shared.PlatformSupport
         // ReSharper disable InconsistentNaming
         static class LinuxImports
         {
+#if __ANDROID__
+            [DllImport("libdl.so")]
+#else
             [DllImport("libdl.so.2")]
+#endif
             private static extern IntPtr dlopen(string path, int flags);
 
+#if __ANDROID__
+            [DllImport("libdl.so")]
+#else
             [DllImport("libdl.so.2")]
+#endif
             private static extern IntPtr dlsym(IntPtr handle, string symbol);
 
+#if __ANDROID__
+            [DllImport("libdl.so")]
+#else
             [DllImport("libdl.so.2")]
+#endif
             private static extern IntPtr dlerror();
 
             public static void Init()
@@ -27,7 +39,7 @@ namespace Avalonia.Shared.PlatformSupport
                 DlError = dlerror;
             }
         }
-        
+
         static class OsXImports
         {
             

@@ -10,15 +10,24 @@ namespace Avalonia.Diagnostics
 {
     public static class DevTools
     {
-        private static readonly Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
+        private static readonly Dictionary<TopLevel, MainWindow> s_open =
+            new Dictionary<TopLevel, MainWindow>();
 
         public static IDisposable Attach(TopLevel root, KeyGesture gesture)
         {
-            void PreviewKeyDown(object sender, KeyEventArgs e)
+            return Attach(root, new DevToolsOptions()
             {
-                if (gesture.Matches(e))
+                Gesture = gesture,
+            });
+        }
+
+        public static IDisposable Attach(TopLevel root, DevToolsOptions options)
+        {
+            void PreviewKeyDown(object? sender, KeyEventArgs e)
+            {
+                if (options.Gesture.Matches(e))
                 {
-                    Open(root);
+                    Open(root, options);
                 }
             }
 
@@ -28,7 +37,9 @@ namespace Avalonia.Diagnostics
                 RoutingStrategies.Tunnel);
         }
 
-        public static IDisposable Open(TopLevel root)
+        public static IDisposable Open(TopLevel root) => Open(root, new DevToolsOptions());
+
+        public static IDisposable Open(TopLevel root, DevToolsOptions options)
         {
             if (s_open.TryGetValue(root, out var window))
             {
@@ -38,15 +49,16 @@ namespace Avalonia.Diagnostics
             {
                 window = new MainWindow
                 {
-                    Width = 1024,
-                    Height = 512,
                     Root = root,
+                    Width = options.Size.Width,
+                    Height = options.Size.Height,
                 };
+                window.SetOptions(options);
 
                 window.Closed += DevToolsClosed;
                 s_open.Add(root, window);
 
-                if (root is Window inspectedWindow)
+                if (options.ShowAsChildWindow && root is Window inspectedWindow)
                 {
                     window.Show(inspectedWindow);
                 }
@@ -59,10 +71,10 @@ namespace Avalonia.Diagnostics
             return Disposable.Create(() => window?.Close());
         }
 
-        private static void DevToolsClosed(object sender, EventArgs e)
+        private static void DevToolsClosed(object? sender, EventArgs e)
         {
-            var window = (MainWindow)sender;
-            s_open.Remove(window.Root);
+            var window = (MainWindow)sender!;
+            s_open.Remove(window.Root!);
             window.Closed -= DevToolsClosed;
         }
     }

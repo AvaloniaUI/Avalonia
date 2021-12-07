@@ -25,6 +25,8 @@ public:
    
     virtual HRESULT GetText (char* type, IAvnString**ppv) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ppv == nullptr)
@@ -42,6 +44,8 @@ public:
     
     virtual HRESULT GetStrings(char* type, IAvnStringArray**ppv) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             *ppv= nil;
@@ -56,7 +60,7 @@ public:
                 return S_OK;
             }
             
-            NSArray* arr = (NSArray*)data;
+            NSArray<NSString*>* arr = (NSArray*)data;
             
             for(int c = 0; c < [arr count]; c++)
                 if(![[arr objectAtIndex:c] isKindOfClass:[NSString class]])
@@ -69,56 +73,71 @@ public:
     
     virtual HRESULT SetText (char* type, char* utf8String) override
     {
-        Clear();
+        START_COM_CALL;
+        
         @autoreleasepool
         {
+            Clear();
+            
             auto string = [NSString stringWithUTF8String:(const char*)utf8String];
             auto typeString = [NSString stringWithUTF8String:(const char*)type];
             if(_item == nil)
                 [_pb setString: string forType: typeString];
             else
                 [_item setString: string forType:typeString];
-        }
         
-        return S_OK;
+            return S_OK;
+        }
     }
     
     virtual HRESULT SetBytes(char* type, void* bytes, int len) override
     {
-        auto typeString = [NSString stringWithUTF8String:(const char*)type];
-        auto data = [NSData dataWithBytes:bytes length:len];
-        if(_item == nil)
-            [_pb setData:data forType:typeString];
-        else
-            [_item setData:data forType:typeString];
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            auto typeString = [NSString stringWithUTF8String:(const char*)type];
+            auto data = [NSData dataWithBytes:bytes length:len];
+            if(_item == nil)
+                [_pb setData:data forType:typeString];
+            else
+                [_item setData:data forType:typeString];
+            return S_OK;
+        }
     }
        
     virtual HRESULT GetBytes(char* type, IAvnString**ppv) override
     {
-        *ppv = nil;
-        auto typeString = [NSString stringWithUTF8String:(const char*)type];
-        NSData*data;
-        @try
+        START_COM_CALL;
+        
+        @autoreleasepool
         {
-            if(_item)
-                data = [_item dataForType:typeString];
-            else
-                data = [_pb dataForType:typeString];
-            if(data == nil)
+            *ppv = nil;
+            auto typeString = [NSString stringWithUTF8String:(const char*)type];
+            NSData*data;
+            @try
+            {
+                if(_item)
+                    data = [_item dataForType:typeString];
+                else
+                    data = [_pb dataForType:typeString];
+                if(data == nil)
+                    return E_FAIL;
+            }
+            @catch(NSException* e)
+            {
                 return E_FAIL;
+            }
+            *ppv = CreateByteArray((void*)data.bytes, (int)data.length);
+            return S_OK;
         }
-        @catch(NSException* e)
-        {
-            return E_FAIL;
-        }
-        *ppv = CreateByteArray((void*)data.bytes, (int)data.length);
-        return S_OK;
     }
 
 
     virtual HRESULT Clear() override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(_item != nil)
@@ -128,15 +147,20 @@ public:
                 [_pb clearContents];
                 [_pb setString:@"" forType:NSPasteboardTypeString];
             }
-        }
         
-        return S_OK;
+            return S_OK;
+        }
     }
     
     virtual HRESULT ObtainFormats(IAvnStringArray** ppv) override
     {
-        *ppv = CreateAvnStringArray(_item == nil ? [_pb types] : [_item types]);
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = CreateAvnStringArray(_item == nil ? [_pb types] : [_item types]);
+            return S_OK;
+        }
     }
 };
 

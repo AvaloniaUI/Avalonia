@@ -7,7 +7,13 @@
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <Calendar />
+    </Border>
+  </Design.PreviewWith>
   <Style Selector="CalendarItem">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="DayTitleTemplate">
       <Template>
         <TextBlock Text="{Binding}"
@@ -21,7 +27,7 @@
         <Border BorderThickness="{TemplateBinding BorderThickness}"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                CornerRadius="{DynamicResource ControlCornerRadius}">
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Border.Styles>
             <Style Selector="Button.CalendarHeader">
               <Setter Property="HorizontalAlignment" Value="Stretch" />

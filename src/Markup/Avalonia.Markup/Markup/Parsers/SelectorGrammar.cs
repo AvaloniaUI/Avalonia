@@ -4,6 +4,8 @@ using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
+#nullable enable
+
 // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
 // only reason they have overridden Equals methods is for unit testing.
 #pragma warning disable 659
@@ -39,7 +41,7 @@ namespace Avalonia.Markup.Parsers
             var selector = new List<ISyntax>();
             while (!r.End && state != State.End)
             {
-                ISyntax syntax = null;
+                ISyntax? syntax = null;
                 switch (state)
                 {
                     case State.Start:
@@ -110,7 +112,7 @@ namespace Avalonia.Markup.Parsers
             return State.TypeName;
         }
 
-        private static (State, ISyntax) ParseMiddle(ref CharacterReader r, char? end)
+        private static (State, ISyntax?) ParseMiddle(ref CharacterReader r, char? end)
         {
             if (r.TakeIf(':'))
             {
@@ -158,11 +160,13 @@ namespace Avalonia.Markup.Parsers
 
             if (identifier.IsEmpty)
             {
-                throw new ExpressionParseException(r.Position, "Expected class name or is selector after ':'.");
+                throw new ExpressionParseException(r.Position, "Expected class name, is, nth-child or nth-last-child selector after ':'.");
             }
 
             const string IsKeyword = "is";
             const string NotKeyword = "not";
+            const string NthChildKeyword = "nth-child";
+            const string NthLastChildKeyword = "nth-last-child";
 
             if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
@@ -179,6 +183,20 @@ namespace Avalonia.Markup.Parsers
                 var syntax = new NotSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
+            if (identifier.SequenceEqual(NthChildKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var (step, offset) = ParseNthChildArguments(ref r);
+
+                var syntax = new NthChildSyntax { Step = step, Offset = offset };
+                return (State.Middle, syntax);
+            }
+            if (identifier.SequenceEqual(NthLastChildKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var (step, offset) = ParseNthChildArguments(ref r);
+
+                var syntax = new NthLastChildSyntax { Step = step, Offset = offset };
+                return (State.Middle, syntax);
+            }
             else
             {
                 return (
@@ -189,8 +207,7 @@ namespace Avalonia.Markup.Parsers
                     });
             }
         }
-
-        private static (State, ISyntax) ParseTraversal(ref CharacterReader r)
+        private static (State, ISyntax?) ParseTraversal(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.TakeIf('>'))
@@ -300,6 +317,114 @@ namespace Avalonia.Markup.Parsers
             return syntax;
         }
 
+        private static (int step, int offset) ParseNthChildArguments(ref CharacterReader r)
+        {
+            int step = 0;
+            int offset = 0;
+
+            if (r.Peek == 'o')
+            {
+                var constArg = r.TakeUntil(')').ToString().Trim();
+                if (constArg.Equals("odd", StringComparison.Ordinal))
+                {
+                    step = 2;
+                    offset = 1;
+                }
+                else
+                {
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(odd). Actual '{constArg}'.");
+                }
+            }
+            else if (r.Peek == 'e')
+            {
+                var constArg = r.TakeUntil(')').ToString().Trim();
+                if (constArg.Equals("even", StringComparison.Ordinal))
+                {
+                    step = 2;
+                    offset = 0;
+                }
+                else
+                {
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(even). Actual '{constArg}'.");
+                }
+            }
+            else
+            {
+                r.SkipWhitespace();
+
+                var stepOrOffset = 0;
+                var stepOrOffsetStr = r.TakeWhile(c => char.IsDigit(c) || c == '-' || c == '+').ToString();
+                if (stepOrOffsetStr.Length == 0
+                    || (stepOrOffsetStr.Length == 1
+                    && stepOrOffsetStr[0] == '+'))
+                {
+                    stepOrOffset = 1;
+                }
+                else if (stepOrOffsetStr.Length == 1
+                    && stepOrOffsetStr[0] == '-')
+                {
+                    stepOrOffset = -1;
+                }
+                else if (!int.TryParse(stepOrOffsetStr.ToString(), out stepOrOffset))
+                {
+                    throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step or offset value. Integer was expected.");
+                }
+
+                r.SkipWhitespace();
+
+                if (r.Peek == ')')
+                {
+                    step = 0;
+                    offset = stepOrOffset;
+                }
+                else
+                {
+                    step = stepOrOffset;
+
+                    if (r.Peek != 'n')
+                    {
+                        throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step value, \"xn+y\" pattern was expected.");
+                    }
+
+                    r.Skip(1); // skip 'n'
+
+                    r.SkipWhitespace();
+
+                    if (r.Peek != ')')
+                    {
+                        int sign;
+                        var nextChar = r.Take();
+                        if (nextChar == '+')
+                        {
+                            sign = 1;
+                        }
+                        else if (nextChar == '-')
+                        {
+                            sign = -1;
+                        }
+                        else
+                        {
+                            throw new ExpressionParseException(r.Position, "Couldn't parse nth-child sign. '+' or '-' was expected.");
+                        }
+
+                        r.SkipWhitespace();
+
+                        if (sign != 0
+                            && !int.TryParse(r.TakeUntil(')').ToString(), out offset))
+                        {
+                            throw new ExpressionParseException(r.Position, "Couldn't parse nth-child offset value. Integer was expected.");
+                        }
+
+                        offset *= sign;
+                    }
+                }
+            }
+
+            Expect(ref r, ')');
+
+            return (step, offset);
+        }
+
         private static void Expect(ref CharacterReader r, char c)
         {
             if (r.End)
@@ -325,11 +450,11 @@ namespace Avalonia.Markup.Parsers
 
         public class OfTypeSyntax : ISyntax, ITypeSyntax
         {
-            public string TypeName { get; set; }
+            public string TypeName { get; set; } = string.Empty;
 
             public string Xmlns { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 var other = obj as OfTypeSyntax;
                 return other != null && other.TypeName == TypeName && other.Xmlns == Xmlns;
@@ -338,11 +463,11 @@ namespace Avalonia.Markup.Parsers
 
         public class IsSyntax : ISyntax, ITypeSyntax
         {
-            public string TypeName { get; set; }
+            public string TypeName { get; set; } = string.Empty;
 
             public string Xmlns { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 var other = obj as IsSyntax;
                 return other != null && other.TypeName == TypeName && other.Xmlns == Xmlns;
@@ -351,9 +476,9 @@ namespace Avalonia.Markup.Parsers
 
         public class ClassSyntax : ISyntax
         {
-            public string Class { get; set; }
+            public string Class { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is ClassSyntax && ((ClassSyntax)obj).Class == Class;
             }
@@ -361,9 +486,9 @@ namespace Avalonia.Markup.Parsers
 
         public class NameSyntax : ISyntax
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is NameSyntax && ((NameSyntax)obj).Name == Name;
             }
@@ -371,11 +496,11 @@ namespace Avalonia.Markup.Parsers
 
         public class PropertySyntax : ISyntax
         {
-            public string Property { get; set; }
+            public string Property { get; set; } = string.Empty;
 
-            public string Value { get; set; }
+            public string Value { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is PropertySyntax && 
                     ((PropertySyntax)obj).Property == Property && 
@@ -385,7 +510,7 @@ namespace Avalonia.Markup.Parsers
 
         public class ChildSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is ChildSyntax;
             }
@@ -393,7 +518,7 @@ namespace Avalonia.Markup.Parsers
 
         public class DescendantSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is DescendantSyntax;
             }
@@ -401,7 +526,7 @@ namespace Avalonia.Markup.Parsers
 
         public class TemplateSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is TemplateSyntax;
             }
@@ -409,17 +534,39 @@ namespace Avalonia.Markup.Parsers
 
         public class NotSyntax : ISyntax
         {
-            public IEnumerable<ISyntax> Argument { get; set; }
+            public IEnumerable<ISyntax> Argument { get; set; } = Enumerable.Empty<ISyntax>();
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
             }
         }
 
+        public class NthChildSyntax : ISyntax
+        {
+            public int Offset { get; set; }
+            public int Step { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return (obj is NthChildSyntax nth) && nth.Offset == Offset && nth.Step == Step;
+            }
+        }
+
+        public class NthLastChildSyntax : ISyntax
+        {
+            public int Offset { get; set; }
+            public int Step { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return (obj is NthLastChildSyntax nth) && nth.Offset == Offset && nth.Step == Step;
+            }
+        }
+
         public class CommaSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is CommaSyntax or;
             }

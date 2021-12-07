@@ -6,7 +6,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class SKTypefaceCollection
+    public class SKTypefaceCollection
     {
         private readonly ConcurrentDictionary<Typeface, SKTypeface> _typefaces =
             new ConcurrentDictionary<Typeface, SKTypeface>();
@@ -27,15 +27,16 @@ namespace Avalonia.Skia
             {
                 return typeface;
             }
+            
+            var initialWeight = (int)key.Weight;
 
             var weight = (int)key.Weight;
 
-            weight -= weight % 100; // make sure we start at a full weight
+            weight -= weight % 50; // make sure we start at a full weight
 
-            for (var i = (int)key.Style; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
-                // only try 2 font weights in each direction
-                for (var j = 0; j < 200; j += 100)
+                for (var j = 0; j < initialWeight; j += 50)
                 {
                     if (weight - j >= 100)
                     {
@@ -57,8 +58,8 @@ namespace Avalonia.Skia
                 }
             }
 
-            //Nothing was found so we use the first typeface we can get.
-            return typefaces.Values.FirstOrDefault();
+            //Nothing was found so we try to get a regular typeface.
+            return typefaces.TryGetValue(new Typeface(key.FontFamily), out typeface) ? typeface : null;
         }
     }
 }

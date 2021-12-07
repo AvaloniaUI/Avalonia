@@ -97,6 +97,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             target.WritableSelectedItems.Clear();
 
             Assert.Empty(target.SelectedIndexes);
+            Assert.Empty(target.WritableSelectedItems);
         }
 
         [Fact]
@@ -123,6 +124,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             target.WritableSelectedItems = null;
 
             Assert.Empty(target.SelectedIndexes);
+            Assert.Empty(target.WritableSelectedItems);
         }
 
         [Fact]
@@ -182,6 +184,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             target.Source = items;
 
             Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(new[] { "bar" }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -203,6 +206,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             items.Reset(new[] { "baz", "foo", "bar" });
 
             Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal(new[] { "bar" }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -227,6 +231,7 @@ namespace Avalonia.Controls.UnitTests.Selection
 
             Assert.Equal(-1, target.SelectedIndex);
             Assert.Equal(null, target.SelectedItem);
+            Assert.Empty(target.WritableSelectedItems);
 
             Assert.Contains(nameof(target.SelectedIndex), changed);
             Assert.Contains(nameof(target.SelectedItem), changed);
@@ -246,6 +251,7 @@ namespace Avalonia.Controls.UnitTests.Selection
 
             Assert.Equal("foo", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(new[] { "foo" }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -257,6 +263,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             target.Source = new[] { "baz", "foo", "bar" };
 
             Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal(new[] { "bar" }, target.WritableSelectedItems);
         }
 
         private static InternalSelectionModel CreateTarget(

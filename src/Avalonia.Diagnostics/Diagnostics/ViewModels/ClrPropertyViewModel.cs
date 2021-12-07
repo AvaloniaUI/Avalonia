@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -7,14 +6,17 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly object _target;
         private string _type;
-        private object _value;
+        private object? _value;
 
+#nullable disable
+        // Remove "nullable disable" after MemberNotNull will work on our CI.
         public ClrPropertyViewModel(object o, PropertyInfo property)
+#nullable restore
         {
             _target = o;
             Property = property;
 
-            if (!property.DeclaringType.IsInterface)
+            if (property.DeclaringType == null || !property.DeclaringType.IsInterface)
             {
                 Name = property.Name;
             }
@@ -22,7 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 Name = property.DeclaringType.Name + '.' + property.Name;
             }
-
+            DeclaringType = property.DeclaringType;
             Update();
         }
 
@@ -47,11 +49,20 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
+        public override string Priority => 
+            string.Empty;
+
+        public override bool? IsAttached => 
+            default;
+
+        public override System.Type? DeclaringType { get; }
+
+        // [MemberNotNull(nameof(_type))]
         public override void Update()
         {
             var val = Property.GetValue(_target);
             RaiseAndSetIfChanged(ref _value, val, nameof(Value));
-            RaiseAndSetIfChanged(ref _type, _value?.GetType().Name, nameof(Type));
+            RaiseAndSetIfChanged(ref _type, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(Type));
         }
     }
 }

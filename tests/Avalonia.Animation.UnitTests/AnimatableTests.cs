@@ -1,5 +1,7 @@
 ﻿using System;
+using Avalonia.Animation.Animators;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -98,6 +100,71 @@ namespace Avalonia.Animation.UnitTests
                 1.0,
                 0.5),
                 Times.Never);
+        }
+
+
+        [Theory]
+        [InlineData(null)] //null value
+        [InlineData("stringValue")] //string value
+        public void Invalid_Values_In_Animation_Should_Not_Crash_Animations(object invalidValue)
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, 1d),
+                },
+                KeyTime = TimeSpan.FromSeconds(0)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, 2d),
+                },
+                KeyTime = TimeSpan.FromSeconds(2),
+            };
+
+            var keyframe3 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, invalidValue),
+                },
+                KeyTime = TimeSpan.FromSeconds(3),
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                Children =
+                {
+                    keyframe1,
+                    keyframe2,
+                    keyframe3
+                },
+                IterationCount = new IterationCount(5),
+                PlaybackDirection = PlaybackDirection.Alternate,
+            };
+
+            var rect = new Rectangle()
+            {
+                Width = 11,
+            };
+
+            var originalValue = rect.Width;
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(rect, clock);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(rect.Width, 1);
+            clock.Step(TimeSpan.FromSeconds(2));
+            Assert.Equal(rect.Width, 2);
+            clock.Step(TimeSpan.FromSeconds(3));
+            //here we have invalid value so value should be expected and set to initial original value
+            Assert.Equal(rect.Width, originalValue);
         }
 
         [Fact]
@@ -328,6 +395,37 @@ namespace Avalonia.Animation.UnitTests
 
                 target.Classes.Remove("foo");
             }
+        }
+
+        [Fact]
+        public void Transitions_Can_Be_Changed_To_Collection_That_Contains_The_Same_Transitions()
+        {
+            var target = CreateTarget();
+            var control = CreateControl(target.Object);
+
+            control.Transitions = new Transitions { target.Object };
+        }
+
+        [Fact]
+        public void Transitions_Can_Re_Set_During_Batch_Update()
+        {
+            var target = CreateTarget();
+            var control = CreateControl(target.Object);
+
+            // Assigning and then clearing Transitions ensures we have a transition state
+            // collection created.
+            control.Transitions = null;
+
+            control.BeginBatchUpdate();
+
+            // Setting opacity then Transitions means that we receive the Transitions change
+            // after the Opacity change when EndBatchUpdate is called.
+            control.Opacity = 0.5;
+            control.Transitions = new Transitions { target.Object };
+
+            // Which means that the transition state hasn't been initialized with the new
+            // Transitions when the Opacity change notification gets raised here.
+            control.EndBatchUpdate();
         }
 
         private static Mock<ITransition> CreateTarget()

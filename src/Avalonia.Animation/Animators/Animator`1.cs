@@ -79,15 +79,15 @@ namespace Avalonia.Animation.Animators
 
             T oldValue, newValue;
 
-            if (firstKeyframe.isNeutral)
+            if (!firstKeyframe.isNeutral && firstKeyframe.Value is T firstKeyframeValue)
+                oldValue = firstKeyframeValue;
+            else
                 oldValue = neutralValue;
-            else
-                oldValue = (T)firstKeyframe.Value;
 
-            if (lastKeyframe.isNeutral)
-                newValue = neutralValue;
+            if (!lastKeyframe.isNeutral && lastKeyframe.Value is T lastKeyframeValue)
+                newValue = lastKeyframeValue;
             else
-                newValue = (T)lastKeyframe.Value;
+                newValue = neutralValue;
 
             if (lastKeyframe.KeySpline != null)
                 progress = lastKeyframe.KeySpline.GetSplineProgress(progress);
@@ -104,6 +104,11 @@ namespace Avalonia.Animation.Animators
             throw new Exception("Index time is out of keyframe time range.");
         }
 
+        public virtual IDisposable BindAnimation(Animatable control, IObservable<T> instance)
+        {
+            return control.Bind((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
+        }
+
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
@@ -116,7 +121,8 @@ namespace Avalonia.Animation.Animators
                 clock ?? control.Clock ?? Clock.GlobalClock,
                 onComplete,
                 InterpolationHandler);
-            return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
+            
+            return BindAnimation(control, instance);
         }
 
         /// <summary>

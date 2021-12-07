@@ -25,6 +25,39 @@ namespace Avalonia.Skia
             }
         }
 
+        public static SKBlendMode ToSKBlendMode(this BitmapBlendingMode blendingMode)
+        {
+            switch (blendingMode)
+            {
+                case BitmapBlendingMode.SourceOver:
+                    return SKBlendMode.SrcOver;
+                case BitmapBlendingMode.Source:
+                    return SKBlendMode.Src;
+                case BitmapBlendingMode.SourceIn:
+                    return SKBlendMode.SrcIn;
+                case BitmapBlendingMode.SourceOut:
+                    return SKBlendMode.SrcOut;
+                case BitmapBlendingMode.SourceAtop:
+                    return SKBlendMode.SrcATop;
+                case BitmapBlendingMode.Destination:
+                    return SKBlendMode.Dst;
+                case BitmapBlendingMode.DestinationIn:
+                    return SKBlendMode.DstIn;
+                case BitmapBlendingMode.DestinationOut:
+                    return SKBlendMode.DstOut;
+                case BitmapBlendingMode.DestinationOver:
+                    return SKBlendMode.DstOver;
+                case BitmapBlendingMode.DestinationAtop:
+                    return SKBlendMode.DstATop;
+                case BitmapBlendingMode.Xor:
+                    return SKBlendMode.Xor;
+                case BitmapBlendingMode.Plus:
+                    return SKBlendMode.Plus;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(blendingMode), blendingMode, null);
+            }
+        }
+
         public static SKPoint ToSKPoint(this Point p)
         {
             return new SKPoint((float)p.X, (float)p.Y);

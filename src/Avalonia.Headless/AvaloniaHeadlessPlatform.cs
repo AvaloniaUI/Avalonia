@@ -51,6 +51,8 @@ namespace Avalonia.Headless
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
             public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true);
+
+            public ITrayIconImpl CreateTrayIcon() => null;
         }
         
         internal static void Initialize()
@@ -58,7 +60,7 @@ namespace Avalonia.Headless
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(new HeadlessPlatformThreadingInterface())
                 .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
-                .Bind<IStandardCursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
+                .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToConstant(new HeadlessPlatformSettingsStub())
                 .Bind<ISystemDialogImpl>().ToSingleton<HeadlessSystemDialogsStub>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()

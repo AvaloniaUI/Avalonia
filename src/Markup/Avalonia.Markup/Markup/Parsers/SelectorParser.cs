@@ -31,13 +31,13 @@ namespace Avalonia.Markup.Parsers
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>The parsed selector.</returns>
-        public Selector Parse(string s)
+        public Selector? Parse(string s)
         {
             var syntax = SelectorGrammar.Parse(s);
             return Create(syntax);
         }
 
-        private Selector Create(IEnumerable<SelectorGrammar.ISyntax> syntax)
+        private Selector? Create(IEnumerable<SelectorGrammar.ISyntax> syntax)
         {
             var result = default(Selector);
             var results = default(List<Selector>);
@@ -104,13 +104,19 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.NotSyntax not:
                         result = result.Not(x => Create(not.Argument));
                         break;
+                    case SelectorGrammar.NthChildSyntax nth:
+                        result = result.NthChild(nth.Step, nth.Offset);
+                        break;
+                    case SelectorGrammar.NthLastChildSyntax nth:
+                        result = result.NthLastChild(nth.Step, nth.Offset);
+                        break;
                     case SelectorGrammar.CommaSyntax comma:
                         if (results == null)
                         {
                             results = new List<Selector>();
                         }
 
-                        results.Add(result);
+                        results.Add(result ?? throw new NotSupportedException("Invalid selector!"));
                         result = null;
                         break;
                     default:

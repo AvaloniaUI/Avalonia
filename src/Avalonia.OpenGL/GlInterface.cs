@@ -128,7 +128,7 @@ namespace Avalonia.OpenGL
             int dstY1,
             int mask,
             int filter);
-        [GlMinVersionEntryPoint("glBlitFramebuffer", 3, 0)]
+        [GlMinVersionEntryPoint("glBlitFramebuffer", 3, 0), GlOptionalEntryPoint]
         public GlBlitFramebuffer BlitFramebuffer { get; }
         
         public delegate void GlGenRenderbuffers(int count, int[] res);

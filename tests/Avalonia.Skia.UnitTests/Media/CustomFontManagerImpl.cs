@@ -48,7 +48,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     continue;
                 }
 
-                typeface = new Typeface(customTypeface.FontFamily.Name, fontStyle, fontWeight);
+                typeface = new Typeface(customTypeface.FontFamily, fontStyle, fontWeight);
 
                 return true;
             }
@@ -83,7 +83,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 case "Noto Mono":
                     {
                         var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_defaultTypeface.FontFamily);
-                        skTypeface = typefaceCollection.Get(typeface);
+                        skTypeface = typefaceCollection.Get(_defaultTypeface);
                         break;
                     }
                 default:

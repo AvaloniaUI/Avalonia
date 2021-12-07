@@ -71,12 +71,12 @@
 }
 @end
 
-AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
+AvnAppMenuItem::AvnAppMenuItem(bool isSeparator)
 {
     _isCheckable = false;
-    _isSeperator = isSeperator;
+    _isSeparator = isSeparator;
     
-    if(isSeperator)
+    if(isSeparator)
     {
         _native = [NSMenuItem separatorItem];
     }
@@ -95,6 +95,8 @@ NSMenuItem* AvnAppMenuItem::GetNative()
 
 HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if(menu != nullptr)
@@ -114,6 +116,8 @@ HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 
 HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if (utf8String != nullptr)
@@ -128,6 +132,8 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 
 HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if(key != AvnKeyNone)
@@ -183,6 +189,8 @@ HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 
 HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         _predicate = predicate;
@@ -193,6 +201,8 @@ HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionC
 
 HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         [_native setState:(isChecked && _isCheckable ? NSOnState : NSOffState)];
@@ -202,6 +212,8 @@ HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 
 HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         switch(toggleType)
@@ -231,6 +243,8 @@ HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
 
 HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if(data != nullptr)
@@ -298,8 +312,27 @@ void AvnAppMenu::RaiseNeedsUpdate()
     }
 }
 
+void AvnAppMenu::RaiseOpening()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Opening();
+    }
+}
+
+void AvnAppMenu::RaiseClosed()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Closed();
+    }
+}
+
+
 HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if([_native hasGlobalMenuItem])
@@ -320,6 +353,8 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 
 HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
@@ -335,6 +370,8 @@ HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 
 HRESULT AvnAppMenu::SetTitle (char* utf8String)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if (utf8String != nullptr)
@@ -348,6 +385,8 @@ HRESULT AvnAppMenu::SetTitle (char* utf8String)
 
 HRESULT AvnAppMenu::Clear()
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         [_native removeAllItems];
@@ -382,6 +421,15 @@ HRESULT AvnAppMenu::Clear()
     _parent->RaiseNeedsUpdate();
 }
 
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    _parent->RaiseOpening();
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    _parent->RaiseClosed();
+}
 
 @end
 
@@ -401,7 +449,7 @@ extern IAvnMenuItem* CreateAppMenuItem()
     }
 }
 
-extern IAvnMenuItem* CreateAppMenuItemSeperator()
+extern IAvnMenuItem* CreateAppMenuItemSeparator()
 {
     @autoreleasepool
     {
@@ -445,47 +493,50 @@ extern void SetAppMenu (NSString* appName, IAvnMenu* menu)
         
         auto appMenu  = [s_appMenuItem submenu];
         
-        [appMenu addItem:[NSMenuItem separatorItem]];
-        
-        // Services item and menu
-        auto servicesItem = [[NSMenuItem alloc] init];
-        servicesItem.title = @"Services";
-        NSMenu *servicesMenu = [[NSMenu alloc] initWithTitle:@"Services"];
-        servicesItem.submenu = servicesMenu;
-        [NSApplication sharedApplication].servicesMenu = servicesMenu;
-        [appMenu addItem:servicesItem];
-        
-        [appMenu addItem:[NSMenuItem separatorItem]];
-        
-        // Hide Application
-        auto hideItem = [[NSMenuItem alloc] initWithTitle:[@"Hide " stringByAppendingString:appName] action:@selector(hide:) keyEquivalent:@"h"];
-        
-        [appMenu addItem:hideItem];
-        
-        // Hide Others
-        auto hideAllOthersItem = [[NSMenuItem alloc] initWithTitle:@"Hide Others"
-                                                       action:@selector(hideOtherApplications:)
-                                                keyEquivalent:@"h"];
-        
-        hideAllOthersItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagOption;
-        [appMenu addItem:hideAllOthersItem];
-        
-        // Show All
-        auto showAllItem = [[NSMenuItem alloc] initWithTitle:@"Show All"
-                                                 action:@selector(unhideAllApplications:)
-                                          keyEquivalent:@""];
-        
-        [appMenu addItem:showAllItem];
-        
-        [appMenu addItem:[NSMenuItem separatorItem]];
-        
-        // Quit Application
-        auto quitItem = [[NSMenuItem alloc] init];
-        quitItem.title = [@"Quit " stringByAppendingString:appName];
-        quitItem.keyEquivalent = @"q";
-        quitItem.target = [AvnWindow class];
-        quitItem.action = @selector(closeAll);
-        [appMenu addItem:quitItem];
+        if(GetAutoGenerateDefaultAppMenuItems())
+        {
+            [appMenu addItem:[NSMenuItem separatorItem]];
+            
+            // Services item and menu
+            auto servicesItem = [[NSMenuItem alloc] init];
+            servicesItem.title = @"Services";
+            NSMenu *servicesMenu = [[NSMenu alloc] initWithTitle:@"Services"];
+            servicesItem.submenu = servicesMenu;
+            [NSApplication sharedApplication].servicesMenu = servicesMenu;
+            [appMenu addItem:servicesItem];
+            
+            [appMenu addItem:[NSMenuItem separatorItem]];
+            
+            // Hide Application
+            auto hideItem = [[NSMenuItem alloc] initWithTitle:[@"Hide " stringByAppendingString:appName] action:@selector(hide:) keyEquivalent:@"h"];
+            
+            [appMenu addItem:hideItem];
+            
+            // Hide Others
+            auto hideAllOthersItem = [[NSMenuItem alloc] initWithTitle:@"Hide Others"
+                                                           action:@selector(hideOtherApplications:)
+                                                    keyEquivalent:@"h"];
+            
+            hideAllOthersItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagOption;
+            [appMenu addItem:hideAllOthersItem];
+            
+            // Show All
+            auto showAllItem = [[NSMenuItem alloc] initWithTitle:@"Show All"
+                                                     action:@selector(unhideAllApplications:)
+                                              keyEquivalent:@""];
+            
+            [appMenu addItem:showAllItem];
+            
+            [appMenu addItem:[NSMenuItem separatorItem]];
+            
+            // Quit Application
+            auto quitItem = [[NSMenuItem alloc] init];
+            quitItem.title = [@"Quit " stringByAppendingString:appName];
+            quitItem.keyEquivalent = @"q";
+            quitItem.target = [AvnWindow class];
+            quitItem.action = @selector(closeAll);
+            [appMenu addItem:quitItem];
+        }
     }
     else
     {

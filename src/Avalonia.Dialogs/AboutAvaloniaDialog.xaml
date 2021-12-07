@@ -79,8 +79,8 @@
         <DrawingPresenter Drawing="{DynamicResource AvaloniaLogo}" />
       </Border>
       <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,-10,0,0">
-        <TextBlock Text="Avalonia 0.9" FontSize="40" Foreground="White" />
-        <TextBlock Text="Development Build" Margin="0,-10,0,0" FontSize="15" Foreground="White" />
+        <TextBlock Text="{Binding Version, StringFormat=Avalonia {0}}" FontSize="40" Foreground="White" />
+        <TextBlock Text="Development Build" IsVisible="{Binding IsDevelopmentBuild}" Margin="0,-10,0,0" FontSize="15" Foreground="White" />
       </StackPanel>
     </StackPanel>
     <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="20" Margin="10 60 10 0">
@@ -99,7 +99,7 @@
       </StackPanel>
      </StackPanel> 
     <StackPanel VerticalAlignment="Bottom" Margin="10">
-      <TextBlock Text="© 2020 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
+      <TextBlock Text="© 2021 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
     </StackPanel>
   </Grid>
 </Window>

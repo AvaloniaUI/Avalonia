@@ -327,7 +327,11 @@ namespace Avalonia.Controls.Presenters
             var oldChild = Child;
             var newChild = content as IControl;
 
-            if (content != null && newChild == null)
+            // We want to allow creating Child from the Template, if Content is null.
+            // But it's important to not use DataTemplates, otherwise we will break content presenters in many places,
+            // otherwise it will blow up every ContentPresenter without Content set.
+            if (newChild == null
+                && (content != null || ContentTemplate != null))
             {
                 var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? 
                     (
@@ -378,7 +382,7 @@ namespace Avalonia.Controls.Presenters
             var useLayoutRounding = UseLayoutRounding;
             var availableSize = finalSize;
             var sizeForChild = availableSize;
-            var scale = GetLayoutScale();
+            var scale = LayoutHelper.GetLayoutScale(this);
             var originX = offset.X;
             var originY = offset.Y;
 
@@ -460,18 +464,6 @@ namespace Avalonia.Controls.Presenters
         private void UpdatePseudoClasses()
         {
             PseudoClasses.Set(":empty", Content is null);
-        }
-
-        private double GetLayoutScale()
-        {
-            var result = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
-
-            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
-            {
-                throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
-            }
-
-            return result;
         }
 
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)

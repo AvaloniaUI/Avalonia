@@ -92,6 +92,7 @@ namespace Avalonia.Styling
         {
             if (!_isActive)
             {
+                _innerSubscription ??= _binding.Observable.Subscribe(_inner);
                 _isActive = true;
                 PublishNext();
             }
@@ -102,6 +103,8 @@ namespace Avalonia.Styling
             if (_isActive)
             {
                 _isActive = false;
+                _innerSubscription?.Dispose();
+                _innerSubscription = null;
                 PublishNext();
             }
         }
@@ -121,9 +124,6 @@ namespace Avalonia.Styling
                 _subscriptionTwoWay = null;
                 sub.Dispose();
             }
-
-            _innerSubscription?.Dispose();
-            _innerSubscription = null;
 
             base.Dispose();
         }
@@ -148,7 +148,17 @@ namespace Avalonia.Styling
 
         protected override void Subscribed()
         {
-            _innerSubscription = _binding.Observable.Subscribe(_inner);
+            if (_isActive)
+            {
+                if (_innerSubscription is null)
+                {
+                    _innerSubscription ??= _binding.Observable.Subscribe(_inner);
+                }
+                else
+                {
+                    PublishNext();
+                }
+            }
         }
 
         protected override void Unsubscribed()

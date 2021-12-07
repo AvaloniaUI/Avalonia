@@ -9,7 +9,7 @@ namespace Avalonia.Media.TextFormatting
     [DebuggerTypeProxy(typeof(TextRunDebuggerProxy))]
     public abstract class TextRun
     {
-        public static readonly int DefaultTextSourceLength = 1;
+        public const int DefaultTextSourceLength = 1;
 
         /// <summary>
         ///  Gets the text source length.

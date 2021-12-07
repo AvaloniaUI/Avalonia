@@ -72,7 +72,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         internal object RawSource { get; }
 
         public override string ToString()
-            => string.Concat(_elements.Select(e => e.ToString()));
+            => string.Concat(_elements);
     }
 
     public class CompiledBindingPathBuilder
@@ -88,7 +88,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
-            _elements.Add(new PropertyElement(info, accessorFactory));
+            _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
             return this;
         }
 
@@ -161,10 +161,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class PropertyElement : ICompiledBindingPathElement
     {
-        public PropertyElement(IPropertyInfo property, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
+        private readonly bool _isFirstElement;
+
+        public PropertyElement(IPropertyInfo property, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory, bool isFirstElement)
         {
             Property = property;
             AccessorFactory = accessorFactory;
+            _isFirstElement = isFirstElement;
         }
 
         public IPropertyInfo Property { get; }
@@ -172,7 +175,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
 
         public override string ToString()
-            => $".{Property.Name}";
+            => _isFirstElement ? Property.Name : $".{Property.Name}";
     }
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement

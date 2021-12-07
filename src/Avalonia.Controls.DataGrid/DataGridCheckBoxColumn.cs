@@ -17,7 +17,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridCheckBoxColumn : DataGridBoundColumn
     {
-        private bool _beganEditWithKeyboard;
         private CheckBox _currentCheckBox;
         private DataGrid _owningGrid;
 
@@ -153,23 +152,7 @@ namespace Avalonia.Controls
         {
             if (editingElement is CheckBox editingCheckBox)
             {
-                bool? uneditedValue = editingCheckBox.IsChecked;
-                bool editValue = false;
-                if(editingEventArgs is PointerPressedEventArgs args)
-                {
-                    // Editing was triggered by a mouse click
-                    Point position = args.GetPosition(editingCheckBox);
-                    Rect rect = new Rect(0, 0, editingCheckBox.Bounds.Width, editingCheckBox.Bounds.Height);
-                    editValue = rect.Contains(position);
-                }
-                else if (_beganEditWithKeyboard)
-                {
-                    // Editing began by a user pressing spacebar
-                    editValue = true;
-                    _beganEditWithKeyboard = false;
-                }
-
-                if (editValue)
+                void EditValue()
                 {
                     // User clicked the checkbox itself or pressed space, let's toggle the IsChecked value
                     if (editingCheckBox.IsThreeState)
@@ -192,6 +175,40 @@ namespace Avalonia.Controls
                         editingCheckBox.IsChecked = !editingCheckBox.IsChecked;
                     }
                 }
+
+                bool? uneditedValue = editingCheckBox.IsChecked;
+                if(editingEventArgs is PointerPressedEventArgs args)
+                {
+                    void ProcessPointerArgs()
+                    {
+                        // Editing was triggered by a mouse click
+                        Point position = args.GetPosition(editingCheckBox);
+                        Rect rect = new Rect(0, 0, editingCheckBox.Bounds.Width, editingCheckBox.Bounds.Height);
+                        if(rect.Contains(position))
+                        {
+                            EditValue();
+                        }
+                    }
+                    
+                    void OnLayoutUpdated(object sender, EventArgs e)
+                    {
+                        if(!editingCheckBox.Bounds.IsEmpty)
+                        {
+                            editingCheckBox.LayoutUpdated -= OnLayoutUpdated;
+                            ProcessPointerArgs();
+                        }
+                    }
+
+                    if(editingCheckBox.Bounds.IsEmpty)
+                    {
+                        editingCheckBox.LayoutUpdated += OnLayoutUpdated;
+                    }
+                    else
+                    {
+                        ProcessPointerArgs();
+                    }
+                }
+
                 return uneditedValue;
             }
             return false;
@@ -284,13 +301,10 @@ namespace Avalonia.Controls
                     CheckBox checkBox = GetCellContent(row) as CheckBox;
                     if (checkBox == _currentCheckBox)
                     {
-                        _beganEditWithKeyboard = true;
                         OwningGrid.BeginEdit();
-                        return;
                     }
                 }
             }
-            _beganEditWithKeyboard = false;
         }
 
         private void OwningGrid_LoadingRow(object sender, DataGridRowEventArgs e)

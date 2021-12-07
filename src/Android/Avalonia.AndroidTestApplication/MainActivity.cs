@@ -16,18 +16,18 @@ namespace Avalonia.AndroidTestApplication
         Icon = "@drawable/icon",
         LaunchMode = LaunchMode.SingleInstance/*,
         ScreenOrientation = ScreenOrientation.Landscape*/)]
-    public class MainBaseActivity : Activity
+    public class MainBaseActivity : AvaloniaActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
             if (Avalonia.Application.Current == null)
             {
                 AppBuilder.Configure<App>()
                     .UseAndroid()
                     .SetupWithoutStarting();
             }
-            SetContentView(new AvaloniaView(this) { Content = App.CreateSimpleWindow() });
+            base.OnCreate(savedInstanceState);
+            Content = App.CreateSimpleWindow();
         }
     }
 
@@ -72,13 +72,33 @@ namespace Avalonia.AndroidTestApplication
                             Height = 40,
                             Background = Brushes.LightGreen,
                             Foreground = Brushes.Black
-                        }
+                        },
 
+                        CreateTextBox(Input.TextInput.TextInputContentType.Normal),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Password),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Email),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Url),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Phone),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Number),
                     }
                 }
             };
 
             return window;
+        }
+
+        private static TextBox CreateTextBox(Input.TextInput.TextInputContentType contentType)
+        {
+            var textBox = new TextBox()
+            {
+                Margin = new Thickness(20, 10),
+                Watermark = contentType.ToString(),
+                BorderThickness = new Thickness(3),
+                FontSize = 20
+            };
+            textBox.TextInputOptionsQuery += (s, e) => { e.ContentType = contentType; };
+
+            return textBox;
         }
     }
 }
