@@ -357,5 +357,157 @@ namespace Avalonia.Base.UnitTests.Collections
 
             Assert.Equal(target, result);
         }
+
+        [Fact]
+        public void RemoveAll_Should_Send_Single_Notification_For_Sequential_Range()
+        {
+            var target = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.Equal(5, e.OldStartingIndex);
+                Assert.Equal(toRemove, e.OldItems);
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Send_Single_Notification_For_Sequential_Range_With_Duplicate_Source_Items()
+        {
+            var items = Enumerable.Range(0, 20).Select(x => $"Item {x / 2}");
+            var target = new AvaloniaList<string>(items);
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.Equal(10, e.OldStartingIndex);
+
+                Assert.Equal(new[] 
+                { 
+                    "Item 5",
+                    "Item 5",
+                    "Item 6",
+                    "Item 6",
+                    "Item 7",
+                    "Item 7",
+                }, e.OldItems);
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Send_Multiple_Notifications_For_Non_Sequential_Range()
+        {
+            var target = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var raised = 0;
+            var toRemove = new[] 
+            {
+                new[] { "Item 2", "Item 3" },
+                new[] { "Item 5", "Item 6" }
+            };
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                
+                if (raised == 0)
+                {
+                    Assert.Equal(5, e.OldStartingIndex);
+                    Assert.Equal(toRemove[1], e.OldItems);
+                }
+                else
+                {
+                    Assert.Equal(2, e.OldStartingIndex);
+                    Assert.Equal(toRemove[0], e.OldItems);
+                }
+
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove[0].Concat(toRemove[1]));
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Send_Multiple_Notifications_For_Sequential_Range_With_Nonsequential_Duplicate_Source_Items()
+        {
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}");
+            var target = new AvaloniaList<string>(items.Concat(items));
+            var raised = 0;
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+
+                if (raised == 0)
+                {
+                    Assert.Equal(15, e.OldStartingIndex);
+                    Assert.Equal(toRemove, e.OldItems);
+                }
+                else
+                {
+                    Assert.Equal(5, e.OldStartingIndex);
+                    Assert.Equal(toRemove, e.OldItems);
+                }
+
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Not_Send_Notification_For_Items_Not_Present()
+        {
+            var target = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7", "Not present" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.Equal(5, e.OldStartingIndex);
+                Assert.Equal(toRemove.Take(3).ToArray(), e.OldItems);
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Handle_Empty_List()
+        {
+            var target = new AvaloniaList<string>();
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(0, raised);
+        }
     }
 }
