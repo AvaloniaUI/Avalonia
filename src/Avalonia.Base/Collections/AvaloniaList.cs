@@ -503,11 +503,24 @@ namespace Avalonia.Collections
         {
             _ = items ?? throw new ArgumentNullException(nameof(items));
 
-            foreach (var i in items)
+            var hItems = new HashSet<T>(items);
+
+            int counter = 0;
+            for (int i = _inner.Count - 1; i >= 0; --i)
             {
-                // TODO: Optimize to only send as many notifications as necessary.
-                Remove(i);
+                if (hItems.Contains(_inner[i]))
+                {
+                    counter += 1;
+                }
+                else if(counter > 0)
+                {
+                    RemoveRange(i + 1, counter);
+                    counter = 0;
+                }
             }
+
+            if (counter > 0)
+                RemoveRange(0, counter);
         }
 
         /// <summary>
