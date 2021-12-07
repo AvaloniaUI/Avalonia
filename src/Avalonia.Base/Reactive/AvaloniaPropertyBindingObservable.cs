@@ -28,7 +28,7 @@ namespace Avalonia.Reactive
         {
             if (_target.TryGetTarget(out var target))
             {
-                _value = (T)target.GetValue(_property);
+                _value = (T)target.GetValue(_property)!;
                 target.PropertyChanged += PropertyChanged;
             }
         }
@@ -66,7 +66,7 @@ namespace Avalonia.Reactive
 
                     if (!Equals(newValue, _value))
                     {
-                        _value = (T)newValue;
+                        _value = (T)newValue!;
                         PublishNext(_value);
                     }
                 }
