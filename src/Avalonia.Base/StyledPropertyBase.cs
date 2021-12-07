@@ -33,11 +33,6 @@ namespace Avalonia
             Action<IAvaloniaObject, bool>? notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
-            if (name.Contains("."))
-            {
-                throw new ArgumentException("'name' may not contain periods.");
-            }
-
             _inherits = inherits;
             ValidateValue = validate;
             HasCoercion |= metadata.CoerceValue != null;
