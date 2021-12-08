@@ -67,7 +67,7 @@ namespace Avalonia.Data.Core
         /// A description of the expression.
         /// </param>
         public ExpressionObserver(
-            object root,
+            object? root,
             ExpressionNode node,
             string? description = null)
         {
@@ -130,13 +130,11 @@ namespace Avalonia.Data.Core
         /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
         /// </param>
         public static ExpressionObserver Create<T, U>(
-            T root,
+            T? root,
             Expression<Func<T, U>> expression,
             bool enableDataValidation = false,
             string? description = null)
         {
-            _ = root ?? throw new ArgumentNullException(nameof(root));
-
             return new ExpressionObserver(root, Parse(expression, enableDataValidation), description ?? expression.ToString());
         }
 
