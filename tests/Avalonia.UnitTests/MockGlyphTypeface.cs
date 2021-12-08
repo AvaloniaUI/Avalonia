@@ -17,7 +17,7 @@ namespace Avalonia.UnitTests
 
         public ushort GetGlyph(uint codepoint)
         {
-            return 0;
+            return (ushort)codepoint;
         }
 
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
