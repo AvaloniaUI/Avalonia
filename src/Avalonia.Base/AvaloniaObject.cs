@@ -103,7 +103,7 @@ namespace Avalonia
         /// Gets or sets the value of a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
-        public object this[AvaloniaProperty property]
+        public object? this[AvaloniaProperty property]
         {
             get { return GetValue(property); }
             set { SetValue(property, value); }
@@ -211,7 +211,7 @@ namespace Avalonia
         /// See https://github.com/AvaloniaUI/Avalonia/pull/2747 for the discussion that prompted
         /// this.
         /// </remarks>
-        public sealed override bool Equals(object obj) => base.Equals(obj);
+        public sealed override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Gets the hash code for the object.
@@ -233,7 +233,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public object GetValue(AvaloniaProperty property)
+        public object? GetValue(AvaloniaProperty property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
 
@@ -567,7 +567,7 @@ namespace Avalonia
         /// <param name="oldParent">The old inheritance parent.</param>
         internal void InheritanceParentChanged<T>(
             StyledPropertyBase<T> property,
-            IAvaloniaObject oldParent)
+            IAvaloniaObject? oldParent)
         {
             var oldValue = oldParent switch
             {

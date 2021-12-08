@@ -17,10 +17,6 @@ namespace Avalonia.Controls.Utils
         private Size _size;
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
-        private AvaloniaList<double> _borderDashArray;
-        private double _borderDashOffset;
-        private PenLineCap _borderLineCap;
-        private PenLineJoin _borderJoin;
         private bool _initialized;
 
 
