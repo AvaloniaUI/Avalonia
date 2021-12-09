@@ -1,5 +1,7 @@
 using System;
 
+#nullable enable
+
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -25,7 +27,7 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        IPropertyAccessor Start(WeakReference<object> reference,
+        IPropertyAccessor? Start(WeakReference<object?> reference,
             string propertyName);
     }
 }

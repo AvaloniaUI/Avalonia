@@ -39,8 +39,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         InstancedBinding? IBinding.Initiate(
             IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
-            object anchor,
+            AvaloniaProperty? targetProperty,
+            object? anchor,
             bool enableDataValidation)
         {
             if (ResourceKey is null)
@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return null;
         }
 
-        private Func<object?, object?>? GetConverter(AvaloniaProperty targetProperty)
+        private Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
         {
             if (targetProperty?.PropertyType == typeof(IBrush))
             {

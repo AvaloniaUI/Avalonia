@@ -115,8 +115,8 @@ namespace Avalonia
         /// <param name="binding">The binding information.</param>
         public IBinding this[IndexerDescriptor binding]
         {
-            get { return new IndexerBinding(this, binding.Property, binding.Mode); }
-            set { this.Bind(binding.Property, value); }
+            get { return new IndexerBinding(this, binding.Property!, binding.Mode); }
+            set { this.Bind(binding.Property!, value); }
         }
 
         private ValueStore Values
