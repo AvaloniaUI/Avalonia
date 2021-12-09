@@ -1,7 +1,9 @@
-﻿namespace Avalonia.Data.Core
+﻿#nullable enable
+
+namespace Avalonia.Data.Core
 {
     interface ITransformNode
     {
-        object Transform(object value);
+        object? Transform(object? value);
     }
 }

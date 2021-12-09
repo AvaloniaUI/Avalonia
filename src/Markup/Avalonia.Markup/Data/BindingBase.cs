@@ -76,14 +76,14 @@ namespace Avalonia.Data
 
         protected abstract ExpressionObserver CreateExpressionObserver(
             IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
+            AvaloniaProperty? targetProperty,
             object? anchor,
             bool enableDataValidation);
 
         /// <inheritdoc/>
-        public InstancedBinding Initiate(
+        public InstancedBinding? Initiate(
             IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
+            AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
         {
@@ -115,7 +115,7 @@ namespace Avalonia.Data
             if (!string.IsNullOrWhiteSpace(StringFormat) &&
                 (targetType == typeof(string) || targetType == typeof(object)))
             {
-                converter = new StringFormatValueConverter(StringFormat, converter);
+                converter = new StringFormatValueConverter(StringFormat!, converter);
             }
 
             var subject = new BindingExpression(

@@ -2,12 +2,14 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.Data.Core.Plugins;
 
+#nullable enable
+
 namespace Avalonia.Data.Core
 {
     public class StreamNode : ExpressionNode
     {
-        private IStreamPlugin _customPlugin = null;
-        private IDisposable _subscription;
+        private IStreamPlugin? _customPlugin = null;
+        private IDisposable? _subscription;
 
         public override string Description => "^";
 
@@ -18,7 +20,7 @@ namespace Avalonia.Data.Core
             _customPlugin = customPlugin;
         }
 
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
             _subscription = GetPlugin(reference)?.Start(reference).Subscribe(ValueChanged);
         }
@@ -29,7 +31,7 @@ namespace Avalonia.Data.Core
             _subscription = null;
         }
 
-        private IStreamPlugin GetPlugin(WeakReference<object> reference)
+        private IStreamPlugin? GetPlugin(WeakReference<object?> reference)
         {
             if (_customPlugin != null)
             {
