@@ -7,7 +7,7 @@ namespace Avalonia.Styling.Activators
     /// <summary>
     /// An <see cref="IStyleActivator"/> which listens to a property value on a control.
     /// </summary>
-    internal class PropertyEqualsActivator : StyleActivatorBase, IObserver<object>
+    internal class PropertyEqualsActivator : StyleActivatorBase, IObserver<object?>
     {
         private readonly IStyleable _control;
         private readonly AvaloniaProperty _property;
@@ -31,8 +31,8 @@ namespace Avalonia.Styling.Activators
 
         protected override void Deinitialize() => _subscription?.Dispose();
 
-        void IObserver<object>.OnCompleted() { }
-        void IObserver<object>.OnError(Exception error) { }
-        void IObserver<object>.OnNext(object value) => PublishNext(PropertyEqualsSelector.Compare(_property.PropertyType, value, _value));
+        void IObserver<object?>.OnCompleted() { }
+        void IObserver<object?>.OnError(Exception error) { }
+        void IObserver<object?>.OnNext(object? value) => PublishNext(PropertyEqualsSelector.Compare(_property.PropertyType, value, _value));
     }
 }

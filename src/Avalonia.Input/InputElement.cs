@@ -632,7 +632,7 @@ namespace Avalonia.Input
             }
             else if (change.Property == IsKeyboardFocusWithinProperty)
             {
-                PseudoClasses.Set(":focus-within", _isKeyboardFocusWithin);
+                PseudoClasses.Set(":focus-within", change.NewValue.GetValueOrDefault<bool>());
             }
         }
 

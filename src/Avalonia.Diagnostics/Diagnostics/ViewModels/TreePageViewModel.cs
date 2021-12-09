@@ -15,7 +15,7 @@ namespace Avalonia.Diagnostics.ViewModels
             Nodes = nodes;
 
             PropertiesFilter = new FilterViewModel();
-            PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView.Refresh();
+            PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView?.Refresh();
 
             SettersFilter = new FilterViewModel();
             SettersFilter.RefreshFilter += (s, e) => Details?.UpdateStyleFilters();

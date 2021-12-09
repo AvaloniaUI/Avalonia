@@ -247,7 +247,7 @@ namespace Avalonia.Data
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => new BindingValue<T>((T)value)
+                _ => new BindingValue<T>((T?)value)
             };
         }
 
@@ -416,7 +416,7 @@ namespace Avalonia.Data
         /// <remarks>
         /// Note that this method uses reflection and as such may be slow.
         /// </remarks>
-        public static BindingValue<T> Convert<T>(this BindingValue<object> value)
+        public static BindingValue<T> Convert<T>(this BindingValue<object?> value)
         {
             return value.Type switch
             {

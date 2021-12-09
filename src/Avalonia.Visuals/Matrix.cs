@@ -216,6 +216,28 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Appends another matrix as post-multiplication operation.
+        /// Equivalent to this * value;
+        /// </summary>
+        /// <param name="value">A matrix.</param>
+        /// <returns>Post-multiplied matrix.</returns>
+        public Matrix Append(Matrix value)
+        {
+            return this * value;
+        }
+
+        /// <summary>
+        /// Prpends another matrix as pre-multiplication operation.
+        /// Equivalent to value * this;
+        /// </summary>
+        /// <param name="value">A matrix.</param>
+        /// <returns>Pre-multiplied matrix.</returns>
+        public Matrix Prepend(Matrix value)
+        {
+            return value * this;
+        }
+
+        /// <summary>
         /// Calculates the determinant for this matrix.
         /// </summary>
         /// <returns>The determinant.</returns>

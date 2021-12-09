@@ -193,7 +193,8 @@
                                 Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <ContentPresenter Content="{TemplateBinding Content}" />
+            <ContentPresenter Content="{TemplateBinding Content}" 
+                              ContentTemplate="{TemplateBinding ContentTemplate}" />
 
             <Path Name="SortIcon"
                   Grid.Column="1"

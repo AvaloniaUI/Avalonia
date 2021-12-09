@@ -19,14 +19,14 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly IVisual _control;
         private IDictionary<object, List<PropertyViewModel>>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
-        private DataGridCollectionView _propertiesView;
+        private DataGridCollectionView? _propertiesView;
         private bool _snapshotStyles;
         private bool _showInactiveStyles;
         private string? _styleStatus;
-        private object _selectedEntity;
+        private object? _selectedEntity;
         private readonly Stack<(string Name,object Entry)> _selectedEntitiesStack = new();
-        private string _selectedEntityName;
-        private string _selectedEntityType;
+        private string? _selectedEntityName;
+        private string? _selectedEntityType;
         private bool _showImplementedInterfaces;
 
         public ControlDetailsViewModel(TreePageViewModel treePage, IVisual control)
@@ -118,7 +118,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public TreePageViewModel TreePage { get; }
 
-        public DataGridCollectionView PropertiesView
+        public DataGridCollectionView? PropertiesView
         {
             get => _propertiesView;
             private set => RaiseAndSetIfChanged(ref _propertiesView, value);
@@ -148,7 +148,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
         
-        public string SelectedEntityType
+        public string? SelectedEntityType
         {
             get => _selectedEntityType;
             set
@@ -274,7 +274,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void ControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (_propertyIndex.TryGetValue(e.Property, out var properties))
+            if (_propertyIndex is { } && _propertyIndex.TryGetValue(e.Property, out var properties))
             {
                 foreach (var property in properties)
                 {
@@ -288,6 +288,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private void ControlPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName != null
+                && _propertyIndex is { }
                 && _propertyIndex.TryGetValue(e.PropertyName, out var properties))
             {
                 foreach (var property in properties)
@@ -406,7 +407,7 @@ namespace Avalonia.Diagnostics.ViewModels
             var selectedProperty = SelectedProperty;
             var selectedEntity = SelectedEntity;
             var selectedEntityName = SelectedEntityName;
-            if (selectedProperty == null)
+            if (selectedEntity == null ||  selectedProperty == null)
                 return;
 
             object? property;
@@ -423,7 +424,7 @@ namespace Avalonia.Diagnostics.ViewModels
                      ?.GetValue(selectedEntity);
             }
             if (property == null) return;
-            _selectedEntitiesStack.Push((Name:selectedEntityName,Entry:selectedEntity));
+            _selectedEntitiesStack.Push((Name:selectedEntityName!,Entry:selectedEntity));
             NavigateToProperty(property, selectedProperty.Name);
         }
 
