@@ -11,6 +11,7 @@ using System;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -168,7 +169,8 @@ namespace Avalonia.Controls
             CompactPaneLengthProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnCompactPaneLengthChanged(v));
             PanePlacementProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnPanePlacementChanged(v));
             DisplayModeProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnDisplayModeChanged(v));
-            
+
+            PaneProperty.Changed.AddClassHandler<SplitView>((x, e) => x.PaneChanged(e));
         }
 
         /// <summary>
@@ -258,6 +260,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the Pane for the SplitView
         /// </summary>
+        [DependsOn(nameof(PaneTemplate))]
         public object Pane
         {
             get => GetValue(PaneProperty);
@@ -459,6 +462,19 @@ namespace Avalonia.Controls
         {
             var mode = (bool)e.NewValue;
             PseudoClasses.Set(":lightdismiss", mode);
+        }
+
+        private void PaneChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is ILogical oldChild)
+            {
+                LogicalChildren.Remove(oldChild);
+            }
+
+            if (e.NewValue is ILogical newChild)
+            {
+                LogicalChildren.Add(newChild);
+            }
         }
     }
 }
