@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Windows.Input;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Data.Converters
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace Avalonia.Data.Converters
         /// <param name="parameter">A user-defined parameter.</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>The converted value.</returns>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null)
             {
@@ -63,7 +65,7 @@ namespace Avalonia.Data.Converters
         /// <param name="parameter">A user-defined parameter.</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>The converted value.</returns>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return Convert(value, targetType, parameter, culture);
         }

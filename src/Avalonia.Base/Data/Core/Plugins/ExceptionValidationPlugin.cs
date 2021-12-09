@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
 
+#nullable enable
+
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -9,22 +11,22 @@ namespace Avalonia.Data.Core.Plugins
     public class ExceptionValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference<object> reference, string memberName) => true;
+        public bool Match(WeakReference<object?> reference, string memberName) => true;
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference<object> reference, string name, IPropertyAccessor inner)
+        public IPropertyAccessor Start(WeakReference<object?> reference, string name, IPropertyAccessor inner)
         {
             return new Validator(reference, name, inner);
         }
 
         private sealed class Validator : DataValidationBase
         {
-            public Validator(WeakReference<object> reference, string name, IPropertyAccessor inner)
+            public Validator(WeakReference<object?> reference, string name, IPropertyAccessor inner)
                 : base(inner)
             {
             }
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object? value, BindingPriority priority)
             {
                 try
                 {
