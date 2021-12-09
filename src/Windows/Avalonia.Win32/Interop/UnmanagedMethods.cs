@@ -1467,6 +1467,16 @@ namespace Avalonia.Win32.Interop
         
         [DllImport("dwmapi.dll")]
         public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
+        
+        [Flags]
+        public enum LayeredWindowFlags
+        {
+            LWA_ALPHA = 0x00000002,
+            LWA_COLORKEY = 0x00000001,
+        }
+        
+        [DllImport("user32.dll")]
+        public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, LayeredWindowFlags dwFlags);
 
         [Flags]
         public enum DWM_BB

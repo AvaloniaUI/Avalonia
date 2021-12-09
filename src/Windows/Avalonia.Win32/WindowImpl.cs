@@ -148,7 +148,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
 
-            _nativeControlHost = new Win32NativeControlHost(this);
+            _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
             s_instances.Add(this);
         }
 
