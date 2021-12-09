@@ -175,7 +175,7 @@ public:
         {
             if(Window != nullptr)
             {
-                [Window makeKeyWindow];
+                [Window makeKeyAndOrderFront:nil];
                 [NSApp activateIgnoringOtherApps:YES];
             }
         }
