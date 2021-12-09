@@ -4,6 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+#nullable enable
+
 namespace Avalonia.Data.Core.Parsers
 {
     class ExpressionVisitorNodeBuilder : ExpressionVisitor

@@ -25,7 +25,19 @@ namespace Avalonia.PropertyStore
 
         public ConstantValueEntry(
             StyledPropertyBase<T> property,
-            [AllowNull] T value,
+            T value,
+            BindingPriority priority,
+            IValueSink sink)
+        {
+            Property = property;
+            _value = value;
+            Priority = priority;
+            _sink = sink;
+        }
+
+        public ConstantValueEntry(
+            StyledPropertyBase<T> property,
+            Optional<T> value,
             BindingPriority priority,
             IValueSink sink)
         {
@@ -37,7 +49,7 @@ namespace Avalonia.PropertyStore
 
         public StyledPropertyBase<T> Property { get; }
         public BindingPriority Priority { get; private set; }
-        Optional<object> IValue.GetValue() => _value.ToObject();
+        Optional<object?> IValue.GetValue() => _value.ToObject();
 
         public Optional<T> GetValue(BindingPriority maxPriority = BindingPriority.Animation)
         {
@@ -59,8 +71,8 @@ namespace Avalonia.PropertyStore
             IValueSink sink,
             IAvaloniaObject owner,
             AvaloniaProperty property,
-            Optional<object> oldValue,
-            Optional<object> newValue)
+            Optional<object?> oldValue,
+            Optional<object?> newValue)
         {
             sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
