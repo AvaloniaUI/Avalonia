@@ -7,19 +7,21 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Data.Core
 {
     public abstract class IndexerNodeBase : SettableNode
     {
-        private IDisposable _subscription;
+        private IDisposable? _subscription;
         
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
-            reference.TryGetTarget(out object target);
+            reference.TryGetTarget(out var target);
 
             var incc = target as INotifyCollectionChanged;
             var inpc = target as INotifyPropertyChanged;
-            var inputs = new List<IObservable<object>>();
+            var inputs = new List<IObservable<object?>>();
 
             if (incc != null)
             {
@@ -44,14 +46,14 @@ namespace Avalonia.Data.Core
 
         protected override void StopListeningCore()
         {
-            _subscription.Dispose();
+            _subscription?.Dispose();
         }
 
-        protected abstract object GetValue(object target);
+        protected abstract object? GetValue(object? target);
 
         protected abstract int? TryGetFirstArgumentAsInt();
 
-        private bool ShouldUpdate(object sender, NotifyCollectionChangedEventArgs e)
+        private bool ShouldUpdate(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (sender is IList)
             {
@@ -84,6 +86,6 @@ namespace Avalonia.Data.Core
             return true; // Implementation defined meaning for the index, so just try to update anyway
         }
 
-        protected abstract bool ShouldUpdate(object sender, PropertyChangedEventArgs e);
+        protected abstract bool ShouldUpdate(object? sender, PropertyChangedEventArgs e);
     }
 }
