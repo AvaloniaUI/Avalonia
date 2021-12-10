@@ -1,6 +1,6 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\src\Avalonia.Build.Tasks\bin\$(Configuration)\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
+    <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\src\Avalonia.Build.Tasks\bin\$(Configuration)\$(TargetFramework)\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
     <AvaloniaUseExternalMSBuild>true</AvaloniaUseExternalMSBuild>
     <AvaloniaXamlIlVerifyIl>true</AvaloniaXamlIlVerifyIl>
   </PropertyGroup>
