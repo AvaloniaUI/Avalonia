@@ -4,6 +4,8 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -16,9 +18,9 @@ namespace Avalonia.Data.Core.Plugins
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        public virtual bool Match(WeakReference<object> reference)
+        public virtual bool Match(WeakReference<object?> reference)
         {
-            reference.TryGetTarget(out object target);
+            reference.TryGetTarget(out var target);
 
             return target is Task;
         } 
@@ -30,9 +32,9 @@ namespace Avalonia.Data.Core.Plugins
         /// <returns>
         /// An observable that produces the output for the value.
         /// </returns>
-        public virtual IObservable<object> Start(WeakReference<object> reference)
+        public virtual IObservable<object?> Start(WeakReference<object?> reference)
         {
-            reference.TryGetTarget(out object target);
+            reference.TryGetTarget(out var target);
 
             if (target is Task task)
             {
@@ -46,7 +48,7 @@ namespace Avalonia.Data.Core.Plugins
                         case TaskStatus.Faulted:
                             return HandleCompleted(task);
                         default:
-                            var subject = new Subject<object>();
+                            var subject = new Subject<object?>();
                             task.ContinueWith(
                                     x => HandleCompleted(task).Subscribe(subject),
                                     TaskScheduler.FromCurrentSynchronizationContext())
@@ -56,10 +58,10 @@ namespace Avalonia.Data.Core.Plugins
                 }
             }
 
-            return Observable.Empty<object>();
+            return Observable.Empty<object?>();
         }
 
-        private IObservable<object> HandleCompleted(Task task)
+        private IObservable<object?> HandleCompleted(Task task)
         {
             var resultProperty = task.GetType().GetRuntimeProperty("Result");
             

@@ -10,6 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -19,7 +20,7 @@ namespace Avalonia.Controls
     /// Represents a data-driven collection control that incorporates a flexible layout system,
     /// custom views, and virtualization.
     /// </summary>
-    public class ItemsRepeater : Panel
+    public class ItemsRepeater : Panel, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="HorizontalCacheLength"/> property.
@@ -61,8 +62,9 @@ namespace Avalonia.Controls
         private readonly ViewportManager _viewportManager;
         private IEnumerable _items;
         private VirtualizingLayoutContext _layoutContext;
-        private NotifyCollectionChangedEventArgs _processingItemsSourceChange;
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
         private bool _isLayoutInProgress;
+        private NotifyCollectionChangedEventArgs _processingItemsSourceChange;
         private ItemsRepeaterElementPreparedEventArgs _elementPreparedArgs;
         private ItemsRepeaterElementClearingEventArgs _elementClearingArgs;
         private ItemsRepeaterElementIndexChangedEventArgs _elementIndexChangedArgs;
@@ -161,6 +163,25 @@ namespace Avalonia.Controls
 
                 return _layoutContext;
             }
+        }
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return child is IControl control
+                ? GetElementIndex(control)
+                : -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            count = ItemsSourceView.Count;
+            return true;
         }
 
         /// <summary>
@@ -545,6 +566,8 @@ namespace Avalonia.Controls
 
                 ElementPrepared(this, _elementPreparedArgs);
             }
+
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         internal void OnElementClearing(IControl element)
@@ -562,6 +585,8 @@ namespace Avalonia.Controls
 
                 ElementClearing(this, _elementClearingArgs);
             }
+
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         internal void OnElementIndexChanged(IControl element, int oldIndex, int newIndex)
@@ -579,6 +604,8 @@ namespace Avalonia.Controls
 
                 ElementIndexChanged(this, _elementIndexChangedArgs);
             }
+
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         private void OnDataSourcePropertyChanged(ItemsSourceView oldValue, ItemsSourceView newValue)
@@ -588,13 +615,13 @@ namespace Avalonia.Controls
                 throw new AvaloniaInternalException("Cannot set ItemsSourceView during layout.");
             }
 
-            ItemsSourceView?.Dispose();
-            ItemsSourceView = newValue;
-
             if (oldValue != null)
             {
                 oldValue.CollectionChanged -= OnItemsSourceViewChanged;
             }
+
+            ItemsSourceView?.Dispose();
+            ItemsSourceView = newValue;
 
             if (newValue != null)
             {

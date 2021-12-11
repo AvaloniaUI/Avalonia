@@ -68,7 +68,8 @@ namespace Avalonia.Controls
                             {
                                 x.RemoveOwner(Owner);
                             }
-                        }, null);
+                        }, 
+                        () => throw new NotSupportedException("Dictionary reset not supported"));
                 }
 
                 return _mergedDictionaries;

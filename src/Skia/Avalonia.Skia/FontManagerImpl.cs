@@ -140,7 +140,11 @@ namespace Avalonia.Skia
                     $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
             }
 
-            return new GlyphTypefaceImpl(skTypeface);
+            var isFakeBold = (int)typeface.Weight >= 600 && !skTypeface.IsBold;
+
+            var isFakeItalic = typeface.Style == FontStyle.Italic && !skTypeface.IsItalic;
+            
+            return new GlyphTypefaceImpl(skTypeface, isFakeBold, isFakeItalic);
         }
     }
 }

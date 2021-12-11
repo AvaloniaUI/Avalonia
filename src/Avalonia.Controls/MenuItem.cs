@@ -390,7 +390,7 @@ namespace Avalonia.Controls
                 parent = parent.Parent;
             }
 
-            _isEmbeddedInMenu = parent is IMenu;
+            _isEmbeddedInMenu = parent.FindLogicalAncestorOfType<IMenu>(true) != null;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

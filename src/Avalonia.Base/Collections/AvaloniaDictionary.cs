@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Data.Core;
 
+#nullable enable
+
 namespace Avalonia.Collections
 {
     /// <summary>
@@ -31,12 +33,12 @@ namespace Avalonia.Collections
         /// <summary>
         /// Occurs when the collection changes.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         /// <summary>
         /// Raised when a property on the collection changes.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <inheritdoc/>
         public int Count => _inner.Count;

@@ -101,7 +101,7 @@ namespace Avalonia.Styling
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
-                    (T)data.value);
+                    (T)data.value!);
             }
         }
 
@@ -128,7 +128,7 @@ namespace Avalonia.Styling
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
-                    (T)data.value);
+                    (T)data.value!);
             }
         }
 

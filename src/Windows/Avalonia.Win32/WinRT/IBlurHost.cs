@@ -1,7 +1,14 @@
 ﻿namespace Avalonia.Win32.WinRT
 {
-    public interface IBlurHost
+    public enum BlurEffect
     {
-        void SetBlur(bool enable);
+        None,
+        Acrylic,
+        Mica
+    }
+    
+    internal interface IBlurHost
+    {
+        void SetBlur(BlurEffect enable);
     }
 }

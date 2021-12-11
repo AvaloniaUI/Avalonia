@@ -62,7 +62,7 @@
                    PlacementMode="Right"
                    IsLightDismissEnabled="False"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
-              <Border Background="{TemplateBinding Background}"
+              <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer Classes="menuscroller">                  
@@ -113,7 +113,7 @@
                    IsLightDismissEnabled="True"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
-              <Border Background="{TemplateBinding Background}"
+              <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer Classes="menuscroller">

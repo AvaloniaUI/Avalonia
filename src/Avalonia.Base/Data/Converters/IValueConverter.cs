@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 
+#nullable enable
+
 namespace Avalonia.Data.Converters
 {
     /// <summary>
@@ -21,7 +23,7 @@ namespace Avalonia.Data.Converters
         /// a <see cref="BindingNotification"/> in an error state. Any exceptions thrown will be
         /// treated as an application exception.
         /// </remarks>
-        object Convert(object value, Type targetType, object parameter, CultureInfo culture);
+        object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture);
 
         /// <summary>
         /// Converts a value.
@@ -36,6 +38,6 @@ namespace Avalonia.Data.Converters
         /// a <see cref="BindingNotification"/> in an error state. Any exceptions thrown will be
         /// treated as an application exception.
         /// </remarks>
-        object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture);
+        object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture);
     }
 }
