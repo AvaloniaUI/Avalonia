@@ -116,7 +116,7 @@ namespace Avalonia.Controls.Platform
 
         protected IMenu? Menu { get; private set; }
 
-        public static TimeSpan MenuShowDelay { get; set; } = TimeSpan.FromMilliseconds(400);
+        protected static TimeSpan MenuShowDelay { get; } = TimeSpan.FromMilliseconds(400);
 
         protected internal virtual void GotFocus(object sender, GotFocusEventArgs e)
         {
