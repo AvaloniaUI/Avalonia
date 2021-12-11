@@ -2,7 +2,7 @@
 
 ## Before You Start
 
-Drop into our [gitter chat room](https://gitter.im/AvaloniaUI/Avalonia) and let us know what you're thinking of doing. We might be able to give you guidance or let you know if someone else is already working on the feature.
+Drop into our [telegram group](https://t.me/Avalonia) or [gitter chat room](https://gitter.im/AvaloniaUI/Avalonia) and let us know what you're thinking of doing. We might be able to give you guidance or let you know if someone else is already working on the feature.
 
 ## Style
 

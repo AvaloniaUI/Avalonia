@@ -5,6 +5,7 @@
     <AssemblyName>Avalonia.Skia</AssemblyName>
     <PackageId>Avalonia.Skia</PackageId>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
+    <IncludeWasmSkia>true</IncludeWasmSkia>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>

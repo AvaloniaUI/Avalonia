@@ -10,14 +10,14 @@ namespace Avalonia.PropertyStore
     internal interface IValue
     {
         BindingPriority Priority { get; }
-        Optional<object> GetValue();
+        Optional<object?> GetValue();
         void Start();
         void RaiseValueChanged(
             IValueSink sink,
             IAvaloniaObject owner,
             AvaloniaProperty property,
-            Optional<object> oldValue,
-            Optional<object> newValue);
+            Optional<object?> oldValue,
+            Optional<object?> newValue);
     }
 
     /// <summary>

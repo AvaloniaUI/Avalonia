@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Linq.Expressions;
 
+#nullable enable
+
 namespace Avalonia.Data.Core.Parsers
 {
     static class ExpressionTreeParser

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Collections;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -24,7 +25,7 @@ namespace Avalonia.Controls.UnitTests
     public class TreeViewTests
     {
         MouseTestHelper _mouse = new MouseTestHelper();
-        
+
         [Fact]
         public void Items_Should_Be_Created()
         {
@@ -675,7 +676,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Same(node, focus.Current);
             }
         }
-        
+
         [Fact]
         public void Keyboard_Navigation_Should_Not_Crash_If_Selected_Item_Is_not_In_Tree()
         {
@@ -1166,6 +1167,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.Empty(target.ItemContainerGenerator.Index.Containers);
         }
 
+        [Fact]
+        public void Can_Use_Derived_TreeViewItem()
+        {
+            var tree = CreateTestTreeData();
+            var target = new DerivedTreeViewWithDerivedTreeViewItems
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            ApplyTemplates(target);
+
+            // Verify that all items are DerivedTreeViewItem
+            VerifyItemType(target.ItemContainerGenerator);
+
+            void VerifyItemType(ITreeItemContainerGenerator containerGenerator)
+            {
+                foreach (var container in containerGenerator.Index.Containers)
+                {
+                    var item = Assert.IsType<DerivedTreeViewItem>(container);
+                    if (item.ItemCount > 0)
+                    {
+                        VerifyItemType(item.ItemContainerGenerator);
+                    }
+                }
+            }
+        }
+
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();
@@ -1376,6 +1405,17 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
+        private class DerivedTreeViewWithDerivedTreeViewItems : TreeView
+        {
+            protected override ITreeItemContainerGenerator CreateTreeItemContainerGenerator() =>
+                CreateTreeItemContainerGenerator<DerivedTreeViewItem>();
+        }
+
+        private class DerivedTreeViewItem : TreeViewItem
+        {
+            protected override IItemContainerGenerator CreateItemContainerGenerator() => CreateTreeItemContainerGenerator<DerivedTreeViewItem>();
+        }
+
         private class TestDataContext : INotifyPropertyChanged
         {
             private string _selectedItem;
@@ -1398,7 +1438,7 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public event PropertyChangedEventHandler PropertyChanged;
-            
+
         }
     }
 }
