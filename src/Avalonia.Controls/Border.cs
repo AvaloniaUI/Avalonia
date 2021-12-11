@@ -1,3 +1,5 @@
+using Avalonia.Collections;
+using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -41,7 +43,31 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
             AvaloniaProperty.Register<Border, BoxShadows>(nameof(BoxShadow));
-        
+
+        /// <summary>
+        /// Defines the <see cref="BorderDashOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> BorderDashOffsetProperty =
+            AvaloniaProperty.Register<Border, double>(nameof(BorderDashOffset));
+
+        /// <summary>
+        /// Defines the <see cref="BorderDashArray"/> property.
+        /// </summary>
+        public static readonly StyledProperty<AvaloniaList<double>?> BorderDashArrayProperty =
+            AvaloniaProperty.Register<Border, AvaloniaList<double>?>(nameof(BorderDashArray));
+
+        /// <summary>
+        /// Defines the <see cref="BorderLineCap"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PenLineCap> BorderLineCapProperty =
+            AvaloniaProperty.Register<Border, PenLineCap>(nameof(BorderLineCap), PenLineCap.Flat);
+
+        /// <summary>
+        /// Defines the <see cref="BorderLineJoin"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PenLineJoin> BorderLineJoinProperty =
+            AvaloniaProperty.Register<Border, PenLineJoin>(nameof(BorderLineJoin), PenLineJoin.Miter);
+
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
         /// <summary>
@@ -54,6 +80,10 @@ namespace Avalonia.Controls
                 BorderBrushProperty,
                 BorderThicknessProperty,
                 CornerRadiusProperty,
+                BorderDashArrayProperty,
+                BorderLineCapProperty,
+                BorderLineJoinProperty,
+                BorderDashOffsetProperty,
                 BoxShadowProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
         }
@@ -77,12 +107,48 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
+        /// </summary>
+        public AvaloniaList<double>? BorderDashArray
+        {
+            get { return GetValue(BorderDashArrayProperty); }
+            set { SetValue(BorderDashArrayProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
         public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
+        /// </summary>
+        public double BorderDashOffset
+        {
+            get { return GetValue(BorderDashOffsetProperty); }
+            set { SetValue(BorderDashOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
+        /// </summary>
+        public PenLineCap BorderLineCap
+        {
+            get { return GetValue(BorderLineCapProperty); }
+            set { SetValue(BorderLineCapProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="PenLineJoin"/> enumeration value that specifies the type of join that is used at the vertices of a Shape.
+        /// </summary>
+        public PenLineJoin BorderLineJoin
+        {
+            get { return GetValue(BorderLineJoinProperty); }
+            set { SetValue(BorderLineJoinProperty, value); }
         }
 
         /// <summary>
@@ -93,7 +159,7 @@ namespace Avalonia.Controls
             get { return GetValue(CornerRadiusProperty); }
             set { SetValue(CornerRadiusProperty, value); }
         }
-        
+
         /// <summary>
         /// Gets or sets the box shadow effect parameters
         /// </summary>
@@ -102,7 +168,7 @@ namespace Avalonia.Controls
             get => GetValue(BoxShadowProperty);
             set => SetValue(BoxShadowProperty, value);
         }
-        
+
         /// <summary>
         /// Renders the control.
         /// </summary>
@@ -110,7 +176,7 @@ namespace Avalonia.Controls
         public override void Render(DrawingContext context)
         {
             _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
-                BoxShadow);
+                BoxShadow, BorderDashOffset, BorderLineCap, BorderLineJoin, BorderDashArray);
         }
 
         /// <summary>
