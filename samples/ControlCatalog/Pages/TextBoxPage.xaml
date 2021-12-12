@@ -18,7 +18,7 @@
             <Flyout>
               <TextBlock>Custom context flyout</TextBlock>
             </Flyout>
-          </TextBox.ContextFlyout>        
+          </TextBox.ContextFlyout>
         </TextBox>
         <TextBox Width="200" Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
         <TextBox Width="200" Watermark="Numeric Watermark" x:Name="numericWatermark"/>
@@ -47,6 +47,19 @@
                   SelectionStart="5" SelectionEnd="22"
                   SelectionBrush="Green" SelectionForegroundBrush="Yellow"/>
         <TextBox Width="200" Text="Custom caret brush" CaretBrush="DarkOrange"/>
+
+        <TextBox Text="IME small font" Width="200"
+                 FontFamily="Comic Sans MS"
+                 FontSize="10"
+                 Foreground="Red"/>
+        <TextBox Text="IME large font" Width="200"
+                 FontFamily="Comic Sans MS"
+                 FontSize="22"
+                 Foreground="Red"/>
+        <TextBox Text="IME disabled" Width="200"
+                 FontFamily="Comic Sans MS"
+                 InputMethod.IsInputMethodEnabled="False"
+                 Foreground="Red"/>
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Spacing="8">
