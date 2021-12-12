@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
+#nullable enable
+
 namespace Avalonia.Data.Converters
 {
     /// <summary>
@@ -22,6 +24,6 @@ namespace Avalonia.Data.Converters
         /// <see cref="AvaloniaProperty.UnsetValue"/>. Any exception thrown will be treated as
         /// an application exception.
         /// </remarks>
-        object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture);
+        object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture);
     }
 }

@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -8,6 +10,6 @@ namespace Avalonia
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        object DefaultValue { get; }
+        object? DefaultValue { get; }
     }
 }

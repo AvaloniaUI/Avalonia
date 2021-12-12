@@ -1,6 +1,8 @@
 using System;
 using System.Reactive.Subjects;
 
+#nullable enable
+
 namespace Avalonia.Data
 {
     /// <summary>
@@ -26,7 +28,7 @@ namespace Avalonia.Data
         /// source which can be used for all binding modes. If you wish to create an instance with
         /// something other than a subject, use one of the static creation methods on this class.
         /// </remarks>
-        public InstancedBinding(ISubject<object> subject, BindingMode mode, BindingPriority priority)
+        public InstancedBinding(ISubject<object?> subject, BindingMode mode, BindingPriority priority)
         {
             Contract.Requires<ArgumentNullException>(subject != null);
 
@@ -35,7 +37,7 @@ namespace Avalonia.Data
             Value = subject;
         }
 
-        private InstancedBinding(object value, BindingMode mode, BindingPriority priority)
+        private InstancedBinding(object? value, BindingMode mode, BindingPriority priority)
         {
             Mode = mode;
             Priority = priority;
@@ -55,17 +57,17 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the value or source of the binding.
         /// </summary>
-        public object Value { get; }
+        public object? Value { get; }
 
         /// <summary>
         /// Gets the <see cref="Value"/> as an observable.
         /// </summary>
-        public IObservable<object> Observable => Value as IObservable<object>;
+        public IObservable<object?>? Observable => Value as IObservable<object?>;
 
         /// <summary>
         /// Gets the <see cref="Value"/> as a subject.
         /// </summary>
-        public ISubject<object> Subject => Value as ISubject<object>;
+        public ISubject<object?>? Subject => Value as ISubject<object?>;
 
         /// <summary>
         /// Creates a new one-time binding with a fixed value.
@@ -87,10 +89,10 @@ namespace Avalonia.Data
         /// <param name="priority">The priority of the binding.</param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding OneTime(
-            IObservable<object> observable,
+            IObservable<object?> observable,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(observable != null);
+            _ = observable ?? throw new ArgumentNullException(nameof(observable));
 
             return new InstancedBinding(observable, BindingMode.OneTime, priority);
         }
@@ -102,10 +104,10 @@ namespace Avalonia.Data
         /// <param name="priority">The priority of the binding.</param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding OneWay(
-            IObservable<object> observable,
+            IObservable<object?> observable,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(observable != null);
+            _ = observable ?? throw new ArgumentNullException(nameof(observable));
 
             return new InstancedBinding(observable, BindingMode.OneWay, priority);
         }
@@ -117,10 +119,10 @@ namespace Avalonia.Data
         /// <param name="priority">The priority of the binding.</param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding OneWayToSource(
-            ISubject<object> subject,
+            ISubject<object?> subject,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(subject != null);
+            _ = subject ?? throw new ArgumentNullException(nameof(subject));
 
             return new InstancedBinding(subject, BindingMode.OneWayToSource, priority);
         }
@@ -132,10 +134,10 @@ namespace Avalonia.Data
         /// <param name="priority">The priority of the binding.</param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding TwoWay(
-            ISubject<object> subject,
+            ISubject<object?> subject,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(subject != null);
+            _ = subject ?? throw new ArgumentNullException(nameof(subject));
 
             return new InstancedBinding(subject, BindingMode.TwoWay, priority);
         }
