@@ -60,6 +60,7 @@ CannotAddAbstractMembers : Member 'public Avalonia.Media.FlowDirection Avalonia.
 CannotAddAbstractMembers : Member 'public System.Double Avalonia.Media.TextFormatting.TextParagraphProperties.Indent.get()' is abstract in the implementation but is missing in the contract.
 CannotAddAbstractMembers : Member 'public Avalonia.Media.BaselineAlignment Avalonia.Media.TextFormatting.TextRunProperties.BaselineAlignment' is abstract in the implementation but is missing in the contract.
 CannotAddAbstractMembers : Member 'public Avalonia.Media.BaselineAlignment Avalonia.Media.TextFormatting.TextRunProperties.BaselineAlignment.get()' is abstract in the implementation but is missing in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.DrawEllipse(Avalonia.Media.IBrush, Avalonia.Media.IPen, Avalonia.Rect)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PopBitmapBlendMode()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PushBitmapBlendMode(Avalonia.Visuals.Media.Imaging.BitmapBlendingMode)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Double Avalonia.Platform.IGeometryImpl.ContourLength' is present in the implementation but not in the contract.
@@ -76,4 +77,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWr
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmap(System.String)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToHeight(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToWidth(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
-Total Issues: 77
+Total Issues: 78
