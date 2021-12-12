@@ -109,7 +109,7 @@ namespace Avalonia.Rendering.SceneGraph
 
                 var distance = ry2 * dx * dx + rx2 * dy * dy;
 
-                return distance < rx2 * ry2;
+                return distance <= rx2 * ry2;
             }
 
             return false;
