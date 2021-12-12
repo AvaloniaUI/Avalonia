@@ -533,7 +533,7 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
-            _imClient.SetPresenter(_presenter);
+            _imClient.SetPresenter(_presenter, this);
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
