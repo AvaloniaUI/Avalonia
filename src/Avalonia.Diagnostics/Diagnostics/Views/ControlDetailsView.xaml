@@ -40,7 +40,7 @@
         <DataGrid.Columns>
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
-          <DataGridTextColumn Header="Type" Binding="{Binding Type}" />
+          <DataGridTextColumn Header="Type" Binding="{Binding Type.Name}" />
           <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" />
         </DataGrid.Columns>
 

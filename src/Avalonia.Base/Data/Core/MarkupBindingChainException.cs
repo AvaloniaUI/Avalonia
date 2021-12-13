@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
+#nullable enable
+
 namespace Avalonia.Data.Core
 {
     internal class MarkupBindingChainException : BindingChainException
     {
-        private IList<string> _nodes = new List<string>();
+        private IList<string>? _nodes = new List<string>();
 
         public MarkupBindingChainException(string message)
             : base(message)
@@ -26,7 +28,7 @@ namespace Avalonia.Data.Core
         }
 
         public bool HasNodes => _nodes?.Count > 0;
-        public void AddNode(string node) => _nodes.Add(node);
+        public void AddNode(string node) => _nodes?.Add(node);
 
         public void Commit(string expression)
         {

@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Windows.Input;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Data.Converters
 {
     class MethodToCommandConverter : ICommand
@@ -18,9 +20,9 @@ namespace Avalonia.Data.Converters
             .GetProperty(nameof(CultureInfo.CurrentCulture), BindingFlags.Public | BindingFlags.Static);
         readonly Func<object, bool> canExecute;
         readonly Action<object> execute;
-        readonly WeakPropertyChangedProxy weakPropertyChanged;
-        readonly PropertyChangedEventHandler propertyChangedEventHandler;
-        readonly string[] dependencyProperties;
+        readonly WeakPropertyChangedProxy? weakPropertyChanged;
+        readonly PropertyChangedEventHandler? propertyChangedEventHandler;
+        readonly string[]? dependencyProperties;
 
         public MethodToCommandConverter(Delegate action)
         {
@@ -74,7 +76,7 @@ namespace Avalonia.Data.Converters
         }
 
 #pragma warning disable 0067
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 #pragma warning restore 0067
 
         public bool CanExecute(object parameter) => canExecute(parameter);
@@ -161,14 +163,14 @@ namespace Avalonia.Data.Converters
                 .Compile();
         }
 
-        private static Expression ConvertTarget(object target, MethodInfo method) =>
+        private static Expression? ConvertTarget(object target, MethodInfo method) =>
             target is null ? null : Expression.Convert(Expression.Constant(target), method.DeclaringType);
 
         internal class WeakPropertyChangedProxy
         {
-            readonly WeakReference<PropertyChangedEventHandler> _listener = new WeakReference<PropertyChangedEventHandler>(null);
+            readonly WeakReference<PropertyChangedEventHandler?> _listener = new WeakReference<PropertyChangedEventHandler?>(null);
             readonly PropertyChangedEventHandler _handler;
-            internal WeakReference<INotifyPropertyChanged> Source { get; } = new WeakReference<INotifyPropertyChanged>(null);
+            internal WeakReference<INotifyPropertyChanged?> Source { get; } = new WeakReference<INotifyPropertyChanged?>(null);
 
             public WeakPropertyChangedProxy()
             {
@@ -190,7 +192,7 @@ namespace Avalonia.Data.Converters
 
             public void Unsubscribe()
             {
-                if (Source.TryGetTarget(out INotifyPropertyChanged source) && source != null)
+                if (Source.TryGetTarget(out var source) && source != null)
                     source.PropertyChanged -= _handler;
 
                 Source.SetTarget(null);
