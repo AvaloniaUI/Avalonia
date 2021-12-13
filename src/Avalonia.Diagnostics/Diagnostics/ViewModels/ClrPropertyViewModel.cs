@@ -48,6 +48,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     var convertedValue = ConvertFromString(value, Property.PropertyType);
                     Property.SetValue(_target, convertedValue);
+                    Update();
                 }
                 catch { }
             }
@@ -67,6 +68,7 @@ namespace Avalonia.Diagnostics.ViewModels
             var val = Property.GetValue(_target);
             RaiseAndSetIfChanged(ref _value, val, nameof(Value));
             RaiseAndSetIfChanged(ref _assignedType, _value?.GetType() ?? Property.PropertyType, nameof(AssignedType));
+            RaisePropertyChanged(nameof(Type));
         }
     }
 }
