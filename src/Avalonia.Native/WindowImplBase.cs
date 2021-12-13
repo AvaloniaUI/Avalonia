@@ -443,7 +443,7 @@ namespace Avalonia.Native
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
-
+            _native.BeginResizeDrag((AvnWindowEdge)edge);
         }
 
         internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,
