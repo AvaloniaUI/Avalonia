@@ -278,9 +278,9 @@ namespace Avalonia.Web.Blazor
                         _glInterface = GRGlInterface.Create();
                         _context = GRContext.CreateGl(_glInterface);
 
-
+                        var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
                         // bump the default resource cache limit
-                        _context.SetResourceCacheLimit(256 * 1024 * 1024);
+                        _context.SetResourceCacheLimit(options.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
                         Console.WriteLine("glcontext created and resource limit set");
                     }
 

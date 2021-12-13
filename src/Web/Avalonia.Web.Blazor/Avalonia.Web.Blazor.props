@@ -1,7 +1,4 @@
 ﻿<Project>
-  <PropertyGroup>
-    <EmccTotalMemory>16777216</EmccTotalMemory>
-    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
-    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-  </PropertyGroup>
+  <Import Project="Microsoft.AspNetCore.StaticWebAssets.props" />
+  <Import Project="Avalonia.Web.Blazor.CompilationTuning.props" />
 </Project>
