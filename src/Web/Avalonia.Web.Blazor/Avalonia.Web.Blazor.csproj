@@ -34,7 +34,6 @@
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\*" />
     <Content Include="*.props">
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>

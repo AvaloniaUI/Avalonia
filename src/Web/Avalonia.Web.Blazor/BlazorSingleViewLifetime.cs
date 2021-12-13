@@ -25,8 +25,6 @@ namespace Avalonia.Web.Blazor
                 .UseSkia()
                 .With(new SkiaOptions { CustomGpuFactory = () => new BlazorSkiaGpu() });
 
-            AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(new FontManager(new CustomFontManagerImpl()));
-
             return builder;
         }
     }
