@@ -403,7 +403,11 @@ namespace Avalonia.Diagnostics.ViewModels
             var selectedProperty = SelectedProperty;
             var selectedEntity = SelectedEntity;
             var selectedEntityName = SelectedEntityName;
-            if (selectedEntity == null ||  selectedProperty == null)
+            if (selectedEntity == null 
+                || selectedProperty == null 
+                || selectedProperty.Type == typeof(string)
+                || selectedProperty.Type.IsValueType
+                )
                 return;
 
             object? property;
@@ -413,11 +417,11 @@ namespace Avalonia.Diagnostics.ViewModels
             }
             else
             {
-                property = _selectedEntity.GetType().GetProperties()
-                     .FirstOrDefault(pi => pi.Name == _selectedProperty?.Name
-                           && pi.DeclaringType == _selectedProperty.DeclaringType
-                           && pi.PropertyType.Name == _selectedProperty.Type)
-                     ?.GetValue(_selectedEntity);
+                property = selectedEntity.GetType().GetProperties()
+                     .FirstOrDefault(pi => pi.Name == selectedProperty.Name
+                           && pi.DeclaringType == selectedProperty.DeclaringType
+                           && pi.PropertyType.Name == selectedProperty.Type.Name)
+                     ?.GetValue(selectedEntity);
             }
             if (property == null) return;
             _selectedEntitiesStack.Push(new (SelectedEntityName, SelectedEntity));
