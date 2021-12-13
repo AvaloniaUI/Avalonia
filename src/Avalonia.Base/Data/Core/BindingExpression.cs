@@ -7,21 +7,23 @@ using Avalonia.Logging;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Data.Core
 {
     /// <summary>
     /// Binds to an expression on an object using a type value converter to convert the values
     /// that are sent and received.
     /// </summary>
-    public class BindingExpression : LightweightObservableBase<object>, ISubject<object>, IDescription
+    public class BindingExpression : LightweightObservableBase<object?>, ISubject<object?>, IDescription
     {
         private readonly ExpressionObserver _inner;
         private readonly Type _targetType;
-        private readonly object _fallbackValue;
-        private readonly object _targetNullValue;
+        private readonly object? _fallbackValue;
+        private readonly object? _targetNullValue;
         private readonly BindingPriority _priority;
-        InnerListener _innerListener;
-        WeakReference<object> _value;
+        InnerListener? _innerListener;
+        WeakReference<object>? _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -47,7 +49,7 @@ namespace Avalonia.Data.Core
             ExpressionObserver inner,
             Type targetType,
             IValueConverter converter,
-            object converterParameter = null,
+            object? converterParameter = null,
             BindingPriority priority = BindingPriority.LocalValue)
             : this(inner, targetType, AvaloniaProperty.UnsetValue, AvaloniaProperty.UnsetValue, converter, converterParameter, priority)
         {
@@ -72,15 +74,15 @@ namespace Avalonia.Data.Core
         public BindingExpression(
             ExpressionObserver inner, 
             Type targetType,
-            object fallbackValue,
-            object targetNullValue,
+            object? fallbackValue,
+            object? targetNullValue,
             IValueConverter converter,
-            object converterParameter = null,
+            object? converterParameter = null,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(inner != null);
-            Contract.Requires<ArgumentNullException>(targetType != null);
-            Contract.Requires<ArgumentNullException>(converter != null);
+            _ = inner ?? throw new ArgumentNullException(nameof(inner));
+            _ = targetType ?? throw new ArgumentNullException(nameof(targetType));
+            _ = converter ?? throw new ArgumentNullException(nameof(converter));
 
             _inner = inner;
             _targetType = targetType;
@@ -99,10 +101,10 @@ namespace Avalonia.Data.Core
         /// <summary>
         /// Gets a parameter to pass to <see cref="Converter"/>.
         /// </summary>
-        public object ConverterParameter { get; }
+        public object? ConverterParameter { get; }
 
         /// <inheritdoc/>
-        string IDescription.Description => _inner.Expression;
+        string? IDescription.Description => _inner.Expression;
 
         /// <inheritdoc/>
         public void OnCompleted()
@@ -115,7 +117,7 @@ namespace Avalonia.Data.Core
         }
 
         /// <inheritdoc/>
-        public void OnNext(object value)
+        public void OnNext(object? value)
         {
             if (value == BindingOperations.DoNothing)
             {
@@ -144,10 +146,8 @@ namespace Avalonia.Data.Core
                         converted = TypeUtilities.Default(type);
                         _inner.SetValue(converted, _priority);
                     }
-                    else if (converted is BindingNotification)
+                    else if (converted is BindingNotification notification)
                     {
-                        var notification = converted as BindingNotification;
-
                         if (notification.ErrorType == BindingErrorType.None)
                         {
                             throw new AvaloniaInternalException(
@@ -185,7 +185,7 @@ namespace Avalonia.Data.Core
         }
 
         protected override void Initialize() => _innerListener = new InnerListener(this);
-        protected override void Deinitialize() => _innerListener.Dispose();
+        protected override void Deinitialize() => _innerListener?.Dispose();
 
         protected override void Subscribed(IObserver<object> observer, bool first)
         {
@@ -196,7 +196,7 @@ namespace Avalonia.Data.Core
         }
 
         /// <inheritdoc/>
-        private object ConvertValue(object value)
+        private object? ConvertValue(object? value)
         {
             if (value == null && _targetNullValue != AvaloniaProperty.UnsetValue)
             {
@@ -302,7 +302,7 @@ namespace Avalonia.Data.Core
             }
         }
 
-        private static BindingNotification Merge(BindingNotification a, object b)
+        private static BindingNotification Merge(BindingNotification a, object? b)
         {
             var bn = b as BindingNotification;
 
@@ -337,7 +337,7 @@ namespace Avalonia.Data.Core
             return a;
         }
 
-        public class InnerListener : IObserver<object>, IDisposable
+        public class InnerListener : IObserver<object?>, IDisposable
         {
             private readonly BindingExpression _owner;
             private readonly IDisposable _dispose;
@@ -352,7 +352,7 @@ namespace Avalonia.Data.Core
             public void OnCompleted() => _owner.PublishCompleted();
             public void OnError(Exception error) => _owner.PublishError(error);
 
-            public void OnNext(object value)
+            public void OnNext(object? value)
             {
                 if (value == BindingOperations.DoNothing)
                 {
@@ -366,7 +366,7 @@ namespace Avalonia.Data.Core
                     return;
                 }
 
-                _owner._value = new WeakReference<object>(converted);
+                _owner._value = converted is not null ? new WeakReference<object>(converted) : null;
                 _owner.PublishNext(converted);
             }
         }

@@ -1,10 +1,10 @@
 {
-	"sdk": {
-		"version": "5.0.402"
-	},
+    "sdk": {
+        "version": "6.0.100"
+    },
     "msbuild-sdks": {
         "Microsoft.Build.Traversal": "1.0.43",
-        "MSBuild.Sdk.Extras": "2.0.54",
+        "MSBuild.Sdk.Extras": "3.0.22",
         "AggregatePackage.NuGet.Sdk" : "0.1.12"
     }
 }

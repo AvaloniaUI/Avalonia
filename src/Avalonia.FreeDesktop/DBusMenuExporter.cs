@@ -413,10 +413,10 @@ namespace Avalonia.FreeDesktop
             #region Events
 
             private event Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)>
-                ItemsPropertiesUpdated;
+                ItemsPropertiesUpdated { add { } remove { } }
             private event Action<(uint revision, int parent)> LayoutUpdated;
-            private event Action<(int id, uint timestamp)> ItemActivationRequested;
-            private event Action<PropertyChanges> PropertiesChanged;
+            private event Action<(int id, uint timestamp)> ItemActivationRequested { add { } remove { } }
+            private event Action<PropertyChanges> PropertiesChanged { add { } remove { } }
 
             async Task<IDisposable> IDBusMenu.WatchItemsPropertiesUpdatedAsync(Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)> handler, Action<Exception> onError)
             {

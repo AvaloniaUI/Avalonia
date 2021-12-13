@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Collections
 {
     /// <summary>

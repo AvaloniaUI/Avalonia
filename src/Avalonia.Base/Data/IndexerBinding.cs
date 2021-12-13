@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Data
+﻿#nullable enable
+
+namespace Avalonia.Data
 {
     public class IndexerBinding : IBinding
     {
@@ -16,10 +18,10 @@
         public AvaloniaProperty Property { get; }
         private BindingMode Mode { get; }
 
-        public InstancedBinding Initiate(
+        public InstancedBinding? Initiate(
             IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
-            object anchor = null,
+            AvaloniaProperty? targetProperty,
+            object? anchor = null,
             bool enableDataValidation = false)
         {
             return new InstancedBinding(Source.GetSubject(Property), Mode, BindingPriority.LocalValue);

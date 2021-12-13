@@ -1,5 +1,7 @@
 using System.Linq;
 
+#nullable enable
+
 namespace Avalonia.Data.Converters
 {
     /// <summary>

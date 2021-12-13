@@ -1,5 +1,7 @@
 ﻿using System;
 
+#nullable enable
+
 namespace Avalonia.Data
 {
     /// <summary>
@@ -47,13 +49,13 @@ namespace Avalonia.Data
         public static readonly BindingNotification UnsetValue =
             new BindingNotification(AvaloniaProperty.UnsetValue);
 
-        private object _value;
+        private object? _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingNotification"/> class.
         /// </summary>
         /// <param name="value">The binding value.</param>
-        public BindingNotification(object value)
+        public BindingNotification(object? value)
         {
             _value = value;
         }
@@ -81,7 +83,7 @@ namespace Avalonia.Data
         /// <param name="error">The binding error.</param>
         /// <param name="errorType">The type of the binding error.</param>
         /// <param name="fallbackValue">The fallback value.</param>
-        public BindingNotification(Exception error, BindingErrorType errorType, object fallbackValue)
+        public BindingNotification(Exception error, BindingErrorType errorType, object? fallbackValue)
             : this(error, errorType)
         {
             _value = fallbackValue;
@@ -95,7 +97,7 @@ namespace Avalonia.Data
         /// If this property is read when <see cref="HasValue"/> is false then it will return
         /// <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </remarks>
-        public object Value => _value;
+        public object? Value => _value;
 
         /// <summary>
         /// Gets a value indicating whether <see cref="Value"/> should be pushed to the target.
@@ -105,7 +107,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the error that occurred on the source, if any.
         /// </summary>
-        public Exception Error { get; set; }
+        public Exception? Error { get; set; }
 
         /// <summary>
         /// Gets the type of error that <see cref="Error"/> represents, if any.
@@ -118,14 +120,14 @@ namespace Avalonia.Data
         /// <param name="a">The first instance.</param>
         /// <param name="b">The second instance.</param>
         /// <returns>true if the two instances are equal; otherwise false.</returns>
-        public static bool operator ==(BindingNotification a, BindingNotification b)
+        public static bool operator ==(BindingNotification? a, BindingNotification? b)
         {
             if (object.ReferenceEquals(a, b))
             {
                 return true;
             }
 
-            if ((object)a == null || (object)b == null)
+            if (a is null || b is null)
             {
                 return false;
             }
@@ -142,7 +144,7 @@ namespace Avalonia.Data
         /// <param name="a">The first instance.</param>
         /// <param name="b">The second instance.</param>
         /// <returns>true if the two instances are unequal; otherwise false.</returns>
-        public static bool operator !=(BindingNotification a, BindingNotification b)
+        public static bool operator !=(BindingNotification? a, BindingNotification? b)
         {
             return !(a == b);
         }
@@ -156,10 +158,10 @@ namespace Avalonia.Data
         /// If <paramref name="o"/> is a <see cref="BindingNotification"/> then returns the binding
         /// notification's <see cref="Value"/>. If not, returns the object unchanged.
         /// </remarks>
-        public static object ExtractValue(object o)
+        public static object? ExtractValue(object? o)
         {
             var notification = o as BindingNotification;
-            return notification != null ? notification.Value : o;
+            return notification is not null ? notification.Value : o;
         }
 
         /// <summary>
@@ -171,7 +173,7 @@ namespace Avalonia.Data
         /// If <paramref name="o"/> is a <see cref="BindingNotification"/> then returns the binding
         /// notification's <see cref="Error"/>. If not, returns the object unchanged.
         /// </remarks>
-        public static object ExtractError(object o)
+        public static object? ExtractError(object? o)
         {
             return o is BindingNotification notification ? notification.Error : o;
         }
@@ -181,7 +183,7 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="obj">The object to compare.</param>
         /// <returns>true if the two instances are equal; otherwise false.</returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as BindingNotification);
         }
@@ -191,7 +193,7 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="other">The value to compare.</param>
         /// <returns>true if the two instances are equal; otherwise false.</returns>
-        public bool Equals(BindingNotification other)
+        public bool Equals(BindingNotification? other)
         {
             return this == other;
         }
@@ -234,28 +236,28 @@ namespace Avalonia.Data
         /// <summary>
         /// Sets the <see cref="Value"/>.
         /// </summary>
-        public void SetValue(object value)
+        public void SetValue(object? value)
         {
             _value = value;
         }
 
-        public BindingValue<object> ToBindingValue()
+        public BindingValue<object?> ToBindingValue()
         {
             if (ErrorType == BindingErrorType.None)
             {
-                return HasValue ? new BindingValue<object>(Value) : BindingValue<object>.Unset;
+                return HasValue ? new BindingValue<object?>(Value) : BindingValue<object?>.Unset;
             }
             else if (ErrorType == BindingErrorType.Error)
             {
-                return BindingValue<object>.BindingError(
-                    Error,
-                    HasValue ? new Optional<object>(Value) : Optional<object>.Empty);
+                return BindingValue<object?>.BindingError(
+                    Error!,
+                    HasValue ? new Optional<object?>(Value) : Optional<object?>.Empty);
             }
             else
             {
-                return BindingValue<object>.DataValidationError(
-                    Error,
-                    HasValue ? new Optional<object>(Value) : Optional<object>.Empty);
+                return BindingValue<object?>.DataValidationError(
+                    Error!,
+                    HasValue ? new Optional<object?>(Value) : Optional<object?>.Empty);
             }
         }
 
@@ -273,7 +275,7 @@ namespace Avalonia.Data
             }
         }
 
-        private static bool ExceptionEquals(Exception a, Exception b)
+        private static bool ExceptionEquals(Exception? a, Exception? b)
         {
             return a?.GetType() == b?.GetType() &&
                    a?.Message == b?.Message;

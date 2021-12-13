@@ -9,6 +9,7 @@
 
   <UserControl.Resources>
     <conv:BoolToOpacityConverter x:Key="BoolToOpacity" Opacity="0.6"/>
+    <conv:GetTypeNameConverter x:Key="GetTypeName"/>
   </UserControl.Resources>
 
   <Grid ColumnDefinitions="*,Auto,320">
@@ -44,11 +45,11 @@
                               IsReadOnly="True"
                               IsVisible="{Binding !$parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
                               />
-          <DataGridTextColumn Header="Assinged Type" Binding="{Binding AssignedType}"  
+          <DataGridTextColumn Header="Assinged Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
                               IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
                               />
-          <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType}" 
+          <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
                               IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
                               />

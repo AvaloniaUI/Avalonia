@@ -2,8 +2,6 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -12,44 +10,21 @@ namespace Avalonia.Diagnostics.ViewModels
         private const BindingFlags PublicStatic = BindingFlags.Public | BindingFlags.Static;
         private static readonly Type[] StringParameter = { typeof(string) };
         private static readonly Type[] StringIFormatProviderParameters = { typeof(string), typeof(IFormatProvider) };
-        private static readonly ConditionalWeakTable<Type, string> s_getTypeNameCache =
-            new ConditionalWeakTable<Type, string>();
 
         public abstract object Key { get; }
         public abstract string Name { get; }
         public abstract string Group { get; }
-        public abstract string AssignedType { get; }
+        public abstract Type AssignedType { get; }
         public abstract Type? DeclaringType { get; }
         public abstract string Value { get; set; }
         public abstract string Priority { get; }
         public abstract bool? IsAttached { get; }
         public abstract void Update();
-        public abstract string PropertyType { get; }
+        public abstract Type PropertyType { get; }
         public string Type => PropertyType == AssignedType
-            ? PropertyType
-            : $"{PropertyType} {{{AssignedType}}}";
+            ? PropertyType.GetTypeName()
+            : $"{PropertyType.GetTypeName()} {{{AssignedType.GetTypeName()}}}";
 
-
-        protected static string GetTypeName(Type type)
-        {
-            if (!s_getTypeNameCache.TryGetValue(type, out var name))
-            {
-                name = type.Name;
-                if (Nullable.GetUnderlyingType(type) is Type nullable)
-                {
-                    name = nullable.Name + "?";
-                }
-                else if (type.IsGenericType)
-                {
-                    var definition = type.GetGenericTypeDefinition();
-                    var arguments = type.GetGenericArguments();
-                    name = definition.Name.Substring(0, definition.Name.IndexOf('`'));
-                    name = $"{name}<{string.Join(",", arguments.Select(GetTypeName))}>";
-                }
-                s_getTypeNameCache.Add(type, name);
-            }
-            return name;
-        }
 
         protected static string ConvertToString(object? value)
         {

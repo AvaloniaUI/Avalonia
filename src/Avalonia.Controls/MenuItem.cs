@@ -107,6 +107,7 @@ namespace Avalonia.Controls
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
+        private bool _commandBindingError;
         private Popup? _popup;
         private KeyGesture? _hotkey;
         private bool _isEmbeddedInMenu;
@@ -379,6 +380,8 @@ namespace Avalonia.Controls
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
             }
+            
+            TryUpdateCanExecute();
 
             var parent = Parent;
 
@@ -387,7 +390,7 @@ namespace Avalonia.Controls
                 parent = parent.Parent;
             }
 
-            _isEmbeddedInMenu = parent is IMenu;
+            _isEmbeddedInMenu = parent.FindLogicalAncestorOfType<IMenu>(true) != null;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -498,13 +501,11 @@ namespace Avalonia.Controls
             base.UpdateDataValidation(property, value);
             if (property == CommandProperty)
             {
-                if (value.Type == BindingValueType.BindingError)
+                _commandBindingError = value.Type == BindingValueType.BindingError;
+                if (_commandBindingError && _commandCanExecute)
                 {
-                    if (_commandCanExecute)
-                    {
-                        _commandCanExecute = false;
-                        UpdateIsEffectivelyEnabled();
-                    }
+                    _commandCanExecute = false;
+                    UpdateIsEffectivelyEnabled();
                 }
             }
         }
@@ -526,22 +527,20 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private static void CommandChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Sender is MenuItem menuItem)
+            if (e.Sender is MenuItem menuItem &&
+                ((ILogical)menuItem).IsAttachedToLogicalTree)
             {
-                if (((ILogical)menuItem).IsAttachedToLogicalTree)
+                if (e.OldValue is ICommand oldCommand)
                 {
-                    if (e.OldValue is ICommand oldCommand)
-                    {
-                        oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
-                    }
-
-                    if (e.NewValue is ICommand newCommand)
-                    {
-                        newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
-                    }
+                    oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
                 }
 
-                menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
+                if (e.NewValue is ICommand newCommand)
+                {
+                    newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                }
+
+                menuItem.TryUpdateCanExecute();
             }
         }
 
@@ -553,7 +552,7 @@ namespace Avalonia.Controls
         {
             if (e.Sender is MenuItem menuItem)
             {
-                menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
+                menuItem.TryUpdateCanExecute();
             }
         }
 
@@ -564,8 +563,29 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void CanExecuteChanged(object sender, EventArgs e)
         {
-            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+            TryUpdateCanExecute();
+        }
 
+        /// <summary>
+        /// Tries to evaluate CanExecute value of a Command if menu is opened
+        /// </summary>
+        private void TryUpdateCanExecute()
+        {
+            if (Command == null)
+            {
+                _commandCanExecute = !_commandBindingError;
+                UpdateIsEffectivelyEnabled();
+                return;
+            }
+            
+            //Perf optimization - only raise CanExecute event if the menu is open
+            if (!((ILogical)this).IsAttachedToLogicalTree ||
+                Parent is MenuItem { IsSubMenuOpen: false })
+            {
+                return;
+            }
+            
+            var canExecute = Command.CanExecute(CommandParameter);
             if (canExecute != _commandCanExecute)
             {
                 _commandCanExecute = canExecute;
@@ -635,6 +655,11 @@ namespace Avalonia.Controls
 
             if (value)
             {
+                foreach (var item in Items.OfType<MenuItem>())
+                {
+                    item.TryUpdateCanExecute();
+                }
+
                 RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
                 IsSelected = true;
                 PseudoClasses.Add(":open");

@@ -4,7 +4,6 @@
              xmlns:sys="clr-namespace:System;assembly=netstandard">
 
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">ButtonSpinner</TextBlock>
     <TextBlock Classes="h2">The ButtonSpinner control allows you to add button spinners to any element and then respond to the Spin event to manipulate that element.</TextBlock>
 
     <StackPanel Orientation="Vertical" Spacing="8" Width="200" Margin="0,20,0,0">

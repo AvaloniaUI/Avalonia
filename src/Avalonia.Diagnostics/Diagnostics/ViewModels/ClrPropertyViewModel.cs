@@ -5,9 +5,9 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class ClrPropertyViewModel : PropertyViewModel
     {
         private readonly object _target;
-        private string _assignedType;
+        private System.Type _assignedType;
         private object? _value;
-        private readonly string _propertyType;
+        private readonly System.Type _propertyType;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -26,7 +26,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 Name = property.DeclaringType.Name + '.' + property.Name;
             }
             DeclaringType = property.DeclaringType;
-            _propertyType = GetTypeName(property.PropertyType);
+            _propertyType = property.PropertyType;
 
             Update();
         }
@@ -36,8 +36,8 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Name { get; }
         public override string Group => "CLR Properties";
 
-        public override string AssignedType => _assignedType;
-        public override string PropertyType => _propertyType;
+        public override System.Type AssignedType => _assignedType;
+        public override  System.Type PropertyType => _propertyType;
 
         public override string Value 
         {
@@ -66,7 +66,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             var val = Property.GetValue(_target);
             RaiseAndSetIfChanged(ref _value, val, nameof(Value));
-            RaiseAndSetIfChanged(ref _assignedType, GetTypeName(_value?.GetType() ?? Property.PropertyType), nameof(AssignedType));
+            RaiseAndSetIfChanged(ref _assignedType, _value?.GetType() ?? Property.PropertyType, nameof(AssignedType));
         }
     }
 }

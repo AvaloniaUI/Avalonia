@@ -1026,6 +1026,7 @@ namespace Avalonia.X11
             if (string.IsNullOrEmpty(title))
             {
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_NAME);
             }
             else
             {

@@ -20,6 +20,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading;
 
+#nullable enable
+
 namespace Avalonia.Collections.Pooled
 {
     /// <summary>
@@ -34,7 +36,7 @@ namespace Avalonia.Collections.Pooled
         [NonSerialized]
         private ArrayPool<T> _pool;
         [NonSerialized]
-        private object _syncRoot;
+        private object? _syncRoot;
 
         private T[] _array; // Storage for stack elements. Do not rename (binary serialization)
         private int _size; // Number of items in the stack. Do not rename (binary serialization)
@@ -237,7 +239,7 @@ namespace Avalonia.Collections.Pooled
             {
                 if (_syncRoot == null)
                 {
-                    Interlocked.CompareExchange<object>(ref _syncRoot, new object(), null);
+                    Interlocked.CompareExchange<object?>(ref _syncRoot, new object(), null);
                 }
                 return _syncRoot;
             }
@@ -456,7 +458,7 @@ namespace Avalonia.Collections.Pooled
             return array[size];
         }
 
-        public bool TryPeek(out T result)
+        public bool TryPeek([MaybeNullWhen(false)] out T result)
         {
             int size = _size - 1;
             T[] array = _array;
@@ -492,12 +494,12 @@ namespace Avalonia.Collections.Pooled
             T item = array[size];
             if (_clearOnFree)
             {
-                array[size] = default;     // Free memory quicker.
+                array[size] = default!;     // Free memory quicker.
             }
             return item;
         }
 
-        public bool TryPop(out T result)
+        public bool TryPop([MaybeNullWhen(false)] out T result)
         {
             int size = _size - 1;
             T[] array = _array;
@@ -513,7 +515,7 @@ namespace Avalonia.Collections.Pooled
             result = array[size];
             if (_clearOnFree)
             {
-                array[size] = default;     // Free memory quicker.
+                array[size] = default!;     // Free memory quicker.
             }
             return true;
         }
@@ -574,7 +576,7 @@ namespace Avalonia.Collections.Pooled
             throw new InvalidOperationException("Stack was empty.");
         }
 
-        private void ReturnArray(T[] replaceWith = null)
+        private void ReturnArray(T[]? replaceWith = null)
         {
             if (_array?.Length > 0)
             {
@@ -625,7 +627,7 @@ namespace Avalonia.Collections.Pooled
             private readonly PooledStack<T> _stack;
             private readonly int _version;
             private int _index;
-            private T _currentElement;
+            private T? _currentElement;
 
             internal Enumerator(PooledStack<T> stack)
             {
@@ -672,7 +674,7 @@ namespace Avalonia.Collections.Pooled
                 {
                     if (_index < 0)
                         ThrowEnumerationNotStartedOrEnded();
-                    return _currentElement;
+                    return _currentElement!;
                 }
             }
 
@@ -682,7 +684,7 @@ namespace Avalonia.Collections.Pooled
                 throw new InvalidOperationException(_index == -2 ? "Enumeration was not started." : "Enumeration has ended.");
             }
 
-            object IEnumerator.Current
+            object? IEnumerator.Current
             {
                 get { return Current; }
             }
