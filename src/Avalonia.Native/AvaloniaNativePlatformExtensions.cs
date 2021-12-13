@@ -73,5 +73,10 @@ namespace Avalonia
         /// You can prevent Avalonia from adding those items to the OSX Application Menu with this property. The default value is false.
         /// </summary>
         public bool DisableDefaultApplicationMenuItems { get; set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool DisableNativeMenus { get; set; }
     }
 }
