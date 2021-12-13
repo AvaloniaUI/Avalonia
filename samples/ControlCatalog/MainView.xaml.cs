@@ -6,6 +6,8 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.XamlIl;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using ControlCatalog.Pages;
 
@@ -16,9 +18,12 @@ namespace ControlCatalog
         public MainView()
         {
             AvaloniaXamlLoader.Load(this);
+
+            var sideBar = this.FindControl<TabControl>("Sidebar");
+
             if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
             {
-                IList tabItems = ((IList)this.FindControl<TabControl>("Sidebar").Items);
+                IList tabItems = ((IList)sideBar.Items);
                 tabItems.Add(new TabItem()
                 {
                     Header = "Dialogs",
@@ -57,6 +62,21 @@ namespace ControlCatalog
             {
                 if (VisualRoot is Window window)
                     window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
+            };
+
+            var transparencyLevels = this.Find<ComboBox>("TransparencyLevels");
+            IDisposable backgroundSetter = null, paneBackgroundSetter = null;
+            transparencyLevels.SelectionChanged += (sender, e) =>
+            {
+                backgroundSetter?.Dispose();
+                paneBackgroundSetter?.Dispose();
+                if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected
+                    && selected != WindowTransparencyLevel.None)
+                {
+                    var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.5);
+                    backgroundSetter = sideBar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                    paneBackgroundSetter = sideBar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                }
             };
         }
 

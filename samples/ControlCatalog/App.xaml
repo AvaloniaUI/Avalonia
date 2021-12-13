@@ -28,7 +28,7 @@
     <Style Selector="Label.h3">
       <Setter Property="FontSize" Value="12" />
     </Style>
-    <StyleInclude Source="/SideBar.xaml" />
+    <StyleInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
   </Application.Styles>
   <TrayIcon.Icons>
     <TrayIcons>
