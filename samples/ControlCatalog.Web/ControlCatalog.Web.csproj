@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <Import Project="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.targets" />
+  <Import Project="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.CompilationTuning.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.csproj"/>
