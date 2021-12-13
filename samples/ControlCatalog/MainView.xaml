@@ -2,7 +2,8 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
-             xmlns:pages="clr-namespace:ControlCatalog.Pages">
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             xmlns:models="clr-namespace:ControlCatalog.Models">
   <Grid>
     <Grid.Styles>
       <Style Selector="TextBlock.h2">
@@ -156,17 +157,21 @@
             <ComboBox x:Name="Decorations"
                       HorizontalAlignment="Stretch"
                       SelectedIndex="0">
-              <ComboBoxItem>No Decorations</ComboBoxItem>
-              <ComboBoxItem>Border Only</ComboBoxItem>
-              <ComboBoxItem>Full Decorations</ComboBoxItem>
+              <ComboBox.Items>
+                <SystemDecorations>None</SystemDecorations>
+                <SystemDecorations>BorderOnly</SystemDecorations>
+                <SystemDecorations>Full</SystemDecorations>
+              </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="Themes"
                       HorizontalAlignment="Stretch"
                       SelectedIndex="0">
-              <ComboBoxItem>Fluent - Light</ComboBoxItem>
-              <ComboBoxItem>Fluent - Dark</ComboBoxItem>
-              <ComboBoxItem>Simple - Light</ComboBoxItem>
-              <ComboBoxItem>Simple - Dark</ComboBoxItem>
+              <ComboBox.Items>
+                <models:CatalogTheme>FluentLight</models:CatalogTheme>
+                <models:CatalogTheme>FluentDark</models:CatalogTheme>
+                <models:CatalogTheme>DefaultLight</models:CatalogTheme>
+                <models:CatalogTheme>DefaultDark</models:CatalogTheme>
+              </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"
                       HorizontalAlignment="Stretch"

@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using ControlCatalog.Pages;
+using ControlCatalog.Models;
 
 namespace ControlCatalog
 {
@@ -40,28 +41,27 @@ namespace ControlCatalog
             var themes = this.Find<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
-                switch (themes.SelectedIndex)
+                if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    case 0:
-                        Application.Current.Styles[0] = App.FluentLight;
-                        break;
-                    case 1:
-                        Application.Current.Styles[0] = App.FluentDark;
-                        break;
-                    case 2:
-                        Application.Current.Styles[0] = App.DefaultLight;
-                        break;
-                    case 3:
-                        Application.Current.Styles[0] = App.DefaultDark;
-                        break;
+                    Application.Current.Styles[0] = theme switch
+                    {
+                        CatalogTheme.FluentLight => App.FluentLight,
+                        CatalogTheme.FluentDark => App.FluentDark,
+                        CatalogTheme.DefaultLight => App.DefaultLight,
+                        CatalogTheme.DefaultDark => App.DefaultDark,
+                        _ => Application.Current.Styles[0]
+                    };
                 }
-            };            
+            };
 
             var decorations = this.Find<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {
-                if (VisualRoot is Window window)
-                    window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
+                if (VisualRoot is Window window
+                    && decorations.SelectedItem is SystemDecorations systemDecorations)
+                {
+                    window.SystemDecorations = systemDecorations;
+                }
             };
 
             var transparencyLevels = this.Find<ComboBox>("TransparencyLevels");
