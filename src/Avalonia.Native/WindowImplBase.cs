@@ -60,6 +60,7 @@ namespace Avalonia.Native
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
+        private readonly ManagedWindowResizeDragHelper _managedDrag;
 
         internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface glFeature)
         {
@@ -69,6 +70,14 @@ namespace Avalonia.Native
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
+
+            _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>
+            {
+                if (capture)
+                    _mouse.Capture(_inputRoot);
+                else
+                    _mouse.Capture(null);
+            });
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
@@ -443,7 +452,7 @@ namespace Avalonia.Native
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
-            _native.BeginResizeDrag((AvnWindowEdge)edge);
+            _managedDrag.BeginResizeDrag(edge, e.GetPosition(_inputRoot));
         }
 
         internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,
