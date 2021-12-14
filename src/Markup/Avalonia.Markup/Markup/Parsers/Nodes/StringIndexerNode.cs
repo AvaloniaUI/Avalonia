@@ -215,7 +215,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return AvaloniaProperty.UnsetValue;
         }
 
-        private object GetValueFromArray(Array array)
+        private object? GetValueFromArray(Array array)
         {
             int[] intArgs;
             if (!ConvertArgumentsToInts(out intArgs))
@@ -223,7 +223,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return GetValueFromArray(array, intArgs);
         }
 
-        private object GetValueFromArray(Array array, int[] indices)
+        private object? GetValueFromArray(Array array, int[] indices)
         {
             if (ValidBounds(indices, array))
             {
@@ -258,7 +258,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             {
                 // Check for the default indexer name first to make this faster.
                 // This will only be false when a class in VB has a custom indexer name.
-                if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)) != null)
+                if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)!) != null)
                 {
                     return indexer;
                 }
