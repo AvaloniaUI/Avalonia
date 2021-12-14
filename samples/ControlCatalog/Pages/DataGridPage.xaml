@@ -19,7 +19,6 @@
   </UserControl.Styles>
   <Grid RowDefinitions="Auto,Auto,*">
     <StackPanel Orientation="Vertical" Spacing="4" Grid.Row="0">
-      <TextBlock Classes="h1">DataGrid</TextBlock>
       <TextBlock Classes="h2">A control for displaying and interacting with a data source.</TextBlock>
     </StackPanel>
     <StackPanel Grid.Row="1" Spacing="4" Orientation="Horizontal" IsVisible="{Binding #EditableTab.IsSelected}">
@@ -35,12 +34,13 @@
           <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All">
             <DataGrid.Columns>
               <!-- Using HeaderTemplate -->
-              <DataGridTextColumn Header="Country" HeaderTemplate="{StaticResource Demo.DataTemplates.CountryHeader}" Binding="{Binding Name}" Width="6*" MinWidth="400" />
+              <DataGridTextColumn Header="Country" HeaderTemplate="{StaticResource Demo.DataTemplates.CountryHeader}" Binding="{Binding Name}" Width="6*" />
               <!-- CompiledBinding example of usage. -->
               <DataGridTextColumn Header="Region" Binding="{CompiledBinding Region}" Width="4*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
               <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
               <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" CellStyleClasses="gdp"
+                                  MinWidth="200"
                                   IsVisible="{Binding #ShowGDP.IsChecked}"/>
             </DataGrid.Columns>
           </DataGrid>

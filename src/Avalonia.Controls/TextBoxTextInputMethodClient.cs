@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls.Presenters;
+using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.VisualTree;
 
@@ -7,9 +8,26 @@ namespace Avalonia.Controls
 {
     internal class TextBoxTextInputMethodClient : ITextInputMethodClient
     {
+        private InputElement _parent;
         private TextPresenter _presenter;
         private IDisposable _subscription;
-        public Rect CursorRectangle => _presenter?.GetCursorRectangle() ?? default;
+        public Rect CursorRectangle
+        {
+            get
+            {
+                if (_parent == null || _presenter == null)
+                {
+                    return default;
+                }
+                var transform = _presenter.TransformToVisual(_parent);
+                if (transform == null)
+                {
+                    return default;
+                }
+                return _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
+            }
+        }
+
         public event EventHandler CursorRectangleChanged;
         public IVisual TextViewVisual => _presenter;
         public event EventHandler TextViewVisualChanged;
@@ -23,9 +41,11 @@ namespace Avalonia.Controls
         public string TextAfterCursor => null;
 
         private void OnCaretIndexChanged(int index) => CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
-        
-        public void SetPresenter(TextPresenter presenter)
+
+
+        public void SetPresenter(TextPresenter presenter, InputElement parent)
         {
+            _parent = parent;
             _subscription?.Dispose();
             _subscription = null;
             _presenter = presenter;
