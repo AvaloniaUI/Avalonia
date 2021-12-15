@@ -236,5 +236,20 @@ namespace Avalonia.DesignerSupport.Remote
 
         public IReadOnlyList<Screen> AllScreens { get; } =
             new Screen[] { new Screen(1, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            return null;
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            return null;
+        }
+
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return null;
+        }
     }
 }

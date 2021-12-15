@@ -200,6 +200,21 @@ namespace Avalonia.X11
 
         }
 
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return null;
+        }
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            return null;
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            return null;
+        }
+
         public int ScreenCount => _impl.Screens.Length;
 
         public IReadOnlyList<Screen> AllScreens =>

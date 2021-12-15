@@ -48,5 +48,20 @@ namespace Avalonia.Native
             _native?.Dispose();
             _native = null;
         }
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            return null;
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            return null;
+        }
+
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return null;
+        }
     }
 }

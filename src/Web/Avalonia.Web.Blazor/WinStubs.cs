@@ -55,5 +55,20 @@ namespace Avalonia.Web.Blazor
 
         public IReadOnlyList<Screen> AllScreens { get; } =
             new[] { new Screen(96, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+
+        public Screen? ScreenFromPoint(PixelPoint point)
+        {
+            return null;
+        }
+
+        public Screen? ScreenFromRect(PixelRect rect)
+        {
+            return null;
+        }
+
+        public Screen? ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return null;
+        }
     }
 }
