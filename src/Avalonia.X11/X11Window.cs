@@ -785,6 +785,12 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_transparencyHelper != null)
+            {
+                _transparencyHelper.Dispose();
+                _transparencyHelper = null;
+            }
+            
             if (_imeControl != null)
             {
                 _imeControl.Dispose();
