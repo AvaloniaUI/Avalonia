@@ -865,6 +865,11 @@ namespace Avalonia.Controls
             {
                 var screen = Screens.ScreenFromWindow(owner);
 
+                if (screen == null)
+                {
+                    screen = Screens.ScreenFromPoint(Position);
+                }
+
                 if (screen != null)
                 {
                     Position = screen.WorkingArea.CenterRect(rect).Position;
