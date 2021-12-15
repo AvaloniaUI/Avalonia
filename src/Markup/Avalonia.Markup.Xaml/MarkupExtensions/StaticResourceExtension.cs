@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
@@ -24,6 +25,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public object ProvideValue(IServiceProvider serviceProvider)
         {
+            if ((string)ResourceKey == "SystemControlBackgroundAccentBrush")
+            {
+                Debugger.Break();
+            }
+            
             var stack = serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>();
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 
