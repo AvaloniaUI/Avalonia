@@ -30,18 +30,24 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml")
-            },
-            DataGridFluent
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDarkColors.xaml")
+            }
         };
 
         public static Styles FluentLight = new Styles
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLightColors.xaml")
+            }
+        };
+        
+        public static Styles FluentLightTheme = new Styles
+        {
+            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+            {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml")
-            },
-            DataGridFluent
+            }
         };
 
         public static Styles DefaultLight = new Styles
@@ -97,6 +103,7 @@ namespace ControlCatalog
         public override void Initialize()
         {
             Styles.Insert(0, FluentLight);
+            Styles.Insert(1, FluentLightTheme);
 
             AvaloniaXamlLoader.Load(this);
         }
