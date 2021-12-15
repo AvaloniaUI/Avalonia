@@ -3,6 +3,7 @@
        xmlns:sys="clr-namespace:System;assembly=netstandard">
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLightColors.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/Base.xaml" />  
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesLight.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FluentControls.xaml" />
