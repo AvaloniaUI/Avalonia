@@ -34,7 +34,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public override System.Type Type => _type;
 
-        public override string Value
+        public override string? Value
         {
             get => ConvertToString(_value);
             set

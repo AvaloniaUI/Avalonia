@@ -95,9 +95,9 @@ namespace Avalonia.Markup.Data
             }
         }
 
-        private static void ApplyBindings(object sender, EventArgs e)
+        private static void ApplyBindings(object? sender, EventArgs e)
         {
-            var target = (IStyledElement)sender;
+            var target = (IStyledElement)sender!;
             ApplyBindings(target);
             target.Initialized -= ApplyBindings;
         }
