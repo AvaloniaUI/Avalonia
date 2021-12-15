@@ -160,7 +160,7 @@ namespace Avalonia.Data
             PublishValue();
         }
 
-        private void TargetPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void TargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == StyledElement.TemplatedParentProperty)
             {
@@ -173,7 +173,7 @@ namespace Avalonia.Data
             }
         }
 
-        private void TemplatedParentPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void TemplatedParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Property)
             {

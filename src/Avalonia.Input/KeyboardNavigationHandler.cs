@@ -98,7 +98,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
         {
             var current = FocusManager.Instance.Current;
 

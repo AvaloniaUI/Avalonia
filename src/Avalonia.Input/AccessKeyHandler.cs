@@ -133,7 +133,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnPreviewKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
@@ -172,7 +172,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
@@ -207,7 +207,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPreviewKeyUp(object sender, KeyEventArgs e)
+        protected virtual void OnPreviewKeyUp(object? sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -234,7 +234,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPreviewPointerPressed(object sender, PointerEventArgs e)
+        protected virtual void OnPreviewPointerPressed(object? sender, PointerEventArgs e)
         {
             if (_showingAccessKeys)
             {
@@ -251,7 +251,7 @@ namespace Avalonia.Input
             _owner!.ShowAccessKeys = _showingAccessKeys = false;
         }
 
-        private void MainMenuClosed(object sender, EventArgs e)
+        private void MainMenuClosed(object? sender, EventArgs e)
         {
             _owner!.ShowAccessKeys = false;
         }

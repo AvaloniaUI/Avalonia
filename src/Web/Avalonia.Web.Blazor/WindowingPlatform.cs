@@ -12,7 +12,7 @@ namespace Avalonia.Web.Blazor
     public class BlazorWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
         private bool _signaled;
-        private static int s_uiThreadId = -1;
+        private static KeyboardDevice? s_keyboard;
 
         public IWindowImpl CreateWindow() => throw new NotSupportedException();
 
@@ -26,16 +26,17 @@ namespace Avalonia.Web.Blazor
             return null;
         }
 
-        public static KeyboardDevice Keyboard { get; private set; }
+        public static KeyboardDevice Keyboard => s_keyboard ??
+            throw new InvalidOperationException("BlazorWindowingPlatform not registered.");
 
         public static void Register()
         {
             var instance = new BlazorWindowingPlatform();
-            Keyboard = new KeyboardDevice();
+            s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
-                .Bind<IKeyboardDevice>().ToConstant(Keyboard)
+                .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())

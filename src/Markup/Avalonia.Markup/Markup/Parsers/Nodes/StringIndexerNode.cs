@@ -297,7 +297,7 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         protected override bool ShouldUpdate(object? sender, PropertyChangedEventArgs e)
         {
-            if (sender is null)
+            if (sender is null || e.PropertyName is null)
                 return false;
             var typeInfo = sender.GetType().GetTypeInfo();
             return typeInfo.GetDeclaredProperty(e.PropertyName)?.GetIndexParameters().Any() ?? false;

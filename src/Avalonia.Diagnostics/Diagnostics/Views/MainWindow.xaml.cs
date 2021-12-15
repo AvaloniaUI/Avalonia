@@ -17,7 +17,7 @@ namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
-        private readonly IDisposable _keySubscription;
+        private readonly IDisposable? _keySubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
         private TopLevel? _root;
 
@@ -25,7 +25,7 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
 
-            _keySubscription = InputManager.Instance.Process
+            _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
                 .Where(x => x.Type == RawKeyEventType.KeyDown)
                 .Subscribe(RawKeyDown);
@@ -82,7 +82,7 @@ namespace Avalonia.Diagnostics.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _keySubscription.Dispose();
+            _keySubscription?.Dispose();
 
             foreach (var state in _frozenPopupStates)
             {
