@@ -6,6 +6,8 @@ using System.Reflection;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Shared.PlatformSupport
 {
     /// <summary>
@@ -94,7 +96,7 @@ namespace Avalonia.Shared.PlatformSupport
             return (asset.GetStream(), asset.Assembly);
         }
 
-        public Assembly? GetAssembly(Uri uri, Uri baseUri)
+        public Assembly? GetAssembly(Uri uri, Uri? baseUri)
         {
             if (!uri.IsAbsoluteUri && baseUri != null)
                 uri = new Uri(baseUri, uri);
@@ -375,7 +377,7 @@ namespace Avalonia.Shared.PlatformSupport
                             var indexLength = new BinaryReader(resources).ReadInt32();
                             var index = AvaloniaResourcesIndexReaderWriter.Read(new SlicedStream(resources, 4, indexLength));
                             var baseOffset = indexLength + 4;
-                            AvaloniaResources = index.ToDictionary(r => "/" + r.Path.TrimStart('/'), r => (IAssetDescriptor)
+                            AvaloniaResources = index.ToDictionary(r => "/" + r.Path!.TrimStart('/'), r => (IAssetDescriptor)
                                 new AvaloniaResourceDescriptor(assembly, baseOffset + r.Offset, r.Size));
                         }
                     }

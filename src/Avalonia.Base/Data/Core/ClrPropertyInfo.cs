@@ -2,8 +2,6 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public class ClrPropertyInfo : IPropertyInfo
@@ -49,7 +47,7 @@ namespace Avalonia.Data.Core
             var target = Expression.Parameter(typeof(object), "target");
             var value = Expression.Parameter(typeof(object), "value");
             return Expression.Lambda<Action<object, object?>>(
-                    Expression.Call(Expression.Convert(target, info.DeclaringType), info.SetMethod,
+                    Expression.Call(Expression.Convert(target, info.DeclaringType!), info.SetMethod,
                         Expression.Convert(value, info.SetMethod.GetParameters()[0].ParameterType)),
                     target, value)
                 .Compile();
@@ -61,7 +59,7 @@ namespace Avalonia.Data.Core
                 return null;
             var target = Expression.Parameter(typeof(object), "target");
             return Expression.Lambda<Func<object, object>>(
-                    Expression.Convert(Expression.Call(Expression.Convert(target, info.DeclaringType), info.GetMethod),
+                    Expression.Convert(Expression.Call(Expression.Convert(target, info.DeclaringType!), info.GetMethod),
                         typeof(object)))
                 .Compile();
         }

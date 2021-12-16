@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -131,7 +129,7 @@ namespace Avalonia.Data.Core.Plugins
                 return false;
             }
 
-            void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object sender, PropertyChangedEventArgs e)
+            void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, PropertyChangedEventArgs e)
             {
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {

@@ -15,12 +15,12 @@ namespace Avalonia.Threading
     public class Dispatcher : IDispatcher
     {
         private readonly JobRunner _jobRunner;
-        private IPlatformThreadingInterface _platform;
+        private IPlatformThreadingInterface? _platform;
 
         public static Dispatcher UIThread { get; } =
             new Dispatcher(AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>());
 
-        public Dispatcher(IPlatformThreadingInterface platform)
+        public Dispatcher(IPlatformThreadingInterface? platform)
         {
             _platform = platform;
             _jobRunner = new JobRunner(platform);
@@ -57,6 +57,10 @@ namespace Avalonia.Threading
         public void MainLoop(CancellationToken cancellationToken)
         {
             var platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
+
+            if (platform is null)
+                throw new InvalidOperationException("Unable to locate IPlatformThreadingInterface");
+
             cancellationToken.Register(() => platform.Signal(DispatcherPriority.Send));
             platform.RunLoop(cancellationToken);
         }
@@ -78,35 +82,35 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            Contract.Requires<ArgumentNullException>(action != null);
+            _ = action ?? throw new ArgumentNullException(nameof(action));
             return _jobRunner.InvokeAsync(action, priority);
         }
         
         /// <inheritdoc/>
         public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            Contract.Requires<ArgumentNullException>(function != null);
+            _ = function ?? throw new ArgumentNullException(nameof(function));
             return _jobRunner.InvokeAsync(function, priority);
         }
 
         /// <inheritdoc/>
         public Task InvokeAsync(Func<Task> function, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            Contract.Requires<ArgumentNullException>(function != null);
+            _ = function ?? throw new ArgumentNullException(nameof(function));
             return _jobRunner.InvokeAsync(function, priority).Unwrap();
         }
 
         /// <inheritdoc/>
         public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> function, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            Contract.Requires<ArgumentNullException>(function != null);
+            _ = function ?? throw new ArgumentNullException(nameof(function));
             return _jobRunner.InvokeAsync(function, priority).Unwrap();
         }
 
         /// <inheritdoc/>
         public void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            Contract.Requires<ArgumentNullException>(action != null);
+            _ = action ?? throw new ArgumentNullException(nameof(action));
             _jobRunner.Post(action, priority);
         }
 

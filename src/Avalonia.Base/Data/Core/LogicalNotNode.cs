@@ -1,8 +1,6 @@
 using System;
 using System.Globalization;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public class LogicalNotNode : ExpressionNode, ITransformNode

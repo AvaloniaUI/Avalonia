@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public static class CommonPropertyNames

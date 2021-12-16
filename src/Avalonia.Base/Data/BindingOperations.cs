@@ -2,8 +2,6 @@ using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
-#nullable enable
-
 namespace Avalonia.Data
 {
     public static class BindingOperations

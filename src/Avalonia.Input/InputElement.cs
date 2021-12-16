@@ -499,7 +499,7 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.Instance.Focus(null);
+                FocusManager.Instance?.Focus(null);
             }
         }
 

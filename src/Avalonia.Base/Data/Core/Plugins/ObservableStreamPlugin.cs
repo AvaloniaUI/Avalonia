@@ -3,8 +3,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -57,14 +55,14 @@ namespace Avalonia.Data.Core.Plugins
 
             // Make a Box<> delegate of the correct type.
             var funcType = typeof(Func<,>).MakeGenericType(sourceType, typeof(object));
-            var box = GetType().GetMethod(nameof(Box), BindingFlags.Static | BindingFlags.NonPublic)
+            var box = GetType().GetMethod(nameof(Box), BindingFlags.Static | BindingFlags.NonPublic)!
                 .MakeGenericMethod(sourceType)
                 .CreateDelegate(funcType);
 
             // Call Observable.Select(target, box);
-            return (IObservable<object>)select.Invoke(
+            return (IObservable<object?>)select.Invoke(
                 null,
-                new object[] { target, box });
+                new object[] { target, box })!;
         }
 
         private static MethodInfo GetObservableSelect(Type source)

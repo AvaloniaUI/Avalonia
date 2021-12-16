@@ -7,8 +7,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public abstract class IndexerNodeBase : SettableNode
@@ -72,12 +70,12 @@ namespace Avalonia.Data.Core
                         return index >= e.OldStartingIndex;
                     case NotifyCollectionChangedAction.Replace:
                         return index >= e.NewStartingIndex &&
-                               index < e.NewStartingIndex + e.NewItems.Count;
+                               index < e.NewStartingIndex + e.NewItems!.Count;
                     case NotifyCollectionChangedAction.Move:
                         return (index >= e.NewStartingIndex &&
-                                index < e.NewStartingIndex + e.NewItems.Count) ||
+                                index < e.NewStartingIndex + e.NewItems!.Count) ||
                                (index >= e.OldStartingIndex &&
-                                index < e.OldStartingIndex + e.OldItems.Count);
+                                index < e.OldStartingIndex + e.OldItems!.Count);
                     case NotifyCollectionChangedAction.Reset:
                         return true;
                 }

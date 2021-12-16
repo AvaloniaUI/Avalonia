@@ -1,8 +1,6 @@
 using System;
 using System.Reactive.Subjects;
 
-#nullable enable
-
 namespace Avalonia.Data
 {
     /// <summary>

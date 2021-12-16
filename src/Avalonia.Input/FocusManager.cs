@@ -32,7 +32,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the instance of the <see cref="IFocusManager"/>.
         /// </summary>
-        public static IFocusManager Instance => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public static IFocusManager? Instance => AvaloniaLocator.Current.GetService<IFocusManager>();
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.

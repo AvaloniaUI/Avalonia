@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-#nullable enable
-
 namespace Avalonia.Collections
 {
     /// <summary>

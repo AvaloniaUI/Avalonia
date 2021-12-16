@@ -13,6 +13,6 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        void OnEvent(object sender, T e);
+        void OnEvent(object? sender, T e);
     }
 }

@@ -7,8 +7,6 @@ using Avalonia.Logging;
 using Avalonia.PropertyStore;
 using Avalonia.Threading;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -47,7 +45,7 @@ namespace Avalonia
         /// <summary>
         /// Raised when a <see cref="AvaloniaProperty"/> value changes on this object.
         /// </summary>
-        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
         {
             add { _inpcChanged += value; }
             remove { _inpcChanged -= value; }
@@ -857,7 +855,7 @@ namespace Avalonia
         private string GetDescription(object o)
         {
             var description = o as IDescription;
-            return description?.Description ?? o.ToString();
+            return description?.Description ?? o.ToString() ?? o.GetType().Name;
         }
 
         /// <summary>
