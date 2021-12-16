@@ -215,8 +215,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private static void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
+        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
         {
+            if (sender is null)
+                return;
+
             var ev = (PointerPressedEventArgs)e;
             var visual = (IVisual)sender;
 

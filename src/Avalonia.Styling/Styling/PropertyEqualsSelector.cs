@@ -86,7 +86,7 @@ namespace Avalonia.Styling
 
         protected override Selector? MovePrevious() => _previous;
 
-        internal static bool Compare(Type propertyType, object propertyValue, object? value)
+        internal static bool Compare(Type propertyType, object? propertyValue, object? value)
         {
             if (propertyType == typeof(object) &&
                 propertyValue?.GetType() is Type inferredType)
