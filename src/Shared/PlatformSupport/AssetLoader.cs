@@ -109,7 +109,7 @@ namespace Avalonia.Shared.PlatformSupport
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">Base URI that is used if <paramref name="uri"/> is relative.</param>
         /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
-        public IEnumerable<Uri> GetAssets(Uri uri, Uri baseUri)
+        public IEnumerable<Uri> GetAssets(Uri uri, Uri? baseUri)
         {
             if (uri.IsAbsoluteUri && uri.Scheme == "resm")
             {
