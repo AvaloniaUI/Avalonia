@@ -328,7 +328,6 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
-                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             }
             @finally
