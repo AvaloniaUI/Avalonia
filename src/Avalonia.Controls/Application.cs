@@ -38,8 +38,8 @@ namespace Avalonia
         /// </summary>
         private DataTemplates? _dataTemplates;
 
-        private readonly Lazy<IClipboard> _clipboard =
-            new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
+        private readonly Lazy<IClipboard?> _clipboard =
+            new Lazy<IClipboard?>(() => (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
         private Styles? _styles;
         private IResourceDictionary? _resources;
@@ -85,7 +85,7 @@ namespace Avalonia
         /// <value>
         /// The current instance of the <see cref="Application"/> class.
         /// </value>
-        public static Application Current
+        public static Application? Current
         {
             get { return AvaloniaLocator.Current.GetService<Application>(); }
         }
@@ -125,7 +125,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the application clipboard.
         /// </summary>
-        public IClipboard Clipboard => _clipboard.Value;
+        public IClipboard? Clipboard => _clipboard.Value;
 
         /// <summary>
         /// Gets the application's global resource dictionary.

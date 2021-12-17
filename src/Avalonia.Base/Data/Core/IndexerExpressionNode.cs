@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     class IndexerExpressionNode : IndexerNodeBase
@@ -18,7 +16,7 @@ namespace Avalonia.Data.Core
 
         public IndexerExpressionNode(IndexExpression expression)
         {
-            _parameter = Expression.Parameter(expression.Object.Type);
+            _parameter = Expression.Parameter(expression.Object!.Type);
             _expression = expression.Update(_parameter, expression.Arguments);
 
             _getDelegate = Expression.Lambda(_expression, _parameter).Compile();

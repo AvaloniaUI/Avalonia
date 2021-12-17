@@ -2,8 +2,6 @@
 using System.Reactive.Linq;
 using Avalonia.Reactive;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public class AvaloniaPropertyAccessorNode : SettableNode

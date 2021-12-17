@@ -1,8 +1,6 @@
 using System;
 using System.Runtime.ExceptionServices;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -74,12 +72,11 @@ namespace Avalonia.Data.Core.Plugins
                 _property = property ?? throw new ArgumentNullException(nameof(property));
             }
 
-            public AvaloniaObject Instance
+            public AvaloniaObject? Instance
             {
                 get
                 {
-                    AvaloniaObject result;
-                    _reference.TryGetTarget(out result);
+                    _reference.TryGetTarget(out var result);
                     return result;
                 }
             }
@@ -91,7 +88,7 @@ namespace Avalonia.Data.Core.Plugins
             {
                 if (!_property.IsReadOnly)
                 {
-                    Instance.SetValue(_property, value, priority);
+                    Instance?.SetValue(_property, value, priority);
                     return true;
                 }
 

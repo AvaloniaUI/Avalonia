@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -60,7 +61,8 @@ namespace Avalonia.Media
         {
             if (_children?.Count > 0)
             {
-                var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+                var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
+                    throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
                 return factory.CreateGeometryGroup(FillRule, _children);
             }
 

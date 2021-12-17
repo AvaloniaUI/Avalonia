@@ -715,7 +715,7 @@ namespace Avalonia.Controls
             /// </summary>
             /// <param name="serviceType">The service type.</param>
             /// <returns>A service of the requested type.</returns>
-            public object GetService(Type serviceType)
+            public object? GetService(Type serviceType)
             {
                 if (serviceType == typeof(IAccessKeyHandler))
                 {

@@ -42,8 +42,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
-#nullable enable
-
 namespace Avalonia.Collections.Pooled
 {
     internal static class ThrowHelper

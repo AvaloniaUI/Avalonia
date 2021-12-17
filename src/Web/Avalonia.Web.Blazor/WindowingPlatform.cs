@@ -58,7 +58,7 @@ namespace Avalonia.Web.Blazor
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            return AvaloniaLocator.Current.GetService<IRuntimePlatform>()
+            return GetRuntimePlatform()
                 .StartSystemTimer(interval, () =>
                 {
                     Dispatcher.UIThread.RunJobs(priority);
@@ -75,7 +75,7 @@ namespace Avalonia.Web.Blazor
             
             IDisposable? disp = null;
             
-            disp = AvaloniaLocator.Current.GetService<IRuntimePlatform>()
+            disp = GetRuntimePlatform()
                 .StartSystemTimer(TimeSpan.FromMilliseconds(1),
                     () =>
                     {
@@ -96,6 +96,10 @@ namespace Avalonia.Web.Blazor
 
         public event Action<DispatcherPriority?>? Signaled;
 
-        
+        private static IRuntimePlatform GetRuntimePlatform()
+        {
+            return AvaloniaLocator.Current.GetService<IRuntimePlatform>() ??
+                throw new InvalidOperationException("Unable to locate IRuntimePlatform.");
+        }
     }
 }
