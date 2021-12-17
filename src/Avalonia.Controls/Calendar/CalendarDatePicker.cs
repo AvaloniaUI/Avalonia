@@ -1,10 +1,11 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Controls.Primitives;
@@ -425,9 +426,6 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
 
-            DisplayDateProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateChanged(e));
-            DisplayDateStartProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateStartChanged(e));
-            DisplayDateEndProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateEndChanged(e));
             IsDropDownOpenProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnIsDropDownOpenChanged(e));
             SelectedDateProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateChanged(e));
             SelectedDateFormatProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateFormatChanged(e));
@@ -443,6 +441,7 @@ namespace Avalonia.Controls
             FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
             _defaultText = string.Empty;
             DisplayDate = DateTime.Today;
+            BlackoutDates.CollectionChanged += BlackoutDates_CollectionChanged;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -459,18 +458,12 @@ namespace Avalonia.Controls
             if (_calendar != null)
             {
                 _calendar.SelectionMode = CalendarSelectionMode.SingleDate;
-                _calendar.SelectedDate = SelectedDate;
-                SetCalendarDisplayDate(DisplayDate);
-                SetCalendarDisplayDateStart(DisplayDateStart);
-                SetCalendarDisplayDateEnd(DisplayDateEnd);
 
                 _calendar.DayButtonMouseUp += Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
                 _calendar.PointerReleased += Calendar_PointerReleased;
                 _calendar.KeyDown += Calendar_KeyDown;
-                //_calendar.SizeChanged += new SizeChangedEventHandler(Calendar_SizeChanged);
-                //_calendar.IsTabStop = true;
 
                 var currentBlackoutDays = BlackoutDates;
                 BlackoutDates = _calendar.BlackoutDates;
@@ -669,11 +662,6 @@ namespace Avalonia.Controls
         {
             var addedDate = (DateTime?)e.NewValue;
             var removedDate = (DateTime?)e.OldValue;
-
-            if (_calendar != null && addedDate != _calendar.SelectedDate)
-            {
-                _calendar.SelectedDate = addedDate;
-            }
 
             if (SelectedDate != null)
             {
@@ -1198,6 +1186,51 @@ namespace Avalonia.Controls
                 int day = discarded.Day;
                 DateTime newD = new DateTime(year, month, day, 0, 0, 0);
                 return newD;
+            }
+        }
+
+        private void BlackoutDates_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (CalendarDateRange item in e.NewItems)
+                    {
+                        _calendar.BlackoutDates.Add(item);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Move:
+                    // We do not need to handle this case as the result will not have an effect.
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (CalendarDateRange item in e.OldItems)
+                    {
+                        _calendar.BlackoutDates.Remove(item);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (CalendarDateRange item in e.OldItems)
+                    {
+                        _calendar.BlackoutDates.Remove(item);
+                    }
+                    foreach (CalendarDateRange item in e.NewItems)
+                    {
+                        _calendar.BlackoutDates.Add(item);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    _calendar.BlackoutDates.Clear();
+                    foreach (CalendarDateRange item in BlackoutDates)
+                    {
+                        _calendar.BlackoutDates.Add(item);
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(e.Action), e.Action, "Invalid NotifyCollectionChangedAction");
             }
         }
     }
