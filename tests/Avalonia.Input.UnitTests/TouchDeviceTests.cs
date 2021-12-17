@@ -13,7 +13,6 @@ namespace Avalonia.Input.UnitTests
             using (UnitTestApplication.Start(
                 new TestServices(inputManager: new InputManager())))
             {
-                var inputManager = InputManager.Instance;
                 var root = new TestRoot();
                 var touchDevice = new TouchDevice();
 
@@ -24,11 +23,41 @@ namespace Avalonia.Input.UnitTests
                     isTapped = true;
                     executedTimes++;
                 };
-                TapOnce(inputManager, touchDevice, root);
+                TapOnce(InputManager.Instance, touchDevice, root);
                 Assert.True(isTapped);
                 Assert.Equal(1, executedTimes);
             }
         }
+
+        [Fact]
+        public void DoubleTapped_Event_Is_Fired_With_Touch()
+        {
+            using (UnitTestApplication.Start(
+                new TestServices(inputManager: new InputManager())))
+            {
+                var root = new TestRoot();
+                var touchDevice = new TouchDevice();
+
+                var isDoubleTapped = false;
+                var doubleTappedExecutedTimes = 0;
+                var tappedExecutedTimes = 0;
+                root.DoubleTapped += (a, e) =>
+                {
+                    isDoubleTapped = true;
+                    doubleTappedExecutedTimes++;
+                };
+                root.Tapped += (a, e) =>
+                {
+                    tappedExecutedTimes++;
+                };
+                TapOnce(InputManager.Instance, touchDevice, root);
+                TapOnce(InputManager.Instance, touchDevice, root);
+                Assert.Equal(2, tappedExecutedTimes);
+                Assert.True(isDoubleTapped);
+                Assert.Equal(1, doubleTappedExecutedTimes);
+            }
+        }
+
         private static void TapOnce(IInputManager inputManager, TouchDevice device, IInputRoot root)
         {
             inputManager.ProcessInput(new RawTouchEventArgs(device, 0,
