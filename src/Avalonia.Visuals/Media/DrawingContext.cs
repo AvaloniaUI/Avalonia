@@ -351,6 +351,12 @@ namespace Avalonia.Media
         {
             _ = clip ?? throw new ArgumentNullException(nameof(clip));
 
+            // HACK: This check was added when nullable annotations pointed out that we're potentially
+            // pushing a null value for the clip here. Ideally we'd return an empty PushedState here but
+            // I don't want to make that change as part of adding nullable annotations.
+            if (clip.PlatformImpl is null)
+                throw new InvalidOperationException("Cannot push empty geometry clip.");
+
             PlatformImpl.PushGeometryClip(clip.PlatformImpl);
             return new PushedState(this, PushedState.PushedStateType.GeometryClip);
         }
