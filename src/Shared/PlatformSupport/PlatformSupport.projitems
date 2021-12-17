@@ -13,5 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)DynLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandardRuntimePlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandardRuntimePlatformServices.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WindowResizeDragHelper.cs" />
   </ItemGroup>
 </Project>

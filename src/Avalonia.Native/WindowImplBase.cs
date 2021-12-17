@@ -60,6 +60,7 @@ namespace Avalonia.Native
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
+        private WindowResizeDragHelper _managedDrag;
 
         internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface glFeature)
         {
@@ -69,6 +70,22 @@ namespace Avalonia.Native
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
+
+            if (this is IWindowImpl win)
+            {
+                _managedDrag = 
+                    new WindowResizeDragHelper
+                    (
+                        win,
+                        capture =>
+                        {
+                            if (capture)
+                                _mouse.Capture(_inputRoot);
+                            else
+                                _mouse.Capture(null);
+                        }
+                    );
+            }
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
@@ -311,7 +328,10 @@ namespace Avalonia.Native
 
                 default:
                     var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
-                    
+
+                    RawInputEventArgs inputEventArgs = e;
+                    _managedDrag?.PreprocessInputEvent(ref inputEventArgs);
+
                     if(!ChromeHitTest(e))
                     {
                         Input?.Invoke(e);
@@ -443,7 +463,7 @@ namespace Avalonia.Native
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
-
+            _managedDrag?.StartDrag(edge, PointToScreen(e.GetPosition(_inputRoot)));
         }
 
         internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,

@@ -22,5 +22,9 @@
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <AvnComIdl Include="avn.idl" OutputFile="Interop.Generated.cs" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\Shared\PlatformSupport\WindowResizeDragHelper.cs" Link="WindowResizeDragHelper.cs" />
+  </ItemGroup>
   <Import Project="../../build/MicroCom.targets" />
 </Project>
