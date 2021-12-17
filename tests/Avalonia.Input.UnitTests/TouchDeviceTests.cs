@@ -1,6 +1,8 @@
 ﻿using System;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Input.UnitTests
@@ -32,6 +34,10 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void DoubleTapped_Event_Is_Fired_With_Touch()
         {
+            var tmp = new Mock<IPlatformSettings>();
+            tmp.Setup(x => x.DoubleClickTime).Returns(new TimeSpan(200));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+               .Bind<IPlatformSettings>().ToConstant(tmp.Object);
             using (UnitTestApplication.Start(
                 new TestServices(inputManager: new InputManager())))
             {

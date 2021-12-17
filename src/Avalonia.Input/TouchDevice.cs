@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -16,7 +17,10 @@ namespace Avalonia.Input
     {
         private readonly Dictionary<long, Pointer> _pointers = new Dictionary<long, Pointer>();
         private bool _disposed;
-        
+        private int _clickCount;
+        private Rect _lastClickRect;
+        private ulong _lastClickTime;
+
         KeyModifiers GetKeyModifiers(RawInputModifiers modifiers) =>
             (KeyModifiers)(modifiers & RawInputModifiers.KeyboardMask);
 
@@ -48,11 +52,22 @@ namespace Avalonia.Input
             var target = pointer.Captured ?? args.Root;
             if (args.Type == RawPointerEventType.TouchBegin)
             {
+                var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                var doubleClickTime = settings.DoubleClickTime.TotalMilliseconds;
+
+                if (!_lastClickRect.Contains(args.Position) || ev.Timestamp - _lastClickTime > doubleClickTime)
+                {
+                    _clickCount = 0;
+                }
+                ++_clickCount;
+                _lastClickTime = ev.Timestamp;
+                _lastClickRect = new Rect(args.Position, new Size())
+                    .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     args.Root, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true),
                         PointerUpdateKind.LeftButtonPressed),
-                    GetKeyModifiers(args.InputModifiers)));
+                    GetKeyModifiers(args.InputModifiers),_clickCount));
             }
 
             if (args.Type == RawPointerEventType.TouchEnd)
