@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
@@ -188,6 +187,33 @@ namespace Avalonia.Media
         public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f)
         {
             DrawRectangle(null, pen, rect, cornerRadius, cornerRadius);
+        }
+
+        /// <summary>
+        /// Draws an ellipse with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the ellipse, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the ellipse, or <c>null</c> for no stroke.</param>
+        /// <param name="center">The location of the center of the ellipse.</param>
+        /// <param name="radiusX">The horizontal radius of the ellipse.</param>
+        /// <param name="radiusY">The vertical radius of the ellipse.</param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        public void DrawEllipse(IBrush brush, IPen pen, Point center, double radiusX, double radiusY)
+        {
+            if (brush == null && !PenIsVisible(pen))
+            {
+                return;
+            }
+
+            var originX = center.X - radiusX;
+            var originY = center.Y - radiusY;
+            var width = radiusX * 2;
+            var height = radiusY * 2;
+
+            PlatformImpl.DrawEllipse(brush, pen, new Rect(originX, originY, width, height));
         }
 
         /// <summary>
