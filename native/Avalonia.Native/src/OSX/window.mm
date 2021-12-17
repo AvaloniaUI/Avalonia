@@ -45,6 +45,7 @@ public:
         StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
         Window = [[AvnWindow alloc] initWithParent:this];
+        [Window setContentView: StandardContainer];
         
         lastPositionSet.X = 100;
         lastPositionSet.Y = 100;
@@ -125,8 +126,6 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
-            
-            [Window setContentView: StandardContainer];
             
             [Window setTitle:_lastTitle];
             
@@ -340,7 +339,8 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
-                [Window setContentSize:NSSize{x, y}];
+                [Window setContentSize:NSSize{x,y}];
+                [Window invalidateShadow];
             }
             @finally
             {
