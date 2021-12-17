@@ -188,7 +188,7 @@ namespace Avalonia.Input
                 // If the menu is open, only match controls in the menu's visual tree.
                 if (menuIsOpen)
                 {
-                    matches = matches.Where(x => MainMenu.IsVisualAncestorOf(x));
+                    matches = matches.Where(x => x is not null && MainMenu!.IsVisualAncestorOf(x));
                 }
 
                 var match = matches.FirstOrDefault();
