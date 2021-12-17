@@ -37,7 +37,7 @@ namespace Avalonia.Media
 
         internal UnicodeRangeSegment Single => _single;
 
-        internal IReadOnlyList<UnicodeRangeSegment> Segments => _segments;
+        internal IReadOnlyList<UnicodeRangeSegment>? Segments => _segments;
 
         /// <summary>
         /// Determines if given value is inside the range.

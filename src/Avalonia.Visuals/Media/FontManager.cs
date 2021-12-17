@@ -16,7 +16,7 @@ namespace Avalonia.Media
         private readonly ConcurrentDictionary<Typeface, GlyphTypeface> _glyphTypefaceCache =
             new ConcurrentDictionary<Typeface, GlyphTypeface>();
         private readonly FontFamily _defaultFontFamily;
-        private readonly IReadOnlyList<FontFallback> _fontFallbacks;
+        private readonly IReadOnlyList<FontFallback>? _fontFallbacks;
 
         public FontManager(IFontManagerImpl platformImpl)
         {
@@ -87,7 +87,7 @@ namespace Avalonia.Media
         /// <returns>
         ///     The <see cref="GlyphTypeface"/>.
         /// </returns>
-        public GlyphTypeface? GetOrAddGlyphTypeface(Typeface typeface)
+        public GlyphTypeface GetOrAddGlyphTypeface(Typeface typeface)
         {
             while (true)
             {
@@ -105,7 +105,7 @@ namespace Avalonia.Media
 
                 if (typeface.FontFamily == _defaultFontFamily)
                 {
-                    return null;
+                   throw new InvalidOperationException($"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
                 }
 
                 typeface = new Typeface(_defaultFontFamily, typeface.Style, typeface.Weight);
@@ -126,7 +126,7 @@ namespace Avalonia.Media
         /// </returns>
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
+            FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
         {
             if(_fontFallbacks != null)
             {

@@ -89,7 +89,7 @@ namespace Avalonia.Media.Fonts
             {
                 fileExtension = "." + fontFamilyKey.Source.AbsolutePath.Split('.').LastOrDefault();
 
-                var fileName = fontFamilyKey.Source.LocalPath.Replace(fileExtension, string.Empty).Split('.').LastOrDefault();
+                var fileName = fontFamilyKey.Source.LocalPath.Replace(fileExtension, string.Empty).Split('.').Last();
 
                 location = new Uri(fontFamilyKey.Source.AbsoluteUri.Replace("." + fileName + fileExtension, string.Empty), UriKind.RelativeOrAbsolute);
 

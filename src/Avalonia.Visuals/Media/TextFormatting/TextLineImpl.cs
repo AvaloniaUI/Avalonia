@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -479,12 +480,13 @@ namespace Avalonia.Media.TextFormatting
         /// </returns>
         internal static ShapedTextCharacters CreateShapedSymbol(TextRun textRun)
         {
-            var formatterImpl = AvaloniaLocator.Current.GetService<ITextShaperImpl>();
+            var properties = textRun.Properties;
 
-            var glyphRun = formatterImpl.ShapeText(textRun.Text, textRun.Properties.Typeface, textRun.Properties.FontRenderingEmSize,
-                textRun.Properties.CultureInfo);
+            _ = properties ?? throw new InvalidOperationException($"{nameof(TextRun.Properties)} should not be null.");
 
-            return new ShapedTextCharacters(glyphRun, textRun.Properties);
+            var glyphRun = TextShaper.Current.ShapeText(textRun.Text, properties.Typeface, properties.FontRenderingEmSize, properties.CultureInfo);
+
+            return new ShapedTextCharacters(glyphRun, properties);
         }
     }
 }

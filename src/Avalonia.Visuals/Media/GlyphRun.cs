@@ -28,14 +28,6 @@ namespace Avalonia.Media
         private ReadOnlySlice<char> _characters;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="GlyphRun"/> class.
-        /// </summary>
-        public GlyphRun()
-        {
-
-        }
-
-        /// <summary>
         ///     Initializes a new instance of the <see cref="GlyphRun"/> class by specifying properties of the class.
         /// </summary>
         /// <param name="glyphTypeface">The glyph typeface.</param>
@@ -56,7 +48,7 @@ namespace Avalonia.Media
             ReadOnlySlice<ushort> glyphClusters = default,
             int biDiLevel = 0)
         {
-            GlyphTypeface = glyphTypeface;
+            _glyphTypeface = glyphTypeface;
 
             FontRenderingEmSize = fontRenderingEmSize;
 
@@ -74,13 +66,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets or sets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
+        ///     Gets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public GlyphTypeface GlyphTypeface
-        {
-            get => _glyphTypeface;
-            set => Set(ref _glyphTypeface, value);
-        }
+        public GlyphTypeface GlyphTypeface => _glyphTypeface;
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.

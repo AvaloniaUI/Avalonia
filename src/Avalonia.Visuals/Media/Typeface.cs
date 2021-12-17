@@ -66,7 +66,7 @@ namespace Avalonia.Media
         /// <value>
         /// The glyph typeface.
         /// </value>
-        public GlyphTypeface? GlyphTypeface => FontManager.Current.GetOrAddGlyphTypeface(this);
+        public GlyphTypeface GlyphTypeface => FontManager.Current.GetOrAddGlyphTypeface(this);
 
         public static bool operator !=(Typeface a, Typeface b)
         {

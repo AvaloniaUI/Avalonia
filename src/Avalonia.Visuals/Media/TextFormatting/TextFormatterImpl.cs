@@ -277,7 +277,7 @@ namespace Avalonia.Media.TextFormatting
 
             var textRuns = new List<ShapedTextCharacters>();
 
-            if (previousLineBreak != null)
+            if (previousLineBreak?.RemainingCharacters != null)
             {
                 for (var index = 0; index < previousLineBreak.RemainingCharacters.Count; index++)
                 {
@@ -317,7 +317,7 @@ namespace Avalonia.Media.TextFormatting
 
             while (textRunEnumerator.MoveNext())
             {
-                var textRun = textRunEnumerator.Current;
+                var textRun = textRunEnumerator.Current!;
 
                 switch (textRun)
                 {
@@ -398,7 +398,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="currentLineBreak">The current line break if the line was explicitly broken.</param>
         /// <returns>The wrapped text line.</returns>
         private static TextLine PerformTextWrapping(List<ShapedTextCharacters> textRuns, TextRange textRange,
-            double paragraphWidth, TextParagraphProperties paragraphProperties, TextLineBreak currentLineBreak)
+            double paragraphWidth, TextParagraphProperties paragraphProperties, TextLineBreak? currentLineBreak)
         {
             var availableWidth = paragraphWidth;
             var currentWidth = 0.0;
@@ -517,7 +517,7 @@ namespace Avalonia.Media.TextFormatting
 
             var lineBreak = remainingCharacters?.Count > 0 ? new TextLineBreak(remainingCharacters) : null;
 
-            if (lineBreak is null && currentLineBreak.TextEndOfLine != null)
+            if (lineBreak is null && currentLineBreak?.TextEndOfLine != null)
             {
                 lineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine);
             }
@@ -586,11 +586,11 @@ namespace Avalonia.Media.TextFormatting
             {
                 _textSource = textSource;
                 _pos = firstTextSourceIndex;
-                Current = null!;
+                Current = null;
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass
-            public TextRun Current { get; private set; }
+            public TextRun? Current { get; private set; }
 
             public bool MoveNext()
             {
