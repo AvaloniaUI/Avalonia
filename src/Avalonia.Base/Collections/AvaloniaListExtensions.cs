@@ -86,7 +86,7 @@ namespace Avalonia.Collections
             {
                 for (var i = items.Count - 1; i >= 0; --i)
                 {
-                    removed(index + i, (T)items[i]);
+                    removed(index + i, (T)items[i]!);
                 }
             }
 
@@ -95,22 +95,22 @@ namespace Avalonia.Collections
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Add(e.NewStartingIndex, e.NewItems);
+                        Add(e.NewStartingIndex, e.NewItems!);
                         break;
 
                     case NotifyCollectionChangedAction.Move:
                     case NotifyCollectionChangedAction.Replace:
-                        Remove(e.OldStartingIndex, e.OldItems);
+                        Remove(e.OldStartingIndex, e.OldItems!);
                         int newIndex = e.NewStartingIndex;
                         if(newIndex > e.OldStartingIndex)
                         {
-                            newIndex -= e.OldItems.Count;
+                            newIndex -= e.OldItems!.Count;
                         }
-                        Add(newIndex, e.NewItems);
+                        Add(newIndex, e.NewItems!);
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        Remove(e.OldStartingIndex, e.OldItems);
+                        Remove(e.OldStartingIndex, e.OldItems!);
                         break;
 
                     case NotifyCollectionChangedAction.Reset:
@@ -164,7 +164,7 @@ namespace Avalonia.Collections
         /// <returns>A disposable used to terminate the subscription.</returns>
         public static IDisposable TrackItemPropertyChanged<T>(
             this IAvaloniaReadOnlyList<T> collection,
-            Action<Tuple<object, PropertyChangedEventArgs>> callback)
+            Action<Tuple<object?, PropertyChangedEventArgs>> callback)
         {
             List<INotifyPropertyChanged> tracked = new List<INotifyPropertyChanged>();
 
@@ -194,7 +194,7 @@ namespace Avalonia.Collections
                         tracked.Remove(inpc);
                     }
                 },
-                null);
+                () => throw new NotSupportedException("Collection reset not supported."));
 
             return Disposable.Create(() =>
             {

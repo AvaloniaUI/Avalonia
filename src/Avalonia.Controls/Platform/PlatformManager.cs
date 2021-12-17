@@ -8,9 +8,6 @@ namespace Avalonia.Controls.Platform
 {
     public static partial class PlatformManager
     {
-        static IPlatformSettings GetSettings()
-            => AvaloniaLocator.Current.GetService<IPlatformSettings>();
-
         static bool s_designerMode;
 
         public static IDisposable DesignerMode()

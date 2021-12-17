@@ -8,7 +8,7 @@ namespace Avalonia.Markup.Parsers
 {
     public static class ExpressionObserverBuilder
     {
-        internal static (ExpressionNode? Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type>? typeResolver = null,
+        internal static (ExpressionNode Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type>? typeResolver = null,
             INameScope? nameScope = null)
         {
             if (string.IsNullOrWhiteSpace(expression))

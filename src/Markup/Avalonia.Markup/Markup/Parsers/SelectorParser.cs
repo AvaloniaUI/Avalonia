@@ -75,7 +75,7 @@ namespace Avalonia.Markup.Parsers
                                 throw new InvalidOperationException($"Cannot find '{property.Property}' on '{type}");
                             }
 
-                            object typedValue;
+                            object? typedValue;
 
                             if (TypeUtilities.TryConvert(
                                     targetProperty.PropertyType,

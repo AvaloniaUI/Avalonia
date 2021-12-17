@@ -1,4 +1,4 @@
-#if !NETCOREAPP3_1
+#if !NETCOREAPP3_1_OR_GREATER
 namespace System
 {
     // This is a hack to enable our span code to work inside MSBuild task without referencing System.Memory

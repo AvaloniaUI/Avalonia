@@ -3,7 +3,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class AvaloniaPropertyViewModel : PropertyViewModel
     {
         private readonly AvaloniaObject _target;
-        private string _type;
+        private System.Type _type;
         private object? _value;
         private string _priority;
         private string _group;
@@ -32,9 +32,9 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Priority =>
             _priority;
 
-        public override string Type => _type;
+        public override System.Type Type => _type;
 
-        public override string Value
+        public override string? Value
         {
             get => ConvertToString(_value);
             set
@@ -58,7 +58,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (Property.IsDirect)
             {
                 RaiseAndSetIfChanged(ref _value, _target.GetValue(Property), nameof(Value));
-                RaiseAndSetIfChanged(ref _type, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(Type));
+                RaiseAndSetIfChanged(ref _type, _value?.GetType() ?? Property.PropertyType, nameof(Type));
                 RaiseAndSetIfChanged(ref _priority, "Direct", nameof(Priority));
 
                 _group = "Properties";
@@ -68,7 +68,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 var val = _target.GetDiagnostic(Property);
 
                 RaiseAndSetIfChanged(ref _value, val?.Value, nameof(Value));
-                RaiseAndSetIfChanged(ref _type, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(Type));
+                RaiseAndSetIfChanged(ref _type, _value?.GetType() ?? Property.PropertyType, nameof(Type));
 
                 if (val != null)
                 {
