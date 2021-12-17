@@ -448,6 +448,10 @@ namespace Avalonia.Headless
                 
             }
 
+            public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+            {
+            }
+
             public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
             {
                 
