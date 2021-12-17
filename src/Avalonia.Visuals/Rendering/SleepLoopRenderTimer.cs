@@ -6,7 +6,7 @@ namespace Avalonia.Rendering
 {
     public class SleepLoopRenderTimer : IRenderTimer
     {
-        private Action<TimeSpan> _tick;
+        private Action<TimeSpan>? _tick;
         private int _count;
         private readonly object _lock = new object();
         private bool _running;

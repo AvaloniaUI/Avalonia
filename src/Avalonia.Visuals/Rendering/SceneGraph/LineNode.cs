@@ -25,11 +25,11 @@ namespace Avalonia.Rendering.SceneGraph
             IPen pen,
             Point p1,
             Point p2,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene>? childScenes = null)
             : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform)
         {
             Transform = transform;
-            Pen = pen?.ToImmutable();
+            Pen = pen.ToImmutable();
             P1 = p1;
             P2 = p2;
             ChildScenes = childScenes;
@@ -56,7 +56,7 @@ namespace Avalonia.Rendering.SceneGraph
         public Point P2 { get; }
 
         /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene> ChildScenes { get; }
+        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.

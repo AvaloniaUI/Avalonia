@@ -24,8 +24,8 @@
 
         static UnicodeData()
         {
-            s_unicodeDataTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.UnicodeData.trie"));
-            s_graphemeBreakTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.GraphemeBreak.trie"));
+            s_unicodeDataTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.UnicodeData.trie")!);
+            s_graphemeBreakTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.GraphemeBreak.trie")!);
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace Avalonia.Media.TextFormatting
         private readonly TextLineMetrics _textLineMetrics;
 
         public TextLineImpl(List<ShapedTextCharacters> textRuns, TextRange textRange, double paragraphWidth,
-            TextParagraphProperties paragraphProperties, TextLineBreak lineBreak = null, bool hasCollapsed = false)
+            TextParagraphProperties paragraphProperties, TextLineBreak? lineBreak = null, bool hasCollapsed = false)
         {
             TextRange = textRange;
             TextLineBreak = lineBreak;
@@ -33,7 +33,7 @@ namespace Avalonia.Media.TextFormatting
         public override TextRange TextRange { get; }
 
         /// <inheritdoc/>
-        public override TextLineBreak TextLineBreak { get; }
+        public override TextLineBreak? TextLineBreak { get; }
 
         /// <inheritdoc/>
         public override bool HasCollapsed { get; }

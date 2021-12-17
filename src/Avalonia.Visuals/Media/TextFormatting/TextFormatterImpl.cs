@@ -8,7 +8,7 @@ namespace Avalonia.Media.TextFormatting
     {
         /// <inheritdoc cref="TextFormatter.FormatLine"/>
         public override TextLine FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
-            TextParagraphProperties paragraphProperties, TextLineBreak previousLineBreak = null)
+            TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
         {
             var textWrapping = paragraphProperties.TextWrapping;
 
@@ -241,7 +241,7 @@ namespace Avalonia.Media.TextFormatting
 
                     first.Add(split.First);
 
-                    second.Add(split.Second);
+                    second.Add(split.Second!);
 
                     if (secondCount > 0)
                     {
@@ -269,7 +269,7 @@ namespace Avalonia.Media.TextFormatting
         /// The formatted text runs.
         /// </returns>
         private static List<ShapedTextCharacters> FetchTextRuns(ITextSource textSource,
-            int firstTextSourceIndex, TextLineBreak previousLineBreak, out TextLineBreak nextLineBreak)
+            int firstTextSourceIndex, TextLineBreak? previousLineBreak, out TextLineBreak? nextLineBreak)
         {
             nextLineBreak = default;
 
@@ -298,11 +298,11 @@ namespace Avalonia.Media.TextFormatting
                         {
                             for (; index < previousLineBreak.RemainingCharacters.Count; index++)
                             {
-                                splitResult.Second.Add(previousLineBreak.RemainingCharacters[index]);
+                                splitResult.Second!.Add(previousLineBreak.RemainingCharacters[index]);
                             }
                         }
 
-                        nextLineBreak = new TextLineBreak(splitResult.Second);
+                        nextLineBreak = new TextLineBreak(splitResult.Second!);
 
                         return splitResult.First;
                     }
@@ -346,7 +346,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var splitResult = SplitTextRuns(textRuns, currentLength + runLineBreak.PositionWrap);
 
-                    nextLineBreak = new TextLineBreak(splitResult.Second);
+                    nextLineBreak = new TextLineBreak(splitResult.Second!);
 
                     return splitResult.First;
                 }
@@ -553,7 +553,7 @@ namespace Avalonia.Media.TextFormatting
 
         internal readonly struct SplitTextRunsResult
         {
-            public SplitTextRunsResult(List<ShapedTextCharacters> first, List<ShapedTextCharacters> second)
+            public SplitTextRunsResult(List<ShapedTextCharacters> first, List<ShapedTextCharacters>? second)
             {
                 First = first;
 
@@ -574,7 +574,7 @@ namespace Avalonia.Media.TextFormatting
             /// <value>
             /// The second text runs.
             /// </value>
-            public List<ShapedTextCharacters> Second { get; }
+            public List<ShapedTextCharacters>? Second { get; }
         }
 
         private struct TextRunEnumerator
@@ -586,7 +586,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 _textSource = textSource;
                 _pos = firstTextSourceIndex;
-                Current = null;
+                Current = null!;
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass

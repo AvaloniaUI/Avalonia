@@ -87,7 +87,7 @@ namespace Avalonia.Media
         /// <returns>
         ///     The <see cref="GlyphTypeface"/>.
         /// </returns>
-        public GlyphTypeface GetOrAddGlyphTypeface(Typeface typeface)
+        public GlyphTypeface? GetOrAddGlyphTypeface(Typeface typeface)
         {
             while (true)
             {

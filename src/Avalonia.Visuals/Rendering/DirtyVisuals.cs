@@ -31,6 +31,11 @@ namespace Avalonia.Rendering
         /// <param name="visual">The dirty visual.</param>
         public void Add(IVisual visual)
         {
+            if (visual.VisualRoot is null)
+            {
+                return;
+            }
+
             if (_deferring > 0)
             {
                 _deferredChanges.Add(visual);

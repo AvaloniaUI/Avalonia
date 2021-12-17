@@ -14,7 +14,7 @@ namespace Avalonia.Media
         private static readonly IComparer<ushort> s_ascendingComparer = Comparer<ushort>.Default;
         private static readonly IComparer<ushort> s_descendingComparer = new ReverseComparer<ushort>();
 
-        private IGlyphRunImpl _glyphRunImpl;
+        private IGlyphRunImpl? _glyphRunImpl;
         private GlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
         private int _biDiLevel;
@@ -199,7 +199,7 @@ namespace Avalonia.Media
                     Initialize();
                 }
 
-                return _glyphRunImpl;
+                return _glyphRunImpl!;
             }
         }
 
@@ -639,7 +639,8 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
+                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface");
 
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this);
         }
@@ -651,7 +652,7 @@ namespace Avalonia.Media
 
         private class ReverseComparer<T> : IComparer<T>
         {
-            public int Compare(T x, T y)
+            public int Compare(T? x, T? y)
             {
                 return Comparer<T>.Default.Compare(y, x);
             }

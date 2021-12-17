@@ -16,8 +16,10 @@ namespace Avalonia
         /// <returns>The point in client coordinates.</returns>
         public static Point PointToClient(this IVisual visual, PixelPoint point)
         {
-            var rootPoint = visual.VisualRoot.PointToClient(point);
-            return visual.VisualRoot.TranslatePoint(rootPoint, visual).Value;
+            var root = visual.VisualRoot ??
+                throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
+            var rootPoint = root.PointToClient(point);
+            return root.TranslatePoint(rootPoint, visual)!.Value;
         }
 
         /// <summary>
@@ -28,8 +30,10 @@ namespace Avalonia
         /// <returns>The point in screen coordinates.</returns>
         public static PixelPoint PointToScreen(this IVisual visual, Point point)
         {
-            var p = visual.TranslatePoint(point, visual.VisualRoot);
-            return visual.VisualRoot.PointToScreen(p.Value);
+            var root = visual.VisualRoot ??
+                throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
+            var p = visual.TranslatePoint(point, root);
+            return visual.VisualRoot.PointToScreen(p!.Value);
         }
 
         /// <summary>
@@ -93,28 +97,29 @@ namespace Avalonia
         private static Matrix GetOffsetFrom(IVisual ancestor, IVisual visual)
         {
             var result = Matrix.Identity;
+            IVisual? v = visual;
 
-            while (visual != ancestor)
+            while (v != ancestor)
             {
-                if (visual.RenderTransform?.Value != null)
+                if (v.RenderTransform?.Value != null)
                 {
-                    var origin = visual.RenderTransformOrigin.ToPixels(visual.Bounds.Size);
+                    var origin = v.RenderTransformOrigin.ToPixels(v.Bounds.Size);
                     var offset = Matrix.CreateTranslation(origin);
-                    var renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
+                    var renderTransform = (-offset) * v.RenderTransform.Value * (offset);
 
                     result *= renderTransform;
                 }
 
-                var topLeft = visual.Bounds.TopLeft;
+                var topLeft = v.Bounds.TopLeft;
 
                 if (topLeft != default)
                 {
                     result *= Matrix.CreateTranslation(topLeft);
                 }
 
-                visual = visual.VisualParent;
+                v = v.VisualParent;
 
-                if (visual == null)
+                if (v == null)
                 {
                     throw new ArgumentException("'visual' is not a descendant of 'ancestor'.");
                 }
