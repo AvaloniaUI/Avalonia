@@ -27,6 +27,7 @@ public:
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
     IAvnMenu* _mainMenu;
+    NSSize _lastSize;
     
     bool _shown;
     bool _inResize;
@@ -35,6 +36,7 @@ public:
     {
         _shown = false;
         _inResize = false;
+        _lastSize = NSSize { 0, 0 };
         _mainMenu = nullptr;
         BaseEvents = events;
         _glContext = gl;
@@ -226,9 +228,17 @@ public:
             if(ret == nullptr)
                 return E_POINTER;
             
-            auto frame = [View frame];
-            ret->Width = frame.size.width;
-            ret->Height = frame.size.height;
+            if(!_shown)
+            {
+                ret->Width = _lastSize.width;
+                ret->Height = _lastSize.height;
+            }
+            else
+            {
+                auto frame = [View frame];
+                ret->Width = frame.size.width;
+                ret->Height = frame.size.height;
+            }
             
             return S_OK;
         }
@@ -323,6 +333,8 @@ public:
             
             @try
             {
+                _lastSize = NSSize{x,y};
+                
                 if(!_shown)
                 {
                     BaseEvents->Resized(AvnSize{x,y}, reason);
