@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Reflection;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -32,7 +30,7 @@ namespace Avalonia.Data.Core.Plugins
                 {
                     return base.SetValue(value, priority);
                 }
-                catch (TargetInvocationException ex)
+                catch (TargetInvocationException ex) when (ex.InnerException is not null)
                 {
                     PublishValue(new BindingNotification(ex.InnerException, BindingErrorType.DataValidationError));
                 }

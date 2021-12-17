@@ -5,8 +5,6 @@ using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>

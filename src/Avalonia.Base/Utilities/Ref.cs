@@ -82,7 +82,7 @@ namespace Avalonia.Utilities
         
         class RefCounter
         {
-            private IDisposable _item;
+            private IDisposable? _item;
             private volatile int _refs;
 
             public RefCounter(IDisposable item)
@@ -120,7 +120,7 @@ namespace Avalonia.Utilities
                     {
                         if (old == 1)
                         {
-                            _item.Dispose();
+                            _item?.Dispose();
                             _item = null;
                         }
                         break;
@@ -134,7 +134,7 @@ namespace Avalonia.Utilities
 
         class Ref<T> : CriticalFinalizerObject, IRef<T> where T : class
         {
-            private T _item;
+            private T? _item;
             private RefCounter _counter;
             private object _lock = new object();
 
@@ -168,7 +168,7 @@ namespace Avalonia.Utilities
                 {
                     lock (_lock)
                     {
-                        return _item;
+                        return _item!;
                     }
                 }
             }

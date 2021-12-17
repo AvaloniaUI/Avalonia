@@ -6,8 +6,6 @@ using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Reactive;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>

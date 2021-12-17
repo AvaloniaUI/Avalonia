@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public class PropertyPath

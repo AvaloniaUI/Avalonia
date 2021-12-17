@@ -45,7 +45,7 @@ namespace Avalonia.Markup.Parsers.Nodes
                         return false;
                     }
 
-                    convertedObjectArray[i] = temp;
+                    convertedObjectArray[i] = temp!;
                 }
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
@@ -163,7 +163,7 @@ namespace Avalonia.Markup.Parsers.Nodes
                         return AvaloniaProperty.UnsetValue;
                     }
 
-                    convertedObjectArray[i] = temp;
+                    convertedObjectArray[i] = temp!;
                 }
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
@@ -238,14 +238,14 @@ namespace Avalonia.Markup.Parsers.Nodes
 
             for (int i = 0; i < Arguments.Count; ++i)
             {
-                object value;
+                object? value;
 
                 if (!TypeUtilities.TryConvert(typeof(int), Arguments[i], CultureInfo.InvariantCulture, out value))
                 {
                     return false;
                 }
 
-                intArgs[i] = (int)value;
+                intArgs[i] = (int)value!;
             }
             return true;
         }

@@ -28,13 +28,13 @@ namespace Avalonia.Threading
         }
 
         /// <inheritdoc/>
-        public override void Post(SendOrPostCallback d, object state)
+        public override void Post(SendOrPostCallback d, object? state)
         {
            Dispatcher.UIThread.Post(() => d(state), DispatcherPriority.Send);
         }
 
         /// <inheritdoc/>
-        public override void Send(SendOrPostCallback d, object state)
+        public override void Send(SendOrPostCallback d, object? state)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 d(state);

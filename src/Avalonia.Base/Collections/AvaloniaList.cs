@@ -6,8 +6,6 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Diagnostics;
 
-#nullable enable
-
 namespace Avalonia.Collections
 {
     /// <summary>
@@ -95,7 +93,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// Raised when a change is made to the collection's items.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler CollectionChanged
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
             add => _collectionChanged += value;
             remove => _collectionChanged -= value;
@@ -135,7 +133,7 @@ namespace Avalonia.Collections
         bool ICollection.IsSynchronized => false;
 
         /// <inheritdoc/>
-        object? ICollection.SyncRoot => null;
+        object ICollection.SyncRoot => this;
 
         /// <inheritdoc/>
         bool ICollection<T>.IsReadOnly => false;
