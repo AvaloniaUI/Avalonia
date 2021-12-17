@@ -785,6 +785,12 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_transparencyHelper != null)
+            {
+                _transparencyHelper.Dispose();
+                _transparencyHelper = null;
+            }
+            
             if (_imeControl != null)
             {
                 _imeControl.Dispose();
@@ -1026,6 +1032,7 @@ namespace Avalonia.X11
             if (string.IsNullOrEmpty(title))
             {
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_NAME);
             }
             else
             {

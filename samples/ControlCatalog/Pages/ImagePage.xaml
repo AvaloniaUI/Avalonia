@@ -3,7 +3,6 @@
              x:Class="ControlCatalog.Pages.ImagePage">
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Spacing="4">
-      <TextBlock Classes="h1">Image</TextBlock>
       <TextBlock Classes="h2">Displays an image</TextBlock>
     </StackPanel>
 

@@ -4,11 +4,10 @@
              xmlns:sys="using:System"
              xmlns:col="using:System.Collections">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">ComboBox</TextBlock>
     <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
     <WrapPanel HorizontalAlignment="Center" Margin="0 16 0 0"
-               MaxWidth="750">
+               MaxWidth="660">
       <WrapPanel.Styles>
         <Style Selector="ComboBox">
           <Setter Property="Width" Value="250" />

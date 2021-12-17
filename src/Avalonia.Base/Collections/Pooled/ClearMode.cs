@@ -1,6 +1,8 @@
 ﻿// This source file is adapted from the Collections.Pooled.
 // (https://github.com/jtmueller/Collections.Pooled/tree/master/Collections.Pooled/)
 
+#nullable enable
+
 namespace Avalonia.Collections.Pooled
 {
     /// <summary>

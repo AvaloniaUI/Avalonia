@@ -10,10 +10,10 @@ namespace Avalonia.Data
     /// <summary>
     /// A XAML binding to a property on a control's templated parent.
     /// </summary>
-    public class TemplateBinding : SingleSubscriberObservableBase<object>,
+    public class TemplateBinding : SingleSubscriberObservableBase<object?>,
         IBinding,
         IDescription,
-        ISubject<object>,
+        ISubject<object?>,
         ISetterValue
     {
         private bool _isSetterValue;
@@ -30,9 +30,9 @@ namespace Avalonia.Data
         }
 
         /// <inheritdoc/>
-        public InstancedBinding Initiate(
+        public InstancedBinding? Initiate(
             IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
+            AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
         {
@@ -88,10 +88,10 @@ namespace Avalonia.Data
         /// <inheritdoc/>
         public string Description => "TemplateBinding: " + Property;
 
-        void IObserver<object>.OnCompleted() => throw new NotImplementedException();
-        void IObserver<object>.OnError(Exception error) => throw new NotImplementedException();
+        void IObserver<object?>.OnCompleted() => throw new NotImplementedException();
+        void IObserver<object?>.OnError(Exception error) => throw new NotImplementedException();
 
-        void IObserver<object>.OnNext(object value)
+        void IObserver<object?>.OnNext(object? value)
         {
             if (_target.TemplatedParent != null && Property != null)
             {
@@ -137,7 +137,7 @@ namespace Avalonia.Data
                     _target.TemplatedParent.GetValue(Property) :
                     _target.TemplatedParent;
 
-                if (Converter != null)
+                if (Converter is not null && _targetType is not null)
                 {
                     value = Converter.Convert(value, _targetType, ConverterParameter, CultureInfo.CurrentCulture);
                 }
@@ -160,7 +160,7 @@ namespace Avalonia.Data
             PublishValue();
         }
 
-        private void TargetPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void TargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == StyledElement.TemplatedParentProperty)
             {
@@ -173,7 +173,7 @@ namespace Avalonia.Data
             }
         }
 
-        private void TemplatedParentPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void TemplatedParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Property)
             {

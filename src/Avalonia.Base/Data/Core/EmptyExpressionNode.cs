@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Data.Core
+﻿#nullable enable
+
+namespace Avalonia.Data.Core
 {
     public class EmptyExpressionNode : ExpressionNode
     {
