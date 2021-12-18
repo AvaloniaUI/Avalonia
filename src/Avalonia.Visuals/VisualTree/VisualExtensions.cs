@@ -19,7 +19,7 @@ namespace Avalonia.VisualTree
         /// The number of steps from the visual to the ancestor or -1 if
         /// <paramref name="visual"/> is not a descendent of <paramref name="ancestor"/>.
         /// </returns>
-        public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual ancestor)
+        public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual? ancestor)
         {
             IVisual? v = visual ?? throw new ArgumentNullException(nameof(visual));
             var result = 0;
