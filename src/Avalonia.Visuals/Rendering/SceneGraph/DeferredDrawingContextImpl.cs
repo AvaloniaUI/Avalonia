@@ -176,7 +176,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+        public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
         {
             var next = NextDrawAs<EllipseNode>();
 

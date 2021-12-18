@@ -202,7 +202,7 @@ namespace Avalonia.Media
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
-        public void DrawEllipse(IBrush brush, IPen pen, Point center, double radiusX, double radiusY)
+        public void DrawEllipse(IBrush? brush, IPen? pen, Point center, double radiusX, double radiusY)
         {
             if (brush == null && !PenIsVisible(pen))
             {

@@ -81,7 +81,7 @@ namespace Avalonia.Platform
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
-        void DrawEllipse(IBrush brush, IPen pen, Rect rect);
+        void DrawEllipse(IBrush? brush, IPen? pen, Rect rect);
 
         /// <summary>
         /// Draws text.
