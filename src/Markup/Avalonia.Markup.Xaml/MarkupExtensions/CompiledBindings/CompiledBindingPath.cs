@@ -96,7 +96,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPathBuilder Method(RuntimeMethodHandle handle, Type delegateType)
+        public CompiledBindingPathBuilder Method(RuntimeMethodHandle handle, RuntimeTypeHandle delegateType)
         {
             _elements.Add(new MethodAsDelegateElement(handle, delegateType));
             return this;
@@ -190,10 +190,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class MethodAsDelegateElement : ICompiledBindingPathElement
     {
-        public MethodAsDelegateElement(RuntimeMethodHandle method, Type delegateType)
+        public MethodAsDelegateElement(RuntimeMethodHandle method, RuntimeTypeHandle delegateType)
         {
             Method = (MethodInfo)MethodBase.GetMethodFromHandle(method);
-            DelegateType = delegateType;
+            DelegateType = Type.GetTypeFromHandle(delegateType);
         }
 
         public MethodInfo Method { get; }

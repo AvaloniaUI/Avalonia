@@ -119,15 +119,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(avaloniaPropertyFieldMaybe,
                                 XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(avaloniaPropertyFieldMaybe, context.GetAvaloniaTypes(), lineInfo)));
                         }
+                        else if (GetAllDefinedProperties(targetType).FirstOrDefault(p => p.Name == propName.PropertyName) is IXamlProperty clrProperty)
+                        {
+                            nodes.Add(new XamlIlClrPropertyPathElementNode(clrProperty));
+                        }
+                        else if (GetAllDefinedMethods(targetType).FirstOrDefault(m => m.Name == propName.PropertyName) is IXamlMethod method)
+                        {
+                            nodes.Add(new XamlIlClrMethodPathElementNode(method, context.Configuration.WellKnownTypes.Delegate));
+                        }
                         else
                         {
-                            var clrProperty = GetAllDefinedProperties(targetType).FirstOrDefault(p => p.Name == propName.PropertyName);
-
-                            if (clrProperty is null)
-                            {
-                                throw new XamlX.XamlParseException($"Unable to resolve property of name '{propName.PropertyName}' on type '{targetType}'.", lineInfo);
-                            }
-                            nodes.Add(new XamlIlClrPropertyPathElementNode(clrProperty));
+                            throw new XamlX.XamlParseException($"Unable to resolve property or method of name '{propName.PropertyName}' on type '{targetType}'.", lineInfo);
                         }
                         break;
                     case BindingExpressionGrammar.IndexerNode indexer:
@@ -271,6 +273,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     foreach (var p in t.Properties)
                     {
                         yield return p;
+                    }
+                }
+            }
+
+            static IEnumerable<IXamlMethod> GetAllDefinedMethods(IXamlType type)
+            {
+                foreach (var t in TraverseTypeHierarchy(type))
+                {
+                    foreach (var m in t.Methods)
+                    {
+                        yield return m;
                     }
                 }
             }
@@ -527,6 +540,50 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             public IXamlType Type => _property.Getter?.ReturnType ?? _property.Setter?.Parameters[0];
+        }
+
+        class XamlIlClrMethodPathElementNode : IXamlIlBindingPathElementNode
+        {
+            private readonly IXamlMethod _method;
+
+            public XamlIlClrMethodPathElementNode(IXamlMethod method, IXamlType systemDelegateType)
+            {
+                _method = method;
+                Type = systemDelegateType;
+            }
+
+            public IXamlType Type { get; }
+
+            public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
+            {
+                IXamlType specificDelegateType;
+                if (_method.ReturnType == context.Configuration.WellKnownTypes.Void && _method.Parameters.Count <= 8)
+                {
+                    specificDelegateType = context.Configuration.TypeSystem
+                        .GetType($"System.Action`{_method.Parameters.Count}")
+                        .MakeGenericType(_method.Parameters);
+                }
+                else if (_method.Parameters.Count <= 7)
+                {
+                    List<IXamlType> genericParameters = new();
+                    genericParameters.AddRange(_method.Parameters);
+                    genericParameters.Add(_method.ReturnType);
+                    specificDelegateType = context.Configuration.TypeSystem
+                        .GetType($"System.Func`{_method.Parameters.Count}")
+                        .MakeGenericType(genericParameters);
+                }
+                else
+                {
+                    // In this case, we need to emit our own delegate type.
+                    specificDelegateType = null;
+                }
+
+                codeGen
+                    .Ldtoken(_method)
+                    .Ldtoken(specificDelegateType)
+                    .EmitCall(context.GetAvaloniaTypes()
+                        .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Method"));
+            }
         }
 
         class XamlIlClrIndexerPathElementNode : IXamlIlBindingPathElementNode
