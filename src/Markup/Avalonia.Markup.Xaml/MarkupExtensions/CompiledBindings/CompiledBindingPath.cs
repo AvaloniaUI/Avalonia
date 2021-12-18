@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
@@ -35,6 +36,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                         break;
                     case PropertyElement prop:
                         node = new PropertyAccessorNode(prop.Property.Name, enableValidation, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory));
+                        break;
+                    case MethodAsDelegateElement methodAsDelegate:
+                        node = new PropertyAccessorNode(methodAsDelegate.Method.Name, enableValidation, new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType));
                         break;
                     case ArrayElementPathElement arr:
                         node = new PropertyAccessorNode(CommonPropertyNames.IndexerName, enableValidation, new ArrayElementPlugin(arr.Indices, arr.ElementType));
@@ -89,6 +93,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
             _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder Method(RuntimeMethodHandle handle, Type delegateType)
+        {
+            _elements.Add(new MethodAsDelegateElement(handle, delegateType));
             return this;
         }
 
@@ -176,6 +186,19 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public override string ToString()
             => _isFirstElement ? Property.Name : $".{Property.Name}";
+    }
+
+    internal class MethodAsDelegateElement : ICompiledBindingPathElement
+    {
+        public MethodAsDelegateElement(RuntimeMethodHandle method, Type delegateType)
+        {
+            Method = (MethodInfo)MethodBase.GetMethodFromHandle(method);
+            DelegateType = delegateType;
+        }
+
+        public MethodInfo Method { get; }
+
+        public Type DelegateType { get; }
     }
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement

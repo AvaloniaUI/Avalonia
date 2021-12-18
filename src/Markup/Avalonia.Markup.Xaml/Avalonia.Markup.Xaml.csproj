@@ -20,6 +20,7 @@
         <Compile Include="MarkupExtensions\CompiledBindings\ArrayElementPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\CompiledBindingPath.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\FindVisualAncestorNode.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\MethodAccessorPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\ObservableStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorFactory.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorPlugin.cs" />
