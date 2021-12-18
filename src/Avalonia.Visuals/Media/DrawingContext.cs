@@ -297,10 +297,10 @@ namespace Avalonia.Media
 
             public void Dispose()
             {
-                if (_context._states is null || _context._transformContainers is null)
-                    throw new ObjectDisposedException(nameof(DrawingContext));
                 if (_type == PushedStateType.None)
                     return;
+                if (_context._states is null || _context._transformContainers is null)
+                    throw new ObjectDisposedException(nameof(DrawingContext));
                 if (_context._currentLevel != _level)
                     throw new InvalidOperationException("Wrong Push/Pop state order");
                 _context._currentLevel--;

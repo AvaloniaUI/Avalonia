@@ -48,18 +48,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// </returns>
         public UpdateState BeginUpdate(VisualNode node)
         {
-            _ = _node ?? throw new ArgumentNullException(nameof(node));
+            _ = node ?? throw new ArgumentNullException(nameof(node));
 
-            if (_childIndex < _node.Children.Count)
+            if (_node != null)
             {
-                _node.ReplaceChild(_childIndex, node);
-            }
-            else
-            {
-                _node.AddChild(node);
-            }
+                if (_childIndex < _node.Children.Count)
+                {
+                    _node.ReplaceChild(_childIndex, node);
+                }
+                else
+                {
+                    _node.AddChild(node);
+                }
 
-            ++_childIndex;
+                ++_childIndex;
+            }
 
             var state = new UpdateState(this, _node, _childIndex, _drawOperationindex);
             _node = node;
@@ -406,7 +409,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             public UpdateState(
                 DeferredDrawingContextImpl owner,
-                VisualNode node,
+                VisualNode? node,
                 int childIndex,
                 int drawOperationIndex)
             {
@@ -436,7 +439,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             public DeferredDrawingContextImpl Owner { get; }
-            public VisualNode Node { get; }
+            public VisualNode? Node { get; }
             public int ChildIndex { get; }
             public int DrawOperationIndex { get; }
         }
