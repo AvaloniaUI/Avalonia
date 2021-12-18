@@ -20,10 +20,10 @@ namespace Avalonia.Data
         /// <returns>
         /// A <see cref="InstancedBinding"/> or null if the binding could not be resolved.
         /// </returns>
-        InstancedBinding Initiate(
+        InstancedBinding? Initiate(
             IAvaloniaObject target, 
-            AvaloniaProperty targetProperty,
-            object anchor = null,
+            AvaloniaProperty? targetProperty,
+            object? anchor = null,
             bool enableDataValidation = false);
     }
 }

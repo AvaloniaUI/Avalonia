@@ -64,6 +64,9 @@ namespace Avalonia.UnitTests
                 windowImpl.Object.Activated?.Invoke();
             });
 
+            windowImpl.Setup(x => x.PointToScreen(It.IsAny<Point>()))
+                .Returns((Point p) => PixelPoint.FromPoint(p, 1D) + position);
+
             return windowImpl;
         }
 

@@ -12,9 +12,9 @@ namespace Avalonia.Data.Core.Plugins
     public class DataAnnotationsValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference<object> reference, string memberName)
+        public bool Match(WeakReference<object?> reference, string memberName)
         {
-            reference.TryGetTarget(out object target);
+            reference.TryGetTarget(out var target);
 
             return target?
                 .GetType()
@@ -24,26 +24,30 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference<object> reference, string name, IPropertyAccessor inner)
+        public IPropertyAccessor Start(WeakReference<object?> reference, string name, IPropertyAccessor inner)
         {
             return new Accessor(reference, name, inner);
         }
 
         private sealed class Accessor : DataValidationBase
         {
-            private readonly ValidationContext _context;
+            private readonly ValidationContext? _context;
 
-            public Accessor(WeakReference<object> reference, string name, IPropertyAccessor inner)
+            public Accessor(WeakReference<object?> reference, string name, IPropertyAccessor inner)
                 : base(inner)
             {
-                reference.TryGetTarget(out object target);
-
-                _context = new ValidationContext(target);
-                _context.MemberName = name;
+                if (reference.TryGetTarget(out var target))
+                {
+                    _context = new ValidationContext(target);
+                    _context.MemberName = name;
+                }
             }
 
-            protected override void InnerValueChanged(object value)
+            protected override void InnerValueChanged(object? value)
             {
+                if (_context is null)
+                    return;
+
                 var errors = new List<ValidationResult>();
 
                 if (Validator.TryValidateProperty(value, _context, errors))

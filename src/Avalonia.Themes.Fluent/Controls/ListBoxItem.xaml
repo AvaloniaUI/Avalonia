@@ -18,7 +18,6 @@
   <Style Selector="ListBoxItem">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
-    <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"

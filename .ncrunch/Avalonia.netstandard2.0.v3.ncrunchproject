@@ -2,7 +2,6 @@
   <Settings>
     <HiddenComponentWarnings>
       <Value>DerivedFilesIncludedInWorkspace</Value>
-      <Value>MissingOrIgnoredProjectReference</Value>
     </HiddenComponentWarnings>
   </Settings>
 </ProjectConfiguration>

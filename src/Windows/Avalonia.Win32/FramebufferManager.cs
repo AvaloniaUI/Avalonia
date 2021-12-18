@@ -107,7 +107,9 @@ namespace Avalonia.Win32
 
         private static FramebufferData AllocateFramebufferData(int width, int height)
         {
-            var bitmapBlob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(width * height * _bytesPerPixel);
+            var service = AvaloniaLocator.Current.GetService<IRuntimePlatform>() ??
+                throw new InvalidOperationException("Unable to locate IRuntimePlatform.");
+            var bitmapBlob = service.AllocBlob(width * height * _bytesPerPixel);
 
             return new FramebufferData(bitmapBlob, width, height);
         }

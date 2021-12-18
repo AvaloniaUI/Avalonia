@@ -21,7 +21,7 @@ namespace Avalonia
         /// <returns>An <see cref="IBinding"/>.</returns>
         public static IBinding ToBinding<T>(this IObservable<T> source)
         {
-            return new BindingAdaptor(source.Select(x => (object)x));
+            return new BindingAdaptor(source.Select(x => (object?)x));
         }
 
         /// <summary>
@@ -36,12 +36,11 @@ namespace Avalonia
         /// <remarks>
         /// The subscription to <paramref name="o"/> is created using a weak reference.
         /// </remarks>
-        public static IObservable<object> GetObservable(this IAvaloniaObject o, AvaloniaProperty property)
+        public static IObservable<object?> GetObservable(this IAvaloniaObject o, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new AvaloniaPropertyObservable<object>(o, property);
+            return new AvaloniaPropertyObservable<object?>(
+                o ?? throw new ArgumentNullException(nameof(o)), 
+                property ?? throw new ArgumentNullException(nameof(property)));
         }
 
         /// <summary>
@@ -59,10 +58,9 @@ namespace Avalonia
         /// </remarks>
         public static IObservable<T> GetObservable<T>(this IAvaloniaObject o, AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new AvaloniaPropertyObservable<T>(o, property);
+            return new AvaloniaPropertyObservable<T>(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)));
         }
 
         /// <summary>
@@ -77,14 +75,13 @@ namespace Avalonia
         /// <remarks>
         /// The subscription to <paramref name="o"/> is created using a weak reference.
         /// </remarks>
-        public static IObservable<BindingValue<object>> GetBindingObservable(
+        public static IObservable<BindingValue<object?>> GetBindingObservable(
             this IAvaloniaObject o,
             AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new AvaloniaPropertyBindingObservable<object>(o, property);
+            return new AvaloniaPropertyBindingObservable<object?>(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)));
         }
 
         /// <summary>
@@ -104,10 +101,10 @@ namespace Avalonia
             this IAvaloniaObject o,
             AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            return new AvaloniaPropertyBindingObservable<T>(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)));
 
-            return new AvaloniaPropertyBindingObservable<T>(o, property);
         }
 
         /// <summary>
@@ -125,10 +122,9 @@ namespace Avalonia
             this IAvaloniaObject o,
             AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new AvaloniaPropertyChangedObservable(o, property);
+            return new AvaloniaPropertyChangedObservable(
+                o ?? throw new ArgumentNullException(nameof(o)),
+                property ?? throw new ArgumentNullException(nameof(property)));
         }
 
         /// <summary>
@@ -143,13 +139,13 @@ namespace Avalonia
         /// An <see cref="ISubject{Object}"/> which can be used for two-way binding to/from the 
         /// property.
         /// </returns>
-        public static ISubject<object> GetSubject(
+        public static ISubject<object?> GetSubject(
             this IAvaloniaObject o,
             AvaloniaProperty property,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            return Subject.Create<object>(
-                Observer.Create<object>(x => o.SetValue(property, x, priority)),
+            return Subject.Create<object?>(
+                Observer.Create<object?>(x => o.SetValue(property, x, priority)),
                 o.GetObservable(property));
         }
 
@@ -188,13 +184,13 @@ namespace Avalonia
         /// An <see cref="ISubject{Object}"/> which can be used for two-way binding to/from the 
         /// property.
         /// </returns>
-        public static ISubject<BindingValue<object>> GetBindingSubject(
+        public static ISubject<BindingValue<object?>> GetBindingSubject(
             this IAvaloniaObject o,
             AvaloniaProperty property,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            return Subject.Create<BindingValue<object>>(
-                Observer.Create<BindingValue<object>>(x =>
+            return Subject.Create<BindingValue<object?>>(
+                Observer.Create<BindingValue<object?>>(x =>
                 {
                     if (x.HasValue)
                     {
@@ -246,7 +242,7 @@ namespace Avalonia
         public static IDisposable Bind(
             this IAvaloniaObject target,
             AvaloniaProperty property,
-            IObservable<BindingValue<object>> source,
+            IObservable<BindingValue<object?>> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
@@ -298,7 +294,7 @@ namespace Avalonia
         public static IDisposable Bind(
             this IAvaloniaObject target,
             AvaloniaProperty property,
-            IObservable<object> source,
+            IObservable<object?> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
@@ -354,7 +350,7 @@ namespace Avalonia
             this IAvaloniaObject target,
             AvaloniaProperty property,
             IBinding binding,
-            object anchor = null)
+            object? anchor = null)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -420,7 +416,7 @@ namespace Avalonia
         /// <param name="target">The object.</param>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public static object GetValue(this IAvaloniaObject target, AvaloniaProperty property)
+        public static object? GetValue(this IAvaloniaObject target, AvaloniaProperty property)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -462,7 +458,7 @@ namespace Avalonia
         /// 
         /// For direct properties returns <see cref="GetValue(IAvaloniaObject, AvaloniaProperty)"/>.
         /// </remarks>
-        public static object GetBaseValue(
+        public static object? GetBaseValue(
             this IAvaloniaObject target,
             AvaloniaProperty property,
             BindingPriority maxPriority)
@@ -517,10 +513,10 @@ namespace Avalonia
         /// <returns>
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
-        public static IDisposable SetValue(
+        public static IDisposable? SetValue(
             this IAvaloniaObject target,
             AvaloniaProperty property,
-            object value,
+            object? value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
@@ -540,7 +536,7 @@ namespace Avalonia
         /// <returns>
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
-        public static IDisposable SetValue<T>(
+        public static IDisposable? SetValue<T>(
             this IAvaloniaObject target,
             AvaloniaProperty<T> property,
             T value,
@@ -657,17 +653,17 @@ namespace Avalonia
 
         private class BindingAdaptor : IBinding
         {
-            private IObservable<object> _source;
+            private IObservable<object?> _source;
 
-            public BindingAdaptor(IObservable<object> source)
+            public BindingAdaptor(IObservable<object?> source)
             {
                 this._source = source;
             }
 
-            public InstancedBinding Initiate(
+            public InstancedBinding? Initiate(
                 IAvaloniaObject target,
-                AvaloniaProperty targetProperty,
-                object anchor = null,
+                AvaloniaProperty? targetProperty,
+                object? anchor = null,
                 bool enableDataValidation = false)
             {
                 return InstancedBinding.OneWay(_source);

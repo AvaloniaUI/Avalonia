@@ -13,24 +13,24 @@ namespace Avalonia.Data.Converters
     /// <typeparam name="TOut">The output type.</typeparam>
     public class FuncMultiValueConverter<TIn, TOut> : IMultiValueConverter
     {
-        private readonly Func<IEnumerable<TIn>, TOut> _convert;
+        private readonly Func<IEnumerable<TIn?>, TOut> _convert;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TOut}"/> class.
         /// </summary>
         /// <param name="convert">The convert function.</param>
-        public FuncMultiValueConverter(Func<IEnumerable<TIn>, TOut> convert)
+        public FuncMultiValueConverter(Func<IEnumerable<TIn?>, TOut> convert)
         {
             _convert = convert;
         }
 
         /// <inheritdoc/>
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             //standard OfType skip null values, even they are valid for the Type
-            static IEnumerable<TIn> OfTypeWithDefaultSupport(IList<object> list)
+            static IEnumerable<TIn?> OfTypeWithDefaultSupport(IList<object?> list)
             {
-                foreach (object obj in list)
+                foreach (var obj in list)
                 {
                     if (obj is TIn result)
                     {

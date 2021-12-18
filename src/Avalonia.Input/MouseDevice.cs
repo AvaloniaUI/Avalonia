@@ -240,7 +240,8 @@ namespace Avalonia.Input
                 if (source != null)
                 {
                     var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                    var doubleClickTime = settings.DoubleClickTime.TotalMilliseconds;
+                    var doubleClickTime = settings?.DoubleClickTime.TotalMilliseconds ?? 500;
+                    var doubleClickSize = settings?.DoubleClickSize ?? new Size(4, 4);
 
                     if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
                     {
@@ -250,7 +251,7 @@ namespace Avalonia.Input
                     ++_clickCount;
                     _lastClickTime = timestamp;
                     _lastClickRect = new Rect(p, new Size())
-                        .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
+                        .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                     _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
                     var e = new PointerPressedEventArgs(source, _pointer, root, p, timestamp, properties, inputModifiers, _clickCount);
                     source.RaiseEvent(e);
@@ -298,10 +299,10 @@ namespace Avalonia.Input
             root = root ?? throw new ArgumentNullException(nameof(root));
 
             var hit = HitTest(root, p);
+            var source = GetSource(hit);
 
-            if (hit != null)
+            if (source is not null)
             {
-                var source = GetSource(hit);
                 var e = new PointerReleasedEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers,
                     _lastMouseDownButton);
 
@@ -321,10 +322,10 @@ namespace Avalonia.Input
             root = root ?? throw new ArgumentNullException(nameof(root));
 
             var hit = HitTest(root, p);
+            var source = GetSource(hit);
 
-            if (hit != null)
+            if (source is not null)
             {
-                var source = GetSource(hit);
                 var e = new PointerWheelEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
@@ -334,9 +335,10 @@ namespace Avalonia.Input
             return false;
         }
 
-        private IInteractive GetSource(IVisual hit)
+        private IInteractive? GetSource(IVisual? hit)
         {
-            hit = hit ?? throw new ArgumentNullException(nameof(hit));
+            if (hit is null)
+                return null;
 
             return _pointer.Captured ??
                 (hit as IInteractive) ??
