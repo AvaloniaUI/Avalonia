@@ -59,8 +59,18 @@ namespace Avalonia.Themes.Fluent
                 if (_mode != value)
                 {
                     _mode = value;
-                    (Loaded as Styles)![1] = _fluentDark[0];
-                    (Loaded as Styles)![2] = _fluentDark[1];
+                    if (_mode == FluentThemeMode.Dark)
+                    {
+                        (Loaded as Styles)![1] = _fluentDark[0];
+                        (Loaded as Styles)![2] = _fluentDark[1];
+                    }
+                    else
+                    {
+                        (Loaded as Styles)![1] = _fluentLight[0];
+                        (Loaded as Styles)![2] = _fluentLight[1];
+                    }
+
+
                 }
 
             }
