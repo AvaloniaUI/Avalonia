@@ -14,10 +14,10 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public EllipseNode(
             Matrix transform, 
-            IBrush brush, 
-            IPen pen, 
+            IBrush? brush, 
+            IPen? pen, 
             Rect rect, 
-            IDictionary<IVisual, Scene> childScenes = null) 
+            IDictionary<IVisual, Scene>? childScenes = null) 
             : base(rect.Inflate(pen?.Thickness ?? 0), transform)
         {
             Transform = transform;
@@ -30,12 +30,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the fill brush.
         /// </summary>
-        public IBrush Brush { get; }
+        public IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
         /// </summary>
-        public ImmutablePen Pen { get; }
+        public ImmutablePen? Pen { get; }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.
@@ -47,9 +47,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public Rect Rect { get; }
 
-        public override IDictionary<IVisual, Scene> ChildScenes { get; }
+        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect)
+        public bool Equals(Matrix transform, IBrush? brush, IPen? pen, Rect rect)
         {
             return transform == Transform &&
                    Equals(brush, Brush) &&

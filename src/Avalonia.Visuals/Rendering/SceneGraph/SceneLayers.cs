@@ -80,7 +80,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>The created layer.</returns>
         public SceneLayer Add(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 
             var distance = layerRoot.CalculateDistanceFromAncestor(_root);
             var layer = new SceneLayer(layerRoot, distance);
@@ -117,7 +117,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </returns>
         public bool Exists(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 
             return _index.ContainsKey(layerRoot);
         }
@@ -127,10 +127,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="layerRoot">The root visual.</param>
         /// <returns>The layer if found, otherwise null.</returns>
-        public SceneLayer Find(IVisual layerRoot)
+        public SceneLayer? Find(IVisual layerRoot)
         {
-            SceneLayer result;
-            _index.TryGetValue(layerRoot, out result);
+            _index.TryGetValue(layerRoot, out var result);
             return result;
         }
 
@@ -141,11 +140,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>The layer.</returns>
         public SceneLayer GetOrAdd(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 
-            SceneLayer result;
-
-            if (!_index.TryGetValue(layerRoot, out result))
+            if (!_index.TryGetValue(layerRoot, out var result))
             {
                 result = Add(layerRoot);
             }
@@ -160,11 +157,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>True if a matching layer was removed, otherwise false.</returns>
         public bool Remove(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 
-            SceneLayer layer;
-
-            if (_index.TryGetValue(layerRoot, out layer))
+            if (_index.TryGetValue(layerRoot, out var layer))
             {
                 Remove(layer);
             }
@@ -179,7 +174,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>True if the layer was part of the scene, otherwise false.</returns>
         public bool Remove(SceneLayer layer)
         {
-            Contract.Requires<ArgumentNullException>(layer != null);
+            _ = layer ?? throw new ArgumentNullException(nameof(layer));
 
             _index.Remove(layer.LayerRoot);
             return _inner.Remove(layer);

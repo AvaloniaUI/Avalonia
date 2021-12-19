@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Avalonia.Animation.Animators;
@@ -26,7 +27,7 @@ namespace Avalonia.Media
             return OffsetX.Equals(other.OffsetX) && OffsetY.Equals(other.OffsetY) && Blur.Equals(other.Blur) && Spread.Equals(other.Spread) && Color.Equals(other.Color);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BoxShadow other && Equals(other);
         }
@@ -59,7 +60,7 @@ namespace Avalonia.Media
                 _index = 0;
             }
 
-            public bool TryReadString(out string s)
+            public bool TryReadString([MaybeNullWhen(false)] out string s)
             {
                 s = null;
                 if (_index >= _arr.Length)
@@ -152,11 +153,11 @@ namespace Avalonia.Media
             tokenizer.TryReadString(out var token5);
 
             if (token4 != null) 
-                blur = double.Parse(token3, CultureInfo.InvariantCulture);
+                blur = double.Parse(token3!, CultureInfo.InvariantCulture);
             if (token5 != null)
-                spread = double.Parse(token4, CultureInfo.InvariantCulture);
+                spread = double.Parse(token4!, CultureInfo.InvariantCulture);
 
-            var color = Color.Parse(token5 ?? token4 ?? token3);
+            var color = Color.Parse(token5 ?? token4 ?? token3!);
             return new BoxShadow
             {
                 IsInset = inset,

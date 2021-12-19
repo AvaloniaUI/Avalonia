@@ -41,7 +41,7 @@ namespace Avalonia.Media
             return FirstCharacterIndex == other.FirstCharacterIndex && TrailingLength == other.TrailingLength;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is CharacterHit other && Equals(other);
         }
