@@ -21,8 +21,11 @@ namespace Avalonia.Themes.Fluent
     public class FluentTheme : IStyle, IResourceProvider
     {
         private readonly Uri _baseUri;
-        private IStyle? _loaded;
+        private Styles _fluentDark = new();
+        private Styles _fluentLight = new();
+        private Styles _sharedStyles = new();
         private bool _isLoading;
+        private IStyle? _loaded;
         private FluentThemeMode _mode;
 
         /// <summary>
@@ -32,6 +35,7 @@ namespace Avalonia.Themes.Fluent
         public FluentTheme(Uri baseUri)
         {
             _baseUri = baseUri;
+            InitStyles(baseUri);
         }
 
         /// <summary>
@@ -41,6 +45,7 @@ namespace Avalonia.Themes.Fluent
         public FluentTheme(IServiceProvider serviceProvider)
         {
             _baseUri = ((IUriContext)serviceProvider.GetService(typeof(IUriContext))).BaseUri;
+            InitStyles(_baseUri);
         }
 
         /// <summary>
@@ -54,8 +59,8 @@ namespace Avalonia.Themes.Fluent
                 if (_mode != value)
                 {
                     _mode = value;
-                    (Loaded as Styles)[3] = FluentDark[0];
-                    (Loaded as Styles)[4] = FluentDark[1];
+                    (Loaded as Styles)![1] = _fluentDark[0];
+                    (Loaded as Styles)![2] = _fluentDark[1];
                 }
 
             }
@@ -73,23 +78,17 @@ namespace Avalonia.Themes.Fluent
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    Styles? resultStyle = new Styles();
-
-                    resultStyle.AddRange(SharedStyles);
+                    Styles? resultStyle = new Styles() { _sharedStyles };
 
                     if (Mode == FluentThemeMode.Light)
                     {
-                        for (int i = 0; i < FluentLight.Count; i++)
-                        {
-                            resultStyle.Add(FluentLight[i]);
-                        }
+                        resultStyle.Add(_fluentLight[0]);
+                        resultStyle.Add(_fluentLight[1]);
                     }
                     else if (Mode == FluentThemeMode.Dark)
                     {
-                        for (int i = 0; i < FluentDark.Count; i++)
-                        {
-                            resultStyle.Add(FluentDark[i]);
-                        }
+                        resultStyle.Add(_fluentDark[0]);
+                        resultStyle.Add(_fluentDark[1]);
                     }
                     _loaded = resultStyle;
                     _isLoading = false;
@@ -137,43 +136,47 @@ namespace Avalonia.Themes.Fluent
         void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
         void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
 
-        private static Styles SharedStyles = new Styles
+        private void InitStyles(Uri baseUri)
         {
-            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            _sharedStyles = new Styles
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Controls/FluentControls.xaml")
-            }
-        };
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
+                },
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
+                },
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/Controls/FluentControls.xaml")
+                }
+            };
 
-        private static Styles FluentLight = new Styles
-        {
-            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            _fluentLight = new Styles
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml")
+                },
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesLight.xaml")
+                }
+            };
+
+            _fluentDark = new Styles
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesLight.xaml")
-            }
-        };
-        private static Styles FluentDark = new Styles
-        {
-            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesDark.xaml")
-            }
-        };
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml")
+                },
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesDark.xaml")
+                }
+            };
+        }
     }
 }
