@@ -4,6 +4,6 @@ namespace Avalonia.Rendering
 {
     public interface IDeferredRendererLock
     {
-        IDisposable TryLock();
+        IDisposable? TryLock();
     }
 }

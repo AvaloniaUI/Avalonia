@@ -4,8 +4,8 @@ namespace Avalonia.Media
 {
     public class FontManagerOptions
     {
-        public string DefaultFamilyName { get; set; }
+        public string? DefaultFamilyName { get; set; }
 
-        public IReadOnlyList<FontFallback> FontFallbacks { get; set; }
+        public IReadOnlyList<FontFallback>? FontFallbacks { get; set; }
     }
 }

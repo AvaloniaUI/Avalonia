@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
 
@@ -6,8 +7,8 @@ namespace Avalonia.Visuals.Platform
 {
     public class PathGeometryContext : IGeometryContext
     {
-        private PathFigure _currentFigure;
-        private PathGeometry _pathGeometry;
+        private PathFigure? _currentFigure;
+        private PathGeometry? _pathGeometry;
 
         public PathGeometryContext(PathGeometry pathGeometry)
         {
@@ -30,13 +31,16 @@ namespace Avalonia.Visuals.Platform
                 Point = point
             };
 
-            _currentFigure.Segments.Add(arcSegment);
+            CurrentFigureSegments().Add(arcSegment);
         }
 
         public void BeginFigure(Point startPoint, bool isFilled)
         {
+            ThrowIfDisposed();
+
             _currentFigure = new PathFigure { StartPoint = startPoint, IsClosed = false, IsFilled = isFilled };
 
+            _pathGeometry.Figures ??= new();
             _pathGeometry.Figures.Add(_currentFigure);
         }
 
@@ -44,14 +48,14 @@ namespace Avalonia.Visuals.Platform
         {
             var bezierSegment = new BezierSegment { Point1 = point1, Point2 = point2, Point3 = point3 };
 
-            _currentFigure.Segments.Add(bezierSegment);
+            CurrentFigureSegments().Add(bezierSegment);
         }
 
         public void QuadraticBezierTo(Point control, Point endPoint)
         {
             var quadraticBezierSegment = new QuadraticBezierSegment { Point1 = control, Point2 = endPoint };
 
-            _currentFigure.Segments.Add(quadraticBezierSegment);
+            CurrentFigureSegments().Add(quadraticBezierSegment);
         }
 
         public void LineTo(Point point)
@@ -61,7 +65,7 @@ namespace Avalonia.Visuals.Platform
                 Point = point
             };
 
-            _currentFigure.Segments.Add(lineSegment);
+            CurrentFigureSegments().Add(lineSegment);
         }
 
         public void EndFigure(bool isClosed)
@@ -76,7 +80,26 @@ namespace Avalonia.Visuals.Platform
 
         public void SetFillRule(FillRule fillRule)
         {
+            ThrowIfDisposed();
             _pathGeometry.FillRule = fillRule;
+        }
+
+        [MemberNotNull(nameof(_pathGeometry))]
+        private void ThrowIfDisposed()
+        {
+            if (_pathGeometry is null)
+                throw new ObjectDisposedException(nameof(PathGeometryContext));
+        }
+
+        private PathSegments CurrentFigureSegments()
+        {
+            ThrowIfDisposed();
+
+            if (_currentFigure is null)
+                throw new InvalidOperationException("No figure in progress.");
+            if (_currentFigure.Segments is null)
+                throw new InvalidOperationException("Current figure's segments cannot be null.");
+            return _currentFigure.Segments;
         }
     }
 }

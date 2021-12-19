@@ -21,7 +21,7 @@ namespace Avalonia.Media.Immutable
         public ImmutablePen(
             uint color,
             double thickness = 1.0,
-            ImmutableDashStyle dashStyle = null,
+            ImmutableDashStyle? dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0) : this(new ImmutableSolidColorBrush(color), thickness, dashStyle, lineCap, lineJoin, miterLimit)
@@ -38,9 +38,9 @@ namespace Avalonia.Media.Immutable
         /// <param name="lineJoin">The line join.</param>
         /// <param name="miterLimit">The miter limit.</param>
         public ImmutablePen(
-            IBrush brush,
+            IBrush? brush,
             double thickness = 1.0,
-            ImmutableDashStyle dashStyle = null,
+            ImmutableDashStyle? dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0)
@@ -58,7 +58,7 @@ namespace Avalonia.Media.Immutable
         /// <summary>
         /// Gets the brush used to draw the stroke.
         /// </summary>
-        public IBrush Brush { get; }
+        public IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the stroke thickness.
@@ -68,7 +68,7 @@ namespace Avalonia.Media.Immutable
         /// <summary>
         /// Specifies the style of dashed lines drawn with a <see cref="Pen"/> object.
         /// </summary>
-        public IDashStyle DashStyle { get; }
+        public IDashStyle? DashStyle { get; }
 
         /// <summary>
         /// Specifies the type of graphic shape to use on both ends of a line.
@@ -87,10 +87,10 @@ namespace Avalonia.Media.Immutable
         public double MiterLimit { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Equals(obj as IPen);
+        public override bool Equals(object? obj) => Equals(obj as IPen);
 
         /// <inheritdoc/>
-        public bool Equals(IPen other)
+        public bool Equals(IPen? other)
         {
             if (ReferenceEquals(this, other))
             {
