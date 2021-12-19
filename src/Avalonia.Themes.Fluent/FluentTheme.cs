@@ -21,7 +21,7 @@ namespace Avalonia.Themes.Fluent
     public class FluentTheme : IStyle, IResourceProvider
     {
         private readonly Uri _baseUri;
-        private IStyle[]? _loaded;
+        private IStyle? _loaded;
         private bool _isLoading;
         private FluentThemeMode _mode;
 
@@ -91,17 +91,17 @@ namespace Avalonia.Themes.Fluent
                             resultStyle.Add(FluentDark[i]);
                         }
                     }
-                    _loaded = new[] { resultStyle };
+                    _loaded = resultStyle;
                     _isLoading = false;
                 }
 
-                return _loaded?[0]!;
+                return _loaded;
             }
         }
 
         bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
 
-        IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
+        IReadOnlyList<IStyle> IStyle.Children => _loaded?.Children ?? Array.Empty<IStyle>();
 
         public event EventHandler OwnerChanged
         {
