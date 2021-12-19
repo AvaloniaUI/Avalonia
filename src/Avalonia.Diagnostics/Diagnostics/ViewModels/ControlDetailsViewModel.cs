@@ -437,7 +437,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
         
-        protected  void NavigateToProperty(object o, string entityName)
+        protected  void NavigateToProperty(object o, string? entityName)
         {
             var oldSelectedEntity = SelectedEntity;
             if (oldSelectedEntity is IAvaloniaObject ao1)

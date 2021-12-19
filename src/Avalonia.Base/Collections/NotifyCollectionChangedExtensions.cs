@@ -4,8 +4,6 @@ using System.Reactive.Linq;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Collections
 {
     public static class NotifyCollectionChangedExtensions
@@ -70,14 +68,14 @@ namespace Avalonia.Collections
                 _sourceReference = source;
             }
 
-            public void OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+            public void OnEvent(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 PublishNext(e);
             }
 
             protected override void Initialize()
             {
-                if (_sourceReference.TryGetTarget(out INotifyCollectionChanged instance))
+                if (_sourceReference.TryGetTarget(out var instance))
                 {
                     WeakSubscriptionManager.Subscribe(
                     instance,
@@ -88,7 +86,7 @@ namespace Avalonia.Collections
 
             protected override void Deinitialize()
             {
-                if (_sourceReference.TryGetTarget(out INotifyCollectionChanged instance))
+                if (_sourceReference.TryGetTarget(out var instance))
                 {
                     WeakSubscriptionManager.Unsubscribe(
                         instance,

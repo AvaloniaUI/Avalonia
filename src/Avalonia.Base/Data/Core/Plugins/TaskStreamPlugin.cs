@@ -4,8 +4,6 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -72,7 +70,7 @@ namespace Avalonia.Data.Core.Plugins
                     case TaskStatus.RanToCompletion:
                         return Observable.Return(resultProperty.GetValue(task));
                     case TaskStatus.Faulted:
-                        return Observable.Return(new BindingNotification(task.Exception, BindingErrorType.Error));
+                        return Observable.Return(new BindingNotification(task.Exception!, BindingErrorType.Error));
                     default:
                         throw new AvaloniaInternalException("HandleCompleted called for non-completed Task.");
                 }
