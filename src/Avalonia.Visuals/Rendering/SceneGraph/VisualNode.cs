@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
-using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -19,9 +19,9 @@ namespace Avalonia.Rendering.SceneGraph
 
         private Rect? _bounds;
         private double _opacity;
-        private List<IVisualNode> _children;
-        private List<IRef<IDrawOperation>> _drawOperations;
-        private IRef<IDisposable> _drawOperationsRefCounter;
+        private List<IVisualNode>? _children;
+        private List<IRef<IDrawOperation>>? _drawOperations;
+        private IRef<IDisposable>? _drawOperationsRefCounter;
         private bool _drawOperationsCloned;
         private Matrix transformRestore;
 
@@ -30,11 +30,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="visual">The visual that this node represents.</param>
         /// <param name="parent">The parent scene graph node, if any.</param>
-        public VisualNode(IVisual visual, IVisualNode parent)
+        public VisualNode(IVisual visual, IVisualNode? parent)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
-
-            Visual = visual;
+            Visual = visual ?? throw new ArgumentNullException(nameof(visual));
             Parent = parent;
             HasAncestorGeometryClip = parent != null && 
                 (parent.HasAncestorGeometryClip || parent.GeometryClip != null);
@@ -44,7 +42,7 @@ namespace Avalonia.Rendering.SceneGraph
         public IVisual Visual { get; }
 
         /// <inheritdoc/>
-        public IVisualNode Parent { get; }
+        public IVisualNode? Parent { get; }
 
         /// <inheritdoc/>
         public CornerRadius ClipToBoundsRadius { get; set; }
@@ -65,7 +63,7 @@ namespace Avalonia.Rendering.SceneGraph
         public bool ClipToBounds { get; set; }
 
         /// <inheritdoc/>
-        public IGeometryImpl GeometryClip { get; set; }
+        public IGeometryImpl? GeometryClip { get; set; }
 
         /// <inheritdoc/>
         public bool HasAncestorGeometryClip { get; }
@@ -87,7 +85,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets or sets the opacity mask for the scene graph node.
         /// </summary>
-        public IBrush OpacityMask { get; set; }
+        public IBrush? OpacityMask { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this node in the scene graph has already
@@ -100,7 +98,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public bool OpacityChanged { get; private set; }
 
-        public IVisual LayerRoot { get; set; }
+        public IVisual? LayerRoot { get; set; }
 
         /// <inheritdoc/>
         public IReadOnlyList<IVisualNode> Children => _children ?? EmptyChildren;
@@ -259,7 +257,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="parent">The new parent node.</param>
         /// <returns>A cloned node.</returns>
-        public VisualNode Clone(IVisualNode parent)
+        public VisualNode Clone(IVisualNode? parent)
         {
             return new VisualNode(Visual, parent)
             {
@@ -382,6 +380,7 @@ namespace Avalonia.Rendering.SceneGraph
             return result;
         }
 
+        [MemberNotNull(nameof(_children))]
         private void EnsureChildrenCreated(int capacity = 0)
         {
             if (_children == null)
@@ -393,6 +392,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Ensures that this node draw operations have been created and are mutable (in case we are using cloned operations).
         /// </summary>
+        [MemberNotNull(nameof(_drawOperations))]
         private void EnsureDrawOperationsCreated()
         {
             if (_drawOperations == null)
@@ -412,7 +412,7 @@ namespace Avalonia.Rendering.SceneGraph
                     _drawOperations.Add(drawOperation.Clone());
                 }
 
-                _drawOperationsRefCounter.Dispose();
+                _drawOperationsRefCounter?.Dispose();
                 _drawOperationsRefCounter = RefCountable.Create(CreateDisposeDrawOperations(_drawOperations));
                 _drawOperationsCloned = false;
             }

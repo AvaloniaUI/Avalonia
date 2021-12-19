@@ -14,7 +14,7 @@
         public FormattedTextStyleSpan(
             int startIndex,
             int length,
-            IBrush foregroundBrush = null)
+            IBrush? foregroundBrush = null)
         {
             StartIndex = startIndex;
             Length = length;
@@ -34,6 +34,6 @@
         /// <summary>
         /// Gets the span's foreground brush.
         /// </summary>
-        public IBrush ForegroundBrush { get; }
+        public IBrush? ForegroundBrush { get; }
     }
 }
