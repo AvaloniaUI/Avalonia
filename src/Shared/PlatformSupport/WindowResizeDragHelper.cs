@@ -24,6 +24,7 @@ namespace Avalonia
 
         public void StartDrag(WindowEdge edge, PixelPoint startDragPosition)
         {
+            _captureMouse(true);
             _edge = edge;
             _startPointerPoint = startDragPosition.ToPoint(RenderScaling);
 
