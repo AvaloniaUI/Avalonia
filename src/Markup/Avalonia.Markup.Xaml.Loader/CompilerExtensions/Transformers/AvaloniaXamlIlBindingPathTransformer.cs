@@ -99,7 +99,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
                 }
 
-                if (startType == null)
+                Func<IXamlType> startTypeResolver = startType is not null ? () => startType : () =>
                 {
                     var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentDataContextNode is null)
@@ -107,10 +107,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         throw new XamlX.XamlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", binding);
                     }
 
-                    startType = parentDataContextNode.DataContextType;
-                }
+                    return parentDataContextNode.DataContextType;
+                };
 
-                XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, binding, startType);
+                XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, binding, startTypeResolver, context.ParentNodes().OfType<XamlAstConstructableObjectNode>().First().Type.GetClrType());
             }
 
             return node;
