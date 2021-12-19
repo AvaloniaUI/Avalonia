@@ -307,7 +307,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
 
-            Assert.Equal(1, raised);
+            Assert.Equal(0, raised);
         }
 
         private class TestButton : Button, IRenderRoot
