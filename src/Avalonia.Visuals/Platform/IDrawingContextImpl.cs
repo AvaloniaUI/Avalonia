@@ -72,6 +72,18 @@ namespace Avalonia.Platform
             BoxShadows boxShadows = default);
 
         /// <summary>
+        /// Draws an ellipse with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the ellipse, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the ellipse, or <c>null</c> for no stroke.</param>
+        /// <param name="rect">The ellipse bounds.</param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        void DrawEllipse(IBrush brush, IPen pen, Rect rect);
+
+        /// <summary>
         /// Draws text.
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>

@@ -59,7 +59,7 @@ namespace Avalonia.Input
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }
 
-        private void OnCaptureDetached(object sender, VisualTreeAttachmentEventArgs e)
+        private void OnCaptureDetached(object? sender, VisualTreeAttachmentEventArgs e)
         {
             Capture(GetNextCapture(e.Parent));
         }

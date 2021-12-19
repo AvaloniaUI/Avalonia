@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-#nullable enable
-
 namespace Avalonia
 {
     public static class StreamBindingExtensions

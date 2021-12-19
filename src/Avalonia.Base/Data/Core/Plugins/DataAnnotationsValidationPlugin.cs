@@ -4,8 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -33,19 +31,23 @@ namespace Avalonia.Data.Core.Plugins
 
         private sealed class Accessor : DataValidationBase
         {
-            private readonly ValidationContext _context;
+            private readonly ValidationContext? _context;
 
             public Accessor(WeakReference<object?> reference, string name, IPropertyAccessor inner)
                 : base(inner)
             {
-                reference.TryGetTarget(out var target);
-
-                _context = new ValidationContext(target);
-                _context.MemberName = name;
+                if (reference.TryGetTarget(out var target))
+                {
+                    _context = new ValidationContext(target);
+                    _context.MemberName = name;
+                }
             }
 
             protected override void InnerValueChanged(object? value)
             {
+                if (_context is null)
+                    return;
+
                 var errors = new List<ValidationResult>();
 
                 if (Validator.TryValidateProperty(value, _context, errors))

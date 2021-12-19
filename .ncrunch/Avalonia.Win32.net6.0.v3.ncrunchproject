@@ -3,9 +3,5 @@
     <AdditionalFilesToIncludeForProject>
       <Value>..\..\tools\MicroComGenerator\bin\Debug\net6.0\**.*</Value>
     </AdditionalFilesToIncludeForProject>
-    <HiddenComponentWarnings>
-      <Value>MissingOrIgnoredProjectReference</Value>
-    </HiddenComponentWarnings>
-    <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>

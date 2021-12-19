@@ -80,7 +80,7 @@ namespace Avalonia.Input.TextInput
             }
         }
 
-        private void OnAttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs visualTreeAttachmentEventArgs)
+        private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs visualTreeAttachmentEventArgs)
         {
             SubscribeToParents();
             UpdateMatrix();
@@ -94,13 +94,13 @@ namespace Avalonia.Input.TextInput
             Dispatcher.UIThread.Post(UpdateMatrix, DispatcherPriority.Render);
         }
 
-        private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.IsEffectiveValueChange && e.Property == Visual.BoundsProperty)
                 EnqueueForUpdate();
         }
 
-        private void OnDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs visualTreeAttachmentEventArgs)
+        private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs visualTreeAttachmentEventArgs)
         {
             UnsubscribeFromParents();
             UpdateMatrix();
