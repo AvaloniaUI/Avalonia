@@ -85,7 +85,7 @@ namespace Avalonia
                 rc = rc.WithHeight(rc.Height + diff.Y);
             }
 
-            PixelPoint rcPosition = rc.Position.ToPixelPoint(RenderScaling);
+            PixelPoint rcPosition = PixelPoint.FromPoint(rc.Position, RenderScaling);
 
             if (_window.Position != rcPosition)
             {

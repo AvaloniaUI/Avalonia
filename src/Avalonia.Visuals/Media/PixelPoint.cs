@@ -252,12 +252,4 @@ namespace Avalonia
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", X, Y);
         }
     }
-
-    public static class PixelPointHelper
-    {
-        public static PixelPoint ToPixelPoint(this Point point, double scale = 1)
-        {
-            return new PixelPoint((int)(point.X * scale), (int) (point.Y * scale));
-        }
-    }
 }
