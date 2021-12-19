@@ -18,7 +18,7 @@ namespace Avalonia.Layout
         // If it does not, then we need to do context.GetElement(0) at which point we have requested an element and are on point to clear it.
         // If we are responsible for clearing element 0 we keep m_cachedFirstElement valid. 
         // If we are not (because FlowLayoutAlgorithm is holding it for us) then we just null out this field and use the one from FlowLayoutAlgorithm.
-        private ILayoutable _cachedFirstElement;
+        private ILayoutable? _cachedFirstElement;
 
         internal FlowLayoutAlgorithm FlowAlgorithm { get; } = new FlowLayoutAlgorithm();
         internal double EffectiveItemWidth { get; private set; }
