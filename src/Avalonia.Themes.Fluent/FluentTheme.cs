@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 
 #nullable enable
@@ -22,6 +23,7 @@ namespace Avalonia.Themes.Fluent
         private readonly Uri _baseUri;
         private IStyle[]? _loaded;
         private bool _isLoading;
+        private FluentThemeMode _mode;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FluentTheme"/> class.
@@ -44,7 +46,20 @@ namespace Avalonia.Themes.Fluent
         /// <summary>
         /// Gets or sets the mode of the fluent theme (light, dark).
         /// </summary>
-        public FluentThemeMode Mode { get; set; }
+        public FluentThemeMode Mode
+        {
+            get => _mode;
+            set
+            {
+                if (_mode != value)
+                {
+                    _mode = value;
+                    (Loaded as Styles)[3] = FluentDark[0];
+                    (Loaded as Styles)[4] = FluentDark[1];
+                }
+
+            }
+        }
 
         public IResourceHost? Owner => (Loaded as IResourceProvider)?.Owner;
 
@@ -58,8 +73,25 @@ namespace Avalonia.Themes.Fluent
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    var loaded = (IStyle)AvaloniaXamlLoader.Load(GetUri(), _baseUri);
-                    _loaded = new[] { loaded };
+                    Styles? resultStyle = new Styles();
+
+                    resultStyle.AddRange(SharedStyles);
+
+                    if (Mode == FluentThemeMode.Light)
+                    {
+                        for (int i = 0; i < FluentLight.Count; i++)
+                        {
+                            resultStyle.Add(FluentLight[i]);
+                        }
+                    }
+                    else if (Mode == FluentThemeMode.Dark)
+                    {
+                        for (int i = 0; i < FluentDark.Count; i++)
+                        {
+                            resultStyle.Add(FluentDark[i]);
+                        }
+                    }
+                    _loaded = new[] { resultStyle };
                     _isLoading = false;
                 }
 
@@ -105,10 +137,43 @@ namespace Avalonia.Themes.Fluent
         void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
         void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
 
-        private Uri GetUri() => Mode switch
+        private static Styles SharedStyles = new Styles
         {
-            FluentThemeMode.Dark => new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml", UriKind.Absolute),
-            _ => new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml", UriKind.Absolute),
+            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Controls/FluentControls.xaml")
+            }
+        };
+
+        private static Styles FluentLight = new Styles
+        {
+            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesLight.xaml")
+            }
+        };
+        private static Styles FluentDark = new Styles
+        {
+            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Themes.Fluent"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesDark.xaml")
+            }
         };
     }
 }

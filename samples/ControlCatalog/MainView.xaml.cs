@@ -11,6 +11,7 @@ using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using ControlCatalog.Pages;
 using ControlCatalog.Models;
+using Avalonia.Themes.Fluent;
 
 namespace ControlCatalog
 {
@@ -43,14 +44,7 @@ namespace ControlCatalog
             {
                 if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    Application.Current.Styles[0] = theme switch
-                    {
-                        CatalogTheme.FluentLight => App.FluentLight,
-                        CatalogTheme.FluentDark => App.FluentDark,
-                        CatalogTheme.DefaultLight => App.DefaultLight,
-                        CatalogTheme.DefaultDark => App.DefaultDark,
-                        _ => Application.Current.Styles[0]
-                    };
+                    (Application.Current.Styles[0] as FluentTheme).Mode = FluentThemeMode.Dark;
                 }
             };
 

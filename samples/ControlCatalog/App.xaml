@@ -5,6 +5,7 @@
              x:CompileBindings="True"
              x:Class="ControlCatalog.App">
   <Application.Styles>
+    <FluentTheme Mode="Light"/>
     <Style Selector="TextBlock.h1, TextBlock.h2, TextBlock.h3">
       <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
