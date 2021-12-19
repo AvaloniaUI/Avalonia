@@ -26,7 +26,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<DrawingImage, Drawing>(nameof(Drawing));
 
         /// <inheritdoc/>
-        public event EventHandler Invalidated;
+        public event EventHandler? Invalidated;
 
         /// <summary>
         /// Gets or sets the drawing content.

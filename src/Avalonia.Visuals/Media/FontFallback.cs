@@ -8,7 +8,7 @@
         /// <summary>
         /// Get or set the fallback <see cref="FontFamily"/>
         /// </summary>
-        public FontFamily FontFamily { get; set; }
+        public FontFamily FontFamily { get; set; } = FontFamily.Default;
 
         /// <summary>
         /// Get or set the <see cref="UnicodeRange"/> that is covered by the fallback.

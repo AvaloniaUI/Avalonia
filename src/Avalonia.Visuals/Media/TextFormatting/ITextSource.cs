@@ -10,6 +10,6 @@
         /// </summary>
         /// <param name="textSourceIndex">The text source index.</param>
         /// <returns>The text run.</returns>
-        TextRun GetTextRun(int textSourceIndex);
+        TextRun? GetTextRun(int textSourceIndex);
     }
 }
