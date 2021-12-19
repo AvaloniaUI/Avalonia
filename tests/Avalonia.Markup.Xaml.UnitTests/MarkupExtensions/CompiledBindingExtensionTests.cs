@@ -1042,6 +1042,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void SupportsMethodBindingAsDelegate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:MethodDataContext'>
+    <StackPanel>
+        <ContentControl Content='{CompiledBinding Action}' Name='action' />
+        <ContentControl Content='{CompiledBinding Func}' Name='func' />
+        <ContentControl Content='{CompiledBinding Action16}' Name='action16' />
+        <ContentControl Content='{CompiledBinding Func16}' Name='func16' />
+        <ContentControl Content='{CompiledBinding CustomDelegateTypeVoid}' Name='customvoid' />
+        <ContentControl Content='{CompiledBinding CustomDelegateTypeInt}' Name='customint' />
+    </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                window.DataContext = new MethodDataContext();
+
+                Assert.IsAssignableFrom(typeof(Action), window.FindControl<ContentControl>("action").Content);
+                Assert.IsAssignableFrom(typeof(Func<int>), window.FindControl<ContentControl>("func").Content);
+                Assert.IsAssignableFrom(typeof(Action<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.FindControl<ContentControl>("action16").Content);
+                Assert.IsAssignableFrom(typeof(Func<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.FindControl<ContentControl>("func16").Content);
+                Assert.True(typeof(Delegate).IsAssignableFrom(window.FindControl<ContentControl>("customvoid").Content.GetType()));
+                Assert.True(typeof(Delegate).IsAssignableFrom(window.FindControl<ContentControl>("customint").Content.GetType()));
+            }
+        }
+
         void Throws(string type, Action cb)
         {
             try
@@ -1130,5 +1161,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 }
             }
         }
+    }
+
+    public class MethodDataContext
+    {
+        public void Action() { }
+
+        public int Func() => 1;
+
+        public void Action16(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16) { }
+        public int Func16(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16) => i;
+        public void CustomDelegateTypeVoid(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16, int i17) { }
+        public int CustomDelegateTypeInt(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16, int i17) => i;
     }
 }

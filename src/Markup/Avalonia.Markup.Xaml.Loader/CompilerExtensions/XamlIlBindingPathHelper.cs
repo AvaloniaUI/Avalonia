@@ -556,26 +556,33 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
+                IXamlTypeBuilder<IXamlILEmitter> newDelegateTypeBuilder = null;
                 IXamlType specificDelegateType;
-                if (_method.ReturnType == context.Configuration.WellKnownTypes.Void && _method.Parameters.Count <= 8)
+                if (_method.ReturnType == context.Configuration.WellKnownTypes.Void && _method.Parameters.Count == 0)
+                {
+                    specificDelegateType = context.Configuration.TypeSystem
+                        .GetType("System.Action");
+                }
+                else if (_method.ReturnType == context.Configuration.WellKnownTypes.Void && _method.Parameters.Count <= 16)
                 {
                     specificDelegateType = context.Configuration.TypeSystem
                         .GetType($"System.Action`{_method.Parameters.Count}")
                         .MakeGenericType(_method.Parameters);
                 }
-                else if (_method.Parameters.Count <= 7)
+                else if (_method.Parameters.Count <= 16)
                 {
                     List<IXamlType> genericParameters = new();
                     genericParameters.AddRange(_method.Parameters);
                     genericParameters.Add(_method.ReturnType);
                     specificDelegateType = context.Configuration.TypeSystem
-                        .GetType($"System.Func`{_method.Parameters.Count}")
+                        .GetType($"System.Func`{_method.Parameters.Count + 1}")
                         .MakeGenericType(genericParameters);
                 }
                 else
                 {
                     // In this case, we need to emit our own delegate type.
-                    specificDelegateType = null;
+                    string delegateTypeName = context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
+                    specificDelegateType = newDelegateTypeBuilder = context.DefineDelegateSubType(delegateTypeName, _method.ReturnType, _method.Parameters);
                 }
 
                 codeGen
@@ -583,6 +590,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .Ldtoken(specificDelegateType)
                     .EmitCall(context.GetAvaloniaTypes()
                         .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Method"));
+
+                newDelegateTypeBuilder?.CreateType();
             }
         }
 
