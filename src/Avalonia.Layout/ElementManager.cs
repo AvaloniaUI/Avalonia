@@ -75,7 +75,9 @@ namespace Avalonia.Layout
 
             if (IsVirtualizingContext)
             {
-                if (_realizedElements[realizedIndex] == null)
+                element = _realizedElements[realizedIndex];
+
+                if (element == null)
                 {
                     // Sentinel. Create the element now since we need it.
                     int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
@@ -84,10 +86,6 @@ namespace Avalonia.Layout
                         dataIndex,
                         ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
                     _realizedElements[realizedIndex] = element;
-                }
-                else
-                {
-                    element = _realizedElements[realizedIndex];
                 }
             }
             else
@@ -98,7 +96,7 @@ namespace Avalonia.Layout
                     ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
             }
 
-            return element!;
+            return element;
         }
 
         public void Add(ILayoutable element, int dataIndex)
