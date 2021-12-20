@@ -98,7 +98,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             BindingPriority = cfg.TypeSystem.GetType("Avalonia.Data.BindingPriority");
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
-            IDisposable = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");
+            ICommand = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");
             Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");
             AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");

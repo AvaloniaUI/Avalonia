@@ -661,7 +661,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 else
                 {
-                    using var canExecuteMethodHandle = codeGen.LocalsPool.GetLocal(context.Configuration.TypeSystem.GetType("System.Reflection.RuntimeMethodHandle"));
+                    using var canExecuteMethodHandle = codeGen.LocalsPool.GetLocal(context.Configuration.TypeSystem.GetType("System.RuntimeMethodHandle"));
                     codeGen
                         .Ldloca(canExecuteMethodHandle.Local)
                         .Emit(OpCodes.Initobj)
