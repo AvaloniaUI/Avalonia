@@ -515,7 +515,7 @@ namespace Avalonia.Markup.Parsers
 
             public string Value { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is AttachedPropertySyntax syntax
                     && syntax.Xmlns == Xmlns

@@ -119,7 +119,7 @@ namespace Avalonia.Markup.Parsers
                         }
 
                         {
-                            object typedValue;
+                            object? typedValue;
 
                             if (TypeUtilities.TryConvert(
                                     targetAttachedProperty.PropertyType,
