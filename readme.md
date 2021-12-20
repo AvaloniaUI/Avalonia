@@ -3,6 +3,8 @@
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia) [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
+Tips: BTC: bc1q05wx78qemgy9x6ytl5ljk2xrt00yqargyjm8gx
+
 ## 📖 About AvaloniaUI 
 
 Avalonia is a cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows via .NET Framework and .NET Core, Linux via Xorg, macOS. Avalonia is ready for **General-Purpose Desktop App Development**. However, there may be some bugs and breaking changes as we continue along into this project's development. 
