@@ -748,14 +748,18 @@ namespace Avalonia.Controls
             {
                 newValue.InitializeForContext(LayoutContext);
 
-                WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
+                WeakEventHandlerManager.Subscribe<AttachedLayout, ItemsRepeater>(
                     newValue,
+                    static (s, h) => s.MeasureInvalidated += h,
+                    static (s, h) => s.MeasureInvalidated -= h,
                     nameof(AttachedLayout.MeasureInvalidated),
                     InvalidateMeasureForLayout);
-                WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
+                WeakEventHandlerManager.Subscribe<AttachedLayout, ItemsRepeater>(
                     newValue,
-                    nameof(AttachedLayout.ArrangeInvalidated),
-                    InvalidateArrangeForLayout);
+                    static (s, h) => s.ArrangeInvalidated += h,
+                    static (s, h) => s.ArrangeInvalidated -= h,
+                    nameof(AttachedLayout.MeasureInvalidated),
+                    InvalidateMeasureForLayout);
             }
 
             bool isVirtualizingLayout = newValue != null && newValue is VirtualizingLayout;

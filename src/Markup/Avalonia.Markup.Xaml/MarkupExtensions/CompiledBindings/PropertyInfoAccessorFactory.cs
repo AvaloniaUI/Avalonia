@@ -149,8 +149,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         {
             if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
             {
-                WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, InpcPropertyAccessor>(
+                WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventHandler, PropertyChangedEventArgs, InpcPropertyAccessor>(
                     inpc,
+                    static (n, h) => n.PropertyChanged += h,
+                    static (n, h) => n.PropertyChanged -= h,
                     nameof(INotifyPropertyChanged.PropertyChanged),
                     OnNotifyPropertyChanged);
             }
@@ -173,8 +175,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             base.SubscribeCore();
             if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
             {
-                WeakEventHandlerManager.Subscribe<INotifyCollectionChanged, NotifyCollectionChangedEventArgs, IndexerAccessor>(
+                WeakEventHandlerManager.Subscribe<INotifyCollectionChanged, NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs, IndexerAccessor>(
                   incc,
+                  static (n, h) => n.CollectionChanged += h,
+                  static (n, h) => n.CollectionChanged -= h,
                   nameof(INotifyCollectionChanged.CollectionChanged),
                   OnNotifyCollectionChanged);
             }

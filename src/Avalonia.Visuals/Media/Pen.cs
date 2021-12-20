@@ -215,8 +215,10 @@ namespace Avalonia.Media
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, T>(
                             newValue,
+                            static (p, h) => p.Invalidated += h,
+                            static (p, h) => p.Invalidated -= h,
                             nameof(newValue.Invalidated),
                             sender.AffectsRenderInvalidated);
                     }

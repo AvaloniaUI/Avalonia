@@ -357,7 +357,12 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, T>(
+                            newValue,
+                            static (v, h) => v.Invalidated += h,
+                            static (v, h) => v.Invalidated -= h,
+                            nameof(newValue.Invalidated),
+                            sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();
