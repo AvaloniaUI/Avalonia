@@ -595,6 +595,80 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
+        class XamlIlClrMethodAsCommandPathElementNode : IXamlIlBindingPathElementNode
+        {
+            private readonly IXamlMethod _executeMethod;
+            private readonly IXamlMethod _canExecuteMethod;
+            private readonly IReadOnlyList<string> _dependsOnProperties;
+
+            public XamlIlClrMethodAsCommandPathElementNode(IXamlType iCommandType, IXamlMethod executeMethod, IXamlMethod canExecuteMethod, IReadOnlyList<string> dependsOnProperties)
+            {
+                Type = iCommandType;
+                _executeMethod = executeMethod;
+                _canExecuteMethod = canExecuteMethod;
+                _dependsOnProperties = dependsOnProperties;
+            }
+
+
+            public IXamlType Type { get; }
+
+            public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
+            {
+                codeGen
+                    .Ldtoken(_executeMethod);
+
+                if (_canExecuteMethod is not null)
+                {
+                    codeGen.Ldtoken(_canExecuteMethod);
+                }
+                else
+                {
+                    using var canExecuteMethodHandle = codeGen.LocalsPool.GetLocal(context.Configuration.TypeSystem.GetType("System.Reflection.RuntimeMethodHandle"));
+                    codeGen
+                        .Ldloca(canExecuteMethodHandle.Local)
+                        .Emit(OpCodes.Initobj)
+                        .Ldloc(canExecuteMethodHandle.Local);
+                }
+
+                if (_dependsOnProperties is { Count:> 0 })
+                {
+                    using var dependsOnProperties = codeGen.LocalsPool.GetLocal(context.Configuration.WellKnownTypes.String.MakeArrayType(1));
+                    codeGen
+                        .Ldc_I4(_dependsOnProperties.Count)
+                        .Newarr(context.Configuration.WellKnownTypes.String)
+                        .Stloc(dependsOnProperties.Local);
+
+                    for (var i = 0; i < _dependsOnProperties.Count; i++)
+                    {
+                        var prop = _dependsOnProperties[i];
+                        codeGen
+                            .Ldloc(dependsOnProperties.Local)
+                            .Ldc_I4(i)
+                            .Ldstr(prop)
+                            .Stelem_ref();
+                    }
+                    codeGen.Ldloc(dependsOnProperties.Local);
+                }
+                else
+                {
+                    codeGen.Ldnull();
+                }
+
+                if (_executeMethod.Parameters.Count != 0)
+                {
+                    codeGen.EmitCall(
+                        context.GetAvaloniaTypes()
+                            .CompiledBindingPathBuilder.FindMethod(m => m.Name == "CommandWithParameter"));
+                }
+                else
+                {
+                    codeGen.EmitCall(
+                        context.GetAvaloniaTypes()
+                                .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Command"));
+                }
+            }
+        }
+
         class XamlIlClrIndexerPathElementNode : IXamlIlBindingPathElementNode
         {
             private readonly IXamlProperty _property;

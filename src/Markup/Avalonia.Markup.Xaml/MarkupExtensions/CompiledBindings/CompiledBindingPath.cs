@@ -37,6 +37,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                     case PropertyElement prop:
                         node = new PropertyAccessorNode(prop.Property.Name, enableValidation, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory));
                         break;
+                    case IMethodAsCommandElement methodAsCommand:
+                        node = new PropertyAccessorNode(methodAsCommand.ExecuteMethod.Name, enableValidation, new CommandAccessorPlugin(methodAsCommand.CreateAccessor));
+                        break;
                     case MethodAsDelegateElement methodAsDelegate:
                         node = new PropertyAccessorNode(methodAsDelegate.Method.Name, enableValidation, new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType));
                         break;
@@ -99,6 +102,18 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPathBuilder Method(RuntimeMethodHandle handle, RuntimeTypeHandle delegateType)
         {
             _elements.Add(new MethodAsDelegateElement(handle, delegateType));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder Command(RuntimeMethodHandle executeMethod, RuntimeMethodHandle canExecuteMethod, string[] dependsOnProperties)
+        {
+            _elements.Add(new MethodAsCommandElement(executeMethod, canExecuteMethod, dependsOnProperties));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder CommandWithParameter<T>(RuntimeMethodHandle executeMethod, RuntimeMethodHandle canExecuteMethod, string[] dependsOnProperties)
+        {
+            _elements.Add(new MethodAsCommandElement<T>(executeMethod, canExecuteMethod, dependsOnProperties));
             return this;
         }
 
@@ -199,6 +214,51 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public MethodInfo Method { get; }
 
         public Type DelegateType { get; }
+    }
+
+    internal interface IMethodAsCommandElement
+    {
+        MethodInfo ExecuteMethod { get; }
+        IPropertyAccessor CreateAccessor(WeakReference<object> obj);
+    }
+
+    internal class MethodAsCommandElement : ICompiledBindingPathElement, IMethodAsCommandElement
+    {
+        public MethodAsCommandElement(RuntimeMethodHandle executeMethod, RuntimeMethodHandle canExecuteMethod, string[] dependsOnElements)
+        {
+            ExecuteMethod = (MethodInfo)MethodBase.GetMethodFromHandle(executeMethod);
+            CanExecuteMethod = canExecuteMethod != default ? (MethodInfo)MethodBase.GetMethodFromHandle(canExecuteMethod) : null;
+            DependsOnProperties = new HashSet<string>(dependsOnElements);
+        }
+
+        public MethodInfo ExecuteMethod { get; }
+        public MethodInfo CanExecuteMethod { get; }
+        public HashSet<string> DependsOnProperties { get; }
+
+        public IPropertyAccessor CreateAccessor(WeakReference<object> obj)
+        {
+            obj.TryGetTarget(out object target);
+            return new CommandAccessorPlugin.CommandWithoutParameterAccessor(obj, DependsOnProperties, (Action)ExecuteMethod.CreateDelegate(typeof(Action), target), (Func<object, bool>)CanExecuteMethod?.CreateDelegate(typeof(Func<object, bool>), target));
+        }
+    }
+    internal class MethodAsCommandElement<T> : ICompiledBindingPathElement, IMethodAsCommandElement
+    {
+        public MethodAsCommandElement(RuntimeMethodHandle executeMethod, RuntimeMethodHandle canExecuteMethod, string[] dependsOnElements)
+        {
+            ExecuteMethod = (MethodInfo)MethodBase.GetMethodFromHandle(executeMethod);
+            CanExecuteMethod = canExecuteMethod != default ? (MethodInfo)MethodBase.GetMethodFromHandle(canExecuteMethod) : null;
+            DependsOnProperties = new HashSet<string>(dependsOnElements);
+        }
+
+        public MethodInfo ExecuteMethod { get; }
+        public MethodInfo CanExecuteMethod { get; }
+        public HashSet<string> DependsOnProperties { get; }
+
+        public IPropertyAccessor CreateAccessor(WeakReference<object> obj)
+        {
+            obj.TryGetTarget(out object target);
+            return new CommandAccessorPlugin.CommandWithParameterAccessor<T>(obj, DependsOnProperties, (Action<T>)ExecuteMethod.CreateDelegate(typeof(Action<T>), target), (Func<object, bool>)CanExecuteMethod?.CreateDelegate(typeof(Func<object, bool>), target));
+        }
     }
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement
