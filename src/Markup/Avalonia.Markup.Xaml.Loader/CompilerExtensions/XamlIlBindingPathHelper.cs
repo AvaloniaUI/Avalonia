@@ -32,6 +32,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     selfType,
                     bindingPath.Path);
 
+                transformed = TransformForTargetTyping(transformed, context);
+
                 bindingResultType = transformed.BindingResultType;
                 binding.Arguments[0] = transformed;
             }
@@ -54,6 +56,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         selfType,
                         bindingPathNode.Path);
 
+                    transformed = TransformForTargetTyping(transformed, context);
+
                     bindingResultType = transformed.BindingResultType;
                     bindingPathAssignment.Values[0] = transformed;
                 }
@@ -66,7 +70,32 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return bindingResultType;
         }
 
-        private static IXamlIlBindingPathNode TransformBindingPath(AstTransformationContext context, IXamlLineInfo lineInfo, Func<IXamlType> startTypeResolver, IXamlType selfType, IEnumerable<BindingExpressionGrammar.INode> bindingExpression)
+        private static XamlIlBindingPathNode TransformForTargetTyping(XamlIlBindingPathNode transformed, AstTransformationContext context)
+        {
+            if (context.ParentNodes().OfType<XamlPropertyAssignmentNode>().FirstOrDefault().Property.Getter.ReturnType == context.GetAvaloniaTypes().ICommand
+                && transformed.Elements[transformed.Elements.Count - 1] is XamlIlClrMethodPathElementNode method)
+            {
+                IXamlMethod executeMethod = method.Method;
+                IXamlMethod canExecuteMethod = executeMethod.DeclaringType.FindMethod(new FindMethodMethodSignature($"Can{executeMethod.Name}", context.Configuration.WellKnownTypes.Boolean, context.Configuration.WellKnownTypes.Object));
+                List<string> dependsOnProperties = new();
+                if (canExecuteMethod is not null)
+                {
+                    foreach (var attr in canExecuteMethod.CustomAttributes)
+                    {
+                        if (attr.Type == context.GetAvaloniaTypes().DependsOnAttribute)
+                        {
+                            dependsOnProperties.Add((string)attr.Parameters[0]);
+                        }
+                    }
+                }
+                transformed.Elements.RemoveAt(transformed.Elements.Count - 1);
+                transformed.Elements.Add(new XamlIlClrMethodAsCommandPathElementNode(context.GetAvaloniaTypes().ICommand, executeMethod, canExecuteMethod, dependsOnProperties));
+            }
+
+            return transformed;
+        }
+
+        private static XamlIlBindingPathNode TransformBindingPath(AstTransformationContext context, IXamlLineInfo lineInfo, Func<IXamlType> startTypeResolver, IXamlType selfType, IEnumerable<BindingExpressionGrammar.INode> bindingExpression)
         {
             List<IXamlIlBindingPathElementNode> transformNodes = new List<IXamlIlBindingPathElementNode>();
             List<IXamlIlBindingPathElementNode> nodes = new List<IXamlIlBindingPathElementNode>();
@@ -553,13 +582,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         class XamlIlClrMethodPathElementNode : IXamlIlBindingPathElementNode
         {
-            private readonly IXamlMethod _method;
 
             public XamlIlClrMethodPathElementNode(IXamlMethod method, IXamlType systemDelegateType)
             {
-                _method = method;
+                Method = method;
                 Type = systemDelegateType;
             }
+            public IXamlMethod Method { get; }
 
             public IXamlType Type { get; }
 
@@ -567,35 +596,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 IXamlTypeBuilder<IXamlILEmitter> newDelegateTypeBuilder = null;
                 IXamlType specificDelegateType;
-                if (_method.ReturnType == context.Configuration.WellKnownTypes.Void && _method.Parameters.Count == 0)
+                if (Method.ReturnType == context.Configuration.WellKnownTypes.Void && Method.Parameters.Count == 0)
                 {
                     specificDelegateType = context.Configuration.TypeSystem
                         .GetType("System.Action");
                 }
-                else if (_method.ReturnType == context.Configuration.WellKnownTypes.Void && _method.Parameters.Count <= 16)
+                else if (Method.ReturnType == context.Configuration.WellKnownTypes.Void && Method.Parameters.Count <= 16)
                 {
                     specificDelegateType = context.Configuration.TypeSystem
-                        .GetType($"System.Action`{_method.Parameters.Count}")
-                        .MakeGenericType(_method.Parameters);
+                        .GetType($"System.Action`{Method.Parameters.Count}")
+                        .MakeGenericType(Method.Parameters);
                 }
-                else if (_method.Parameters.Count <= 16)
+                else if (Method.Parameters.Count <= 16)
                 {
                     List<IXamlType> genericParameters = new();
-                    genericParameters.AddRange(_method.Parameters);
-                    genericParameters.Add(_method.ReturnType);
+                    genericParameters.AddRange(Method.Parameters);
+                    genericParameters.Add(Method.ReturnType);
                     specificDelegateType = context.Configuration.TypeSystem
-                        .GetType($"System.Func`{_method.Parameters.Count + 1}")
+                        .GetType($"System.Func`{Method.Parameters.Count + 1}")
                         .MakeGenericType(genericParameters);
                 }
                 else
                 {
                     // In this case, we need to emit our own delegate type.
                     string delegateTypeName = context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
-                    specificDelegateType = newDelegateTypeBuilder = context.DefineDelegateSubType(delegateTypeName, _method.ReturnType, _method.Parameters);
+                    specificDelegateType = newDelegateTypeBuilder = context.DefineDelegateSubType(delegateTypeName, Method.ReturnType, Method.Parameters);
                 }
 
                 codeGen
-                    .Ldtoken(_method)
+                    .Ldtoken(Method)
                     .Ldtoken(specificDelegateType)
                     .EmitCall(context.GetAvaloniaTypes()
                         .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Method"));
@@ -803,7 +832,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         class XamlIlBindingPathNode : XamlAstNode, IXamlIlBindingPathNode, IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
         {
             private readonly List<IXamlIlBindingPathElementNode> _transformElements;
-            private readonly List<IXamlIlBindingPathElementNode> _elements;
 
             public XamlIlBindingPathNode(IXamlLineInfo lineInfo,
                 IXamlType bindingPathType,
@@ -812,15 +840,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 Type = new XamlAstClrTypeReference(lineInfo, bindingPathType, false);
                 _transformElements = transformElements;
-                _elements = elements;
+                Elements = elements;
             }
 
             public IXamlType BindingResultType
                 => _transformElements.Count > 0
                     ? _transformElements[0].Type
-                    : _elements[_elements.Count - 1].Type;
+                    : Elements[Elements.Count - 1].Type;
 
             public IXamlAstTypeReference Type { get; }
+
+            public List<IXamlIlBindingPathElementNode> Elements { get; }
 
             public XamlILNodeEmitResult Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
@@ -832,7 +862,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     transform.Emit(context, codeGen);
                 }
 
-                foreach (var element in _elements)
+                foreach (var element in Elements)
                 {
                     element.Emit(context, codeGen);
                 }
@@ -850,11 +880,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         _transformElements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
                     }
                 }
-                for (int i = 0; i < _elements.Count; i++)
+                for (int i = 0; i < Elements.Count; i++)
                 {
-                    if (_elements[i] is IXamlAstNode ast)
+                    if (Elements[i] is IXamlAstNode ast)
                     {
-                        _elements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
+                        Elements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
                     }
                 }
             }
