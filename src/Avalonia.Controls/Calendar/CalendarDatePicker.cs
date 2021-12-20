@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Controls.Primitives;
@@ -441,7 +440,6 @@ namespace Avalonia.Controls
             FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
             _defaultText = string.Empty;
             DisplayDate = DateTime.Today;
-            BlackoutDates.CollectionChanged += BlackoutDates_CollectionChanged;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -1186,51 +1184,6 @@ namespace Avalonia.Controls
                 int day = discarded.Day;
                 DateTime newD = new DateTime(year, month, day, 0, 0, 0);
                 return newD;
-            }
-        }
-
-        private void BlackoutDates_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (CalendarDateRange item in e.NewItems)
-                    {
-                        _calendar.BlackoutDates.Add(item);
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                    // We do not need to handle this case as the result will not have an effect.
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (CalendarDateRange item in e.OldItems)
-                    {
-                        _calendar.BlackoutDates.Remove(item);
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    foreach (CalendarDateRange item in e.OldItems)
-                    {
-                        _calendar.BlackoutDates.Remove(item);
-                    }
-                    foreach (CalendarDateRange item in e.NewItems)
-                    {
-                        _calendar.BlackoutDates.Add(item);
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    _calendar.BlackoutDates.Clear();
-                    foreach (CalendarDateRange item in BlackoutDates)
-                    {
-                        _calendar.BlackoutDates.Add(item);
-                    }
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(e.Action), e.Action, "Invalid NotifyCollectionChangedAction");
             }
         }
     }
