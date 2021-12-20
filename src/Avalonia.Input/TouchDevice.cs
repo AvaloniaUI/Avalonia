@@ -19,7 +19,6 @@ namespace Avalonia.Input
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
-        private long _lastTouchPointId;
         KeyModifiers GetKeyModifiers(RawInputModifiers modifiers) =>
             (KeyModifiers)(modifiers & RawInputModifiers.KeyboardMask);
 
@@ -51,19 +50,27 @@ namespace Avalonia.Input
             var target = pointer.Captured ?? args.Root;
             if (args.Type == RawPointerEventType.TouchBegin)
             {
-                var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-
-                if (!_lastClickRect.Contains(args.Position)
-                    || ev.Timestamp - _lastClickTime > settings.DoubleClickTime.TotalMilliseconds
-                    || _lastTouchPointId != args.TouchPointId)
+                if (_pointers.Count > 1)
                 {
-                    _clickCount = 0;
+                    _clickCount = 1;
+                    _lastClickTime = 0;
+                    _lastClickRect = new Rect();
                 }
-                ++_clickCount;
-                _lastTouchPointId = args.TouchPointId;
-                _lastClickTime = ev.Timestamp;
-                _lastClickRect = new Rect(args.Position, new Size())
-                    .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
+                else
+                {
+                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+
+                    if (!_lastClickRect.Contains(args.Position)
+                        || ev.Timestamp - _lastClickTime > settings.DoubleClickTime.TotalMilliseconds)
+                    {
+                        _clickCount = 0;
+                    }
+                    ++_clickCount;
+                    _lastClickTime = ev.Timestamp;
+                    _lastClickRect = new Rect(args.Position, new Size())
+                        .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
+                }
+
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     args.Root, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true),
