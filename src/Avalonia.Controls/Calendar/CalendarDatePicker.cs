@@ -578,58 +578,6 @@ namespace Avalonia.Controls
             SetSelectedDate();
         }
         
-        private void SetCalendarDisplayDate(DateTime value)
-        {
-            if (DateTimeHelper.CompareYearMonth(_calendar.DisplayDate, value) != 0)
-            {
-                _calendar.DisplayDate = DisplayDate;
-                if (DateTime.Compare(_calendar.DisplayDate, DisplayDate) != 0)
-                {
-                    DisplayDate = _calendar.DisplayDate;
-                }
-            }
-        }
-        private void OnDisplayDateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (_calendar != null)
-            {
-                var value = (DateTime)e.NewValue;
-                SetCalendarDisplayDate(value);
-            }
-        }
-        private void SetCalendarDisplayDateStart(DateTime? value)
-        {
-            _calendar.DisplayDateStart = value;
-            if (_calendar.DisplayDateStart.HasValue && DisplayDateStart.HasValue && DateTime.Compare(_calendar.DisplayDateStart.Value, DisplayDateStart.Value) != 0)
-            {
-                DisplayDateStart = _calendar.DisplayDateStart;
-            }
-        }
-        private void OnDisplayDateStartChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (_calendar != null)
-            {
-                var value = (DateTime?)e.NewValue;
-                SetCalendarDisplayDateStart(value);
-            }
-        }
-        private void SetCalendarDisplayDateEnd(DateTime? value)
-        {
-            _calendar.DisplayDateEnd = value;
-            if (_calendar.DisplayDateEnd.HasValue && DisplayDateEnd.HasValue && DateTime.Compare(_calendar.DisplayDateEnd.Value, DisplayDateEnd.Value) != 0)
-            {
-                DisplayDateEnd = _calendar.DisplayDateEnd;
-            }
-
-        }
-        private void OnDisplayDateEndChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (_calendar != null)
-            {
-                var value = (DateTime?)e.NewValue;
-                SetCalendarDisplayDateEnd(value);
-            }
-        }
         private void OnIsDropDownOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var oldValue = (bool)e.OldValue;
