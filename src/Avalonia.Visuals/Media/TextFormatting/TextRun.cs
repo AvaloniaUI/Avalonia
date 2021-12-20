@@ -24,7 +24,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// A set of properties shared by every characters in the run
         /// </summary>
-        public virtual TextRunProperties Properties => null;
+        public virtual TextRunProperties? Properties => null;
 
         private class TextRunDebuggerProxy
         {
@@ -49,7 +49,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            public TextRunProperties Properties => _textRun.Properties;
+            public TextRunProperties? Properties => _textRun.Properties;
         }
     }
 }

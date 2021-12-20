@@ -731,8 +731,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        Title='foo'
-        x:DataType='local:TestDataContext'>
+        Title='foo'>
     <ContentControl Content='{CompiledBinding $parent.Title}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
@@ -1039,6 +1038,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.DataContext = dataContext;
 
                 Assert.Equal("bar-" + typeof(TestDataContext).FullName, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_Self_Without_DataType()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock Name='textBlock' Text='{CompiledBinding $self.Name}' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                Assert.Equal(textBlock.Name, textBlock.Text);
             }
         }
 
