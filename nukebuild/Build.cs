@@ -203,10 +203,21 @@ partial class Build : NukeBuild
 
     void RunCoreTest(string projectName)
     {
-        Information($"Running tests from {projectName}");
-        var project = Solution.GetProject(projectName).NotNull("project != null");
+        if(!projectName.EndsWith(".csproj"))
+            projectName = System.IO.Path.Combine(projectName, System.IO.Path.GetFileName(projectName)+".csproj");
+        Information("Running tests from " + projectName);
+        XDocument xdoc;
+        using (var s = File.OpenRead(projectName))
+            xdoc = XDocument.Load(s);
 
-        foreach (var fw in project.GetTargetFrameworks())
+        List<string> frameworks = null;
+        var targets = xdoc.Root.Descendants("TargetFrameworks").FirstOrDefault();
+        if (targets != null)
+            frameworks = targets.Value.Split(';').Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
+        else
+            frameworks = new List<string> {xdoc.Root.Descendants("TargetFramework").First().Value};
+
+        foreach(var fw in frameworks)
         {
             if (fw.StartsWith("net4")
                 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
@@ -219,7 +230,7 @@ partial class Build : NukeBuild
             Information($"Running for {projectName} ({fw}) ...");
 
             DotNetTest(c => c
-                .SetProjectFile(project)
+                .SetProjectFile(projectName)
                 .SetConfiguration(Parameters.Configuration)
                 .SetFramework(fw)
                 .EnableNoBuild()
