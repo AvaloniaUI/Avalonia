@@ -4,6 +4,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia) [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
 Tips: BTC: bc1q05wx78qemgy9x6ytl5ljk2xrt00yqargyjm8gx
+This will be shared with the community and awarded for significant contributions.
 
 ## 📖 About AvaloniaUI 
 
