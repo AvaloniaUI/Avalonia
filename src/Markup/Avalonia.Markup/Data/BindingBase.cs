@@ -272,7 +272,7 @@ namespace Avalonia.Data
                 _target.PropertyChanged -= PropertyChanged;
             }
 
-            private void PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+            private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
             {
                 if (e.Property == _property)
                 {

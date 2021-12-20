@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     public class MethodAccessorPlugin : IPropertyAccessorPlugin

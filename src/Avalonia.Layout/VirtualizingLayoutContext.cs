@@ -43,7 +43,7 @@ namespace Avalonia.Layout
     /// </summary>
     public abstract class VirtualizingLayoutContext : LayoutContext
     {
-        private NonVirtualizingLayoutContext _contextAdapter;
+        private NonVirtualizingLayoutContext? _contextAdapter;
 
         /// <summary>
         /// Gets the number of items in the data.

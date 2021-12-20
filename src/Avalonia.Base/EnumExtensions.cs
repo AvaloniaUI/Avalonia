@@ -1,8 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>

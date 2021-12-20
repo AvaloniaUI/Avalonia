@@ -399,7 +399,7 @@ namespace Avalonia.Controls.Primitives
             {
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
-                if (keymap.OpenContextMenu.Any(k => k.Matches(e)))
+                if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
                 {
                     e.Handled = HideCore();
                 }

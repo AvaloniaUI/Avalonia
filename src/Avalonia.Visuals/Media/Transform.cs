@@ -19,7 +19,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Raised when the transform changes.
         /// </summary>
-        public event EventHandler Changed;
+        public event EventHandler? Changed;
 
         /// <summary>
         /// Gets the transform's <see cref="Matrix"/>.

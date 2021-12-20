@@ -2,8 +2,6 @@ using System;
 using System.Globalization;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data.Converters
 {
     /// <summary>

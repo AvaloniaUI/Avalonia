@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data
 {
     /// <summary>
@@ -418,15 +416,15 @@ namespace Avalonia.Data
             {
                 BindingValueType.DoNothing => BindingValue<T>.DoNothing,
                 BindingValueType.UnsetValue => BindingValue<T>.Unset,
-                BindingValueType.Value => new BindingValue<T>(TypeUtilities.ConvertImplicit<T>(value.Value)),
+                BindingValueType.Value => new BindingValue<T>(TypeUtilities.ConvertImplicit<T>(value.Value!)),
                 BindingValueType.BindingError => BindingValue<T>.BindingError(value.Error!),
                 BindingValueType.BindingErrorWithFallback => BindingValue<T>.BindingError(
                         value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value)),
+                        TypeUtilities.ConvertImplicit<T>(value.Value!)),
                 BindingValueType.DataValidationError => BindingValue<T>.DataValidationError(value.Error!),
                 BindingValueType.DataValidationErrorWithFallback => BindingValue<T>.DataValidationError(
                         value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value)),
+                        TypeUtilities.ConvertImplicit<T>(value.Value!)),
                 _ => throw new NotSupportedException("Invalid BindingValue type."),
             };
         }
