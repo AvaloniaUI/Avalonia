@@ -59,7 +59,10 @@ namespace Avalonia.Input
                 else
                 {
                     var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-
+                    if (settings == null)
+                    {
+                        throw new Exception("IPlatformSettings can not be null");
+                    }
                     if (!_lastClickRect.Contains(args.Position)
                         || ev.Timestamp - _lastClickTime > settings.DoubleClickTime.TotalMilliseconds)
                     {
