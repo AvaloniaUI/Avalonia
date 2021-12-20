@@ -33,7 +33,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the clip to be pushed or null if the operation represents a pop.
         /// </summary>
-        public IGeometryImpl Clip { get; }
+        public IGeometryImpl? Clip { get; }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.

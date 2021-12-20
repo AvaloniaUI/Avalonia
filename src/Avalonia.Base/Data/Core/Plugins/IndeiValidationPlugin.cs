@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
@@ -39,7 +37,7 @@ namespace Avalonia.Data.Core.Plugins
                 _name = name;
             }
 
-            void IWeakSubscriber<DataErrorsChangedEventArgs>.OnEvent(object sender, DataErrorsChangedEventArgs e)
+            void IWeakSubscriber<DataErrorsChangedEventArgs>.OnEvent(object? sender, DataErrorsChangedEventArgs e)
             {
                 if (e.PropertyName == _name || string.IsNullOrEmpty(e.PropertyName))
                 {

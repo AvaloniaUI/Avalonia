@@ -17,7 +17,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the global instance of the input manager.
         /// </summary>
-        public static IInputManager Instance => AvaloniaLocator.Current.GetService<IInputManager>();
+        public static IInputManager? Instance => AvaloniaLocator.Current.GetService<IInputManager>();
 
         /// <inheritdoc/>
         public IObservable<RawInputEventArgs> PreProcess => _preProcess;

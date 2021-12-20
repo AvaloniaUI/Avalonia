@@ -20,8 +20,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading;
 
-#nullable enable
-
 namespace Avalonia.Collections.Pooled
 {
     /// <summary>
@@ -613,7 +611,7 @@ namespace Avalonia.Collections.Pooled
             _version++;
         }
 
-        void IDeserializationCallback.OnDeserialization(object sender)
+        void IDeserializationCallback.OnDeserialization(object? sender)
         {
             // We can't serialize array pools, so deserialized PooledStacks will
             // have to use the shared pool, even if they were using a custom pool

@@ -7,8 +7,6 @@ using Avalonia.Data.Core.Parsers;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Reactive;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     /// <summary>

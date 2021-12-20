@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public class TypeCastNode : ExpressionNode

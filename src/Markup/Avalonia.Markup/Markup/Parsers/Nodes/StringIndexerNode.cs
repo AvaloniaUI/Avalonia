@@ -45,7 +45,7 @@ namespace Avalonia.Markup.Parsers.Nodes
                         return false;
                     }
 
-                    convertedObjectArray[i] = temp;
+                    convertedObjectArray[i] = temp!;
                 }
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
@@ -163,7 +163,7 @@ namespace Avalonia.Markup.Parsers.Nodes
                         return AvaloniaProperty.UnsetValue;
                     }
 
-                    convertedObjectArray[i] = temp;
+                    convertedObjectArray[i] = temp!;
                 }
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
@@ -215,7 +215,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return AvaloniaProperty.UnsetValue;
         }
 
-        private object GetValueFromArray(Array array)
+        private object? GetValueFromArray(Array array)
         {
             int[] intArgs;
             if (!ConvertArgumentsToInts(out intArgs))
@@ -223,7 +223,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return GetValueFromArray(array, intArgs);
         }
 
-        private object GetValueFromArray(Array array, int[] indices)
+        private object? GetValueFromArray(Array array, int[] indices)
         {
             if (ValidBounds(indices, array))
             {
@@ -238,14 +238,14 @@ namespace Avalonia.Markup.Parsers.Nodes
 
             for (int i = 0; i < Arguments.Count; ++i)
             {
-                object value;
+                object? value;
 
                 if (!TypeUtilities.TryConvert(typeof(int), Arguments[i], CultureInfo.InvariantCulture, out value))
                 {
                     return false;
                 }
 
-                intArgs[i] = (int)value;
+                intArgs[i] = (int)value!;
             }
             return true;
         }
@@ -258,7 +258,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             {
                 // Check for the default indexer name first to make this faster.
                 // This will only be false when a class in VB has a custom indexer name.
-                if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)) != null)
+                if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)!) != null)
                 {
                     return indexer;
                 }
@@ -297,7 +297,7 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         protected override bool ShouldUpdate(object? sender, PropertyChangedEventArgs e)
         {
-            if (sender is null)
+            if (sender is null || e.PropertyName is null)
                 return false;
             var typeInfo = sender.GetType().GetTypeInfo();
             return typeInfo.GetDeclaredProperty(e.PropertyName)?.GetIndexParameters().Any() ?? false;

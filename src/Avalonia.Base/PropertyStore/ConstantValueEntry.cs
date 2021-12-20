@@ -2,8 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 
-#nullable enable
-
 namespace Avalonia.PropertyStore
 {
     /// <summary>

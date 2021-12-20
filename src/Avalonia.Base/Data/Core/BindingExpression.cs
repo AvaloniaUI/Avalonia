@@ -7,8 +7,6 @@ using Avalonia.Logging;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     /// <summary>
@@ -263,7 +261,7 @@ namespace Avalonia.Data.Core
 
         private BindingNotification ConvertFallback()
         {
-            object converted;
+            object? converted;
 
             if (_fallbackValue == AvaloniaProperty.UnsetValue)
             {

@@ -3,8 +3,6 @@ using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -84,15 +82,15 @@ namespace Avalonia
 
         protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
 
-        protected BindingValue<object> TryConvert(object? value)
+        protected BindingValue<object?> TryConvert(object? value)
         {
             if (value == UnsetValue)
             {
-                return BindingValue<object>.Unset;
+                return BindingValue<object?>.Unset;
             }
             else if (value == BindingOperations.DoNothing)
             {
-                return BindingValue<object>.DoNothing;
+                return BindingValue<object?>.DoNothing;
             }
 
             if (!TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
@@ -102,7 +100,7 @@ namespace Avalonia
                     Name,
                     value,
                     value?.GetType().FullName ?? "(null)"));
-                return BindingValue<object>.BindingError(error);
+                return BindingValue<object?>.BindingError(error);
             }
 
             return converted;

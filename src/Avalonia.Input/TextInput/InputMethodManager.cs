@@ -8,7 +8,6 @@ namespace Avalonia.Input.TextInput
         private ITextInputMethodImpl? _im;
         private IInputElement? _focusedElement;
         private ITextInputMethodClient? _client;
-        private IDisposable? _subscribeDisposable;
         private readonly TransformTrackingHelper _transformTracker = new TransformTrackingHelper();
 
         public TextInputMethodManager()
@@ -64,7 +63,7 @@ namespace Avalonia.Input.TextInput
             }
         }
 
-        private void OnTextViewVisualChanged(object sender, EventArgs e) 
+        private void OnTextViewVisualChanged(object? sender, EventArgs e) 
             => _transformTracker.SetVisual(_client?.TextViewVisual);
 
         private void UpdateCursorRect()
@@ -79,7 +78,7 @@ namespace Avalonia.Input.TextInput
                 _im.SetCursorRect(_client.CursorRectangle.TransformToAABB(transform.Value));
         }
 
-        private void OnCursorRectangleChanged(object sender, EventArgs e)
+        private void OnCursorRectangleChanged(object? sender, EventArgs e)
         {
             if (sender == _client)
                 UpdateCursorRect();

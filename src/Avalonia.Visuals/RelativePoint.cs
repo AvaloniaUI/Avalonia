@@ -111,7 +111,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The other object.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
-        public override bool Equals(object obj) => obj is RelativePoint other && Equals(other);
+        public override bool Equals(object? obj) => obj is RelativePoint other && Equals(other);
 
         /// <summary>
         /// Checks if the <see cref="RelativePoint"/> equals another point.

@@ -415,6 +415,34 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+        {
+            if (rect.Height <= 0 || rect.Width <= 0)
+                return;
+
+            var rc = rect.ToSKRect();
+
+            if (brush != null)
+            {
+                using (var paint = CreatePaint(_fillPaint, brush, rect.Size))
+                {
+                    Canvas.DrawOval(rc, paint.Paint);
+                }
+            }
+
+            if (pen?.Brush != null)
+            {
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Size))
+                {
+                    if (paint.Paint is object)
+                    {
+                        Canvas.DrawOval(rc, paint.Paint);
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds.Size))

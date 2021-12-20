@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Avalonia.Web.Blazor</PackageId>
     <LangVersion>preview</LangVersion>
@@ -32,7 +31,8 @@
   <Import Project="..\..\..\build\BuildTargets.targets" />
   <Import Project="..\..\..\build\SkiaSharp.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-
+  <Import Project="..\..\..\build\NullableEnable.props" />
+  
   <ItemGroup>
     <Content Include="*.props">
       <Pack>true</Pack>
