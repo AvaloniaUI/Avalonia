@@ -204,7 +204,7 @@ partial class Build : NukeBuild
     void RunCoreTest(string projectName)
     {
         if(!projectName.EndsWith(".csproj"))
-            projectName = System.IO.Path.Combine(projectName, System.IO.Path.GetFileName(projectName)+".csproj");
+            projectName = Path.Combine("tests", projectName, System.IO.Path.GetFileName(projectName)+".csproj");
         Information("Running tests from " + projectName);
         XDocument xdoc;
         using (var s = File.OpenRead(projectName))
