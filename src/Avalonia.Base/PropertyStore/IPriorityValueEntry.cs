@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.PropertyStore
+﻿namespace Avalonia.PropertyStore
 {
     /// <summary>
     /// Represents an untyped interface to <see cref="IPriorityValueEntry{T}"/>.

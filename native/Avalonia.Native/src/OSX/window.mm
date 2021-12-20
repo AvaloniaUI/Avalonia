@@ -43,6 +43,7 @@ public:
         StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
         Window = [[AvnWindow alloc] initWithParent:this];
+        [Window setContentView: StandardContainer];
         
         lastPositionSet.X = 100;
         lastPositionSet.Y = 100;
@@ -124,8 +125,6 @@ public:
             SetPosition(lastPositionSet);
             UpdateStyle();
             
-            [Window setContentView: StandardContainer];
-            
             [Window setTitle:_lastTitle];
             
             if(ShouldTakeFocusOnShow() && activate)
@@ -175,7 +174,7 @@ public:
         {
             if(Window != nullptr)
             {
-                [Window makeKeyWindow];
+                [Window makeKeyAndOrderFront:nil];
                 [NSApp activateIgnoringOtherApps:YES];
             }
         }
@@ -328,8 +327,8 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
-                [StandardContainer setFrameSize:NSSize{x,y}];
-                [Window setContentSize:NSSize{x, y}];
+                [Window setContentSize:NSSize{x,y}];
+                [Window invalidateShadow];
             }
             @finally
             {
@@ -1494,7 +1493,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     NSRect rect = NSZeroRect;
     rect.size = newSize;
     
-    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag;
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag;
     _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
     [self addTrackingArea:_area];
     

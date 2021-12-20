@@ -14,7 +14,7 @@ namespace Avalonia.Rendering.SceneGraph
     internal class DeferredDrawingContextImpl : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
     {
         private readonly ISceneBuilder _sceneBuilder;
-        private VisualNode _node;
+        private VisualNode? _node;
         private int _childIndex;
         private int _drawOperationindex;
 
@@ -48,7 +48,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </returns>
         public UpdateState BeginUpdate(VisualNode node)
         {
-            Contract.Requires<ArgumentNullException>(node != null);
+            _ = node ?? throw new ArgumentNullException(nameof(node));
 
             if (_node != null)
             {
@@ -93,11 +93,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// </remarks>
         public void TrimChildren()
         {
-            _node.TrimChildren(_childIndex);
+            _node!.TrimChildren(_childIndex);
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
             var next = NextDrawAs<GeometryNode>();
 
@@ -149,7 +149,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
+        public void DrawRectangle(IBrush? brush, IPen? pen, RoundedRect rect,
             BoxShadows boxShadows = default)
         {
             var next = NextDrawAs<RectangleNode>();
@@ -172,6 +172,20 @@ namespace Avalonia.Rendering.SceneGraph
             if (next == null || !next.Item.Equals(Transform, material, rect))
             {
                 Add(new ExperimentalAcrylicNode(Transform, material, rect));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
+        public void DrawEllipse(IBrush? brush, IPen? pen, Rect rect)
+        {
+            var next = NextDrawAs<EllipseNode>();
+
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect))
+            {
+                Add(new EllipseNode(Transform, brush, pen, rect, CreateChildScene(brush)));
             }
             else
             {
@@ -245,7 +259,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(null))
             {
-                Add((new GeometryClipNode()));
+                Add(new GeometryClipNode());
             }
             else
             {
@@ -329,8 +343,11 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void PushGeometryClip(IGeometryImpl clip)
+        public void PushGeometryClip(IGeometryImpl? clip)
         {
+            if (clip is null)
+                return;
+
             var next = NextDrawAs<GeometryClipNode>();
 
             if (next == null || !next.Item.Equals(Transform, clip))
@@ -392,7 +409,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             public UpdateState(
                 DeferredDrawingContextImpl owner,
-                VisualNode node,
+                VisualNode? node,
                 int childIndex,
                 int drawOperationIndex)
             {
@@ -404,9 +421,9 @@ namespace Avalonia.Rendering.SceneGraph
 
             public void Dispose()
             {
-                Owner._node.TrimDrawOperations(Owner._drawOperationindex);
+                Owner._node!.TrimDrawOperations(Owner._drawOperationindex);
 
-                var dirty = Owner.Layers.GetOrAdd(Owner._node.LayerRoot).Dirty;
+                var dirty = Owner.Layers.GetOrAdd(Owner._node.LayerRoot!).Dirty;
 
                 var drawOperations = Owner._node.DrawOperations;
                 var drawOperationsCount = drawOperations.Count;
@@ -422,7 +439,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             public DeferredDrawingContextImpl Owner { get; }
-            public VisualNode Node { get; }
+            public VisualNode? Node { get; }
             public int ChildIndex { get; }
             public int DrawOperationIndex { get; }
         }
@@ -437,7 +454,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         private void Add(IRef<IDrawOperation> node)
         {
-            if (_drawOperationindex < _node.DrawOperations.Count)
+            if (_drawOperationindex < _node!.DrawOperations.Count)
             {
                 _node.ReplaceDrawOperation(_drawOperationindex, node);
             }
@@ -449,12 +466,12 @@ namespace Avalonia.Rendering.SceneGraph
             ++_drawOperationindex;
         }
 
-        private IRef<T> NextDrawAs<T>() where T : class, IDrawOperation
+        private IRef<T>? NextDrawAs<T>() where T : class, IDrawOperation
         {
-            return _drawOperationindex < _node.DrawOperations.Count ? _node.DrawOperations[_drawOperationindex] as IRef<T> : null;
+            return _drawOperationindex < _node!.DrawOperations.Count ? _node.DrawOperations[_drawOperationindex] as IRef<T> : null;
         }
 
-        private IDictionary<IVisual, Scene> CreateChildScene(IBrush brush)
+        private IDictionary<IVisual, Scene>? CreateChildScene(IBrush? brush)
         {
             var visualBrush = brush as VisualBrush;
 

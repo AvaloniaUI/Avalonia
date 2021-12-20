@@ -47,7 +47,8 @@
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Margin="{TemplateBinding Padding}">
-            <ContentPresenter Content="{TemplateBinding Content}"/>
+            <ContentPresenter Content="{TemplateBinding Content}" 
+                              ContentTemplate="{TemplateBinding ContentTemplate}" />
 
             <Path Name="SortIcon"
                   Grid.Column="1"

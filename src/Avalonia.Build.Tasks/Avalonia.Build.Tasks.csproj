@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
-        <TargetFrameworks Condition="$(Configuration) == 'Debug'">netstandard2.0;netcoreapp3.1</TargetFrameworks>
         <OutputType>exe</OutputType>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
         <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
         <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
-        <NoWarn>NU1605</NoWarn>
+        <NoWarn>NU1605;CS8632</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -90,6 +89,7 @@
       <Compile Include="../Avalonia.Controls/GridLength.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
+      <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.2" />

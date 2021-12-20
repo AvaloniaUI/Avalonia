@@ -1,14 +1,28 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="using:System">
+  <Design.PreviewWith>
+    <Border Width="400" Height="400">
+      <SplitView DisplayMode="Inline"
+                 IsPaneOpen="True">
+        <SplitView.Pane>
+          <Border Background="Green" />
+        </SplitView.Pane>
+        <SplitView.Content>
+          <Border Background="Blue" />
+        </SplitView.Content>
+      </SplitView>
+    </Border>
+  </Design.PreviewWith>
 
   <Styles.Resources>
     <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
     <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
-
-    <!-- Not used here (directly) since they're strings, but preserving for reference
-        <x:String x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</x:String>
-        <x:String x:Key="SplitViewPaneAnimationOpenPreDuration">00:00:00.19999</x:String>
-        <x:String x:Key="SplitViewPaneAnimationCloseDuration">00:00:00.1</x:String>-->
+    <sys:TimeSpan x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</sys:TimeSpan>
+    <sys:TimeSpan x:Key="SplitViewPaneAnimationCloseDuration">00:00:00.1</sys:TimeSpan>
+    <Easing x:Key="SplitViewPaneAnimationEasing">0.1,0.9,0.2,1.0</Easing>
+    <!-- Not used here (directly), but preserving for reference
+        <x:String x:Key="SplitViewPaneAnimationOpenPreDuration">00:00:00.19999</x:String>-->
   </Styles.Resources>
 
   <Style Selector="SplitView">
@@ -170,7 +184,7 @@
   <Style Selector="SplitView:open /template/ Panel#PART_PaneRoot">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Width" Duration="00:00:00.2" Easing="0.1,0.9,0.2,1.0" />
+        <DoubleTransition Property="Width" Duration="{StaticResource SplitViewPaneAnimationOpenDuration}" Easing="{StaticResource SplitViewPaneAnimationEasing}" />
       </Transitions>
     </Setter>
     <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=OpenPaneLength}" />
@@ -178,7 +192,7 @@
   <Style Selector="SplitView:open /template/ Rectangle#LightDismissLayer">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="00:00:00.2" Easing="0.1,0.9,0.2,1.0" />
+        <DoubleTransition Property="Opacity" Duration="{StaticResource SplitViewPaneAnimationOpenDuration}" Easing="{StaticResource SplitViewPaneAnimationEasing}" />
       </Transitions>
     </Setter>
     <Setter Property="Opacity" Value="1.0"/>
@@ -187,7 +201,7 @@
   <Style Selector="SplitView:closed /template/ Panel#PART_PaneRoot">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Width" Duration="00:00:00.1" Easing="0.1,0.9,0.2,1.0" />
+        <DoubleTransition Property="Width" Duration="{StaticResource SplitViewPaneAnimationCloseDuration}" Easing="{StaticResource SplitViewPaneAnimationEasing}" />
       </Transitions>
     </Setter>
     <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClosedPaneWidth}" />
@@ -195,7 +209,7 @@
   <Style Selector="SplitView:closed /template/ Rectangle#LightDismissLayer">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="00:00:00.2" Easing="0.1,0.9,0.2,1.0" />
+        <DoubleTransition Property="Opacity" Duration="{StaticResource SplitViewPaneAnimationCloseDuration}" Easing="{StaticResource SplitViewPaneAnimationEasing}" />
       </Transitions>
     </Setter>
     <Setter Property="Opacity" Value="0.0"/>

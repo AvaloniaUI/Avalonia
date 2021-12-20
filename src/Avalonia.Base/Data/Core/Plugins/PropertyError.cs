@@ -19,10 +19,10 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        public Type PropertyType => null;
+        public Type? PropertyType => null;
 
         /// <inheritdoc/>
-        public object Value => _error;
+        public object? Value => _error;
 
         /// <inheritdoc/>
         public void Dispose()
@@ -30,7 +30,7 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        public bool SetValue(object value, BindingPriority priority)
+        public bool SetValue(object? value, BindingPriority priority)
         {
             return false;
         }

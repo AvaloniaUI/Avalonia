@@ -23,11 +23,11 @@ namespace Avalonia.Rendering.SceneGraph
             IBrush foreground,
             Point origin,
             IFormattedTextImpl text,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene>? childScenes = null)
             : base(text.Bounds.Translate(origin), transform)
         {
             Transform = transform;
-            Foreground = foreground?.ToImmutable();
+            Foreground = foreground.ToImmutable();
             Origin = origin;
             Text = text;
             ChildScenes = childScenes;
@@ -54,7 +54,7 @@ namespace Avalonia.Rendering.SceneGraph
         public IFormattedTextImpl Text { get; }
 
         /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene> ChildScenes { get; }
+        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)

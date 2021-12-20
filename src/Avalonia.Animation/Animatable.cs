@@ -232,7 +232,7 @@ namespace Avalonia.Animation
             }
         }
 
-        private object GetAnimationBaseValue(AvaloniaProperty property)
+        private object? GetAnimationBaseValue(AvaloniaProperty property)
         {
             var value = this.GetBaseValue(property, BindingPriority.LocalValue);
 

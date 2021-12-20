@@ -10,8 +10,8 @@ namespace Avalonia.Utilities
     /// </summary>
     public struct SynchronousCompletionAsyncResult<T> : INotifyCompletion
     {
-        private readonly SynchronousCompletionAsyncResultSource<T> _source;
-        private readonly T _result;
+        private readonly SynchronousCompletionAsyncResultSource<T>? _source;
+        private readonly T? _result;
         private readonly bool _isValid;
         internal SynchronousCompletionAsyncResult(SynchronousCompletionAsyncResultSource<T> source)
         {
@@ -44,7 +44,7 @@ namespace Avalonia.Utilities
         {
             if (!_isValid)
                 ThrowNotInitialized();
-            return _source == null ? _result : _source.Result;
+            return _source == null ? _result! : _source.Result;
         }
 
 
@@ -67,15 +67,15 @@ namespace Avalonia.Utilities
     /// <typeparam name="T"></typeparam>
     public class SynchronousCompletionAsyncResultSource<T>
     {
-        private T _result;
+        private T? _result;
         internal bool IsCompleted { get; private set; }
         public SynchronousCompletionAsyncResult<T> AsyncResult => new SynchronousCompletionAsyncResult<T>(this);
         
         internal T Result => IsCompleted ?
-            _result :
+            _result! :
             throw new InvalidOperationException("Asynchronous operation is not yet completed");
         
-        private List<Action> _continuations;
+        private List<Action>? _continuations;
 
         internal void OnCompleted(Action continuation)
         {

@@ -26,6 +26,6 @@ namespace Avalonia.Animation
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>
-        Task Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken);
+        Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken);
     }
 }
