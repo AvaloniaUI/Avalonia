@@ -32,7 +32,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         private Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int generation)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            _ = root ?? throw new ArgumentNullException(nameof(root));
 
             var renderRoot = root.Visual as IRenderRoot;
 
@@ -76,7 +76,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="node">The node.</param>
         public void Add(IVisualNode node)
         {
-            Contract.Requires<ArgumentNullException>(node != null);
+            _ = node ?? throw new ArgumentNullException(nameof(node));
 
             _index.Add(node.Visual, node);
         }
@@ -115,10 +115,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>
         /// The node representing the visual or null if it could not be found.
         /// </returns>
-        public IVisualNode FindNode(IVisual visual)
+        public IVisualNode? FindNode(IVisual visual)
         {
-            IVisualNode node;
-            _index.TryGetValue(visual, out node);
+            _index.TryGetValue(visual, out var node);
             return node;
         }
 
@@ -129,7 +128,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="root">The root of the subtree to search.</param>
         /// <param name="filter">A filter. May be null.</param>
         /// <returns>The visuals at the specified point.</returns>
-        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
+        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
         {
             var node = FindNode(root);
             return (node != null) ? new HitTestEnumerable(node, filter, p, Root) : Enumerable.Empty<IVisual>();
@@ -142,7 +141,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="root">The root of the subtree to search.</param>
         /// <param name="filter">A filter. May be null.</param>
         /// <returns>The visual at the specified point.</returns>
-        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool>? filter)
         {
             var node = FindNode(root);
             return (node != null) ? HitTestFirst(node, p, filter) : null;
@@ -154,14 +153,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="node">The node.</param>
         public void Remove(IVisualNode node)
         {
-            Contract.Requires<ArgumentNullException>(node != null);
+            _ = node ?? throw new ArgumentNullException(nameof(node));
 
             _index.Remove(node.Visual);
 
             node.Dispose();
         }
 
-        private VisualNode Clone(VisualNode source, IVisualNode parent, Dictionary<IVisual, IVisualNode> index)
+        private VisualNode Clone(VisualNode source, IVisualNode? parent, Dictionary<IVisual, IVisualNode> index)
         {
             var result = source.Clone(parent);
 
@@ -185,7 +184,7 @@ namespace Avalonia.Rendering.SceneGraph
             return result;
         }
 
-        private IVisual HitTestFirst(IVisualNode root, Point p, Func<IVisual, bool> filter)
+        private IVisual HitTestFirst(IVisualNode root, Point p, Func<IVisual, bool>? filter)
         {
             using var enumerator = new HitTestEnumerator(root, filter, p, Root);
 
@@ -197,11 +196,11 @@ namespace Avalonia.Rendering.SceneGraph
         private class HitTestEnumerable : IEnumerable<IVisual>
         {
             private readonly IVisualNode _root;
-            private readonly Func<IVisual, bool> _filter;
+            private readonly Func<IVisual, bool>? _filter;
             private readonly IVisualNode _sceneRoot;
             private readonly Point _point;
             
-            public HitTestEnumerable(IVisualNode root, Func<IVisual, bool> filter, Point point, IVisualNode sceneRoot)
+            public HitTestEnumerable(IVisualNode root, Func<IVisual, bool>? filter, Point point, IVisualNode sceneRoot)
             {
                 _root = root;
                 _filter = filter;
@@ -223,12 +222,12 @@ namespace Avalonia.Rendering.SceneGraph
         private struct HitTestEnumerator : IEnumerator<IVisual>
         {
             private readonly PooledStack<Entry> _nodeStack;
-            private readonly Func<IVisual, bool> _filter;
+            private readonly Func<IVisual, bool>? _filter;
             private readonly IVisualNode _sceneRoot;
-            private IVisual _current;
+            private IVisual? _current;
             private readonly Point _point;
 
-            public HitTestEnumerator(IVisualNode root, Func<IVisual, bool> filter, Point point, IVisualNode sceneRoot)
+            public HitTestEnumerator(IVisualNode root, Func<IVisual, bool>? filter, Point point, IVisualNode sceneRoot)
             {
                 _nodeStack = new PooledStack<Entry>();
                 _nodeStack.Push(new Entry(root, false, null, true));
@@ -283,7 +282,7 @@ namespace Avalonia.Rendering.SceneGraph
                 throw new NotSupportedException();
             }
 
-            public IVisual Current => _current;
+            public IVisual Current => _current!;
 
             object IEnumerator.Current => Current;
 
@@ -307,7 +306,7 @@ namespace Avalonia.Rendering.SceneGraph
                     if (node.GeometryClip != null)
                     {
                         var controlPoint = _sceneRoot.Visual.TranslatePoint(_point, node.Visual);
-                        clipped = !node.GeometryClip.FillContains(controlPoint.Value);
+                        clipped = !node.GeometryClip.FillContains(controlPoint!.Value);
                     }
 
                     if (!clipped && node.Visual is ICustomHitTest custom)

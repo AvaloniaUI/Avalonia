@@ -166,7 +166,7 @@ namespace Avalonia.Media.TextFormatting
 
         public readonly struct SplitTextCharactersResult
         {
-            public SplitTextCharactersResult(ShapedTextCharacters first, ShapedTextCharacters second)
+            public SplitTextCharactersResult(ShapedTextCharacters first, ShapedTextCharacters? second)
             {
                 First = first;
 
@@ -187,7 +187,7 @@ namespace Avalonia.Media.TextFormatting
             /// <value>
             /// The second text run.
             /// </value>
-            public ShapedTextCharacters Second { get; }
+            public ShapedTextCharacters? Second { get; }
         }
     }
 }

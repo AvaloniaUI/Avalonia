@@ -11,11 +11,11 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
         /// </summary>
-        public static readonly StyledProperty<Transform> TransformProperty =
-            AvaloniaProperty.Register<Geometry, Transform>(nameof(Transform));
+        public static readonly StyledProperty<Transform?> TransformProperty =
+            AvaloniaProperty.Register<Geometry, Transform?>(nameof(Transform));
 
         private bool _isDirty = true;
-        private IGeometryImpl _platformImpl;
+        private IGeometryImpl? _platformImpl;
 
         static Geometry()
         {
@@ -25,7 +25,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Raised when the geometry changes.
         /// </summary>
-        public event EventHandler Changed;
+        public event EventHandler? Changed;
 
         /// <summary>
         /// Gets the geometry's bounding rectangle.
@@ -35,7 +35,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.
         /// </summary>
-        public IGeometryImpl PlatformImpl
+        public IGeometryImpl? PlatformImpl
         {
             get
             {
@@ -60,7 +60,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets a transform to apply to the geometry.
         /// </summary>
-        public Transform Transform
+        public Transform? Transform
         {
             get { return GetValue(TransformProperty); }
             set { SetValue(TransformProperty, value); }
@@ -127,7 +127,7 @@ namespace Avalonia.Media
         /// Creates the platform implementation of the geometry, without the transform applied.
         /// </summary>
         /// <returns></returns>
-        protected abstract IGeometryImpl CreateDefiningGeometry();
+        protected abstract IGeometryImpl? CreateDefiningGeometry();
 
         /// <summary>
         /// Invalidates the platform implementation of the geometry.
@@ -141,8 +141,8 @@ namespace Avalonia.Media
 
         private void TransformChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldValue = (Transform)e.OldValue;
-            var newValue = (Transform)e.NewValue;
+            var oldValue = (Transform?)e.OldValue;
+            var newValue = (Transform?)e.NewValue;
 
             if (oldValue != null)
             {
@@ -157,9 +157,9 @@ namespace Avalonia.Media
             TransformChanged(newValue, EventArgs.Empty);
         }
 
-        private void TransformChanged(object sender, EventArgs e)
+        private void TransformChanged(object? sender, EventArgs e)
         {
-            var transform = ((Transform)sender)?.Value;
+            var transform = ((Transform?)sender)?.Value;
 
             if (_platformImpl is ITransformedGeometryImpl t)
             {
@@ -174,7 +174,7 @@ namespace Avalonia.Media
             }
             else if (_platformImpl != null && transform != null && transform != Matrix.Identity)
             {
-                _platformImpl = PlatformImpl.WithTransform(transform.Value);
+                _platformImpl = _platformImpl.WithTransform(transform.Value);
             }
 
             Changed?.Invoke(this, EventArgs.Empty);
