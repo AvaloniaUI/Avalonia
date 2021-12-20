@@ -8,6 +8,73 @@ namespace Avalonia.Styling.UnitTests
 {
     public class SelectorTests_PropertyEquals
     {
+        static SelectorTests_PropertyEquals()
+        {
+            //Ensure the attached properties are registered before run tests
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Grid).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Auth).TypeHandle);
+        }
+
+        class Auth
+        {
+            public readonly static AttachedProperty<string> NameProperty =
+                AvaloniaProperty.RegisterAttached<Auth, AvaloniaObject, string>("Name");
+
+            public static string GetName(AvaloniaObject avaloniaObject) =>
+                avaloniaObject.GetValue(NameProperty);
+
+            public static void SetName(AvaloniaObject avaloniaObject, string value) =>
+                avaloniaObject.SetValue(NameProperty, value);
+        }
+
+        [Fact]
+        public async Task PropertyEquals_Attached_Property_Matching_Value()
+        {
+            var target = new Markup.Parsers.SelectorParser((ns, type) =>
+            {
+                return (ns, type) switch
+                {
+                    ("", nameof(TextBlock)) => typeof(TextBlock),
+                    ("", nameof(Grid)) => typeof(Grid),
+                    _ => null
+                };
+            }).Parse("TextBlock[(Grid.Column)=1]");
+            
+
+            var control = new TextBlock();
+            var activator = target.Match(control).Activator.ToObservable();
+
+            Assert.False(await activator.Take(1));
+            Grid.SetColumn(control, 1);
+            Assert.True(await activator.Take(1));
+            Grid.SetColumn(control, 0);
+            Assert.False(await activator.Take(1));
+        }
+
+        [Fact]
+        public async Task PropertyEquals_Attached_Property_With_Namespace_Matching_Value()
+        {
+            var target = new Markup.Parsers.SelectorParser((ns, type) =>
+            {
+                return (ns, type) switch
+                {
+                    ("", nameof(TextBlock)) => typeof(TextBlock),
+                    ("l", nameof(Auth)) => typeof(Auth),
+                    _ => null
+                };
+            }).Parse("TextBlock[(l|Auth.Name)=Admin]");
+
+
+            var control = new TextBlock();
+            var activator = target.Match(control).Activator.ToObservable();
+
+            Assert.False(await activator.Take(1));
+            Auth.SetName(control, "Admin");
+            Assert.True(await activator.Take(1));
+            Auth.SetName(control, null);
+            Assert.False(await activator.Take(1));
+        }
+
         [Fact]
         public async Task PropertyEquals_Matches_When_Property_Has_Matching_Value()
         {
