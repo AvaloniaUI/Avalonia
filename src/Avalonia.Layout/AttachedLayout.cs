@@ -12,17 +12,17 @@ namespace Avalonia.Layout
     /// </summary>
     public abstract class AttachedLayout : AvaloniaObject
     {
-        public string LayoutId { get; set; }
+        public string? LayoutId { get; set; }
 
         /// <summary>
         /// Occurs when the measurement state (layout) has been invalidated.
         /// </summary>
-        public event EventHandler MeasureInvalidated;
+        public event EventHandler? MeasureInvalidated;
 
         /// <summary>
         /// Occurs when the arrange state (layout) has been invalidated.
         /// </summary>
-        public event EventHandler ArrangeInvalidated;
+        public event EventHandler? ArrangeInvalidated;
 
         /// <summary>
         /// Initializes any per-container state the layout requires when it is attached to an
