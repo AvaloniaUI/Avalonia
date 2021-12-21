@@ -235,7 +235,7 @@ namespace Avalonia.Input.UnitTests
                 Assert.Equal(9, tappedExecutedTimes);
                 Assert.Equal(9, pointerPressedExecutedTimes);
                 Assert.True(isDoubleTapped);
-                Assert.Equal(2, doubleTappedExecutedTimes);
+                Assert.Equal(3, doubleTappedExecutedTimes);
 
             }
         }

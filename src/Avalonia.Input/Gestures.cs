@@ -88,7 +88,7 @@ namespace Avalonia.Input
                 {
                     s_lastPress.SetTarget(ev.Source);
                 }
-                else if (clickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+                else if (clickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
