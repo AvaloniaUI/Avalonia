@@ -58,7 +58,7 @@ namespace Avalonia.Input.UnitTests
                 };
                 TapOnce(InputManager.Instance, touchDevice, root);
                 TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 1);
-                Assert.Equal(2, tappedExecutedTimes);
+                Assert.Equal(1, tappedExecutedTimes);
                 Assert.True(isDoubleTapped);
                 Assert.Equal(1, doubleTappedExecutedTimes);
             }
@@ -232,7 +232,7 @@ namespace Avalonia.Input.UnitTests
                 SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchBegin, 5, 6, 7);
                 SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchEnd, 5, 6, 7);
                 TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 8);
-                Assert.Equal(9, tappedExecutedTimes);
+                Assert.Equal(6, tappedExecutedTimes);
                 Assert.Equal(9, pointerPressedExecutedTimes);
                 Assert.True(isDoubleTapped);
                 Assert.Equal(3, doubleTappedExecutedTimes);

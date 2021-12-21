@@ -6,6 +6,7 @@ namespace Avalonia.Input
 {
     public static class Gestures
     {
+        private static bool _isDoubleTapped = false;
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,
@@ -86,14 +87,20 @@ namespace Avalonia.Input
 #pragma warning restore CS0618 // Type or member is obsolete
                 if (clickCount <= 1)
                 {
+                    _isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
                 }
                 else if (clickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
+                        _isDoubleTapped = true;
                         e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
+                }
+                else
+                {
+                    _isDoubleTapped = false;
                 }
             }
         }
@@ -112,7 +119,7 @@ namespace Avalonia.Input
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
                         }
-                        else
+                        else if(_isDoubleTapped == false)
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(TappedEvent, e));
                         }
