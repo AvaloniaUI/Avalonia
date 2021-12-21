@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.RadioButtonPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">RadioButton</TextBlock>
     <TextBlock Classes="h2">Allows the selection of a single option of many</TextBlock>
 
     <StackPanel Orientation="Horizontal"
@@ -11,9 +10,9 @@
                 Spacing="16">
       <StackPanel Orientation="Vertical"
                   Spacing="16">
-        <RadioButton IsChecked="True">Option 1</RadioButton>
-        <RadioButton>Option 2</RadioButton>
-        <RadioButton IsChecked="{x:Null}">Option 3</RadioButton>
+        <RadioButton IsChecked="True">_Option 1</RadioButton>
+        <RadioButton>O_ption 2</RadioButton>
+        <RadioButton IsChecked="{x:Null}">Op_tion 3</RadioButton>
         <RadioButton IsEnabled="False">Disabled</RadioButton>
       </StackPanel>
       <StackPanel Orientation="Vertical"

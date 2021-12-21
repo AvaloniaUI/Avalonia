@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
@@ -42,7 +43,8 @@ namespace Avalonia.Dialogs
 
         private static void ShellExec(string cmd, bool waitForExit = true)
         {
-            var escapedArgs = cmd.Replace("\"", "\\\"");
+            var escapedArgs = Regex.Replace(cmd, "(?=[`~!#&*()|;'<>])", "\\")
+                .Replace("\"", "\\\\\\\"");
 
             using (var process = Process.Start(
                 new ProcessStartInfo

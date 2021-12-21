@@ -154,7 +154,8 @@ namespace Avalonia.Media
 
             if (g1 is object && g2 is object)
             {
-                var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+                var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
+                    throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
                 return factory.CreateCombinedGeometry(GeometryCombineMode, g1, g2);
             }
             else if (GeometryCombineMode == GeometryCombineMode.Intersect)

@@ -101,7 +101,7 @@ namespace Avalonia.Layout
 
             if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
             {
-                throw new Exception($"Invalid LayoutScaling returned from {visualRoot.GetType()}");
+                throw new Exception($"Invalid LayoutScaling returned from {visualRoot!.GetType()}");
             }
 
             return result;

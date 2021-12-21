@@ -89,7 +89,7 @@ namespace Avalonia.Input
                 var method = direction == NavigationDirection.Next ||
                              direction == NavigationDirection.Previous ?
                              NavigationMethod.Tab : NavigationMethod.Directional;
-                FocusManager.Instance.Focus(next, method, keyModifiers);
+                FocusManager.Instance?.Focus(next, method, keyModifiers);
             }
         }
 
@@ -98,9 +98,9 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
         {
-            var current = FocusManager.Instance.Current;
+            var current = FocusManager.Instance?.Current;
 
             if (current != null && e.Key == Key.Tab)
             {

@@ -1,4 +1,5 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="ContextMenu">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Padding" Value="4,2"/>

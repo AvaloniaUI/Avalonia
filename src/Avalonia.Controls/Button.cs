@@ -99,6 +99,7 @@ namespace Avalonia.Controls
             CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
             IsCancelProperty.Changed.Subscribe(IsCancelChanged);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>((lbl, args) => lbl.OnAccessKey(args));
         }
 
         public Button()
@@ -256,6 +257,8 @@ namespace Avalonia.Controls
             }
         }
 
+        protected virtual void OnAccessKey(RoutedEventArgs e) => OnClick();
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -301,15 +304,18 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void OnClick()
         {
-            OpenFlyout();
-
-            var e = new RoutedEventArgs(ClickEvent);
-            RaiseEvent(e);
-
-            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
+            if (IsEffectivelyEnabled)
             {
-                Command.Execute(CommandParameter);
-                e.Handled = true;
+                OpenFlyout();
+
+                var e = new RoutedEventArgs(ClickEvent);
+                RaiseEvent(e);
+
+                if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
+                {
+                    Command.Execute(CommandParameter);
+                    e.Handled = true;
+                }
             }
         }
 
@@ -355,6 +361,13 @@ namespace Avalonia.Controls
         
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
+            IsPressed = false;
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+
             IsPressed = false;
         }
 

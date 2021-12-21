@@ -11,6 +11,14 @@ namespace Avalonia.Media
     /// </summary>
     public class DrawingImage : AvaloniaObject, IImage, IAffectsRender
     {
+        public DrawingImage() 
+        { 
+        }
+
+        public DrawingImage(Drawing drawing)
+        {
+            Drawing = drawing;
+        }
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
         /// </summary>
@@ -18,7 +26,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<DrawingImage, Drawing>(nameof(Drawing));
 
         /// <inheritdoc/>
-        public event EventHandler Invalidated;
+        public event EventHandler? Invalidated;
 
         /// <summary>
         /// Gets or sets the drawing content.

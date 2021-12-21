@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -122,10 +123,21 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 lifetimeEvents.ShutdownRequested += OnShutdownRequested;
 
             _cts = new CancellationTokenSource();
-            MainWindow?.Show();
+            
+            // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
+            // gets stuffed into a local var and can not be GCed until after the program stops.
+            // this method never exits until program end.
+            ShowMainWindow(); 
+                              
             Dispatcher.UIThread.MainLoop(_cts.Token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ShowMainWindow()
+        {
+            MainWindow?.Show();
         }
 
         public void Dispose()

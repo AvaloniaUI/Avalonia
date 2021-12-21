@@ -57,7 +57,7 @@ namespace Avalonia.Styling
             {
                 if (_styledProperty is object)
                 {
-                    _subscription = _target.SetValue(_styledProperty, _value, BindingPriority.Style);
+                    _subscription = _target.SetValue(_styledProperty!, _value, BindingPriority.Style);
                 }
                 else
                 {
