@@ -2473,6 +2473,7 @@ protected:
             return S_OK;
         }
     }
+
     virtual HRESULT SetTopMost (bool value) override
     {
         START_COM_CALL;
