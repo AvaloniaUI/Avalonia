@@ -71,7 +71,7 @@ namespace Avalonia.Input
                     ++_clickCount;
                     _lastClickTime = ev.Timestamp;
                     _lastClickRect = new Rect(args.Position, new Size())
-                        .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
+                        .Inflate(new Thickness(16, 16));
                 }
 
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
