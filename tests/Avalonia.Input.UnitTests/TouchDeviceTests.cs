@@ -157,35 +157,101 @@ namespace Avalonia.Input.UnitTests
                 {
                     tappedExecutedTimes++;
                 };
-                InputManager.Instance.ProcessInput(new RawTouchEventArgs(touchDevice, 0,
-                                             root,
-                                             RawPointerEventType.TouchBegin,
-                                             new Point(0, 0),
-                                             RawInputModifiers.None,
-                                             0));
-                InputManager.Instance.ProcessInput(new RawTouchEventArgs(touchDevice, 0,
-                                             root,
-                                             RawPointerEventType.TouchBegin,
-                                             new Point(0, 0),
-                                             RawInputModifiers.None,
-                                             1));
-                InputManager.Instance.ProcessInput(new RawTouchEventArgs(touchDevice, 0,
-                                            root,
-                                            RawPointerEventType.TouchEnd,
-                                            new Point(0, 0),
-                                            RawInputModifiers.None,
-                                            0));
-                InputManager.Instance.ProcessInput(new RawTouchEventArgs(touchDevice, 0,
-                                             root,
-                                             RawPointerEventType.TouchEnd,
-                                             new Point(0, 0),
-                                             RawInputModifiers.None,
-                                             1));
+                SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchBegin, 0, 1);
+                SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchEnd, 0, 1);
                 Assert.Equal(2, tappedExecutedTimes);
                 Assert.False(isDoubleTapped);
                 Assert.Equal(0, doubleTappedExecutedTimes);
             }
         }
+
+        [Fact]
+        public void Click_Counting_Should_Work_Correctly_With_Few_Touch_Contacts()
+        {
+            var tmp = new Mock<IPlatformSettings>();
+            tmp.Setup(x => x.DoubleClickTime).Returns(new TimeSpan(200));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+               .Bind<IPlatformSettings>().ToConstant(tmp.Object);
+            using (UnitTestApplication.Start(
+                new TestServices(inputManager: new InputManager())))
+            {
+                var root = new TestRoot();
+                var touchDevice = new TouchDevice();
+
+                var pointerPressedExecutedTimes = 0;
+                var tappedExecutedTimes = 0;
+                var isDoubleTapped = false;
+                var doubleTappedExecutedTimes = 0;
+                root.PointerPressed += (a, e) =>
+                {
+                    pointerPressedExecutedTimes++;
+                    switch (pointerPressedExecutedTimes)
+                    {
+                        case <= 2:
+                            Assert.True(e.ClickCount == 1);
+                            break;
+                        case 3:
+                            Assert.True(e.ClickCount == 2);
+                            break;
+                        case 4:
+                            Assert.True(e.ClickCount == 3);
+                            break;
+                        case 5:
+                            Assert.True(e.ClickCount == 4);
+                            break;
+                        case 6:
+                            Assert.True(e.ClickCount == 5);
+                            break;
+                        case 7:
+                            Assert.True(e.ClickCount == 1);
+                            break;
+                        case 8:
+                            Assert.True(e.ClickCount == 1);
+                            break;
+                        case 9:
+                            Assert.True(e.ClickCount == 2);
+                            break;
+                        default:
+                            break;
+                    }
+                };
+                root.DoubleTapped += (a, e) =>
+                {
+                    isDoubleTapped = true;
+                    doubleTappedExecutedTimes++;
+                };
+                root.Tapped += (a, e) =>
+                {
+                    tappedExecutedTimes++;
+                };
+                SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchBegin, 0, 1);
+                SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchEnd, 0, 1);
+                TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 2);
+                TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 3);
+                TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 4);
+                SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchBegin, 5, 6, 7);
+                SendXTouchContactsWithIds(InputManager.Instance, touchDevice, root, RawPointerEventType.TouchEnd, 5, 6, 7);
+                TapOnce(InputManager.Instance, touchDevice, root, touchPointId: 8);
+                Assert.Equal(9, tappedExecutedTimes);
+                Assert.Equal(9, pointerPressedExecutedTimes);
+                Assert.True(isDoubleTapped);
+                Assert.Equal(2, doubleTappedExecutedTimes);
+
+            }
+        }
+        private static void SendXTouchContactsWithIds(IInputManager inputManager, TouchDevice device, IInputRoot root, RawPointerEventType type, params long[] touchPointIds)
+        {
+            for (int i = 0; i < touchPointIds.Length; i++)
+            {
+                inputManager.ProcessInput(new RawTouchEventArgs(device, 0,
+                                                              root,
+                                                              type,
+                                                              new Point(0, 0),
+                                                              RawInputModifiers.None,
+                                                              touchPointIds[i]));
+            }
+        }
+
 
         private static void TapOnce(IInputManager inputManager, TouchDevice device, IInputRoot root, ulong timestamp = 0, long touchPointId = 0)
         {
