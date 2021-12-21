@@ -119,7 +119,9 @@ namespace Avalonia.Input
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
                         }
-                        else if(_isDoubleTapped == false)
+                        //_isDoubleTapped needed here to prevent invoking Tapped event when DoubleTapped is called.
+                        //This behaviour matches UWP behaviour.
+                        else if (_isDoubleTapped == false)
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(TappedEvent, e));
                         }
