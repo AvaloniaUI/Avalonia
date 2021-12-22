@@ -40,6 +40,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             var selectorType = pn.Property.GetClrProperty().Getter.ReturnType;
             var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
+            var avaloniaAttachedPropertyT = context.GetAvaloniaTypes().AvaloniaAttachedPropertyT;
             XamlIlSelectorNode Create(IEnumerable<SelectorGrammar.ISyntax> syntax,
                 Func<string, string, XamlAstClrTypeReference> typeResolver)
             {
@@ -85,6 +86,47 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             result = new XamlIlPropertyEqualsSelector(result, targetProperty, typedValue);
                             break;
                         }
+                        case SelectorGrammar.AttachedPropertySyntax attachedProperty:
+                            {
+                                var targetType = result?.TargetType;
+                                if (targetType == null)
+                                {
+                                    throw new XamlParseException("Attached Property selectors must be applied to a type.",node);
+                                }
+                                var attachedPropertyOwnerType = typeResolver(attachedProperty.Xmlns, attachedProperty.TypeName).Type;
+
+                                if (attachedPropertyOwnerType is null)
+                                {
+                                    throw new XamlParseException($"Cannot find '{attachedProperty.Xmlns}:{attachedProperty.TypeName}",node);
+                                }
+
+                                var attachedPropertyName = attachedProperty.Property + "Property";
+
+                                var targetPropertyField = attachedPropertyOwnerType.GetAllFields()
+                                    .FirstOrDefault(f => f.IsStatic
+                                        && f.IsPublic
+                                        && f.Name == attachedPropertyName
+                                        && f.FieldType.GenericTypeDefinition == avaloniaAttachedPropertyT
+                                        );
+
+                                if (targetPropertyField is null)
+                                {
+                                    throw new XamlParseException($"Cannot find '{attachedProperty.Property}' on '{attachedPropertyOwnerType.GetFqn()}", node);
+                                }
+
+                                var targetPropertyType = XamlIlAvaloniaPropertyHelper
+                                    .GetAvaloniaPropertyType(targetPropertyField, context.GetAvaloniaTypes(), node);
+
+                                if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context,
+                                    new XamlAstTextNode(node, attachedProperty.Value, context.Configuration.WellKnownTypes.String),
+                                    targetPropertyType, out var typedValue))
+                                        throw new XamlParseException(
+                                            $"Cannot convert '{attachedProperty.Value}' to '{targetPropertyType.GetFqn()}",
+                                            node);
+
+                                result = new XamlIlAttacchedPropertyEqualsSelector(result, targetPropertyField, typedValue);
+                                break;
+                            }
                         case SelectorGrammar.ChildSyntax child:
                             result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Child);
                             break;
@@ -329,6 +371,34 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlLoadException(
                     $"{Property.Name} of {(Property.Setter ?? Property.Getter).DeclaringType.GetFqn()} doesn't seem to be an AvaloniaProperty",
                     this);
+            context.Emit(Value, codeGen, context.Configuration.WellKnownTypes.Object);
+            EmitCall(context, codeGen,
+                m => m.Name == "PropertyEquals"
+                     && m.Parameters.Count == 3
+                     && m.Parameters[1].FullName == "Avalonia.AvaloniaProperty"
+                     && m.Parameters[2].Equals(context.Configuration.WellKnownTypes.Object));
+        }
+    }
+
+
+    class XamlIlAttacchedPropertyEqualsSelector : XamlIlSelectorNode
+    {
+        public XamlIlAttacchedPropertyEqualsSelector(XamlIlSelectorNode previous,
+            IXamlField propertyFiled,
+            IXamlAstValueNode value)
+            : base(previous)
+        {
+            PropertyFiled = propertyFiled;
+            Value = value;
+        }
+
+        public IXamlField PropertyFiled { get; set; }
+        public IXamlAstValueNode Value { get; set; }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldsfld(PropertyFiled);
             context.Emit(Value, codeGen, context.Configuration.WellKnownTypes.Object);
             EmitCall(context, codeGen,
                 m => m.Name == "PropertyEquals"

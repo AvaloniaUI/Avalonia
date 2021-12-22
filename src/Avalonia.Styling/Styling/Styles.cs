@@ -262,7 +262,7 @@ namespace Avalonia.Styling
             }
         }
 
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             static IReadOnlyList<T> ToReadOnlyList<T>(IList list)
             {
@@ -282,7 +282,7 @@ namespace Avalonia.Styling
             {
                 for (var i = 0; i < items.Count; ++i)
                 {
-                    var style = (IStyle)items[i];
+                    var style = (IStyle)items[i]!;
 
                     if (Owner is object && style is IResourceProvider resourceProvider)
                     {
@@ -299,7 +299,7 @@ namespace Avalonia.Styling
             {
                 for (var i = 0; i < items.Count; ++i)
                 {
-                    var style = (IStyle)items[i];
+                    var style = (IStyle)items[i]!;
 
                     if (Owner is object && style is IResourceProvider resourceProvider)
                     {
@@ -315,14 +315,14 @@ namespace Avalonia.Styling
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    Add(e.NewItems);
+                    Add(e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldItems);
+                    Remove(e.OldItems!);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    Remove(e.OldItems);
-                    Add(e.NewItems);
+                    Remove(e.OldItems!);
+                    Add(e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     throw new InvalidOperationException("Reset should not be called on Styles.");

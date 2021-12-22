@@ -77,8 +77,7 @@ namespace Avalonia.Rendering
         /// </remarks>
         protected virtual IDisposable StartCore(Action<TimeSpan> tick)
         {
-            _runtime ??= AvaloniaLocator.Current.GetService<IRuntimePlatform>() ??
-                throw new InvalidOperationException("Unable to locate IRuntimePlatform.");
+            _runtime ??= AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
 
             return _runtime.StartSystemTimer(
                 TimeSpan.FromSeconds(1.0 / FramesPerSecond),

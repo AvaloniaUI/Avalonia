@@ -70,8 +70,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
             return factory.CreateLineGeometry(StartPoint, EndPoint);
         }

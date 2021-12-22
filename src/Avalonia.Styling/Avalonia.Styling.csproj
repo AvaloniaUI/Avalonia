@@ -9,4 +9,5 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>
