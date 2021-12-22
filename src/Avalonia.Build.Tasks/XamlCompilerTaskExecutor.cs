@@ -126,6 +126,7 @@ namespace Avalonia.Build.Tasks
             asm.MainModule.Types.Add(indexerAccessorClosure);
             var trampolineBuilder = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlTrampolines",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(trampolineBuilder);
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
