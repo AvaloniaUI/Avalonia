@@ -7,8 +7,6 @@ using Avalonia.Logging;
 using Avalonia.PropertyStore;
 using Avalonia.Threading;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -47,7 +45,7 @@ namespace Avalonia
         /// <summary>
         /// Raised when a <see cref="AvaloniaProperty"/> value changes on this object.
         /// </summary>
-        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
         {
             add { _inpcChanged += value; }
             remove { _inpcChanged -= value; }
@@ -103,7 +101,7 @@ namespace Avalonia
         /// Gets or sets the value of a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
-        public object this[AvaloniaProperty property]
+        public object? this[AvaloniaProperty property]
         {
             get { return GetValue(property); }
             set { SetValue(property, value); }
@@ -115,8 +113,8 @@ namespace Avalonia
         /// <param name="binding">The binding information.</param>
         public IBinding this[IndexerDescriptor binding]
         {
-            get { return new IndexerBinding(this, binding.Property, binding.Mode); }
-            set { this.Bind(binding.Property, value); }
+            get { return new IndexerBinding(this, binding.Property!, binding.Mode); }
+            set { this.Bind(binding.Property!, value); }
         }
 
         private ValueStore Values
@@ -211,7 +209,7 @@ namespace Avalonia
         /// See https://github.com/AvaloniaUI/Avalonia/pull/2747 for the discussion that prompted
         /// this.
         /// </remarks>
-        public sealed override bool Equals(object obj) => base.Equals(obj);
+        public sealed override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Gets the hash code for the object.
@@ -233,7 +231,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public object GetValue(AvaloniaProperty property)
+        public object? GetValue(AvaloniaProperty property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
 
@@ -567,7 +565,7 @@ namespace Avalonia
         /// <param name="oldParent">The old inheritance parent.</param>
         internal void InheritanceParentChanged<T>(
             StyledPropertyBase<T> property,
-            IAvaloniaObject oldParent)
+            IAvaloniaObject? oldParent)
         {
             var oldValue = oldParent switch
             {
@@ -857,7 +855,7 @@ namespace Avalonia
         private string GetDescription(object o)
         {
             var description = o as IDescription;
-            return description?.Description ?? o.ToString();
+            return description?.Description ?? o.ToString() ?? o.GetType().Name;
         }
 
         /// <summary>

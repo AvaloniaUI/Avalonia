@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Utilities
 {
@@ -94,15 +95,26 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
+        /// Returns a value indicating whether null can be assigned to the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type</typeparam>
+        /// <returns>True if the type accepts null values; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool AcceptsNull<T>()
+        {
+            return default(T) is null;
+        }
+
+        /// <summary>
         /// Returns a value indicating whether value can be casted to the specified type.
         /// If value is null, checks if instances of that type can be null.
         /// </summary>
         /// <typeparam name="T">The type to cast to</typeparam>
         /// <param name="value">The value to check if cast possible</param>
         /// <returns>True if the cast is possible, otherwise false.</returns>
-        public static bool CanCast<T>(object value)
+        public static bool CanCast<T>(object? value)
         {
-            return value is T || (value is null && AcceptsNull(typeof(T)));
+            return value is T || (value is null && AcceptsNull<T>());
         }
 
         /// <summary>
@@ -113,7 +125,7 @@ namespace Avalonia.Utilities
         /// <param name="culture">The culture to use.</param>
         /// <param name="result">If successful, contains the convert value.</param>
         /// <returns>True if the cast was successful, otherwise false.</returns>
-        public static bool TryConvert(Type to, object value, CultureInfo culture, out object result)
+        public static bool TryConvert(Type to, object? value, CultureInfo? culture, out object? result)
         {
             if (value == null)
             {
@@ -155,9 +167,9 @@ namespace Avalonia.Utilities
             {
                 result = null;
 
-                if (TryConvert(Enum.GetUnderlyingType(toUnderl), value, culture, out object enumValue))
+                if (TryConvert(Enum.GetUnderlyingType(toUnderl), value, culture, out var enumValue))
                 {
-                    result = Enum.ToObject(toUnderl, enumValue);
+                    result = Enum.ToObject(toUnderl, enumValue!);
                     return true;
                 }
             }
@@ -232,7 +244,7 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to convert.</param>
         /// <param name="result">If successful, contains the converted value.</param>
         /// <returns>True if the convert was successful, otherwise false.</returns>
-        public static bool TryConvertImplicit(Type to, object value, out object result)
+        public static bool TryConvertImplicit(Type to, object? value, out object? result)
         {
             if (value == null)
             {
@@ -294,9 +306,9 @@ namespace Avalonia.Utilities
         /// <param name="type">The type to convert to..</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
-        public static object ConvertOrDefault(object value, Type type, CultureInfo culture)
+        public static object? ConvertOrDefault(object? value, Type type, CultureInfo culture)
         {
-            return TryConvert(type, value, culture, out object result) ? result : Default(type);
+            return TryConvert(type, value, culture, out var result) ? result : Default(type);
         }
 
         /// <summary>
@@ -306,16 +318,16 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to convert.</param>
         /// <param name="type">The type to convert to.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
-        public static object ConvertImplicitOrDefault(object value, Type type)
+        public static object? ConvertImplicitOrDefault(object? value, Type type)
         {
-            return TryConvertImplicit(type, value, out object result) ? result : Default(type);
+            return TryConvertImplicit(type, value, out var result) ? result : Default(type);
         }
 
         public static T ConvertImplicit<T>(object value)
         {
             if (TryConvertImplicit(typeof(T), value, out var result))
             {
-                return (T)result;
+                return (T)result!;
             }
 
             throw new InvalidCastException(
@@ -327,7 +339,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The default value.</returns>
-        public static object Default(Type type)
+        public static object? Default(Type type)
         {
             if (type.IsValueType)
             {
@@ -355,7 +367,7 @@ namespace Avalonia.Utilities
                 return false;
             }
 
-            Type underlyingType = Nullable.GetUnderlyingType(type);
+            var underlyingType = Nullable.GetUnderlyingType(type);
 
             if (underlyingType != null)
             {
@@ -379,7 +391,7 @@ namespace Avalonia.Utilities
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-        private static MethodInfo FindTypeConversionOperatorMethod(Type fromType, Type toType, OperatorType operatorType)
+        private static MethodInfo? FindTypeConversionOperatorMethod(Type fromType, Type toType, OperatorType operatorType)
         {
             const string implicitName = "op_Implicit";
             const string explicitName = "op_Explicit";

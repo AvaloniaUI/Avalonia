@@ -17,7 +17,7 @@ namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
-        private readonly IDisposable _keySubscription;
+        private readonly IDisposable? _keySubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
         private TopLevel? _root;
 
@@ -25,7 +25,7 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
 
-            _keySubscription = InputManager.Instance.Process
+            _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
                 .Where(x => x.Type == RawKeyEventType.KeyDown)
                 .Subscribe(RawKeyDown);
@@ -82,7 +82,7 @@ namespace Avalonia.Diagnostics.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _keySubscription.Dispose();
+            _keySubscription?.Dispose();
 
             foreach (var state in _frozenPopupStates)
             {
@@ -160,13 +160,19 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
+            var root = Root;
+            if (root is null)
+            {
+                return;
+            }
+
             switch (e.Modifiers)
             {
                 case RawInputModifiers.Control | RawInputModifiers.Shift:
                 {
                     IControl? control = null;
 
-                    foreach (var popupRoot in GetPopupRoots(Root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         control = GetHoveredControl(popupRoot);
 
@@ -176,7 +182,7 @@ namespace Avalonia.Diagnostics.Views
                         }
                     }
 
-                    control ??= GetHoveredControl(Root);
+                    control ??= GetHoveredControl(root);
 
                     if (control != null)
                     {
@@ -190,7 +196,7 @@ namespace Avalonia.Diagnostics.Views
                 {
                     vm.FreezePopups = !vm.FreezePopups;
 
-                    foreach (var popupRoot in GetPopupRoots(Root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         if (popupRoot.Parent is Popup popup)
                         {

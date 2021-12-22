@@ -377,7 +377,7 @@ namespace Avalonia
             }
         }
 
-        protected override void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
             VisualRoot?.Renderer?.RecalculateChildren(this);
@@ -489,11 +489,8 @@ namespace Avalonia
 
         protected internal sealed override void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            // Don't log a binding error unless the control is attached to a logical or visual tree.
-            // In theory this should only need to check for logical tree attachment, but in practise
-            // due to ContentControlMixin only taking effect when the template has finished being
-            // applied, some controls are attached to the visual tree before the logical tree.
-            if (((ILogical)this).IsAttachedToLogicalTree || ((IVisual)this).IsAttachedToVisualTree)
+            // Don't log a binding error unless the control is attached to a logical tree.
+            if (((ILogical)this).IsAttachedToLogicalTree)
             {
                 if (e is BindingChainException b &&
                     string.IsNullOrEmpty(b.ExpressionErrorPoint) &&
@@ -575,7 +572,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void RenderTransformChanged(object sender, EventArgs e)
+        private void RenderTransformChanged(object? sender, EventArgs e)
         {
             InvalidateVisual();
         }
@@ -596,13 +593,14 @@ namespace Avalonia
 
             if (_visualRoot != null)
             {
-                var e = new VisualTreeAttachmentEventArgs(old, VisualRoot);
+                var e = new VisualTreeAttachmentEventArgs(old!, _visualRoot);
                 OnDetachedFromVisualTreeCore(e);
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.FindAncestorOfType<IRenderRoot>();
+                var root = this.FindAncestorOfType<IRenderRoot>() ??
+                    throw new AvaloniaInternalException("Visual is atached to visual tree but root could not be found.");
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
@@ -610,28 +608,28 @@ namespace Avalonia
             OnVisualParentChanged(old, value);
         }
 
-        private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
+        private void AffectsRenderInvalidated(object? sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void VisualChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void VisualChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    SetVisualParent(e.NewItems, this);
+                    SetVisualParent(e.NewItems!, this);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    SetVisualParent(e.OldItems, null);
+                    SetVisualParent(e.OldItems!, null);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    SetVisualParent(e.OldItems, null);
-                    SetVisualParent(e.NewItems, this);
+                    SetVisualParent(e.OldItems!, null);
+                    SetVisualParent(e.NewItems!, this);
                     break;
             }
         }
@@ -642,7 +640,7 @@ namespace Avalonia
 
             for (var i = 0; i < count; i++)
             {
-                var visual = (Visual) children[i];
+                var visual = (Visual) children[i]!;
                 
                 visual.SetVisualParent(parent);
             }

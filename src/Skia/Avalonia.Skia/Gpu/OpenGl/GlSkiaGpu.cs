@@ -25,7 +25,7 @@ namespace Avalonia.Skia
                     GRGlInterface.CreateOpenGl(proc => context.GlInterface.GetProcAddress(proc)) :
                     GRGlInterface.CreateGles(proc => context.GlInterface.GetProcAddress(proc)))
                 {
-                    _grContext = GRContext.CreateGl(iface);
+                    _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = true });
                     if (maxResourceBytes.HasValue)
                     {
                         _grContext.SetResourceCacheLimit(maxResourceBytes.Value);
@@ -66,7 +66,7 @@ namespace Avalonia.Skia
                 _canCreateSurfaces = true;
                 return surface;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Logger.TryGet(LogEventLevel.Error, "OpenGL")
                     ?.Log(this, "Unable to create a Skia-compatible FBO manually");

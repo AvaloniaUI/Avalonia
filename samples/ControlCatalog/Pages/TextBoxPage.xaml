@@ -3,21 +3,27 @@
              x:Class="ControlCatalog.Pages.TextBoxPage"
              xmlns:sys="clr-namespace:System;assembly=netstandard">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <Label Classes="h1">TextBox</Label>
     <Label Classes="h2">A control into which the user can input text</Label>
 
-    <StackPanel Orientation="Horizontal"
-              Margin="0,16,0,0"
-              HorizontalAlignment="Center"
-              Spacing="16">
-      <StackPanel Orientation="Vertical" Spacing="8">
-        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+    <WrapPanel Margin="-8,0"
+               HorizontalAlignment="Center">
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200"
+                 FontFamily="Comic Sans MS"
+                 Foreground="Blue">
+          <TextBox.ContextFlyout>
+            <Flyout>
+              <TextBlock>Custom context flyout</TextBlock>
+            </Flyout>
+          </TextBox.ContextFlyout>
+        </TextBox>
         <TextBox Width="200" Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
-        <TextBox Width="200" Watermark="Numeric Watermark" x:Name="numericWatermark"/>
+        <TextBox Width="200" Watermark="Numeric with watermark" x:Name="numericWatermark"/>
         <TextBox Width="200"
                  Watermark="Floating Watermark"
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+        <MaskedTextBox Width="200" ResetOnSpace="False"  Mask="(LLL) 999-0000"/>
         
         <TextBox Width="200" Text="Validation Error">
           <DataValidationErrors.Error>
@@ -40,15 +46,27 @@
         <TextBox Width="200" Text="Custom caret brush" CaretBrush="DarkOrange"/>
       </StackPanel>
 
-      <StackPanel Orientation="Vertical" Spacing="8">
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
         <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125"
                  Text="Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
         <TextBox AcceptsReturn="True" Width="200" Height="125"
                  Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
 
         <TextBox Classes="clearButton" Text="Clear Content" Width="200" FontWeight="Normal" FontStyle="Normal" Watermark="Watermark" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+        <TextBox Text="IME small font" Width="200"
+         FontFamily="Comic Sans MS"
+         FontSize="10"
+         Foreground="Red"/>
+        <TextBox Text="IME large font" Width="200"
+                 FontFamily="Comic Sans MS"
+                 FontSize="22"
+                 Foreground="Red"/>
+        <TextBox Text="IME disabled" Width="200"
+                 FontFamily="Comic Sans MS"
+                 InputMethod.IsInputMethodEnabled="False"
+                 Foreground="Red"/>
       </StackPanel>
-      <StackPanel Orientation="Vertical" Spacing="8">
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
         <Label Classes="h2" Target="{Binding #firstResMFont}">res_m fonts</Label>
         <TextBox Width="200" x:Name="firstResMFont" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
         <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
@@ -56,14 +74,14 @@
         <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-*.ttf?assembly=ControlCatalog#Source Sans Pro"/>
       </StackPanel>
 
-      <StackPanel Orientation="Vertical" Spacing="8">
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
         <Label Classes="h2" Target="{Binding #firstResFont}">_res fonts</Label>
         <TextBox Width="200" x:Name="firstResFont" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
         <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
         <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-Italic.ttf#Source Sans Pro"/>
         <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-*.ttf#Source Sans Pro"/>
       </StackPanel>
-    </StackPanel>
+    </WrapPanel>
     <TextBox AcceptsReturn="True" TextWrapping="Wrap" Height="200" MaxWidth="400"
              FontFamily="avares://ControlCatalog/Assets/Fonts#WenQuanYi Micro Hei"
              Text="计算机科学（是系统性研究信息与计算的理论基础以及它们在计算机系统中如何实现与应用的实用技术的学科。它通常被形容为对那些创造、描述以及转换信息的算法处理的系统研究。计算机科学包含很多分支领域；有些强调特定结果的计算，比如计算机图形学；而有些是探討计算问题的性质，比如计算复杂性理论；还有一些领域專注于怎样实现计算，比如程式語言理論是研究描述计算的方法，而程式设计是应用特定的程式語言解决特定的计算问题，人机交互则是專注于怎样使计算机和计算变得有用、好用，以及随时随地为人所用。&#xD;&#xD;有时公众会误以为计算机科学就是解决计算机问题的事业（比如信息技术），或者只是与使用计算机的经验有关，如玩游戏、上网或者文字处理。其实计算机科学所关注的，不仅仅是去理解实现类似游戏、浏览器这些软件的程序的性质，更要通过现有的知识创造新的程序或者改进已有的程序。" />

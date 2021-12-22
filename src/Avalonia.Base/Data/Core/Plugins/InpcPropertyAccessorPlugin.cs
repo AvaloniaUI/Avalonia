@@ -12,8 +12,8 @@ namespace Avalonia.Data.Core.Plugins
     /// </summary>
     public class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
-        private readonly Dictionary<(Type, string), PropertyInfo> _propertyLookup =
-            new Dictionary<(Type, string), PropertyInfo>();
+        private readonly Dictionary<(Type, string), PropertyInfo?> _propertyLookup =
+            new Dictionary<(Type, string), PropertyInfo?>();
 
         /// <inheritdoc/>
         public bool Match(object obj, string propertyName) => GetFirstPropertyWithName(obj.GetType(), propertyName) != null;
@@ -27,12 +27,13 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
+        public IPropertyAccessor? Start(WeakReference<object?> reference, string propertyName)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(propertyName != null);
+            _ = reference ?? throw new ArgumentNullException(nameof(reference));
+            _ = propertyName ?? throw new ArgumentNullException(nameof(propertyName));
 
-            reference.TryGetTarget(out object instance);
+            if (!reference.TryGetTarget(out var instance) || instance is null)
+                return null;
 
             var p = GetFirstPropertyWithName(instance.GetType(), propertyName);
 
@@ -48,11 +49,11 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private PropertyInfo GetFirstPropertyWithName(Type type, string propertyName)
+        private PropertyInfo? GetFirstPropertyWithName(Type type, string propertyName)
         {
             var key = (type, propertyName);
 
-            if (!_propertyLookup.TryGetValue(key, out PropertyInfo propertyInfo))
+            if (!_propertyLookup.TryGetValue(key, out var propertyInfo))
             {
                 propertyInfo = TryFindAndCacheProperty(type, propertyName);
             }
@@ -60,9 +61,9 @@ namespace Avalonia.Data.Core.Plugins
             return propertyInfo;
         }
 
-        private PropertyInfo TryFindAndCacheProperty(Type type, string propertyName)
+        private PropertyInfo? TryFindAndCacheProperty(Type type, string propertyName)
         {
-            PropertyInfo found = null;
+            PropertyInfo? found = null;
 
             const BindingFlags bindingFlags =
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
@@ -86,22 +87,22 @@ namespace Avalonia.Data.Core.Plugins
 
         private class Accessor : PropertyAccessorBase, IWeakSubscriber<PropertyChangedEventArgs>
         {
-            private readonly WeakReference<object> _reference;
+            private readonly WeakReference<object?> _reference;
             private readonly PropertyInfo _property;
             private bool _eventRaised;
 
-            public Accessor(WeakReference<object> reference, PropertyInfo property)
+            public Accessor(WeakReference<object?> reference, PropertyInfo property)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-                Contract.Requires<ArgumentNullException>(property != null);
+                _ = reference ?? throw new ArgumentNullException(nameof(reference));
+                _ = property ?? throw new ArgumentNullException(nameof(property));
 
                 _reference = reference;
                 _property = property;
             }
 
-            public override Type PropertyType => _property.PropertyType;
+            public override Type? PropertyType => _property.PropertyType;
 
-            public override object Value
+            public override object? Value
             {
                 get
                 {
@@ -110,7 +111,7 @@ namespace Avalonia.Data.Core.Plugins
                 }
             }
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object? value, BindingPriority priority)
             {
                 if (_property.CanWrite)
                 {
@@ -128,7 +129,7 @@ namespace Avalonia.Data.Core.Plugins
                 return false;
             }
 
-            void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object sender, PropertyChangedEventArgs e)
+            void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, PropertyChangedEventArgs e)
             {
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {
@@ -156,9 +157,9 @@ namespace Avalonia.Data.Core.Plugins
                 }
             }
 
-            private object GetReferenceTarget()
+            private object? GetReferenceTarget()
             {
-                _reference.TryGetTarget(out object target);
+                _reference.TryGetTarget(out var target);
 
                 return target;
             }

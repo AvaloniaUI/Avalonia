@@ -424,9 +424,12 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateCursorFactory(IAvnCursorFactory** ppv);
      HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv);
      HRESULT SetAppMenu(IAvnMenu* menu);
+     HRESULT SetServicesMenu(IAvnMenu* menu);
      HRESULT CreateMenu(IAvnMenuEvents* cb, IAvnMenu** ppv);
      HRESULT CreateMenuItem(IAvnMenuItem** ppv);
      HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
+     HRESULT CreateTrayIcon(IAvnTrayIcon** ppv);
+     HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -538,7 +541,6 @@ interface IAvnMacOptions : IUnknown
 {
      HRESULT SetShowInDock(int show);
      HRESULT SetApplicationTitle(char* utf8string);
-     HRESULT SetDisableDefaultApplicationMenuItems(bool enabled);
 }
 
 [uuid(04c1b049-1f43-418a-9159-cae627ec1367)]
@@ -665,6 +667,14 @@ interface IAvnGlSurfaceRenderingSession : IUnknown
      HRESULT GetScaling(double* ret);
 }
 
+[uuid(60992d19-38f0-4141-a0a9-76ac303801f3)]
+interface IAvnTrayIcon : IUnknown
+{
+    HRESULT SetIcon(void* data, size_t length);
+    HRESULT SetMenu(IAvnMenu* menu);
+    HRESULT SetIsVisible(bool isVisible);
+}
+
 [uuid(a7724dc1-cf6b-4fa8-9d23-228bf2593edc)]
 interface IAvnMenu : IUnknown
 {
@@ -743,4 +753,12 @@ interface IAvnApplicationEvents : IUnknown
 {
      void FilesOpened (IAvnStringArray* urls);
      bool TryShutdown();
+}
+
+[uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]
+interface IAvnApplicationCommands : IUnknown
+{
+    HRESULT HideApp();
+    HRESULT ShowAll();
+    HRESULT HideOthers();
 }

@@ -1,14 +1,25 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Platform;
+
+#nullable enable
 
 namespace Avalonia.Controls.Platform
 {
-    public interface ITopLevelNativeMenuExporter
+    public interface INativeMenuExporter
+    {
+        void SetNativeMenu(NativeMenu? menu);
+    }
+
+    public interface ITopLevelNativeMenuExporter : INativeMenuExporter
     {
         bool IsNativeMenuExported { get; }
+
         event EventHandler OnIsNativeMenuExportedChanged;
-        void SetNativeMenu(NativeMenu menu);
+    }
+
+    public interface INativeMenuExporterProvider
+    {
+        INativeMenuExporter? NativeMenuExporter { get; }
     }
     
     public interface ITopLevelImplWithNativeMenuExporter : ITopLevelImpl

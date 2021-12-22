@@ -35,5 +35,13 @@ namespace Avalonia.Input
         /// when it activates, e.g. when a Window is activated.
         /// </remarks>
         void SetFocusScope(IFocusScope scope);
+
+        /// <summary>
+        /// Notifies the focus manager that a focus scope has been removed.
+        /// </summary>
+        /// <param name="scope">The focus scope to be removed.</param>
+        /// This should not be called by client code. It is called by an <see cref="IFocusScope"/>
+        /// when it deactivates or closes, e.g. when a Window is closed.
+        void RemoveFocusScope(IFocusScope scope);
     }
 }

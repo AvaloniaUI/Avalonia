@@ -109,7 +109,7 @@ namespace Avalonia.Controls
                 observer.OnNext(Convert(_target.FindResource(_key)));
             }
 
-            private void ResourcesChanged(object sender, ResourcesChangedEventArgs e)
+            private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e)
             {
                 PublishNext(Convert(_target.FindResource(_key)));
             }
@@ -159,7 +159,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            private void OwnerChanged(object sender, EventArgs e)
+            private void OwnerChanged(object? sender, EventArgs e)
             {
                 if (_owner is object)
                 {
@@ -176,7 +176,7 @@ namespace Avalonia.Controls
                 PublishNext();
             }
 
-            private void ResourcesChanged(object sender, ResourcesChangedEventArgs e)
+            private void ResourcesChanged(object? sender, ResourcesChangedEventArgs e)
             {
                 PublishNext();
             }

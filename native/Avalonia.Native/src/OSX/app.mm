@@ -97,3 +97,30 @@ extern void InitializeAvnApp(IAvnApplicationEvents* events)
     id delegate = [[AvnAppDelegate alloc] initWithEvents:events];
     [app setDelegate:delegate];
 }
+
+HRESULT AvnApplicationCommands::HideApp()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] hide:[NSApp delegate]];
+    return S_OK;
+}
+
+HRESULT AvnApplicationCommands::ShowAll()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] unhideAllApplications:[NSApp delegate]];
+    return S_OK;
+}
+
+HRESULT AvnApplicationCommands::HideOthers()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] hideOtherApplications:[NSApp delegate]];
+    return S_OK;
+}
+
+
+extern IAvnApplicationCommands* CreateApplicationCommands()
+{
+    return new AvnApplicationCommands();
+}

@@ -10,16 +10,16 @@ namespace Avalonia.Data.Core.Plugins
     /// </summary>
     public class ObservableStreamPlugin : IStreamPlugin
     {
-        static MethodInfo observableSelect;
+        static MethodInfo? observableSelect;
 
         /// <summary>
         /// Checks whether this plugin handles the specified value.
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        public virtual bool Match(WeakReference<object> reference)
+        public virtual bool Match(WeakReference<object?> reference)
         {
-            reference.TryGetTarget(out object target);
+            reference.TryGetTarget(out var target);
 
             return target != null && target.GetType().GetInterfaces().Any(x =>
               x.IsGenericType &&
@@ -33,12 +33,13 @@ namespace Avalonia.Data.Core.Plugins
         /// <returns>
         /// An observable that produces the output for the value.
         /// </returns>
-        public virtual IObservable<object> Start(WeakReference<object> reference)
+        public virtual IObservable<object?> Start(WeakReference<object?> reference)
         {
-            reference.TryGetTarget(out object target);
+            if (!reference.TryGetTarget(out var target) || target is null)
+                return Observable.Empty<object?>();
 
             // If the observable returns a reference type then we can cast it.
-            if (target is IObservable<object> result)
+            if (target is IObservable<object?> result)
             {
                 return result;
             };
@@ -54,14 +55,14 @@ namespace Avalonia.Data.Core.Plugins
 
             // Make a Box<> delegate of the correct type.
             var funcType = typeof(Func<,>).MakeGenericType(sourceType, typeof(object));
-            var box = GetType().GetMethod(nameof(Box), BindingFlags.Static | BindingFlags.NonPublic)
+            var box = GetType().GetMethod(nameof(Box), BindingFlags.Static | BindingFlags.NonPublic)!
                 .MakeGenericMethod(sourceType)
                 .CreateDelegate(funcType);
 
             // Call Observable.Select(target, box);
-            return (IObservable<object>)select.Invoke(
+            return (IObservable<object?>)select.Invoke(
                 null,
-                new object[] { target, box });
+                new object[] { target, box })!;
         }
 
         private static MethodInfo GetObservableSelect(Type source)
@@ -98,6 +99,6 @@ namespace Avalonia.Data.Core.Plugins
             return observableSelect;
         }
 
-        private static object Box<T>(T value) => (object)value;
+        private static object? Box<T>(T value) => (object?)value;
     }
 }

@@ -120,7 +120,7 @@ namespace Avalonia.Interactivity
             bool handledEventsToo = false)
             where TTarget : class, IInteractive
         {
-            void Adapter(object sender, RoutedEventArgs e)
+            void Adapter(object? sender, RoutedEventArgs e)
             {
                 if (sender is TTarget target && e is TEventArgs args)
                 {
@@ -136,7 +136,7 @@ namespace Avalonia.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TTarget : class, IInteractive
         {
-            void Adapter(object sender, RoutedEventArgs e)
+            void Adapter(object? sender, RoutedEventArgs e)
             {
                 if (sender is TTarget target && e is TEventArgs args)
                 {
