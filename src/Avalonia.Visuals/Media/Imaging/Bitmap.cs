@@ -21,8 +21,7 @@ namespace Avalonia.Media.Imaging
         /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
         public static Bitmap DecodeToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            return new Bitmap(factory.LoadBitmapToWidth(stream, width, interpolationMode));
+            return new Bitmap(GetFactory().LoadBitmapToWidth(stream, width, interpolationMode));
         }
 
         /// <summary>
@@ -35,8 +34,7 @@ namespace Avalonia.Media.Imaging
         /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
         public static Bitmap DecodeToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            return new Bitmap(factory.LoadBitmapToHeight(stream, height, interpolationMode));
+            return new Bitmap(GetFactory().LoadBitmapToHeight(stream, height, interpolationMode));
         }
 
         /// <summary>
@@ -47,8 +45,7 @@ namespace Avalonia.Media.Imaging
         /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
         public Bitmap CreateScaledBitmap(PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            return new Bitmap(factory.ResizeBitmap(PlatformImpl.Item, destinationSize, interpolationMode));
+            return new Bitmap(GetFactory().ResizeBitmap(PlatformImpl.Item, destinationSize, interpolationMode));
         }
 
         /// <summary>
@@ -57,8 +54,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="fileName">The filename of the bitmap.</param>
         public Bitmap(string fileName)
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = RefCountable.Create(factory.LoadBitmap(fileName));
+            PlatformImpl = RefCountable.Create(GetFactory().LoadBitmap(fileName));
         }
 
         /// <summary>
@@ -67,8 +63,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="stream">The stream to read the bitmap from.</param>
         public Bitmap(Stream stream)
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = RefCountable.Create(factory.LoadBitmap(stream));
+            PlatformImpl = RefCountable.Create(GetFactory().LoadBitmap(stream));
         }
 
         /// <summary>
@@ -106,9 +101,8 @@ namespace Avalonia.Media.Imaging
         [Obsolete("Use overload taking an AlphaFormat.")]
         public Bitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-
-            PlatformImpl = RefCountable.Create(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
+            var ri = GetFactory();
+            PlatformImpl = RefCountable.Create(ri
                 .LoadBitmap(format, ri.DefaultAlphaFormat, data, size, dpi, stride));
         }
 
@@ -123,8 +117,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="stride">The number of bytes per row.</param>
         public Bitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            PlatformImpl = RefCountable.Create(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
-                .LoadBitmap(format, alphaFormat, data, size, dpi, stride));
+            PlatformImpl = RefCountable.Create(GetFactory().LoadBitmap(format, alphaFormat, data, size, dpi, stride));
         }
 
         /// <inheritdoc/>
@@ -172,6 +165,11 @@ namespace Avalonia.Media.Imaging
                 sourceRect,
                 destRect,
                 bitmapInterpolationMode);
+        }
+
+        private static IPlatformRenderInterface GetFactory()
+        {
+            return AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
     }
 }

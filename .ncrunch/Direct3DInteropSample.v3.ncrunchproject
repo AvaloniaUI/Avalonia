@@ -1,9 +1,5 @@
 ﻿<ProjectConfiguration>
   <Settings>
-    <HiddenComponentWarnings>
-      <Value>MissingOrIgnoredProjectReference</Value>
-    </HiddenComponentWarnings>
     <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
-    <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>

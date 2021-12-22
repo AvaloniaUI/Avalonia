@@ -9,7 +9,7 @@ namespace Avalonia.Animation
     {
         protected override void Stop()
         {
-            AvaloniaLocator.Current.GetService<IRenderLoop>().Remove(this);
+            AvaloniaLocator.Current.GetRequiredService<IRenderLoop>().Remove(this);
         }
 
         bool IRenderLoopTask.NeedsUpdate => HasSubscriptions;

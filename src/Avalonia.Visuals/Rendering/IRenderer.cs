@@ -27,7 +27,7 @@ namespace Avalonia.Rendering
         /// Indicates that the underlying low-level scene information has been updated. Used to
         /// signal that an update to the current pointer-over state may be required.
         /// </remarks>
-        event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
+        event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
 
         /// <summary>
         /// Mark a visual as dirty and needing re-rendering.
@@ -57,7 +57,7 @@ namespace Avalonia.Rendering
         /// children will be excluded from the results.
         /// </param>
         /// <returns>The visual at the specified point, topmost first.</returns>
-        IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter);
+        IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter);
 
         /// <summary>
         /// Informs the renderer that the z-ordering of a visual's children has changed.

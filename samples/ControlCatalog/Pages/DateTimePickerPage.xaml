@@ -6,7 +6,6 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.DateTimePickerPage">
   <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Stretch">
-    <TextBlock Classes="h1">DatePicker and TimePicker</TextBlock>
     <TextBlock Name="DatePickerDesc" Classes="h2" TextWrapping="Wrap"/>
     <TextBlock Name="TimePickerDesc" Classes="h2" TextWrapping="Wrap"/>
 

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
-#nullable enable
 
 namespace Avalonia.Data
 {
@@ -23,13 +20,13 @@ namespace Avalonia.Data
     /// </remarks>
     public readonly struct Optional<T> : IEquatable<Optional<T>>
     {
-        [AllowNull] private readonly T _value;
+        private readonly T _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Optional{T}"/> struct with value.
         /// </summary>
         /// <param name="value">The value.</param>
-        public Optional([AllowNull] T value)
+        public Optional(T value)
         {
             _value = value;
             HasValue = true;
@@ -61,7 +58,7 @@ namespace Avalonia.Data
         /// Casts the value (if any) to an <see cref="object"/>.
         /// </summary>
         /// <returns>The cast optional value.</returns>
-        public Optional<object> ToObject() => HasValue ? new Optional<object>(_value) : default;
+        public Optional<object?> ToObject() => HasValue ? new Optional<object?>(_value) : default;
 
         /// <inheritdoc/>
         public override string ToString() => HasValue ? _value?.ToString() ?? "(null)" : "(empty)";
@@ -70,15 +67,14 @@ namespace Avalonia.Data
         /// Gets the value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
-        [return: MaybeNull]
-        public T GetValueOrDefault() => HasValue ? _value : default;
+        public T? GetValueOrDefault() => HasValue ? _value : default;
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
-        public T GetValueOrDefault(T defaultValue) => HasValue ? _value : defaultValue;
+        public T? GetValueOrDefault(T defaultValue) => HasValue ? _value : defaultValue;
 
         /// <summary>
         /// Gets the value if present, otherwise the default value.
@@ -87,8 +83,7 @@ namespace Avalonia.Data
         /// The value if present and of the correct type, `default(TResult)` if the value is
         /// not present or of an incorrect type.
         /// </returns>
-        [return: MaybeNull]
-        public TResult GetValueOrDefault<TResult>()
+        public TResult? GetValueOrDefault<TResult>()
         {
             return HasValue ?
                 _value is TResult result ? result : default
@@ -104,8 +99,7 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        [return: MaybeNull]
-        public TResult GetValueOrDefault<TResult>([AllowNull] TResult defaultValue)
+        public TResult? GetValueOrDefault<TResult>(TResult defaultValue)
         {
             return HasValue ?
                 _value is TResult result ? result : default
@@ -116,7 +110,7 @@ namespace Avalonia.Data
         /// Creates an <see cref="Optional{T}"/> from an instance of the underlying value type.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static implicit operator Optional<T>([AllowNull] T value) => new Optional<T>(value);
+        public static implicit operator Optional<T>(T value) => new Optional<T>(value);
 
         /// <summary>
         /// Compares two <see cref="Optional{T}"/>s for inequality.
@@ -162,9 +156,9 @@ namespace Avalonia.Data
         /// <typeparam name="T">The target type.</typeparam>
         /// <param name="value">The binding value.</param>
         /// <returns>The cast value.</returns>
-        public static Optional<T> Cast<T>(this Optional<object> value)
+        public static Optional<T> Cast<T>(this Optional<object?> value)
         {
-            return value.HasValue ? new Optional<T>((T)value.Value) : Optional<T>.Empty;
+            return value.HasValue ? new Optional<T>((T)value.Value!) : Optional<T>.Empty;
         }
     }
 }

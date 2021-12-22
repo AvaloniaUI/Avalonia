@@ -16,7 +16,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
         private readonly IDisposable _pointerOverSubscription;
-        private ViewModelBase _content;
+        private ViewModelBase? _content;
         private int _selectedTab;
         private string? _focusedControl;
         private IInputElement? _pointerOverElement;
@@ -26,11 +26,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _freezePopups;
         private string? _pointerOverElementName;
         private IInputRoot? _pointerOverRoot;
-
-#nullable disable
-        // Remove "nullable disable" after MemberNotNull will work on our CI.
         public MainViewModel(AvaloniaObject root)
-#nullable restore
         {
             _root = root;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
@@ -38,7 +34,9 @@ namespace Avalonia.Diagnostics.ViewModels
             _events = new EventsPageViewModel(this);
 
             UpdateFocusedControl();
-            KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
+
+            if (KeyboardDevice.Instance is not null)
+                KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
             SelectedTab = 0;
             if (root is TopLevel topLevel)
             {
@@ -110,10 +108,9 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public ConsoleViewModel Console { get; }
 
-        public ViewModelBase Content
+        public ViewModelBase? Content
         {
             get { return _content; }
-            // [MemberNotNull(nameof(_content))]
             private set
             {
                 if (_content is TreePageViewModel oldTree &&
@@ -221,7 +218,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void Dispose()
         {
-            KeyboardDevice.Instance.PropertyChanged -= KeyboardPropertyChanged;
+            if (KeyboardDevice.Instance is not null)
+                KeyboardDevice.Instance.PropertyChanged -= KeyboardPropertyChanged;
             _pointerOverSubscription.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
@@ -234,7 +232,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateFocusedControl()
         {
-            FocusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
+            FocusedControl = KeyboardDevice.Instance?.FocusedElement?.GetType().Name;
         }
 
         private void KeyboardPropertyChanged(object? sender, PropertyChangedEventArgs e)
