@@ -91,7 +91,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                 {
                                     return;
                                 }
-                                nodes.Add(new LogicalTreeNode((IAvaloniaObject)s,Owner));
+                                nodes.Add(new LogicalTreeNode((IAvaloniaObject)s!,Owner));
                             }),
                         Window.WindowClosedEvent.AddClassHandler(typeof(Window), (s,e)=>
                             {
@@ -106,7 +106,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                 }
                                 if(nodes.Count == 0)
                                 {
-                                    if (Avalonia.Application.Current.ApplicationLifetime is Lifetimes.IControlledApplicationLifetime controller)
+                                    if (Avalonia.Application.Current?.ApplicationLifetime is Lifetimes.IControlledApplicationLifetime controller)
                                     {
                                         controller.Shutdown();
                                     }

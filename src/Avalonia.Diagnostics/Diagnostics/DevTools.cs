@@ -66,8 +66,12 @@ namespace Avalonia.Diagnostics
             }
         }
 
-        internal static IDisposable Attach(Application application, DevToolsOptions options, Window? owner = null)
+        internal static IDisposable Attach(Application? application, DevToolsOptions options, Window? owner = null)
         {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
             var result = Disposable.Empty;
             // Skip if call on Design Mode
             if (!Avalonia.Controls.Design.IsDesignMode
@@ -99,8 +103,12 @@ namespace Avalonia.Diagnostics
             return result;
         }
 
-        private static IDisposable Open(Application application, DevToolsOptions options, Window? owner = default)
+        private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
         {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
             if (s_open.TryGetValue(application, out var window))
             {                
                 window.Activate();

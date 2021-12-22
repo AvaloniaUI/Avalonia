@@ -191,7 +191,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                 {
                                     return;
                                 }
-                                nodes.Add(new VisualTreeNode((IAvaloniaObject)s,Owner));
+                                nodes.Add(new VisualTreeNode((IAvaloniaObject)s!,Owner));
                             }),
                         Window.WindowClosedEvent.AddClassHandler(typeof(Window), (s,e)=>
                             {

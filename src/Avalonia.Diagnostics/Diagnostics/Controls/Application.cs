@@ -10,7 +10,8 @@ namespace Avalonia.Diagnostics.Controls
 
     {
         private readonly App _application;
-        private static readonly Version s_version = typeof(IAvaloniaObject).Assembly.GetName().Version;
+        private static readonly Version s_version = typeof(IAvaloniaObject).Assembly?.GetName()?.Version
+            ?? Version.Parse("0.0.00");
         public event EventHandler? Closed;
 
         public Application(App application)
@@ -68,7 +69,7 @@ namespace Avalonia.Diagnostics.Controls
         /// <summary>
         /// Gets the application clipboard.
         /// </summary>
-        public Input.Platform.IClipboard Clipboard =>
+        public Input.Platform.IClipboard? Clipboard =>
             _application.Clipboard;
 
         /// <summary>
