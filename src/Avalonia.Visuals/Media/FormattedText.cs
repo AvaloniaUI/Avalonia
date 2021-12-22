@@ -24,8 +24,7 @@ namespace Avalonia.Media
         /// </summary>
         public FormattedText()
         {
-            _platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
+            _platform = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
 
         /// <summary>

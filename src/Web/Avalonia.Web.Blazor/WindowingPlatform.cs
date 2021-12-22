@@ -98,8 +98,7 @@ namespace Avalonia.Web.Blazor
 
         private static IRuntimePlatform GetRuntimePlatform()
         {
-            return AvaloniaLocator.Current.GetService<IRuntimePlatform>() ??
-                throw new InvalidOperationException("Unable to locate IRuntimePlatform.");
+            return AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
         }
     }
 }
