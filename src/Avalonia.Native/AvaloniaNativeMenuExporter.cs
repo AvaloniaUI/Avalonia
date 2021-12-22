@@ -144,6 +144,13 @@ namespace Avalonia.Native
 
         private void DoLayoutReset(bool forceUpdate = false)
         {
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
+
+            if (macOpts != null && macOpts.DisableNativeMenus)
+            {
+                return;
+            }
+
             if (_resetQueued || forceUpdate)
             {
                 _resetQueued = false;
