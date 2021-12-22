@@ -109,7 +109,7 @@ namespace Avalonia.Styling
             var converter = TypeDescriptor.GetConverter(propertyType);
             if (converter?.CanConvertFrom(valueType) == true)
             {
-                return Equals(propertyValue, converter.ConvertFrom(null, CultureInfo.InvariantCulture, value));
+                return Equals(propertyValue, converter.ConvertFrom(null, CultureInfo.InvariantCulture, value!));
             }
 
             return false;

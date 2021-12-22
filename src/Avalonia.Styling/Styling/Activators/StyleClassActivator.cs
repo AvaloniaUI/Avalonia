@@ -66,7 +66,7 @@ namespace Avalonia.Styling.Activators
             _classes.CollectionChanged -= ClassesChangedHandler;
         }
 
-        private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ClassesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action != NotifyCollectionChangedAction.Move)
             {
