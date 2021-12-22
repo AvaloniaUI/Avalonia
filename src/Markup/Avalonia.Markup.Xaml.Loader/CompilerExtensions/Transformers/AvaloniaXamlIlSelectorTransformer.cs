@@ -118,7 +118,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                     .GetAvaloniaPropertyType(targetPropertyField, context.GetAvaloniaTypes(), node);
 
                                 if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context,
-                                    new XamlAstTextNode(node, attachedProperty.Value, context.Configuration.WellKnownTypes.String),
+                                    new XamlAstTextNode(node, attachedProperty.Value, type: context.Configuration.WellKnownTypes.String),
                                     targetPropertyType, out var typedValue))
                                         throw new XamlParseException(
                                             $"Cannot convert '{attachedProperty.Value}' to '{targetPropertyType.GetFqn()}",
