@@ -5,6 +5,7 @@
     <AvaloniaXamlReportImportance Condition="'$(AvaloniaXamlReportImportance)' == ''">low</AvaloniaXamlReportImportance>
     <_AvaloniaPatchComInterop Condition="'$(_AvaloniaPatchComInterop)' == ''">false</_AvaloniaPatchComInterop>
     <_AvaloniaSkipXamlCompilation Condition="'$(_AvaloniaSkipXamlCompilation)' == ''">false</_AvaloniaSkipXamlCompilation>
+    <AvaloniaUseCompiledBindingsByDefault Condition="'$(AvaloniaUseCompiledBindingsByDefault)' == ''">false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <!-- Unfortunately we have to update default items in .targets since custom nuget props are improted before Microsoft.NET.Sdk.DefaultItems.props -->
@@ -19,6 +20,10 @@
     </Compile>
     <None Remove="**\*.axaml" />
     <None Remove="**\*.paml" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AvaloniaUseCompiledBindingsByDefault)' == 'true'">
+    <RuntimeHostConfigurationOption Include="Avalonia.UseCompiledBindingsByDefault" Value="true" />
   </ItemGroup>
   
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
@@ -109,6 +114,7 @@
       EnableComInteropPatching="$(_AvaloniaPatchComInterop)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
+      DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
