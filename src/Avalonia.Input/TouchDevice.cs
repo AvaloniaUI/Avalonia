@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input.Raw;
-using Avalonia.VisualTree;
+using Avalonia.Platform;
 
 namespace Avalonia.Input
 {
@@ -16,7 +16,9 @@ namespace Avalonia.Input
     {
         private readonly Dictionary<long, Pointer> _pointers = new Dictionary<long, Pointer>();
         private bool _disposed;
-        
+        private int _clickCount;
+        private Rect _lastClickRect;
+        private ulong _lastClickTime;
         KeyModifiers GetKeyModifiers(RawInputModifiers modifiers) =>
             (KeyModifiers)(modifiers & RawInputModifiers.KeyboardMask);
 
@@ -27,10 +29,10 @@ namespace Avalonia.Input
                 rv |= RawInputModifiers.LeftMouseButton;
             return rv;
         }
-        
+
         public void ProcessRawEvent(RawInputEventArgs ev)
         {
-            if(_disposed)
+            if (_disposed)
                 return;
             var args = (RawTouchEventArgs)ev;
             if (!_pointers.TryGetValue(args.TouchPointId, out var pointer))
@@ -43,16 +45,40 @@ namespace Avalonia.Input
                     PointerType.Touch, _pointers.Count == 0);
                 pointer.Capture(hit);
             }
-            
+
 
             var target = pointer.Captured ?? args.Root;
             if (args.Type == RawPointerEventType.TouchBegin)
             {
+                if (_pointers.Count > 1)
+                {
+                    _clickCount = 1;
+                    _lastClickTime = 0;
+                    _lastClickRect = new Rect();
+                }
+                else
+                {
+                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                    if (settings == null)
+                    {
+                        throw new Exception("IPlatformSettings can not be null");
+                    }
+                    if (!_lastClickRect.Contains(args.Position)
+                        || ev.Timestamp - _lastClickTime > settings.DoubleClickTime.TotalMilliseconds)
+                    {
+                        _clickCount = 0;
+                    }
+                    ++_clickCount;
+                    _lastClickTime = ev.Timestamp;
+                    _lastClickRect = new Rect(args.Position, new Size())
+                        .Inflate(new Thickness(16, 16));
+                }
+
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     args.Root, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true),
                         PointerUpdateKind.LeftButtonPressed),
-                    GetKeyModifiers(args.InputModifiers)));
+                    GetKeyModifiers(args.InputModifiers), _clickCount));
             }
 
             if (args.Type == RawPointerEventType.TouchEnd)
@@ -84,12 +110,12 @@ namespace Avalonia.Input
                     GetKeyModifiers(args.InputModifiers)));
             }
 
-            
+
         }
 
         public void Dispose()
         {
-            if(_disposed)
+            if (_disposed)
                 return;
             var values = _pointers.Values.ToList();
             _pointers.Clear();
@@ -97,6 +123,6 @@ namespace Avalonia.Input
             foreach (var p in values)
                 p.Dispose();
         }
-        
+
     }
 }
