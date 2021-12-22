@@ -12,8 +12,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BrushProperty =
-            AvaloniaProperty.Register<Pen, IBrush>(nameof(Brush));
+        public static readonly StyledProperty<IBrush?> BrushProperty =
+            AvaloniaProperty.Register<Pen, IBrush?>(nameof(Brush));
 
         /// <summary>
         /// Defines the <see cref="Thickness"/> property.
@@ -24,8 +24,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="DashStyle"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDashStyle> DashStyleProperty =
-            AvaloniaProperty.Register<Pen, IDashStyle>(nameof(DashStyle));
+        public static readonly StyledProperty<IDashStyle?> DashStyleProperty =
+            AvaloniaProperty.Register<Pen, IDashStyle?>(nameof(DashStyle));
 
         /// <summary>
         /// Defines the <see cref="LineCap"/> property.
@@ -64,7 +64,7 @@ namespace Avalonia.Media
         public Pen(
             uint color,
             double thickness = 1.0,
-            IDashStyle dashStyle = null,
+            IDashStyle? dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0) : this(new SolidColorBrush(color), thickness, dashStyle, lineCap, lineJoin, miterLimit)
@@ -81,9 +81,9 @@ namespace Avalonia.Media
         /// <param name="lineJoin">The line join.</param>
         /// <param name="miterLimit">The miter limit.</param>
         public Pen(
-            IBrush brush,
+            IBrush? brush,
             double thickness = 1.0,
-            IDashStyle dashStyle = null,
+            IDashStyle? dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0)
@@ -110,7 +110,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the brush used to draw the stroke.
         /// </summary>
-        public IBrush Brush
+        public IBrush? Brush
         {
             get => GetValue(BrushProperty);
             set => SetValue(BrushProperty, value);
@@ -128,7 +128,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the style of dashed lines drawn with a <see cref="Pen"/> object.
         /// </summary>
-        public IDashStyle DashStyle
+        public IDashStyle? DashStyle
         {
             get => GetValue(DashStyleProperty);
             set => SetValue(DashStyleProperty, value);
@@ -165,7 +165,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Raised when the pen changes.
         /// </summary>
-        public event EventHandler Invalidated;
+        public event EventHandler? Invalidated;
 
         /// <summary>
         /// Creates an immutable clone of the brush.
@@ -244,6 +244,6 @@ namespace Avalonia.Media
         /// <param name="e">The event args.</param>
         protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
 
-        private void AffectsRenderInvalidated(object sender, EventArgs e) => RaiseInvalidated(EventArgs.Empty);
+        private void AffectsRenderInvalidated(object? sender, EventArgs e) => RaiseInvalidated(EventArgs.Empty);
     }
 }

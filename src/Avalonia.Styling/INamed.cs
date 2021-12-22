@@ -8,6 +8,6 @@ namespace Avalonia
         /// <summary>
         /// Gets the element name.
         /// </summary>
-        string Name { get; }
+        string? Name { get; }
     }
 }

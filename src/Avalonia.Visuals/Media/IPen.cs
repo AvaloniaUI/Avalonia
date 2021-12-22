@@ -8,12 +8,12 @@
         /// <summary>
         /// Gets the brush used to draw the stroke.
         /// </summary>
-        IBrush Brush { get; }
+        IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the style of dashed lines drawn with a <see cref="Pen"/> object.
         /// </summary>
-        IDashStyle DashStyle { get; }
+        IDashStyle? DashStyle { get; }
 
         /// <summary>
         /// Gets the type of shape to use on both ends of a line.

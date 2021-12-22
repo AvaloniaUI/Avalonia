@@ -17,11 +17,11 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Get the
         /// </summary>
-        public  TextEndOfLine TextEndOfLine { get; }
+        public TextEndOfLine? TextEndOfLine { get; }
 
         /// <summary>
         /// Get the remaining shaped characters that were split up by the <see cref="TextFormatter"/> during the formatting process.
         /// </summary>
-        public IReadOnlyList<ShapedTextCharacters> RemainingCharacters { get; }
+        public IReadOnlyList<ShapedTextCharacters>? RemainingCharacters { get; }
     }
 }

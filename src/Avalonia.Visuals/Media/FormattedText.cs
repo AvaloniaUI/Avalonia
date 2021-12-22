@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 
@@ -10,11 +11,11 @@ namespace Avalonia.Media
     {
         private readonly IPlatformRenderInterface _platform;
         private Size _constraint = Size.Infinity;
-        private IFormattedTextImpl _platformImpl;
-        private IReadOnlyList<FormattedTextStyleSpan> _spans;
+        private IFormattedTextImpl? _platformImpl;
+        private IReadOnlyList<FormattedTextStyleSpan>? _spans;
         private Typeface _typeface;
         private double _fontSize;
-        private string _text;
+        private string? _text;
         private TextAlignment _textAlignment;
         private TextWrapping _textWrapping;
 
@@ -23,7 +24,7 @@ namespace Avalonia.Media
         /// </summary>
         public FormattedText()
         {
-            _platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            _platform = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace Avalonia.Media
         /// Gets or sets a collection of spans that describe the formatting of subsections of the
         /// text.
         /// </summary>
-        public IReadOnlyList<FormattedTextStyleSpan> Spans
+        public IReadOnlyList<FormattedTextStyleSpan>? Spans
         {
             get => _spans;
             set => Set(ref _spans, value);
@@ -107,7 +108,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
-        public string Text
+        public string? Text
         {
             get => _text;
             set => Set(ref _text, value);
@@ -141,7 +142,7 @@ namespace Avalonia.Media
                 if (_platformImpl == null)
                 {
                     _platformImpl = _platform.CreateFormattedText(
-                        _text,
+                        _text ?? string.Empty,
                         _typeface,
                         _fontSize,
                         _textAlignment,

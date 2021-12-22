@@ -20,10 +20,10 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="geometry">The geometry.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public GeometryNode(Matrix transform,
-            IBrush brush,
-            IPen pen,
+            IBrush? brush,
+            IPen? pen,
             IGeometryImpl geometry,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene>? childScenes = null)
             : base(geometry.GetRenderBounds(pen), transform)
         {
             Transform = transform;
@@ -41,12 +41,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the fill brush.
         /// </summary>
-        public IBrush Brush { get; }
+        public IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
         /// </summary>
-        public ImmutablePen Pen { get; }
+        public ImmutablePen? Pen { get; }
 
         /// <summary>
         /// Gets the geometry to draw.
@@ -54,7 +54,7 @@ namespace Avalonia.Rendering.SceneGraph
         public IGeometryImpl Geometry { get; }
 
         /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene> ChildScenes { get; }
+        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -68,7 +68,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, IGeometryImpl geometry)
+        public bool Equals(Matrix transform, IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
             return transform == Transform &&
                    Equals(brush, Brush) &&

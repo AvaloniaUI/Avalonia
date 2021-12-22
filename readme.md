@@ -75,6 +75,12 @@ For more information see the [.NET Foundation Code of Conduct](https://dotnetfou
 
 Avalonia is licenced under the [MIT licence](licence.md).
 
+## Support Avalonia
+
+**BTC**: bc1q05wx78qemgy9x6ytl5ljk2xrt00yqargyjm8gx
+
+This will be shared with the community and awarded for significant contributions.
+
 ### Backers
 
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/Avalonia#backer)]
