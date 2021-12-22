@@ -82,15 +82,12 @@ namespace Avalonia.Input
                 var e = (PointerPressedEventArgs)ev;
                 var visual = (IVisual)ev.Source;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                var clickCount = e.ClickCount;
-#pragma warning restore CS0618 // Type or member is obsolete
-                if (clickCount <= 1)
+                if (e.ClickCount <= 1)
                 {
                     s_isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
                 }
-                else if (clickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
@@ -119,7 +116,7 @@ namespace Avalonia.Input
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
                         }
-                        //_isDoubleTapped needed here to prevent invoking Tapped event when DoubleTapped is called.
+                        //s_isDoubleTapped needed here to prevent invoking Tapped event when DoubleTapped is called.
                         //This behaviour matches UWP behaviour.
                         else if (s_isDoubleTapped == false)
                         {
