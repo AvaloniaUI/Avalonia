@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Disposables;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -208,12 +207,11 @@ namespace Avalonia.Input.UnitTests
         {
             var unitTestApp = UnitTestApplication.Start(
                 new TestServices(inputManager: new InputManager()));
-            var scope = AvaloniaLocator.EnterScope();
             var iSettingsMock = new Mock<IPlatformSettings>();
             iSettingsMock.Setup(x => x.DoubleClickTime).Returns(doubleClickTime);
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
-            return new CompositeDisposable(unitTestApp, scope);
+            return unitTestApp;
         }
         private static void SendXTouchContactsWithIds(IInputManager inputManager, TouchDevice device, IInputRoot root, RawPointerEventType type, params long[] touchPointIds)
         {
