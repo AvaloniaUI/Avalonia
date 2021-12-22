@@ -9,9 +9,7 @@ namespace Avalonia.Animation
     {
         protected override void Stop()
         {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>() ??
-                throw new InvalidOperationException("Unable to locate IRenderLoop.");
-            loop.Remove(this);
+            AvaloniaLocator.Current.GetRequiredService<IRenderLoop>().Remove(this);
         }
 
         bool IRenderLoopTask.NeedsUpdate => HasSubscriptions;

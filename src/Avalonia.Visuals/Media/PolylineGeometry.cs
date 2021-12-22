@@ -76,8 +76,7 @@ namespace Avalonia.Media
 
         protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var geometry = factory.CreateStreamGeometry();
 
             using (var context = geometry.Open())

@@ -169,8 +169,7 @@ namespace Avalonia.Media.Imaging
 
         private static IPlatformRenderInterface GetFactory()
         {
-            return AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
+            return AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
     }
 }
