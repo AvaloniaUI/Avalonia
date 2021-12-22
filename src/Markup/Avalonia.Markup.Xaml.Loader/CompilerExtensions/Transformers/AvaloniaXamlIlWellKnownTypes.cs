@@ -86,6 +86,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IBrush { get; }
         public IXamlType ImmutableSolidColorBrush { get; }
         public IXamlConstructor ImmutableSolidColorBrushConstructorColor { get; }
+        public IXamlType TypeUtilities { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -189,6 +190,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IBrush = cfg.TypeSystem.GetType("Avalonia.Media.IBrush");
             ImmutableSolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.Immutable.ImmutableSolidColorBrush");
             ImmutableSolidColorBrushConstructorColor = ImmutableSolidColorBrush.GetConstructor(new List<IXamlType> { UInt });
+            TypeUtilities = cfg.TypeSystem.GetType("Avalonia.Utilities.TypeUtilities");
         }
     }
 

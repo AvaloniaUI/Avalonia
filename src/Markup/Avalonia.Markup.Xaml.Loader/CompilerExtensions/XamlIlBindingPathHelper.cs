@@ -14,7 +14,7 @@ using XamlX.Emit;
 using XamlX.IL;
 using Avalonia.Utilities;
 
-using XamlIlEmitContext = XamlX.Emit.XamlEmitContext<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
+using XamlIlEmitContext = XamlX.Emit.XamlEmitContextWithLocals<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -652,58 +652,56 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
+                var trampolineBuilder = context.Configuration.GetExtra<XamlIlTrampolineBuilder>();
+                var objectType = context.Configuration.WellKnownTypes.Object;
                 codeGen
-                    .Ldtoken(_executeMethod);
+                    .Ldstr(_executeMethod.Name)
+                    .Ldnull()
+                    .Ldftn(trampolineBuilder.EmitCommandExecuteTrampoline(context, _executeMethod))
+                    .Newobj(context.Configuration.TypeSystem.GetType("System.Action`2")
+                        .MakeGenericType(objectType, objectType)
+                        .GetConstructor(new() { objectType, context.Configuration.TypeSystem.GetType("System.IntPtr") }));
 
-                if (_canExecuteMethod is not null)
+                if (_canExecuteMethod is null)
                 {
-                    codeGen.Ldtoken(_canExecuteMethod);
+                    codeGen.Ldnull();
                 }
                 else
                 {
-                    using var canExecuteMethodHandle = codeGen.LocalsPool.GetLocal(context.Configuration.TypeSystem.GetType("System.RuntimeMethodHandle"));
                     codeGen
-                        .Ldloca(canExecuteMethodHandle.Local)
-                        .Emit(OpCodes.Initobj)
-                        .Ldloc(canExecuteMethodHandle.Local);
+                        .Ldnull()
+                        .Ldftn(trampolineBuilder.EmitCommandCanExecuteTrampoline(context, _canExecuteMethod))
+                        .Newobj(context.Configuration.TypeSystem.GetType("System.Func`3")
+                            .MakeGenericType(objectType, objectType, context.Configuration.WellKnownTypes.Boolean)
+                            .GetConstructor(new() { objectType, context.Configuration.TypeSystem.GetType("System.IntPtr") }));
                 }
 
-                if (_dependsOnProperties is { Count:> 0 })
+                if (_dependsOnProperties is { Count:> 1 })
                 {
-                    using var dependsOnProperties = codeGen.LocalsPool.GetLocal(context.Configuration.WellKnownTypes.String.MakeArrayType(1));
+                    using var dependsOnPropertiesArray = context.GetLocalOfType(context.Configuration.WellKnownTypes.String.MakeArrayType(1));
                     codeGen
                         .Ldc_I4(_dependsOnProperties.Count)
                         .Newarr(context.Configuration.WellKnownTypes.String)
-                        .Stloc(dependsOnProperties.Local);
+                        .Stloc(dependsOnPropertiesArray.Local);
 
-                    for (var i = 0; i < _dependsOnProperties.Count; i++)
+                    for (int i = 0; i < _dependsOnProperties.Count; i++)
                     {
-                        var prop = _dependsOnProperties[i];
                         codeGen
-                            .Ldloc(dependsOnProperties.Local)
+                            .Ldloc(dependsOnPropertiesArray.Local)
                             .Ldc_I4(i)
-                            .Ldstr(prop)
+                            .Ldstr(_dependsOnProperties[i])
                             .Stelem_ref();
                     }
-                    codeGen.Ldloc(dependsOnProperties.Local);
+                    codeGen.Ldloc(dependsOnPropertiesArray.Local);
                 }
                 else
                 {
                     codeGen.Ldnull();
                 }
 
-                if (_executeMethod.Parameters.Count != 0)
-                {
-                    codeGen.EmitCall(
-                        context.GetAvaloniaTypes()
-                            .CompiledBindingPathBuilder.FindMethod(m => m.Name == "CommandWithParameter"));
-                }
-                else
-                {
-                    codeGen.EmitCall(
-                        context.GetAvaloniaTypes()
-                                .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Command"));
-                }
+                codeGen
+                    .EmitCall(context.GetAvaloniaTypes()
+                        .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Command"));
             }
         }
 
@@ -829,7 +827,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
-        class XamlIlBindingPathNode : XamlAstNode, IXamlIlBindingPathNode, IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
+        class XamlIlBindingPathNode : XamlAstNode, IXamlIlBindingPathNode, IXamlAstLocalsEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
         {
             private readonly List<IXamlIlBindingPathElementNode> _transformElements;
 

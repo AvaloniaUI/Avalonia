@@ -12,11 +12,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     internal class CommandAccessorPlugin : IPropertyAccessorPlugin
     {
-        private readonly Func<WeakReference<object>, IPropertyAccessor> _commandAccessorFactory;
+        private readonly Action<object, object> _execute;
+        private readonly Func<object, object, bool> _canExecute;
+        private readonly ISet<string> _dependsOnProperties;
 
-        public CommandAccessorPlugin(Func<WeakReference<object>, IPropertyAccessor> commandAccessorFactory)
+        public CommandAccessorPlugin(Action<object, object> execute, Func<object, object, bool> canExecute, ISet<string> dependsOnProperties)
         {
-            _commandAccessorFactory = commandAccessorFactory;
+            _execute = execute;
+            _canExecute = canExecute;
+            _dependsOnProperties = dependsOnProperties;
         }
 
         public bool Match(object obj, string propertyName)
@@ -26,25 +30,76 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
-            return _commandAccessorFactory(reference);
+            return new CommandAccessor(reference, _execute, _canExecute, _dependsOnProperties);
         }
 
-        internal abstract class CommandAccessorBase : PropertyAccessorBase
+        private sealed class CommandAccessor : PropertyAccessorBase
         {
             private readonly WeakReference<object> _reference;
+            private Command _command;
             private readonly ISet<string> _dependsOnProperties;
 
-            public CommandAccessorBase(WeakReference<object> reference, ISet<string> dependsOnProperties)
+            public CommandAccessor(WeakReference<object> reference, Action<object, object> execute, Func<object, object, bool> canExecute, ISet<string> dependsOnProperties)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
 
                 _reference = reference;
                 _dependsOnProperties = dependsOnProperties;
+                _command = new Command(reference, execute, canExecute);
+
+            }
+
+            public override object Value => _reference.TryGetTarget(out var _) ? _command : null;
+
+            private void RaiseCanExecuteChanged()
+            {
+                _command.RaiseCanExecuteChanged();
+            }
+
+            private sealed class Command : ICommand
+            {
+                private readonly WeakReference<object> _target;
+                private readonly Action<object, object> _execute;
+                private readonly Func<object, object, bool> _canExecute;
+
+                public event EventHandler CanExecuteChanged;
+
+                public Command(WeakReference<object> target, Action<object, object> execute, Func<object, object, bool> canExecute)
+                {
+                    _target = target;
+                    _execute = execute;
+                    _canExecute = canExecute;
+                }
+
+                public void RaiseCanExecuteChanged()
+                {
+                    Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
+                       , Threading.DispatcherPriority.Input);
+                }
+
+                public bool CanExecute(object parameter)
+                {
+                    if (_target.TryGetTarget(out var target))
+                    {
+                        if (_canExecute == null)
+                        {
+                            return true;
+                        }
+                        return _canExecute(target, parameter);
+                    }
+                    return false;
+                }
+
+                public void Execute(object parameter)
+                {
+                    if (_target.TryGetTarget(out var target))
+                    {
+                        _execute(target, parameter);
+                    }
+                }
             }
 
             public override Type PropertyType => typeof(ICommand);
-
-            protected abstract void RaiseCanExecuteChanged();
 
             public override bool SetValue(object value, BindingPriority priority)
             {
@@ -55,7 +110,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (string.IsNullOrEmpty(e.PropertyName) || _dependsOnProperties.Contains(e.PropertyName))
                 {
-                    SendCurrentValue();
+                    RaiseCanExecuteChanged();
                 }
             }
 
@@ -94,102 +149,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                         inpc,
                         nameof(INotifyPropertyChanged.PropertyChanged),
                         OnNotifyPropertyChanged);
-                }
-            }
-        }
-
-        internal sealed class CommandWithParameterAccessor<T> : CommandAccessorBase
-        {
-            private Command _command;
-
-            public CommandWithParameterAccessor(WeakReference<object> target, ISet<string> dependsOnProperties, Action<T> execute, Func<object, bool> canExecute)
-                : base(target, dependsOnProperties)
-            {
-                _command = new Command(execute, canExecute);
-            }
-
-            public override object Value => _command;
-
-            protected override void RaiseCanExecuteChanged()
-            {
-                _command.RaiseCanExecuteChanged();
-            }
-
-            private sealed class Command : ICommand
-            {
-                private readonly Action<T> _execute;
-                private readonly Func<object, bool> _canExecute;
-
-                public event EventHandler CanExecuteChanged;
-
-                public Command(Action<T> execute, Func<object, bool> canExecute)
-                {
-                    _execute = execute;
-                    _canExecute = canExecute;
-                }
-
-                public void RaiseCanExecuteChanged()
-                {
-                    Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
-                       , Threading.DispatcherPriority.Input);
-                }
-
-                public bool CanExecute(object parameter)
-                {
-                    return _canExecute(parameter);
-                }
-
-                public void Execute(object parameter)
-                {
-                    _execute((T)parameter);
-                }
-            }
-        }
-
-        internal sealed class CommandWithoutParameterAccessor : CommandAccessorBase
-        {
-            private Command _command;
-
-            public CommandWithoutParameterAccessor(WeakReference<object> target, ISet<string> dependsOnProperties, Action execute, Func<object, bool> canExecute)
-                : base(target, dependsOnProperties)
-            {
-                _command = new Command(execute, canExecute);
-            }
-
-            public override object Value => _command;
-
-            protected override void RaiseCanExecuteChanged()
-            {
-                _command.RaiseCanExecuteChanged();
-            }
-
-            private sealed class Command : ICommand
-            {
-                private readonly Action _execute;
-                private readonly Func<object, bool> _canExecute;
-
-                public event EventHandler CanExecuteChanged;
-
-                public Command(Action execute, Func<object, bool> canExecute)
-                {
-                    _execute = execute;
-                    _canExecute = canExecute;
-                }
-
-                public void RaiseCanExecuteChanged()
-                {
-                    Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
-                       , Threading.DispatcherPriority.Input);
-                }
-
-                public bool CanExecute(object parameter)
-                {
-                    return _canExecute(parameter);
-                }
-
-                public void Execute(object parameter)
-                {
-                    _execute();
                 }
             }
         }

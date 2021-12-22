@@ -124,6 +124,8 @@ namespace Avalonia.Build.Tasks
             var indexerAccessorClosure = new TypeDefinition("CompiledAvaloniaXaml", "!IndexerAccessorFactoryClosure",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(indexerAccessorClosure);
+            var trampolineBuilder = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlTrampolines",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
@@ -133,6 +135,7 @@ namespace Avalonia.Build.Tasks
                 AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
+                new XamlIlTrampolineBuilder(typeSystem.CreateTypeBuilder(trampolineBuilder)),
                 new DeterministicIdGenerator());
 
 
@@ -256,7 +259,7 @@ namespace Avalonia.Build.Tasks
                             (closureName, closureBaseType) =>
                                 populateBuilder.DefineSubType(closureBaseType, closureName, false),
                             (closureName, returnType, parameterTypes) =>
-                                populateBuilder.CreateDelegateSubType(closureName, false, returnType, parameterTypes),
+                                populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
                             res.Uri, res
                         );
                         
