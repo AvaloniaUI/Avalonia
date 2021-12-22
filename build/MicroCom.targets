@@ -6,6 +6,7 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <ExcludeAssets>all</ExcludeAssets>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
     </ProjectReference>
   </ItemGroup>
   

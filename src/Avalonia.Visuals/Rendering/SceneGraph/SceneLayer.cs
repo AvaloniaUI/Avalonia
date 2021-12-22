@@ -54,7 +54,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets or sets the opacity mask for the layer.
         /// </summary>
-        public IBrush OpacityMask { get; set; }
+        public IBrush? OpacityMask { get; set; }
 
         /// <summary>
         /// Gets or sets the target rectangle for the layer opacity mask.
@@ -64,7 +64,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the layer's geometry clip.
         /// </summary>
-        public IGeometryImpl GeometryClip { get; set; }
+        public IGeometryImpl? GeometryClip { get; set; }
 
         /// <summary>
         /// Gets the dirty rectangles for the layer.

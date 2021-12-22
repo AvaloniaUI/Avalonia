@@ -23,8 +23,8 @@ namespace Avalonia.Utilities
             string eventName)
             where TEventArgs : EventArgs
         {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(eventName != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+            _ = eventName ?? throw new ArgumentNullException(nameof(eventName));
 
             return Observable.Create<EventPattern<object, TEventArgs>>(observer =>
             {
@@ -43,7 +43,7 @@ namespace Avalonia.Utilities
                 _observer = observer;
             }
 
-            public void OnEvent(object sender, TEventArgs e)
+            public void OnEvent(object? sender, TEventArgs e)
             {
                 _observer.OnNext(new EventPattern<object, TEventArgs>(sender, e));
             }

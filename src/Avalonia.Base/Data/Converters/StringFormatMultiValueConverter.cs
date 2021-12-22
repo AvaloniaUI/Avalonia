@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-#nullable enable
-
 namespace Avalonia.Data.Converters
 {
     /// <summary>

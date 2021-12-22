@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace Avalonia.Collections.Pooled
 {
     /// <summary>

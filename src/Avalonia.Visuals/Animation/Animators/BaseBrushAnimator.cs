@@ -143,7 +143,7 @@ namespace Avalonia.Animation.Animators
                     if (!match(firstKeyType))
                         continue;
 
-                    animator = (IAnimator)Activator.CreateInstance(animatorType);
+                    animator = (IAnimator?)Activator.CreateInstance(animatorType);
                     if (animator != null)
                     {
                         animator.Property = Property;

@@ -53,11 +53,16 @@ namespace Avalonia.Styling
 
                 if (_property.IsAttached)
                 {
+                    builder.Append('(');
                     builder.Append(_property.OwnerType.Name);
                     builder.Append('.');
                 }
 
                 builder.Append(_property.Name);
+                if (_property.IsAttached)
+                {
+                    builder.Append(')');
+                }
                 builder.Append('=');
                 builder.Append(_value ?? string.Empty);
                 builder.Append(']');
@@ -104,7 +109,7 @@ namespace Avalonia.Styling
             var converter = TypeDescriptor.GetConverter(propertyType);
             if (converter?.CanConvertFrom(valueType) == true)
             {
-                return Equals(propertyValue, converter.ConvertFrom(null, CultureInfo.InvariantCulture, value));
+                return Equals(propertyValue, converter.ConvertFrom(null, CultureInfo.InvariantCulture, value!));
             }
 
             return false;

@@ -177,7 +177,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
         }

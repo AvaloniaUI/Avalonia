@@ -4,7 +4,7 @@
     <PackAvaloniaNative Condition="'$(PackAvaloniaNative)' == ''">$([MSBuild]::IsOSPlatform(OSX))</PackAvaloniaNative>
     <IsPackable>$(PackAvaloniaNative)</IsPackable>
     <IsPackable Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'True'">true</IsPackable>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 

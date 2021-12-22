@@ -41,7 +41,7 @@ namespace Avalonia.Web.Blazor
 
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
 
-            if (Application.Current.ApplicationLifetime is ISingleViewApplicationLifetime lifetime)
+            if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime lifetime)
             {
                 _topLevel.Content = lifetime.MainView;
             }
@@ -280,7 +280,7 @@ namespace Avalonia.Web.Blazor
 
                         var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
                         // bump the default resource cache limit
-                        _context.SetResourceCacheLimit(options.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
+                        _context.SetResourceCacheLimit(options?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
                         Console.WriteLine("glcontext created and resource limit set");
                     }
 

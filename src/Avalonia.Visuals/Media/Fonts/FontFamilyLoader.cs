@@ -32,7 +32,8 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsBySource(FontFamilyKey fontFamilyKey)
         {
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>() ??
+                throw new InvalidOperationException("Unable to locate IAssetLoader.");
 
             var availableAssets = assetLoader.GetAssets(fontFamilyKey.Source, fontFamilyKey.BaseUri);
 
@@ -50,7 +51,8 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsByExpression(FontFamilyKey fontFamilyKey)
         {
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>() ??
+                throw new InvalidOperationException("Unable to locate IAssetLoader.");
 
             var fileName = GetFileName(fontFamilyKey, out var fileExtension, out var location);
 
@@ -87,7 +89,7 @@ namespace Avalonia.Media.Fonts
             {
                 fileExtension = "." + fontFamilyKey.Source.AbsolutePath.Split('.').LastOrDefault();
 
-                var fileName = fontFamilyKey.Source.LocalPath.Replace(fileExtension, string.Empty).Split('.').LastOrDefault();
+                var fileName = fontFamilyKey.Source.LocalPath.Replace(fileExtension, string.Empty).Split('.').Last();
 
                 location = new Uri(fontFamilyKey.Source.AbsoluteUri.Replace("." + fileName + fileExtension, string.Empty), UriKind.RelativeOrAbsolute);
 

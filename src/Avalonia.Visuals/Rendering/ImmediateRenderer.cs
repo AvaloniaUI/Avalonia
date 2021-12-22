@@ -19,9 +19,9 @@ namespace Avalonia.Rendering
     public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
         private readonly IVisual _root;
-        private readonly IRenderRoot _renderRoot;
+        private readonly IRenderRoot? _renderRoot;
         private bool _updateTransformedBounds = true;
-        private IRenderTarget _renderTarget;
+        private IRenderTarget? _renderTarget;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
@@ -29,9 +29,7 @@ namespace Avalonia.Rendering
         /// <param name="root">The control to render.</param>
         public ImmediateRenderer(IVisual root)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
-
-            _root = root;
+            _root = root ?? throw new ArgumentNullException(nameof(root));
             _renderRoot = root as IRenderRoot;
         }
 
@@ -49,7 +47,7 @@ namespace Avalonia.Rendering
         public bool DrawDirtyRects { get; set; }
 
         /// <inheritdoc/>
-        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
+        public event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
 
         /// <inheritdoc/>
         public void Paint(Rect rect)
@@ -169,7 +167,7 @@ namespace Avalonia.Rendering
             return HitTest(root, p, filter);
         }
 
-        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
         {
             return HitTest(root, p, filter).FirstOrDefault();
         }
@@ -233,9 +231,9 @@ namespace Avalonia.Rendering
         private static IEnumerable<IVisual> HitTest(
            IVisual visual,
            Point p,
-           Func<IVisual, bool> filter)
+           Func<IVisual, bool>? filter)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             if (filter?.Invoke(visual) != false)
             {

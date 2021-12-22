@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     internal class MarkupBindingChainException : BindingChainException

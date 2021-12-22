@@ -1,8 +1,7 @@
 ﻿<ProjectConfiguration>
   <Settings>
     <HiddenComponentWarnings>
-      <Value>AbnormalReferenceResolution</Value>
+      <Value>DerivedFilesIncludedInWorkspace</Value>
     </HiddenComponentWarnings>
-    <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>
