@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
@@ -20,7 +21,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets a collection describing the logical children of the host control.
         /// </summary>
-        IAvaloniaList<ILogical> LogicalChildren { get; }
+        IList<ILogical> LogicalChildren { get; }
 
         /// <summary>
         /// Registers an <see cref="IContentPresenter"/> with a host control.

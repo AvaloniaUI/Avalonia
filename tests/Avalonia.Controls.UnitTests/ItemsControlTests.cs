@@ -231,8 +231,8 @@ namespace Avalonia.Controls.UnitTests
             target.Template = GetTemplate();
             target.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            target.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Add);
 
             target.Items = new[] { child };
 
@@ -250,8 +250,8 @@ namespace Avalonia.Controls.UnitTests
             target.Items = new[] { child };
             target.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            target.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Remove);
 
             target.Items = null;
 
@@ -269,7 +269,7 @@ namespace Avalonia.Controls.UnitTests
             target.Items = new[] { child };
             target.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            target.AddLogicalChildrenChangedHandler((s, e) => called = true);
 
             target.Items = new[] { "Foo" };
 
@@ -288,8 +288,8 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            target.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Add);
 
             items.Add("Bar");
 
@@ -308,8 +308,8 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            target.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Remove);
 
             items.Remove("Bar");
 

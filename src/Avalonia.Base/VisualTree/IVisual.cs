@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Rendering;
@@ -88,7 +89,12 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets the control's child visuals.
         /// </summary>
-        IAvaloniaReadOnlyList<IVisual> VisualChildren { get; }
+        /// <remarks>
+        /// This property is free to return a different collection instance when the element's
+        /// visual children change. To listen for change in the logical children, subscribe
+        /// using <see cref="VisualExtensions.AddVisualChildrenChangedHandler(Visual, System.Collections.Specialized.NotifyCollectionChangedEventHandler)"/>/
+        /// </remarks>
+        IReadOnlyList<IVisual> VisualChildren { get; }
 
         /// <summary>
         /// Gets the control's parent visual.

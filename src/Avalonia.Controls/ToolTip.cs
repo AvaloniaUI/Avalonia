@@ -3,6 +3,7 @@ using System;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {

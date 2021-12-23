@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
@@ -43,7 +44,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+        IList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)

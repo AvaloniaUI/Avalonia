@@ -62,8 +62,8 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            decorator.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Add);
 
             decorator.Child = child;
 
@@ -79,8 +79,8 @@ namespace Avalonia.Controls.UnitTests
 
             decorator.Child = child;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            decorator.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Remove);
 
             decorator.Child = null;
 
@@ -97,7 +97,7 @@ namespace Avalonia.Controls.UnitTests
 
             decorator.Child = child1;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            decorator.AddLogicalChildrenChangedHandler((s, e) => called = true);
 
             decorator.Child = child2;
 

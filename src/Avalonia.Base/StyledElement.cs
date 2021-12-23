@@ -60,7 +60,7 @@ namespace Avalonia
         private string? _name;
         private readonly Classes _classes = new Classes();
         private ILogicalRoot? _logicalRoot;
-        private IAvaloniaList<ILogical>? _logicalChildren;
+        private ILogicalVisualChildren? _children;
         private IResourceDictionary? _resources;
         private Styles? _styles;
         private bool _styled;
@@ -230,27 +230,12 @@ namespace Avalonia
             internal set => SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
         }
 
+        protected internal ILogicalVisualChildren Children => _children ??= CreateChildren();
+
         /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
-        protected IAvaloniaList<ILogical> LogicalChildren
-        {
-            get
-            {
-                if (_logicalChildren == null)
-                {
-                    var list = new AvaloniaList<ILogical>
-                    {
-                        ResetBehavior = ResetBehavior.Remove,
-                        Validate = logical => ValidateLogicalChild(logical)
-                    };
-                    list.CollectionChanged += LogicalChildrenCollectionChanged;
-                    _logicalChildren = list;
-                }
-
-                return _logicalChildren;
-            }
-        }
+        protected IList<ILogical> LogicalChildren => Children.LogicalMutable;
 
         /// <summary>
         /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
@@ -276,7 +261,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
-        IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
+        IReadOnlyList<ILogical> ILogical.LogicalChildren => Children.Logical;
 
         /// <inheritdoc/>
         bool IResourceNode.HasResources => (_resources?.HasResources ?? false) ||
@@ -349,6 +334,8 @@ namespace Avalonia
 
             return _styled;
         }
+
+        protected virtual ILogicalVisualChildren CreateChildren() => new LogicalVisualChildren(this);
 
         /// <summary>
         /// Detaches all styles from the element and queues a restyle.
@@ -523,9 +510,9 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            if (_logicalChildren is object)
+            if (_children?.Logical is IReadOnlyList<ILogical> children)
             {
-                var count = _logicalChildren.Count;
+                var count = children.Count;
 
                 if (count > 0)
                 {
@@ -533,7 +520,7 @@ namespace Avalonia
 
                     for (var i = 0; i < count; ++i)
                     {
-                        _logicalChildren[i].NotifyResourcesChanged(e);
+                        children[i].NotifyResourcesChanged(e);
                     }
                 }
             }
@@ -639,14 +626,6 @@ namespace Avalonia
             }
 
             return null;
-        }
-
-        private static void ValidateLogicalChild(ILogical c)
-        {
-            if (c == null)
-            {
-                throw new ArgumentException("Cannot add null to LogicalChildren.");
-            }
         }
 
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
@@ -807,13 +786,13 @@ namespace Avalonia
         {
             InvalidateStyles();
 
-            if (_logicalChildren is object)
+            if (_children?.Logical is IReadOnlyList<ILogical> children)
             {
-                var childCount = _logicalChildren.Count;
+                var childCount = children.Count;
 
                 for (var i = 0; i < childCount; ++i)
                 {
-                    (_logicalChildren[i] as StyledElement)?.InvalidateStylesOnThisAndDescendents();
+                    (children[i] as StyledElement)?.InvalidateStylesOnThisAndDescendents();
                 }
             }
         }
@@ -822,13 +801,13 @@ namespace Avalonia
         {
             DetachStyles(styles);
 
-            if (_logicalChildren is object)
+            if (_children?.Logical is IReadOnlyList<ILogical> children)
             {
-                var childCount = _logicalChildren.Count;
+                var childCount = children.Count;
 
                 for (var i = 0; i < childCount; ++i)
                 {
-                    (_logicalChildren[i] as StyledElement)?.DetachStylesFromThisAndDescendents(styles);
+                    (children[i] as StyledElement)?.DetachStylesFromThisAndDescendents(styles);
                 }
             }
         }

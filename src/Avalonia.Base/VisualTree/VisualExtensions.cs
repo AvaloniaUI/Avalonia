@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Rendering;
 
@@ -403,6 +404,26 @@ namespace Avalonia.VisualTree
                 })
                 .OrderBy(x => x, null)
                 .Select(x => x.Element);
+        }
+
+        /// <summary>
+        /// Adds a handler to listen to changes in a visual's children.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="handler">The handler.</param>
+        public static void AddVisualChildrenChangedHandler(this Visual visual, NotifyCollectionChangedEventHandler handler)
+        {
+            visual.Children.AddVisualChildrenChangedHandler(handler);
+        }
+
+        /// <summary>
+        /// Removes a handler added by <see cref="AddVisualChildrenChangedHandler(Visual, NotifyCollectionChangedEventHandler)"/>.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="handler">The handler.</param>
+        public static void RemoveVisualChildrenChangedHandler(this Visual visual, NotifyCollectionChangedEventHandler handler)
+        {
+            visual.Children.RemoveVisualChildrenChangedHandler(handler);
         }
 
         private static T FindDescendantOfTypeCore<T>(IVisual visual) where T : class

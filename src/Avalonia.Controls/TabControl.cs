@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
@@ -135,7 +136,7 @@ namespace Avalonia.Controls
         internal IContentPresenter ContentPart { get; private set; }
 
         /// <inheritdoc/>
-        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+        IList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)

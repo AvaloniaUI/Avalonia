@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Controls;
 
@@ -32,7 +33,12 @@ namespace Avalonia.LogicalTree
         /// <summary>
         /// Gets the logical children.
         /// </summary>
-        IAvaloniaReadOnlyList<ILogical> LogicalChildren { get; }
+        /// <remarks>
+        /// This property is free to return a different collection instance when the element's
+        /// logical children change. To listen for change in the logical children, subscribe
+        /// using <see cref="LogicalExtensions.AddLogicalChildrenChangedHandler(StyledElement, System.Collections.Specialized.NotifyCollectionChangedEventHandler)"/>.
+        /// </remarks>
+        IReadOnlyList<ILogical> LogicalChildren { get; }
 
         /// <summary>
         /// Notifies the control that it is being attached to a rooted logical tree.

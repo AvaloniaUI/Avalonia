@@ -18,7 +18,7 @@ namespace Avalonia.Diagnostics.Views
         {
             this.InitializeComponent();
             _historyList = this.FindControl<ListBox>("historyList");
-            ((ILogical)_historyList).LogicalChildren.CollectionChanged += HistoryChanged;
+            _historyList.AddLogicalChildrenChangedHandler(HistoryChanged);
             _input = this.FindControl<TextBox>("input");
             _input.KeyDown += InputKeyDown;
         }

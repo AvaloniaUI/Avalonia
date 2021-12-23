@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Xunit;
@@ -435,7 +436,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
                 set
                 {
                     VisualChildren.Clear();
-                    VisualChildren.AddRange(value.Cast<Visual>());
+                    ((IAvaloniaList<IVisual>)VisualChildren).AddRange(value.Cast<Visual>());
                 }
             }
 

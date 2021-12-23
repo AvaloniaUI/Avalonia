@@ -111,6 +111,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Mock<Control>();
             var logicalScroll = child.As<ILogicalScrollable>();
 
+            child.CallBase = true;
             logicalScroll.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
             logicalScroll.Setup(x => x.ScrollSize).Returns(new Size(12, 43));
 
@@ -132,6 +133,7 @@ namespace Avalonia.Controls.UnitTests
             var child = new Mock<Control>();
             var logicalScroll = child.As<ILogicalScrollable>();
 
+            child.CallBase = true;
             logicalScroll.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
             logicalScroll.Setup(x => x.PageScrollSize).Returns(new Size(45, 67));
 

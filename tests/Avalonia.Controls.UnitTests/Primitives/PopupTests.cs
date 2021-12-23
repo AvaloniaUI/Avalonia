@@ -120,8 +120,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var child = new Control();
             var called = false;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            target.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Add);
 
             target.Child = child;
 
@@ -137,8 +137,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Child = child;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            target.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Remove);
 
             target.Child = null;
 
@@ -155,7 +155,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Child = child1;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            target.AddLogicalChildrenChangedHandler((s, e) => called = true);
 
             target.Child = child2;
 

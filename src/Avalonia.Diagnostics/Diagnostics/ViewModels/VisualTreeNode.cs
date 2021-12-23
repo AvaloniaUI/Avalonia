@@ -128,11 +128,11 @@ namespace Avalonia.Diagnostics.ViewModels
                             }));
                 }
 
-                _subscriptions.Add(
-                    _control.VisualChildren.ForEachItem(
-                        (i, item) => nodes.Insert(i, new VisualTreeNode(item, Owner)),
-                        (i, item) => nodes.RemoveAt(i),
-                        () => nodes.Clear()));
+                ////_subscriptions.Add(
+                ////    _control.VisualChildren.ForEachItem(
+                ////        (i, item) => nodes.Insert(i, new VisualTreeNode(item, Owner)),
+                ////        (i, item) => nodes.RemoveAt(i),
+                ////        () => nodes.Clear()));
             }
 
             private struct PopupRoot

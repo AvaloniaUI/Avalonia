@@ -1,5 +1,6 @@
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
 using Xunit;
 

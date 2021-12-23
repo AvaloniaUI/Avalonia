@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace Avalonia.LogicalTree
 {
@@ -200,6 +201,26 @@ namespace Avalonia.LogicalTree
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Adds a handler to listen to changes in an element's logical children.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <param name="handler">The handler.</param>
+        public static void AddLogicalChildrenChangedHandler(this StyledElement element, NotifyCollectionChangedEventHandler handler)
+        {
+            element.Children.AddLogicalChildrenChangedHandler(handler);
+        }
+
+        /// <summary>
+        /// Removes a handler added by <see cref="AddLogicalChildrenChangedHandler(StyledElement, NotifyCollectionChangedEventHandler)"/>.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <param name="handler">The handler.</param>
+        public static void RemoveLogicalChildrenChangeHandler(this StyledElement element, NotifyCollectionChangedEventHandler handler)
+        {
+            element.Children.RemoveLogicalChildrenChangedHandler(handler);
         }
 
         private static T FindDescendantOfTypeCore<T>(ILogical logical) where T : class

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Base.UnitTests
@@ -45,7 +46,7 @@ namespace Avalonia.Base.UnitTests
 
         public void AddChildren(IEnumerable<Visual> v)
         {
-            VisualChildren.AddRange(v);
+            ((IAvaloniaList<IVisual>)VisualChildren).AddRange(v);
         }
 
         public void RemoveChild(Visual v)

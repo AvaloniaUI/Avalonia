@@ -180,8 +180,8 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
             var called = false;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            target.AddLogicalChildrenChangedHandler((s, e) =>
+                called = e.Action == NotifyCollectionChangedAction.Add);
 
             target.Template = GetTemplate();
             target.Content = child;
@@ -203,7 +203,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            target.AddLogicalChildrenChangedHandler((s, e) => called = true);
 
             target.Content = null;
             ((ContentPresenter)target.Presenter).UpdateChild();
@@ -224,7 +224,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            target.AddLogicalChildrenChangedHandler((s, e) => called = true);
 
             target.Content = child2;
             target.Presenter.ApplyTemplate();

@@ -1,4 +1,5 @@
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls

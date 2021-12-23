@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Data;
@@ -25,7 +26,7 @@ namespace Avalonia
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
     [UsableDuringInitialization]
-    public class Visual : StyledElement, IVisual
+    public class Visual : StyledElement, IVisual, ISetVisualParent
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -119,12 +120,6 @@ namespace Avalonia
         {
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
-
-            var visualChildren = new AvaloniaList<IVisual>();
-            visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = visual => ValidateVisualChild(visual);
-            visualChildren.CollectionChanged += VisualChildrenChanged;
-            VisualChildren = visualChildren;
         }
 
         /// <summary>
@@ -254,11 +249,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's child visuals.
         /// </summary>
-        protected IAvaloniaList<IVisual> VisualChildren
-        {
-            get;
-            private set;
-        }
+        protected IList<IVisual> VisualChildren => Children.VisualMutable;
 
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
@@ -273,7 +264,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's child controls.
         /// </summary>
-        IAvaloniaReadOnlyList<IVisual> IVisual.VisualChildren => VisualChildren;
+        IReadOnlyList<IVisual> IVisual.VisualChildren => Children.Visual;
 
         /// <summary>
         /// Gets the control's parent visual.
@@ -289,6 +280,32 @@ namespace Avalonia
         {
             get { return _transformedBounds; }
             set { SetAndRaise(TransformedBoundsProperty, ref _transformedBounds, value); }
+        }
+
+        void ISetVisualParent.SetParent(IVisual? parent)
+        {
+            if (_visualParent == parent)
+            {
+                return;
+            }
+
+            var old = _visualParent;
+            _visualParent = parent;
+
+            if (_visualRoot != null)
+            {
+                var e = new VisualTreeAttachmentEventArgs(old, VisualRoot);
+                OnDetachedFromVisualTreeCore(e);
+            }
+
+            if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
+            {
+                var root = this.FindAncestorOfType<IRenderRoot>();
+                var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
+                OnAttachedToVisualTreeCore(e);
+            }
+
+            OnVisualParentChanged(old, parent);
         }
 
         /// <summary>
@@ -538,23 +555,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Ensures a visual child is not null and not already parented.
-        /// </summary>
-        /// <param name="c">The visual child.</param>
-        private static void ValidateVisualChild(IVisual c)
-        {
-            if (c == null)
-            {
-                throw new ArgumentNullException(nameof(c), "Cannot add null to VisualChildren.");
-            }
-
-            if (c.VisualParent != null)
-            {
-                throw new InvalidOperationException("The control already has a visual parent.");
-            }
-        }
-
-        /// <summary>
         /// Called when the <see cref="ZIndex"/> property changes on any control.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -577,72 +577,6 @@ namespace Avalonia
             InvalidateVisual();
         }
 
-        /// <summary>
-        /// Sets the visual parent of the Visual.
-        /// </summary>
-        /// <param name="value">The visual parent.</param>
-        private void SetVisualParent(Visual? value)
-        {
-            if (_visualParent == value)
-            {
-                return;
-            }
-
-            var old = _visualParent;
-            _visualParent = value;
-
-            if (_visualRoot != null)
-            {
-                var e = new VisualTreeAttachmentEventArgs(old, VisualRoot);
-                OnDetachedFromVisualTreeCore(e);
-            }
-
-            if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
-            {
-                var root = this.FindAncestorOfType<IRenderRoot>();
-                var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
-                OnAttachedToVisualTreeCore(e);
-            }
-
-            OnVisualParentChanged(old, value);
-        }
-
         private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
-
-        /// <summary>
-        /// Called when the <see cref="VisualChildren"/> collection changes.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The event args.</param>
-        private void VisualChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    SetVisualParent(e.NewItems, this);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    SetVisualParent(e.OldItems, null);
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    SetVisualParent(e.OldItems, null);
-                    SetVisualParent(e.NewItems, this);
-                    break;
-            }
-        }
-        
-        private static void SetVisualParent(IList children, Visual? parent)
-        {
-            var count = children.Count;
-
-            for (var i = 0; i < count; i++)
-            {
-                var visual = (Visual) children[i];
-                
-                visual.SetVisualParent(parent);
-            }
-        }
     }
 }

@@ -1,8 +1,6 @@
-using Avalonia.LogicalTree;
-
 #nullable enable
 
-namespace Avalonia.Controls
+namespace Avalonia.LogicalTree
 {
     /// <summary>
     /// Defines an interface through which a <see cref="StyledElement"/>'s logical parent can be set.

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -46,7 +48,7 @@ namespace Avalonia.Controls
         /// Gets the children of the <see cref="Panel"/>.
         /// </summary>
         [Content]
-        public Controls Children { get; } = new Controls();
+        public new Controls Children { get; } = new Controls();
 
         /// <summary>
         /// Gets or Sets Panel background brush.
@@ -113,24 +115,26 @@ namespace Avalonia.Controls
         protected virtual void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             List<Control> controls;
+            var logicalChildren = (IAvaloniaList<ILogical>)LogicalChildren;
+            var visualChildren = (IAvaloniaList<IVisual>)VisualChildren;
 
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     controls = e.NewItems.OfType<Control>().ToList();
-                    LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems.OfType<Visual>());
+                    logicalChildren.InsertRange(e.NewStartingIndex, controls);
+                    visualChildren.InsertRange(e.NewStartingIndex, e.NewItems.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Move:
-                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
-                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    logicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    visualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
                     controls = e.OldItems.OfType<Control>().ToList();
-                    LogicalChildren.RemoveAll(controls);
-                    VisualChildren.RemoveAll(e.OldItems.OfType<Visual>());
+                    logicalChildren.RemoveAll(controls);
+                    visualChildren.RemoveAll(e.OldItems.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Replace:

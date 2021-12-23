@@ -423,7 +423,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            LogicalChildren.AddRange(toAdd);
+            ((IAvaloniaList<ILogical>)LogicalChildren).AddRange(toAdd);
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            LogicalChildren.RemoveAll(toRemove);
+            ((IAvaloniaList<ILogical>)LogicalChildren).RemoveAll(toRemove);
         }
 
         /// <summary>
