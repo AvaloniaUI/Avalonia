@@ -78,11 +78,10 @@ namespace Avalonia.Data.Core.Plugins
                 _ = method ?? throw new ArgumentNullException(nameof(method));
 
                 var returnType = method.ReturnType;
-                bool hasReturn = returnType != typeof(void);
 
                 var parameters = method.GetParameters();
 
-                var signatureTypeCount = (hasReturn ? 1 : 0) + parameters.Length;
+                var signatureTypeCount = parameters.Length + 1;
 
                 var paramTypes = new Type[signatureTypeCount];
 
@@ -94,11 +93,7 @@ namespace Avalonia.Data.Core.Plugins
                     paramTypes[i] = parameter.ParameterType;
                 }
 
-                if (hasReturn)
-                {
-                    paramTypes[paramTypes.Length - 1] = returnType;
-
-                }
+                paramTypes[paramTypes.Length - 1] = returnType;
 
                 PropertyType = Expression.GetDelegateType(paramTypes);
 
