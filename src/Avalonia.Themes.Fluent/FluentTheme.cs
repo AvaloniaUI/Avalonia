@@ -88,23 +88,19 @@ namespace Avalonia.Themes.Fluent
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    Styles? resultStyle = new Styles() { _sharedStyles };
 
                     if (Mode == FluentThemeMode.Light)
                     {
-                        resultStyle.Add(_fluentLight[0]);
-                        resultStyle.Add(_fluentLight[1]);
+                        _loaded = new Styles() { _sharedStyles , _fluentLight[0], _fluentLight[1] };
                     }
                     else if (Mode == FluentThemeMode.Dark)
                     {
-                        resultStyle.Add(_fluentDark[0]);
-                        resultStyle.Add(_fluentDark[1]);
+                        _loaded = new Styles() { _sharedStyles, _fluentDark[0], _fluentDark[1] };
                     }
-                    _loaded = resultStyle;
                     _isLoading = false;
                 }
 
-                return _loaded;
+                return _loaded!;
             }
         }
 
