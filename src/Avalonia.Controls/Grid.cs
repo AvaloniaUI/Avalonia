@@ -570,13 +570,10 @@ namespace Avalonia.Controls
             return (arrangeSize);
         }
 
-        /// <summary>
-        /// <see cref="Panel.ChildrenChanged"/>
-        /// </summary>
-        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected internal override void InvalidateOnChildrenChanged()
         {
             CellsStructureDirty = true;
-            base.ChildrenChanged(sender, e);
+            base.InvalidateOnChildrenChanged();
         }
 
         /// <summary>

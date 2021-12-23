@@ -119,12 +119,6 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Reset:
                     throw new NotSupportedException("Reset should not be signaled on LogicalChildren collection");
             }
-
-            // HACK: Remove this.
-            if (_owner is IVisual v)
-            {
-                v?.GetVisualRoot()?.Renderer?.RecalculateChildren(v);
-            }
         }
 
         private void OnVisualCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

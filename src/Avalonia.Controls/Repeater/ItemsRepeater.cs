@@ -288,7 +288,7 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private protected override void InvalidateMeasureOnChildrenChanged()
+        protected internal override void InvalidateOnChildrenChanged()
         {
             // Don't invalidate measure when children change.
         }

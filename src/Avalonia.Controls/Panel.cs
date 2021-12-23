@@ -1,13 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -41,14 +35,13 @@ namespace Avalonia.Controls
         /// </summary>
         public Panel()
         {
-            Children.CollectionChanged += ChildrenChanged;
         }
 
         /// <summary>
         /// Gets the children of the <see cref="Panel"/>.
         /// </summary>
         [Content]
-        public new Controls Children { get; } = new Controls();
+        public new Controls Children => (Controls)base.Children;
 
         /// <summary>
         /// Gets or Sets Panel background brush.
@@ -81,6 +74,8 @@ namespace Avalonia.Controls
             base.Render(context);
         }
 
+        protected override ILogicalVisualChildren CreateChildren() => new PanelChildren(this);
+
         /// <summary>
         /// Marks a property on a child as affecting the parent panel's arrangement.
         /// </summary>
@@ -108,56 +103,19 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="Children"/> collection changes.
+        /// Called in response to the <see cref="Children"/> collection changing in order to allow
+        /// the panel to carry out any needed invalidation.
         /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        protected virtual void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected internal virtual void InvalidateOnChildrenChanged()
         {
-            List<Control> controls;
-            var logicalChildren = (IAvaloniaList<ILogical>)LogicalChildren;
-            var visualChildren = (IAvaloniaList<IVisual>)VisualChildren;
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    controls = e.NewItems.OfType<Control>().ToList();
-                    logicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    visualChildren.InsertRange(e.NewStartingIndex, e.NewItems.OfType<Visual>());
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                    logicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
-                    visualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    controls = e.OldItems.OfType<Control>().ToList();
-                    logicalChildren.RemoveAll(controls);
-                    visualChildren.RemoveAll(e.OldItems.OfType<Visual>());
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    for (var i = 0; i < e.OldItems.Count; ++i)
-                    {
-                        var index = i + e.OldStartingIndex;
-                        var child = (IControl)e.NewItems[i];
-                        LogicalChildren[index] = child;
-                        VisualChildren[index] = child;
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    throw new NotSupportedException();
-            }
-
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
-            InvalidateMeasureOnChildrenChanged();
+            OnChildIndexChanged(new ChildIndexChangedEventArgs());
+            InvalidateMeasure();
+            VisualRoot?.Renderer?.RecalculateChildren(this);
         }
 
-        private protected virtual void InvalidateMeasureOnChildrenChanged()
+        protected void OnChildIndexChanged(ChildIndexChangedEventArgs e)
         {
-            InvalidateMeasure();
+            _childIndexChanged?.Invoke(this, e);
         }
 
         private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)

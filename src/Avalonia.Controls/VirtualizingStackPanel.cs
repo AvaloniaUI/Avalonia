@@ -78,6 +78,13 @@ namespace Avalonia.Controls
             _forceRemeasure = true;
         }
 
+        protected override ILogicalVisualChildren CreateChildren()
+        {
+            var result = base.CreateChildren();
+            result.AddLogicalChildrenChangedHandler(ChildrenChanged);
+            return result;
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_forceRemeasure || availableSize != ((ILayoutable)this).PreviousMeasure)
@@ -103,10 +110,8 @@ namespace Avalonia.Controls
             return result;
         }
 
-        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ChildrenChanged(sender, e);
-
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
