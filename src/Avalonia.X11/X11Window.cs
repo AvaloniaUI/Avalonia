@@ -1157,7 +1157,7 @@ namespace Avalonia.X11
         public ITextInputMethodImpl TextInputMethod => _ime;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
-            _transparencyHelper.SetTransparencyRequest(transparencyLevel);
+            _transparencyHelper?.SetTransparencyRequest(transparencyLevel);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
