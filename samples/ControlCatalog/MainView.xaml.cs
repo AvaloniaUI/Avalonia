@@ -44,34 +44,22 @@ namespace ControlCatalog
                     var themeStyle = Application.Current.Styles[0];
                     if (theme == CatalogTheme.FluentLight)
                     {
-                        if (themeStyle is FluentTheme fluentTheme)
+                        if (App.Fluent.Mode != FluentThemeMode.Light)
                         {
-                            if (fluentTheme.Mode == FluentThemeMode.Dark)
-                            {
-                                fluentTheme.Mode = FluentThemeMode.Light;
-                            }
+                            App.Fluent.Mode = FluentThemeMode.Light;
                         }
-                        else
-                        {
-                            Application.Current.Styles[0] = App.Fluent;
-                            Application.Current.Styles[1] = App.DataGridFluent;
-                        }
+                        Application.Current.Styles[0] = App.Fluent;
+                        Application.Current.Styles[1] = App.DataGridFluent;
                     }
                     else if (theme == CatalogTheme.FluentDark)
                     {
-                        if (themeStyle is FluentTheme fluentTheme)
-                        {
-                            if (fluentTheme.Mode == FluentThemeMode.Light)
-                            {
-                                fluentTheme.Mode = FluentThemeMode.Dark;
-                            }
-                        }
-                        else
+
+                        if (App.Fluent.Mode != FluentThemeMode.Dark)
                         {
                             App.Fluent.Mode = FluentThemeMode.Dark;
-                            Application.Current.Styles[0] = App.Fluent;
-                            Application.Current.Styles[1] = App.DataGridFluent;
                         }
+                        Application.Current.Styles[0] = App.Fluent;
+                        Application.Current.Styles[1] = App.DataGridFluent;
                     }
                     else if (theme == CatalogTheme.DefaultLight)
                     {
