@@ -53,7 +53,7 @@ namespace ControlCatalog
                         }
                         else
                         {
-                            Application.Current.Styles[0] = App.FluentLight;
+                            Application.Current.Styles[0] = App.Fluent;
                             Application.Current.Styles[1] = App.DataGridFluent;
                         }
                     }
@@ -68,7 +68,8 @@ namespace ControlCatalog
                         }
                         else
                         {
-                            Application.Current.Styles[0] = App.FluentDark;
+                            App.Fluent.Mode = FluentThemeMode.Dark;
+                            Application.Current.Styles[0] = App.Fluent;
                             Application.Current.Styles[1] = App.DataGridFluent;
                         }
                     }
