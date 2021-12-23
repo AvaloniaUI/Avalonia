@@ -16,12 +16,12 @@ namespace ControlCatalog
             DataContext = new ApplicationViewModel();
         }
 
-        private static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        public static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
             Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
         };
 
-        private static readonly StyleInclude DataGridDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        public static readonly StyleInclude DataGridDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
             Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Default.xaml")
         };
@@ -31,8 +31,7 @@ namespace ControlCatalog
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml")
-            },
-            DataGridFluent
+            }
         };
 
         public static Styles FluentLight = new Styles
@@ -40,8 +39,7 @@ namespace ControlCatalog
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml")
-            },
-            DataGridFluent
+            }
         };
 
         public static Styles DefaultLight = new Styles
@@ -65,8 +63,7 @@ namespace ControlCatalog
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
-            },
-            DataGridDefault
+            }
         };
 
         public static Styles DefaultDark = new Styles
@@ -90,8 +87,7 @@ namespace ControlCatalog
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
-            },
-            DataGridDefault
+            }
         };
 
         public override void Initialize()

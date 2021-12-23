@@ -18,7 +18,7 @@ namespace Avalonia.Themes.Fluent
     /// <summary>
     /// Includes the fluent theme in an application.
     /// </summary>
-    public class FluentTheme : IStyle, IResourceProvider
+    public class FluentTheme : AvaloniaObject, IStyle, IResourceProvider
     {
         private readonly Uri _baseUri;
         private Styles _fluentDark = new();
@@ -26,7 +26,6 @@ namespace Avalonia.Themes.Fluent
         private Styles _sharedStyles = new();
         private bool _isLoading;
         private IStyle? _loaded;
-        private FluentThemeMode _mode;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FluentTheme"/> class.
@@ -48,31 +47,32 @@ namespace Avalonia.Themes.Fluent
             InitStyles(_baseUri);
         }
 
+
+        public static readonly StyledProperty<FluentThemeMode> ModeProperty =
+            AvaloniaProperty.Register<FluentTheme, FluentThemeMode>(nameof(Mode));
         /// <summary>
         /// Gets or sets the mode of the fluent theme (light, dark).
         /// </summary>
         public FluentThemeMode Mode
         {
-            get => _mode;
-            set
+            get => GetValue(ModeProperty);
+            set => SetValue(ModeProperty, value);
+        }
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == ModeProperty)
             {
-                if (_mode != value)
+                if (Mode == FluentThemeMode.Dark)
                 {
-                    _mode = value;
-                    if (_mode == FluentThemeMode.Dark)
-                    {
-                        (Loaded as Styles)![1] = _fluentDark[0];
-                        (Loaded as Styles)![2] = _fluentDark[1];
-                    }
-                    else
-                    {
-                        (Loaded as Styles)![1] = _fluentLight[0];
-                        (Loaded as Styles)![2] = _fluentLight[1];
-                    }
-
-
+                    (Loaded as Styles)![1] = _fluentDark[0];
+                    (Loaded as Styles)![2] = _fluentDark[1];
                 }
-
+                else
+                {
+                    (Loaded as Styles)![1] = _fluentLight[0];
+                    (Loaded as Styles)![2] = _fluentLight[1];
+                }
             }
         }
 

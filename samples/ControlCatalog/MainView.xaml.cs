@@ -3,15 +3,12 @@ using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.XamlIl;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using ControlCatalog.Pages;
-using ControlCatalog.Models;
 using Avalonia.Themes.Fluent;
+using ControlCatalog.Models;
+using ControlCatalog.Pages;
 
 namespace ControlCatalog
 {
@@ -44,7 +41,47 @@ namespace ControlCatalog
             {
                 if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    (Application.Current.Styles[0] as FluentTheme).Mode = FluentThemeMode.Dark;
+                    var themeStyle = Application.Current.Styles[0];
+                    if (theme == CatalogTheme.FluentLight)
+                    {
+                        if (themeStyle is FluentTheme fluentTheme)
+                        {
+                            if (fluentTheme.Mode == FluentThemeMode.Dark)
+                            {
+                                fluentTheme.Mode = FluentThemeMode.Light;
+                            }
+                        }
+                        else
+                        {
+                            Application.Current.Styles[0] = new FluentTheme(new Uri("avares://ControlCatalog/Styles"));
+                            Application.Current.Styles[1] = App.DataGridFluent;
+                        }
+                    }
+                    else if (theme == CatalogTheme.FluentDark)
+                    {
+                        if (themeStyle is FluentTheme fluentTheme)
+                        {
+                            if (fluentTheme.Mode == FluentThemeMode.Light)
+                            {
+                                fluentTheme.Mode = FluentThemeMode.Dark;
+                            }
+                        }
+                        else
+                        {
+                            Application.Current.Styles[0] = new FluentTheme(new Uri("avares://ControlCatalog/Styles")) { Mode = FluentThemeMode.Dark };
+                            Application.Current.Styles[1] = App.DataGridFluent;
+                        }
+                    }
+                    else if (theme == CatalogTheme.DefaultLight)
+                    {
+                        Application.Current.Styles[0] = App.DefaultLight;
+                        Application.Current.Styles[1] = App.DataGridDefault;
+                    }
+                    else if (theme == CatalogTheme.DefaultDark)
+                    {
+                        Application.Current.Styles[0] = App.DefaultDark;
+                        Application.Current.Styles[1] = App.DataGridDefault;
+                    }
                 }
             };
 
