@@ -67,7 +67,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     gen.Ldarg(1);
                 }
             }
-            gen.Emit(OpCodes.Tailcall);
             gen.EmitCall(executeMethod, swallowResult: true);
             gen.Ret();
 
