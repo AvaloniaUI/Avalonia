@@ -203,6 +203,7 @@ namespace Avalonia.Input.UnitTests
             Assert.True(isDoubleTapped);
             Assert.Equal(3, doubleTappedExecutedTimes);
         }
+
         private IDisposable UnitTestApp(TimeSpan doubleClickTime = new TimeSpan())
         {
             var unitTestApp = UnitTestApplication.Start(
@@ -213,6 +214,7 @@ namespace Avalonia.Input.UnitTests
                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
             return unitTestApp;
         }
+        
         private static void SendXTouchContactsWithIds(IInputManager inputManager, TouchDevice device, IInputRoot root, RawPointerEventType type, params long[] touchPointIds)
         {
             for (int i = 0; i < touchPointIds.Length; i++)
