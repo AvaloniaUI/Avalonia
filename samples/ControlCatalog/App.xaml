@@ -5,8 +5,6 @@
              x:CompileBindings="True"
              x:Class="ControlCatalog.App">
   <Application.Styles>
-    <FluentTheme Mode="Light"/>
-    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
     <Style Selector="TextBlock.h1, TextBlock.h2, TextBlock.h3">
       <Setter Property="TextWrapping" Value="Wrap" />
     </Style>

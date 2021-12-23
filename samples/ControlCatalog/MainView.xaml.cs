@@ -53,7 +53,7 @@ namespace ControlCatalog
                         }
                         else
                         {
-                            Application.Current.Styles[0] = new FluentTheme(new Uri("avares://ControlCatalog/Styles"));
+                            Application.Current.Styles[0] = App.FluentLight;
                             Application.Current.Styles[1] = App.DataGridFluent;
                         }
                     }
@@ -68,7 +68,7 @@ namespace ControlCatalog
                         }
                         else
                         {
-                            Application.Current.Styles[0] = new FluentTheme(new Uri("avares://ControlCatalog/Styles")) { Mode = FluentThemeMode.Dark };
+                            Application.Current.Styles[0] = App.FluentDark;
                             Application.Current.Styles[1] = App.DataGridFluent;
                         }
                     }
