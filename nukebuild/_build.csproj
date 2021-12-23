@@ -16,6 +16,7 @@
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageReference Include="ILRepack.NETStandard" Version="2.0.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.7.0" />
+    <PackageReference Include="MicroCom.CodeGenerator" Version="0.10.3" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
   </ItemGroup>
@@ -37,10 +38,6 @@
     <None Include="..\GitVersion.yml" Condition="Exists('..\GitVersion.yml')" />
     <Compile Remove="Numerge/**/*.*" />
     <Compile Include="Numerge/Numerge/**/*.cs" />
-    <Compile Include="..\src\tools\MicroComGenerator\**\*.cs" Exclude="..\src\tools\MicroComGenerator\obj\**">
-      <Link>MicroComGenerator\%(Filename)%(Extension)</Link>
-    </Compile>
-    <Compile Remove="..\src\tools\MicroComGenerator\Program.cs" />
   </ItemGroup>
 
 </Project>
