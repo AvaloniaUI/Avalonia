@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        IList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+        IList<ILogical> IContentPresenterHost.LogicalChildren => Children.LogicalMutable;
 
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
@@ -71,12 +71,12 @@ namespace Avalonia.Controls.Primitives
         {
             if (e.OldValue is ILogical oldChild)
             {
-                LogicalChildren.Remove(oldChild);
+                Children.LogicalMutable.Remove(oldChild);
             }
 
             if (e.NewValue is ILogical newChild)
             {
-                LogicalChildren.Add(newChild);
+                Children.LogicalMutable.Add(newChild);
             }
         }
     }

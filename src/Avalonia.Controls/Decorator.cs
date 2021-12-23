@@ -73,15 +73,15 @@ namespace Avalonia.Controls
             if (oldChild != null)
             {
                 ((ISetLogicalParent)oldChild).SetParent(null);
-                LogicalChildren.Clear();
-                VisualChildren.Remove(oldChild);
+                Children.LogicalMutable.Clear();
+                Children.VisualMutable.Remove(oldChild);
             }
 
             if (newChild != null)
             {
                 ((ISetLogicalParent)newChild).SetParent(this);
-                VisualChildren.Add(newChild);
-                LogicalChildren.Add(newChild);
+                Children.VisualMutable.Add(newChild);
+                Children.LogicalMutable.Add(newChild);
             }
         }
     }

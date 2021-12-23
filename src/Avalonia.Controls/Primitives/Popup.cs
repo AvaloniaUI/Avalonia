@@ -583,14 +583,14 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            LogicalChildren.Clear();
+            Children.LogicalMutable.Clear();
 
             ((ISetLogicalParent?)e.OldValue)?.SetParent(null);
 
             if (e.NewValue != null)
             {
                 ((ISetLogicalParent)e.NewValue).SetParent(this);
-                LogicalChildren.Add((ILogical)e.NewValue);
+                Children.LogicalMutable.Add((ILogical)e.NewValue);
             }
         }
 

@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Notifications
         /// <param name="host">The window that will host the control.</param>
         public WindowNotificationManager(Window host)
         {
-            if (VisualChildren.Count != 0)
+            if (Children.Visual.Count != 0)
             {
                 Install(host);
             }
@@ -168,6 +168,6 @@ namespace Avalonia.Controls.Notifications
             PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
         }
 
-        public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);
+        public bool HitTest(Point point) => Children.Visual.HitTestCustom(point);
     }
 }

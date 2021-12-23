@@ -29,34 +29,34 @@ namespace Avalonia.Base.UnitTests
             {
                 if (Child != null)
                 {
-                    VisualChildren.Remove(Child);
+                    Children.VisualMutable.Remove(Child);
                 }
 
                 if (value != null)
                 {
-                    VisualChildren.Add(value);
+                    Children.VisualMutable.Add(value);
                 }
             }
         }
 
         public void AddChild(Visual v)
         {
-            VisualChildren.Add(v);
+            Children.VisualMutable.Add(v);
         }
 
         public void AddChildren(IEnumerable<Visual> v)
         {
-            ((IAvaloniaList<IVisual>)VisualChildren).AddRange(v);
+            ((IAvaloniaList<IVisual>)Children.VisualMutable).AddRange(v);
         }
 
         public void RemoveChild(Visual v)
         {
-            VisualChildren.Remove(v);
+            Children.VisualMutable.Remove(v);
         }
 
         public void ClearChildren()
         {
-            VisualChildren.Clear();
+            Children.VisualMutable.Clear();
         }
     }
 }

@@ -410,15 +410,15 @@ namespace Avalonia.Controls.Primitives
             {
                 oldThumb.DragDelta -= ThumbDragged;
 
-                LogicalChildren.Remove(oldThumb);
-                VisualChildren.Remove(oldThumb);
+                Children.LogicalMutable.Remove(oldThumb);
+                Children.VisualMutable.Remove(oldThumb);
             }
 
             if (newThumb != null)
             {
                 newThumb.DragDelta += ThumbDragged;
-                LogicalChildren.Add(newThumb);
-                VisualChildren.Add(newThumb);
+                Children.LogicalMutable.Add(newThumb);
+                Children.VisualMutable.Add(newThumb);
             }
         }
 
@@ -429,14 +429,14 @@ namespace Avalonia.Controls.Primitives
 
             if (oldButton != null)
             {
-                LogicalChildren.Remove(oldButton);
-                VisualChildren.Remove(oldButton);
+                Children.LogicalMutable.Remove(oldButton);
+                Children.VisualMutable.Remove(oldButton);
             }
 
             if (newButton != null)
             {
-                LogicalChildren.Add(newButton);
-                VisualChildren.Add(newButton);
+                Children.LogicalMutable.Add(newButton);
+                Children.VisualMutable.Add(newButton);
             }
         }
 

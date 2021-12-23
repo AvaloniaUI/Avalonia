@@ -238,10 +238,10 @@ namespace Avalonia.Controls.Presenters
             Panel = ItemsPanel.Build();
             Panel.SetValue(TemplatedParentProperty, TemplatedParent);
 
-            LogicalChildren.Clear();
-            VisualChildren.Clear();
-            LogicalChildren.Add(Panel);
-            VisualChildren.Add(Panel);
+            Children.LogicalMutable.Clear();
+            Children.VisualMutable.Clear();
+            Children.LogicalMutable.Add(Panel);
+            Children.VisualMutable.Add(Panel);
 
             _createdPanel = true;
 

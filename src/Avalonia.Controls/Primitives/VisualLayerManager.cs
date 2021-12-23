@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
             _layers.Add(layer);
             ((ISetLogicalParent)layer).SetParent(this);
             layer.ZIndex = zindex;
-            VisualChildren.Add(layer);
+            Children.VisualMutable.Add(layer);
             if (((ILogical)this).IsAttachedToLogicalTree)
                 ((ILogical)layer).NotifyAttachedToLogicalTree(
                     new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));

@@ -255,7 +255,7 @@ namespace Avalonia.Controls.Primitives
             // and we don't need to do anything.
             if (_appliedTemplate != template && (template != null || logical.IsAttachedToLogicalTree))
             {
-                if (VisualChildren.Count > 0)
+                if (Children.Visual.Count > 0)
                 {
                     foreach (var child in this.GetTemplateChildren())
                     {
@@ -263,7 +263,7 @@ namespace Avalonia.Controls.Primitives
                         ((ISetLogicalParent)child).SetParent(null);
                     }
 
-                    VisualChildren.Clear();
+                    Children.VisualMutable.Clear();
                 }
 
                 if (template != null)
@@ -273,7 +273,7 @@ namespace Avalonia.Controls.Primitives
                     var (child, nameScope) = template.Build(this);
                     ApplyTemplatedParent(child);
                     ((ISetLogicalParent)child).SetParent(this);
-                    VisualChildren.Add(child);
+                    Children.VisualMutable.Add(child);
                     
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
@@ -307,11 +307,12 @@ namespace Avalonia.Controls.Primitives
 
         protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            var count = VisualChildren.Count;
+            var children = Children.Visual;
+            var count = children.Count;
 
             for (var i = 0; i < count; ++i)
             {
-                if (VisualChildren[i] is ILogical logical)
+                if (children[i] is ILogical logical)
                 {
                     logical.NotifyResourcesChanged(e);
                 }
@@ -323,9 +324,11 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (VisualChildren.Count > 0)
+            var children = Children.Visual;
+
+            if (children.Count > 0)
             {
-                ((ILogical)VisualChildren[0]).NotifyAttachedToLogicalTree(e);
+                ((ILogical)children[0]).NotifyAttachedToLogicalTree(e);
             }
 
             base.OnAttachedToLogicalTree(e);
@@ -334,9 +337,11 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (VisualChildren.Count > 0)
+            var children = Children.Visual;
+
+            if (children.Count > 0)
             {
-                ((ILogical)VisualChildren[0]).NotifyDetachedFromLogicalTree(e);
+                ((ILogical)children[0]).NotifyDetachedFromLogicalTree(e);
             }
 
             base.OnDetachedFromLogicalTree(e);

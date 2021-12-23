@@ -426,7 +426,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
             public bool ClassHandlerInvoked { get; private set; }
             public new string Name { get; set; }
 
-            public IEnumerable<IVisual> Children
+            public new IEnumerable<IVisual> Children
             {
                 get
                 {
@@ -435,8 +435,8 @@ namespace Avalonia.Base.UnitTests.Interactivity
 
                 set
                 {
-                    VisualChildren.Clear();
-                    ((IAvaloniaList<IVisual>)VisualChildren).AddRange(value.Cast<Visual>());
+                    base.Children.VisualMutable.Clear();
+                    ((IAvaloniaList<IVisual>)base.Children.VisualMutable).AddRange(value.Cast<Visual>());
                 }
             }
 

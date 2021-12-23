@@ -9,7 +9,7 @@ namespace Avalonia.Controls.UnitTests
 
         public void AddVisualChild(IVisual visual)
         {
-            VisualChildren.Add(visual);
+            Children.VisualMutable.Add(visual);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

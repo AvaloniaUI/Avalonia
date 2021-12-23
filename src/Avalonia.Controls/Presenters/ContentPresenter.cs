@@ -256,7 +256,7 @@ namespace Avalonia.Controls.Presenters
             var content = Content;
             var oldChild = Child;
             var newChild = CreateChild();
-            var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
+            var logicalChildren = Host?.LogicalChildren ?? Children.LogicalMutable;
 
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
@@ -264,7 +264,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (oldChild != null)
                 {
-                    VisualChildren.Remove(oldChild);
+                    Children.VisualMutable.Remove(oldChild);
                     logicalChildren.Remove(oldChild);
                     ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
                 }
@@ -295,7 +295,7 @@ namespace Avalonia.Controls.Presenters
                     logicalChildren.Add(newChild);
                 }
 
-                VisualChildren.Add(newChild);
+                Children.VisualMutable.Add(newChild);
             }
 
             _createdChild = true;
@@ -450,8 +450,8 @@ namespace Avalonia.Controls.Presenters
             }
             else if (Child != null)
             {
-                VisualChildren.Remove(Child);
-                LogicalChildren.Remove(Child);
+                Children.VisualMutable.Remove(Child);
+                Children.LogicalMutable.Remove(Child);
                 ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
                 _recyclingDataTemplate = null;

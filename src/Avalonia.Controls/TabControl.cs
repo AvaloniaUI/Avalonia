@@ -136,7 +136,7 @@ namespace Avalonia.Controls
         internal IContentPresenter ContentPart { get; private set; }
 
         /// <inheritdoc/>
-        IList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+        IList<ILogical> IContentPresenterHost.LogicalChildren => Children.LogicalMutable;
 
         /// <inheritdoc/>
         bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)

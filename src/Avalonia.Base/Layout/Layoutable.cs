@@ -613,7 +613,7 @@ namespace Avalonia.Layout
             double width = 0;
             double height = 0;
 
-            var visualChildren = VisualChildren;
+            var visualChildren = Children.Visual;
             var visualCount = visualChildren.Count;
 
             for (var i = 0; i < visualCount; i++)
@@ -716,7 +716,7 @@ namespace Avalonia.Layout
         {
             var arrangeRect = new Rect(finalSize);
 
-            var visualChildren = VisualChildren;
+            var visualChildren = Children.Visual;
             var visualCount = visualChildren.Count;
 
             for (var i = 0; i < visualCount; i++)

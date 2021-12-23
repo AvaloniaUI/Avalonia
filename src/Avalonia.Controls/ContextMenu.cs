@@ -384,7 +384,7 @@ namespace Avalonia.Controls
 
         private void PopupClosed(object sender, EventArgs e)
         {
-            foreach (var i in LogicalChildren)
+            foreach (var i in Children.Logical)
             {
                 if (i is MenuItem menuItem)
                 {

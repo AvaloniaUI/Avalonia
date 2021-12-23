@@ -249,6 +249,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's child visuals.
         /// </summary>
+        [Obsolete("Use Children.Visual or Children.VisualMutable property")]
         protected IList<IVisual> VisualChildren => Children.VisualMutable;
 
         /// <summary>
@@ -421,7 +422,7 @@ namespace Avalonia
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            var visualChildren = VisualChildren;
+            var visualChildren = Children.Visual;
 
             if (visualChildren != null)
             {
@@ -458,7 +459,7 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
-            var visualChildren = VisualChildren;
+            var visualChildren = Children.Visual;
 
             if (visualChildren != null)
             {

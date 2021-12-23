@@ -2329,6 +2329,8 @@ namespace Avalonia.Controls
             if (ShowGridLines && (_gridLinesRenderer == null))
             {
                 _gridLinesRenderer = new GridLinesRenderer();
+
+                // TODO: Grid requires a visual child that isn't in Children.
                 this.VisualChildren.Add(_gridLinesRenderer);
             }
 

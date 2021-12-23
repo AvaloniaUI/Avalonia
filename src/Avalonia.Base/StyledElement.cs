@@ -235,6 +235,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
+        [Obsolete("Use Children.Logical or Children.LogicalMutable property")]
         protected IList<ILogical> LogicalChildren => Children.LogicalMutable;
 
         /// <summary>
@@ -589,12 +590,12 @@ namespace Avalonia
                     element._dataContextUpdating = true;
                     element.OnDataContextBeginUpdate();
 
-                    var logicalChildren = element.LogicalChildren;
+                    var logicalChildren = element.Children.Logical;
                     var logicalChildrenCount = logicalChildren.Count;
 
                     for (var i = 0; i < logicalChildrenCount; i++)
                     {
-                        if (element.LogicalChildren[i] is StyledElement s &&
+                        if (logicalChildren[i] is StyledElement s &&
                             s.InheritanceParent == element &&
                             !s.IsSet(DataContextProperty))
                         {
@@ -653,7 +654,7 @@ namespace Avalonia
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
-            var logicalChildren = LogicalChildren;
+            var logicalChildren = Children.Logical;
             var logicalChildrenCount = logicalChildren.Count;
 
             for (var i = 0; i < logicalChildrenCount; i++)
@@ -674,7 +675,7 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                var logicalChildren = LogicalChildren;
+                var logicalChildren = Children.Logical;
                 var logicalChildrenCount = logicalChildren.Count;
 
                 for (var i = 0; i < logicalChildrenCount; i++)

@@ -266,7 +266,7 @@ namespace Avalonia.Controls
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
                 {
-                    LogicalChildren.Add(container.ContainerControl);
+                    Children.LogicalMutable.Add(container.ContainerControl);
                 }
             }
         }
@@ -284,7 +284,7 @@ namespace Avalonia.Controls
                 // when it is removed from the Items collection.
                 if (container?.ContainerControl != container?.Item)
                 {
-                    LogicalChildren.Remove(container.ContainerControl);
+                    Children.LogicalMutable.Remove(container.ContainerControl);
                 }
             }
         }
@@ -416,14 +416,14 @@ namespace Avalonia.Controls
                 {
                     var control = i as IControl;
 
-                    if (control != null && !LogicalChildren.Contains(control))
+                    if (control != null && !Children.Logical.Contains(control))
                     {
                         toAdd.Add(control);
                     }
                 }
             }
 
-            ((IAvaloniaList<ILogical>)LogicalChildren).AddRange(toAdd);
+            ((IAvaloniaList<ILogical>)Children.LogicalMutable).AddRange(toAdd);
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            ((IAvaloniaList<ILogical>)LogicalChildren).RemoveAll(toRemove);
+            ((IAvaloniaList<ILogical>)Children.LogicalMutable).RemoveAll(toRemove);
         }
 
         /// <summary>

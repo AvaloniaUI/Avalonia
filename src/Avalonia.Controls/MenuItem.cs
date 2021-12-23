@@ -602,13 +602,13 @@ namespace Avalonia.Controls
 
             if (oldValue != null)
             {
-                LogicalChildren.Remove(oldValue);
+                Children.LogicalMutable.Remove(oldValue);
                 PseudoClasses.Remove(":icon");
             }
 
             if (newValue != null)
             {
-                LogicalChildren.Add(newValue);
+                Children.LogicalMutable.Add(newValue);
                 PseudoClasses.Add(":icon");
             }
         }

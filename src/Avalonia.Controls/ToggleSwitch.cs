@@ -116,12 +116,12 @@ namespace Avalonia.Controls
         {
             if (e.OldValue is ILogical oldChild)
             {
-                LogicalChildren.Remove(oldChild);
+                Children.LogicalMutable.Remove(oldChild);
             }
 
             if (e.NewValue is ILogical newChild)
             {
-                LogicalChildren.Add(newChild);
+                Children.LogicalMutable.Add(newChild);
             }
         }
 
@@ -129,12 +129,12 @@ namespace Avalonia.Controls
         {
             if (e.OldValue is ILogical oldChild)
             {
-                LogicalChildren.Remove(oldChild);
+                Children.LogicalMutable.Remove(oldChild);
             }
 
             if (e.NewValue is ILogical newChild)
             {
-                LogicalChildren.Add(newChild);
+                Children.LogicalMutable.Add(newChild);
             }
         }
 
