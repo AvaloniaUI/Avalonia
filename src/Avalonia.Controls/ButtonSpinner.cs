@@ -197,7 +197,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerWheelChanged(e);
 
-            if (AllowSpin && IsFocused)
+            if (AllowSpin && IsKeyboardFocusWithin)
             {
                 if (e.Delta.Y != 0)
                 {
