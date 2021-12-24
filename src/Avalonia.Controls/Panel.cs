@@ -108,14 +108,14 @@ namespace Avalonia.Controls
         /// </summary>
         protected internal virtual void InvalidateOnChildrenChanged()
         {
-            OnChildIndexChanged(new ChildIndexChangedEventArgs());
+            OnChildIndexChanged();
             InvalidateMeasure();
             VisualRoot?.Renderer?.RecalculateChildren(this);
         }
 
-        protected void OnChildIndexChanged(ChildIndexChangedEventArgs e)
+        protected void OnChildIndexChanged(ILogical changed = null)
         {
-            _childIndexChanged?.Invoke(this, e);
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(changed));
         }
 
         private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)
