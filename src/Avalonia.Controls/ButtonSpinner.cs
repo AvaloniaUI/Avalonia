@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -196,13 +196,14 @@ namespace Avalonia.Controls
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnPointerWheelChanged(e);
-            if (!e.Handled && AllowSpin)
+
+            if (AllowSpin && IsKeyboardFocusWithin)
             {
                 if (e.Delta.Y != 0)
                 {
                     var spinnerEventArgs = new SpinEventArgs(SpinEvent, (e.Delta.Y < 0) ? SpinDirection.Decrease : SpinDirection.Increase, true);
                     OnSpin(spinnerEventArgs);
-                    e.Handled = spinnerEventArgs.Handled;
+                    e.Handled = true;
                 }
             }
         }
