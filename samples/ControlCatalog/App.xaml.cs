@@ -94,6 +94,11 @@ namespace ControlCatalog
                 singleViewLifetime.MainView = new MainView();
 
             base.OnFrameworkInitializationCompleted();
+
+            this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+            {
+                StartupScreenIndex = 1,
+            });
         }
     }
 }
