@@ -10,11 +10,11 @@ namespace Avalonia.Diagnostics
     static class VisualExtensions
     {
         /// <summary>
-        /// Rendered control to stream
+        /// Render control to the destination stream.
         /// </summary>
-        /// <param name="source">the control I want to render in the stream</param>
-        /// <param name="destination">destination destina</param>
-        /// <param name="dpi">(optional) dpi quality default 96</param>
+        /// <param name="source">Control to be rendered.</param>
+        /// <param name="destination">Destination stream.</param>
+        /// <param name="dpi">Dpi quality.</param>
         public static void RenderTo(this IControl source, Stream destination, double dpi = 96)
         {
             if (source.TransformedBounds == null)
@@ -30,7 +30,6 @@ namespace Avalonia.Diagnostics
             var root = (source.VisualRoot
                 ?? source.GetVisualRoot())
                 as IControl ?? source;
-
 
             IDisposable? clipSetter = default;
             IDisposable? clipToBoundsSetter = default;
@@ -57,7 +56,6 @@ namespace Avalonia.Diagnostics
                     bitmap.Render(root);
                     bitmap.Save(destination);
                 }
-
             }
             finally
             {

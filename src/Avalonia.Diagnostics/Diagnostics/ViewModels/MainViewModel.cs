@@ -231,7 +231,7 @@ namespace Avalonia.Diagnostics.ViewModels
         
         [DependsOn(nameof(TreePageViewModel.SelectedNode))]
         [DependsOn(nameof(Content))]
-        bool CanShot(object? paramter)
+        bool CanShot(object? parameter)
         {
             return Content is TreePageViewModel tree
                 && tree.SelectedNode != null
@@ -261,7 +261,6 @@ namespace Avalonia.Diagnostics.ViewModels
                     //TODO: Notify error
                 }
             }
-
         }
 
         public void SetOptions(DevToolsOptions options)
