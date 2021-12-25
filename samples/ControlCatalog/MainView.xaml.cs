@@ -3,14 +3,12 @@ using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.XamlIl;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using ControlCatalog.Pages;
+using Avalonia.Themes.Fluent;
 using ControlCatalog.Models;
+using ControlCatalog.Pages;
 
 namespace ControlCatalog
 {
@@ -43,14 +41,36 @@ namespace ControlCatalog
             {
                 if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    Application.Current.Styles[0] = theme switch
+                    var themeStyle = Application.Current.Styles[0];
+                    if (theme == CatalogTheme.FluentLight)
                     {
-                        CatalogTheme.FluentLight => App.FluentLight,
-                        CatalogTheme.FluentDark => App.FluentDark,
-                        CatalogTheme.DefaultLight => App.DefaultLight,
-                        CatalogTheme.DefaultDark => App.DefaultDark,
-                        _ => Application.Current.Styles[0]
-                    };
+                        if (App.Fluent.Mode != FluentThemeMode.Light)
+                        {
+                            App.Fluent.Mode = FluentThemeMode.Light;
+                        }
+                        Application.Current.Styles[0] = App.Fluent;
+                        Application.Current.Styles[1] = App.DataGridFluent;
+                    }
+                    else if (theme == CatalogTheme.FluentDark)
+                    {
+
+                        if (App.Fluent.Mode != FluentThemeMode.Dark)
+                        {
+                            App.Fluent.Mode = FluentThemeMode.Dark;
+                        }
+                        Application.Current.Styles[0] = App.Fluent;
+                        Application.Current.Styles[1] = App.DataGridFluent;
+                    }
+                    else if (theme == CatalogTheme.DefaultLight)
+                    {
+                        Application.Current.Styles[0] = App.DefaultLight;
+                        Application.Current.Styles[1] = App.DataGridDefault;
+                    }
+                    else if (theme == CatalogTheme.DefaultDark)
+                    {
+                        Application.Current.Styles[0] = App.DefaultDark;
+                        Application.Current.Styles[1] = App.DataGridDefault;
+                    }
                 }
             };
 
