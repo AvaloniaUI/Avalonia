@@ -12,7 +12,7 @@ namespace Avalonia.Media
         public static UnicodeRange Default = Parse("0-10FFFD");
 
         private readonly UnicodeRangeSegment _single;
-        private readonly IReadOnlyList<UnicodeRangeSegment> _segments = null;
+        private readonly IReadOnlyList<UnicodeRangeSegment>? _segments = null;
 
         public UnicodeRange(int start, int end)
         {
@@ -37,7 +37,7 @@ namespace Avalonia.Media
 
         internal UnicodeRangeSegment Single => _single;
 
-        internal IReadOnlyList<UnicodeRangeSegment> Segments => _segments;
+        internal IReadOnlyList<UnicodeRangeSegment>? Segments => _segments;
 
         /// <summary>
         /// Determines if given value is inside the range.

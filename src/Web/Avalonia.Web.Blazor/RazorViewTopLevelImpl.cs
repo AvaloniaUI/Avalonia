@@ -106,8 +106,7 @@ namespace Avalonia.Web.Blazor
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-
+            var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
             return new DeferredRenderer(root, loop);
         }
 

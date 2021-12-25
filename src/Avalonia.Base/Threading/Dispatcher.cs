@@ -56,11 +56,7 @@ namespace Avalonia.Threading
         /// </param>
         public void MainLoop(CancellationToken cancellationToken)
         {
-            var platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
-
-            if (platform is null)
-                throw new InvalidOperationException("Unable to locate IPlatformThreadingInterface");
-
+            var platform = AvaloniaLocator.Current.GetRequiredService<IPlatformThreadingInterface>();
             cancellationToken.Register(() => platform.Signal(DispatcherPriority.Send));
             platform.RunLoop(cancellationToken);
         }

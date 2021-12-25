@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using XamlX.Ast;
 using XamlX.Transform;
+using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
@@ -15,7 +16,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 IXamlType startType = null;
                 var sourceProperty = binding.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "Source");
-                if ((sourceProperty?.Values.Count ?? 0) == 1)
+                var dataTypeProperty = binding.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "DataType");
+                if (sourceProperty?.Values.Count is 1)
                 {
                     var sourceValue = sourceProperty.Values[0];
                     switch (sourceValue)
@@ -99,7 +101,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
                 }
 
-                if (startType == null)
+                if (dataTypeProperty?.Values.Count is 1 && dataTypeProperty.Values[0] is XamlAstTextNode text)
+                {
+                    startType = TypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type;
+                }
+
+                Func<IXamlType> startTypeResolver = startType is not null ? () => startType : () =>
                 {
                     var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentDataContextNode is null)
@@ -107,10 +114,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         throw new XamlX.XamlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", binding);
                     }
 
-                    startType = parentDataContextNode.DataContextType;
-                }
+                    return parentDataContextNode.DataContextType;
+                };
 
-                XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, binding, startType);
+                XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, binding, startTypeResolver, context.ParentNodes().OfType<XamlAstConstructableObjectNode>().First().Type.GetClrType());
             }
 
             return node;

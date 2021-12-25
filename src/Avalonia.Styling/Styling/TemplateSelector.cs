@@ -5,7 +5,7 @@ namespace Avalonia.Styling
     internal class TemplateSelector : Selector
     {
         private readonly Selector _parent;
-        private string _selectorString;
+        private string? _selectorString;
 
         public TemplateSelector(Selector parent)
         {
@@ -24,7 +24,7 @@ namespace Avalonia.Styling
         public override bool IsCombinator => true;
 
         /// <inheritdoc/>
-        public override Type TargetType => null;
+        public override Type? TargetType => null;
 
         public override string ToString()
         {
@@ -48,6 +48,6 @@ namespace Avalonia.Styling
             return _parent.Match(templatedParent, subscribe);
         }
 
-        protected override Selector MovePrevious() => null;
+        protected override Selector? MovePrevious() => null;
     }
 }

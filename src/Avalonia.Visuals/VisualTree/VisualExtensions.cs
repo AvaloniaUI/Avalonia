@@ -19,20 +19,19 @@ namespace Avalonia.VisualTree
         /// The number of steps from the visual to the ancestor or -1 if
         /// <paramref name="visual"/> is not a descendent of <paramref name="ancestor"/>.
         /// </returns>
-        public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual ancestor)
+        public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual? ancestor)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
-
+            IVisual? v = visual ?? throw new ArgumentNullException(nameof(visual));
             var result = 0;
 
-            while (visual != null && visual != ancestor)
+            while (v != null && v != ancestor)
             {
-                visual = visual.VisualParent;
+                v = v.VisualParent;
 
                 result++;
             }
 
-            return visual != null ? result : -1;
+            return v != null ? result : -1;
         }
 
         /// <summary>
@@ -44,15 +43,14 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static int CalculateDistanceFromRoot(IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
-
+            IVisual? v = visual ?? throw new ArgumentNullException(nameof(visual));
             var result = 0;
 
-            visual = visual?.VisualParent;
+            v = v?.VisualParent;
 
-            while (visual != null)
+            while (v != null)
             {
-                visual = visual.VisualParent;
+                v = v.VisualParent;
 
                 result++;
             }
@@ -66,54 +64,56 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The first visual.</param>
         /// <param name="target">The second visual.</param>
         /// <returns>The common ancestor, or null if not found.</returns>
-        public static IVisual FindCommonVisualAncestor(this IVisual visual, IVisual target)
+        public static IVisual? FindCommonVisualAncestor(this IVisual visual, IVisual target)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            IVisual? v = visual ?? throw new ArgumentNullException(nameof(visual));
 
             if (target is null)
             {
                 return null;
             }
 
-            void GoUpwards(ref IVisual node, int count)
+            IVisual? t = target;
+
+            void GoUpwards(ref IVisual? node, int count)
             {
                 for (int i = 0; i < count; ++i)
                 {
-                    node = node.VisualParent;
+                    node = node?.VisualParent;
                 }
             }
 
             // We want to find lowest node first, then make sure that both nodes are at the same height.
             // By doing that we can sometimes find out that other node is our lowest common ancestor.
-            var firstHeight = CalculateDistanceFromRoot(visual);
-            var secondHeight = CalculateDistanceFromRoot(target);
+            var firstHeight = CalculateDistanceFromRoot(v);
+            var secondHeight = CalculateDistanceFromRoot(t);
 
             if (firstHeight > secondHeight)
             {
-                GoUpwards(ref visual, firstHeight - secondHeight);
+                GoUpwards(ref v, firstHeight - secondHeight);
             }
             else
             {
-                GoUpwards(ref target, secondHeight - firstHeight);
+                GoUpwards(ref t, secondHeight - firstHeight);
             }
 
-            if (visual == target)
+            if (v == t)
             {
-                return visual;
+                return v;
             }
 
-            while (visual != null && target != null)
+            while (v != null && t != null)
             {
-                IVisual firstParent = visual.VisualParent;
-                IVisual secondParent = target.VisualParent;
+                IVisual? firstParent = v.VisualParent;
+                IVisual? secondParent = t.VisualParent;
 
                 if (firstParent == secondParent)
                 {
                     return firstParent;
                 }
 
-                visual = visual.VisualParent;
-                target = target.VisualParent;
+                v = v.VisualParent;
+                t = t.VisualParent;
             }
 
             return null;
@@ -126,14 +126,14 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<IVisual> GetVisualAncestors(this IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            IVisual? v = visual ?? throw new ArgumentNullException(nameof(visual));
 
-            visual = visual.VisualParent;
+            v = v.VisualParent;
 
-            while (visual != null)
+            while (v != null)
             {
-                yield return visual;
-                visual = visual.VisualParent;
+                yield return v;
+                v = v.VisualParent;
             }
         }
 
@@ -144,14 +144,14 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The visual.</param>
         /// <param name="includeSelf">If given visual should be included in search.</param>
         /// <returns>First ancestor of given type.</returns>
-        public static T FindAncestorOfType<T>(this IVisual visual, bool includeSelf = false) where T : class
+        public static T? FindAncestorOfType<T>(this IVisual visual, bool includeSelf = false) where T : class
         {
             if (visual is null)
             {
                 return null;
             }
 
-            IVisual parent = includeSelf ? visual : visual.VisualParent;
+            IVisual? parent = includeSelf ? visual : visual.VisualParent;
 
             while (parent != null)
             {
@@ -173,7 +173,7 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The visual.</param>
         /// <param name="includeSelf">If given visual should be included in search.</param>
         /// <returns>First descendant of given type.</returns>
-        public static T FindDescendantOfType<T>(this IVisual visual, bool includeSelf = false) where T : class
+        public static T? FindDescendantOfType<T>(this IVisual visual, bool includeSelf = false) where T : class
         {
             if (visual is null)
             {
@@ -195,7 +195,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual and its ancestors.</returns>
         public static IEnumerable<IVisual> GetSelfAndVisualAncestors(this IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             yield return visual;
 
@@ -211,9 +211,9 @@ namespace Avalonia.VisualTree
         /// <param name="visual">The root visual to test.</param>
         /// <param name="p">The point.</param>
         /// <returns>The visual at the requested point.</returns>
-        public static IVisual GetVisualAt(this IVisual visual, Point p)
+        public static IVisual? GetVisualAt(this IVisual visual, Point p)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             return visual.GetVisualAt(p, x => x.IsVisible);
         }
@@ -228,11 +228,17 @@ namespace Avalonia.VisualTree
         /// children will be excluded from the results.
         /// </param>
         /// <returns>The visual at the requested point.</returns>
-        public static IVisual GetVisualAt(this IVisual visual, Point p, Func<IVisual, bool> filter)
+        public static IVisual? GetVisualAt(this IVisual visual, Point p, Func<IVisual, bool> filter)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             var root = visual.GetVisualRoot();
+
+            if (root is null)
+            {
+                return null;
+            }
+
             var rootPoint = visual.TranslatePoint(p, root);
 
             if (rootPoint.HasValue)
@@ -253,7 +259,7 @@ namespace Avalonia.VisualTree
             this IVisual visual,
             Point p)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             return visual.GetVisualsAt(p, x => x.IsVisible);
         }
@@ -273,9 +279,15 @@ namespace Avalonia.VisualTree
             Point p,
             Func<IVisual, bool> filter)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             var root = visual.GetVisualRoot();
+
+            if (root is null)
+            {
+                return Array.Empty<IVisual>();
+            }
+
             var rootPoint = visual.TranslatePoint(p, root);
 
             if (rootPoint.HasValue)
@@ -334,7 +346,7 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The parent, or null if the visual is unparented.</returns>
-        public static IVisual GetVisualParent(this IVisual visual)
+        public static IVisual? GetVisualParent(this IVisual visual)
         {
             return visual.VisualParent;
         }
@@ -347,7 +359,7 @@ namespace Avalonia.VisualTree
         /// <returns>
         /// The parent, or null if the visual is unparented or its parent is not of type <typeparamref name="T"/>.
         /// </returns>
-        public static T GetVisualParent<T>(this IVisual visual) where T : class
+        public static T? GetVisualParent<T>(this IVisual visual) where T : class
         {
             return visual.VisualParent as T;
         }
@@ -359,9 +371,9 @@ namespace Avalonia.VisualTree
         /// <returns>
         /// The root visual or null if the visual is not rooted.
         /// </returns>
-        public static IRenderRoot GetVisualRoot(this IVisual visual)
+        public static IRenderRoot? GetVisualRoot(this IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             return visual as IRenderRoot ?? visual.VisualRoot;
         }
@@ -377,7 +389,7 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static bool IsVisualAncestorOf(this IVisual visual, IVisual target)
         {
-            IVisual current = target?.VisualParent;
+            IVisual? current = target?.VisualParent;
 
             while (current != null)
             {
@@ -402,10 +414,10 @@ namespace Avalonia.VisualTree
                     ZIndex = element.ZIndex,
                 })
                 .OrderBy(x => x, null)
-                .Select(x => x.Element);
+                .Select(x => x.Element!);
         }
 
-        private static T FindDescendantOfTypeCore<T>(IVisual visual) where T : class
+        private static T? FindDescendantOfTypeCore<T>(IVisual visual) where T : class
         {
             var visualChildren = visual.VisualChildren;
             var visualChildrenCount = visualChildren.Count;
@@ -432,12 +444,15 @@ namespace Avalonia.VisualTree
 
         private class ZOrderElement : IComparable<ZOrderElement>
         {
-            public IVisual Element { get; set; }
+            public IVisual? Element { get; set; }
             public int Index { get; set; }
             public int ZIndex { get; set; }
 
-            public int CompareTo(ZOrderElement other)
+            public int CompareTo(ZOrderElement? other)
             {
+                if (other is null)
+                    return 1;
+
                 var z = other.ZIndex - ZIndex;
 
                 if (z != 0)

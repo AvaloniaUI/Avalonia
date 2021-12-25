@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Utilities;
 
@@ -14,7 +15,7 @@ namespace Avalonia.Media.TextFormatting
 
         private readonly ReadOnlySlice<char> _text;
         private readonly TextParagraphProperties _paragraphProperties;
-        private readonly IReadOnlyList<ValueSpan<TextRunProperties>> _textStyleOverrides;
+        private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textStyleOverrides;
         private readonly TextTrimming _textTrimming;
 
         /// <summary>
@@ -41,12 +42,12 @@ namespace Avalonia.Media.TextFormatting
             TextAlignment textAlignment = TextAlignment.Left,
             TextWrapping textWrapping = TextWrapping.NoWrap,
             TextTrimming textTrimming = TextTrimming.None,
-            TextDecorationCollection textDecorations = null,
+            TextDecorationCollection? textDecorations = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
             double lineHeight = double.NaN,
             int maxLines = 0,
-            IReadOnlyList<ValueSpan<TextRunProperties>> textStyleOverrides = null)
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
         {
             _text = string.IsNullOrEmpty(text) ?
                 new ReadOnlySlice<char>() :
@@ -228,7 +229,7 @@ namespace Avalonia.Media.TextFormatting
             var currentY = 0d;
 
             var lineIndex = 0;
-            TextLine currentLine = null;
+            TextLine? currentLine = null;
             CharacterHit characterHit;
 
             for (; lineIndex < TextLines.Count; lineIndex++)
@@ -289,7 +290,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
             IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping,
-            TextDecorationCollection textDecorations, double lineHeight)
+            TextDecorationCollection? textDecorations, double lineHeight)
         {
             var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
 
@@ -339,6 +340,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Updates the layout and applies specified text style overrides.
         /// </summary>
+        [MemberNotNull(nameof(TextLines))]
         private void UpdateLayout()
         {
             if (_text.IsEmpty || MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
@@ -360,7 +362,7 @@ namespace Avalonia.Media.TextFormatting
                 var textSource = new FormattedTextSource(_text,
                     _paragraphProperties.DefaultTextRunProperties, _textStyleOverrides);
 
-                TextLine previousLine = null;
+                TextLine? previousLine = null;
 
                 while (currentPosition < _text.Length)
                 {
@@ -558,17 +560,17 @@ namespace Avalonia.Media.TextFormatting
         {
             private readonly ReadOnlySlice<char> _text;
             private readonly TextRunProperties _defaultProperties;
-            private readonly IReadOnlyList<ValueSpan<TextRunProperties>> _textModifier;
+            private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 
             public FormattedTextSource(ReadOnlySlice<char> text, TextRunProperties defaultProperties,
-                IReadOnlyList<ValueSpan<TextRunProperties>> textModifier)
+                IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
             {
                 _text = text;
                 _defaultProperties = defaultProperties;
                 _textModifier = textModifier;
             }
 
-            public TextRun GetTextRun(int textSourceIndex)
+            public TextRun? GetTextRun(int textSourceIndex)
             {
                 if (textSourceIndex > _text.Length)
                 {
@@ -597,7 +599,7 @@ namespace Avalonia.Media.TextFormatting
             /// The created text style run.
             /// </returns>
             private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySlice<char> text,
-                TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>> textModifier)
+                TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
             {
                 if (textModifier == null || textModifier.Count == 0)
                 {

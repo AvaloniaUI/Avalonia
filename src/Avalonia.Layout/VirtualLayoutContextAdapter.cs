@@ -6,14 +6,14 @@ namespace Avalonia.Layout
     public class VirtualLayoutContextAdapter : NonVirtualizingLayoutContext
     {
         private readonly VirtualizingLayoutContext _virtualizingContext;
-        private ChildrenCollection _children;
+        private ChildrenCollection? _children;
 
         public VirtualLayoutContextAdapter(VirtualizingLayoutContext virtualizingContext)
         {
             _virtualizingContext = virtualizingContext;
         }
 
-        protected override object LayoutStateCore
+        protected override object? LayoutStateCore
         {
             get => _virtualizingContext.LayoutState;
             set => _virtualizingContext.LayoutState = value;
