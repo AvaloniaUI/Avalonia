@@ -7,12 +7,12 @@ namespace Avalonia.Data.Core
     {
         public override string Description => "!";
 
-        protected override void NextValueChanged(object value)
+        protected override void NextValueChanged(object? value)
         {
             base.NextValueChanged(Negate(value));
         }
 
-        private static object Negate(object value)
+        private static object Negate(object? value)
         {
             var notification = value as BindingNotification;
             var v = BindingNotification.ExtractValue(value);
@@ -74,8 +74,11 @@ namespace Avalonia.Data.Core
             return notification ?? AvaloniaProperty.UnsetValue;
         }
 
-        public object Transform(object value)
+        public object? Transform(object? value)
         {
+            if (value is null)
+                return null;
+
             var originalType = value.GetType();
             var negated = Negate(value);
             if (negated is BindingNotification)

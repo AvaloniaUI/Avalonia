@@ -3,7 +3,8 @@
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}">
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}">
         <CarouselPresenter IsVirtualized="{TemplateBinding IsVirtualized}"
                            Items="{TemplateBinding Items}"
                            ItemsPanel="{TemplateBinding ItemsPanel}"

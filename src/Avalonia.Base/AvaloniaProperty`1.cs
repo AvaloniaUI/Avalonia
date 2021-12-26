@@ -24,7 +24,7 @@ namespace Avalonia
             string name,
             Type ownerType,
             AvaloniaPropertyMetadata metadata,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool>? notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
             _changed = new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();
@@ -40,7 +40,7 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty source,
             Type ownerType,
-            AvaloniaPropertyMetadata metadata)
+            AvaloniaPropertyMetadata? metadata)
             : this(source as AvaloniaProperty<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
         {
         }
@@ -54,7 +54,7 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty<TValue> source,
             Type ownerType,
-            AvaloniaPropertyMetadata metadata)
+            AvaloniaPropertyMetadata? metadata)
             : base(source, ownerType, metadata)
         {
             _changed = source._changed;
@@ -82,15 +82,15 @@ namespace Avalonia
 
         protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
 
-        protected BindingValue<object> TryConvert(object value)
+        protected BindingValue<object?> TryConvert(object? value)
         {
             if (value == UnsetValue)
             {
-                return BindingValue<object>.Unset;
+                return BindingValue<object?>.Unset;
             }
             else if (value == BindingOperations.DoNothing)
             {
-                return BindingValue<object>.DoNothing;
+                return BindingValue<object?>.DoNothing;
             }
 
             if (!TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
@@ -100,7 +100,7 @@ namespace Avalonia
                     Name,
                     value,
                     value?.GetType().FullName ?? "(null)"));
-                return BindingValue<object>.BindingError(error);
+                return BindingValue<object?>.BindingError(error);
             }
 
             return converted;

@@ -3,7 +3,6 @@
              x:Class="ControlCatalog.Pages.CursorPage">
   <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,*">
     <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="4">
-      <TextBlock Classes="h1">Cursor</TextBlock>
       <TextBlock Classes="h2">Defines a cursor (mouse pointer)</TextBlock>
     </StackPanel>
 

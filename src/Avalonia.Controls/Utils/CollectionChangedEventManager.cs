@@ -107,7 +107,7 @@ namespace Avalonia.Controls.Utils
                     this);
             }
 
-            void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+            void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 static void Notify(
                     INotifyCollectionChanged incc,

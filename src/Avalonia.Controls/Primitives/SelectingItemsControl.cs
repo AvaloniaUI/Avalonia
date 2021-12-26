@@ -545,6 +545,10 @@ namespace Avalonia.Controls.Primitives
             if (!e.Handled)
             {
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+
+                if (keymap is null)
+                    return;
+
                 bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 
                 if (ItemCount > 0 &&

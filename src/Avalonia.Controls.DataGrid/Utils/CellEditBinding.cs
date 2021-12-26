@@ -1,10 +1,8 @@
 ﻿using Avalonia.Data;
 using Avalonia.Reactive;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
-using System.Text;
 
 namespace Avalonia.Controls.Utils
 {
@@ -67,11 +65,14 @@ namespace Avalonia.Controls.Utils
 
             private void SetSourceValue(object value)
             {
-                _settingSourceValue = true;
+                if (!_settingSourceValue)
+                {
+                    _settingSourceValue = true;
 
-                _sourceSubject.OnNext(value);
+                    _sourceSubject.OnNext(value);
 
-                _settingSourceValue = false;
+                    _settingSourceValue = false;
+                }
             }
             private void SetControlValue(object value)
             {

@@ -332,7 +332,9 @@ namespace Avalonia.Controls
         /// </summary>
         static NumericUpDown()
         {
+#pragma warning disable CS0612 // Type or member is obsolete
             CultureInfoProperty.Changed.Subscribe(OnCultureInfoChanged);
+#pragma warning restore CS0612 // Type or member is obsolete
             NumberFormatProperty.Changed.Subscribe(OnNumberFormatChanged);
             FormatStringProperty.Changed.Subscribe(FormatStringChanged);
             IncrementProperty.Changed.Subscribe(IncrementChanged);

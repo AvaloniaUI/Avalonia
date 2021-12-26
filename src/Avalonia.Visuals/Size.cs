@@ -226,7 +226,7 @@ namespace Avalonia
         /// <returns>
         /// True if <paramref name="obj"/> is a size that equals the current size.
         /// </returns>
-        public override bool Equals(object obj) => obj is Size other && Equals(other);
+        public override bool Equals(object? obj) => obj is Size other && Equals(other);
 
         /// <summary>
         /// Returns a hash code for a <see cref="Size"/>.

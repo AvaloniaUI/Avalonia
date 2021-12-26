@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -14,52 +17,56 @@ namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
-        private readonly IDisposable _keySubscription;
-        private TopLevel? _root;
+        private readonly IDisposable? _keySubscription;
+        private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
+        private AvaloniaObject? _root;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _keySubscription = InputManager.Instance.Process
+            _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
+                .Where(x => x.Type == RawKeyEventType.KeyDown)
                 .Subscribe(RawKeyDown);
+
+            _frozenPopupStates = new Dictionary<Popup, IDisposable>();
 
             EventHandler? lh = default;
             lh = (s, e) =>
-              {
-                  this.Opened -= lh;
-                  if ((DataContext as MainViewModel)?.StartupScreenIndex is int index)
-                  {
-                      var screens = this.Screens;
-                      if (index > -1 && index < screens.ScreenCount)                          
-                      {
-                          var screen = screens.All[index];
-                          this.Position = screen.Bounds.TopLeft;
-                          this.WindowState = WindowState.Maximized;
-                      }
-                  }
-              };
+            {
+                this.Opened -= lh;
+                if ((DataContext as MainViewModel)?.StartupScreenIndex is { } index)
+                {
+                    var screens = this.Screens;
+                    if (index > -1 && index < screens.ScreenCount)
+                    {
+                        var screen = screens.All[index];
+                        this.Position = screen.Bounds.TopLeft;
+                        this.WindowState = WindowState.Maximized;
+                    }
+                }
+            };
             this.Opened += lh;
         }
 
-        public TopLevel? Root
+        public AvaloniaObject? Root
         {
             get => _root;
             set
             {
                 if (_root != value)
                 {
-                    if (_root != null)
+                    if (_root is ICloseable oldClosable)
                     {
-                        _root.Closed -= RootClosed;
+                        oldClosable.Closed -= RootClosed;
                     }
 
                     _root = value;
 
-                    if (_root != null)
+                    if (_root is  ICloseable newClosable)
                     {
-                        _root.Closed += RootClosed;
+                        newClosable.Closed += RootClosed;
                         DataContext = new MainViewModel(_root);
                     }
                     else
@@ -75,11 +82,18 @@ namespace Avalonia.Diagnostics.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _keySubscription.Dispose();
+            _keySubscription?.Dispose();
 
-            if (_root != null)
+            foreach (var state in _frozenPopupStates)
             {
-                _root.Closed -= RootClosed;
+                state.Value.Dispose();
+            }
+
+            _frozenPopupStates.Clear();
+
+            if (_root is ICloseable cloneable)
+            {
+                cloneable.Closed -= RootClosed;
                 _root = null;
             }
 
@@ -91,6 +105,53 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        private IControl? GetHoveredControl(TopLevel topLevel)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
+#pragma warning restore CS0618 // Type or member is obsolete                
+
+            return (IControl?)topLevel.GetVisualsAt(point, x =>
+                {
+                    if (x is AdornerLayer || !x.IsVisible)
+                    {
+                        return false;
+                    }
+
+                    return !(x is IInputElement ie) || ie.IsHitTestVisible;
+                })
+                .FirstOrDefault();
+        }
+
+        private static List<PopupRoot> GetPopupRoots(TopLevel root)
+        {
+            var popupRoots = new List<PopupRoot>();
+
+            void ProcessProperty<T>(IControl control, AvaloniaProperty<T> property)
+            {
+                if (control.GetValue(property) is IPopupHostProvider popupProvider
+                    && popupProvider.PopupHost is PopupRoot popupRoot)
+                {
+                    popupRoots.Add(popupRoot);
+                }
+            }
+
+            foreach (var control in root.GetVisualDescendants().OfType<IControl>())
+            {
+                if (control is Popup p && p.Host is PopupRoot popupRoot)
+                {
+                    popupRoots.Add(popupRoot);
+                }
+
+                ProcessProperty(control, ContextFlyoutProperty);
+                ProcessProperty(control, ContextMenuProperty);
+                ProcessProperty(control, FlyoutBase.AttachedFlyoutProperty);
+                ProcessProperty(control, ToolTipDiagnostics.ToolTipProperty);
+            }
+
+            return popupRoots;
+        }
+
         private void RawKeyDown(RawKeyEventArgs e)
         {
             var vm = (MainViewModel?)DataContext;
@@ -99,34 +160,79 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            const RawInputModifiers modifiers = RawInputModifiers.Control | RawInputModifiers.Shift;
-
-            if (e.Modifiers == modifiers)
+            var root = Root as TopLevel
+                ?? vm.PointerOverRoot as TopLevel;
+            if (root is null)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                var point = (Root as IInputRoot)?.MouseDevice?.GetPosition(Root) ?? default;
-#pragma warning restore CS0618 // Type or member is obsolete                
+                return;
+            }
 
-                var control = Root.GetVisualsAt(point, x =>
+            switch (e.Modifiers)
+            {
+                case RawInputModifiers.Control | RawInputModifiers.Shift:
+                {
+                    IControl? control = null;
+
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
-                        if (x is AdornerLayer || !x.IsVisible) return false;
-                        if (!(x is IInputElement ie)) return true;
-                        return ie.IsHitTestVisible;
-                    })
-                    .FirstOrDefault();
+                        control = GetHoveredControl(popupRoot);
 
-                if (control != null)
-                {
-                    vm.SelectControl((IControl)control);
+                        if (control != null)
+                        {
+                            break;
+                        }
+                    }
+
+                    control ??= GetHoveredControl(root);
+
+                    if (control != null)
+                    {
+                        vm.SelectControl(control);
+                    }
+
+                    break;
                 }
-            } 
-            else if (e.Modifiers == RawInputModifiers.Alt)
-            {
-                if (e.Key == Key.S || e.Key == Key.D)
-                {
-                    var enable = e.Key == Key.S;
 
-                    vm.EnableSnapshotStyles(enable);
+                case RawInputModifiers.Control | RawInputModifiers.Alt when e.Key == Key.F:
+                {
+                    vm.FreezePopups = !vm.FreezePopups;
+
+                    foreach (var popupRoot in GetPopupRoots(root))
+                    {
+                        if (popupRoot.Parent is Popup popup)
+                        {
+                            if (vm.FreezePopups)
+                            {
+                                var lightDismissEnabledState = popup.SetValue(
+                                    Popup.IsLightDismissEnabledProperty,
+                                    !vm.FreezePopups,
+                                    BindingPriority.Animation);
+
+                                if (lightDismissEnabledState != null)
+                                {
+                                    _frozenPopupStates[popup] = lightDismissEnabledState;
+                                }
+                            }
+                            else
+                            {
+                                //TODO Use Dictionary.Remove(Key, out Value) in netstandard 2.1
+                                if (_frozenPopupStates.ContainsKey(popup))
+                                {
+                                    _frozenPopupStates[popup].Dispose();
+                                    _frozenPopupStates.Remove(popup);
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+                }
+
+                case RawInputModifiers.Alt when e.Key == Key.S || e.Key == Key.D:
+                {
+                    vm.EnableSnapshotStyles(e.Key == Key.S);
+
+                    break;
                 }
             }
         }

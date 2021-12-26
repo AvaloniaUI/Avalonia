@@ -61,7 +61,8 @@
                   Padding="{TemplateBinding Padding}"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}">
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"
@@ -74,8 +75,6 @@
               </Grid.ColumnDefinitions>
               <ContentPresenter Name="PART_IconPresenter"
                                 Content="{TemplateBinding Icon}"
-                                Width="16"
-                                Height="16"
                                 Margin="{DynamicResource MenuIconPresenterMargin}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -143,7 +142,8 @@
         <Border Name="PART_LayoutRoot"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Panel>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
@@ -197,6 +197,8 @@
   </Style>
 
   <Style Selector="MenuItem /template/ ContentPresenter#PART_IconPresenter">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
     <Setter Property="IsVisible" Value="False" />
   </Style>
   <Style Selector="MenuItem:icon /template/ ContentPresenter#PART_IconPresenter">

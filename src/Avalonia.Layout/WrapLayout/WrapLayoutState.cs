@@ -62,8 +62,11 @@ namespace Avalonia.Layout
 
         internal void SetOrientation(Orientation orientation)
         {
-            foreach (var item in _items.Where(i => i.Measure.HasValue))
+            foreach (var item in _items)
             {
+                if (!item.Measure.HasValue)
+                    continue;
+
                 UvMeasure measure = item.Measure.Value;
                 double v = measure.V;
                 measure.V = measure.U;
@@ -120,10 +123,10 @@ namespace Avalonia.Layout
                 }
 
                 lastPosition = item.Position;
-                maxV = Math.Max(maxV, item.Measure.Value.V);
+                maxV = Math.Max(maxV, item.Measure!.Value.V);
             }
 
-            double totalHeight = lastPosition.Value.V + maxV;
+            double totalHeight = lastPosition!.Value.V + maxV;
             if (calculateAverage)
             {
                 return (totalHeight / itemCount) * _context.ItemCount;

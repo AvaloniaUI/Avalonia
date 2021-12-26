@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Utilities
+﻿namespace Avalonia.Utilities
 {
     /// <summary>
     /// A visitor to resolve an untyped <see cref="AvaloniaProperty"/> to a typed property.

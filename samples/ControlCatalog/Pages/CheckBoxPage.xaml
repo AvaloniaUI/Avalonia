@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.CheckBoxPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">CheckBox</TextBlock>
     <TextBlock Classes="h2">A check box control</TextBlock>
 
     <StackPanel Orientation="Horizontal"
@@ -11,9 +10,9 @@
                 Spacing="16">
       <StackPanel Orientation="Vertical"
                   Spacing="16">
-        <CheckBox>Unchecked</CheckBox>
-        <CheckBox IsChecked="True">Checked</CheckBox>
-        <CheckBox IsChecked="{x:Null}">Indeterminate</CheckBox>
+        <CheckBox>_Unchecked</CheckBox>
+        <CheckBox IsChecked="True">_Checked</CheckBox>
+        <CheckBox IsChecked="{x:Null}">_Indeterminate</CheckBox>
         <CheckBox IsChecked="True" IsEnabled="False">Disabled</CheckBox>
       </StackPanel>
       <StackPanel Orientation="Vertical"

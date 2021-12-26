@@ -26,7 +26,7 @@ namespace Avalonia.Media
         public static readonly StyledProperty<GradientStops> GradientStopsProperty =
             AvaloniaProperty.Register<GradientBrush, GradientStops>(nameof(GradientStops));
 
-        private IDisposable _gradientStopsSubscription;
+        private IDisposable? _gradientStopsSubscription;
 
         static GradientBrush()
         {
@@ -64,13 +64,13 @@ namespace Avalonia.Media
         {
             if (e.Sender is GradientBrush brush)
             {
-                var oldValue = (GradientStops)e.OldValue;
-                var newValue = (GradientStops)e.NewValue;
+                var oldValue = (GradientStops?)e.OldValue;
+                var newValue = (GradientStops?)e.NewValue;
 
                 if (oldValue != null)
                 {
                     oldValue.CollectionChanged -= brush.GradientStopsChanged;
-                    brush._gradientStopsSubscription.Dispose();
+                    brush._gradientStopsSubscription?.Dispose();
                 }
 
                 if (newValue != null)
@@ -83,12 +83,12 @@ namespace Avalonia.Media
             }
         }
 
-        private void GradientStopsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void GradientStopsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             RaiseInvalidated(EventArgs.Empty);
         }
 
-        private void GradientStopChanged(Tuple<object, PropertyChangedEventArgs> e)
+        private void GradientStopChanged(Tuple<object?, PropertyChangedEventArgs> e)
         {
             RaiseInvalidated(EventArgs.Empty);
         }

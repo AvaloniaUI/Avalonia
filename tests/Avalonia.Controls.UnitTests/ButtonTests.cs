@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -272,6 +273,19 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Invokes_CanExecute_When_CommandParameter_Changed()
         {
+            var target = new Button();
+            var raised = 0;
+
+            target.Click += (s, e) => ++raised;
+
+            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Raises_Click_When_AccessKey_Raised()
+        {
             var command = new TestCommand(p => p is bool value && value);
             var target = new Button { Command = command };
 
@@ -280,6 +294,20 @@ namespace Avalonia.Controls.UnitTests
 
             target.CommandParameter = false;
             Assert.False(target.IsEffectivelyEnabled);
+        }
+        
+        [Fact]
+        public void Button_Invokes_Doesnt_Execute_When_Button_Disabled()
+        {
+            var target = new Button();
+            var raised = 0;
+
+            target.IsEnabled = false;
+            target.Click += (s, e) => ++raised;
+
+            target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+
+            Assert.Equal(0, raised);
         }
 
         private class TestButton : Button, IRenderRoot

@@ -16,7 +16,7 @@ namespace Avalonia.Layout
             _nonVirtualizingContext = nonVirtualizingContext;
         }
 
-        protected override object LayoutStateCore 
+        protected override object? LayoutStateCore 
         { 
             get => _nonVirtualizingContext.LayoutState;
             set => _nonVirtualizingContext.LayoutState = value; 

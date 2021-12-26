@@ -11,6 +11,6 @@ namespace Avalonia
         /// <value>
         /// The description of the object.
         /// </value>
-        string Description { get; }
+        string? Description { get; }
     }
 }

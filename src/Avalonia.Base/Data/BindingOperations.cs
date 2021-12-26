@@ -1,7 +1,6 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
@@ -26,11 +25,11 @@ namespace Avalonia.Data
             IAvaloniaObject target,
             AvaloniaProperty property,
             InstancedBinding binding,
-            object anchor)
+            object? anchor)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(binding != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+            _ = property ?? throw new ArgumentNullException(nameof(property));
+            _ = binding ?? throw new ArgumentNullException(nameof(binding));
 
             var mode = binding.Mode;
 
@@ -43,8 +42,12 @@ namespace Avalonia.Data
             {
                 case BindingMode.Default:
                 case BindingMode.OneWay:
-                    return target.Bind(property, binding.Observable ?? binding.Subject, binding.Priority);
+                    if (binding.Observable is null)
+                        throw new InvalidOperationException("InstancedBinding does not contain an observable.");
+                    return target.Bind(property, binding.Observable, binding.Priority);
                 case BindingMode.TwoWay:
+                    if (binding.Subject is null)
+                        throw new InvalidOperationException("InstancedBinding does not contain a subject.");
                     return new TwoWayBindingDisposable(
                         target.Bind(property, binding.Subject, binding.Priority),
                         target.GetObservable(property).Subscribe(binding.Subject));
@@ -74,6 +77,11 @@ namespace Avalonia.Data
 
                 case BindingMode.OneWayToSource:
                 {
+                    if (binding.Observable is null)
+                        throw new InvalidOperationException("InstancedBinding does not contain an observable.");
+                    if (binding.Subject is null)
+                        throw new InvalidOperationException("InstancedBinding does not contain a subject.");
+
                     // Perf: Avoid allocating closure in the outer scope.
                     var bindingCopy = binding;
 

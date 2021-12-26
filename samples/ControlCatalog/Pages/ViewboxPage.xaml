@@ -4,7 +4,6 @@
 
     <Grid RowDefinitions="Auto,*,*">
         <StackPanel Orientation="Vertical" Spacing="4">
-            <TextBlock Classes="h1">Viewbox</TextBlock>
             <TextBlock Classes="h2">A control used to scale single child.</TextBlock>
         </StackPanel>
 

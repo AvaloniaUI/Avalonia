@@ -35,15 +35,46 @@ namespace Avalonia
         }
     }
 
+    /// <summary>
+    /// Platform-specific options which apply to Windows.
+    /// </summary>
     public class Win32PlatformOptions
     {
+        /// <summary>
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
+        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
+        /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
-        
+
+        /// <summary>
+        /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
+        /// </summary>
+        /// <remarks>
+        /// GPU rendering will not be enabled if this is set to false.
+        /// </remarks>
         public bool? AllowEglInitialization { get; set; }
-        
-        public bool? EnableMultitouch { get; set; }
+
+        /// <summary>
+        /// Enables multitouch support. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
+        /// </remarks>
+        public bool? EnableMultitouch { get; set; } = true;
+
+        /// <summary>
+        /// Embeds popups to the window when set to true. The default value is false.
+        /// </summary>
         public bool OverlayPopups { get; set; }
+
+        /// <summary>
+        /// Avalonia would try to use native Widows OpenGL when set to true. The default value is false.
+        /// </summary>
         public bool UseWgl { get; set; }
+
         public IList<GlVersion> WglProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),
@@ -58,12 +89,19 @@ namespace Avalonia
         /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
         /// </remarks>
         public bool UseWindowsUIComposition { get; set; } = true;
+
+        /// <summary>
+        /// When <see cref="UseWindowsUIComposition"/> enabled, create rounded corner blur brushes
+        /// If set to null the brushes will be created using default settings (sharp corners)
+        /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
+        /// </summary>
+        public float? CompositionBackdropCornerRadius { get; set; }
     }
 }
 
 namespace Avalonia.Win32
 {
-    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
+    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -76,6 +114,10 @@ namespace Avalonia.Win32
             SetDpiAwareness();
             CreateMessageWindow();
         }
+
+        internal static Win32Platform Instance => s_instance;
+
+        internal IntPtr Handle => _hwnd;
 
         /// <summary>
         /// Gets the actual WindowsVersion. Same as the info returned from RtlGetVersion.
@@ -230,6 +272,8 @@ namespace Avalonia.Win32
                     }
                 }
             }
+            
+            TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
@@ -260,6 +304,11 @@ namespace Avalonia.Win32
             {
                 throw new Win32Exception();
             }
+        }
+
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            return new TrayIconImpl();
         }
 
         public IWindowImpl CreateWindow()

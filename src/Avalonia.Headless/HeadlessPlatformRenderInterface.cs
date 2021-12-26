@@ -47,6 +47,8 @@ namespace Avalonia.Headless
         }
 
         public IStreamGeometryImpl CreateStreamGeometry() => new HeadlessStreamingGeometryStub();
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => throw new NotImplementedException();
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
 
@@ -443,6 +445,10 @@ namespace Avalonia.Headless
             public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadow = default)
             {
                 
+            }
+
+            public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+            {
             }
 
             public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
