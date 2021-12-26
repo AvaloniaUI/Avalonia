@@ -142,7 +142,7 @@ namespace Avalonia.Web.Blazor
 
         public Size ClientSize => _clientSize;
         public Size? FrameSize => null;
-        public double RenderScaling => 1;
+        public double RenderScaling => _currentSurface?.Scaling ?? 1;
 
         public IEnumerable<object> Surfaces => new object[] { _currentSurface! };
 
