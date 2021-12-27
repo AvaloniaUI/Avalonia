@@ -16,7 +16,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Implements input-related functionality for a control.
     /// </summary>
-    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":pointerover")]
+    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":focus-within", ":pointerover")]
     public class InputElement : Interactive, IInputElement
     {
         /// <summary>
@@ -499,7 +499,7 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.Instance.Focus(null);
+                FocusManager.Instance?.Focus(null);
             }
         }
 
@@ -632,7 +632,7 @@ namespace Avalonia.Input
             }
             else if (change.Property == IsKeyboardFocusWithinProperty)
             {
-                PseudoClasses.Set(":focus-within", _isKeyboardFocusWithin);
+                PseudoClasses.Set(":focus-within", change.NewValue.GetValueOrDefault<bool>());
             }
         }
 
@@ -675,7 +675,7 @@ namespace Avalonia.Input
         /// <see cref="IsEffectivelyEnabled"/>.
         /// </summary>
         /// <param name="parent">The parent control.</param>
-        private void UpdateIsEffectivelyEnabled(InputElement parent)
+        private void UpdateIsEffectivelyEnabled(InputElement? parent)
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 

@@ -5,8 +5,6 @@ using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -169,7 +167,8 @@ namespace Avalonia
                 }
                 else if (slot.Priority == BindingPriority.LocalValue)
                 {
-                    var old = TryGetValue(property, BindingPriority.LocalValue, out var value) ? value : default;
+                    var old = TryGetValue(property, BindingPriority.LocalValue, out var value) ?
+                        new Optional<T>(value) : default;
 
                     // During batch update values can't be removed immediately because they're needed to raise
                     // a correctly-typed _sink.ValueChanged notification. They instead mark themselves for removal
@@ -188,7 +187,7 @@ namespace Avalonia
                         // so there's no way to mark them for removal at the end of a batch update. Instead convert
                         // them to a constant value entry with Unset priority in the event of a local value being
                         // cleared during a batch update.
-                        var sentinel = new ConstantValueEntry<T>(property, default, BindingPriority.Unset, _sink);
+                        var sentinel = new ConstantValueEntry<T>(property, Optional<T>.Empty, BindingPriority.Unset, _sink);
                         _values.SetValue(property, sentinel);
                     }
 
@@ -479,7 +478,7 @@ namespace Avalonia
                 return true;
             }
 
-            public void ValueChanged(AvaloniaProperty property, Optional<object> oldValue)
+            public void ValueChanged(AvaloniaProperty property, Optional<object?> oldValue)
             {
                 _notifications ??= new List<Notification>();
 
@@ -506,7 +505,7 @@ namespace Avalonia
             private struct Notification
             {
                 public AvaloniaProperty property;
-                public Optional<object> oldValue;
+                public Optional<object?> oldValue;
             }
         }
     }

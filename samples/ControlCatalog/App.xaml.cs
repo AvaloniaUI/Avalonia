@@ -1,41 +1,33 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
+using Avalonia.Themes.Fluent;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
     public class App : Application
     {
-        private static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        public App()
+        {
+            DataContext = new ApplicationViewModel();
+        }
+
+        public static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
             Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
         };
 
-        private static readonly StyleInclude DataGridDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        public static readonly StyleInclude DataGridDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
             Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Default.xaml")
         };
 
-        public static Styles FluentDark = new Styles
-        {
-            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml")
-            },
-            DataGridFluent
-        };
-
-        public static Styles FluentLight = new Styles
-        {
-            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml")
-            },
-            DataGridFluent
-        };
+        public static FluentTheme Fluent = new FluentTheme(new Uri("avares://ControlCatalog/Styles"));
 
         public static Styles DefaultLight = new Styles
         {
@@ -58,8 +50,7 @@ namespace ControlCatalog
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
-            },
-            DataGridDefault
+            }
         };
 
         public static Styles DefaultDark = new Styles
@@ -83,25 +74,31 @@ namespace ControlCatalog
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
-            },
-            DataGridDefault
+            }
         };
 
         public override void Initialize()
         {
-            Styles.Insert(0, FluentLight);
-
+            Styles.Insert(0, Fluent);
+            Styles.Insert(1, DataGridFluent);
             AvaloniaXamlLoader.Load(this);
         }
 
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+            {
                 desktopLifetime.MainWindow = new MainWindow();
+            }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 singleViewLifetime.MainView = new MainView();
 
             base.OnFrameworkInitializationCompleted();
+
+            this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+            {
+                StartupScreenIndex = 1,
+            });
         }
     }
 }

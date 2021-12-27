@@ -99,10 +99,9 @@ namespace ControlCatalog.Pages
             foreach (var pt in _pointers.Values)
             {
                 var brush = new ImmutableSolidColorBrush(pt.Color);
-                context.DrawGeometry(brush, null, new EllipseGeometry(new Rect(pt.Point.X - 75, pt.Point.Y - 75,
-                    150, 150)));
+
+                context.DrawEllipse(brush, null, pt.Point, 75, 75);
             }
-            
         }
     }
 }

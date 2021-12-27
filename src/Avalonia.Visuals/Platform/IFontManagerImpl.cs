@@ -31,7 +31,7 @@ namespace Avalonia.Platform
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out Typeface typeface);
+            FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface);
 
         /// <summary>
         ///     Creates a glyph typeface.

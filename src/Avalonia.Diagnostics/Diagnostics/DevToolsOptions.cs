@@ -16,6 +16,7 @@ namespace Avalonia.Diagnostics
         /// Gets or sets a value indicating whether DevTools should be displayed as a child window
         /// of the window being inspected. The default value is true.
         /// </summary>
+        /// <remarks>This setting is ignored if DevTools is attached to <see cref="Application"/></remarks>
         public bool ShowAsChildWindow { get; set; } = true;
 
         /// <summary>

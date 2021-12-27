@@ -17,11 +17,11 @@ namespace Avalonia.Controls
         /// <param name="nameScope">The name scope.</param>
         /// <param name="name">The name.</param>
         /// <returns>The named element or null if not found.</returns>
-        public static T Find<T>(this INameScope nameScope, string name)
+        public static T? Find<T>(this INameScope nameScope, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(nameScope != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            _ = nameScope ?? throw new ArgumentNullException(nameof(nameScope));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
 
             var result = nameScope.Find(name);
 
@@ -31,7 +31,7 @@ namespace Avalonia.Controls
                     $"Expected control '{name}' to be '{typeof(T)} but it was '{result.GetType()}'.");
             }
 
-            return (T)result;
+            return (T?)result;
         }
 
         /// <summary>
@@ -41,11 +41,11 @@ namespace Avalonia.Controls
         /// <param name="anchor">The control to take the name scope from.</param>
         /// <param name="name">The name.</param>
         /// <returns>The named element or null if not found.</returns>
-        public static T Find<T>(this ILogical anchor, string name)
+        public static T? Find<T>(this ILogical anchor, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(anchor != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            _ = anchor ?? throw new ArgumentNullException(nameof(anchor));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
             var styledAnchor = anchor as StyledElement;
             if (styledAnchor == null)
                 return null;
@@ -64,8 +64,8 @@ namespace Avalonia.Controls
         public static T Get<T>(this INameScope nameScope, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(nameScope != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            _ = nameScope ?? throw new ArgumentNullException(nameof(nameScope));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
 
             var result = nameScope.Find(name);
 
@@ -94,9 +94,9 @@ namespace Avalonia.Controls
         public static T Get<T>(this ILogical anchor, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(anchor != null);
-            Contract.Requires<ArgumentNullException>(name != null);
-               
+            _ = anchor ?? throw new ArgumentNullException(nameof(anchor));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
             var nameScope = (anchor as INameScope) ?? NameScope.GetNameScope((StyledElement)anchor);
             if (nameScope == null)
                 throw new InvalidOperationException(
@@ -105,9 +105,9 @@ namespace Avalonia.Controls
             return nameScope.Get<T>(name);
         }
         
-        public static INameScope FindNameScope(this ILogical control)
+        public static INameScope? FindNameScope(this ILogical control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            _ = control ?? throw new ArgumentNullException(nameof(control));
 
             var scope = control.GetSelfAndLogicalAncestors()
                 .OfType<StyledElement>()

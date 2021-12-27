@@ -23,10 +23,5 @@ namespace Avalonia.Layout.Utils
                 list.AddRange(Enumerable.Repeat(value, size - cur));
             }
         }
-
-        public static void Resize<T>(this List<T> list, int count)
-        {
-            Resize(list, count, default);
-        }
     }
 }

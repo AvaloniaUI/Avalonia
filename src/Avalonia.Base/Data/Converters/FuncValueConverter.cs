@@ -12,23 +12,23 @@ namespace Avalonia.Data.Converters
     /// <typeparam name="TOut">The output type.</typeparam>
     public class FuncValueConverter<TIn, TOut> : IValueConverter
     {
-        private readonly Func<TIn, TOut> _convert;
+        private readonly Func<TIn?, TOut> _convert;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncValueConverter{TIn, TOut}"/> class.
         /// </summary>
         /// <param name="convert">The convert function.</param>
-        public FuncValueConverter(Func<TIn, TOut> convert)
+        public FuncValueConverter(Func<TIn?, TOut> convert)
         {
             _convert = convert;
         }
 
         /// <inheritdoc/>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is TIn || (value == null && TypeUtilities.AcceptsNull(typeof(TIn))))
+            if (TypeUtilities.CanCast<TIn>(value))
             {
-                return _convert((TIn)value);
+                return _convert((TIn?)value);
             }
             else
             {
@@ -37,7 +37,7 @@ namespace Avalonia.Data.Converters
         }
 
         /// <inheritdoc/>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

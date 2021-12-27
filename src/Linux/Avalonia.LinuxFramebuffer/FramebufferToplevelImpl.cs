@@ -30,10 +30,9 @@ namespace Avalonia.LinuxFramebuffer
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
-            {
-                
-            };
+            var factory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            return factory?.Create(root, renderLoop) ?? new DeferredRenderer(root, renderLoop);
         }
 
         public void Dispose()
@@ -41,7 +40,7 @@ namespace Avalonia.LinuxFramebuffer
             throw new NotSupportedException();
         }
 
-        
+
         public void Invalidate(Rect rect)
         {
         }

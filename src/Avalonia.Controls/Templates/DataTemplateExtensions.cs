@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Templates
                 currentTemplateHost = currentTemplateHost.LogicalParent;
             }
 
-            IGlobalDataTemplates global = AvaloniaLocator.Current.GetService<IGlobalDataTemplates>();
+            var global = AvaloniaLocator.Current.GetService<IGlobalDataTemplates>();
 
             if (global != null && global.IsDataTemplatesInitialized)
             {

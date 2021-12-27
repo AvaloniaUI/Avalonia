@@ -358,6 +358,12 @@ interface ICompositor2 : IInspectable
     [overload("CreateStepEasingFunction")] HRESULT CreateStepEasingFunctionWithStepCount([in] INT32 stepCount, [out] [retval] void** result);
 }
 
+[uuid(0D8FB190-F122-5B8D-9FDD-543B0D8EB7F3)]
+interface ICompositorWithBlurredWallpaperBackdropBrush : IInspectable
+{
+    HRESULT TryCreateBlurredWallpaperBackdropBrush([out] [retval] ICompositionBackdropBrush** result);
+}
+
 [uuid(08E05581-1AD1-4F97-9757-402D76E4233B)]
 interface ISpriteVisual : IInspectable
 {
@@ -520,6 +526,13 @@ enum CompositionCompositeMode
     MinBlend,
 }
 
+[contract(Windows.Foundation.UniversalApiContract, 2.0)]
+[exclusiveto(Windows.UI.Composition.CompositionClip)]
+[uuid(1CCD2A52-CFC7-4ACE-9983-146BB8EB6A3C)]
+interface ICompositionClip : IInspectable
+{
+}
+
 [uuid(117E202D-A859-4C89-873B-C2AA566788E3)]
 interface IVisual : IInspectable
 {
@@ -531,8 +544,8 @@ interface IVisual : IInspectable
     [propput] HRESULT BorderMode([in] CompositionBorderMode value);
     [propget] HRESULT CenterPoint([out] [retval] Vector3* value);
     [propput] HRESULT CenterPoint([in] Vector3 value);
-    [propget] HRESULT Clip([out] [retval]void** value);
-    [propput] HRESULT Clip([in] void* value);
+    [propget] HRESULT Clip([out] [retval] ICompositionClip** value);
+    [propput] HRESULT Clip([in] ICompositionClip* value);
     [propget] HRESULT CompositeMode([out] [retval] CompositionCompositeMode* value);
     [propput] HRESULT CompositeMode([in] CompositionCompositeMode value);
     [propget] HRESULT IsVisible([out] [retval] boolean* value);
@@ -692,6 +705,99 @@ interface ICompositionScopedBatch : IInspectable
     [eventremove] HRESULT RemoveCompleted([in] int token);
 }
 
+[contract(Windows.Foundation.UniversalApiContract, 6.0)]
+[exclusiveto(Windows.UI.Composition.CompositionRoundedRectangleGeometry)]
+[uuid(8770C822-1D50-4B8B-B013-7C9A0E46935F)]
+interface ICompositionRoundedRectangleGeometry : IInspectable
+{
+    [propget] HRESULT CornerRadius([out] [retval] Vector2* value);
+    [propput] HRESULT CornerRadius([in] Vector2 value);
+    [propget] HRESULT Offset([out] [retval] Vector2* value);
+    [propput] HRESULT Offset([in] Vector2 value);
+    [propget] HRESULT Size([out] [retval] Vector2* value);
+    [propput] HRESULT Size([in] Vector2 value);
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 6.0)]
+[exclusiveto(Windows.UI.Composition.CompositionGeometry)]
+[uuid(E985217C-6A17-4207-ABD8-5FD3DD612A9D)]
+interface ICompositionGeometry : IInspectable
+{
+    [propget] HRESULT TrimEnd([out] [retval] FLOAT* value);
+    [propput] HRESULT TrimEnd([in] FLOAT value);
+    [propget] HRESULT TrimOffset([out] [retval] FLOAT* value);
+    [propput] HRESULT TrimOffset([in] FLOAT value);
+    [propget] HRESULT TrimStart([out] [retval] FLOAT* value);
+    [propput] HRESULT TrimStart([in] FLOAT value);
+}
+
+[uuid(401B61BB-0007-4363-B1F3-6BCC003FB83E)]
+interface ICompositionSpriteShape : IInspectable
+{
+    [propget] HRESULT GetFillBrush([out] [retval] ICompositionBrush** value);
+    [propput] HRESULT SetFillBrush([in] ICompositionBrush* value);
+    [propget] HRESULT Geometry([out] [retval] ICompositionGeometry** value);
+    [propput] HRESULT Geometry([in] ICompositionGeometry* value);
+    [propget] HRESULT IsStrokeNonScaling([out] [retval] boolean* value);
+    [propput] HRESULT IsStrokeNonScaling([in] boolean value);
+    [propget] HRESULT StrokeBrush([out] [retval] ICompositionBrush** value);
+    [propput] HRESULT StrokeBrush([in] ICompositionBrush* value);
+    [propget] HRESULT StrokeDashArray();
+    [propget] HRESULT StrokeDashCap();
+    [propput] HRESULT StrokeDashCap();
+    [propget] HRESULT StrokeDashOffset();
+    [propput] HRESULT StrokeDashOffset();
+    [propget] HRESULT StrokeEndCap();
+    [propput] HRESULT StrokeEndCap();
+    [propget] HRESULT StrokeLineJoin();
+    [propput] HRESULT StrokeLineJoin();
+    [propget] HRESULT StrokeMiterLimit();
+    [propput] HRESULT StrokeMiterLimit();
+    [propget] HRESULT StrokeStartCap();
+    [propput] HRESULT StrokeStartCap();
+    [propget] HRESULT StrokeThickness();
+    [propput] HRESULT StrokeThickness();
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 6.0)]
+[exclusiveto(Windows.UI.Composition.CompositionShape)]
+[uuid(B47CE2F7-9A88-42C4-9E87-2E500CA8688C)]
+interface ICompositionShape : IInspectable
+{
+    [propget] HRESULT CenterPoint([out] [retval] Vector2* value);
+    [propput] HRESULT CenterPoint([in] Vector2 value);
+}
+
+[uuid(42d4219a-be1b-5091-8f1e-90270840fc2d)]
+interface IVectorOfCompositionShape : IInspectable
+{
+    HRESULT GetAt();
+    [propget] HRESULT GetSize();
+    HRESULT GetView();
+    HRESULT IndexOf();
+    HRESULT SetAt();
+    HRESULT InsertAt(); 
+    HRESULT RemoveAt();
+    HRESULT Append([in] ICompositionShape* value);
+    HRESULT RemoveAtEnd();
+    HRESULT Clear();
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 7.0)]
+[exclusiveto(Windows.UI.Composition.CompositionGeometricClip)]
+[uuid(C840B581-81C9-4444-A2C1-CCAECE3A50E5)]
+interface ICompositionGeometricClip : IInspectable
+{
+    [propget] HRESULT Geometry([out] [retval] ICompositionGeometry** value);
+    [propput] HRESULT Geometry([in] ICompositionGeometry* value);
+}
+
+[uuid(F2BD13C3-BA7E-4B0F-9126-FFB7536B8176)]
+interface IShapeVisual : IInspectable
+{
+    [propget] HRESULT Shapes([out] [retval] IUnknown** value);
+}
+
 [uuid(48EA31AD-7FCD-4076-A79C-90CC4B852C9B)]
 interface ICompositor5 : IInspectable
 {
@@ -709,10 +815,19 @@ interface ICompositor5 : IInspectable
     [overload("CreatePathGeometry")] HRESULT CreatePathGeometryWithPath([in] void* path, [out] [retval] void** result);
     HRESULT CreatePathKeyFrameAnimation([out] [retval] void** result);
     HRESULT CreateRectangleGeometry([out] [retval] void** result);
-    HRESULT CreateRoundedRectangleGeometry([out] [retval] void** result);
-    HRESULT CreateShapeVisual([out] [retval] void** result);
+    HRESULT CreateRoundedRectangleGeometry([out] [retval] ICompositionRoundedRectangleGeometry** result);
+    HRESULT CreateShapeVisual([out] [retval] IShapeVisual** result);
     [overload("CreateSpriteShape")] HRESULT CreateSpriteShape([out] [retval] void** result);
     [overload("CreateSpriteShape")] HRESULT CreateSpriteShapeWithGeometry([in] void* geometry, [out] [retval] void** result);
     HRESULT CreateViewBox([out] [retval] void** result);
     HRESULT RequestCommitAsync([out] [retval] IAsyncAction** operation);
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 7.0)]
+[exclusiveto(Windows.UI.Composition.Compositor)]
+[uuid(7A38B2BD-CEC8-4EEB-830F-D8D07AEDEBC3)]
+interface ICompositor6 : IInspectable
+{
+    [overload("CreateGeometricClip")] HRESULT CreateGeometricClip([out] [retval] ICompositionGeometricClip** result);
+    [overload("CreateGeometricClip")] HRESULT CreateGeometricClipWithGeometry([in] ICompositionGeometry* geometry, [out] [retval] ICompositionGeometricClip** result); 
 }

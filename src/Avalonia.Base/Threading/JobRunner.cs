@@ -11,12 +11,12 @@ namespace Avalonia.Threading
     /// </summary>
     internal class JobRunner
     {
-        private IPlatformThreadingInterface _platform;
+        private IPlatformThreadingInterface? _platform;
 
         private readonly Queue<IJob>[] _queues = Enumerable.Range(0, (int)DispatcherPriority.MaxValue + 1)
             .Select(_ => new Queue<IJob>()).ToArray();
 
-        public JobRunner(IPlatformThreadingInterface platform)
+        public JobRunner(IPlatformThreadingInterface? platform)
         {
             _platform = platform;
         }
@@ -48,7 +48,7 @@ namespace Avalonia.Threading
         {
             var job = new Job(action, priority, false);
             AddJob(job);
-            return job.Task;
+            return job.Task!;
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Avalonia.Threading
                 _platform?.Signal(job.Priority);
         }
 
-        private IJob GetNextJob(DispatcherPriority minimumPriority)
+        private IJob? GetNextJob(DispatcherPriority minimumPriority)
         {
             for (int c = (int)DispatcherPriority.MaxValue; c >= (int)minimumPriority; c--)
             {
@@ -146,7 +146,7 @@ namespace Avalonia.Threading
             /// <summary>
             /// The task completion source.
             /// </summary>
-            private readonly TaskCompletionSource<object> _taskCompletionSource;
+            private readonly TaskCompletionSource<object?>? _taskCompletionSource;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Job"/> class.
@@ -158,7 +158,7 @@ namespace Avalonia.Threading
             {
                 _action = action;
                 Priority = priority;
-                _taskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object>();
+                _taskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object?>();
             }
 
             /// <inheritdoc/>
@@ -167,8 +167,8 @@ namespace Avalonia.Threading
             /// <summary>
             /// The task.
             /// </summary>
-            public Task Task => _taskCompletionSource?.Task;
-
+            public Task? Task => _taskCompletionSource?.Task;
+            
             /// <inheritdoc/>
             void IJob.Run()
             {

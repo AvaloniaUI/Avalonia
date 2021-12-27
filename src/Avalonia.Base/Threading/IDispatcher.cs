@@ -20,15 +20,14 @@ namespace Avalonia.Threading
         void VerifyAccess();
 
         /// <summary>
-        /// Invokes a method on the dispatcher thread.
+        /// Posts an action that will be invoked on the dispatcher thread.
         /// </summary>
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
-        /// <returns>A task that can be used to track the method's execution.</returns>
         void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal);
 
         /// <summary>
-        /// Invokes a method on the dispatcher thread.
+        /// Posts an action that will be invoked on the dispatcher thread.
         /// </summary>
         /// <typeparam name="T">type of argument</typeparam>
         /// <param name="action">The method to call.</param>
@@ -37,17 +36,19 @@ namespace Avalonia.Threading
         void Post<T>(Action<T> action, T arg, DispatcherPriority priority = DispatcherPriority.Normal);
 
         /// <summary>
-        /// Posts an action that will be invoked on the dispatcher thread.
+        /// Invokes a action on the dispatcher thread.
         /// </summary>
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
+        /// <returns>A task that can be used to track the method's execution.</returns>
         Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal);
 
         /// <summary>
-        /// Posts a function that will be invoked on the dispatcher thread.
+        /// Invokes a method on the dispatcher thread.
         /// </summary>
         /// <param name="function">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
+        /// <returns>A task that can be used to track the method's execution.</returns>
         Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal);
 
         /// <summary>

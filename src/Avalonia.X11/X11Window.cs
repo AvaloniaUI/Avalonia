@@ -190,13 +190,8 @@ namespace Avalonia.X11
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
             if (platform.Options.UseDBusMenu)
-                NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
+                NativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
             NativeControlHost = new X11NativeControlHost(_platform, this);
-            DispatcherTimer.Run(() =>
-            {
-                Paint?.Invoke(default);
-                return _handle != IntPtr.Zero;
-            }, TimeSpan.FromMilliseconds(100));
             InitializeIme();
         }
 
@@ -790,6 +785,12 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_transparencyHelper != null)
+            {
+                _transparencyHelper.Dispose();
+                _transparencyHelper = null;
+            }
+            
             if (_imeControl != null)
             {
                 _imeControl.Dispose();
@@ -805,13 +806,14 @@ namespace Avalonia.X11
             
             if (_handle != IntPtr.Zero)
             {
-                XDestroyWindow(_x11.Display, _handle);
                 _platform.Windows.Remove(_handle);
                 _platform.XI2?.OnWindowDestroyed(_handle);
+                var handle = _handle;
                 _handle = IntPtr.Zero;
                 Closed?.Invoke();
                 _mouse.Dispose();
                 _touch.Dispose();
+                XDestroyWindow(_x11.Display, handle);
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
@@ -1030,6 +1032,7 @@ namespace Avalonia.X11
             if (string.IsNullOrEmpty(title))
             {
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_NAME);
             }
             else
             {
@@ -1154,7 +1157,7 @@ namespace Avalonia.X11
         public ITextInputMethodImpl TextInputMethod => _ime;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
-            _transparencyHelper.SetTransparencyRequest(transparencyLevel);
+            _transparencyHelper?.SetTransparencyRequest(transparencyLevel);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {

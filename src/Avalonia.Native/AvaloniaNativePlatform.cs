@@ -93,8 +93,6 @@ namespace Avalonia.Native
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
                 _factory.MacOptions.SetShowInDock(macOpts?.ShowInDock != false ? 1 : 0);
-                _factory.MacOptions.SetDisableDefaultApplicationMenuItems(
-                    macOpts?.DisableDefaultApplicationMenuItems == true ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
@@ -112,7 +110,8 @@ namespace Avalonia.Native
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
-                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform);
+                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
+                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
 
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
@@ -132,6 +131,11 @@ namespace Avalonia.Native
                     // ignored
                 }
             }
+        }
+
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            return new TrayIconImpl(_factory);
         }
 
         public IWindowImpl CreateWindow()
