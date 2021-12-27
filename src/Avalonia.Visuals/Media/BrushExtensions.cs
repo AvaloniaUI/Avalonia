@@ -18,7 +18,7 @@ namespace Avalonia.Media
         /// </returns>
         public static IBrush ToImmutable(this IBrush brush)
         {
-            Contract.Requires<ArgumentNullException>(brush != null);
+            _ = brush ?? throw new ArgumentNullException(nameof(brush));
 
             return (brush as IMutableBrush)?.ToImmutable() ?? brush;
         }
@@ -33,7 +33,7 @@ namespace Avalonia.Media
         /// </returns>
         public static ImmutableDashStyle ToImmutable(this IDashStyle style)
         {
-            Contract.Requires<ArgumentNullException>(style != null);
+            _ = style ?? throw new ArgumentNullException(nameof(style));
 
             return style as ImmutableDashStyle ?? ((DashStyle)style).ToImmutable();
         }
@@ -48,7 +48,7 @@ namespace Avalonia.Media
         /// </returns>
         public static ImmutablePen ToImmutable(this IPen pen)
         {
-            Contract.Requires<ArgumentNullException>(pen != null);
+            _ = pen ?? throw new ArgumentNullException(nameof(pen));
 
             return pen as ImmutablePen ?? ((Pen)pen).ToImmutable();
         }

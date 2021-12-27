@@ -1,9 +1,8 @@
-<Application
-    xmlns="https://github.com/avaloniaui" 
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:Class="RenderDemo.App">
-    <Application.Styles>
-        <FluentTheme/>
-        <StyleInclude Source="avares://RenderDemo/SideBar.xaml"/>
-    </Application.Styles>
+<Application x:Class="RenderDemo.App"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
+  </Application.Styles>
 </Application>

@@ -499,7 +499,7 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.Instance.Focus(null);
+                FocusManager.Instance?.Focus(null);
             }
         }
 
@@ -675,7 +675,7 @@ namespace Avalonia.Input
         /// <see cref="IsEffectivelyEnabled"/>.
         /// </summary>
         /// <param name="parent">The parent control.</param>
-        private void UpdateIsEffectivelyEnabled(InputElement parent)
+        private void UpdateIsEffectivelyEnabled(InputElement? parent)
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 

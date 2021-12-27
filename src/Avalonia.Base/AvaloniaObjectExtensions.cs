@@ -6,8 +6,6 @@ using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Reactive;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -662,9 +660,9 @@ namespace Avalonia
                 this._source = source;
             }
 
-            public InstancedBinding Initiate(
+            public InstancedBinding? Initiate(
                 IAvaloniaObject target,
-                AvaloniaProperty targetProperty,
+                AvaloniaProperty? targetProperty,
                 object? anchor = null,
                 bool enableDataValidation = false)
             {

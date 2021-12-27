@@ -65,7 +65,9 @@ namespace Avalonia.Controls
                 }
             });
 
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
+
+            if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
             {
                 lifetime.Exit += Lifetime_Exit;
             }
@@ -186,7 +188,8 @@ namespace Avalonia.Controls
 
         private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
         {
-            var trayIcons = GetIcons(Application.Current);
+            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
+            var trayIcons = GetIcons(app);
 
             RemoveIcons(trayIcons);
         }

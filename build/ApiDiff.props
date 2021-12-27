@@ -3,6 +3,7 @@
     <ApiContractPackageVersion>0.10.0</ApiContractPackageVersion>
     <NugetPackageName Condition="'$(PackageId)' != ''">$(PackageId)</NugetPackageName>
     <NugetPackageName Condition="'$(PackageId)' == ''">Avalonia</NugetPackageName>
+    <RunApiCompat Condition="'$(TargetFramework)' == 'net6.0'">false</RunApiCompat>
   </PropertyGroup>
   <ItemGroup>
     <PackageDownload Include="$(NugetPackageName)" Version="[$(ApiContractPackageVersion)]" />

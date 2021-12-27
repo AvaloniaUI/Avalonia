@@ -3,8 +3,6 @@ using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -155,7 +153,7 @@ namespace Avalonia
 
             if (v.HasValue)
             {
-                o.SetValue<TValue>(this, (TValue)v.Value);
+                o.SetValue<TValue>(this, (TValue)v.Value!);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {

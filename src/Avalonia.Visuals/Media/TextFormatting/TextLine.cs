@@ -29,7 +29,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// A <see cref="TextLineBreak"/> value that represents the line break.
         /// </returns>
-        public abstract TextLineBreak TextLineBreak { get; }
+        public abstract TextLineBreak? TextLineBreak { get; }
 
         /// <summary>
         /// Gets the distance from the top to the baseline of the current TextLine object.

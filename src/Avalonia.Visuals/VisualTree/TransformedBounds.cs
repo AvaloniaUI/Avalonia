@@ -54,7 +54,7 @@ namespace Avalonia.VisualTree
             return Bounds == other.Bounds && Clip == other.Clip && Transform == other.Transform;
         }
 
-        public override bool Equals(object obj) => obj is TransformedBounds other && Equals(other);
+        public override bool Equals(object? obj) => obj is TransformedBounds other && Equals(other);
 
         public override int GetHashCode()
         {

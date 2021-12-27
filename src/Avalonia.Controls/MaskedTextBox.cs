@@ -207,9 +207,14 @@ namespace Avalonia.Controls
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 
-            if (Match(keymap.Paste))
+            if (keymap is not null && Match(keymap.Paste))
             {
-                var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
+                var clipboard = (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard));
+
+                if (clipboard is null)
+                    return;
+
+                var text = await clipboard.GetTextAsync();
 
                 if (text == null)
                     return;

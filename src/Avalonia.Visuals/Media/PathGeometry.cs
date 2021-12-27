@@ -11,8 +11,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Figures"/> property.
         /// </summary>
-        public static readonly DirectProperty<PathGeometry, PathFigures> FiguresProperty =
-            AvaloniaProperty.RegisterDirect<PathGeometry, PathFigures>(nameof(Figures), g => g.Figures, (g, f) => g.Figures = f);
+        public static readonly DirectProperty<PathGeometry, PathFigures?> FiguresProperty =
+            AvaloniaProperty.RegisterDirect<PathGeometry, PathFigures?>(nameof(Figures), g => g.Figures, (g, f) => g.Figures = f);
 
         /// <summary>
         /// Defines the <see cref="FillRule"/> property.
@@ -20,9 +20,9 @@ namespace Avalonia.Media
         public static readonly StyledProperty<FillRule> FillRuleProperty =
                                  AvaloniaProperty.Register<PathGeometry, FillRule>(nameof(FillRule));
 
-        private PathFigures _figures;
-        private IDisposable _figuresObserver;
-        private IDisposable _figuresPropertiesObserver;
+        private PathFigures? _figures;
+        private IDisposable? _figuresObserver;
+        private IDisposable? _figuresPropertiesObserver;
 
         static PathGeometry()
         {
@@ -35,7 +35,7 @@ namespace Avalonia.Media
         /// </summary>
         public PathGeometry()
         {
-            Figures = new PathFigures();
+            _figures = new PathFigures();
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Avalonia.Media
         /// The figures.
         /// </value>
         [Content]
-        public PathFigures Figures
+        public PathFigures? Figures
         {
             get { return _figures; }
             set { SetAndRaise(FiguresProperty, ref _figures, value); }
@@ -81,15 +81,20 @@ namespace Avalonia.Media
             set { SetValue(FillRuleProperty, value); }
         }
 
-        protected override IGeometryImpl CreateDefiningGeometry()
+        protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var figures = Figures;
+
+            if (figures is null)
+                return null;
+
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var geometry = factory.CreateStreamGeometry();
 
             using (var ctx = new StreamGeometryContext(geometry.Open()))
             {
                 ctx.SetFillRule(FillRule);
-                foreach (var f in Figures)
+                foreach (var f in figures)
                 {
                     f.ApplyTo(ctx);
                 }
@@ -98,7 +103,7 @@ namespace Avalonia.Media
             return geometry;
         }
 
-        private void OnFiguresChanged(PathFigures figures)
+        private void OnFiguresChanged(PathFigures? figures)
         {
             _figuresObserver?.Dispose();
             _figuresPropertiesObserver?.Dispose();
@@ -120,12 +125,15 @@ namespace Avalonia.Media
  
         }
 
-        private void InvalidateGeometryFromSegments(object _, EventArgs __)
+        private void InvalidateGeometryFromSegments(object? _, EventArgs __)
         {
             InvalidateGeometry();
         }
 
         public override string ToString()
-            => $"{(FillRule != FillRule.EvenOdd ? "F1 " : "")}{(string.Join(" ", Figures))}";
+        {
+            var figuresString = _figures is not null ? string.Join(" ", _figures) : string.Empty;
+            return $"{(FillRule != FillRule.EvenOdd ? "F1 " : "")}{figuresString}";
+        }
     }
 }

@@ -4,8 +4,6 @@ using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -544,12 +542,12 @@ namespace Avalonia
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (_metadataCache.TryGetValue(type, out AvaloniaPropertyMetadata result))
+            if (_metadataCache.TryGetValue(type, out var result))
             {
                 return result;
             }
 
-            Type currentType = type;
+            Type? currentType = type;
 
             while (currentType != null)
             {

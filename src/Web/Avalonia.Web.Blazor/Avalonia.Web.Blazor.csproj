@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Avalonia.Web.Blazor</PackageId>
     <LangVersion>preview</LangVersion>
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
   </PropertyGroup>
   
   <ItemGroup>
@@ -31,12 +31,12 @@
   <Import Project="..\..\..\build\BuildTargets.targets" />
   <Import Project="..\..\..\build\SkiaSharp.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-
+  <Import Project="..\..\..\build\NullableEnable.props" />
+  
   <ItemGroup>
-    <AvaloniaResource Include="Assets\*" />
     <Content Include="*.props">
       <Pack>true</Pack>
-      <PackagePath>build\;buildTransitive\</PackagePath>
+      <PackagePath>build\</PackagePath>
     </Content>
     <Content Include="*.targets">
       <Pack>true</Pack>

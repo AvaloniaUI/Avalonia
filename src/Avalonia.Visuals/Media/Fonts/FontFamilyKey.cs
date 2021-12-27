@@ -12,7 +12,7 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="source"></param>
         /// <param name="baseUri"></param>
-        public FontFamilyKey(Uri source, Uri baseUri = null)
+        public FontFamilyKey(Uri source, Uri? baseUri = null)
         {
             Source = source ?? throw new ArgumentNullException(nameof(source));
 
@@ -27,7 +27,7 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// A base URI to use if <see cref="Source"/> is relative
         /// </summary>
-        public Uri BaseUri { get; }
+        public Uri? BaseUri { get; }
 
         /// <summary>
         /// Returns a hash code for this instance.
@@ -55,12 +55,12 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        public static bool operator !=(FontFamilyKey a, FontFamilyKey b)
+        public static bool operator !=(FontFamilyKey? a, FontFamilyKey? b)
         {
             return !(a == b);
         }
 
-        public static bool operator ==(FontFamilyKey a, FontFamilyKey b)
+        public static bool operator ==(FontFamilyKey? a, FontFamilyKey? b)
         {
             if (ReferenceEquals(a, b))
             {
@@ -77,7 +77,7 @@ namespace Avalonia.Media.Fonts
         /// <returns>
         ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (!(obj is FontFamilyKey other))
             {
