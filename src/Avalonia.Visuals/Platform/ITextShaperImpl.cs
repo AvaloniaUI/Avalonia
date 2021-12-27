@@ -17,6 +17,6 @@ namespace Avalonia.Platform
         /// <param name="fontRenderingEmSize">The font rendering em size.</param>
         /// <param name="culture">The culture.</param>
         /// <returns>A shaped glyph run.</returns>
-        GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture);
+        GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo? culture);
     }
 }

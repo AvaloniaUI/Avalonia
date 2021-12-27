@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using Avalonia.Data;
 
-#nullable enable
-
 namespace Avalonia.Reactive
 {
     internal class AvaloniaPropertyBindingObservable<T> : LightweightObservableBase<BindingValue<T>>, IDescription
     {
         private readonly WeakReference<IAvaloniaObject> _target;
         private readonly AvaloniaProperty _property;
-        private T _value;
+        private BindingValue<T> _value = BindingValue<T>.Unset;
 
-#nullable disable
         public AvaloniaPropertyBindingObservable(
             IAvaloniaObject target,
             AvaloniaProperty property)
@@ -20,7 +17,6 @@ namespace Avalonia.Reactive
             _target = new WeakReference<IAvaloniaObject>(target);
             _property = property;
         }
-#nullable enable
 
         public string Description => $"{_target.GetType().Name}.{_property.Name}";
 
@@ -43,10 +39,13 @@ namespace Avalonia.Reactive
 
         protected override void Subscribed(IObserver<BindingValue<T>> observer, bool first)
         {
-            observer.OnNext(new BindingValue<T>(_value));
+            if (_value.Type != BindingValueType.UnsetValue)
+            {
+                observer.OnNext(_value);
+            }
         }
 
-        private void PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == _property)
             {
@@ -54,7 +53,7 @@ namespace Avalonia.Reactive
                 {
                     var newValue = e.Sender.GetValue(typedArgs.Property);
 
-                    if (!typedArgs.OldValue.HasValue || !EqualityComparer<T>.Default.Equals(newValue, _value))
+                    if (!_value.HasValue || !EqualityComparer<T>.Default.Equals(newValue, _value.Value))
                     {
                         _value = newValue;
                         PublishNext(_value);

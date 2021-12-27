@@ -35,7 +35,7 @@ namespace Avalonia.Reactive
             }
         }
 
-        private void PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == _property)
             {

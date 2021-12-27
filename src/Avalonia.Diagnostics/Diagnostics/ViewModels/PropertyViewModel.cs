@@ -16,7 +16,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract string Group { get; }
         public abstract Type AssignedType { get; }
         public abstract Type? DeclaringType { get; }
-        public abstract string Value { get; set; }
+        public abstract string? Value { get; set; }
         public abstract string Priority { get; }
         public abstract bool? IsAttached { get; }
         public abstract void Update();
@@ -26,7 +26,7 @@ namespace Avalonia.Diagnostics.ViewModels
             : $"{PropertyType.GetTypeName()} {{{AssignedType.GetTypeName()}}}";
 
 
-        protected static string ConvertToString(object? value)
+        protected static string? ConvertToString(object? value)
         {
             if (value is null)
             {
@@ -64,8 +64,13 @@ namespace Avalonia.Diagnostics.ViewModels
             throw new InvalidCastException("Unable to convert value.");
         }
 
-        protected static object? ConvertFromString(string s, Type targetType)
+        protected static object? ConvertFromString(string? s, Type targetType)
         {
+            if (s is null)
+            {
+                return null;
+            }
+
             var converter = TypeDescriptor.GetConverter(targetType);
 
             if (converter.CanConvertFrom(typeof(string)))

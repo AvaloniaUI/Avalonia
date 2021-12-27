@@ -83,7 +83,7 @@
           <TextBlock Text="{Binding FocusedControl}" />
           <Separator Width="8" />
           <TextBlock>Pointer Over:</TextBlock>
-          <TextBlock Text="{Binding PointerOverElement}" />
+          <TextBlock Text="{Binding PointerOverElementName}" />
         </StackPanel>
 
         <TextBlock Grid.Column="1"

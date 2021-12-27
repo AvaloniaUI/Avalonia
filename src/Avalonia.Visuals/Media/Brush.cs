@@ -19,7 +19,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<Brush, double>(nameof(Opacity), 1.0);
 
         /// <inheritdoc/>
-        public event EventHandler Invalidated;
+        public event EventHandler? Invalidated;
 
         static Brush()
         {
@@ -43,18 +43,20 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static IBrush Parse(string s)
         {
-            Contract.Requires<ArgumentNullException>(s != null);
-            Contract.Requires<FormatException>(s.Length > 0);
+            _ = s ?? throw new ArgumentNullException(nameof(s));
 
-            if (s[0] == '#')
+            if (s.Length > 0)
             {
-                return new ImmutableSolidColorBrush(Color.Parse(s));
-            }
+                if (s[0] == '#')
+                {
+                    return new ImmutableSolidColorBrush(Color.Parse(s));
+                }
 
-            var brush = KnownColors.GetKnownBrush(s);
-            if (brush != null)
-            {
-                return brush;
+                var brush = KnownColors.GetKnownBrush(s);
+                if (brush != null)
+                {
+                    return brush;
+                }
             }
 
             throw new FormatException($"Invalid brush string: '{s}'.");

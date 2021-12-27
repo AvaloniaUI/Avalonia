@@ -3,8 +3,6 @@ using System.Globalization;
 using System.Windows.Input;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data.Converters
 {
     /// <summary>
@@ -38,7 +36,7 @@ namespace Avalonia.Data.Converters
                 return new MethodToCommandConverter(d);
             }
 
-            if (TypeUtilities.TryConvert(targetType, value, culture, out object result))
+            if (TypeUtilities.TryConvert(targetType, value, culture, out var result))
             {
                 return result;
             }

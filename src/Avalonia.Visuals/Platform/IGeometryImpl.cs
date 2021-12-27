@@ -23,7 +23,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="pen">The pen to use. May be null.</param>
         /// <returns>The bounding rectangle.</returns>
-        Rect GetRenderBounds(IPen pen);
+        Rect GetRenderBounds(IPen? pen);
 
         /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Data
+﻿namespace Avalonia.Data
 {
     public class IndexerBinding : IBinding
     {

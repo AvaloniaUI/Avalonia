@@ -337,6 +337,45 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
+        /// <inheritdoc />
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+        {
+            var rc = rect.ToDirect2D();
+
+            if (brush != null)
+            {
+                using (var b = CreateBrush(brush, rect.Size))
+                {
+                    if (b.PlatformBrush != null)
+                    {
+                        _deviceContext.FillEllipse(new Ellipse
+                        {
+                            Point = rect.Center.ToSharpDX(),
+                            RadiusX = (float)(rect.Width / 2),
+                            RadiusY = (float)(rect.Height / 2)
+                        }, b.PlatformBrush);
+                    }
+                }
+            }
+
+            if (pen?.Brush != null)
+            {
+                using (var wrapper = CreateBrush(pen.Brush, rect.Size))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
+                {
+                    if (wrapper.PlatformBrush != null)
+                    {
+                        _deviceContext.DrawEllipse(new Ellipse
+                        {
+                            Point = rect.Center.ToSharpDX(),
+                            RadiusX = (float)(rect.Width / 2),
+                            RadiusY = (float)(rect.Height / 2)
+                        }, wrapper.PlatformBrush, (float)pen.Thickness, d2dStroke);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Draws text.
         /// </summary>

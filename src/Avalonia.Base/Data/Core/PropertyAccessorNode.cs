@@ -2,8 +2,6 @@ using System;
 using System.Diagnostics;
 using Avalonia.Data.Core.Plugins;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public class PropertyAccessorNode : SettableNode

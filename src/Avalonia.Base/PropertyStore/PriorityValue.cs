@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Data;
 
-#nullable enable
-
 namespace Avalonia.PropertyStore
 {
     /// <summary>
