@@ -923,7 +923,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public bool HasResources => true;
         public List<object> RequestedResources { get; } = new List<object>();
 
-        public event EventHandler OwnerChanged;
+        public event EventHandler OwnerChanged { add { } remove { } }
 
         public void AddOwner(IResourceHost owner) => Owner = owner;
         public void RemoveOwner(IResourceHost owner) => Owner = null;

@@ -64,6 +64,7 @@
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Focusable" Value="True"/>
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>

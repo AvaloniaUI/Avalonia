@@ -12,6 +12,7 @@
         ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
         TransparencyLevelHint="{Binding TransparencyLevel}"        
         x:Name="MainWindow"
+        Background="Transparent"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}">
   <NativeMenu.Menu>
     <NativeMenu>
@@ -60,17 +61,7 @@
   </Window.DataTemplates>
   <Panel>
     <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
-      <DockPanel LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargin}">
-        <Menu Name="MainMenu" DockPanel.Dock="Top">
-          <MenuItem Header="File">
-            <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
-          </MenuItem>
-          <MenuItem Header="Help">
-            <MenuItem Header="About" Command="{Binding AboutCommand}" />
-          </MenuItem>
-        </Menu>
-        <local:MainView />
-      </DockPanel>
+      <local:MainView Margin="{Binding #MainWindow.WindowDecorationMargin}" />
     </Panel>
     <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
       <Border.Background>

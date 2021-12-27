@@ -5,6 +5,7 @@
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Focusable" Value="True"/>
   </Style>
   <Style Selector="ButtonSpinner /template/ RepeatButton">
     <Setter Property="Background" Value="Transparent"/>

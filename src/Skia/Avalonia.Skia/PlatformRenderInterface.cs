@@ -62,6 +62,16 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            return new GeometryGroupImpl(fillRule, children);
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            return new CombinedGeometryImpl(combineMode, g1, g2);
+        }
+
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {
@@ -207,6 +217,8 @@ namespace Avalonia.Skia
 
             s_font.Size = (float)glyphRun.FontRenderingEmSize;
             s_font.Typeface = typeface;
+            s_font.Embolden = glyphTypeface.IsFakeBold;
+            s_font.SkewX = glyphTypeface.IsFakeItalic ? -0.2f : 0;
 
             SKTextBlob textBlob;
 

@@ -16,12 +16,17 @@ namespace Avalonia.Media
         private readonly ConcurrentDictionary<Typeface, GlyphTypeface> _glyphTypefaceCache =
             new ConcurrentDictionary<Typeface, GlyphTypeface>();
         private readonly FontFamily _defaultFontFamily;
+        private readonly IReadOnlyList<FontFallback>? _fontFallbacks;
 
         public FontManager(IFontManagerImpl platformImpl)
         {
             PlatformImpl = platformImpl;
 
-            DefaultFontFamilyName = PlatformImpl.GetDefaultFontFamilyName();
+            var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
+
+            _fontFallbacks = options?.FontFallbacks;
+
+            DefaultFontFamilyName = options?.DefaultFamilyName ?? PlatformImpl.GetDefaultFontFamilyName();
 
             if (string.IsNullOrEmpty(DefaultFontFamilyName))
             {
@@ -100,7 +105,7 @@ namespace Avalonia.Media
 
                 if (typeface.FontFamily == _defaultFontFamily)
                 {
-                    return null;
+                   throw new InvalidOperationException($"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
                 }
 
                 typeface = new Typeface(_defaultFontFamily, typeface.Style, typeface.Weight);
@@ -121,7 +126,28 @@ namespace Avalonia.Media
         /// </returns>
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out Typeface typeface) =>
-            PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontFamily, culture, out typeface);
+            FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
+        {
+            if(_fontFallbacks != null)
+            {
+                foreach (var fallback in _fontFallbacks)
+                {
+                    if(fallback is null)
+                    {
+                        continue;
+                    }
+
+                    typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight);
+
+                    var glyphTypeface = typeface.GlyphTypeface;
+
+                    if(glyphTypeface.TryGetGlyph((uint)codepoint, out _)){
+                        return true;
+                    }
+                }
+            }
+
+            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontFamily, culture, out typeface);
+        }
     }
 }

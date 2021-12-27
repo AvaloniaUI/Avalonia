@@ -43,6 +43,7 @@ public:
         StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
         Window = [[AvnWindow alloc] initWithParent:this];
+        [Window setContentView: StandardContainer];
         
         lastPositionSet.X = 100;
         lastPositionSet.Y = 100;
@@ -52,7 +53,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -174,7 +174,7 @@ public:
         {
             if(Window != nullptr)
             {
-                [Window makeKeyWindow];
+                [Window makeKeyAndOrderFront:nil];
                 [NSApp activateIgnoringOtherApps:YES];
             }
         }
@@ -205,7 +205,11 @@ public:
                 auto window = Window;
                 Window = nullptr;
                 
-                [window close];
+                try{
+                    // Seems to throw sometimes on application exit.
+                    [window close];
+                }
+                catch(NSException*){}
             }
             
             return S_OK;
@@ -231,6 +235,8 @@ public:
     
     virtual HRESULT GetFrameSize(AvnSize* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -321,7 +327,8 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
-                [Window setContentSize:NSSize{x, y}];
+                [Window setContentSize:NSSize{x,y}];
+                [Window invalidateShadow];
             }
             @finally
             {
@@ -641,6 +648,7 @@ private:
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
         [Window setTabbingMode:NSWindowTabbingModeDisallowed];
+        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     }
     
     void HideOrShowTrafficLights ()
@@ -719,6 +727,7 @@ private:
             if (cparent->WindowState() == Minimized)
                 cparent->SetWindowState(Normal);
             
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
             UpdateStyle();
@@ -1091,14 +1100,7 @@ private:
     {
         _fullScreenActive = true;
         
-        [Window setHasShadow:YES];
-        [Window setTitleVisibility:NSWindowTitleVisible];
-        [Window setTitlebarAppearsTransparent:NO];
         [Window setTitle:_lastTitle];
-        
-        Window.styleMask = Window.styleMask | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
-        Window.styleMask = Window.styleMask & ~NSWindowStyleMaskFullSizeContentView;
-    
         [Window toggleFullScreen:nullptr];
     }
     
@@ -1491,7 +1493,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     NSRect rect = NSZeroRect;
     rect.size = newSize;
     
-    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag;
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag;
     _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
     [self addTrackingArea:_area];
     
@@ -1547,7 +1549,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return pt;
 }
 
-- (AvnPoint)toAvnPoint:(CGPoint)p
++ (AvnPoint)toAvnPoint:(CGPoint)p
 {
     AvnPoint result;
     
@@ -1604,7 +1606,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
-    auto avnPoint = [self toAvnPoint:localPoint];
+    auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
     AvnVector delta;
     
@@ -1672,6 +1674,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = true;
             [self mouseEvent:event withType:MiddleButtonDown];
@@ -1704,6 +1707,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = false;
             [self mouseEvent:event withType:MiddleButtonUp];
@@ -1947,7 +1951,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
     auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = [self toAvnPoint:localPoint];
+    auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];
@@ -2378,6 +2382,56 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         _parent->GetPosition(&position);
         _parent->BaseEvents->PositionChanged(position);
+    }
+}
+
+- (AvnPoint) translateLocalPoint:(AvnPoint)pt
+{
+    pt.Y = [self frame].size.height - pt.Y;
+    return pt;
+}
+
+- (void)sendEvent:(NSEvent *)event
+{
+    [super sendEvent:event];
+    
+    /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
+    if(_parent != nullptr && dynamic_cast<WindowImpl*>(_parent.getRaw()) != nullptr)
+    {
+        switch(event.type)
+        {
+            case NSEventTypeLeftMouseDown:
+            {
+                AvnView* view = _parent->View;
+                NSPoint windowPoint = [event locationInWindow];
+                NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
+                
+                if (!NSPointInRect(viewPoint, view.bounds))
+                {
+                    auto avnPoint = [AvnView toAvnPoint:windowPoint];
+                    auto point = [self translateLocalPoint:avnPoint];
+                    AvnVector delta;
+                   
+                    _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+                }
+            }
+            break;
+                
+            case NSEventTypeMouseEntered:
+            {
+                _parent->UpdateCursor();
+            }
+            break;
+                
+            case NSEventTypeMouseExited:
+            {
+                [[NSCursor arrowCursor] set];
+            }
+            break;
+                
+            default:
+                break;
+        }
     }
 }
 @end

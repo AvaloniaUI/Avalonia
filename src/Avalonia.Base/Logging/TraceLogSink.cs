@@ -9,11 +9,11 @@ namespace Avalonia.Logging
     public class TraceLogSink : ILogSink
     {
         private readonly LogEventLevel _level;
-        private readonly IList<string> _areas;
+        private readonly IList<string>? _areas;
 
         public TraceLogSink(
             LogEventLevel minimumLevel,
-            IList<string> areas = null)
+            IList<string>? areas = null)
         {
             _level = minimumLevel;
             _areas = areas?.Count > 0 ? areas : null;
@@ -24,7 +24,7 @@ namespace Avalonia.Logging
             return level >= _level && (_areas?.Contains(area) ?? true);
         }
 
-        public void Log(LogEventLevel level, string area, object source, string messageTemplate)
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate)
         {
             if (IsEnabled(level, area))
             {
@@ -32,7 +32,7 @@ namespace Avalonia.Logging
             }
         }
 
-        public void Log<T0>(LogEventLevel level, string area, object source, string messageTemplate, T0 propertyValue0)
+        public void Log<T0>(LogEventLevel level, string area, object? source, string messageTemplate, T0 propertyValue0)
         {
             if (IsEnabled(level, area))
             {
@@ -40,7 +40,7 @@ namespace Avalonia.Logging
             }
         }
 
-        public void Log<T0, T1>(LogEventLevel level, string area, object source, string messageTemplate, T0 propertyValue0, T1 propertyValue1)
+        public void Log<T0, T1>(LogEventLevel level, string area, object? source, string messageTemplate, T0 propertyValue0, T1 propertyValue1)
         {
             if (IsEnabled(level, area))
             {
@@ -48,7 +48,7 @@ namespace Avalonia.Logging
             }
         }
 
-        public void Log<T0, T1, T2>(LogEventLevel level, string area, object source, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2)
+        public void Log<T0, T1, T2>(LogEventLevel level, string area, object? source, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2)
         {
             if (IsEnabled(level, area))
             {
@@ -56,7 +56,7 @@ namespace Avalonia.Logging
             }
         }
 
-        public void Log(LogEventLevel level, string area, object source, string messageTemplate, params object[] propertyValues)
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate, params object?[] propertyValues)
         {
             if (IsEnabled(level, area))
             {
@@ -67,10 +67,10 @@ namespace Avalonia.Logging
         private static string Format<T0, T1, T2>(
             string area,
             string template,
-            object source,
-            T0 v0 = default,
-            T1 v1 = default,
-            T2 v2 = default)
+            object? source,
+            T0? v0 = default,
+            T1? v1 = default,
+            T2? v2 = default)
         {
             var result = new StringBuilder(template.Length);
             var r = new CharacterReader(template.AsSpan());
@@ -127,8 +127,8 @@ namespace Avalonia.Logging
         private static string Format(
             string area,
             string template,
-            object source,
-            object[] v)
+            object? source,
+            object?[] v)
         {
             var result = new StringBuilder(template.Length);
             var r = new CharacterReader(template.AsSpan());

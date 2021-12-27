@@ -15,18 +15,16 @@ namespace Avalonia.Data.Converters
         /// <param name="inner">
         /// An optional inner converter to be called before the format takes place.
         /// </param>
-        public StringFormatValueConverter(string format, IValueConverter inner)
+        public StringFormatValueConverter(string format, IValueConverter? inner)
         {
-            Contract.Requires<ArgumentNullException>(format != null);
-
-            Format = format;
+            Format = format ?? throw new ArgumentNullException(nameof(format));
             Inner = inner;
         }
 
         /// <summary>
         /// Gets an inner value converter which will be called before the string format takes place.
         /// </summary>
-        public IValueConverter Inner { get; }
+        public IValueConverter? Inner { get; }
 
         /// <summary>
         /// Gets the format string.
@@ -34,14 +32,14 @@ namespace Avalonia.Data.Converters
         public string Format { get; }
 
         /// <inheritdoc/>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             value = Inner?.Convert(value, targetType, parameter, culture) ?? value;
             return string.Format(culture, Format, value);
         }
 
         /// <inheritdoc/>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotSupportedException("Two way bindings are not supported with a string format");
         }

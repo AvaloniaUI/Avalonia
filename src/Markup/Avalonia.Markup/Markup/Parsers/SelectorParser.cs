@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Styling;
 using Avalonia.Utilities;
+using System.Linq;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -75,34 +76,84 @@ namespace Avalonia.Markup.Parsers
                                 throw new InvalidOperationException($"Cannot find '{property.Property}' on '{type}");
                             }
 
-                            object typedValue;
+                            {
+                                object? typedValue;
+
+                                if (TypeUtilities.TryConvert(
+                                        targetProperty.PropertyType,
+                                        property.Value,
+                                        CultureInfo.InvariantCulture,
+                                        out typedValue))
+                                {
+                                    result = result.PropertyEquals(targetProperty, typedValue);
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException(
+                                        $"Could not convert '{property.Value}' to '{targetProperty.PropertyType}");
+                                }
+                            }
+                            break;
+                        }
+                    case SelectorGrammar.AttachedPropertySyntax attachedProperty:
+                        var targetType = result?.TargetType;
+
+                        if (targetType == null)
+                        {
+                            throw new InvalidOperationException("Attached Property selectors must be applied to a type.");
+                        }
+
+                        var attachedPropertyOwnerType = Resolve(attachedProperty.Xmlns, attachedProperty.TypeName);
+
+                        if (attachedPropertyOwnerType is null)
+                        {
+                            throw new InvalidOperationException($"Cannot find '{attachedProperty.Xmlns}:{attachedProperty.TypeName}");
+                        }
+
+                        var targetAttachedProperty = AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(targetType)
+                            .FirstOrDefault(ap => ap.OwnerType == attachedPropertyOwnerType && ap.Name == attachedProperty.Property);
+
+                        if (targetAttachedProperty == null)
+                        {
+                            throw new InvalidOperationException($"Cannot find '{attachedProperty.Property}' on '{attachedPropertyOwnerType}");
+                        }
+
+                        {
+                            object? typedValue;
 
                             if (TypeUtilities.TryConvert(
-                                    targetProperty.PropertyType,
-                                    property.Value,
+                                    targetAttachedProperty.PropertyType,
+                                    attachedProperty.Value,
                                     CultureInfo.InvariantCulture,
                                     out typedValue))
                             {
-                                result = result.PropertyEquals(targetProperty, typedValue);
+                                result = result.PropertyEquals(targetAttachedProperty, typedValue);
                             }
                             else
                             {
                                 throw new InvalidOperationException(
-                                    $"Could not convert '{property.Value}' to '{targetProperty.PropertyType}");
+                                    $"Could not convert '{attachedProperty.Value}' to '{targetAttachedProperty.PropertyType}");
                             }
-                            break;
                         }
+
+                        break;
                     case SelectorGrammar.ChildSyntax child:
-                        result = result.Child();
+                        result = result!.Child();
                         break;
                     case SelectorGrammar.DescendantSyntax descendant:
                         result = result.Descendant();
                         break;
                     case SelectorGrammar.TemplateSyntax template:
-                        result = result.Template();
+                        result = result!.Template();
                         break;
                     case SelectorGrammar.NotSyntax not:
-                        result = result.Not(x => Create(not.Argument));
+                        result = result.Not(x => Create(not.Argument)!);
+                        break;
+                    case SelectorGrammar.NthChildSyntax nth:
+                        result = result.NthChild(nth.Step, nth.Offset);
+                        break;
+                    case SelectorGrammar.NthLastChildSyntax nth:
+                        result = result.NthLastChild(nth.Step, nth.Offset);
                         break;
                     case SelectorGrammar.CommaSyntax comma:
                         if (results == null)
