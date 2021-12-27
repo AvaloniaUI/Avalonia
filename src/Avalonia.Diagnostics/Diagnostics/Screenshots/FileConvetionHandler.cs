@@ -7,7 +7,7 @@ namespace Avalonia.Diagnostics.Screenshots
     /// <summary>
     /// Take a Screenshot on file by convention
     /// </summary>
-    public sealed class FileConvetionHandler : IScreenshotHandler
+    public sealed class FileConvetionHandler : BaseRenderToStreamHandler
     {
         /// <summary>
         /// Get or sets the root folder where screeshots well be stored.
@@ -23,7 +23,7 @@ namespace Avalonia.Diagnostics.Screenshots
         public Func<IControl, string, string> ScreenshotFileNameConvention { get; set; }
             = Convetions.DefaultScreenshotFileNameConvention;
 
-        public async Task Take(IControl control)
+        protected override async Task<System.IO.Stream?> GetStream(IControl control)
         {
             var filePath = ScreenshotFileNameConvention(control, ScreenshotsRoot);
             var folder = System.IO.Path.GetDirectoryName(filePath);
@@ -31,9 +31,7 @@ namespace Avalonia.Diagnostics.Screenshots
             {
                 await Task.Run(new Action(() => System.IO.Directory.CreateDirectory(folder!)));
             }
-            using var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
-            control.RenderTo(output);
-            await output.FlushAsync();
+            return new System.IO.FileStream(filePath, System.IO.FileMode.Create);
         }
     }
 }
