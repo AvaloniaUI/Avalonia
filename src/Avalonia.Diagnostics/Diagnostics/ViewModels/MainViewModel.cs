@@ -30,7 +30,8 @@ namespace Avalonia.Diagnostics.ViewModels
         private string? _pointerOverElementName;
         private IInputRoot? _pointerOverRoot;
         private IScreenshotHandler? _screenshotHandler;
-
+        private bool _showPropertyType;        
+        
         public MainViewModel(AvaloniaObject root)
         {
             _root = root;
@@ -81,7 +82,20 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeDirtyRects;
             set
             {
-                ((TopLevel)_root).Renderer.DrawDirtyRects = value;
+                var changed = true;
+                if (_root is TopLevel topLevel && topLevel.Renderer is { })
+                {
+                    topLevel.Renderer.DrawDirtyRects = value;
+                }
+                else if (_root is Controls.Application app && app.RendererRoot is { })
+                {
+                    app.RendererRoot.DrawDirtyRects = value;
+                }
+                else
+                {
+                    changed = false;
+                }
+                if (changed)
                 RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
             }
         }
@@ -101,8 +115,21 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _showFpsOverlay;
             set
             {
-                ((TopLevel)_root).Renderer.DrawFps = value;
-                RaiseAndSetIfChanged(ref _showFpsOverlay, value);
+                var changed = true;
+                if (_root is TopLevel topLevel && topLevel.Renderer is { })
+                {
+                    topLevel.Renderer.DrawFps = value;
+                }
+                else if (_root is Controls.Application app && app.RendererRoot is { })
+                {
+                    app.RendererRoot.DrawFps = value;
+                }
+                else
+                {
+                    changed = false;
+                }
+                if(changed)
+                    RaiseAndSetIfChanged(ref _showFpsOverlay, value);
             }
         }
 
@@ -296,6 +323,17 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _screenshotHandler = options.ScreenshotHandler;
             StartupScreenIndex = options.StartupScreenIndex;
+        }
+
+        public bool ShowDettailsPropertyType 
+        { 
+            get => _showPropertyType; 
+            private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
+        }
+
+        public void ToggleShowDettailsPropertyType(object paramter)
+        {
+            ShowDettailsPropertyType = !ShowDettailsPropertyType;
         }
     }
 }

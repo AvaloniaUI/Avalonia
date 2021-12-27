@@ -15,6 +15,16 @@
                       IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
+        <MenuItem Header="_Details">
+          <MenuItem Header="Split Property Type" Command="{Binding ToggleShowDettailsPropertyType}">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding ShowDettailsPropertyType}"
+                        IsEnabled="False"/>
+            </MenuItem.Icon>
+
+          </MenuItem>
+        </MenuItem> 
       </MenuItem>
       <MenuItem Header="_Options">
         <MenuItem Header="Visualize margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">
