@@ -410,8 +410,8 @@ namespace Avalonia.Diagnostics.ViewModels
             var selectedEntityName = SelectedEntityName;
             if (selectedEntity == null 
                 || selectedProperty == null 
-                || selectedProperty.Type == typeof(string)
-                || selectedProperty.Type.IsValueType
+                || selectedProperty.PropertyType == typeof(string)
+                || selectedProperty.PropertyType.IsValueType
                 )
                 return;
 
@@ -425,7 +425,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 property = selectedEntity.GetType().GetProperties()
                      .FirstOrDefault(pi => pi.Name == selectedProperty.Name
                            && pi.DeclaringType == selectedProperty.DeclaringType
-                           && pi.PropertyType.Name == selectedProperty.Type.Name)
+                           && pi.PropertyType.Name == selectedProperty.PropertyType.Name)
                      ?.GetValue(selectedEntity);
             }
             if (property == null) return;

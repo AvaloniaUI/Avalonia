@@ -26,6 +26,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _freezePopups;
         private string? _pointerOverElementName;
         private IInputRoot? _pointerOverRoot;
+        private bool _showPropertyType;        
         private bool _showImplementedInterfaces;
         public MainViewModel(AvaloniaObject root)
         {
@@ -279,6 +280,17 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 viewModel.UpdatePropertiesView();
             }
+        }
+
+        public bool ShowDettailsPropertyType 
+        { 
+            get => _showPropertyType; 
+            private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
+        }
+
+        public void ToggleShowDettailsPropertyType(object paramter)
+        {
+            ShowDettailsPropertyType = !ShowDettailsPropertyType;
         }
     }
 }
