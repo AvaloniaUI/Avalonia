@@ -13,10 +13,10 @@ namespace Avalonia.iOS
     {
         public static EaglFeature GlFeature;
         public static DisplayLinkTimer Timer;
-        class PlatformSettings : IPlatformSettings
+        class PlatformSettings : ITouchPlatformSettings
         {
-            public Size DoubleClickSize { get; } = new Size(10, 10);
-            public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
+            public Size TouchDoubleClickSize => new Size(10, 10);
+            public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(500);
         }
         
         public static void Register()
@@ -30,7 +30,7 @@ namespace Avalonia.iOS
                 .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
-                .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
+                .Bind<ITouchPlatformSettings>().ToConstant(new PlatformSettings())
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IRenderLoop>().ToSingleton<RenderLoop>()

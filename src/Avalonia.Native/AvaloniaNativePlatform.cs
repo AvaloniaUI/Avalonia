@@ -11,7 +11,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IPlatformSettings, IWindowingPlatform
+    class AvaloniaNativePlatform : IPlatformSettings, ITouchPlatformSettings, IWindowingPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
@@ -26,9 +26,13 @@ namespace Avalonia.Native
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500); //TODO
 
+        public Size TouchDoubleClickSize => new Size(16, 16);
+
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
+
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result =  new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
+            var result = new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
             result.DoInitialize(options);
 
             return result;
@@ -55,14 +59,14 @@ namespace Avalonia.Native
                 return Initialize(CreateAvaloniaNative(), options);
         }
 
-        public void SetupApplicationMenuExporter ()
+        public void SetupApplicationMenuExporter()
         {
             var exporter = new AvaloniaNativeMenuExporter(_factory);
         }
 
-        public void SetupApplicationName ()
+        public void SetupApplicationName()
         {
-            if(!string.IsNullOrWhiteSpace(Application.Current.Name))
+            if (!string.IsNullOrWhiteSpace(Application.Current.Name))
             {
                 _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
             }
@@ -80,13 +84,13 @@ namespace Avalonia.Native
                 GCHandle.FromIntPtr(handle).Free();
             }
         }
-        
+
         void DoInitialize(AvaloniaNativePlatformOptions options)
         {
             _options = options;
-            
+
             var applicationPlatform = new AvaloniaNativeApplicationPlatform();
-            
+
             _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
             if (_factory.MacOptions != null)
             {
@@ -102,6 +106,7 @@ namespace Avalonia.Native
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
+                .Bind<ITouchPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
@@ -118,7 +123,7 @@ namespace Avalonia.Native
             hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
             hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-            
+
             if (_options.UseGpu)
             {
                 try
@@ -133,7 +138,7 @@ namespace Avalonia.Native
             }
         }
 
-        public ITrayIconImpl CreateTrayIcon ()
+        public ITrayIconImpl CreateTrayIcon()
         {
             return new TrayIconImpl(_factory);
         }
@@ -159,8 +164,8 @@ namespace Avalonia.Native
             ShowInDock = true;
         }
 
-        public bool ShowInDock 
-        { 
+        public bool ShowInDock
+        {
             get => _showInDock;
             set
             {
