@@ -32,19 +32,23 @@ namespace Avalonia.Diagnostics
                 windowName = rc.Name;
             }
 
-            var assembly = Assembly.GetEntryAssembly();
+            var assembly = Assembly.GetEntryAssembly()!;
             var appName = Application.Current?.Name
                 ?? assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product
                 ?? assembly.GetName().Name;
-            var appVerions = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
-                ?? assembly.GetCustomAttribute<AssemblyVersionAttribute>().Version;
+            var appVerions = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? assembly?.GetCustomAttribute<AssemblyVersionAttribute>()?.Version
+                ?? "0.0.0.0";
             var folder = System.IO.Path.Combine(screenshotRoot
-                , appName
+                , appName!
                 , appVerions
                 , windowName);
 
             return System.IO.Path.Combine(folder
                                 , $"{DateTime.Now:yyyyMMddhhmmssfff}.png");
         };
+
+        public static IScreenshotHandler DefaultScreenshotHandler { get; } =
+            new Screenshots.FileHandler();
     }
 }

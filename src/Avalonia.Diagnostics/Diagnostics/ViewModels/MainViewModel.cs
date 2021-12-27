@@ -29,8 +29,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _freezePopups;
         private string? _pointerOverElementName;
         private IInputRoot? _pointerOverRoot;
-        private string? _screenshotRoot;
-        private Func<IControl, string, string>? _getScreenshotFileName;
+        private IScreenshotHandler? _screenshotHandler;
 
         public MainViewModel(AvaloniaObject root)
         {
@@ -277,22 +276,13 @@ namespace Avalonia.Diagnostics.ViewModels
 
         async void Shot(object? parameter)
         {
-            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control 
-                && _screenshotRoot is { }
-                && _getScreenshotFileName is { }
+            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control
+                && _screenshotHandler is { }
                 )
             {
                 try
                 {
-                    var filePath = _getScreenshotFileName(control, _screenshotRoot);
-                    var folder = System.IO.Path.GetDirectoryName(filePath);
-                    if (System.IO.Directory.Exists(folder) == false)
-                    {
-                        await Task.Run(new Action(() => System.IO.Directory.CreateDirectory(folder!)));
-                    }
-                    using var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
-                    control.RenderTo(output);
-                    await output.FlushAsync();
+                    await _screenshotHandler.Take(control);
                 }
                 catch (Exception ex)
                 {
@@ -304,12 +294,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void SetOptions(DevToolsOptions options)
         {
-            _screenshotRoot = string.IsNullOrWhiteSpace(options.ScreenshotsRoot)
-                ? Convetions.DefaultScreenshotsRoot
-                : options.ScreenshotsRoot!;
-
-            _getScreenshotFileName = options.ScreenshotFileNameConvention
-                ?? Convetions.DefaultScreenshotFileNameConvention;
+            _screenshotHandler = options.ScreenshotHandler;
             StartupScreenIndex = options.StartupScreenIndex;
         }
     }

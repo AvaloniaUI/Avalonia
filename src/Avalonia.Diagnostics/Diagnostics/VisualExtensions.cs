@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics
 {
-    static class VisualExtensions
+    public static class VisualExtensions
     {
         /// <summary>
         /// Render control to the destination stream.
