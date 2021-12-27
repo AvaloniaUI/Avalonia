@@ -28,7 +28,12 @@ namespace Avalonia.Diagnostics.Controls
                 };
                 controller.Exit += eh;
             }
-
+            RendererRoot = application.ApplicationLifetime switch
+            {
+                Lifetimes.IClassicDesktopStyleApplicationLifetime classic => classic.MainWindow.Renderer,
+                Lifetimes.ISingleViewApplicationLifetime single => (single.MainView as VisualTree.IVisual)?.VisualRoot?.Renderer,
+                _ => null
+            };
         }
 
         internal App Instance => _application;
@@ -105,5 +110,10 @@ namespace Avalonia.Diagnostics.Controls
         /// </summary>
         public string? Name =>
             _application.Name;
+
+        /// <summary>
+        /// Gets the root of the visual tree, if the control is attached to a visual tree.
+        /// </summary>
+        internal Rendering.IRenderer? RendererRoot { get; }
     }
 }
