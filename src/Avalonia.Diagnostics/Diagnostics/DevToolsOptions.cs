@@ -33,7 +33,7 @@ namespace Avalonia.Diagnostics
         /// <summary>
         /// Allow to customizze SreenshotHandler
         /// </summary>
-        /// <remarks>Default handler is <see cref="Screenshots.FileHandler"/></remarks>
+        /// <remarks>Default handler is <see cref="Screenshots.FileConvetionHandler"/></remarks>
         public IScreenshotHandler ScreenshotHandler { get; set; }
           = Convetions.DefaultScreenshotHandler;
     }

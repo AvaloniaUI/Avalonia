@@ -5,9 +5,9 @@ using Avalonia.Controls;
 namespace Avalonia.Diagnostics.Screenshots
 {
     /// <summary>
-    /// Take a Screenshot on file
+    /// Take a Screenshot on file by convention
     /// </summary>
-    public sealed class FileHandler : IScreenshotHandler
+    public sealed class FileConvetionHandler : IScreenshotHandler
     {
         /// <summary>
         /// Get or sets the root folder where screeshots well be stored.
