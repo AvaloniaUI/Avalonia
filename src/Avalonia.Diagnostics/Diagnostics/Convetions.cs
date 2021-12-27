@@ -49,6 +49,6 @@ namespace Avalonia.Diagnostics
         };
 
         public static IScreenshotHandler DefaultScreenshotHandler { get; } =
-            new Screenshots.FileConvetionHandler();
+            new Screenshots.FilePickerHandler();
     }
 }
