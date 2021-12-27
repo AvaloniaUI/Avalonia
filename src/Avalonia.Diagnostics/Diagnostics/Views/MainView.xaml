@@ -15,6 +15,15 @@
                       IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
+        <MenuItem Header="Control Details">
+          <MenuItem Header="Show Implemented Interfaces" Command="{Binding ToggleShowImplementedInterfaces}">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding ShowImplementedInterfaces}"
+                        IsEnabled="False" />
+            </MenuItem.Icon>
+          </MenuItem>
+        </MenuItem>
       </MenuItem>
       <MenuItem Header="_Options">
         <MenuItem Header="Visualize margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">
@@ -37,16 +46,6 @@
                       IsChecked="{Binding ShowFpsOverlay}"
                       IsEnabled="False" />
           </MenuItem.Icon>
-        </MenuItem>
-        <MenuItem Header="Control Details">
-          <MenuItem Header="Show Implemented Interfaces" Command="{Binding ToggleShowImplementedInterfaces}">
-            <MenuItem.Icon>
-              <CheckBox BorderThickness="0"
-                        IsChecked="{Binding ShowImplementedInterfaces}"
-                        IsEnabled="False" />
-            </MenuItem.Icon>
-
-          </MenuItem>
         </MenuItem>
       </MenuItem>
     </Menu>
