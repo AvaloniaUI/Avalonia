@@ -33,7 +33,11 @@ namespace Avalonia.Android
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public static AndroidPlatformOptions Options { get; private set; }
+
+        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickSize"/>
         public Size TouchDoubleClickSize => new Size(4, 4);
+
+        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickTime"/>
         public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(200);
 
         public static void Initialize(Type appType, AndroidPlatformOptions options)

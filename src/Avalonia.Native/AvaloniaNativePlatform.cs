@@ -26,8 +26,10 @@ namespace Avalonia.Native
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500); //TODO
 
+        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickSize"/>
         public Size TouchDoubleClickSize => new Size(16, 16);
 
+        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickTime"/>
         public TimeSpan TouchDoubleClickTime => DoubleClickTime;
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)

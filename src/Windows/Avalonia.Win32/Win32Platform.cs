@@ -133,7 +133,11 @@ namespace Avalonia.Win32
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
+
+        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickSize"/>
         public Size TouchDoubleClickSize => new Size(16,16);
+
+        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickTime"/>
         public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public static void Initialize()
         {

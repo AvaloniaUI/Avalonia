@@ -15,7 +15,10 @@ namespace Avalonia.iOS
         public static DisplayLinkTimer Timer;
         class PlatformSettings : ITouchPlatformSettings
         {
+            /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickSize"/>
             public Size TouchDoubleClickSize => new Size(10, 10);
+
+            /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickTime"/>
             public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(500);
         }
         
