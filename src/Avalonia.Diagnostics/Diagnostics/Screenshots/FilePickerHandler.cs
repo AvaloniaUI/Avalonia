@@ -13,23 +13,37 @@ namespace Avalonia.Diagnostics.Screenshots
     public sealed class FilePickerHandler : BaseRenderToStreamHandler
     {
         /// <summary>
-        /// Get or sets the root folder where screeshots well be stored.
+        /// Instance FilePickerHandler
+        /// </summary>
+        public FilePickerHandler()
+        {
+
+        }
+        /// <summary>
+        /// Instance FilePickerHandler with specificated parameter
+        /// </summary>
+        /// <param name="title">SaveFilePicker Title</param>
+        /// <param name="screenshotRoot"></param>
+        public FilePickerHandler(string? title
+            , string? screenshotRoot = default
+            )
+        {
+            if (title is { })
+                Title = title;
+            if (screenshotRoot is { })
+                ScreenshotsRoot = screenshotRoot;
+        }
+        /// <summary>
+        /// Get the root folder where screeshots well be stored.
         /// The default root folder is [Environment.SpecialFolder.MyPictures]/Screenshots.
         /// </summary>
-        public string ScreenshotsRoot { get; set; }
+        public string ScreenshotsRoot { get; }
             = Convetions.DefaultScreenshotsRoot;
-
-        /// <summary>
-        /// Get or sets conventin for screenshot fileName.
-        /// For known default screen shot file name convection see <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>.
-        /// </summary>
-        public Func<IControl, string, string> ScreenshotFileNameConvention { get; set; }
-            = Convetions.DefaultScreenshotFileNameConvention;
 
         /// <summary>
         /// SaveFilePicker Title
         /// </summary>
-        public string Title { get; set; } = "Save Screenshot to ...";
+        public string Title { get; } = "Save Screenshot to ...";
 
         Window GetWindow(IControl control)
         {
@@ -50,11 +64,20 @@ namespace Avalonia.Diagnostics.Screenshots
                 Title = Title,
                 Filters = new() { new FileDialogFilter() { Name = "PNG", Extensions = new() { "png" } } },
                 Directory = ScreenshotsRoot,
-                InitialFileName = ScreenshotFileNameConvention(control, ScreenshotsRoot)
             }.ShowAsync(GetWindow(control));
-            if (result is { })
+            if (!string.IsNullOrWhiteSpace(result))
             {
-                output = new FileStream(result, FileMode.Create);
+                var foldler = Path.GetDirectoryName(result);
+                // Directory information for path, or null if path denotes a root directory or is
+                // null. Returns System.String.Empty if path does not contain directory information.
+                if (!string.IsNullOrWhiteSpace(foldler))
+                {
+                    if (!Directory.Exists(foldler))
+                    {
+                        Directory.CreateDirectory(foldler);
+                    }
+                    output = new FileStream(result, FileMode.Create);
+                }
             }
             return output;
         }
