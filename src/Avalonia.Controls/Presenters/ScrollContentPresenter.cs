@@ -60,6 +60,13 @@ namespace Avalonia.Controls.Presenters
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
 
+        /// <summary>
+        /// Defines the <see cref="BubbleUpScrollOnEndReached"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> BubbleUpScrollOnEndReachedProperty =
+            AvaloniaProperty.Register<ScrollContentPresenter, bool>(
+                nameof(BubbleUpScrollOnEndReached));
+
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private bool _arranging;
@@ -136,6 +143,15 @@ namespace Avalonia.Controls.Presenters
         {
             get { return _viewport; }
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the scroll event should be bubbled up to the parent scroll viewer when the end is reached.
+        /// </summary>
+        public bool BubbleUpScrollOnEndReached
+        {
+            get => GetValue(BubbleUpScrollOnEndReachedProperty);
+            set => SetValue(BubbleUpScrollOnEndReachedProperty, value);
         }
 
         /// <inheritdoc/>
@@ -405,8 +421,11 @@ namespace Avalonia.Controls.Presenters
                     _activeLogicalGestureScrolls[e.Id] = delta;
                 }
 
-                Offset = new Vector(x, y);
-                e.Handled = true;
+                Vector newOffset = new Vector(x, y);
+                bool offsetChanged = newOffset != Offset;
+                Offset = newOffset;
+
+                e.Handled = !BubbleUpScrollOnEndReached || offsetChanged;
             }
         }
 
@@ -440,8 +459,11 @@ namespace Avalonia.Controls.Presenters
                     x = Math.Min(x, Extent.Width - Viewport.Width);
                 }
 
-                Offset = new Vector(x, y);
-                e.Handled = true;
+                Vector newOffset = new Vector(x, y);
+                bool offsetChanged = newOffset != Offset;
+                Offset = newOffset;
+
+                e.Handled = !BubbleUpScrollOnEndReached || offsetChanged;
             }
         }
 

@@ -182,6 +182,14 @@ namespace Avalonia.Controls
                 true);
 
         /// <summary>
+        /// Defines the <see cref="BubbleUpScrollOnEndReached"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> BubbleUpScrollOnEndReachedProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(BubbleUpScrollOnEndReached),
+                false);
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -419,6 +427,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets a value that indicates whether the scroll event should be bubbled up to the parent scroll viewer when the end is reached.
+        /// </summary>
+        public bool BubbleUpScrollOnEndReached
+        {
+            get => GetValue(BubbleUpScrollOnEndReachedProperty);
+            set => SetValue(BubbleUpScrollOnEndReachedProperty, value);
+        }
+
+        /// <summary>
         /// Scrolls the content up one line.
         /// </summary>
         public void LineUp()
@@ -546,6 +563,26 @@ namespace Avalonia.Controls
         public static bool GetAllowAutoHide(Control control)
         {
             return control.GetValue(AllowAutoHideProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the BubbleUpScrollOnEndReachedProperty attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetBubbleUpScrollOnEndReached(Control control, bool value)
+        {
+            control.SetValue(BubbleUpScrollOnEndReachedProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the BubbleUpScrollOnEndReachedProperty attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static bool GetBubbleUpScrollOnEndReached(Control control)
+        {
+            return control.GetValue(BubbleUpScrollOnEndReachedProperty);
         }
 
         /// <summary>

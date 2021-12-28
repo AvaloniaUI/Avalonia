@@ -5,6 +5,7 @@
   <Setter Property="Padding" Value="4"/>
   <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
   <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+  <Setter Property="ScrollViewer.BubbleUpScrollOnEndReached" Value="True" />
   <Setter Property="Template">
     <ControlTemplate>
       <Border BorderBrush="{TemplateBinding BorderBrush}"
@@ -13,6 +14,7 @@
         <ScrollViewer Background="{TemplateBinding Background}"
                       HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                       VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                      BubbleUpScrollOnEndReached="{TemplateBinding (ScrollViewer.BubbleUpScrollOnEndReached)}"
                       AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
