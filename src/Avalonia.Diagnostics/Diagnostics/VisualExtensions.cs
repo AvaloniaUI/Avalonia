@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics
 {
-    public static class VisualExtensions
+    internal static class VisualExtensions
     {
         /// <summary>
         /// Render control to the destination stream.
@@ -36,7 +36,7 @@ namespace Avalonia.Diagnostics
             IDisposable? renderTransformOriginSetter = default;
             IDisposable? renderTransformSetter = default;
             try
-            {                
+            {
                 // Set clip region
                 var clipRegion = new Media.RectangleGeometry(rect);
                 clipToBoundsSetter = root.SetValue(Visual.ClipToBoundsProperty, true, BindingPriority.Animation);
@@ -52,7 +52,7 @@ namespace Avalonia.Diagnostics
                     BindingPriority.Animation);
 
                 using (var bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
-                {                   
+                {
                     bitmap.Render(root);
                     bitmap.Save(destination);
                 }
