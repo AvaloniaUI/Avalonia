@@ -101,7 +101,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, ITouchPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
+    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -134,10 +134,10 @@ namespace Avalonia.Win32
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
 
-        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickSize"/>
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
         public Size TouchDoubleClickSize => new Size(16,16);
 
-        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickTime"/>
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
         public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public static void Initialize()
         {
@@ -151,7 +151,6 @@ namespace Avalonia.Win32
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
-                .Bind<ITouchPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())

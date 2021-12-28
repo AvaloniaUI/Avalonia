@@ -58,7 +58,7 @@ namespace Avalonia.Input
                 }
                 else
                 {
-                    var settings = AvaloniaLocator.Current.GetRequiredService<ITouchPlatformSettings>();
+                    var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
 
                     if (!_lastClickRect.Contains(args.Position)
                         || ev.Timestamp - _lastClickTime > settings.TouchDoubleClickTime.TotalMilliseconds)

@@ -79,4 +79,8 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWr
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmap(System.String)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToHeight(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToWidth(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
-Total Issues: 79
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avalonia.Platform.IPlatformSettings.TouchDoubleClickSize' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avalonia.Platform.IPlatformSettings.TouchDoubleClickSize.get()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime.get()' is present in the implementation but not in the contract.
+Total Issues: 84

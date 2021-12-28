@@ -29,16 +29,20 @@ namespace Avalonia
 
 namespace Avalonia.Android
 {
-    class AndroidPlatform : ITouchPlatformSettings
+    class AndroidPlatform : IPlatformSettings
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public static AndroidPlatformOptions Options { get; private set; }
 
-        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickSize"/>
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
         public Size TouchDoubleClickSize => new Size(4, 4);
 
-        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickTime"/>
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
         public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(200);
+
+        public Size DoubleClickSize => TouchDoubleClickSize;
+
+        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500);
 
         public static void Initialize(Type appType, AndroidPlatformOptions options)
         {
@@ -49,7 +53,7 @@ namespace Avalonia.Android
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
-                .Bind<ITouchPlatformSettings>().ToConstant(Instance)
+                .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()

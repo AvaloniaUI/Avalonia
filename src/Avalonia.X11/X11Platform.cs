@@ -68,7 +68,7 @@ namespace Avalonia.X11
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
-            var platformSettingStub = new PlatformSettingsStub();
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
@@ -78,8 +78,7 @@ namespace Avalonia.X11
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
-                .Bind<ITouchPlatformSettings>().ToConstant(platformSettingStub)
-                .Bind<IPlatformSettings>().ToConstant(platformSettingStub)
+                .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())

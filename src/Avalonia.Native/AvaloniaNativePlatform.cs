@@ -11,7 +11,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IPlatformSettings, ITouchPlatformSettings, IWindowingPlatform
+    class AvaloniaNativePlatform : IPlatformSettings, IWindowingPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
@@ -26,10 +26,10 @@ namespace Avalonia.Native
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500); //TODO
 
-        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickSize"/>
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
         public Size TouchDoubleClickSize => new Size(16, 16);
 
-        /// <inheritdoc cref="ITouchPlatformSettings.TouchDoubleClickTime"/>
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
         public TimeSpan TouchDoubleClickTime => DoubleClickTime;
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
@@ -108,7 +108,6 @@ namespace Avalonia.Native
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
-                .Bind<ITouchPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
