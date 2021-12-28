@@ -58,11 +58,8 @@ namespace Avalonia.Input
                 }
                 else
                 {
-                    var settings = AvaloniaLocator.Current.GetService<ITouchPlatformSettings>();
-                    if (settings == null)
-                    {
-                        throw new Exception("ITouchPlatformSettings can not be null.");
-                    }
+                    var settings = AvaloniaLocator.Current.GetRequiredService<ITouchPlatformSettings>();
+
                     if (!_lastClickRect.Contains(args.Position)
                         || ev.Timestamp - _lastClickTime > settings.TouchDoubleClickTime.TotalMilliseconds)
                     {
