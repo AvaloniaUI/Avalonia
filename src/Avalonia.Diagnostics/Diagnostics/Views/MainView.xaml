@@ -77,8 +77,6 @@
             BorderThickness="0,1,0,0">
       <Grid ColumnDefinitions="*, Auto">
         <StackPanel Grid.Column="0" Spacing="4" Orientation="Horizontal">
-          <TextBlock>Hold F8 to take a screenshot.</TextBlock>
-          <Separator Width="8"/>
           <TextBlock>Hold Ctrl+Shift over a control to inspect.</TextBlock>
           <Separator Width="8" />
           <TextBlock>Focused:</TextBlock>
