@@ -197,7 +197,7 @@ namespace Avalonia.Threading
         {
             private readonly Action<T> _action;
             private readonly T _parameter;
-            private readonly TaskCompletionSource<object> _taskCompletionSource;
+            private readonly TaskCompletionSource<bool>? _taskCompletionSource;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Job"/> class.
@@ -212,7 +212,7 @@ namespace Avalonia.Threading
                 _action = action;
                 _parameter = parameter;
                 Priority = priority;
-                _taskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object>();
+                _taskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<bool>();
             }
 
             /// <inheritdoc/>
@@ -229,7 +229,7 @@ namespace Avalonia.Threading
                 try
                 {
                     _action(_parameter);
-                    _taskCompletionSource.SetResult(null);
+                    _taskCompletionSource.SetResult(default);
                 }
                 catch (Exception e)
                 {
