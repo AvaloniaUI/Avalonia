@@ -4,12 +4,14 @@ using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Threading;
+using System.Reactive.Linq;
+using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class MainViewModel : ViewModelBase, IDisposable
     {
-        private readonly TopLevel _root;
+        private readonly AvaloniaObject _root;
         private readonly TreePageViewModel _logicalTree;
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
@@ -17,13 +19,15 @@ namespace Avalonia.Diagnostics.ViewModels
         private ViewModelBase? _content;
         private int _selectedTab;
         private string? _focusedControl;
-        private string? _pointerOverElement;
+        private IInputElement? _pointerOverElement;
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
         private bool _freezePopups;
-
-        public MainViewModel(TopLevel root)
+        private string? _pointerOverElementName;
+        private IInputRoot? _pointerOverRoot;
+        private bool _showPropertyType;        
+        public MainViewModel(AvaloniaObject root)
         {
             _root = root;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
@@ -35,8 +39,24 @@ namespace Avalonia.Diagnostics.ViewModels
             if (KeyboardDevice.Instance is not null)
                 KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
             SelectedTab = 0;
-            _pointerOverSubscription = root.GetObservable(TopLevel.PointerOverElementProperty)
-                .Subscribe(x => PointerOverElement = x?.GetType().Name);
+            if (root is TopLevel topLevel)
+            {
+                _pointerOverSubscription = topLevel.GetObservable(TopLevel.PointerOverElementProperty)
+                    .Subscribe(x => PointerOverElement = x);
+
+            }
+            else
+            {
+#nullable disable
+                _pointerOverSubscription = InputManager.Instance.PreProcess
+                    .OfType<Input.Raw.RawPointerEventArgs>()
+                    .Subscribe(e =>
+                        {
+                            PointerOverRoot = e.Root;
+                            PointerOverElement = e.Root.GetInputElementsAt(e.Position).FirstOrDefault();
+                        });                                     
+#nullable restore
+            }
             Console = new ConsoleViewModel(UpdateConsoleContext);
         }
 
@@ -51,13 +71,26 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
-        
+
         public bool ShouldVisualizeDirtyRects
         {
             get => _shouldVisualizeDirtyRects;
             set
             {
-                _root.Renderer.DrawDirtyRects = value;
+                var changed = true;
+                if (_root is TopLevel topLevel && topLevel.Renderer is { })
+                {
+                    topLevel.Renderer.DrawDirtyRects = value;
+                }
+                else if (_root is Controls.Application app && app.RendererRoot is { })
+                {
+                    app.RendererRoot.DrawDirtyRects = value;
+                }
+                else
+                {
+                    changed = false;
+                }
+                if (changed)
                 RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
             }
         }
@@ -77,8 +110,21 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _showFpsOverlay;
             set
             {
-                _root.Renderer.DrawFps = value;
-                RaiseAndSetIfChanged(ref _showFpsOverlay, value);
+                var changed = true;
+                if (_root is TopLevel topLevel && topLevel.Renderer is { })
+                {
+                    topLevel.Renderer.DrawFps = value;
+                }
+                else if (_root is Controls.Application app && app.RendererRoot is { })
+                {
+                    app.RendererRoot.DrawFps = value;
+                }
+                else
+                {
+                    changed = false;
+                }
+                if(changed)
+                    RaiseAndSetIfChanged(ref _showFpsOverlay, value);
             }
         }
 
@@ -150,12 +196,28 @@ namespace Avalonia.Diagnostics.ViewModels
             private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
         }
 
-        public string? PointerOverElement
+        public IInputRoot? PointerOverRoot 
+        { 
+            get => _pointerOverRoot;
+            private  set => RaiseAndSetIfChanged( ref _pointerOverRoot , value); 
+        }
+
+        public IInputElement? PointerOverElement
         {
             get { return _pointerOverElement; }
-            private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
+            private set
+            {
+                RaiseAndSetIfChanged(ref _pointerOverElement, value);
+                PointerOverElementName = value?.GetType()?.Name;
+            }
         }
-        
+
+        public string? PointerOverElementName
+        {
+            get => _pointerOverElementName;
+            private set => RaiseAndSetIfChanged(ref _pointerOverElementName, value);
+        }
+
         private void UpdateConsoleContext(ConsoleContext context)
         {
             context.root = _root;
@@ -188,8 +250,11 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
-            _root.Renderer.DrawDirtyRects = false;
-            _root.Renderer.DrawFps = false;
+            if (_root is TopLevel top)
+            {
+                top.Renderer.DrawDirtyRects = false;
+                top.Renderer.DrawFps = false;
+            }
         }
 
         private void UpdateFocusedControl()
@@ -224,6 +289,17 @@ namespace Avalonia.Diagnostics.ViewModels
         public void SetOptions(DevToolsOptions options)
         {
             StartupScreenIndex = options.StartupScreenIndex;
+        }
+
+        public bool ShowDettailsPropertyType 
+        { 
+            get => _showPropertyType; 
+            private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
+        }
+
+        public void ToggleShowDettailsPropertyType(object paramter)
+        {
+            ShowDettailsPropertyType = !ShowDettailsPropertyType;
         }
     }
 }
