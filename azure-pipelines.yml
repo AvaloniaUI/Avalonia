@@ -155,4 +155,4 @@ jobs:
     inputs:
       gitHubConnection: 'GithubComments'
       repositoryName: '$(Build.Repository.Name)'
-      comment: 'You can test this PR using the following package version. 0.10.999-cibuild00$(Build.BuildId)-beta. (feed url: https://nuget.avaloniaui.net/repository/avalonia-all/index.json)'
+      comment: 'You can test this PR using the following package version. `0.10.999-cibuild00$(Build.BuildId)-beta`. (feed url: https://nuget.avaloniaui.net/repository/avalonia-all/index.json)'
