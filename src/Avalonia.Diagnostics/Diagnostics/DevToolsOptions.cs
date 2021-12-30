@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using System;
+using Avalonia.Input;
 
 namespace Avalonia.Diagnostics
 {
@@ -33,5 +34,12 @@ namespace Avalonia.Diagnostics
         /// Gets or sets a value indicating whether DevTools should be displayed implemented interfaces on Control details. The default value is true.
         /// </summary>
         public bool ShowImplementedInterfaces { get; set; } = true;
+        
+        /// <summary>
+        /// Allow to customizze SreenshotHandler
+        /// </summary>
+        /// <remarks>Default handler is <see cref="Screenshots.FilePickerHandler"/></remarks>
+        public IScreenshotHandler ScreenshotHandler { get; set; }
+          = Convetions.DefaultScreenshotHandler;
     }
 }

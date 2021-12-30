@@ -1,8 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 using System.Reactive.Linq;
 using System.Linq;
@@ -26,8 +29,10 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _freezePopups;
         private string? _pointerOverElementName;
         private IInputRoot? _pointerOverRoot;
+        private IScreenshotHandler? _screenshotHandler;
         private bool _showPropertyType;        
         private bool _showImplementedInterfaces;
+        
         public MainViewModel(AvaloniaObject root)
         {
             _root = root;
@@ -286,9 +291,38 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public int? StartupScreenIndex { get; private set; } = default;
+        
+        [DependsOn(nameof(TreePageViewModel.SelectedNode))]
+        [DependsOn(nameof(Content))]
+        bool CanShot(object? parameter)
+        {
+            return Content is TreePageViewModel tree
+                && tree.SelectedNode != null
+                && tree.SelectedNode.Visual is VisualTree.IVisual visual
+                && visual.VisualRoot != null;
+        }
+
+        async void Shot(object? parameter)
+        {
+            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control
+                && _screenshotHandler is { }
+                )
+            {
+                try
+                {
+                    await _screenshotHandler.Take(control);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                    //TODO: Notify error
+                }
+            }
+        }
 
         public void SetOptions(DevToolsOptions options)
         {
+            _screenshotHandler = options.ScreenshotHandler;
             StartupScreenIndex = options.StartupScreenIndex;
             ShowImplementedInterfaces = options.ShowImplementedInterfaces;
         }
