@@ -2,6 +2,22 @@ variables:
     MSBuildEnableWorkloadResolver: 'false'
 
 jobs:
+
+- job: GetPRNumber
+  pool:
+    vmImage: 'windows-2022'
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
+  steps:
+    
+  - task: PowerShell@2
+    displayName: Get PR Number
+    inputs:
+      targetType: 'inline'
+      script: |
+        $ prId = $env:System_PullRequest_PullRequestId
+        Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
+      
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
@@ -149,11 +165,4 @@ jobs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
     condition: succeeded()
-    
-  - task: PowerShell@2
-    displayName: Get PR Number
-    inputs:
-      targetType: 'inline'
-      script: |
-        $ prId = "$(System.PullRequest.PullRequestId)"
-        Set-Content -Path $(build.artifactstagingdirectory)\prId.txt -Value $prId
+
