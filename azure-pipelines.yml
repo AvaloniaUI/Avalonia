@@ -149,3 +149,11 @@ jobs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
     condition: succeeded()
+    
+  - task: PowerShell@2
+    displayName: Get PR Number
+    inputs:
+      targetType: 'inline'
+      script: |
+        $ prId = "$(System.PullRequest.PullRequestId)"
+        Set-Content -Path $(build.artifactstagingdirectory)\prId.txt -Value $prId
