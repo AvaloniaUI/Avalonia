@@ -15,7 +15,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        $ prId = $env:System_PullRequest_PullRequestId
+        $prId = $env:System_PullRequest_PullRequestId
         Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
       
 - job: Linux
