@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using System;
+using Avalonia.Input;
 
 namespace Avalonia.Diagnostics
 {
@@ -28,5 +29,12 @@ namespace Avalonia.Diagnostics
         /// Get or set the startup screen index where the DevTools window will be displayed.
         /// </summary>
         public int? StartupScreenIndex { get; set; }
+
+        /// <summary>
+        /// Allow to customizze SreenshotHandler
+        /// </summary>
+        /// <remarks>Default handler is <see cref="Screenshots.FilePickerHandler"/></remarks>
+        public IScreenshotHandler ScreenshotHandler { get; set; }
+          = Convetions.DefaultScreenshotHandler;
     }
 }
