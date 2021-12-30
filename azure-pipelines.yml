@@ -18,6 +18,12 @@ jobs:
         $prId = $env:System_PullRequest_PullRequestId
         Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
       
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'PRNumber'
+      publishLocation: 'Container'
+      
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
