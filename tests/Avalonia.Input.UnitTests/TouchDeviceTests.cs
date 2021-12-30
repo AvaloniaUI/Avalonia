@@ -209,7 +209,7 @@ namespace Avalonia.Input.UnitTests
             var unitTestApp = UnitTestApplication.Start(
                 new TestServices(inputManager: new InputManager()));
             var iSettingsMock = new Mock<IPlatformSettings>();
-            iSettingsMock.Setup(x => x.DoubleClickTime).Returns(doubleClickTime);
+            iSettingsMock.Setup(x => x.TouchDoubleClickTime).Returns(doubleClickTime);
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
             return unitTestApp;

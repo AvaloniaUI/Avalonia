@@ -58,20 +58,17 @@ namespace Avalonia.Input
                 }
                 else
                 {
-                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                    if (settings == null)
-                    {
-                        throw new Exception("IPlatformSettings can not be null.");
-                    }
+                    var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+
                     if (!_lastClickRect.Contains(args.Position)
-                        || ev.Timestamp - _lastClickTime > settings.DoubleClickTime.TotalMilliseconds)
+                        || ev.Timestamp - _lastClickTime > settings.TouchDoubleClickTime.TotalMilliseconds)
                     {
                         _clickCount = 0;
                     }
                     ++_clickCount;
                     _lastClickTime = ev.Timestamp;
                     _lastClickRect = new Rect(args.Position, new Size())
-                        .Inflate(new Thickness(16, 16));
+                        .Inflate(new Thickness(settings.TouchDoubleClickSize.Width / 2, settings.TouchDoubleClickSize.Height / 2));
                 }
 
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
