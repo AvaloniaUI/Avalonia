@@ -444,7 +444,7 @@ namespace Avalonia.Controls
 
             // We need to explicitly collapse the cells of the invisible column because layout only goes through
             // visible ones
-            ColumnHeaders.InvalidateChildIndex();
+            ColumnHeaders?.InvalidateChildIndex();
             foreach (var row in GetAllRows())
             {
                 row.Cells[updatedColumn.Index].IsVisible = updatedColumn.IsVisible;

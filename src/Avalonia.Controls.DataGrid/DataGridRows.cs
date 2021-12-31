@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace Avalonia.Controls
 {
-    public partial class DataGrid : IChildIndexProvider
+    public partial class DataGrid
     {
 
         internal bool AreRowBottomGridLinesRequired
@@ -122,26 +122,6 @@ namespace Avalonia.Controls
 
                 return totalRowsHeight + totalDetailsHeight;
             }
-        }
-
-        internal EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
-
-        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
-        {
-            add => _childIndexChanged += value;
-            remove => _childIndexChanged -= value;
-        }
-
-        int IChildIndexProvider.GetChildIndex(ILogical child)
-        {
-            return child is DataGridRow row
-                ? row.Index
-                : throw new InvalidOperationException("Invalid DataGrid child");
-        }
-
-        bool IChildIndexProvider.TryGetTotalCount(out int count)
-        {
-            return DataConnection.TryGetCount(false, true, out count);
         }
 
         /// <summary>
@@ -832,7 +812,7 @@ namespace Avalonia.Controls
                 if (row.Slot > slotDeleted)
                 {
                     CorrectRowAfterDeletion(row, wasRow);
-                    _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
+                    _rowsPresenter?.InvalidateChildIndex(row);
                 }
             }
 
@@ -888,7 +868,7 @@ namespace Avalonia.Controls
                 if (row.Slot >= slotInserted)
                 {
                     DataGrid.CorrectRowAfterInsertion(row, rowInserted);
-                    _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
+                    _rowsPresenter?.InvalidateChildIndex(row);
                 }
             }
 
@@ -1507,7 +1487,7 @@ namespace Avalonia.Controls
             if (row.IsRecycled)
             {
                 row.ApplyCellsState();
-                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
+                _rowsPresenter?.InvalidateChildIndex(row);
             }
             else if (row == EditingRow)
             {

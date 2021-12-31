@@ -19,6 +19,8 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
     {
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+
         public DataGridRowsPresenter()
         {
             AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
@@ -46,18 +48,25 @@ namespace Avalonia.Controls.Primitives
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
-            add => OwningGrid._childIndexChanged += value;
-            remove => OwningGrid._childIndexChanged -= value;
-        }
-
-        bool IChildIndexProvider.TryGetTotalCount(out int count)
-        {
-            return ((IChildIndexProvider)OwningGrid).TryGetTotalCount(out count);
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
         }
 
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            return ((IChildIndexProvider)OwningGrid).GetChildIndex(child);
+            return child is DataGridRow row
+                ? row.Index
+                : throw new InvalidOperationException("Invalid DataGrid child");
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            return OwningGrid.DataConnection.TryGetCount(false, true, out count);
+        }
+
+        internal void InvalidateChildIndex(DataGridRow row)
+        {
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
         }
 
         /// <summary>
