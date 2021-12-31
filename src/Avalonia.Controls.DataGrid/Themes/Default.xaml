@@ -29,6 +29,10 @@
       </ControlTemplate>
     </Setter>
   </Style>
+  <Style Selector="DataGridCell > TextBlock#CellTextBlock">
+    <Setter Property="Margin" Value="{DynamicResource DataGridTextColumnCellTextBlockMargin}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
 
   <Style Selector="DataGridColumnHeader">
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
