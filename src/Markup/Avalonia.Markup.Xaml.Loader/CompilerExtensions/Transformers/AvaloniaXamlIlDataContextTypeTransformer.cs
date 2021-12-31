@@ -155,6 +155,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 Func<IXamlType> startTypeResolver = () =>
                 {
+                    var dataTypeProperty = obj.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "DataType");
+                    if (dataTypeProperty?.Values.Count is 1 && dataTypeProperty.Values[0] is XamlAstTextNode text)
+                    {
+                        return TypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type;
+                    }
+
                     var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentDataContextNode is null)
                     {

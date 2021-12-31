@@ -81,7 +81,7 @@ namespace Avalonia.Threading
             _ = action ?? throw new ArgumentNullException(nameof(action));
             return _jobRunner.InvokeAsync(action, priority);
         }
-        
+
         /// <inheritdoc/>
         public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal)
         {
@@ -108,6 +108,13 @@ namespace Avalonia.Threading
         {
             _ = action ?? throw new ArgumentNullException(nameof(action));
             _jobRunner.Post(action, priority);
+        }
+
+        /// <inheritdoc/>
+        public void Post<T>(Action<T> action, T arg, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            _ = action ?? throw new ArgumentNullException(nameof(action));
+            _jobRunner.Post(action, arg, priority);
         }
 
         /// <summary>
