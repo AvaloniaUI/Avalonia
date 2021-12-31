@@ -18,5 +18,9 @@ namespace Avalonia.LinuxFramebuffer
     {
         public Size DoubleClickSize { get; } = new Size(4, 4);
         public TimeSpan DoubleClickTime { get; } = new TimeSpan(0, 0, 0, 0, 500);
+
+        public Size TouchDoubleClickSize => new Size(16,16);
+
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
     }
 }

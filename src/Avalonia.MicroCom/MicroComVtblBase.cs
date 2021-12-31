@@ -21,6 +21,11 @@ namespace Avalonia.MicroCom
             AddMethod((AddRefDelegate)Release);
         }
 
+        protected void AddMethod(void* f)
+        {
+            _methods.Add(new IntPtr(f));
+        }
+
         protected void AddMethod(Delegate d)
         {
             GCHandle.Alloc(d);

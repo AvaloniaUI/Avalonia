@@ -51,6 +51,9 @@ namespace Avalonia.Web.Blazor
 
         public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
 
+        public Size TouchDoubleClickSize => new Size(16, 16);
+
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public void RunLoop(CancellationToken cancellationToken)
         {
             throw new NotSupportedException();

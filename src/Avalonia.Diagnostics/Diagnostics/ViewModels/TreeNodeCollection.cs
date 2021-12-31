@@ -10,6 +10,20 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal abstract class TreeNodeCollection : IAvaloniaReadOnlyList<TreeNode>, IDisposable
     {
+        private class EmptyTreeNodeCollection : TreeNodeCollection
+        {
+            public EmptyTreeNodeCollection():base(default!)
+            {
+
+            }
+            protected override void Initialize(AvaloniaList<TreeNode> nodes)
+            {
+                
+            }
+        }
+
+        static readonly internal TreeNodeCollection Empty = new EmptyTreeNodeCollection();
+
         private AvaloniaList<TreeNode>? _inner;
 
         public TreeNodeCollection(TreeNode owner) => Owner = owner;
