@@ -16,7 +16,7 @@ jobs:
       targetType: 'inline'
       script: |
         $prId = $env:System_PullRequest_PullRequestId
-        Write-Host "PR Number is:-" $env:System_PullRequest_PullRequestNumber
+        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
         Write-Host "PR ID is:-" $env:System_PullRequest_PullRequestId
         Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
       
