@@ -12,20 +12,25 @@
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="*,Auto"
-              Background="{TemplateBinding Background}">
-          <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
-                            Margin="{TemplateBinding Padding}"
-                            TextElement.Foreground="{TemplateBinding Foreground}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        <Border x:Name="CellBorder"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid ColumnDefinitions="*,Auto">
+            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              Margin="{TemplateBinding Padding}"
+                              Foreground="{TemplateBinding Foreground}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
-          <Rectangle Name="PART_RightGridLine"
-                     Grid.Column="1"
-                     VerticalAlignment="Stretch"
-                     Width="1" />
-        </Grid>
+            <Rectangle Name="PART_RightGridLine"
+                       Grid.Column="1"
+                       VerticalAlignment="Stretch"
+                       Width="1" />
+          </Grid>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -44,35 +49,40 @@
 
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="*,Auto"
-              Background="{TemplateBinding Background}">
+        <Border x:Name="HeaderBorder"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid ColumnDefinitions="*,Auto">
 
-          <Grid ColumnDefinitions="*,Auto"
-                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                Margin="{TemplateBinding Padding}">
-            <ContentPresenter Content="{TemplateBinding Content}" 
-                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+            <Grid ColumnDefinitions="*,Auto"
+                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                  Margin="{TemplateBinding Padding}">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}" />
 
-            <Path Name="SortIcon"
-                  Grid.Column="1"
-                  Fill="{TemplateBinding Foreground}"
-                  HorizontalAlignment="Left"
-                  VerticalAlignment="Center"
-                  Stretch="Uniform"
-                  Width="8"
-                  Margin="4,0,0,0"
-                  Data="F1 M -5.215,6.099L 5.215,6.099L 0,0L -5.215,6.099 Z "/>
+              <Path Name="SortIcon"
+                    Grid.Column="1"
+                    Fill="{TemplateBinding Foreground}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Stretch="Uniform"
+                    Width="8"
+                    Margin="4,0,0,0"
+                    Data="F1 M -5.215,6.099L 5.215,6.099L 0,0L -5.215,6.099 Z "/>
+
+            </Grid>
+
+            <Rectangle Name="VerticalSeparator"
+                       Grid.Column="1" Width="1"
+                       VerticalAlignment="Stretch"
+                       Fill="{TemplateBinding SeparatorBrush}"
+                       IsVisible="{TemplateBinding AreSeparatorsVisible}" />
 
           </Grid>
-
-          <Rectangle Name="VerticalSeparator"
-                     Grid.Column="1" Width="1"
-                     VerticalAlignment="Stretch"
-                     Fill="{TemplateBinding SeparatorBrush}"
-                     IsVisible="{TemplateBinding AreSeparatorsVisible}" />
-
-        </Grid>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -106,19 +116,24 @@
   <Style Selector="DataGridRow">
     <Setter Property="Template">
       <ControlTemplate>
-        <DataGridFrozenGrid Name="PART_Root"
-                            Background="{TemplateBinding Background}"
-                            RowDefinitions="*,Auto,Auto"
-                            ColumnDefinitions="Auto,*">
+        <Border x:Name="RowBorder"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <DataGridFrozenGrid Name="PART_Root"
+                              RowDefinitions="*,Auto,Auto"
+                              ColumnDefinitions="Auto,*">
 
-          <Rectangle Name="BackgroundRectangle" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
+            <Rectangle Name="BackgroundRectangle" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
 
-          <DataGridRowHeader Grid.RowSpan="3" Name="PART_RowHeader" DataGridFrozenGrid.IsFrozen="True" />
-          <DataGridCellsPresenter Grid.Column="1" Name="PART_CellsPresenter" DataGridFrozenGrid.IsFrozen="True" />
-          <DataGridDetailsPresenter Grid.Row="1" Grid.Column="1" Name="PART_DetailsPresenter"/>
-          <Rectangle Grid.Row="2" Grid.Column="1" Name="PART_BottomGridLine" HorizontalAlignment="Stretch" Height="1" />
+            <DataGridRowHeader Grid.RowSpan="3" Name="PART_RowHeader" DataGridFrozenGrid.IsFrozen="True" />
+            <DataGridCellsPresenter Grid.Column="1" Name="PART_CellsPresenter" DataGridFrozenGrid.IsFrozen="True" />
+            <DataGridDetailsPresenter Grid.Row="1" Grid.Column="1" Name="PART_DetailsPresenter"/>
+            <Rectangle Grid.Row="2" Grid.Column="1" Name="PART_BottomGridLine" HorizontalAlignment="Stretch" Height="1" />
 
-        </DataGridFrozenGrid>
+          </DataGridFrozenGrid>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -192,12 +207,18 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataGridFrozenGrid Name="Root"
-                                 Background="{TemplateBinding Background}"
-                                 ColumnDefinitions="Auto,Auto,Auto,Auto"
-                                 RowDefinitions="Auto,*,Auto">
+                            ColumnDefinitions="Auto,Auto,Auto,Auto"
+                            RowDefinitions="Auto,*,Auto">
 
           <Rectangle Grid.Column="1" Grid.Row="1" Name="IndentSpacer" />
-          <ToggleButton Grid.Column="2" Grid.Row="1" Name="ExpanderButton" Margin="2,0,0,0"/>
+          <ToggleButton Grid.Column="2" Grid.Row="1"
+                        Name="ExpanderButton"
+                        Margin="2,0,0,0"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Foreground="{TemplateBinding Foreground}" />
 
           <StackPanel Grid.Column="3" Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,1,0,1">
             <TextBlock Name="PropertyNameElement" Margin="4,0,0,0" IsVisible="{TemplateBinding IsPropertyNameVisible}"/>
@@ -250,9 +271,11 @@
     </Setter>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
+        <Border x:Name="DataGridBorder"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                BorderBrush="{TemplateBinding BorderBrush}">
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="Auto,*,Auto">
 
             <DataGridColumnHeader Name="PART_TopLeftCornerHeader" Width="22" />
