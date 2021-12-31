@@ -27,6 +27,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly Stack<(string Name,object Entry)> _selectedEntitiesStack = new();
         private string? _selectedEntityName;
         private string? _selectedEntityType;
+        private bool _showImplementedInterfaces;
 
         public ControlDetailsViewModel(TreePageViewModel treePage, IAvaloniaObject avaloniaObject)
         {
@@ -246,18 +247,21 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetClrProperties(object o)
+        private IEnumerable<PropertyViewModel> GetClrProperties(object o, bool showImplementedInterfaces)
         {
             foreach (var p in GetClrProperties(o, o.GetType()))
             {
                 yield return p;
             }
 
-            foreach (var i in o.GetType().GetInterfaces())
+            if (showImplementedInterfaces)
             {
-                foreach (var p in GetClrProperties(o, i))
+                foreach (var i in o.GetType().GetInterfaces())
                 {
-                    yield return p;
+                    foreach (var p in GetClrProperties(o, i))
+                    {
+                        yield return p;
+                    }
                 }
             }
         }
@@ -454,7 +458,7 @@ namespace Avalonia.Diagnostics.ViewModels
             SelectedEntityName = entityName;
             SelectedEntityType = o.ToString();
             var properties = GetAvaloniaProperties(o)
-                .Concat(GetClrProperties(o))
+                .Concat(GetClrProperties(o, _showImplementedInterfaces))
                 .OrderBy(x => x, PropertyComparer.Instance)
                 .ThenBy(x => x.Name)
                 .ToList();
@@ -474,6 +478,13 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 inpc2.PropertyChanged += ControlPropertyChanged;
             }
+        }
+
+        internal void UpdatePropertiesView(bool showImplementedInterfaces)
+        {
+            _showImplementedInterfaces = showImplementedInterfaces;
+            SelectedProperty = null;
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString());
         }
     }
 }

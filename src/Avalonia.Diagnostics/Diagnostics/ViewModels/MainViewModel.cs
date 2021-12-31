@@ -31,6 +31,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private IInputRoot? _pointerOverRoot;
         private IScreenshotHandler? _screenshotHandler;
         private bool _showPropertyType;        
+        private bool _showImplementedInterfaces;
         
         public MainViewModel(AvaloniaObject root)
         {
@@ -323,6 +324,22 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _screenshotHandler = options.ScreenshotHandler;
             StartupScreenIndex = options.StartupScreenIndex;
+            ShowImplementedInterfaces = options.ShowImplementedInterfaces;
+        }
+
+        public bool ShowImplementedInterfaces 
+        { 
+            get => _showImplementedInterfaces; 
+            private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces , value); 
+        }
+
+        public void ToggleShowImplementedInterfaces(object parametr)
+        {
+            ShowImplementedInterfaces = !ShowImplementedInterfaces;
+            if (Content is TreePageViewModel viewModel)
+            {
+                viewModel.UpdatePropertiesView();
+            }
         }
 
         public bool ShowDettailsPropertyType 
