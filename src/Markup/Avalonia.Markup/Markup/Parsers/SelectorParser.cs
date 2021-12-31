@@ -138,16 +138,16 @@ namespace Avalonia.Markup.Parsers
 
                         break;
                     case SelectorGrammar.ChildSyntax child:
-                        result = result.Child();
+                        result = result!.Child();
                         break;
                     case SelectorGrammar.DescendantSyntax descendant:
                         result = result.Descendant();
                         break;
                     case SelectorGrammar.TemplateSyntax template:
-                        result = result.Template();
+                        result = result!.Template();
                         break;
                     case SelectorGrammar.NotSyntax not:
-                        result = result.Not(x => Create(not.Argument));
+                        result = result.Not(x => Create(not.Argument)!);
                         break;
                     case SelectorGrammar.NthChildSyntax nth:
                         result = result.NthChild(nth.Step, nth.Offset);

@@ -12,7 +12,7 @@ namespace Avalonia.Controls
         /// <param name="value">True to add the pseudoclass or false to remove.</param>
         public static void Set(this IPseudoClasses classes, string name, bool value)
         {
-            Contract.Requires<ArgumentNullException>(classes != null);
+            _ = classes ?? throw new ArgumentNullException(nameof(classes));
 
             if (value)
             {

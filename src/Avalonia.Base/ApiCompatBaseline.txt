@@ -1,0 +1,3 @@
+Compat issues with assembly Avalonia.Base:
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Threading.IDispatcher.Post<T>(System.Action<T>, T, Avalonia.Threading.DispatcherPriority)' is present in the implementation but not in the contract.
+Total Issues: 1

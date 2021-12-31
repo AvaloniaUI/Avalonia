@@ -98,8 +98,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
             if (Rect != default) return factory.CreateEllipseGeometry(Rect);
             
