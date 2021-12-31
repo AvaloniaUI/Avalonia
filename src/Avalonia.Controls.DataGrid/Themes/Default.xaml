@@ -103,8 +103,9 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataGridFrozenGrid Name="PART_Root"
-                                 RowDefinitions="*,Auto,Auto"
-                                 ColumnDefinitions="Auto,*">
+                            Background="{TemplateBinding Background}"
+                            RowDefinitions="*,Auto,Auto"
+                            ColumnDefinitions="Auto,*">
 
           <Rectangle Name="BackgroundRectangle" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
 
@@ -116,6 +117,13 @@
         </DataGridFrozenGrid>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="DataGridRow">
+    <Setter Property="Background" Value="{Binding $parent[DataGrid].RowBackground}" />
+  </Style>
+  <Style Selector="DataGridRow:nth-child(even)">
+    <Setter Property="Background" Value="{Binding $parent[DataGrid].AlternatingRowBackground}" />
   </Style>
 
   <Style Selector="DataGridRow /template/ Rectangle#BackgroundRectangle">

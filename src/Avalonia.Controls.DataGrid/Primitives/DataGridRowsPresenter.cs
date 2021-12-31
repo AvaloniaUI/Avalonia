@@ -7,8 +7,8 @@ using System;
 using System.Diagnostics;
 
 using Avalonia.Input;
-using Avalonia.Input.GestureRecognizers;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// Used within the template of a <see cref="T:Avalonia.Controls.DataGrid" /> to specify the
     /// location in the control's visual tree where the rows are to be added.
     /// </summary>
-    public sealed class DataGridRowsPresenter : Panel
+    public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
     {
         public DataGridRowsPresenter()
         {
@@ -42,6 +42,22 @@ namespace Avalonia.Controls.Primitives
             {
                 return availableSize.Height;
             }
+        }
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => OwningGrid._childIndexChanged += value;
+            remove => OwningGrid._childIndexChanged -= value;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            return ((IChildIndexProvider)OwningGrid).TryGetTotalCount(out count);
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return ((IChildIndexProvider)OwningGrid).GetChildIndex(child);
         }
 
         /// <summary>

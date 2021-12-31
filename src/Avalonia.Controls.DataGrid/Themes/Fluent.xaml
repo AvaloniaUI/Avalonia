@@ -272,6 +272,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataGridFrozenGrid Name="PART_Root"
+                            Background="{TemplateBinding Background}"
                             RowDefinitions="*,Auto,Auto"
                             ColumnDefinitions="Auto,*">
 
@@ -303,6 +304,13 @@
     </Setter>
   </Style>
 
+  <Style Selector="DataGridRow">
+    <Setter Property="Background" Value="{Binding $parent[DataGrid].RowBackground}" />
+  </Style>
+  <Style Selector="DataGridRow:nth-child(even)">
+    <Setter Property="Background" Value="{Binding $parent[DataGrid].AlternatingRowBackground}" />
+  </Style>
+  
   <Style Selector="DataGridRow /template/ Rectangle#InvalidVisualElement">
     <Setter Property="Opacity" Value="0" />
   </Style>

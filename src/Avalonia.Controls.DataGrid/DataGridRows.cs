@@ -5,6 +5,7 @@
 
 using Avalonia.Collections;
 using Avalonia.Controls.Utils;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using System;
@@ -16,7 +17,7 @@ using System.Linq;
 
 namespace Avalonia.Controls
 {
-    public partial class DataGrid
+    public partial class DataGrid : IChildIndexProvider
     {
 
         internal bool AreRowBottomGridLinesRequired
@@ -121,6 +122,26 @@ namespace Avalonia.Controls
 
                 return totalRowsHeight + totalDetailsHeight;
             }
+        }
+
+        internal EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return child is DataGridRow row
+                ? row.Index
+                : throw new InvalidOperationException("Invalid DataGrid child");
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            return DataConnection.TryGetCount(false, true, out count);
         }
 
         /// <summary>
@@ -811,7 +832,7 @@ namespace Avalonia.Controls
                 if (row.Slot > slotDeleted)
                 {
                     CorrectRowAfterDeletion(row, wasRow);
-                    row.EnsureBackground();
+                    _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
                 }
             }
 
@@ -867,7 +888,7 @@ namespace Avalonia.Controls
                 if (row.Slot >= slotInserted)
                 {
                     DataGrid.CorrectRowAfterInsertion(row, rowInserted);
-                    row.EnsureBackground();
+                    _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
                 }
             }
 
@@ -1485,8 +1506,8 @@ namespace Avalonia.Controls
             // If the row has been recycled, reapply the BackgroundBrush
             if (row.IsRecycled)
             {
-                row.EnsureBackground();
                 row.ApplyCellsState();
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
             }
             else if (row == EditingRow)
             {
