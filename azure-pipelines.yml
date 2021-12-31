@@ -2,6 +2,33 @@ variables:
     MSBuildEnableWorkloadResolver: 'false'
 
 jobs:
+
+- job: GetPRNumber
+  pool:
+    vmImage: 'windows-2022'
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
+  steps:
+    
+  - task: PowerShell@2
+    displayName: Get PR Number
+    inputs:
+      targetType: 'inline'
+      script: |
+        $prId = $env:System_PullRequest_PullRequestNumber
+        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
+
+        if (!([string]::IsNullOrWhiteSpace($prId)))
+        {
+          Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
+        }
+      
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'PRNumber'
+      publishLocation: 'Container'
+      
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
@@ -150,9 +177,3 @@ jobs:
       artifactName: 'Samples'
     condition: succeeded()
 
-  - task: GitHubComment@0
-    displayName: 'Comment Package Version'
-    inputs:
-      gitHubConnection: 'GithubComments'
-      repositoryName: '$(Build.Repository.Name)'
-      comment: 'You can test this PR using the following package version. `0.10.999-cibuild00$(Build.BuildId)-beta`. (feed url: https://nuget.avaloniaui.net/repository/avalonia-all/index.json)'
