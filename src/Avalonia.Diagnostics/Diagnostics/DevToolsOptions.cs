@@ -31,6 +31,11 @@ namespace Avalonia.Diagnostics
         public int? StartupScreenIndex { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether DevTools should be displayed implemented interfaces on Control details. The default value is true.
+        /// </summary>
+        public bool ShowImplementedInterfaces { get; set; } = true;
+        
+        /// <summary>
         /// Allow to customizze SreenshotHandler
         /// </summary>
         /// <remarks>Default handler is <see cref="Screenshots.FilePickerHandler"/></remarks>
