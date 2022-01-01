@@ -5,6 +5,7 @@ namespace Avalonia.Web.Blazor
 {
     public class CssCursor : ICursorImpl
     {
+        public const string Default = "default";
         public string? Value { get; set; }
         
         public CssCursor(StandardCursorType type)
@@ -17,7 +18,7 @@ namespace Avalonia.Web.Blazor
         /// </summary>
         public CssCursor(string base64, string format, PixelPoint hotspot, StandardCursorType fallback)
         {
-            Value = $"url(data:image/{format},{base64}) {hotspot.X} {hotspot.Y}, {ToKeyword(fallback)}";
+            Value = $"url(\"data:image/{format};base64,{base64}\") {hotspot.X} {hotspot.Y}, {ToKeyword(fallback)}";
         }
         
         /// <summary>
@@ -65,7 +66,7 @@ namespace Avalonia.Web.Blazor
             StandardCursorType.BottomLeftCorner => "sw-resize",
             StandardCursorType.BottomRightCorner => "se-resize",
             
-            _ => "default",
+            _ => Default,
         };
         
         public void Dispose() {}
