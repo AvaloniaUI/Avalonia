@@ -21,6 +21,7 @@ namespace Avalonia.Web.Blazor
         private readonly Stopwatch _sw = Stopwatch.StartNew();
         private readonly ITextInputMethodImpl _textInputMethod;
         private readonly TouchDevice _touchDevice;
+        private string _currentCursor = CssCursor.Default;
 
         public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
         {
@@ -126,8 +127,16 @@ namespace Avalonia.Web.Blazor
 
         public void SetCursor(ICursorImpl cursor)
         {
-            // nop
-
+            var cur = cursor as CssCursor;
+            var val = CssCursor.Default;
+            if (cur != null && cur.Value != null)
+            {
+                val = cur.Value;
+            }
+            if (_currentCursor != val)
+            {
+                SetCssCursor?.Invoke(val);
+            }
         }
 
         public IPopupImpl? CreatePopup()
@@ -146,6 +155,7 @@ namespace Avalonia.Web.Blazor
 
         public IEnumerable<object> Surfaces => new object[] { _currentSurface! };
 
+        public Action<string>? SetCssCursor { get; set; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, PlatformResizeReason>? Resized { get; set; }
