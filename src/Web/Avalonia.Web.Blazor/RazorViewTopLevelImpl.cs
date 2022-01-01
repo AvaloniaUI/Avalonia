@@ -126,8 +126,12 @@ namespace Avalonia.Web.Blazor
 
         public void SetCursor(ICursorImpl cursor)
         {
-            // nop
-
+            var cur = cursor as CssCursor;
+            if (cur == null || cur.Value == null)
+            {
+                throw new NotSupportedException();
+            }
+            SetCssCursor?.Invoke(cur.Value);
         }
 
         public IPopupImpl? CreatePopup()
@@ -146,6 +150,7 @@ namespace Avalonia.Web.Blazor
 
         public IEnumerable<object> Surfaces => new object[] { _currentSurface! };
 
+        public Action<string>? SetCssCursor { get; set; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, PlatformResizeReason>? Resized { get; set; }
