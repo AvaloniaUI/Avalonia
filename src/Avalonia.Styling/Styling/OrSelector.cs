@@ -120,7 +120,7 @@ namespace Avalonia.Styling
                 }
                 else
                 {
-                    while (!result.IsAssignableFrom(selector.TargetType))
+                    while (result is not null && !result.IsAssignableFrom(selector.TargetType))
                     {
                         result = result.BaseType;
                     }

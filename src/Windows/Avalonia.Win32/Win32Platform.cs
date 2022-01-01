@@ -134,6 +134,11 @@ namespace Avalonia.Win32
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
 
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
+        public Size TouchDoubleClickSize => new Size(16,16);
+
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public static void Initialize()
         {
             Initialize(new Win32PlatformOptions());

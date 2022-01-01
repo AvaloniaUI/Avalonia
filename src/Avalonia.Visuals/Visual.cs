@@ -382,7 +382,7 @@ namespace Avalonia
             }
         }
 
-        protected override void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
             VisualRoot?.Renderer?.RecalculateChildren(this);

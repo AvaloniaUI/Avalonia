@@ -129,7 +129,11 @@
                  IsLightDismissEnabled="True">
             <Calendar Name="PART_Calendar"
                       FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
-                      IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"/>
+                      IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
+                      SelectedDate="{TemplateBinding SelectedDate, Mode=TwoWay}"
+                      DisplayDate="{TemplateBinding DisplayDate}"
+                      DisplayDateStart="{TemplateBinding DisplayDateStart}"
+                      DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
           </Popup>
         </Grid>
       </ControlTemplate>

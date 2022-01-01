@@ -114,7 +114,7 @@ namespace Avalonia.Input
 
     public class PointerPressedEventArgs : PointerEventArgs
     {
-        private readonly int _obsoleteClickCount;
+        private readonly int _clickCount;
 
         public PointerPressedEventArgs(
             IInteractive source,
@@ -123,15 +123,14 @@ namespace Avalonia.Input
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
-            int obsoleteClickCount = 1)
+            int clickCount = 1)
             : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
         {
-            _obsoleteClickCount = obsoleteClickCount;
+            _clickCount = clickCount;
         }
 
-        [Obsolete("Use DoubleTapped event or Gestures.DoubleRightTapped attached event")]
-        public int ClickCount => _obsoleteClickCount;
+        public int ClickCount => _clickCount;
 
         [Obsolete("Use PointerPressedEventArgs.GetCurrentPoint(this).Properties")]
         public MouseButton MouseButton => Properties.PointerUpdateKind.GetMouseButton();

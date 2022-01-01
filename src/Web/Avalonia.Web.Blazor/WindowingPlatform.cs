@@ -51,6 +51,9 @@ namespace Avalonia.Web.Blazor
 
         public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
 
+        public Size TouchDoubleClickSize => new Size(16, 16);
+
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public void RunLoop(CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
@@ -98,8 +101,7 @@ namespace Avalonia.Web.Blazor
 
         private static IRuntimePlatform GetRuntimePlatform()
         {
-            return AvaloniaLocator.Current.GetService<IRuntimePlatform>() ??
-                throw new InvalidOperationException("Unable to locate IRuntimePlatform.");
+            return AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
         }
     }
 }

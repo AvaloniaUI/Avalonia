@@ -427,7 +427,7 @@ namespace Avalonia
 
                 if (_logicalRoot != null)
                 {
-                    var e = new LogicalTreeAttachmentEventArgs(_logicalRoot, this, old);
+                    var e = new LogicalTreeAttachmentEventArgs(_logicalRoot, this, old!);
                     OnDetachedFromLogicalTreeCore(e);
                 }
 
@@ -435,7 +435,7 @@ namespace Avalonia
 
                 if (newRoot is object)
                 {
-                    var e = new LogicalTreeAttachmentEventArgs(newRoot, this, parent);
+                    var e = new LogicalTreeAttachmentEventArgs(newRoot, this, parent!);
                     OnAttachedToLogicalTreeCore(e);
                 }
                 else if (parent is null)
@@ -495,21 +495,21 @@ namespace Avalonia
             DetachStylesFromThisAndDescendents(allStyles);
         }
 
-        protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    SetLogicalParent(e.NewItems);
+                    SetLogicalParent(e.NewItems!);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    ClearLogicalParent(e.OldItems);
+                    ClearLogicalParent(e.OldItems!);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    ClearLogicalParent(e.OldItems);
-                    SetLogicalParent(e.NewItems);
+                    ClearLogicalParent(e.OldItems!);
+                    SetLogicalParent(e.NewItems!);
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
@@ -729,7 +729,7 @@ namespace Avalonia
 
             for (var i = 0; i < count; i++)
             {
-                var logical = (ILogical) children[i];
+                var logical = (ILogical) children[i]!;
                 
                 if (logical.LogicalParent is null)
                 {
@@ -744,7 +744,7 @@ namespace Avalonia
 
             for (var i = 0; i < count; i++)
             {
-                var logical = (ILogical) children[i];
+                var logical = (ILogical) children[i]!;
                 
                 if (logical.LogicalParent == this)
                 {
