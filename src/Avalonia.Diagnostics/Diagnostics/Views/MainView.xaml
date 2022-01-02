@@ -45,7 +45,14 @@
                       IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Header="_Details">
+        <MenuItem Header="Control _Details">
+          <MenuItem Header="Show Implemented Interfaces" Command="{Binding ToggleShowImplementedInterfaces}">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding ShowImplementedInterfaces}"
+                        IsEnabled="False" />
+            </MenuItem.Icon>
+          </MenuItem>
           <MenuItem Header="Split Property Type" Command="{Binding ToggleShowDettailsPropertyType}">
             <MenuItem.Icon>
               <CheckBox BorderThickness="0"
@@ -53,8 +60,8 @@
                         IsEnabled="False"/>
             </MenuItem.Icon>
 
-          </MenuItem>
-        </MenuItem> 
+          </MenuItem>          
+        </MenuItem>
       </MenuItem>
       <MenuItem Header="_Options">
         <MenuItem Header="Visualize margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">

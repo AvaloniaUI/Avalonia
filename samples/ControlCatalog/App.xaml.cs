@@ -89,16 +89,18 @@ namespace ControlCatalog
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
                 desktopLifetime.MainWindow = new MainWindow();
+
+                this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+                {
+                    StartupScreenIndex = 1,
+                });
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
+            {
                 singleViewLifetime.MainView = new MainView();
+            }
 
             base.OnFrameworkInitializationCompleted();
-
-            this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
-            {
-                StartupScreenIndex = 1,
-            });
         }
     }
 }

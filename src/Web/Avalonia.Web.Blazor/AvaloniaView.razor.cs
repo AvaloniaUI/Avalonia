@@ -22,6 +22,7 @@ namespace Avalonia.Web.Blazor
         private DpiWatcherInterop _dpiWatcher = null!;
         private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null!;
         private InputHelperInterop _inputHelper = null!;
+        private InputHelperInterop _canvasHelper = null!;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
         private double _dpi;
@@ -254,9 +255,11 @@ namespace Avalonia.Web.Blazor
                 Threading.Dispatcher.UIThread.Post(async () =>
                 {
                     _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
+                    _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
 
                     _inputHelper.Hide();
-                    _inputHelper.SetCursor("default");
+                    _canvasHelper.SetCursor("default");
+                    _topLevelImpl.SetCssCursor = _canvasHelper.SetCursor;
 
                     Console.WriteLine("starting html canvas setup");
                     _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
