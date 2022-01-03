@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Avalonia.Threading;
 
 namespace Avalonia.Utilities;
 
@@ -53,6 +54,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             new WeakReference<IWeakEventSubscriber<TEventArgs>>[16];
         private int _count;
         private readonly Action _unsubscribe;
+        private bool _compactScheduled;
 
         public Subscription(WeakEvent<TSender, TEventArgs> ev, TSender target)
         {
@@ -99,12 +101,21 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
 
             if (removed)
             {
-                Compact();
+                ScheduleCompact();
             }
         }
 
+        void ScheduleCompact()
+        {
+            if(_compactScheduled)
+                return;
+            _compactScheduled = true;
+            Dispatcher.UIThread.Post(Compact, DispatcherPriority.Background);
+        }
+        
         void Compact()
         {
+            _compactScheduled = false;
             int empty = -1;
             for (var c = 0; c < _count; c++)
             {
@@ -140,7 +151,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             }
 
             if (needCompact)
-                Compact();
+                ScheduleCompact();
         }
     }
 
