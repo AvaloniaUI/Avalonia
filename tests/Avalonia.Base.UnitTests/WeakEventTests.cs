@@ -8,18 +8,18 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class WeakEventManagerTests
+    public class WeakEventTests
     {
         class EventSource
         {
-            public event EventHandler<EventArgs> Event;
+            public event EventHandler Event;
 
             public void Fire()
             {
                 Event?.Invoke(this, new EventArgs());
             }
 
-            public static readonly WeakEvent<EventSource, EventArgs> WeakEvent = WeakEvent<EventSource, EventArgs>.Register(
+            public static readonly WeakEvent<EventSource, EventArgs> WeakEv = WeakEvent.Register<EventSource>(
                 (t, s) => t.Event += s,
                 (t, s) => t.Event -= s);
         }
@@ -45,7 +45,7 @@ namespace Avalonia.Base.UnitTests
             bool handled = false;
             var subscriber = new Subscriber(() => handled = true);
             var source = new EventSource();
-            EventSource.WeakEvent.Subscribe(source, subscriber);
+            EventSource.WeakEv.Subscribe(source, subscriber);
 
             source.Fire();
             Assert.True(handled);
@@ -69,7 +69,7 @@ namespace Avalonia.Base.UnitTests
 
         private void AddSubscriber(EventSource source, Action func)
         {
-            EventSource.WeakEvent.Subscribe(source, new Subscriber(func));
+            EventSource.WeakEv.Subscribe(source, new Subscriber(func));
         }
     }
 }
