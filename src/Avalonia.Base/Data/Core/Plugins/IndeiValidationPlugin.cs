@@ -11,6 +11,12 @@ namespace Avalonia.Data.Core.Plugins
     /// </summary>
     public class IndeiValidationPlugin : IDataValidationPlugin
     {
+        private static readonly WeakEvent<INotifyDataErrorInfo, DataErrorsChangedEventArgs>
+            ErrorsChangedWeakEvent = WeakEvent.Register<INotifyDataErrorInfo, DataErrorsChangedEventArgs>(
+                (s, h) => s.ErrorsChanged += h,
+                (s, h) => s.ErrorsChanged -= h
+            );
+
         /// <inheritdoc/>
         public bool Match(WeakReference<object?> reference, string memberName)
         {
@@ -25,7 +31,7 @@ namespace Avalonia.Data.Core.Plugins
             return new Validator(reference, name, accessor);
         }
 
-        private class Validator : DataValidationBase, IWeakSubscriber<DataErrorsChangedEventArgs>
+        private class Validator : DataValidationBase, IWeakEventSubscriber<DataErrorsChangedEventArgs>
         {
             private readonly WeakReference<object?> _reference;
             private readonly string _name;
@@ -37,7 +43,7 @@ namespace Avalonia.Data.Core.Plugins
                 _name = name;
             }
 
-            void IWeakSubscriber<DataErrorsChangedEventArgs>.OnEvent(object? sender, DataErrorsChangedEventArgs e)
+            void IWeakEventSubscriber<DataErrorsChangedEventArgs>.OnEvent(object? notifyDataErrorInfo, WeakEvent ev, DataErrorsChangedEventArgs e)
             {
                 if (e.PropertyName == _name || string.IsNullOrEmpty(e.PropertyName))
                 {
@@ -51,10 +57,7 @@ namespace Avalonia.Data.Core.Plugins
 
                 if (target != null)
                 {
-                    WeakSubscriptionManager.Subscribe(
-                        target,
-                        nameof(target.ErrorsChanged),
-                        this);
+                    ErrorsChangedWeakEvent.Subscribe(target, this);
                 }
 
                 base.SubscribeCore();
@@ -66,10 +69,7 @@ namespace Avalonia.Data.Core.Plugins
 
                 if (target != null)
                 {
-                    WeakSubscriptionManager.Unsubscribe(
-                        target,
-                        nameof(target.ErrorsChanged),
-                        this);
+                    ErrorsChangedWeakEvent.Unsubscribe(target, this);
                 }
 
                 base.UnsubscribeCore();

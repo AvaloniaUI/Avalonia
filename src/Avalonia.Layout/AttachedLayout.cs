@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using Avalonia.Utilities;
 
 namespace Avalonia.Layout
 {
@@ -20,9 +21,25 @@ namespace Avalonia.Layout
         public event EventHandler? MeasureInvalidated;
 
         /// <summary>
+        /// Occurs when the measurement state (layout) has been invalidated.
+        /// </summary>
+        public static readonly WeakEvent<AttachedLayout, EventArgs> MeasureInvalidatedWeakEvent =
+            WeakEvent.Register<AttachedLayout>(
+                (s, h) => s.MeasureInvalidated += h,
+                (s, h) => s.MeasureInvalidated -= h);
+
+        /// <summary>
         /// Occurs when the arrange state (layout) has been invalidated.
         /// </summary>
         public event EventHandler? ArrangeInvalidated;
+        
+        /// <summary>
+        /// Occurs when the arrange state (layout) has been invalidated.
+        /// </summary>
+        public static readonly WeakEvent<AttachedLayout, EventArgs> ArrangeInvalidatedWeakEvent =
+            WeakEvent.Register<AttachedLayout>(
+                (s, h) => s.ArrangeInvalidated += h,
+                (s, h) => s.ArrangeInvalidated -= h);
 
         /// <summary>
         /// Initializes any per-container state the layout requires when it is attached to an
