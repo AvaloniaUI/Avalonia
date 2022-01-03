@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Controls.Utils;
 
 #nullable enable
 
@@ -37,7 +38,7 @@ namespace Avalonia.Controls.Selection
             set => SetSource(value);
         }
 
-        public bool SingleSelect 
+        public bool SingleSelect
         {
             get => _singleSelect;
             set
@@ -65,7 +66,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public int SelectedIndex 
+        public int SelectedIndex
         {
             get => _selectedIndex;
             set
@@ -124,7 +125,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public int AnchorIndex 
+        public int AnchorIndex
         {
             get => _anchorIndex;
             set
@@ -150,7 +151,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        IEnumerable? ISelectionModel.Source 
+        IEnumerable? ISelectionModel.Source
         {
             get => Source;
             set => SetSource(value);
@@ -170,10 +171,10 @@ namespace Avalonia.Controls.Selection
                     SelectedIndex = -1;
                 }
             }
-                
+
         }
 
-        IReadOnlyList<object?> ISelectionModel.SelectedItems 
+        IReadOnlyList<object?> ISelectionModel.SelectedItems
         {
             get => _selectedItemsUntyped ??= new SelectedItems<T>.Untyped(SelectedItems);
         }
@@ -291,16 +292,19 @@ namespace Avalonia.Controls.Selection
                     using var update = BatchUpdate();
                     update.Operation.SkipLostSelection = true;
 
-                    if (SingleSelect)
+                    // preserve selected items if still contained in the new source
+                    var currentSelectedItems = _selectedItems.ToArray();
+
+                    Clear();
+
+                    foreach (var item in currentSelectedItems)
                     {
-                        if (!value.Cast<T>().Contains(SelectedItem))
+                        var newIndex = value.IndexOf(item);
+
+                        if (newIndex >= 0)
                         {
-                            Clear();
+                            Select(newIndex);
                         }
-                    }
-                    else
-                    {
-                        Clear();
                     }
                 }
 
@@ -635,7 +639,7 @@ namespace Avalonia.Controls.Selection
             if (RangesEnabled && Ranges.Count > 0)
             {
                 var selected = Ranges.ToList();
-                
+
                 if (max < 0)
                 {
                     operation.DeselectedRanges = selected;

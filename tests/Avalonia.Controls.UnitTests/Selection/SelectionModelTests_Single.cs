@@ -259,11 +259,11 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(1, target.SelectedIndex);
                 Assert.Equal("bar", target.SelectedItem);
 
-                target.Source = new string?[] { "qux", "bar", "corge" };
+                target.Source = new string?[] { "_", "qux", "bar", "corge" };
 
-                Assert.Equal(new[] { 1 }, target.SelectedIndexes);
+                Assert.Equal(new[] { 2 }, target.SelectedIndexes);
                 Assert.Equal(new string?[] { "bar" }, target.SelectedItems);
-                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal(2, target.SelectedIndex);
                 Assert.Equal("bar", target.SelectedItem);
             }
 

@@ -208,6 +208,29 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(1, selectedItemRaised);
                 Assert.Equal(1, selectedItemsRaised);
             }
+
+        }
+
+        public class Source
+        {
+            [Fact]
+            public void Changing_Source_Enumerable_Retains_Selection_If_Contained_In_New_Enumerable()
+            {
+                var target = new SelectionModel<string?> { SingleSelect = false };
+
+                target.Source = new string?[] { "a", "b", "c", "d", "e" };
+                target.Select(1); // b
+                target.Select(3); // d
+                target.Select(4); // e
+
+                Assert.Equal(new[] { 1, 3, 4 }, target.SelectedIndexes);
+                Assert.Equal(new string?[] { "b", "d", "e" }, target.SelectedItems);
+
+                target.Source = new string?[] { "_", "a", "b", "c", "d" };
+
+                Assert.Equal(new[] { 2, 4 }, target.SelectedIndexes);
+                Assert.Equal(new string?[] { "b", "d" }, target.SelectedItems);
+            }
         }
 
         public class SelectedIndex
@@ -286,7 +309,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             {
                 var target = CreateTarget();
                 var raised = 0;
-                
+
                 target.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(target.SelectedIndex))
