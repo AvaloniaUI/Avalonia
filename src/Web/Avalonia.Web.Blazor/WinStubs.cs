@@ -58,17 +58,17 @@ namespace Avalonia.Web.Blazor
 
         public Screen? ScreenFromPoint(PixelPoint point)
         {
-            return null;
+            return ScreenHelper.ScreenFromPoint(point, AllScreens);
         }
 
         public Screen? ScreenFromRect(PixelRect rect)
         {
-            return null;
+            return ScreenHelper.ScreenFromRect(rect, AllScreens);
         }
 
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
-            return null;
+            return ScreenHelper.ScreenFromWindow(window, AllScreens);
         }
     }
 }

@@ -76,7 +76,7 @@ namespace Avalonia.Win32
         {
             var handle = window.Handle.Handle;
 
-            var monitor = MonitorFromWindow(handle, MONITOR.MONITOR_DEFAULTTONEAREST);
+            var monitor = MonitorFromWindow(handle, MONITOR.MONITOR_DEFAULTTONULL);
 
             return FindScreenByHandle(monitor);
         }
@@ -87,7 +87,7 @@ namespace Avalonia.Win32
             {
                 X = point.X,
                 Y = point.Y
-            }, MONITOR.MONITOR_DEFAULTTONEAREST);
+            }, MONITOR.MONITOR_DEFAULTTONULL);
 
             return FindScreenByHandle(monitor);
         }
@@ -100,7 +100,7 @@ namespace Avalonia.Win32
                 top = rect.TopLeft.Y,
                 right = rect.TopRight.X,
                 bottom = rect.BottomRight.Y
-            }, MONITOR.MONITOR_DEFAULTTONEAREST);
+            }, MONITOR.MONITOR_DEFAULTTONULL);
 
             return FindScreenByHandle(monitor);
         }
