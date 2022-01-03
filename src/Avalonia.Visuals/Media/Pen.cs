@@ -46,7 +46,8 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<Pen, double>(nameof(MiterLimit), 10.0);
 
         private EventHandler? _invalidated;
-        private IAffectsRender? _subscribedTo;
+        private IAffectsRender? _subscribedToBrush;
+        private IAffectsRender? _subscribedToDashes;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="Pen"/> class.
@@ -167,12 +168,12 @@ namespace Avalonia.Media
             add
             {
                 _invalidated += value;
-                UpdateBrushSubscription();
+                UpdateSubscriptions();
             }
             remove
             {
                 _invalidated -= value; 
-                UpdateBrushSubscription();
+                UpdateSubscriptions();
             }
         }
 
@@ -195,23 +196,32 @@ namespace Avalonia.Media
         {
             _invalidated?.Invoke(this, EventArgs.Empty);
             if(change.Property == BrushProperty)
-                UpdateBrushSubscription();
+                UpdateSubscription(ref _subscribedToBrush, Brush);
+            if(change.Property == DashStyleProperty)
+                UpdateSubscription(ref _subscribedToDashes, DashStyle);
             base.OnPropertyChanged(change);
         }
 
-        void UpdateBrushSubscription()
+        
+        void UpdateSubscription(ref IAffectsRender? field, object? value)
         {
-            if ((_invalidated == null || _subscribedTo != Brush) && _subscribedTo != null)
+            if ((_invalidated == null || field != value) && field != null)
             {
-                InvalidatedWeakEvent.Unsubscribe(_subscribedTo, this);
-                _subscribedTo = null;
+                InvalidatedWeakEvent.Unsubscribe(field, this);
+                field = null;
             }
 
-            if (_invalidated != null && _subscribedTo != Brush && Brush is IAffectsRender affectsRender)
+            if (_invalidated != null && field != value && value is IAffectsRender affectsRender)
             {
                 InvalidatedWeakEvent.Subscribe(affectsRender, this);
-                _subscribedTo = affectsRender;
+                field = affectsRender;
             }
+        }
+
+        void UpdateSubscriptions()
+        {
+            UpdateSubscription(ref _subscribedToBrush, Brush);
+            UpdateSubscription(ref _subscribedToDashes, DashStyle);
         }
         
         void IWeakEventSubscriber<EventArgs>.OnEvent(object? sender, WeakEvent ev, EventArgs e)
