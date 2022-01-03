@@ -247,6 +247,27 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
 
             [Fact]
+            public void Changing_Source_Enumerable_Retains_Selection_If_Contained_In_New_Enumerable()
+            {
+                var target = new SelectionModel<string?> { SingleSelect = true };
+
+                target.Source = new string?[] { "foo", "bar", "baz" };
+                target.SelectedIndex = 1;
+
+                Assert.Equal(new[] { 1 }, target.SelectedIndexes);
+                Assert.Equal(new string?[] { "bar" }, target.SelectedItems);
+                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal("bar", target.SelectedItem);
+
+                target.Source = new string?[] { "qux", "bar", "corge" };
+
+                Assert.Equal(new[] { 1 }, target.SelectedIndexes);
+                Assert.Equal(new string?[] { "bar" }, target.SelectedItems);
+                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal("bar", target.SelectedItem);
+            }
+
+            [Fact]
             public void Changing_Source_To_Null_Raises_SelectedItems_PropertyChanged()
             {
                 var target = CreateTarget();
