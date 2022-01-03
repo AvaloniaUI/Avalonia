@@ -126,8 +126,6 @@ namespace Avalonia.Native
                 _applicationCommands.ShowAll();
             };
 
-            appMenu.Add(showAllItem);
-
             appMenu.Add(new NativeMenuItemSeparator());
 
             var quitItem = new NativeMenuItem("Quit") { Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta) };
