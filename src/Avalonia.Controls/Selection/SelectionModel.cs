@@ -290,7 +290,18 @@ namespace Avalonia.Controls.Selection
                 {
                     using var update = BatchUpdate();
                     update.Operation.SkipLostSelection = true;
-                    Clear();
+
+                    if (SingleSelect)
+                    {
+                        if (!value.Cast<T>().Contains(SelectedItem))
+                        {
+                            Clear();
+                        }
+                    }
+                    else
+                    {
+                        Clear();
+                    }
                 }
 
                 base.Source = value;
