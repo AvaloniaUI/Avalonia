@@ -131,7 +131,7 @@ namespace Avalonia.Native
                 };
                 quitItem.Click += (sender, args) =>
                 {
-                    (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+                    (Application.Current.ApplicationLifetime as IControlledApplicationLifetime)?.Shutdown();
                 };
                 result.Add(quitItem);
             }
