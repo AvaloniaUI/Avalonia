@@ -126,7 +126,12 @@ namespace Avalonia.Rendering.SceneGraph
 
             while (node == null && visual.IsVisible)
             {
-                visual = visual.VisualParent!;
+                var parent = visual.VisualParent;
+
+                if (parent is null)
+                    return null;
+
+                visual = parent;
                 node = scene.FindNode(visual);
             }
 
