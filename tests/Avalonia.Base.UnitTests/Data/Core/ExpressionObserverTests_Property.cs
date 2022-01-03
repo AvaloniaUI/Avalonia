@@ -10,6 +10,7 @@ using Avalonia.UnitTests;
 using Xunit;
 using System.Threading.Tasks;
 using Avalonia.Markup.Parsers;
+using Avalonia.Threading;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
@@ -182,6 +183,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             sub.Dispose();
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
 
             GC.KeepAlive(data);
@@ -209,8 +213,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
             data.RaisePropertyChanged(null);
 
             Assert.Equal(new[] { "foo", "bar", "bar" }, result);
-
+            
             sub.Dispose();
+            
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
 
@@ -231,7 +238,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.Equal(new[] { "bar", "baz", null }, result);
 
             sub.Dispose();
-
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
 
@@ -253,6 +262,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.Equal(new[] { "bar", "baz", null }, result);
 
             sub.Dispose();
+            
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
@@ -297,6 +309,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             sub.Dispose();
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
             Assert.Equal(0, old.PropertyChangedSubscriptionCount);
@@ -329,6 +344,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 result);
 
             sub.Dispose();
+            
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
@@ -412,6 +430,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
             sub1.Dispose();
             sub2.Dispose();
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
 
             GC.KeepAlive(data);
@@ -535,6 +556,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 },
                 result);
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
             Assert.Equal(0, first.PropertyChangedSubscriptionCount);
             Assert.Equal(0, second.PropertyChangedSubscriptionCount);
 
