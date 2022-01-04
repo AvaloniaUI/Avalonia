@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Check dotnet-format is installed
+commandExist=$(dotnet-format --version)
+if [[ -z $commandExist ]]
+then
+    echo "dotnet-format doesn't exist. Install with dotnet tool install -g dotnet-format"
+    exit 1
+else
+    #Get staged c# files
+    declare files=$(git diff --name-only --cached "**/*.cs" )
+    #Get number of c# files
+    declare nfiles=$(echo "$files" | grep -vc ^$)
+    #if any files
+    if [[ $nfiles == 0 ]]
+    then
+       exit 0
+    else
+        #Run format only files
+        echo "$files" | dotnet-format --include - --folder
+        if [[ $? == 0 ]]
+        then
+            #Update files changed
+            git add $(echo "$files")
+            exit 0
+        else
+            exit 1
+        fi
+    fi
+fi
+

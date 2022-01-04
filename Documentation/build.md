@@ -7,7 +7,7 @@ Avalonia requires at least Visual Studio 2022 and dotnet 6 SDK 6.0.100 to build 
 ```
 git clone https://github.com/AvaloniaUI/Avalonia.git
 cd Avalonia
-git submodule update --init
+init
 ```
 
 ### Install the required version of the .NET Core SDK
@@ -49,7 +49,7 @@ The build process needs [Xcode](https://developer.apple.com/xcode/) to build the
 ```
 git clone https://github.com/AvaloniaUI/Avalonia.git
 cd Avalonia
-git submodule update --init --recursive
+./init.sh
 ```
 
 ### Build native libraries (macOS only)
