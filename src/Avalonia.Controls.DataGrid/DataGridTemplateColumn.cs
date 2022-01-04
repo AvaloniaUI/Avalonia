@@ -30,6 +30,20 @@ namespace Avalonia.Controls
             set { SetAndRaise(CellTemplateProperty, ref _cellTemplate, value); }
         }
 
+        private IDataTemplate _cellEditingCellTemplate;
+
+        public static readonly DirectProperty<DataGridTemplateColumn, IDataTemplate> CellEditingTemplateProperty =
+                AvaloniaProperty.RegisterDirect<DataGridTemplateColumn, IDataTemplate>(
+                    nameof(CellEditingTemplate),
+                    o => o.CellEditingTemplate,
+                    (o, v) => o.CellEditingTemplate = v);
+
+        public IDataTemplate CellEditingTemplate
+        {
+            get => _cellEditingCellTemplate;
+            set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
+        }
+        
         private void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var oldValue = (IDataTemplate)e.OldValue;
@@ -38,7 +52,7 @@ namespace Avalonia.Controls
 
         public DataGridTemplateColumn()
         {
-            IsReadOnly = true;
+            // IsReadOnly = true;
         }
 
         protected override IControl GenerateElement(DataGridCell cell, object dataItem)
@@ -60,7 +74,18 @@ namespace Avalonia.Controls
         protected override IControl GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding)
         {
             binding = null;
-            return GenerateElement(cell, dataItem);
+            if(CellEditingTemplate != null)
+            {
+                return CellEditingTemplate.Build(dataItem);
+            }
+            if (Design.IsDesignMode)
+            {
+                return null;
+            }
+            else
+            {
+                throw DataGridError.DataGridTemplateColumn.MissingTemplateForType(typeof(DataGridTemplateColumn));
+            }
         }
 
         protected override object PrepareCellForEdit(IControl editingElement, RoutedEventArgs editingEventArgs)
@@ -70,7 +95,8 @@ namespace Avalonia.Controls
 
         protected internal override void RefreshCellContent(IControl element, string propertyName)
         {
-            if(propertyName == nameof(CellTemplate) && element.Parent is DataGridCell cell)
+            var cell = element.Parent as DataGridCell;
+            if(propertyName == nameof(CellTemplate) && cell is not null)
             {
                 cell.Content = GenerateElement(cell, cell.DataContext);
             }
