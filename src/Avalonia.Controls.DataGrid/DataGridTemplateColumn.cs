@@ -15,7 +15,7 @@ namespace Avalonia.Controls
 {
     public class DataGridTemplateColumn : DataGridColumn
     {
-        IDataTemplate _cellTemplate;
+        private IDataTemplate _cellTemplate;
 
         public static readonly DirectProperty<DataGridTemplateColumn, IDataTemplate> CellTemplateProperty =
             AvaloniaProperty.RegisterDirect<DataGridTemplateColumn, IDataTemplate>(
@@ -54,7 +54,7 @@ namespace Avalonia.Controls
         {
             // IsReadOnly = true;
         }
-
+        
         protected override IControl GenerateElement(DataGridCell cell, object dataItem)
         {
             if(CellTemplate != null)
@@ -77,6 +77,10 @@ namespace Avalonia.Controls
             if(CellEditingTemplate != null)
             {
                 return CellEditingTemplate.Build(dataItem);
+            }
+            else if (CellTemplate != null)
+            {
+                return CellTemplate.Build(dataItem);
             }
             if (Design.IsDesignMode)
             {
@@ -102,6 +106,23 @@ namespace Avalonia.Controls
             }
 
             base.RefreshCellContent(element, propertyName);
+        }
+        
+        public override bool IsReadOnly
+        {
+            get
+            {
+                if (CellEditingTemplate is null)
+                {
+                    return true;
+                }
+
+                return base.IsReadOnly;
+            }
+            set
+            {
+                base.IsReadOnly = value;
+            }
         }
     }
 }
