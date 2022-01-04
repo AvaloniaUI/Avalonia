@@ -287,32 +287,27 @@ namespace Avalonia.Controls.Selection
                     throw new InvalidOperationException("Cannot change source while update is in progress.");
                 }
 
+                var currentSelectedItems =
+                    base.Source != null ? _selectedItems?.ToArray() : null;
+
                 if (base.Source is object && value is object)
                 {
                     using var update = BatchUpdate();
                     update.Operation.SkipLostSelection = true;
-
-                    // preserve selected items if still contained in the new source
-                    var currentSelectedItems = _selectedItems.ToArray();
-
                     Clear();
-
-                    foreach (var item in currentSelectedItems)
-                    {
-                        var newIndex = value.IndexOf(item);
-
-                        if (newIndex >= 0)
-                        {
-                            Select(newIndex);
-                        }
-                    }
                 }
-
-                base.Source = value;
 
                 using (var update = BatchUpdate())
                 {
                     update.Operation.IsSourceUpdate = true;
+
+                    if (currentSelectedItems != null)
+                    {
+                        base.Source = null;
+                        _initSelectedItems = currentSelectedItems;
+                    }
+
+                    base.Source = value;
 
                     if (_initSelectedItems is object && ItemsView is object)
                     {
