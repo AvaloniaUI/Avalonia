@@ -49,6 +49,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
     {
         private readonly WeakEvent<TSender, TEventArgs> _ev;
         private readonly TSender _target;
+        private readonly Action _compact;
 
         private WeakReference<IWeakEventSubscriber<TEventArgs>>?[] _data =
             new WeakReference<IWeakEventSubscriber<TEventArgs>>[16];
@@ -60,7 +61,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
         {
             _ev = ev;
             _target = target;
-
+            _compact = Compact;
             _unsubscribe = ev._subscribe(target, OnEvent);
         }
 
@@ -110,7 +111,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             if(_compactScheduled)
                 return;
             _compactScheduled = true;
-            Dispatcher.UIThread.Post(Compact, DispatcherPriority.Background);
+            Dispatcher.UIThread.Post(_compact, DispatcherPriority.Background);
         }
         
         void Compact()

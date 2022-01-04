@@ -259,7 +259,11 @@ namespace Avalonia.Web.Blazor
 
                     _inputHelper.Hide();
                     _canvasHelper.SetCursor("default");
-                    _topLevelImpl.SetCssCursor = _canvasHelper.SetCursor;
+                    _topLevelImpl.SetCssCursor = x =>
+                    {
+                        _inputHelper.SetCursor(x);//macOS
+                        _canvasHelper.SetCursor(x);//windows
+                    };
 
                     Console.WriteLine("starting html canvas setup");
                     _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
