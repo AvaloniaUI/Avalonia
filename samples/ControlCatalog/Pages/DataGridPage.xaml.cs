@@ -48,9 +48,9 @@ namespace ControlCatalog.Pages
 
             var items = new List<Person>
             {
-                new Person { FirstName = "John", LastName = "Doe" },
-                new Person { FirstName = "Elizabeth", LastName = "Thomas", IsBanned = true },
-                new Person { FirstName = "Zack", LastName = "Ward" }
+                new Person { FirstName = "John", LastName = "Doe" , Age = 30},
+                new Person { FirstName = "Elizabeth", LastName = "Thomas", IsBanned = true , Age = 40 },
+                new Person { FirstName = "Zack", LastName = "Ward" , Age = 50 }
             };
             var collectionView3 = new DataGridCollectionView(items);
 
