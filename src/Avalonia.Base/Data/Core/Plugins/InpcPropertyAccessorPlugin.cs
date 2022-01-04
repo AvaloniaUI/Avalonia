@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Utilities;
@@ -85,7 +86,7 @@ namespace Avalonia.Data.Core.Plugins
             return found;
         }
 
-        private class Accessor : PropertyAccessorBase, IWeakSubscriber<PropertyChangedEventArgs>
+        private class Accessor : PropertyAccessorBase, IWeakEventSubscriber<PropertyChangedEventArgs>
         {
             private readonly WeakReference<object?> _reference;
             private readonly PropertyInfo _property;
@@ -129,7 +130,8 @@ namespace Avalonia.Data.Core.Plugins
                 return false;
             }
 
-            void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, PropertyChangedEventArgs e)
+            void IWeakEventSubscriber<PropertyChangedEventArgs>.
+                OnEvent(object? notifyPropertyChanged, WeakEvent ev, PropertyChangedEventArgs e)
             {
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {
@@ -148,13 +150,8 @@ namespace Avalonia.Data.Core.Plugins
             {
                 var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
-                if (inpc != null)
-                {
-                    WeakSubscriptionManager.Unsubscribe(
-                        inpc,
-                        nameof(inpc.PropertyChanged),
-                        this);
-                }
+                if (inpc != null) 
+                    WeakEvents.PropertyChanged.Unsubscribe(inpc, this);
             }
 
             private object? GetReferenceTarget()
@@ -178,13 +175,8 @@ namespace Avalonia.Data.Core.Plugins
             {
                 var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
-                if (inpc != null)
-                {
-                    WeakSubscriptionManager.Subscribe(
-                        inpc,
-                        nameof(inpc.PropertyChanged),
-                        this);
-                }
+                if (inpc != null) 
+                    WeakEvents.PropertyChanged.Subscribe(inpc, this);
             }
         }
     }
