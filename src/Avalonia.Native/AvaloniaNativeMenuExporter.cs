@@ -80,8 +80,8 @@ namespace Avalonia.Native
             };
             result.Add(aboutItem);
 
-            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
-            if (macOpts == null || !macOpts.DisableDefaultApplicationMenuItems)
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
+            if (!macOpts.DisableDefaultApplicationMenuItems)
             {
                 result.Add(new NativeMenuItemSeparator());
 
@@ -142,9 +142,9 @@ namespace Avalonia.Native
 
         private void DoLayoutReset(bool forceUpdate = false)
         {
-            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
 
-            if (macOpts != null && macOpts.DisableNativeMenus)
+            if (macOpts.DisableNativeMenus)
             {
                 return;
             }
