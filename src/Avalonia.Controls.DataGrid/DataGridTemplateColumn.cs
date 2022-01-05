@@ -32,12 +32,24 @@ namespace Avalonia.Controls
 
         private IDataTemplate _cellEditingCellTemplate;
 
+        /// <summary>
+        /// Defines the <see cref="CellEditingTemplate"/> property.
+        /// </summary>
         public static readonly DirectProperty<DataGridTemplateColumn, IDataTemplate> CellEditingTemplateProperty =
                 AvaloniaProperty.RegisterDirect<DataGridTemplateColumn, IDataTemplate>(
                     nameof(CellEditingTemplate),
                     o => o.CellEditingTemplate,
                     (o, v) => o.CellEditingTemplate = v);
 
+        /// <summary>
+        /// Gets or sets the <see cref="IDataTemplate"/> which is used for the editing mode of the current <see cref="DataGridCell"/>
+        /// </summary>
+        /// <value>
+        /// An <see cref="IDataTemplate"/> for the editing mode of the current <see cref="DataGridCell"/>
+        /// </value>
+        /// <remarks>
+        /// If this property is <see langword="null"/> the column is read-only.
+        /// </remarks>
         public IDataTemplate CellEditingTemplate
         {
             get => _cellEditingCellTemplate;
