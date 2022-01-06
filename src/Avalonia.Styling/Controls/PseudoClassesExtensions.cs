@@ -14,6 +14,8 @@ namespace Avalonia.Controls
         {
             _ = classes ?? throw new ArgumentNullException(nameof(classes));
 
+            ThrowIfPseudoClassNameIsInvalid(name);
+
             if (value)
             {
                 classes.Add(name);
@@ -21,6 +23,15 @@ namespace Avalonia.Controls
             else
             {
                 classes.Remove(name);
+            }
+        }
+
+        private static void ThrowIfPseudoClassNameIsInvalid(string name)
+        {
+            if (string.IsNullOrEmpty(name) || !name.StartsWith(":") || name.Length < 2)
+            {
+                throw new ArgumentException(
+                    $"Name '{name}' for pseudoclass is invalid.");
             }
         }
 
