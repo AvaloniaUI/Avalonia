@@ -7,17 +7,18 @@ namespace Avalonia.Data.Core.Plugins
 {
     public class MethodAccessorPlugin : IPropertyAccessorPlugin
     {
-        private readonly Dictionary<(Type, string), MethodInfo> _methodLookup =
-            new Dictionary<(Type, string), MethodInfo>();
+        private readonly Dictionary<(Type, string), MethodInfo?> _methodLookup =
+            new Dictionary<(Type, string), MethodInfo?>();
 
         public bool Match(object obj, string methodName) => GetFirstMethodWithName(obj.GetType(), methodName) != null;
 
-        public IPropertyAccessor Start(WeakReference<object> reference, string methodName)
+        public IPropertyAccessor? Start(WeakReference<object?> reference, string methodName)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(methodName != null);
+            _ = reference ?? throw new ArgumentNullException(nameof(reference));
+            _ = methodName ?? throw new ArgumentNullException(nameof(methodName));
 
-            reference.TryGetTarget(out object instance);
+            if (!reference.TryGetTarget(out var instance) || instance is null)
+                return null;
 
             var method = GetFirstMethodWithName(instance.GetType(), methodName);
 
@@ -43,11 +44,11 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private MethodInfo GetFirstMethodWithName(Type type, string methodName)
+        private MethodInfo? GetFirstMethodWithName(Type type, string methodName)
         {
             var key = (type, methodName);
 
-            if (!_methodLookup.TryGetValue(key, out MethodInfo methodInfo))
+            if (!_methodLookup.TryGetValue(key, out var methodInfo))
             {
                 methodInfo = TryFindAndCacheMethod(type, methodName);
             }
@@ -55,9 +56,9 @@ namespace Avalonia.Data.Core.Plugins
             return methodInfo;
         }
 
-        private MethodInfo TryFindAndCacheMethod(Type type, string methodName)
+        private MethodInfo? TryFindAndCacheMethod(Type type, string methodName)
         {
-            MethodInfo found = null;
+            MethodInfo? found = null;
 
             const BindingFlags bindingFlags =
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
@@ -81,10 +82,10 @@ namespace Avalonia.Data.Core.Plugins
 
         private sealed class Accessor : PropertyAccessorBase
         {
-            public Accessor(WeakReference<object> reference, MethodInfo method, ParameterInfo[] parameters)
+            public Accessor(WeakReference<object?> reference, MethodInfo method, ParameterInfo[] parameters)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-                Contract.Requires<ArgumentNullException>(method != null);
+                _ = reference ?? throw new ArgumentNullException(nameof(reference));
+                _ = method ?? throw new ArgumentNullException(nameof(method));
 
                 var returnType = method.ReturnType;
                 bool hasReturn = returnType != typeof(void);
@@ -115,19 +116,17 @@ namespace Avalonia.Data.Core.Plugins
                 {
                     Value = method.CreateDelegate(PropertyType);
                 }
-                else
+                else if (reference.TryGetTarget(out var target))
                 {
-                    reference.TryGetTarget(out object target);
-
                     Value = method.CreateDelegate(PropertyType, target);
                 }
             }
 
-            public override Type PropertyType { get; }
+            public override Type? PropertyType { get; }
 
-            public override object Value { get; }
+            public override object? Value { get; }
 
-            public override bool SetValue(object value, BindingPriority priority) => false;
+            public override bool SetValue(object? value, BindingPriority priority) => false;
 
             protected override void SubscribeCore()
             {

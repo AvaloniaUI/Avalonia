@@ -11,33 +11,39 @@ namespace Avalonia.Data.Core.Plugins
     /// </summary>
     public class IndeiValidationPlugin : IDataValidationPlugin
     {
+        private static readonly WeakEvent<INotifyDataErrorInfo, DataErrorsChangedEventArgs>
+            ErrorsChangedWeakEvent = WeakEvent.Register<INotifyDataErrorInfo, DataErrorsChangedEventArgs>(
+                (s, h) => s.ErrorsChanged += h,
+                (s, h) => s.ErrorsChanged -= h
+            );
+
         /// <inheritdoc/>
-        public bool Match(WeakReference<object> reference, string memberName)
+        public bool Match(WeakReference<object?> reference, string memberName)
         {
-            reference.TryGetTarget(out object target);
+            reference.TryGetTarget(out var target);
 
             return target is INotifyDataErrorInfo;
         }
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference<object> reference, string name, IPropertyAccessor accessor)
+        public IPropertyAccessor Start(WeakReference<object?> reference, string name, IPropertyAccessor accessor)
         {
             return new Validator(reference, name, accessor);
         }
 
-        private class Validator : DataValidationBase, IWeakSubscriber<DataErrorsChangedEventArgs>
+        private class Validator : DataValidationBase, IWeakEventSubscriber<DataErrorsChangedEventArgs>
         {
-            private readonly WeakReference<object> _reference;
+            private readonly WeakReference<object?> _reference;
             private readonly string _name;
 
-            public Validator(WeakReference<object> reference, string name, IPropertyAccessor inner)
+            public Validator(WeakReference<object?> reference, string name, IPropertyAccessor inner)
                 : base(inner)
             {
                 _reference = reference;
                 _name = name;
             }
 
-            void IWeakSubscriber<DataErrorsChangedEventArgs>.OnEvent(object sender, DataErrorsChangedEventArgs e)
+            void IWeakEventSubscriber<DataErrorsChangedEventArgs>.OnEvent(object? notifyDataErrorInfo, WeakEvent ev, DataErrorsChangedEventArgs e)
             {
                 if (e.PropertyName == _name || string.IsNullOrEmpty(e.PropertyName))
                 {
@@ -51,10 +57,7 @@ namespace Avalonia.Data.Core.Plugins
 
                 if (target != null)
                 {
-                    WeakSubscriptionManager.Subscribe(
-                        target,
-                        nameof(target.ErrorsChanged),
-                        this);
+                    ErrorsChangedWeakEvent.Subscribe(target, this);
                 }
 
                 base.SubscribeCore();
@@ -66,25 +69,20 @@ namespace Avalonia.Data.Core.Plugins
 
                 if (target != null)
                 {
-                    WeakSubscriptionManager.Unsubscribe(
-                        target,
-                        nameof(target.ErrorsChanged),
-                        this);
+                    ErrorsChangedWeakEvent.Unsubscribe(target, this);
                 }
 
                 base.UnsubscribeCore();
             }
 
-            protected override void InnerValueChanged(object value)
+            protected override void InnerValueChanged(object? value)
             {
                 PublishValue(CreateBindingNotification(value));
             }
 
-            private BindingNotification CreateBindingNotification(object value)
+            private BindingNotification CreateBindingNotification(object? value)
             {
-                var target = (INotifyDataErrorInfo)GetReferenceTarget();
-
-                if (target != null)
+                if (GetReferenceTarget() is INotifyDataErrorInfo target)
                 {
                     var errors = target.GetErrors(_name)?
                         .Cast<object>()
@@ -103,9 +101,9 @@ namespace Avalonia.Data.Core.Plugins
                 return new BindingNotification(value);
             }
 
-            private object GetReferenceTarget()
+            private object? GetReferenceTarget()
             {
-                _reference.TryGetTarget(out object target);
+                _reference.TryGetTarget(out var target);
 
                 return target;
             }

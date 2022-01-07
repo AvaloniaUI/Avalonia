@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <AssemblyName>Avalonia.Styling</AssemblyName>
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
@@ -9,4 +9,5 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

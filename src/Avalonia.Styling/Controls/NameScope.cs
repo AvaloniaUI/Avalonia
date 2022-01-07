@@ -22,8 +22,8 @@ namespace Avalonia.Controls
         
         private readonly Dictionary<string, object> _inner = new Dictionary<string, object>();
 
-        private readonly Dictionary<string, SynchronousCompletionAsyncResultSource<object>> _pendingSearches =
-            new Dictionary<string, SynchronousCompletionAsyncResultSource<object>>();
+        private readonly Dictionary<string, SynchronousCompletionAsyncResultSource<object?>> _pendingSearches =
+            new Dictionary<string, SynchronousCompletionAsyncResultSource<object?>>();
         
         /// <summary>
         /// Gets the value of the attached <see cref="NameScopeProperty"/> on a styled element.
@@ -32,7 +32,7 @@ namespace Avalonia.Controls
         /// <returns>The value of the NameScope attached property.</returns>
         public static INameScope GetNameScope(StyledElement styled)
         {
-            Contract.Requires<ArgumentNullException>(styled != null);
+            _ = styled ?? throw new ArgumentNullException(nameof(styled));
 
             return styled.GetValue(NameScopeProperty);
         }
@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         /// <param name="value">The value to set.</param>
         public static void SetNameScope(StyledElement styled, INameScope value)
         {
-            Contract.Requires<ArgumentNullException>(styled != null);
+            _ = styled ?? throw new ArgumentNullException(nameof(styled));
 
             styled.SetValue(NameScopeProperty, value);
         }
@@ -54,12 +54,11 @@ namespace Avalonia.Controls
         {
             if (IsCompleted)
                 throw new InvalidOperationException("NameScope is completed, no further registrations are allowed");
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(element != null);
 
-            object existing;
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+            _ = element ?? throw new ArgumentNullException(nameof(element));
 
-            if (_inner.TryGetValue(name, out existing))
+            if (_inner.TryGetValue(name, out var existing))
             {
                 if (existing != element)
                 {
@@ -77,27 +76,26 @@ namespace Avalonia.Controls
             }
         }
 
-        public SynchronousCompletionAsyncResult<object> FindAsync(string name)
+        public SynchronousCompletionAsyncResult<object?> FindAsync(string name)
         {
             var found = Find(name);
             if (found != null)
-                return new SynchronousCompletionAsyncResult<object>(found);
+                return new SynchronousCompletionAsyncResult<object?>(found);
             if (IsCompleted)
-                return new SynchronousCompletionAsyncResult<object>((object)null);
+                return new SynchronousCompletionAsyncResult<object?>(null);
             if (!_pendingSearches.TryGetValue(name, out var tcs))
                 // We are intentionally running continuations synchronously here
-                _pendingSearches[name] = tcs = new SynchronousCompletionAsyncResultSource<object>();
+                _pendingSearches[name] = tcs = new SynchronousCompletionAsyncResultSource<object?>();
 
             return tcs.AsyncResult;
         }
 
         /// <inheritdoc />
-        public object Find(string name)
+        public object? Find(string name)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            _ = name ?? throw new ArgumentNullException(nameof(name));
 
-            object result;
-            _inner.TryGetValue(name, out result);
+            _inner.TryGetValue(name, out var result);
             return result;
         }
 

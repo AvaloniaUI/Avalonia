@@ -22,6 +22,12 @@ namespace Avalonia.UnitTests
         }
 
         /// <inheritdoc/>
+        public void Post<T>(Action<T> action, T arg, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            action(arg);
+        }
+
+        /// <inheritdoc/>
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             action();

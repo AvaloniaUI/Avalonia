@@ -48,7 +48,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the font family.
         /// </summary>
-        public FontFamily FontFamily { get; }
+        public FontFamily? FontFamily { get; }
 
         /// <summary>
         /// Gets the font style.
@@ -78,7 +78,7 @@ namespace Avalonia.Media
             return  a.Equals(b);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Typeface typeface && Equals(typeface);
         }

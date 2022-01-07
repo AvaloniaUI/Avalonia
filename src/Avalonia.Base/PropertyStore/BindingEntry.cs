@@ -2,8 +2,6 @@
 using Avalonia.Data;
 using Avalonia.Threading;
 
-#nullable enable
-
 namespace Avalonia.PropertyStore
 {
     /// <summary>
@@ -44,7 +42,7 @@ namespace Avalonia.PropertyStore
         public StyledPropertyBase<T> Property { get; }
         public BindingPriority Priority { get; private set; }
         public IObservable<BindingValue<T>> Source { get; }
-        Optional<object> IValue.GetValue() => _value.ToObject();
+        Optional<object?> IValue.GetValue() => _value.ToObject();
 
         public void BeginBatchUpdate() => _batchUpdate = true;
 
@@ -121,8 +119,8 @@ namespace Avalonia.PropertyStore
             IValueSink sink,
             IAvaloniaObject owner,
             AvaloniaProperty property,
-            Optional<object> oldValue,
-            Optional<object> newValue)
+            Optional<object?> oldValue,
+            Optional<object?> newValue)
         {
             sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,

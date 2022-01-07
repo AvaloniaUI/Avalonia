@@ -24,7 +24,7 @@ namespace Avalonia.Media
             };
         }
 
-        private void ChildTransform_Changed(object sender, System.EventArgs e)
+        private void ChildTransform_Changed(object? sender, System.EventArgs e)
         {
             this.RaiseChanged();
         }

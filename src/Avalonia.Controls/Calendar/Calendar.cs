@@ -1903,6 +1903,11 @@ namespace Avalonia.Controls
         }
         internal void ProcessPageDownKey(bool shift)
         {
+            if (!shift)
+            {
+                OnNextClick();
+                return;
+            }
             switch (DisplayMode)
             {
                 case CalendarMode.Month:
@@ -1927,6 +1932,11 @@ namespace Avalonia.Controls
         }
         internal void ProcessPageUpKey(bool shift)
         {
+            if (!shift)
+            {
+                OnPreviousClick();
+                return;
+            }
             switch (DisplayMode)
             {
                 case CalendarMode.Month:

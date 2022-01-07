@@ -86,12 +86,14 @@ namespace Avalonia.Media.Transformation
 
             if (fromIdentity && toIdentity)
             {
+                result.Matrix = Matrix.Identity;
+
                 return true;
             }
 
             // ReSharper disable PossibleInvalidOperationException
-            TransformOperation fromValue = fromIdentity ? Identity : from.Value;
-            TransformOperation toValue = toIdentity ? Identity : to.Value;
+            TransformOperation fromValue = fromIdentity ? Identity : from!.Value;
+            TransformOperation toValue = toIdentity ? Identity : to!.Value;
             // ReSharper restore PossibleInvalidOperationException
 
             var interpolationType = toIdentity ? fromValue.Type : toValue.Type;
@@ -179,7 +181,8 @@ namespace Avalonia.Media.Transformation
                 }
                 case OperationType.Identity:
                 {
-                    // Do nothing.
+                    result.Matrix = Matrix.Identity;
+
                     break;
                 }
             }

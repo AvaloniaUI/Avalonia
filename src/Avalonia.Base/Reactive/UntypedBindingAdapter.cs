@@ -2,8 +2,6 @@
 using System.Reactive.Subjects;
 using Avalonia.Data;
 
-#nullable enable
-
 namespace Avalonia.Reactive
 {
     internal class UntypedBindingAdapter<T> : SingleSubscriberObservableBase<object?>,

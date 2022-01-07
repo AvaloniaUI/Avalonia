@@ -14,6 +14,6 @@ namespace Avalonia
         /// <returns>
         /// The default value.
         /// </returns>
-        object GetDefaultValue(Type type);
+        object? GetDefaultValue(Type type);
     }
 }
