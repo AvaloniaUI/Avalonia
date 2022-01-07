@@ -285,7 +285,7 @@ namespace Avalonia.Controls
         
         private void ThrowIfPseudoClassNameIsInvalid(string name)
         {
-            if (string.IsNullOrEmpty(name) || !name.StartsWith(":") || name.Length < 2)
+            if (name == null || name.Length < 2 || name[0] != ':')
             {
                 throw new ArgumentException(
                     $"Name '{name}' for pseudoclass is invalid.");
