@@ -260,6 +260,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IPseudoClasses.Add(string name)
         {
+            ThrowIfPseudoClassNameIsInvalid(name);
+            
             if (!Contains(name))
             {
                 base.Add(name);
@@ -278,6 +280,15 @@ namespace Avalonia.Controls
             {
                 throw new ArgumentException(
                     $"The pseudoclass '{name}' may only be {operation} by the control itself.");
+            }
+        }
+        
+        private void ThrowIfPseudoClassNameIsInvalid(string name)
+        {
+            if (string.IsNullOrEmpty(name) || !name.StartsWith(":") || name.Length < 2)
+            {
+                throw new ArgumentException(
+                    $"Name '{name}' for pseudoclass is invalid.");
             }
         }
 
