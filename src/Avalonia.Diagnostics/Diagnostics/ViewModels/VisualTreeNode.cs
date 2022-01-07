@@ -7,15 +7,22 @@ using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
+using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class VisualTreeNode : TreeNode
     {
-        public VisualTreeNode(IVisual visual, TreeNode? parent, string? customName = null)
-            : base(visual, parent, customName)
+        public VisualTreeNode(IAvaloniaObject avaloniaObject, TreeNode? parent, string? customName = null)
+            : base(avaloniaObject, parent, customName)
         {
-            Children = new VisualTreeNodeCollection(this, visual);
+            Children = avaloniaObject switch
+            {
+                IVisual visual => new VisualTreeNodeCollection(this, visual),
+                Controls.Application host => new ApplicationHostVisuals(this, host),
+                _ => TreeNodeCollection.Empty
+            };
 
             if (Visual is IStyleable styleable)
                 IsInTemplate = styleable.TemplatedParent != null;
@@ -27,7 +34,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public static VisualTreeNode[] Create(object control)
         {
-            return control is IVisual visual ?
+            return control is IAvaloniaObject visual ?
                 new[] { new VisualTreeNode(visual, null) } :
                 Array.Empty<VisualTreeNode>();
         }
@@ -130,7 +137,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 _subscriptions.Add(
                     _control.VisualChildren.ForEachItem(
-                        (i, item) => nodes.Insert(i, new VisualTreeNode(item, Owner)),
+                        (i, item) => nodes.Insert(i, new VisualTreeNode((IAvaloniaObject)item, Owner)),
                         (i, item) => nodes.RemoveAt(i),
                         () => nodes.Clear()));
             }
@@ -145,6 +152,69 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 public IControl Root { get; }
                 public string? CustomName { get; }
+            }
+        }
+
+        internal class ApplicationHostVisuals : TreeNodeCollection
+        {
+            readonly Controls.Application _application;
+            CompositeDisposable _subscriptions = new CompositeDisposable(2);
+            public ApplicationHostVisuals(TreeNode owner, Controls.Application host) :
+                base(owner)
+            {
+                _application = host;
+            }
+
+            protected override void Initialize(AvaloniaList<TreeNode> nodes)
+            {
+                if (_application.ApplicationLifetime is Lifetimes.ISingleViewApplicationLifetime single)
+                {
+                    nodes.Add(new VisualTreeNode(single.MainView, Owner));
+                }
+                if (_application.ApplicationLifetime is Lifetimes.IClassicDesktopStyleApplicationLifetime classic)
+                {
+
+                    for (int i = 0; i < classic.Windows.Count; i++)
+                    {
+                        var window = classic.Windows[i];
+                        if (window is Views.MainWindow)
+                        {
+                            continue;
+                        }
+                        nodes.Add(new VisualTreeNode(window, Owner));
+                    }
+                    _subscriptions = new System.Reactive.Disposables.CompositeDisposable()
+                    {
+                        Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (s,e)=>
+                            {
+                                if (s is Views.MainWindow)
+                                {
+                                    return;
+                                }
+                                nodes.Add(new VisualTreeNode((IAvaloniaObject)s!,Owner));
+                            }),
+                        Window.WindowClosedEvent.AddClassHandler(typeof(Window), (s,e)=>
+                            {
+                                if (s is Views.MainWindow)
+                                {
+                                    return;
+                                }
+                                var item = nodes.FirstOrDefault(node=>object.ReferenceEquals(node.Visual,s));
+                                if(!(item is null))
+                                {
+                                    nodes.Remove(item);
+                                }
+                            }),
+                    };
+
+
+                }
+            }
+
+            public override void Dispose()
+            {
+                _subscriptions?.Dispose();
+                base.Dispose();
             }
         }
     }

@@ -80,12 +80,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     }
                 }
 
-                var shouldBreak = GetSimpleBreak() ?? (bool?)GetPairTableBreak(lastClass);
+                var shouldBreak = GetSimpleBreak() ?? GetPairTableBreak(lastClass);
 
                 // Rule LB8a
                 _lb8a = _nextClass == LineBreakClass.ZWJ;
 
-                if (shouldBreak.Value)
+                if (shouldBreak)
                 {
                     Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition);
                     return true;

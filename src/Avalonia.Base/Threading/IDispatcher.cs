@@ -27,6 +27,15 @@ namespace Avalonia.Threading
         void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal);
 
         /// <summary>
+        /// Posts an action that will be invoked on the dispatcher thread.
+        /// </summary>
+        /// <typeparam name="T">type of argument</typeparam>
+        /// <param name="action">The method to call.</param>
+        /// <param name="arg">The argument of method to call.</param>
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        void Post<T>(Action<T> action, T arg, DispatcherPriority priority = DispatcherPriority.Normal);
+
+        /// <summary>
         /// Invokes a action on the dispatcher thread.
         /// </summary>
         /// <param name="action">The method.</param>

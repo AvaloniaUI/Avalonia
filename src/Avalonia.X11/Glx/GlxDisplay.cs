@@ -95,8 +95,8 @@ namespace Avalonia.X11.Glx
 
                 if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
                 {
-                    var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
-                        ?.GlxRendererBlacklist;
+                    var opts = AvaloniaLocator.Current.GetService<X11PlatformOptions>() ?? new X11PlatformOptions();
+                    var blacklist = opts.GlxRendererBlacklist;
                     if (blacklist != null)
                         foreach (var item in blacklist)
                             if (glInterface.Renderer.Contains(item))
