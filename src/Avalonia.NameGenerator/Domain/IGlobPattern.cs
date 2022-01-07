@@ -1,7 +1,6 @@
-namespace Avalonia.NameGenerator.Domain
+namespace Avalonia.NameGenerator.Domain;
+
+public interface IGlobPattern
 {
-    public interface IGlobPattern
-    {
-        bool Matches(string str);
-    }
+    bool Matches(string str);
 }

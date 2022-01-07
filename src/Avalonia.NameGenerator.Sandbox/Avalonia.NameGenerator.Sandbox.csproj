@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net5</TargetFramework>
+        <TargetFramework>net6</TargetFramework>
         <LangVersion>preview</LangVersion>
         <IsPackable>false</IsPackable>
         <InstallAvalonia>true</InstallAvalonia>
@@ -18,5 +18,8 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="ReactiveUI.Validation" Version="2.2.1" />
     </ItemGroup>
 </Project>
