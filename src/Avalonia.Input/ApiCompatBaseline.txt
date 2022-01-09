@@ -10,5 +10,7 @@ MembersMustExist : Member 'public void Avalonia.Input.InputElement.add_DoubleTap
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.add_Tapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.remove_DoubleTapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.remove_Tapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task<Avalonia.Media.Imaging.Bitmap> Avalonia.Input.Platform.IClipboard.GetBitmapAsync()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Input.Platform.IClipboard.SetBitmapAsync(Avalonia.Media.Imaging.Bitmap)' is present in the implementation but not in the contract.
 TypesMustExist : Type 'Avalonia.Platform.IStandardCursorFactory' does not exist in the implementation but it does exist in the contract.
-Total Issues: 12
+Total Issues: 14
