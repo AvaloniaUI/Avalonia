@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -910,6 +911,16 @@ namespace Avalonia.Controls.UnitTests
                 return Task.CompletedTask;
             }
 
+            public Task<Bitmap> GetBitmapAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetBitmapAsync(Bitmap bitmap)
+            {
+                throw new NotImplementedException();
+            } 
+            
             public Task ClearAsync()
             {
                 _text = null;

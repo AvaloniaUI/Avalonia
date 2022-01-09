@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 #nullable enable
@@ -16,6 +17,16 @@ namespace Avalonia.Web.Blazor
 
         public Task ClearAsync() => Task.CompletedTask;
 
+        public Task<Bitmap> GetBitmapAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetBitmapAsync(Bitmap bitmap)
+        {
+            throw new NotImplementedException();
+        }
+        
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
         public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
