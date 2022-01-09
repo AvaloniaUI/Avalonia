@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
@@ -276,7 +277,16 @@ namespace Avalonia.X11
             data.Set(DataFormats.Text, text);
             return SetDataObjectAsync(data);
         }
+        public Task<Bitmap> GetBitmapAsync()
+        {
+            throw new NotImplementedException();
+        }
 
+        public Task SetBitmapAsync(Bitmap bitmap)
+        {
+            throw new NotImplementedException();
+        }
+        
         public Task ClearAsync()
         {
             return SetTextAsync(null);

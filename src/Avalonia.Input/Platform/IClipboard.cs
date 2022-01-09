@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Input.Platform
 {
@@ -7,6 +8,10 @@ namespace Avalonia.Input.Platform
         Task<string> GetTextAsync();
 
         Task SetTextAsync(string text);
+        
+        Task<Bitmap> GetBitmapAsync();
+        
+        Task SetBitmapAsync(Bitmap bitmap);
 
         Task ClearAsync();
 
@@ -15,5 +20,6 @@ namespace Avalonia.Input.Platform
         Task<string[]> GetFormatsAsync();
         
         Task<object> GetDataAsync(string format);
+       
     }
 }

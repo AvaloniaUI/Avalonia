@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -31,6 +32,16 @@ namespace Avalonia.Headless
             return Task.Run(() => _text = text);
         }
 
+        public Task<Bitmap> GetBitmapAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetBitmapAsync(Bitmap bitmap)
+        {
+            throw new NotImplementedException();
+        }
+        
         public Task ClearAsync()
         {
             return Task.Run(() => _text = null);

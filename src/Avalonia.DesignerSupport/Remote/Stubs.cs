@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
@@ -186,6 +187,16 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
+        public Task<Bitmap> GetBitmapAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetBitmapAsync(Bitmap bitmap)
+        {
+            throw new NotImplementedException();
+        }
+        
         public Task ClearAsync() => Task.CompletedTask;
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
         public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);

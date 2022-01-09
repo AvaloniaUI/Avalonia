@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Interop;
 
@@ -45,6 +46,16 @@ namespace Avalonia.Native
             return Task.CompletedTask;
         }
 
+        public Task<Bitmap> GetBitmapAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetBitmapAsync(Bitmap bitmap)
+        {
+            throw new NotImplementedException();
+        }
+        
         public IEnumerable<string> GetFormats()
         {
             var rv = new List<string>();

@@ -1,10 +1,12 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 
@@ -67,6 +69,28 @@ namespace Avalonia.Win32
             }
         }
 
+        public Task<Bitmap> GetBitmapAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task SetBitmapAsync(Bitmap bitmap)
+        {
+            var dataObject = new Avalonia.Input.DataObject();
+
+            using var ms = new MemoryStream();
+            bitmap.Save(ms);
+
+            ms.Position = 0;
+
+            var imageBytes = ms.GetBuffer();
+	        
+            dataObject.Set("PNG", imageBytes);
+
+            await ClearAsync();
+            await SetDataObjectAsync(dataObject);
+        }
+        
         public async Task ClearAsync()
         {
             using(await OpenClipboard())
