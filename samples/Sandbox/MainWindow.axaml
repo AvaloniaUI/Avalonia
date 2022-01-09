@@ -1,4 +1,30 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:sandbox="clr-namespace:Sandbox"
         x:Class="Sandbox.MainWindow">
+    <Window.DataContext>
+        <sandbox:MainViewModel />
+    </Window.DataContext>
+    <Grid RowDefinitions="Auto, *, Auto, Auto, *">
+        
+        <TextBlock Grid.Row="0">Copy Image</TextBlock>
+        <Carousel Name="Carousel" Items="{Binding Images}" Grid.Row="1" Background="White">
+            <Carousel.ItemTemplate>
+                <DataTemplate DataType="sandbox:ImageSource">
+                    <Panel >
+                        <Image Source="{Binding Bitmap}"></Image>
+                        <Button Content="Copy" 
+                                Command="{Binding CopyImage}"
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Top"></Button>
+                    </Panel>
+                </DataTemplate>
+            </Carousel.ItemTemplate>
+        </Carousel>
+        <Button Grid.Row="1" Content="►" Command="{Binding #Carousel.Next}" VerticalAlignment="Center" HorizontalAlignment="Right" ></Button>
+        <Button Grid.Row="1"  Content="◄" Command="{Binding #Carousel.Previous}" VerticalAlignment="Center" HorizontalAlignment="Left" ></Button>
+        
+        <TextBlock Grid.Row="3">Paste Image</TextBlock>
+
+    </Grid>
 </Window>
