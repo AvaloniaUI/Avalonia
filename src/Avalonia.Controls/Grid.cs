@@ -203,6 +203,46 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        ///   Derived class must implement to support Visual children. The method must return
+        ///    the child at the specified index. Index must be between 0 and GetVisualChildrenCount-1.
+        ///
+        ///    By default a Visual does not have any children.
+        ///
+        ///  Remark:
+        ///       During this virtual call it is not valid to modify the Visual tree.
+        /// </summary>
+        protected override IVisual GetVisualChild(int index)
+        {
+            // because "base.Count + 1" for GridLinesRenderer
+            // argument checking done at the base class
+            if (index == base.VisualChildrenCount)
+            {
+                if (_gridLinesRenderer == null)
+                {
+                    throw new ArgumentOutOfRangeException("index");
+                }
+                return _gridLinesRenderer;
+            }
+            else
+                return base.GetVisualChild(index);
+        }
+
+        /// <summary>
+        ///  Derived classes override this property to enable the Visual code to enumerate
+        ///  the Visual children. Derived classes need to return the number of children
+        ///  from this method.
+        ///
+        ///    By default a Visual does not have any children.
+        ///
+        ///  Remark: During this virtual method the Visual tree must not be modified.
+        /// </summary>
+        protected override int VisualChildrenCount
+        {
+            //since GridLinesRenderer has not been added as a child, so we do not subtract
+            get { return base.VisualChildrenCount + (_gridLinesRenderer != null ? 1 : 0); }
+        }
+
+        /// <summary>
         /// Content measurement.
         /// </summary>
         /// <param name="constraint">Constraint</param>
@@ -2329,15 +2369,16 @@ namespace Avalonia.Controls
             if (ShowGridLines && (_gridLinesRenderer == null))
             {
                 _gridLinesRenderer = new GridLinesRenderer();
-                this.VisualChildren.Add(_gridLinesRenderer);
+                this.AddVisualChild(_gridLinesRenderer);
             }
 
             if ((!ShowGridLines) && (_gridLinesRenderer != null))
             {
-                this.VisualChildren.Add(_gridLinesRenderer);
+                this.RemoveVisualChild(_gridLinesRenderer);
                 _gridLinesRenderer = null;
             }
 
+            OnVisualChildrenChanged(EventArgs.Empty);
             return (_gridLinesRenderer);
         }
 

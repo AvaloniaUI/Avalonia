@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -366,7 +367,7 @@ namespace Avalonia.Interactivity.UnitTests
 
             EventHandler<RoutedEventArgs> removeHandler = (s, e) =>
             {
-                parent.Children = Array.Empty<IVisual>();
+                parent.Children.Clear();
             };
             
             target.AddHandler(ev, removeHandler);
@@ -388,7 +389,7 @@ namespace Avalonia.Interactivity.UnitTests
             var tree = new TestInteractive
             {
                 Name = "1",
-                Children = new[]
+                Children =
                 {
                     new TestInteractive
                     {
@@ -397,7 +398,7 @@ namespace Avalonia.Interactivity.UnitTests
                     (target = new TestInteractive
                     {
                         Name = "2b",
-                        Children = new[]
+                        Children =
                         {
                             new TestInteractive
                             {
@@ -419,24 +420,10 @@ namespace Avalonia.Interactivity.UnitTests
             return target;
         }
 
-        private class TestInteractive : Interactive
+        private class TestInteractive : Panel
         {
             public bool ClassHandlerInvoked { get; private set; }
             public new string Name { get; set; }
-
-            public IEnumerable<IVisual> Children
-            {
-                get
-                {
-                    return ((IVisual)this).VisualChildren.AsEnumerable();
-                }
-
-                set
-                {
-                    VisualChildren.Clear();
-                    VisualChildren.AddRange(value.Cast<Visual>());
-                }
-            }
 
             public void ClassHandler(RoutedEventArgs e)
             {

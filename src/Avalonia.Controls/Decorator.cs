@@ -1,5 +1,9 @@
+using System;
 using Avalonia.Layout;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -11,8 +15,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly StyledProperty<IControl> ChildProperty =
-            AvaloniaProperty.Register<Decorator, IControl>(nameof(Child));
+        public static readonly StyledProperty<IControl?> ChildProperty =
+            AvaloniaProperty.Register<Decorator, IControl?>(nameof(Child), validate: ValidateChild);
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -20,23 +24,24 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Thickness> PaddingProperty =
             AvaloniaProperty.Register<Decorator, Thickness>(nameof(Padding));
 
+        private IControl? _child;
+
         /// <summary>
         /// Initializes static members of the <see cref="Decorator"/> class.
         /// </summary>
         static Decorator()
         {
             AffectsMeasure<Decorator>(ChildProperty, PaddingProperty);
-            ChildProperty.Changed.AddClassHandler<Decorator>((x, e) => x.ChildChanged(e));
         }
 
         /// <summary>
         /// Gets or sets the decorated control.
         /// </summary>
         [Content]
-        public IControl Child
+        public IControl? Child
         {
-            get { return GetValue(ChildProperty); }
-            set { SetValue(ChildProperty, value); }
+            get => _child;
+            set => SetValue(ChildProperty, value);
         }
 
         /// <summary>
@@ -47,6 +52,10 @@ namespace Avalonia.Controls
             get { return GetValue(PaddingProperty); }
             set { SetValue(PaddingProperty, value); }
         }
+
+        protected override int VisualChildrenCount => Child is null ? 0 : 1;
+
+        protected override event EventHandler? VisualChildrenChanged;
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
@@ -60,28 +69,42 @@ namespace Avalonia.Controls
             return LayoutHelper.ArrangeChild(Child, finalSize, Padding);
         }
 
-        /// <summary>
-        /// Called when the <see cref="Child"/> property changes.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override IVisual GetVisualChild(int index)
         {
-            var oldChild = (Control)e.OldValue;
-            var newChild = (Control)e.NewValue;
+            return (index == 0 && _child is not null) ?
+                _child : throw new ArgumentOutOfRangeException(nameof(index));
+        }
 
-            if (oldChild != null)
-            {
-                ((ISetLogicalParent)oldChild).SetParent(null);
-                LogicalChildren.Clear();
-                VisualChildren.Remove(oldChild);
-            }
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
 
-            if (newChild != null)
+            if (change.Property == ChildProperty)
             {
-                ((ISetLogicalParent)newChild).SetParent(this);
-                VisualChildren.Add(newChild);
-                LogicalChildren.Add(newChild);
+                var oldChild = change.OldValue.GetValueOrDefault<IControl>();
+                _child = change.NewValue.GetValueOrDefault<IControl>();
+
+                if (oldChild is not null)
+                {
+                    ((ISetLogicalParent)oldChild).SetParent(null);
+                    LogicalChildren.Clear();
+                    RemoveVisualChild(oldChild);
+                }
+
+                if (_child is not null)
+                {
+                    ((ISetLogicalParent)_child).SetParent(this);
+                    AddVisualChild(_child);
+                    LogicalChildren.Add(_child);
+                }
+
+                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        private static bool ValidateChild(IControl? arg)
+        {
+            return arg is null || (arg.VisualParent is null && arg.Parent is null);
         }
     }
 }

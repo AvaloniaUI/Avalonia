@@ -1,9 +1,7 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -27,7 +25,6 @@ namespace Avalonia.UnitTests
         public TestRoot(IControl child)
             : this(false, child)
         {
-            Child = child;
         }
 
         public TestRoot(bool useGlobalStyles, IControl child)

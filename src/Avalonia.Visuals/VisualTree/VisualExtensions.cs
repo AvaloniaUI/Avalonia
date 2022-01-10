@@ -305,7 +305,12 @@ namespace Avalonia.VisualTree
         /// <returns>The visual children.</returns>
         public static IEnumerable<IVisual> GetVisualChildren(this IVisual visual)
         {
-            return visual.VisualChildren;
+            var count = visual.VisualChildrenCount;
+
+            for (var i = 0; i < count; ++i)
+            {
+                yield return visual.GetVisualChild(i);
+            }
         }
 
         /// <summary>
@@ -315,11 +320,14 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<IVisual> GetVisualDescendants(this IVisual visual)
         {
-            foreach (IVisual child in visual.VisualChildren)
+            var childCount = visual.VisualChildrenCount;
+
+            for (var i = 0; i < childCount; ++i)
             {
+                var child = visual.GetVisualChild(i);
                 yield return child;
 
-                foreach (IVisual descendant in child.GetVisualDescendants())
+                foreach (var descendant in child.GetVisualDescendants())
                 {
                     yield return descendant;
                 }
@@ -404,27 +412,43 @@ namespace Avalonia.VisualTree
             return false;
         }
 
-        public static IEnumerable<IVisual> SortByZIndex(this IEnumerable<IVisual> elements)
+        public static IEnumerable<IVisual> VisualChildrenByZIndex(this IVisual visual)
         {
-            return elements
-                .Select((element, index) => new ZOrderElement
+            var count = visual.VisualChildrenCount;
+
+            if (count == 0)
+                return Array.Empty<IVisual>();
+            else if (count == 1)
+                return new[] { visual.GetVisualChild(0) };
+            else
+            {
+                var elements = new List<ZOrderElement>(count);
+
+                for (var i = 0; i < count; i++)
                 {
-                    Element = element,
-                    Index = index,
-                    ZIndex = element.ZIndex,
-                })
-                .OrderBy(x => x, null)
-                .Select(x => x.Element!);
+                    var child = visual.GetVisualChild(i);
+
+                    elements.Add(new ZOrderElement
+                    {
+                        Element = child,
+                        Index = i,
+                        ZIndex = child.ZIndex,
+                    });
+                }
+
+                return elements
+                    .OrderBy(x => x, null)
+                    .Select(x => x.Element!);
+            }
         }
 
         private static T? FindDescendantOfTypeCore<T>(IVisual visual) where T : class
         {
-            var visualChildren = visual.VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
+            var visualChildrenCount = visual.VisualChildrenCount;
 
             for (var i = 0; i < visualChildrenCount; i++)
             {
-                IVisual child = visualChildren[i];
+                IVisual child = visual.GetVisualChild(i);
 
                 if (child is T result)
                 {

@@ -36,7 +36,7 @@ namespace Avalonia.Styling.UnitTests
                 .Template()
                 .Name("border");
 
-            var border = (Border)((IVisual)control).VisualChildren.Single();
+            var border = (Border)((IVisual)control).GetVisualChildren().Single();
             var values = new List<bool>();
             var match = selector.Match(border);
 
@@ -76,7 +76,7 @@ namespace Avalonia.Styling.UnitTests
                 .OfType<TextBlock>()
                 .Name("baz");
 
-            var border = (Border)((IVisual)control).VisualChildren.Single();
+            var border = (Border)((IVisual)control).GetVisualChildren().Single();
             var values = new List<bool>();
             var match = selector.Match(border);
 
@@ -136,7 +136,7 @@ namespace Avalonia.Styling.UnitTests
                 .Name("border")
                 .Class("foo");
 
-            var border = (Border)((IVisual)control).VisualChildren.Single();
+            var border = (Border)((IVisual)control).GetVisualChildren().Single();
             var values = new List<bool>();
             var match = selector.Match(border);
 

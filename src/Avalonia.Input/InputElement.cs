@@ -682,12 +682,11 @@ namespace Avalonia.Input
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.
             
-            var children = VisualChildren;
+            var childrenCount = VisualChildrenCount;
 
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (int i = 0; i < children.Count; ++i)
+            for (int i = 0; i < childrenCount; ++i)
             {
-                var child = children[i] as InputElement;
+                var child = GetVisualChild(i) as InputElement;
 
                 child?.UpdateIsEffectivelyEnabled(this);
             }

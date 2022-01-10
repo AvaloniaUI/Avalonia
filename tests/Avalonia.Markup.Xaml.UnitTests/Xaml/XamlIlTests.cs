@@ -118,9 +118,9 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 var btn = ((Button)parsed.Content);
                 btn.ApplyTemplate();
                 var canvas = (Canvas)btn.GetVisualChildren().First()
-                    .VisualChildren.First()
-                    .VisualChildren.First()
-                    .VisualChildren.First();
+                    .GetVisualChildren().First()
+                    .GetVisualChildren().First()
+                    .GetVisualChildren().First();
                 Assert.Equal(Brushes.Red.Color, ((ISolidColorBrush)canvas.Background).Color);
             }
         }

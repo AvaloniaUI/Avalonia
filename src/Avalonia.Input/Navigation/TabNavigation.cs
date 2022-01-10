@@ -238,12 +238,11 @@ namespace Avalonia.Input.Navigation
             {
                 if (e is IVisual elementAsVisual)
                 {
-                    var children = elementAsVisual.VisualChildren;
-                    var count = children.Count;
+                    var count = elementAsVisual.VisualChildrenCount;
 
                     for (int i = 0; i < count; i++)
                     {
-                        if (children[i] is InputElement ie)
+                        if (elementAsVisual.GetVisualChild(i) is InputElement ie)
                         {
                             if (IsVisibleAndEnabled(ie))
                                 return ie;
@@ -276,12 +275,11 @@ namespace Avalonia.Input.Navigation
 
                 if (elementAsVisual != null)
                 {
-                    var children = elementAsVisual.VisualChildren;
-                    var count = children.Count;
+                    var count = elementAsVisual.VisualChildrenCount;
 
                     for (int i = count - 1; i >= 0; i--)
                     {
-                        if (children[i] is InputElement ie)
+                        if (elementAsVisual.GetVisualChild(i) is InputElement ie)
                         {
                             if (IsVisibleAndEnabled(ie))
                                 return ie;
@@ -387,14 +385,13 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is IVisual parentAsVisual && e is IVisual elementAsVisual)
             {
-                var children = parentAsVisual.VisualChildren;
-                var count = children.Count;
+                var count = parentAsVisual.VisualChildrenCount;
                 var i = 0;
 
                 //go till itself
                 for (; i < count; i++)
                 {
-                    var vchild = children[i];
+                    var vchild = parentAsVisual.GetVisualChild(i);
                     if (vchild == elementAsVisual)
                         break;
                 }
@@ -402,7 +399,7 @@ namespace Avalonia.Input.Navigation
                 //search ahead
                 for (; i < count; i++)
                 {
-                    var visual = children[i];
+                    var visual = parentAsVisual.GetVisualChild(i);
                     if (visual is IInputElement ie)
                         return ie;
                 }
@@ -591,13 +588,12 @@ namespace Avalonia.Input.Navigation
         {
             if (GetParent(e) is IVisual parentAsVisual && e is IVisual elementAsVisual)
             {
-                var children = parentAsVisual.VisualChildren;
-                var count = children.Count;
+                var count = parentAsVisual.VisualChildrenCount;
                 IInputElement? prev = null;
                 
                 for (int i = 0; i < count; i++)
                 {
-                    var vchild = children[i];
+                    var vchild = parentAsVisual.GetVisualChild(i);
                     if (vchild == elementAsVisual)
                         break;
                     if (vchild is IInputElement ie && IsVisibleAndEnabled(ie))

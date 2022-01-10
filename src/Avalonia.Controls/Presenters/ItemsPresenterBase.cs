@@ -7,6 +7,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -130,6 +131,8 @@ namespace Avalonia.Controls.Presenters
         }
 
         protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
+        protected override int VisualChildrenCount => Panel is null ? 0 : 1;
+        protected override event EventHandler VisualChildrenChanged;
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -194,6 +197,12 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        protected override IVisual GetVisualChild(int index)
+        {
+            return (index == 0 && Panel is not null) ?
+                Panel : throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -235,13 +244,15 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         private void CreatePanel()
         {
+            if (Panel is not null)
+                RemoveVisualChild(Panel);
+
             Panel = ItemsPanel.Build();
             Panel.SetValue(TemplatedParentProperty, TemplatedParent);
 
             LogicalChildren.Clear();
-            VisualChildren.Clear();
             LogicalChildren.Add(Panel);
-            VisualChildren.Add(Panel);
+            AddVisualChild(Panel);
 
             _createdPanel = true;
 
@@ -251,6 +262,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             PanelCreated(Panel);
+            VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

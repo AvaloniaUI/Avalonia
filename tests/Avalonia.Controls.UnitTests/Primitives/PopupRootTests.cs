@@ -84,7 +84,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 Assert.IsType<VisualLayerManager>(visualLayerManager);
 
-                var contentPresenter = visualLayerManager.VisualChildren.Single();
+                var contentPresenter = visualLayerManager.GetVisualChildren().Single();
                 Assert.IsType<ContentPresenter>(contentPresenter);
                 
                 

@@ -1,5 +1,4 @@
 using System;
-
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -8,6 +7,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -226,6 +226,9 @@ namespace Avalonia.Controls.Presenters
             set => SetAndRaise(RecognizesAccessKeyProperty, ref _recognizesAccessKey, value);
         }
 
+        protected override int VisualChildrenCount => Child is null ? 0 : 1;
+        protected override event EventHandler VisualChildrenChanged;
+
         /// <summary>
         /// Gets the host content control.
         /// </summary>
@@ -261,10 +264,9 @@ namespace Avalonia.Controls.Presenters
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
             {
-
                 if (oldChild != null)
                 {
-                    VisualChildren.Remove(oldChild);
+                    RemoveVisualChild(oldChild);
                     logicalChildren.Remove(oldChild);
                     ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
                 }
@@ -295,10 +297,17 @@ namespace Avalonia.Controls.Presenters
                     logicalChildren.Add(newChild);
                 }
 
-                VisualChildren.Add(newChild);
+                AddVisualChild(newChild);
             }
 
+            VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
             _createdChild = true;
+        }
+
+        protected override IVisual GetVisualChild(int index)
+        {
+            return (index == 0 && _child is not null) ?
+                _child : throw new ArgumentOutOfRangeException(nameof(index));
         }
 
         /// <inheritdoc/>
@@ -450,7 +459,7 @@ namespace Avalonia.Controls.Presenters
             }
             else if (Child != null)
             {
-                VisualChildren.Remove(Child);
+                RemoveVisualChild(Child);
                 LogicalChildren.Remove(Child);
                 ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;

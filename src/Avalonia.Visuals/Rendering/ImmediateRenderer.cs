@@ -248,9 +248,9 @@ namespace Avalonia.Rendering
                     containsPoint = visual.TransformedBounds?.Contains(p) == true;
                 }
 
-                if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
+                if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildrenCount > 0)
                 {
-                    foreach (var child in visual.VisualChildren.SortByZIndex())
+                    foreach (var child in visual.VisualChildrenByZIndex())
                     {
                         foreach (var result in HitTest(child, p, filter))
                         {
@@ -323,8 +323,11 @@ namespace Avalonia.Rendering
                     if (_updateTransformedBounds)
                         visual.TransformedBounds = transformed;
 
-                    foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
+                    var childCount = visual.VisualChildrenCount;
+
+                    for (var i = 0; i < childCount; ++i)
                     {
+                        var child = visual.GetVisualChild(i);
                         var childBounds = GetTransformedBounds(child);
 
                         if (!child.ClipToBounds || clipRect.Intersects(childBounds))

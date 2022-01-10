@@ -389,9 +389,11 @@ namespace Avalonia.Input
 
         private void ClearChildrenPointerOver(PointerEventArgs e, IInputElement element,bool clearRoot)
         {
-            foreach (IInputElement el in element.VisualChildren)
+            var count = element.VisualChildrenCount;
+
+            for (int i = 0; i < count; i++)
             {
-                if (el.IsPointerOver)
+                if (element.GetVisualChild(i) is IInputElement el && el.IsPointerOver)
                 {
                     ClearChildrenPointerOver(e, el, true);
                     break;

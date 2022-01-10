@@ -72,7 +72,7 @@ namespace Avalonia.Styling.UnitTests
             var styleable = target.As<IStyleable>();
             BuildVisualTree(target);
 
-            var textBlock = (TextBlock)target.Object.VisualChildren.Single().VisualChildren.Single();
+            var textBlock = (TextBlock)target.Object.GetVisualChildren().Single().GetVisualChildren().Single();
             var selector = default(Selector)
                 .OfType(target.Object.GetType())
                 .Template()
@@ -90,7 +90,7 @@ namespace Avalonia.Styling.UnitTests
             var styleKey = templatedControl.Object.GetType();
             BuildVisualTree(target);
 
-            var border = (Border)target.Object.VisualChildren.Single();
+            var border = (Border)target.Object.GetVisualChildren().Single();
 
             var selector = default(Selector).OfType(styleKey).Template().OfType<Border>();
 
@@ -108,7 +108,7 @@ namespace Avalonia.Styling.UnitTests
 
             styleable.Setup(x => x.StyleKey).Returns(styleKey);
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
-            var border = (Border)target.Object.VisualChildren.Single();
+            var border = (Border)target.Object.GetVisualChildren().Single();
             var selector = default(Selector).OfType(styleKey).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).Activator;
 
@@ -124,7 +124,7 @@ namespace Avalonia.Styling.UnitTests
             BuildVisualTree(target);
 
             styleable.Setup(x => x.Classes).Returns(new Classes("bar"));
-            var border = (Border)target.Object.VisualChildren.Single();
+            var border = (Border)target.Object.GetVisualChildren().Single();
             var selector = default(Selector).OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).Activator;
 
@@ -140,7 +140,7 @@ namespace Avalonia.Styling.UnitTests
             BuildVisualTree(target);
 
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
-            var border = (Border)target.Object.VisualChildren.Single();
+            var border = (Border)target.Object.GetVisualChildren().Single();
             var selector = default(Selector).OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).Activator;
             var inccDebug = (INotifyCollectionChangedDebug)styleable.Object.Classes;
@@ -155,15 +155,13 @@ namespace Avalonia.Styling.UnitTests
 
         private void BuildVisualTree<T>(Mock<T> templatedControl) where T : class, IVisual
         {
-            templatedControl.Setup(x => x.VisualChildren).Returns(new Controls.Controls
+            templatedControl.SetupGet(x => x.VisualChildrenCount).Returns(1);
+            templatedControl.Setup(x => x.GetVisualChild(0)).Returns(new Border
             {
-                new Border
+                [Control.TemplatedParentProperty] = templatedControl.Object,
+                Child = new TextBlock
                 {
                     [Control.TemplatedParentProperty] = templatedControl.Object,
-                    Child = new TextBlock
-                    {
-                        [Control.TemplatedParentProperty] = templatedControl.Object,
-                    },
                 },
             });
         }

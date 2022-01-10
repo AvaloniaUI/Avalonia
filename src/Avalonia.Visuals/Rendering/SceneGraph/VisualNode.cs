@@ -192,11 +192,12 @@ namespace Avalonia.Rendering.SceneGraph
                 return;
             }
 
-            var keys = new List<long>(Visual.VisualChildren.Count);
+            var childCount = Visual.VisualChildrenCount;
+            var keys = new List<long>(childCount);
 
-            for (var i = 0; i < Visual.VisualChildren.Count; ++i)
+            for (var i = 0; i < childCount; ++i)
             {
-                var child = Visual.VisualChildren[i];
+                var child = Visual.GetVisualChild(i);
                 var zIndex = child.ZIndex;
                 keys.Add(((long)zIndex << 32) + i);
             }
@@ -206,7 +207,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             foreach (var i in keys)
             {
-                var child = Visual.VisualChildren[(int)(i & 0xffffffff)];
+                var child = Visual.GetVisualChild((int)(i & 0xffffffff));
                 var node = scene.FindNode(child);
 
                 if (node != null)

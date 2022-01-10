@@ -119,12 +119,6 @@ namespace Avalonia
         {
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
-
-            var visualChildren = new AvaloniaList<IVisual>();
-            visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = visual => ValidateVisualChild(visual);
-            visualChildren.CollectionChanged += VisualChildrenChanged;
-            VisualChildren = visualChildren;
         }
 
         /// <summary>
@@ -136,6 +130,24 @@ namespace Avalonia
         /// Raised when the control is detached from a rooted visual tree.
         /// </summary>
         public event EventHandler<VisualTreeAttachmentEventArgs>? DetachedFromVisualTree;
+
+        /// <summary>
+        /// Raised when the visual children of the control change.
+        /// </summary>
+        event EventHandler? IVisual.VisualChildrenChanged
+        {
+            add => VisualChildrenChanged += value;
+            remove => VisualChildrenChanged -= value;
+        }
+
+        /// <summary>
+        /// Raised when the visual children of the control change.
+        /// </summary>
+        protected virtual event EventHandler? VisualChildrenChanged
+        {
+            add { }
+            remove { }
+        }
 
         /// <summary>
         /// Gets the bounds of the control relative to its parent.
@@ -252,13 +264,9 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the control's child visuals.
+        /// Gets the number of visual children of the control.
         /// </summary>
-        protected IAvaloniaList<IVisual> VisualChildren
-        {
-            get;
-            private set;
-        }
+        protected virtual int VisualChildrenCount => 0;
 
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
@@ -271,9 +279,9 @@ namespace Avalonia
         bool IVisual.IsAttachedToVisualTree => VisualRoot != null;
 
         /// <summary>
-        /// Gets the control's child controls.
+        /// Gets the number of visual children of the control.
         /// </summary>
-        IAvaloniaReadOnlyList<IVisual> IVisual.VisualChildren => VisualChildren;
+        int IVisual.VisualChildrenCount => VisualChildrenCount;
 
         /// <summary>
         /// Gets the control's parent visual.
@@ -307,6 +315,14 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(context != null);
         }
+
+        /// <summary>
+        /// Returns the specified visual child.
+        /// </summary>
+        /// <param name="index">
+        /// The index of the visual child; must be less than <see cref="VisualChildrenCount"/>.
+        /// </param>
+        IVisual IVisual.GetVisualChild(int index) => GetVisualChild(index);
 
         /// <summary>
         /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
@@ -377,6 +393,54 @@ namespace Avalonia
             }
         }
 
+        /// <summary>
+        /// Defines the parent-child relationship between two visuals.
+        /// </summary>
+        /// <param name="child">The visual to add as a child of this visual.</param>
+        protected void AddVisualChild(IVisual child)
+        {
+            switch (child)
+            {
+                case null:
+                    throw new ArgumentNullException(nameof(child));
+                case Visual v when v._visualParent is not null:
+                    throw new InvalidOperationException("The control already has a visual parent.");
+                case Visual v:
+                    v.SetVisualParent(this);
+                    InvalidateVisual();
+                    break;
+                default:
+                    throw new NotSupportedException("Arbitrary IVisual implementations not currently supported.");
+            }
+        }
+
+        /// <summary>
+        /// Removes the parent-child relationship between two visuals.
+        /// </summary>
+        /// <param name="child">The visual to remove as a child of this visual.</param>
+        protected void RemoveVisualChild(IVisual child)
+        {
+            switch (child)
+            {
+                case null:
+                    throw new ArgumentNullException(nameof(child));
+                case Visual v when v._visualParent != this:
+                    throw new InvalidOperationException("The control is not a child of this Visual.");
+                case Visual v:
+                    v.SetVisualParent(null);
+                    InvalidateVisual();
+                    break;
+                default:
+                    throw new NotSupportedException("Arbitrary IVisual implementations not currently supported.");
+            }
+        }
+
+        /// <summary>
+        /// Returns the specified visual child.
+        /// </summary>
+        /// <param name="index">The index of the visual child.</param>
+        protected virtual IVisual GetVisualChild(int index) => throw new ArgumentOutOfRangeException(nameof(index));
+
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
@@ -404,18 +468,13 @@ namespace Avalonia
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            var visualChildren = VisualChildren;
+            var childCount = VisualChildrenCount;
 
-            if (visualChildren != null)
+            for (var i = 0; i < childCount; ++i)
             {
-                var visualChildrenCount = visualChildren.Count;
-
-                for (var i = 0; i < visualChildrenCount; i++)
+                if (GetVisualChild(i) is Visual v)
                 {
-                    if (visualChildren[i] is Visual child)
-                    {
-                        child.OnAttachedToVisualTreeCore(e);
-                    }
+                    v.OnAttachedToVisualTreeCore(e);
                 }
             }
         }
@@ -441,18 +500,13 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
-            var visualChildren = VisualChildren;
+            var childCount = VisualChildrenCount;
 
-            if (visualChildren != null)
+            for (var i = 0; i < childCount; ++i)
             {
-                var visualChildrenCount = visualChildren.Count;
-
-                for (var i = 0; i < visualChildrenCount; i++)
+                if (GetVisualChild(i) is Visual v)
                 {
-                    if (visualChildren[i] is Visual child)
-                    {
-                        child.OnDetachedFromVisualTreeCore(e);
-                    }
+                    v.OnDetachedFromVisualTreeCore(e);
                 }
             }
         }
@@ -538,23 +592,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Ensures a visual child is not null and not already parented.
-        /// </summary>
-        /// <param name="c">The visual child.</param>
-        private static void ValidateVisualChild(IVisual c)
-        {
-            if (c == null)
-            {
-                throw new ArgumentNullException(nameof(c), "Cannot add null to VisualChildren.");
-            }
-
-            if (c.VisualParent != null)
-            {
-                throw new InvalidOperationException("The control already has a visual parent.");
-            }
-        }
-
-        /// <summary>
         /// Called when the <see cref="ZIndex"/> property changes on any control.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -609,41 +646,5 @@ namespace Avalonia
         }
 
         private void AffectsRenderInvalidated(object? sender, EventArgs e) => InvalidateVisual();
-
-        /// <summary>
-        /// Called when the <see cref="VisualChildren"/> collection changes.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The event args.</param>
-        private void VisualChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    SetVisualParent(e.NewItems!, this);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    SetVisualParent(e.OldItems!, null);
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    SetVisualParent(e.OldItems!, null);
-                    SetVisualParent(e.NewItems!, this);
-                    break;
-            }
-        }
-        
-        private static void SetVisualParent(IList children, Visual? parent)
-        {
-            var count = children.Count;
-
-            for (var i = 0; i < count; i++)
-            {
-                var visual = (Visual) children[i]!;
-                
-                visual.SetVisualParent(parent);
-            }
-        }
     }
 }

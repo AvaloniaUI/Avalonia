@@ -32,11 +32,11 @@ namespace Avalonia.ReactiveUI.UnitTests
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            var child = ((IVisual)target).VisualChildren.Single();
+            var child = ((IVisual)target).GetVisualChildren().Single();
             Assert.IsType<Border>(child);
-            child = child.VisualChildren.Single();
+            child = child.GetVisualChildren().Single();
             Assert.IsType<ContentPresenter>(child);
-            child = child.VisualChildren.Single();
+            child = child.GetVisualChildren().Single();
             Assert.IsType<TextBlock>(child);
         }
 

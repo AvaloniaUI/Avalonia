@@ -254,23 +254,23 @@ namespace Avalonia.Rendering.SceneGraph
 
                     if (forceRecurse)
                     {
-                        var visualChildren = (IList<IVisual>) visual.VisualChildren;
+                        var visualChildrenCount = visual.VisualChildrenCount;
 
-                        node.TryPreallocateChildren(visualChildren.Count);
+                        node.TryPreallocateChildren(visualChildrenCount);
 
-                        if (visualChildren.Count == 1)
+                        if (visualChildrenCount == 1)
                         {
-                            var childNode = GetOrCreateChildNode(scene, visualChildren[0], node);
+                            var childNode = GetOrCreateChildNode(scene, visual.GetVisualChild(0), node);
                             Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
                         }
-                        else if (visualChildren.Count > 1)
+                        else if (visualChildrenCount > 1)
                         {
-                            var count = visualChildren.Count;
+                            var count = visualChildrenCount;
                             var sortedChildren = new (IVisual visual, int index)[count];
 
                             for (var i = 0; i < count; i++)
                             {
-                                sortedChildren[i] = (visualChildren[i], i);
+                                sortedChildren[i] = (visual.GetVisualChild(i), i);
                             }
 
                             // Regular Array.Sort is unstable, we need to provide indices as well to avoid reshuffling elements.

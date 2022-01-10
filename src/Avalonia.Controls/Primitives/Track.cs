@@ -10,6 +10,9 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
@@ -31,14 +34,23 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Orientation> OrientationProperty =
             ScrollBar.OrientationProperty.AddOwner<Track>();
 
-        public static readonly StyledProperty<Thumb> ThumbProperty =
-            AvaloniaProperty.Register<Track, Thumb>(nameof(Thumb));
+        public static readonly DirectProperty<Track, Thumb?> ThumbProperty =
+            AvaloniaProperty.RegisterDirect<Track, Thumb?>(
+                nameof(Thumb),
+                o => o.Thumb,
+                (o, v) => o.Thumb = v);
 
-        public static readonly StyledProperty<Button> IncreaseButtonProperty =
-            AvaloniaProperty.Register<Track, Button>(nameof(IncreaseButton));
+        public static readonly DirectProperty<Track, Button?> IncreaseButtonProperty =
+            AvaloniaProperty.RegisterDirect<Track, Button?>(
+                nameof(IncreaseButton),
+                o => o.IncreaseButton,
+                (o, v) => o.IncreaseButton = v);
 
-        public static readonly StyledProperty<Button> DecreaseButtonProperty =
-            AvaloniaProperty.Register<Track, Button>(nameof(DecreaseButton));
+        public static readonly DirectProperty<Track, Button?> DecreaseButtonProperty =
+            AvaloniaProperty.RegisterDirect<Track, Button?>(
+                nameof(DecreaseButton),
+                o => o.DecreaseButton,
+                (o, v) => o.DecreaseButton = v);
 
         public static readonly StyledProperty<bool> IsDirectionReversedProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IsDirectionReversed));
@@ -49,12 +61,12 @@ namespace Avalonia.Controls.Primitives
         private double _minimum;
         private double _maximum = 100.0;
         private double _value;
+        private Thumb? _thumb;
+        private Button? _increaseButton;
+        private Button? _decreaseButton;
 
         static Track()
         {
-            ThumbProperty.Changed.AddClassHandler<Track>((x, e) => x.ThumbChanged(e));
-            IncreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
-            DecreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             AffectsArrange<Track>(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
         }
 
@@ -65,67 +77,156 @@ namespace Avalonia.Controls.Primitives
 
         public double Minimum
         {
-            get { return _minimum; }
-            set { SetAndRaise(MinimumProperty, ref _minimum, value); }
+            get => _minimum;
+            set => SetAndRaise(MinimumProperty, ref _minimum, value);
         }
 
         public double Maximum
         {
-            get { return _maximum; }
-            set { SetAndRaise(MaximumProperty, ref _maximum, value); }
+            get => _maximum;
+            set => SetAndRaise(MaximumProperty, ref _maximum, value);
         }
 
         public double Value
         {
-            get { return _value; }
-            set { SetAndRaise(ValueProperty, ref _value, value); }
+            get => _value;
+            set => SetAndRaise(ValueProperty, ref _value, value);
         }
 
         public double ViewportSize
         {
-            get { return GetValue(ViewportSizeProperty); }
-            set { SetValue(ViewportSizeProperty, value); }
+            get => GetValue(ViewportSizeProperty);
+            set => SetValue(ViewportSizeProperty, value);
         }
 
         public Orientation Orientation
         {
-            get { return GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         [Content]
-        public Thumb Thumb
+        public Thumb? Thumb
         {
-            get { return GetValue(ThumbProperty); }
-            set { SetValue(ThumbProperty, value); }
+            get => _thumb;
+            set
+            {
+                if (_thumb == value)
+                    return;
+
+                var oldValue = _thumb;
+
+                if (_thumb is not null)
+                {
+                    _thumb.DragDelta -= ThumbDragged;
+                    LogicalChildren.Remove(_thumb);
+                    RemoveVisualChild(_thumb);
+                    _thumb = null;
+                }
+
+                if (value is not null)
+                {
+                    _thumb = value;
+                    _thumb.DragDelta += ThumbDragged;
+                    LogicalChildren.Add(_thumb);
+                    AddVisualChild(_thumb);
+                }
+
+                RaisePropertyChanged(ThumbProperty, oldValue, _thumb);
+                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
-        public Button IncreaseButton
+        public Button? IncreaseButton
         {
-            get { return GetValue(IncreaseButtonProperty); }
-            set { SetValue(IncreaseButtonProperty, value); }
+            get => _increaseButton;
+            set
+            {
+                if (_increaseButton == value)
+                    return;
+
+                var oldValue = _increaseButton;
+
+                if (_increaseButton is not null)
+                {
+                    LogicalChildren.Remove(_increaseButton);
+                    RemoveVisualChild(_increaseButton);
+                    _increaseButton = null;
+                }
+
+                if (value is not null)
+                {
+                    _increaseButton = value;
+                    LogicalChildren.Add(_increaseButton);
+                    AddVisualChild(_increaseButton);
+                }
+
+                RaisePropertyChanged(IncreaseButtonProperty, oldValue, _increaseButton);
+                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
-        public Button DecreaseButton
+        public Button? DecreaseButton
         {
-            get { return GetValue(DecreaseButtonProperty); }
-            set { SetValue(DecreaseButtonProperty, value); }
+            get => _decreaseButton;
+            set
+            {
+                if (_decreaseButton == value)
+                    return;
+
+                var oldValue = _decreaseButton;
+
+                if (_decreaseButton is not null)
+                {
+                    LogicalChildren.Remove(_decreaseButton);
+                    RemoveVisualChild(_decreaseButton);
+                    _decreaseButton = null;
+                }
+
+                if (value is not null)
+                {
+                    _decreaseButton = value;
+                    LogicalChildren.Add(_decreaseButton);
+                    AddVisualChild(_decreaseButton);
+                }
+
+                RaisePropertyChanged(DecreaseButtonProperty, oldValue, _decreaseButton);
+                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public bool IsDirectionReversed
         {
-            get { return GetValue(IsDirectionReversedProperty); }
-            set { SetValue(IsDirectionReversedProperty, value); }
+            get => GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, value);
         }
 
         public bool IsThumbDragHandled
         {
-            get { return GetValue(IgnoreThumbDragProperty); }
-            set { SetValue(IgnoreThumbDragProperty, value); }
+            get => GetValue(IgnoreThumbDragProperty);
+            set => SetValue(IgnoreThumbDragProperty, value);
+        }
+
+        protected override int VisualChildrenCount
+        {
+            get
+            {
+                var result = 0;
+
+                if (Thumb is not null)
+                    ++result;
+                if (IncreaseButton is not null)
+                    ++result;
+                if (DecreaseButton is not null)
+                    ++result;
+                return result;
+            }
         }
 
         private double ThumbCenterOffset { get; set; }
         private double Density { get; set; }
+
+        protected override event EventHandler? VisualChildrenChanged;
 
         /// <summary>
         /// Calculates the distance along the <see cref="Thumb"/> of a specified point along the
@@ -171,6 +272,17 @@ namespace Avalonia.Controls.Primitives
                 // Increases in y cause decreases in Sliders value
                 return -1 * scale * vertical * Density;
             }
+        }
+
+        protected override IVisual GetVisualChild(int index)
+        {
+            if (_thumb is not null && index-- == 0)
+                return _thumb;
+            if (_increaseButton is not null && index-- == 0)
+                return _increaseButton;
+            if (_decreaseButton is not null && index-- == 0)
+                return _decreaseButton;
+            throw new ArgumentOutOfRangeException(nameof(index));
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -401,46 +513,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
 
-        private void ThumbChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var oldThumb = (Thumb)e.OldValue;
-            var newThumb = (Thumb)e.NewValue;
-
-            if (oldThumb != null)
-            {
-                oldThumb.DragDelta -= ThumbDragged;
-
-                LogicalChildren.Remove(oldThumb);
-                VisualChildren.Remove(oldThumb);
-            }
-
-            if (newThumb != null)
-            {
-                newThumb.DragDelta += ThumbDragged;
-                LogicalChildren.Add(newThumb);
-                VisualChildren.Add(newThumb);
-            }
-        }
-
-        private void ButtonChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var oldButton = (Button)e.OldValue;
-            var newButton = (Button)e.NewValue;
-
-            if (oldButton != null)
-            {
-                LogicalChildren.Remove(oldButton);
-                VisualChildren.Remove(oldButton);
-            }
-
-            if (newButton != null)
-            {
-                LogicalChildren.Add(newButton);
-                VisualChildren.Add(newButton);
-            }
-        }
-
-        private void ThumbDragged(object sender, VectorEventArgs e)
+        private void ThumbDragged(object? sender, VectorEventArgs e)
         {
             if (IsThumbDragHandled)
                 return;

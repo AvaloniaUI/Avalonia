@@ -5,6 +5,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 #nullable enable
 
@@ -96,6 +97,7 @@ namespace Avalonia.Controls.Primitives
                 RoutingStrategies.Direct);
 
         private IControlTemplate? _appliedTemplate;
+        private IControl? _child;
 
         /// <summary>
         /// Initializes static members of the <see cref="TemplatedControl"/> class.
@@ -214,6 +216,8 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(TemplateProperty, value); }
         }
 
+        protected override int VisualChildrenCount => _child is null ? 0 : 1;
+
         /// <summary>
         /// Gets the value of the IsTemplateFocusTargetProperty attached property on a control.
         /// </summary>
@@ -255,7 +259,7 @@ namespace Avalonia.Controls.Primitives
             // and we don't need to do anything.
             if (_appliedTemplate != template && (template != null || logical.IsAttachedToLogicalTree))
             {
-                if (VisualChildren.Count > 0)
+                if (_child is not null)
                 {
                     foreach (var child in this.GetTemplateChildren())
                     {
@@ -263,7 +267,8 @@ namespace Avalonia.Controls.Primitives
                         ((ISetLogicalParent)child).SetParent(null);
                     }
 
-                    VisualChildren.Clear();
+                    RemoveVisualChild(_child);
+                    _child = null;
                 }
 
                 if (template != null)
@@ -273,7 +278,8 @@ namespace Avalonia.Controls.Primitives
                     var (child, nameScope) = template.Build(this);
                     ApplyTemplatedParent(child);
                     ((ISetLogicalParent)child).SetParent(this);
-                    VisualChildren.Add(child);
+                    _child = child;
+                    AddVisualChild(child);
                     
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
@@ -305,16 +311,17 @@ namespace Avalonia.Controls.Primitives
             return this;
         }
 
+        protected override IVisual GetVisualChild(int index)
+        {
+            return (index == 0 && _child is not null) ?
+                _child : throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
         protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            var count = VisualChildren.Count;
-
-            for (var i = 0; i < count; ++i)
+            if (_child is ILogical logical)
             {
-                if (VisualChildren[i] is ILogical logical)
-                {
-                    logical.NotifyResourcesChanged(e);
-                }
+                logical.NotifyResourcesChanged(e);
             }
 
             base.NotifyChildResourcesChanged(e);
@@ -323,22 +330,14 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (VisualChildren.Count > 0)
-            {
-                ((ILogical)VisualChildren[0]).NotifyAttachedToLogicalTree(e);
-            }
-
+            ((ILogical?)_child)?.NotifyAttachedToLogicalTree(e);
             base.OnAttachedToLogicalTree(e);
         }
 
         /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (VisualChildren.Count > 0)
-            {
-                ((ILogical)VisualChildren[0]).NotifyDetachedFromLogicalTree(e);
-            }
-
+            ((ILogical?)_child)?.NotifyDetachedFromLogicalTree(e);
             base.OnDetachedFromLogicalTree(e);
         }
 

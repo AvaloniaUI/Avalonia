@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Rendering;
 
@@ -29,6 +28,11 @@ namespace Avalonia.VisualTree
         /// Raised when the control is detached from a rooted visual tree.
         /// </summary>
         event EventHandler<VisualTreeAttachmentEventArgs>? DetachedFromVisualTree;
+
+        /// <summary>
+        /// Raised when the visual children of the control change.
+        /// </summary>
+        event EventHandler? VisualChildrenChanged;
 
         /// <summary>
         /// Gets the bounds of the control relative to its parent.
@@ -86,9 +90,9 @@ namespace Avalonia.VisualTree
         RelativePoint RenderTransformOrigin { get; set; }
 
         /// <summary>
-        /// Gets the control's child visuals.
+        /// Gets the number of visual children of the control.
         /// </summary>
-        IAvaloniaReadOnlyList<IVisual> VisualChildren { get; }
+        int VisualChildrenCount { get; }
 
         /// <summary>
         /// Gets the control's parent visual.
@@ -104,6 +108,14 @@ namespace Avalonia.VisualTree
         /// Gets or sets the Z index of the node.
         /// </summary>
         int ZIndex { get; set; }
+
+        /// <summary>
+        /// Returns the specified visual child.
+        /// </summary>
+        /// <param name="index">
+        /// The index of the visual child; must be less than <see cref="VisualChildrenCount"/>.
+        /// </param>
+        IVisual GetVisualChild(int index);
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.

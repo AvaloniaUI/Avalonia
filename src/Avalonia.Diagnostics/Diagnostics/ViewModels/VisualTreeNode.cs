@@ -109,6 +109,25 @@ namespace Avalonia.Diagnostics.ViewModels
 
             protected override void Initialize(AvaloniaList<TreeNode> nodes)
             {
+                void UpdateNodes()
+                {
+                    // TODO: Update this more intelligently.
+                    nodes.Clear();
+
+                    var count = _control.VisualChildrenCount;
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        var child = (IAvaloniaObject)_control.GetVisualChild(i);
+                        nodes.Add(new VisualTreeNode(child, Owner));
+                    }
+                }
+
+                void OnVisualChildrenChanged(object? sender, EventArgs e)
+                {
+                    UpdateNodes();
+                }
+
                 _subscriptions.Clear();
 
                 if (GetHostedPopupRootObservable(_control) is { } popupRootObservable)
@@ -135,11 +154,10 @@ namespace Avalonia.Diagnostics.ViewModels
                             }));
                 }
 
-                _subscriptions.Add(
-                    _control.VisualChildren.ForEachItem(
-                        (i, item) => nodes.Insert(i, new VisualTreeNode((IAvaloniaObject)item, Owner)),
-                        (i, item) => nodes.RemoveAt(i),
-                        () => nodes.Clear()));
+                UpdateNodes();
+                _control.VisualChildrenChanged += OnVisualChildrenChanged;
+                _subscriptions.Add(Disposable.Create(() =>
+                    _control.VisualChildrenChanged -= OnVisualChildrenChanged));
             }
 
             private struct PopupRoot

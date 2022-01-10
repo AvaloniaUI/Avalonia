@@ -97,7 +97,7 @@ namespace Avalonia
         {
             if (property.ValidateValue?.Invoke(value) == false)
             {
-                throw new ArgumentException($"{value} is not a valid value for '{property.Name}.");
+                throw new ArgumentException($"{value} is not a valid value for '{property.Name}'.");
             }
 
             IDisposable? result = null;

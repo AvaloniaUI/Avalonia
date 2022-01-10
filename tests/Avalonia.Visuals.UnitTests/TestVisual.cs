@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Visuals.UnitTests
@@ -18,45 +17,51 @@ namespace Avalonia.Visuals.UnitTests
 
     public class TestVisual : Visual
     {
+        private List<IVisual> _children = new List<IVisual>();
+
         public IVisual Child
         {
-            get
-            {
-                return ((IVisual)this).VisualChildren.FirstOrDefault();
-            }
-
+            get => _children.FirstOrDefault();
             set
             {
-                if (Child != null)
+                _children.Clear();
+                if (value is not null)
                 {
-                    VisualChildren.Remove(Child);
-                }
-
-                if (value != null)
-                {
-                    VisualChildren.Add(value);
+                    _children.Add(value);
+                    AddVisualChild(value);
                 }
             }
         }
 
+        protected override int VisualChildrenCount => _children.Count;
+
         public void AddChild(Visual v)
         {
-            VisualChildren.Add(v);
+            _children.Add(v);
+            AddVisualChild(v);
         }
 
         public void AddChildren(IEnumerable<Visual> v)
         {
-            VisualChildren.AddRange(v);
+            _children.AddRange(v);
+
+            foreach (var i in v)
+                AddVisualChild(i);
         }
 
         public void RemoveChild(Visual v)
         {
-            VisualChildren.Remove(v);
+            _children.Remove(v);
+            RemoveVisualChild(v);
         }
 
         public void ClearChildren()
         {
-            VisualChildren.Clear();
+            foreach (var i in _children)
+                RemoveVisualChild(i);
+            _children.Clear();
         }
+
+        protected override IVisual GetVisualChild(int index) => _children[index];
     }
 }

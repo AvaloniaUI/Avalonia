@@ -6,6 +6,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -56,6 +57,9 @@ namespace Avalonia.Controls
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
         }
+
+        protected override int VisualChildrenCount => Children.Count;
+        protected override event EventHandler VisualChildrenChanged;
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -119,18 +123,19 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Add:
                     controls = e.NewItems.OfType<Control>().ToList();
                     LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems.OfType<Visual>());
+                    foreach (IControl i in e.NewItems)
+                        AddVisualChild(i);
                     break;
 
                 case NotifyCollectionChangedAction.Move:
                     LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
-                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
                     controls = e.OldItems.OfType<Control>().ToList();
                     LogicalChildren.RemoveAll(controls);
-                    VisualChildren.RemoveAll(e.OldItems.OfType<Visual>());
+                    foreach (IControl i in e.OldItems)
+                        RemoveVisualChild(i);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
@@ -138,8 +143,9 @@ namespace Avalonia.Controls
                     {
                         var index = i + e.OldStartingIndex;
                         var child = (IControl)e.NewItems[i];
+                        RemoveVisualChild((IControl)e.OldItems[i]);
                         LogicalChildren[index] = child;
-                        VisualChildren[index] = child;
+                        AddVisualChild(child);
                     }
                     break;
 
@@ -147,9 +153,13 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
+            OnVisualChildrenChanged(EventArgs.Empty);
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
             InvalidateMeasureOnChildrenChanged();
         }
+
+        protected override IVisual GetVisualChild(int index) => Children[index];
+        protected virtual void OnVisualChildrenChanged(EventArgs e) => VisualChildrenChanged?.Invoke(this, e);
 
         private protected virtual void InvalidateMeasureOnChildrenChanged()
         {

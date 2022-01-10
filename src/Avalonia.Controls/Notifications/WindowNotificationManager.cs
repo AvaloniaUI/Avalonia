@@ -3,11 +3,10 @@ using System.Collections;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Rendering;
-using Avalonia.Data;
 using Avalonia.VisualTree;
-using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls.Notifications
 {
@@ -56,7 +55,7 @@ namespace Avalonia.Controls.Notifications
         /// <param name="host">The window that will host the control.</param>
         public WindowNotificationManager(Window host)
         {
-            if (VisualChildren.Count != 0)
+            if (VisualChildrenCount != 0)
             {
                 Install(host);
             }
@@ -168,6 +167,15 @@ namespace Avalonia.Controls.Notifications
             PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
         }
 
-        public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);
+        public bool HitTest(Point point)
+        {
+            if (VisualChildrenCount > 0)
+            {
+                var child = GetVisualChild(0);
+                return child.HitTestCustom(point);
+            }
+
+            return false;
+        }
     }
 }

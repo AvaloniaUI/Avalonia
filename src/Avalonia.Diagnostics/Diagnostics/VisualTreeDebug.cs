@@ -55,7 +55,7 @@ namespace Avalonia.Diagnostics
                 builder.AppendLine();
             }
 
-            foreach (var child in visual.VisualChildren)
+            foreach (var child in visual.GetVisualChildren())
             {
                 PrintVisualTree(child, builder, indent + 1);
             }

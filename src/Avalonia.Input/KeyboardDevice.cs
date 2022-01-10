@@ -66,9 +66,11 @@ namespace Avalonia.Input
         
         private void ClearFocusWithin(IInputElement element, bool clearRoot)
         {
-            foreach (var visual in element.VisualChildren)
+            var childCount = element.VisualChildrenCount;
+
+            for (var i = 0; i < childCount; ++i)
             {
-                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
+                if (element.GetVisualChild(i) is IInputElement el && el.IsKeyboardFocusWithin)
                 {
                     ClearFocusWithin(el, true);
                     break;
@@ -129,9 +131,11 @@ namespace Avalonia.Input
         
         private void ClearChildrenFocusWithin(IInputElement element, bool clearRoot)
         {
-            foreach (var visual in element.VisualChildren)
+            var childCount = element.VisualChildrenCount;
+
+            for (var i = 0; i < childCount; ++i)
             {
-                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
+                if (element.GetVisualChild(i) is IInputElement el && el.IsKeyboardFocusWithin)
                 {
                     ClearChildrenFocusWithin(el, true);
                     break;

@@ -76,13 +76,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
                 visual.As<IVisual>().Setup(v => v.Bounds).Returns(new Rect(0, 0, 400, 400));
 
-                visual.As<IVisual>().Setup(v => v.VisualChildren)
-                    .Returns(new AvaloniaList<IVisual>() { child.As<IVisual>().Object });
+                visual.As<IVisual>().SetupGet(x => x.VisualChildrenCount).Returns(1);
+                visual.As<IVisual>().Setup(v => v.GetVisualChild(0)).Returns(child.As<IVisual>().Object);
 
                 Rect childBounds = new Rect(0, 0, 100, 100);
                 child.As<IVisual>().Setup(v => v.Bounds).Returns(() => childBounds);
                 child.As<IVisual>().Setup(v => v.VisualParent).Returns(visual.Object);
-                child.As<IVisual>().Setup(v => v.VisualChildren).Returns(new AvaloniaList<IVisual>());
+                visual.As<IVisual>().SetupGet(x => x.VisualChildrenCount).Returns(0);
 
                 var invalidationCalls = new List<Rect>();
 
