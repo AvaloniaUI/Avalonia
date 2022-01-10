@@ -1,5 +1,4 @@
-using Avalonia.Collections;
-using Avalonia.Controls.Mixins;
+using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -38,10 +37,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             AvaloniaProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
 
-        static ContentControl()
-        {
-            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
-        }
+        private ILogical _logicalChild;
 
         /// <summary>
         /// Gets or sets the content to display.
@@ -90,40 +86,72 @@ namespace Avalonia.Controls
             set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
-        /// <inheritdoc/>
-        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+        protected override int LogicalChildrenCount => _logicalChild is null ? 0 : 1;
+        protected override event EventHandler LogicalChildrenChanged;
 
-        /// <inheritdoc/>
-        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
-            return RegisterContentPresenter(presenter);
+            RegisterContentPresenter(presenter);
+        }
+
+        void IContentPresenterHost.RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        {
+            RegisterLogicalChild(presenter, child);
+        }
+
+        protected override ILogical GetLogicalChild(int index)
+        {
+            return (index == 0 && _logicalChild is not null) ?
+                _logicalChild : throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        protected virtual void OnLogicalChildrenChanged(EventArgs e)
+        {
+            LogicalChildrenChanged?.Invoke(this, e);
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ContentProperty)
+                SetLogicalChild(change.NewValue.GetValueOrDefault<ILogical>());
         }
 
         /// <summary>
         /// Called when an <see cref="IContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual void RegisterContentPresenter(IContentPresenter presenter)
         {
             if (presenter.Name == "PART_ContentPresenter")
-            {
                 Presenter = presenter;
-                return true;
-            }
-
-            return false;
         }
 
-        private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <summary>
+        /// Called when a registered <see cref="IContentPresenter"/>'s logical child changes.
+        /// </summary>
+        /// <param name="presenter">The presenter.</param>
+        /// <param name="child">The new logical child.</param>
+        protected virtual void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
         {
-            if (e.OldValue is ILogical oldChild)
-            {
-                LogicalChildren.Remove(oldChild);
-            }
+            if (presenter == Presenter)
+                SetLogicalChild(child);
+        }
 
-            if (e.NewValue is ILogical newChild)
+        private void SetLogicalChild(ILogical child)
+        {
+            if (_logicalChild != child)
             {
-                LogicalChildren.Add(newChild);
+                if (_logicalChild?.LogicalParent == this)
+                    ((ISetLogicalParent)_logicalChild).SetParent(null);
+
+                _logicalChild = child;
+
+                if (_logicalChild is not null && _logicalChild.LogicalParent is null)
+                    ((ISetLogicalParent)_logicalChild).SetParent(this);
+
+                OnLogicalChildrenChanged(EventArgs.Empty);
             }
         }
     }

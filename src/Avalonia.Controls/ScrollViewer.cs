@@ -570,20 +570,19 @@ namespace Avalonia.Controls
             (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override void RegisterContentPresenter(IContentPresenter presenter)
         {
             _childSubscription?.Dispose();
             _childSubscription = null;
 
-            if (base.RegisterContentPresenter(presenter))
+            base.RegisterContentPresenter(presenter);
+
+            if (presenter == Presenter)
             {
                 _childSubscription = Presenter?
                     .GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(ChildChanged);
-                return true;
             }
-
-            return false;
         }
 
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)

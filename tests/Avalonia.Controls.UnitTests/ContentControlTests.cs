@@ -174,62 +174,61 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Content_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Setting_Content_Should_Fire_LogicalChildrenChanged()
         {
             var target = new ContentControl();
             var child = new Control();
-            var called = false;
+            var called = 0;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            ((ILogical)target).LogicalChildrenChanged += (s, e) => ++called;
 
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]
-        public void Clearing_Content_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Clearing_Content_Should_Fire_LogicalChildrenChanged()
         {
             var target = new ContentControl();
             var child = new Control();
-            var called = false;
+            var called = 0;
 
             target.Template = GetTemplate();
             target.Content = child;
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            ((ILogical)target).LogicalChildrenChanged += (s, e) => ++called;
 
             target.Content = null;
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]
-        public void Changing_Content_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Changing_Content_Should_Fire_LogicalChildrenChanged()
         {
             var target = new ContentControl();
             var child1 = new Control();
             var child2 = new Control();
-            var called = false;
+            var called = 0;
 
             target.Template = GetTemplate();
             target.Content = child1;
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            ((ILogical)target).LogicalChildrenChanged += (s, e) => ++called;
 
             target.Content = child2;
             target.Presenter.ApplyTemplate();
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]

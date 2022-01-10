@@ -18,7 +18,7 @@ namespace Avalonia.Diagnostics.Views
         {
             this.InitializeComponent();
             _historyList = this.FindControl<ListBox>("historyList");
-            ((ILogical)_historyList).LogicalChildren.CollectionChanged += HistoryChanged;
+            ((ILogical)_historyList).LogicalChildrenChanged += HistoryChanged;
             _input = this.FindControl<TextBox>("input");
             _input.KeyDown += InputKeyDown;
         }
@@ -30,10 +30,13 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void HistoryChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void HistoryChanged(object? sender, EventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems?[0] is IControl control)
+            var history = (ILogical)_historyList;
+
+            if (history.LogicalChildrenCount > 0)
             {
+                var control = (IControl)history.GetLogicalChild(history.LogicalChildrenCount - 1);
                 DispatcherTimer.RunOnce(control.BringIntoView, TimeSpan.Zero);
             }
         }

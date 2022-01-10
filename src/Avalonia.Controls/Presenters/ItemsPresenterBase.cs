@@ -131,8 +131,16 @@ namespace Avalonia.Controls.Presenters
         }
 
         protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
+        protected override int LogicalChildrenCount => Panel is null ? 0 : 1;
         protected override int VisualChildrenCount => Panel is null ? 0 : 1;
-        protected override event EventHandler VisualChildrenChanged;
+
+        protected override event EventHandler LogicalChildrenChanged;
+        
+        protected override event EventHandler VisualChildrenChanged
+        {
+            add => LogicalChildrenChanged += value;
+            remove => LogicalChildrenChanged -= value;
+        }
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -197,6 +205,12 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        protected override ILogical GetLogicalChild(int index)
+        {
+            return (index == 0 && Panel is not null) ?
+                Panel : throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
         protected override IVisual GetVisualChild(int index)
         {
             return (index == 0 && Panel is not null) ?
@@ -250,8 +264,7 @@ namespace Avalonia.Controls.Presenters
             Panel = ItemsPanel.Build();
             Panel.SetValue(TemplatedParentProperty, TemplatedParent);
 
-            LogicalChildren.Clear();
-            LogicalChildren.Add(Panel);
+            ((ISetLogicalParent)Panel).SetParent(this);
             AddVisualChild(Panel);
 
             _createdPanel = true;
@@ -262,7 +275,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             PanelCreated(Panel);
-            VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+            LogicalChildrenChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>

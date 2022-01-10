@@ -17,6 +17,11 @@ namespace Avalonia.Controls
         private double _crossAxisOffset;
         private bool _forceRemeasure;
 
+        public VirtualizingStackPanel()
+        {
+            Children.CollectionChanged += ChildrenChanged;
+        }
+
         bool IVirtualizingPanel.IsFull
         {
             get
@@ -103,10 +108,8 @@ namespace Avalonia.Controls
             return result;
         }
 
-        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ChildrenChanged(sender, e);
-
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:

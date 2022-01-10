@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -25,6 +21,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<Panel>();
 
+        private PanelChildren _children;
+
         /// <summary>
         /// Initializes static members of the <see cref="Panel"/> class.
         /// </summary>
@@ -36,18 +34,10 @@ namespace Avalonia.Controls
         private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Panel"/> class.
-        /// </summary>
-        public Panel()
-        {
-            Children.CollectionChanged += ChildrenChanged;
-        }
-
-        /// <summary>
         /// Gets the children of the <see cref="Panel"/>.
         /// </summary>
         [Content]
-        public Controls Children { get; } = new Controls();
+        public Controls Children => _children ??= new(this);
 
         /// <summary>
         /// Gets or Sets Panel background brush.
@@ -58,8 +48,16 @@ namespace Avalonia.Controls
             set { SetValue(BackgroundProperty, value); }
         }
 
+        protected override int LogicalChildrenCount => Children.Count;
         protected override int VisualChildrenCount => Children.Count;
-        protected override event EventHandler VisualChildrenChanged;
+
+        protected override event EventHandler LogicalChildrenChanged;
+        
+        protected override event EventHandler VisualChildrenChanged
+        {
+            add => LogicalChildrenChanged += value;
+            remove => LogicalChildrenChanged -= value;
+        }
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -110,61 +108,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="Children"/> collection changes.
+        /// Called in response to the <see cref="Children"/> collection changing in order to allow
+        /// the panel to carry out any needed invalidation.
         /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        protected virtual void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected internal virtual void InvalidateDueToChildrenChange()
         {
-            List<Control> controls;
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    controls = e.NewItems.OfType<Control>().ToList();
-                    LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    foreach (IControl i in e.NewItems)
-                        AddVisualChild(i);
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    controls = e.OldItems.OfType<Control>().ToList();
-                    LogicalChildren.RemoveAll(controls);
-                    foreach (IControl i in e.OldItems)
-                        RemoveVisualChild(i);
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    for (var i = 0; i < e.OldItems.Count; ++i)
-                    {
-                        var index = i + e.OldStartingIndex;
-                        var child = (IControl)e.NewItems[i];
-                        RemoveVisualChild((IControl)e.OldItems[i]);
-                        LogicalChildren[index] = child;
-                        AddVisualChild(child);
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    throw new NotSupportedException();
-            }
-
-            OnVisualChildrenChanged(EventArgs.Empty);
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
-            InvalidateMeasureOnChildrenChanged();
-        }
-
-        protected override IVisual GetVisualChild(int index) => Children[index];
-        protected virtual void OnVisualChildrenChanged(EventArgs e) => VisualChildrenChanged?.Invoke(this, e);
-
-        private protected virtual void InvalidateMeasureOnChildrenChanged()
-        {
+            OnChildIndexChanged();
             InvalidateMeasure();
+            VisualRoot?.Renderer?.RecalculateChildren(this);
         }
+
+        protected void OnChildIndexChanged(ILogical changed = null)
+        {
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(changed));
+        }
+
+        protected override ILogical GetLogicalChild(int index) => Children[index];
+        protected override IVisual GetVisualChild(int index) => Children[index];
+
+        internal new void AddVisualChild(IVisual child) => base.AddVisualChild(child);
+        internal new void RemoveVisualChild(IVisual child) => base.RemoveVisualChild(child);
 
         private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)
             where TPanel : class, IPanel

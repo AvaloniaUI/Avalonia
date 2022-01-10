@@ -1,6 +1,7 @@
-using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+
+#nullable enable
 
 namespace Avalonia.Controls.Presenters
 {
@@ -18,18 +19,14 @@ namespace Avalonia.Controls.Presenters
     public interface IContentPresenterHost : ITemplatedControl
     {
         /// <summary>
-        /// Gets a collection describing the logical children of the host control.
+        /// Called by the content presenter to register a logical child with the host.
         /// </summary>
-        IAvaloniaList<ILogical> LogicalChildren { get; }
+        void RegisterLogicalChild(IContentPresenter presenter, ILogical? child);
 
         /// <summary>
         /// Registers an <see cref="IContentPresenter"/> with a host control.
         /// </summary>
         /// <param name="presenter">The content presenter.</param>
-        /// <returns>
-        /// True if the content presenter should add its child to the logical children of the
-        /// host; otherwise false.
-        /// </returns>
-        bool RegisterContentPresenter(IContentPresenter presenter);
+        void RegisterContentPresenter(IContentPresenter presenter);
     }
 }

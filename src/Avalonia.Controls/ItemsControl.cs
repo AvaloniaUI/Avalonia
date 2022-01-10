@@ -57,6 +57,8 @@ namespace Avalonia.Controls
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+        private LogicalChildren _logicalChildren;
+        private EventHandler _logicalChildrenChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -146,11 +148,31 @@ namespace Avalonia.Controls
             protected set;
         }
 
+        protected override int LogicalChildrenCount => _logicalChildren?.Count ?? 0;
+
+        protected override event EventHandler LogicalChildrenChanged
+        {
+            add
+            {
+                if (_logicalChildrenChanged is null)
+                    LogicalChildren.CollectionChanged += OnLogicalChildrenCollectionChanged;
+                _logicalChildrenChanged += value;
+            }
+            remove
+            {
+                _logicalChildrenChanged -= value;
+                if (_logicalChildrenChanged is null)
+                    LogicalChildren.CollectionChanged -= OnLogicalChildrenCollectionChanged;
+            }
+        }
+
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
         }
+
+        protected IAvaloniaList<ILogical> LogicalChildren => _logicalChildren ??= new LogicalChildren(this);
 
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
@@ -181,6 +203,11 @@ namespace Avalonia.Controls
         void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
             ItemsCollectionChanged(sender, e);
+        }
+
+        protected override ILogical GetLogicalChild(int index)
+        {
+            return _logicalChildren?[index] ?? throw new ArgumentOutOfRangeException(nameof(index));
         }
 
         /// <summary>
@@ -448,6 +475,11 @@ namespace Avalonia.Controls
             }
 
             LogicalChildren.RemoveAll(toRemove);
+        }
+
+        private void OnLogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            _logicalChildrenChanged!(this, e);
         }
 
         /// <summary>

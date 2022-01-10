@@ -5,9 +5,9 @@
 
 using System;
 using Avalonia.Controls.Metadata;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -119,8 +119,7 @@ namespace Avalonia.Controls.Primitives
                 if (_thumb is not null)
                 {
                     _thumb.DragDelta -= ThumbDragged;
-                    LogicalChildren.Remove(_thumb);
-                    RemoveVisualChild(_thumb);
+                    RemoveChild(_thumb);
                     _thumb = null;
                 }
 
@@ -128,12 +127,11 @@ namespace Avalonia.Controls.Primitives
                 {
                     _thumb = value;
                     _thumb.DragDelta += ThumbDragged;
-                    LogicalChildren.Add(_thumb);
-                    AddVisualChild(_thumb);
+                    AddChild(_thumb);
                 }
 
                 RaisePropertyChanged(ThumbProperty, oldValue, _thumb);
-                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+                LogicalChildrenChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -149,20 +147,18 @@ namespace Avalonia.Controls.Primitives
 
                 if (_increaseButton is not null)
                 {
-                    LogicalChildren.Remove(_increaseButton);
-                    RemoveVisualChild(_increaseButton);
+                    RemoveChild(_increaseButton);
                     _increaseButton = null;
                 }
 
                 if (value is not null)
                 {
                     _increaseButton = value;
-                    LogicalChildren.Add(_increaseButton);
-                    AddVisualChild(_increaseButton);
+                    AddChild(_increaseButton);
                 }
 
                 RaisePropertyChanged(IncreaseButtonProperty, oldValue, _increaseButton);
-                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+                LogicalChildrenChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -178,20 +174,18 @@ namespace Avalonia.Controls.Primitives
 
                 if (_decreaseButton is not null)
                 {
-                    LogicalChildren.Remove(_decreaseButton);
-                    RemoveVisualChild(_decreaseButton);
+                    RemoveChild(_decreaseButton);
                     _decreaseButton = null;
                 }
 
                 if (value is not null)
                 {
                     _decreaseButton = value;
-                    LogicalChildren.Add(_decreaseButton);
-                    AddVisualChild(_decreaseButton);
+                    AddChild(_decreaseButton);
                 }
 
                 RaisePropertyChanged(DecreaseButtonProperty, oldValue, _decreaseButton);
-                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+                LogicalChildrenChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -207,7 +201,7 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(IgnoreThumbDragProperty, value);
         }
 
-        protected override int VisualChildrenCount
+        protected override int LogicalChildrenCount
         {
             get
             {
@@ -223,10 +217,18 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override int VisualChildrenCount => LogicalChildrenCount;
+
         private double ThumbCenterOffset { get; set; }
         private double Density { get; set; }
 
-        protected override event EventHandler? VisualChildrenChanged;
+        protected override event EventHandler? LogicalChildrenChanged;
+
+        protected override event EventHandler? VisualChildrenChanged
+        {
+            add => LogicalChildrenChanged += value;
+            remove => LogicalChildrenChanged -= value;
+        }
 
         /// <summary>
         /// Calculates the distance along the <see cref="Thumb"/> of a specified point along the
@@ -274,16 +276,8 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override IVisual GetVisualChild(int index)
-        {
-            if (_thumb is not null && index-- == 0)
-                return _thumb;
-            if (_increaseButton is not null && index-- == 0)
-                return _increaseButton;
-            if (_decreaseButton is not null && index-- == 0)
-                return _decreaseButton;
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+        protected override ILogical GetLogicalChild(int index) => GetChild(index);
+        protected override IVisual GetVisualChild(int index) => GetChild(index);
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -548,6 +542,29 @@ namespace Avalonia.Controls.Primitives
         {
             PseudoClasses.Set(":vertical", o == Orientation.Vertical);
             PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
+        }
+
+        private IControl GetChild(int index)
+        {
+            if (_thumb is not null && index-- == 0)
+                return _thumb;
+            if (_increaseButton is not null && index-- == 0)
+                return _increaseButton;
+            if (_decreaseButton is not null && index-- == 0)
+                return _decreaseButton;
+            throw new ArgumentOutOfRangeException();
+        }
+
+        private void AddChild(IControl child)
+        {
+            ((ISetLogicalParent)child).SetParent(this);
+            AddVisualChild(child);
+        }
+
+        private void RemoveChild(IControl child)
+        {
+            ((ISetLogicalParent)child).SetParent(null);
+            RemoveVisualChild(child);
         }
     }
 }

@@ -77,7 +77,12 @@ namespace Avalonia.LogicalTree
         /// <returns>The logical children.</returns>
         public static IEnumerable<ILogical> GetLogicalChildren(this ILogical logical)
         {
-            return logical.LogicalChildren;
+            var count = logical.LogicalChildrenCount;
+
+            for (var i = 0; i < count; ++i)
+            {
+                yield return logical.GetLogicalChild(i);
+            }
         }
 
         /// <summary>
@@ -87,8 +92,12 @@ namespace Avalonia.LogicalTree
         /// <returns>The logical's ancestors.</returns>
         public static IEnumerable<ILogical> GetLogicalDescendants(this ILogical logical)
         {
-            foreach (ILogical child in logical.LogicalChildren)
+            var count = logical.LogicalChildrenCount;
+
+            for (var i = 0; i < count; ++i)
             {
+                var child = logical.GetLogicalChild(i);
+
                 yield return child;
 
                 foreach (ILogical descendant in child.GetLogicalDescendants())
@@ -169,9 +178,11 @@ namespace Avalonia.LogicalTree
 
             if (parent != null)
             {
-                foreach (ILogical sibling in parent.LogicalChildren)
+                var count = parent.LogicalChildrenCount;
+
+                for (var i = 0; i < count; ++i)
                 {
-                    yield return sibling;
+                    yield return parent.GetLogicalChild(i);
                 }
             }
         }
@@ -204,12 +215,11 @@ namespace Avalonia.LogicalTree
 
         private static T? FindDescendantOfTypeCore<T>(ILogical logical) where T : class
         {
-            var logicalChildren = logical.LogicalChildren;
-            var logicalChildrenCount = logicalChildren.Count;
+            var logicalChildrenCount = logical.LogicalChildrenCount;
 
             for (var i = 0; i < logicalChildrenCount; i++)
             {
-                ILogical child = logicalChildren[i];
+                ILogical child = logical.GetLogicalChild(i);
 
                 if (child is T result)
                 {

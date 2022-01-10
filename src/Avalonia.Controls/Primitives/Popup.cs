@@ -141,6 +141,7 @@ namespace Avalonia.Controls.Primitives
         private PopupOpenState? _openState;
         private IInputElement? _overlayInputPassThroughElement;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+        private ILogical? _logicalChild;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -148,7 +149,6 @@ namespace Avalonia.Controls.Primitives
         static Popup()
         {
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
-            ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
             IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));    
             VerticalOffsetProperty.Changed.AddClassHandler<Popup>((x, _) => x.HandlePositionChange());    
             HorizontalOffsetProperty.Changed.AddClassHandler<Popup>((x, _) => x.HandlePositionChange());
@@ -362,6 +362,9 @@ namespace Avalonia.Controls.Primitives
 
         IPopupHost? IPopupHostProvider.PopupHost => Host;
 
+        protected override int LogicalChildrenCount => _logicalChild is null ? 0 : 1;
+        protected override event EventHandler? LogicalChildrenChanged;
+
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
             add => _popupHostChangedHandler += value; 
@@ -522,6 +525,11 @@ namespace Avalonia.Controls.Primitives
             return new Size();
         }
 
+        protected override ILogical GetLogicalChild(int index)
+        {
+            return (index == 0 && _logicalChild is not null) ?
+                _logicalChild : throw new ArgumentOutOfRangeException(nameof(index));
+        }
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -539,7 +547,20 @@ namespace Avalonia.Controls.Primitives
             base.OnDetachedFromLogicalTree(e);
             Close();
         }
-        
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ChildProperty)
+            {
+                ((ISetLogicalParent?)_logicalChild)?.SetParent(null);
+                _logicalChild = change.NewValue.GetValueOrDefault<ILogical>();
+                ((ISetLogicalParent?)_logicalChild)?.SetParent(this);
+                LogicalChildrenChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         private void HandlePositionChange()
         {
             if (_openState != null)
@@ -589,23 +610,6 @@ namespace Avalonia.Controls.Primitives
                 {
                     Close();
                 }
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="Child"/> property changes.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            LogicalChildren.Clear();
-
-            ((ISetLogicalParent?)e.OldValue)?.SetParent(null);
-
-            if (e.NewValue != null)
-            {
-                ((ISetLogicalParent)e.NewValue).SetParent(this);
-                LogicalChildren.Add((ILogical)e.NewValue);
             }
         }
 

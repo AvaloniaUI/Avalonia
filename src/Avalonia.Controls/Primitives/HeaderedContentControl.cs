@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
@@ -23,13 +24,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
             AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate?>(nameof(HeaderTemplate));
 
-        /// <summary>
-        /// Initializes static members of the <see cref="ContentControl"/> class.
-        /// </summary>
-        static HeaderedContentControl()
-        {
-            HeaderProperty.Changed.AddClassHandler<HeaderedContentControl>((x, e) => x.HeaderChanged(e));
-        }
+        private ILogical? _headerChild;
 
         /// <summary>
         /// Gets or sets the header content.
@@ -58,30 +53,59 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(HeaderTemplateProperty, value);
         }
 
-        /// <inheritdoc/>
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override int LogicalChildrenCount => base.LogicalChildrenCount + (_headerChild is null ? 0 : 1);
+
+        protected override ILogical GetLogicalChild(int index)
         {
-            var result = base.RegisterContentPresenter(presenter);
-
-            if (presenter.Name == "PART_HeaderPresenter")
-            {
-                HeaderPresenter = presenter;
-                result = true;
-            }
-
-            return result;
+            if (index == base.LogicalChildrenCount && _headerChild is not null)
+                return _headerChild;
+            return base.GetLogicalChild(index);
         }
 
-        private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (e.OldValue is ILogical oldChild)
-            {
-                LogicalChildren.Remove(oldChild);
-            }
+            base.OnPropertyChanged(change);
 
-            if (e.NewValue is ILogical newChild)
+            if (change.Property == HeaderProperty)
+                SetHeaderChild(change.NewValue.GetValueOrDefault<ILogical>());
+        }
+
+        /// <summary>
+        /// Called when an <see cref="IContentPresenter"/> is registered with the control.
+        /// </summary>
+        /// <param name="presenter">The presenter.</param>
+        protected override void RegisterContentPresenter(IContentPresenter presenter)
+        {
+            base.RegisterContentPresenter(presenter);
+            if (presenter.Name == "PART_HeaderPresenter")
+                HeaderPresenter = presenter;
+        }
+
+        /// <summary>
+        /// Called when a registered <see cref="IContentPresenter"/>'s logical child changes.
+        /// </summary>
+        /// <param name="presenter">The presenter.</param>
+        /// <param name="child">The new logical child.</param>
+        protected override void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        {
+            base.RegisterLogicalChild(presenter, child);
+            if (presenter == HeaderPresenter)
+                SetHeaderChild(child);
+        }
+
+        private void SetHeaderChild(ILogical? child)
+        {
+            if (_headerChild != child)
             {
-                LogicalChildren.Add(newChild);
+                if (_headerChild?.LogicalParent == this)
+                    ((ISetLogicalParent)_headerChild).SetParent(null);
+
+                _headerChild = child;
+
+                if (_headerChild is not null && _headerChild.LogicalParent is null)
+                    ((ISetLogicalParent)_headerChild).SetParent(this);
+
+                OnLogicalChildrenChanged(EventArgs.Empty);
             }
         }
     }

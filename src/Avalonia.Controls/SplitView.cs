@@ -1,17 +1,14 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using System;
+using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
-using System;
-using System.Reactive.Disposables;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
-using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -154,6 +151,8 @@ namespace Avalonia.Controls
         private bool _isPaneOpen;
         private Panel _pane;
         private IDisposable _pointerDisposable;
+        private IContentPresenter _panePresenter;
+        private ILogical _paneChild;
 
         public SplitView()
         {
@@ -169,8 +168,6 @@ namespace Avalonia.Controls
             CompactPaneLengthProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnCompactPaneLengthChanged(v));
             PanePlacementProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnPanePlacementChanged(v));
             DisplayModeProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnDisplayModeChanged(v));
-
-            PaneProperty.Changed.AddClassHandler<SplitView>((x, e) => x.PaneChanged(e));
         }
 
         /// <summary>
@@ -297,6 +294,8 @@ namespace Avalonia.Controls
             set => SetValue(TemplateSettingsProperty, value);
         }
 
+        protected override int LogicalChildrenCount => base.LogicalChildrenCount + (_paneChild is null ? 0 : 1);
+
         /// <summary>
         /// Fired when the pane is closed
         /// </summary>
@@ -317,16 +316,27 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<EventArgs> PaneOpening;
 
-        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        protected override void RegisterContentPresenter(IContentPresenter presenter)
         {
-            var result = base.RegisterContentPresenter(presenter);
+            base.RegisterContentPresenter(presenter);
 
             if (presenter.Name == "PART_PanePresenter")
-            {
-                return true;
-            }
-            
-            return result;
+                _panePresenter = presenter;
+        }
+
+        protected override void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        {
+            base.RegisterLogicalChild(presenter, child);
+
+            if (presenter == _panePresenter)
+                SetPaneChild(child);
+        }
+
+        protected override ILogical GetLogicalChild(int index)
+        {
+            if (index == base.LogicalChildrenCount && _paneChild is not null)
+                return _paneChild;
+            return base.GetLogicalChild(index);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -350,6 +360,14 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
             _pointerDisposable?.Dispose();
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == PaneProperty)
+                SetPaneChild(change.NewValue.GetValueOrDefault<ILogical>());
         }
 
         private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
@@ -464,16 +482,15 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":lightdismiss", mode);
         }
 
-        private void PaneChanged(AvaloniaPropertyChangedEventArgs e)
+        private void SetPaneChild(ILogical child)
         {
-            if (e.OldValue is ILogical oldChild)
+            if (_paneChild != child)
             {
-                LogicalChildren.Remove(oldChild);
-            }
-
-            if (e.NewValue is ILogical newChild)
-            {
-                LogicalChildren.Add(newChild);
+                if (_paneChild is not null && _paneChild.LogicalParent == this)
+                    ((ISetLogicalParent)_paneChild).SetParent(null);
+                _paneChild = child;
+                if (_paneChild is not null && _paneChild.LogicalParent is null)
+                    ((ISetLogicalParent)_paneChild).SetParent(this);
             }
         }
     }

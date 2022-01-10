@@ -1,17 +1,13 @@
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
-using Avalonia.LogicalTree;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
-using Avalonia.VisualTree;
-using Moq;
-using System;
 using System.Linq;
-using Xunit;
-using Avalonia.Rendering;
-using Avalonia.Media;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.LogicalTree;
+using Avalonia.Media;
+using Avalonia.Rendering;
+using Avalonia.UnitTests;
+using Moq;
+using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {

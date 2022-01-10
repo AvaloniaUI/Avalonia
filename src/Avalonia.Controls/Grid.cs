@@ -610,13 +610,10 @@ namespace Avalonia.Controls
             return (arrangeSize);
         }
 
-        /// <summary>
-        /// <see cref="Panel.ChildrenChanged"/>
-        /// </summary>
-        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected internal override void InvalidateDueToChildrenChange()
         {
             CellsStructureDirty = true;
-            base.ChildrenChanged(sender, e);
+            base.InvalidateDueToChildrenChange();
         }
 
         /// <summary>
@@ -707,6 +704,8 @@ namespace Avalonia.Controls
             get => RowDefinitions?.IsDirty ?? false;
             set => RowDefinitions.IsDirty = value;
         }
+
+        protected override event EventHandler VisualChildrenChanged;
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
@@ -2378,7 +2377,7 @@ namespace Avalonia.Controls
                 _gridLinesRenderer = null;
             }
 
-            OnVisualChildrenChanged(EventArgs.Empty);
+            VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
             return (_gridLinesRenderer);
         }
 

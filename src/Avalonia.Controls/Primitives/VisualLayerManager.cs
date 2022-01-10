@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -80,6 +82,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override int VisualChildrenCount => base.VisualChildrenCount + _layers.Count;
+        protected override event EventHandler VisualChildrenChanged;
+
         T FindLayer<T>() where T : class
         {
             foreach (var layer in _layers)
@@ -94,10 +99,19 @@ namespace Avalonia.Controls.Primitives
             ((ISetLogicalParent)layer).SetParent(this);
             layer.ZIndex = zindex;
             AddVisualChild(layer);
+            VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
             if (((ILogical)this).IsAttachedToLogicalTree)
                 ((ILogical)layer).NotifyAttachedToLogicalTree(
                     new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
             InvalidateArrange();
+        }
+
+        protected override IVisual GetVisualChild(int index)
+        {
+            var baseCount = base.VisualChildrenCount;
+            if (index >= baseCount)
+                return _layers[index - baseCount];
+            return base.GetVisualChild(index);
         }
 
         protected override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)

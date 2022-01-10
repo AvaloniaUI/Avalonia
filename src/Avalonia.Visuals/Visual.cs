@@ -441,12 +441,6 @@ namespace Avalonia
         /// <param name="index">The index of the visual child.</param>
         protected virtual IVisual GetVisualChild(int index) => throw new ArgumentOutOfRangeException(nameof(index));
 
-        protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            base.LogicalChildrenCollectionChanged(sender, e);
-            VisualRoot?.Renderer?.RecalculateChildren(this);
-        }
-
         /// <summary>
         /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
         /// for this control and all of its visual descendants.

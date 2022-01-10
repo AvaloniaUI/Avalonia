@@ -1,5 +1,3 @@
-using Avalonia.Collections;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.LogicalTree;
 
@@ -16,13 +14,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<object> HeaderProperty =
             HeaderedContentControl.HeaderProperty.AddOwner<HeaderedItemsControl>();
 
-        /// <summary>
-        /// Initializes static members of the <see cref="ContentControl"/> class.
-        /// </summary>
-        static HeaderedItemsControl()
-        {
-            HeaderProperty.Changed.AddClassHandler<HeaderedItemsControl>((x, e) => x.HeaderChanged(e));
-        }
+        private ILogical _headerChild;
 
         /// <summary>
         /// Gets or sets the content of the control's header.
@@ -42,40 +34,54 @@ namespace Avalonia.Controls.Primitives
             private set;
         }
 
-        /// <inheritdoc/>
-        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
-
-        /// <inheritdoc/>
-        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
-            return RegisterContentPresenter(presenter);
+            RegisterContentPresenter(presenter);
+        }
+
+        void IContentPresenterHost.RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        {
+            RegisterLogicalChild(presenter, child);
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == HeaderProperty)
+                SetHeaderChild(change.NewValue.GetValueOrDefault<ILogical>());
         }
 
         /// <summary>
         /// Called when an <see cref="IContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual void RegisterContentPresenter(IContentPresenter presenter)
         {
             if (presenter.Name == "PART_HeaderPresenter")
-            {
                 HeaderPresenter = presenter;
-                return true;
-            }
-
-            return false;
         }
 
-        private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <summary>
+        /// Called when a registered <see cref="IContentPresenter"/>'s logical child changes.
+        /// </summary>
+        /// <param name="presenter">The presenter.</param>
+        /// <param name="child">The new logical child.</param>
+        protected virtual void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
         {
-            if (e.OldValue is ILogical oldChild)
-            {
-                LogicalChildren.Remove(oldChild);
-            }
+            if (presenter == HeaderPresenter)
+                SetHeaderChild(child);
+        }
 
-            if (e.NewValue is ILogical newChild)
+        private void SetHeaderChild(ILogical child)
+        {
+            if (_headerChild != child)
             {
-                LogicalChildren.Add(newChild);
+                if (_headerChild is not null)
+                    LogicalChildren.Remove(_headerChild);
+                _headerChild = child;
+                if (_headerChild is not null)
+                    LogicalChildren.Add(_headerChild);
             }
         }
     }

@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Collections;
 using Avalonia.Controls;
 
 namespace Avalonia.LogicalTree
@@ -20,6 +19,11 @@ namespace Avalonia.LogicalTree
         event EventHandler<LogicalTreeAttachmentEventArgs>? DetachedFromLogicalTree;
 
         /// <summary>
+        /// Raised when the logical children of the control change.
+        /// </summary>
+        event EventHandler? LogicalChildrenChanged;
+
+        /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
         /// </summary>
         bool IsAttachedToLogicalTree { get; }
@@ -30,9 +34,17 @@ namespace Avalonia.LogicalTree
         ILogical? LogicalParent { get; }
 
         /// <summary>
-        /// Gets the logical children.
+        /// Gets the number of logical children of the control.
         /// </summary>
-        IAvaloniaReadOnlyList<ILogical> LogicalChildren { get; }
+        int LogicalChildrenCount { get; }
+
+        /// <summary>
+        /// Returns the specified logical child.
+        /// </summary>
+        /// <param name="index">
+        /// The index of the logical child; must be less than <see cref="LogicalChildrenCount"/>.
+        /// </param>
+        ILogical GetLogicalChild(int index);
 
         /// <summary>
         /// Notifies the control that it is being attached to a rooted logical tree.

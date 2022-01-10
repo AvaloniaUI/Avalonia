@@ -226,8 +226,15 @@ namespace Avalonia.Controls.Presenters
             set => SetAndRaise(RecognizesAccessKeyProperty, ref _recognizesAccessKey, value);
         }
 
+        protected override int LogicalChildrenCount => Child is null ? 0 : 1;
         protected override int VisualChildrenCount => Child is null ? 0 : 1;
-        protected override event EventHandler VisualChildrenChanged;
+        protected override event EventHandler LogicalChildrenChanged;
+        
+        protected override event EventHandler VisualChildrenChanged
+        {
+            add => LogicalChildrenChanged += value;
+            remove => LogicalChildrenChanged -= value;
+        }
 
         /// <summary>
         /// Gets the host content control.
@@ -259,7 +266,6 @@ namespace Avalonia.Controls.Presenters
             var content = Content;
             var oldChild = Child;
             var newChild = CreateChild();
-            var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
 
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
@@ -267,7 +273,8 @@ namespace Avalonia.Controls.Presenters
                 if (oldChild != null)
                 {
                     RemoveVisualChild(oldChild);
-                    logicalChildren.Remove(oldChild);
+                    if (oldChild.LogicalParent == this)
+                        ((ISetLogicalParent)oldChild).SetParent(null);
                     ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
                 }
             }
@@ -291,17 +298,24 @@ namespace Avalonia.Controls.Presenters
             {
                 ((ISetInheritanceParent)newChild).SetParent(this);
                 Child = newChild;
-
-                if (!logicalChildren.Contains(newChild))
-                {
-                    logicalChildren.Add(newChild);
-                }
-
                 AddVisualChild(newChild);
             }
 
-            VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+            Host?.RegisterLogicalChild(this, newChild);
+
+            if (newChild is not null && newChild.LogicalParent is null)
+            {
+                ((ISetLogicalParent)newChild).SetParent(this);
+                LogicalChildrenChanged?.Invoke(this, EventArgs.Empty);
+            }
+
             _createdChild = true;
+        }
+
+        protected override ILogical GetLogicalChild(int index)
+        {
+            return (index == 0 && _child is not null) ?
+                _child : throw new ArgumentOutOfRangeException(nameof(index));
         }
 
         protected override IVisual GetVisualChild(int index)
@@ -460,7 +474,8 @@ namespace Avalonia.Controls.Presenters
             else if (Child != null)
             {
                 RemoveVisualChild(Child);
-                LogicalChildren.Remove(Child);
+                if (Child.LogicalParent == this)
+                    ((ISetLogicalParent)Child).SetParent(null);
                 ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
                 _recyclingDataTemplate = null;
@@ -477,8 +492,8 @@ namespace Avalonia.Controls.Presenters
 
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var host = e.NewValue as IContentPresenterHost;
-            Host = host?.RegisterContentPresenter(this) == true ? host : null;
+            Host = e.NewValue as IContentPresenterHost;
+            Host?.RegisterContentPresenter(this);
         }
     }
 }

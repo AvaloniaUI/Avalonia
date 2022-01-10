@@ -143,7 +143,7 @@ namespace Avalonia.Collections
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public T this[int index]
+        public virtual T this[int index]
         {
             get
             {
@@ -405,7 +405,7 @@ namespace Avalonia.Collections
         /// </summary>
         /// <param name="oldIndex">The index of the item to move.</param>
         /// <param name="newIndex">The index to move the item to.</param>
-        public void Move(int oldIndex, int newIndex)
+        public virtual void Move(int oldIndex, int newIndex)
         {
             var item = this[oldIndex];
             _inner.RemoveAt(oldIndex);
@@ -428,7 +428,7 @@ namespace Avalonia.Collections
         /// <param name="oldIndex">The first index of the items to move.</param>
         /// <param name="count">The number of items to move.</param>
         /// <param name="newIndex">The index to move the items to.</param>
-        public void MoveRange(int oldIndex, int count, int newIndex)
+        public virtual void MoveRange(int oldIndex, int count, int newIndex)
         {
             var items = _inner.GetRange(oldIndex, count);
             var modifiedNewIndex = newIndex;

@@ -40,7 +40,7 @@ namespace Avalonia.Controls.UnitTests
 
             decorator.Child = child;
 
-            Assert.Equal(new[] { child }, ((ILogical)decorator).LogicalChildren.ToList());
+            Assert.Equal(new[] { child }, ((ILogical)decorator).GetLogicalChildren().ToList());
         }
 
         [Fact]
@@ -52,56 +52,54 @@ namespace Avalonia.Controls.UnitTests
             decorator.Child = child;
             decorator.Child = null;
 
-            Assert.Equal(new ILogical[0], ((ILogical)decorator).LogicalChildren.ToList());
+            Assert.Equal(new ILogical[0], ((ILogical)decorator).GetLogicalChildren().ToList());
         }
 
         [Fact]
-        public void Setting_Content_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Setting_Content_Should_Fire_LogicalChildrenChanged()
         {
             var decorator = new Decorator();
             var child = new Control();
-            var called = false;
+            var called = 0;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            ((ILogical)decorator).LogicalChildrenChanged += (s, e) => ++called;
 
             decorator.Child = child;
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]
-        public void Clearing_Content_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Clearing_Content_Should_Fire_LogicalChildrenChanged()
         {
             var decorator = new Decorator();
             var child = new Control();
-            var called = false;
+            var called = 0;
 
             decorator.Child = child;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            ((ILogical)decorator).LogicalChildrenChanged += (s, e) => ++called;
 
             decorator.Child = null;
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]
-        public void Changing_Content_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Changing_Content_Should_Fire_LogicalChildrenChanged()
         {
             var decorator = new Decorator();
             var child1 = new Control();
             var child2 = new Control();
-            var called = false;
+            var called = 0;
 
             decorator.Child = child1;
 
-            ((ILogical)decorator).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            ((ILogical)decorator).LogicalChildrenChanged += (s, e) => ++called;
 
             decorator.Child = child2;
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]

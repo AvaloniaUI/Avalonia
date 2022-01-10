@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
@@ -58,6 +59,8 @@ namespace Avalonia.Controls
         /// </summary>
         private static readonly FuncTemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new WrapPanel());
+
+        private ILogical _contentChild;
 
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
@@ -134,13 +137,14 @@ namespace Avalonia.Controls
 
         internal IContentPresenter ContentPart { get; private set; }
 
-        /// <inheritdoc/>
-        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
-
-        /// <inheritdoc/>
-        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
-            return RegisterContentPresenter(presenter);
+            RegisterContentPresenter(presenter);
+        }
+
+        void IContentPresenterHost.RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        {
+            RegisterLogicalChild(presenter, child);
         }
 
         protected override void OnContainersMaterialized(ItemContainerEventArgs e)
@@ -174,15 +178,27 @@ namespace Avalonia.Controls
         /// Called when an <see cref="IContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual void RegisterContentPresenter(IContentPresenter presenter)
         {
             if (presenter.Name == "PART_SelectedContentHost")
-            {
                 ContentPart = presenter;
-                return true;
-            }
+        }
 
-            return false;
+        /// <summary>
+        /// Called when a registered <see cref="IContentPresenter"/>'s logical child changes.
+        /// </summary>
+        /// <param name="presenter">The presenter.</param>
+        /// <param name="child">The new logical child.</param>
+        protected virtual void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        {
+            if (presenter == ContentPart)
+            {
+                if (_contentChild is not null)
+                    LogicalChildren.Remove(_contentChild);
+                _contentChild = child;
+                if (_contentChild is not null)
+                    LogicalChildren.Add(_contentChild);
+            }
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()

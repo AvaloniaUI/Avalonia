@@ -111,56 +111,54 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Child = child;
             target.Child = null;
 
-            Assert.Equal(new ILogical[0], ((ILogical)target).LogicalChildren.ToList());
+            Assert.Equal(0, ((ILogical)target).LogicalChildrenCount);
         }
 
         [Fact]
-        public void Setting_Child_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Setting_Child_Should_Fire_LogicalChildrenChanged()
         {
             var target = new Popup();
             var child = new Control();
-            var called = false;
+            var called = 0;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Add;
+            ((ILogical)target).LogicalChildrenChanged += (s, e) => ++called;
 
             target.Child = child;
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]
-        public void Clearing_Child_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Clearing_Child_Should_Fire_LogicalChildrenChanged()
         {
             var target = new Popup();
             var child = new Control();
-            var called = false;
+            var called = 0;
 
             target.Child = child;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) =>
-                called = e.Action == NotifyCollectionChangedAction.Remove;
+            ((ILogical)target).LogicalChildrenChanged += (s, e) => ++called;
 
             target.Child = null;
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]
-        public void Changing_Child_Should_Fire_LogicalChildren_CollectionChanged()
+        public void Changing_Child_Should_Fire_LogicalChildrenChanged()
         {
             var target = new Popup();
             var child1 = new Control();
             var child2 = new Control();
-            var called = false;
+            var called = 0;
 
             target.Child = child1;
 
-            ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
+            ((ILogical)target).LogicalChildrenChanged += (s, e) => ++called;
 
             target.Child = child2;
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]

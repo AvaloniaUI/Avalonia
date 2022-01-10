@@ -136,7 +136,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             Assert.Same(thumb.Parent, target);
-            Assert.Equal(new[] { thumb }, ((ILogical)target).LogicalChildren);
+            Assert.Equal(new[] { thumb }, target.GetLogicalChildren());
         }
 
         [Fact]

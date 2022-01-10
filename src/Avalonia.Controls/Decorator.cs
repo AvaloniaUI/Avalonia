@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -52,10 +53,17 @@ namespace Avalonia.Controls
             get { return GetValue(PaddingProperty); }
             set { SetValue(PaddingProperty, value); }
         }
-
+        
+        protected override int LogicalChildrenCount => Child is null ? 0 : 1;
         protected override int VisualChildrenCount => Child is null ? 0 : 1;
 
-        protected override event EventHandler? VisualChildrenChanged;
+        protected override event EventHandler? LogicalChildrenChanged;
+
+        protected override event EventHandler? VisualChildrenChanged
+        {
+            add => LogicalChildrenChanged += value;
+            remove => LogicalChildrenChanged -= value;
+        }
 
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
@@ -67,6 +75,12 @@ namespace Avalonia.Controls
         protected override Size ArrangeOverride(Size finalSize)
         {
             return LayoutHelper.ArrangeChild(Child, finalSize, Padding);
+        }
+
+        protected override ILogical GetLogicalChild(int index)
+        {
+            return (index == 0 && _child is not null) ?
+                _child : throw new ArgumentOutOfRangeException(nameof(index));
         }
 
         protected override IVisual GetVisualChild(int index)
@@ -87,7 +101,6 @@ namespace Avalonia.Controls
                 if (oldChild is not null)
                 {
                     ((ISetLogicalParent)oldChild).SetParent(null);
-                    LogicalChildren.Clear();
                     RemoveVisualChild(oldChild);
                 }
 
@@ -95,10 +108,9 @@ namespace Avalonia.Controls
                 {
                     ((ISetLogicalParent)_child).SetParent(this);
                     AddVisualChild(_child);
-                    LogicalChildren.Add(_child);
                 }
 
-                VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
+                LogicalChildrenChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
