@@ -24,7 +24,7 @@ namespace Avalonia.Animation.Animators
         /// <summary>
         /// Gets or sets the target property for the keyframe.
         /// </summary>
-        public AvaloniaProperty Property { get; set; }
+        public AvaloniaProperty? Property { get; set; }
 
         public Animator()
         {
@@ -33,7 +33,7 @@ namespace Avalonia.Animation.Animators
         }
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
+        public virtual IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
@@ -106,13 +106,16 @@ namespace Avalonia.Animation.Animators
 
         public virtual IDisposable BindAnimation(Animatable control, IObservable<T> instance)
         {
+            if (Property is null)
+                throw new InvalidOperationException("Animator has no property specified.");
+
             return control.Bind((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
         }
 
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        internal IDisposable Run(Animation animation, Animatable control, IClock clock, Action onComplete)
+        internal IDisposable Run(Animation animation, Animatable control, IClock? clock, Action? onComplete)
         {
             var instance = new AnimationInstance<T>(
                 animation,
