@@ -448,7 +448,7 @@ namespace Avalonia.Controls
             internal set;
         }
 
-        public bool IsReadOnly
+        public virtual bool IsReadOnly
         {
             get
             {

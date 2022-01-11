@@ -34,7 +34,7 @@ namespace Avalonia.Controls
         IStyleHost,
         ILogicalRoot,
         ITextInputMethodRoot,
-        IWeakSubscriber<ResourcesChangedEventArgs>
+        IWeakEventSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -73,6 +73,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
+
+        private static readonly WeakEvent<IResourceHost, ResourcesChangedEventArgs>
+            ResourcesChangedWeakEvent = WeakEvent.Register<IResourceHost, ResourcesChangedEventArgs>(
+                (s, h) => s.ResourcesChanged += h,
+                (s, h) => s.ResourcesChanged -= h
+            );
 
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
@@ -178,10 +184,7 @@ namespace Avalonia.Controls
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
-                WeakSubscriptionManager.Subscribe(
-                    applicationResources,
-                    nameof(IResourceHost.ResourcesChanged),
-                    this);
+                ResourcesChangedWeakEvent.Subscribe(applicationResources, this);
             }
 
             impl.LostFocus += PlatformImpl_LostFocus;
@@ -286,7 +289,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMouseDevice IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
 
-        void IWeakSubscriber<ResourcesChangedEventArgs>.OnEvent(object sender, ResourcesChangedEventArgs e)
+        void IWeakEventSubscriber<ResourcesChangedEventArgs>.OnEvent(object sender, WeakEvent ev, ResourcesChangedEventArgs e)
         {
             ((ILogical)this).NotifyResourcesChanged(e);
         }

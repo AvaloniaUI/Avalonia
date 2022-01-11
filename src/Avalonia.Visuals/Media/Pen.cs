@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
-    public class Pen : AvaloniaObject, IPen
+    public sealed class Pen : AvaloniaObject, IPen, IWeakEventSubscriber<EventArgs>
     {
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
@@ -45,6 +45,10 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> MiterLimitProperty =
             AvaloniaProperty.Register<Pen, double>(nameof(MiterLimit), 10.0);
 
+        private EventHandler? _invalidated;
+        private IAffectsRender? _subscribedToBrush;
+        private IAffectsRender? _subscribedToDashes;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Pen"/> class.
         /// </summary>
@@ -96,17 +100,6 @@ namespace Avalonia.Media
             DashStyle = dashStyle;
         }
 
-        static Pen()
-        {
-            AffectsRender<Pen>(
-                BrushProperty,
-                ThicknessProperty,
-                DashStyleProperty,
-                LineCapProperty,
-                LineJoinProperty,
-                MiterLimitProperty);
-        }
-
         /// <summary>
         /// Gets or sets the brush used to draw the stroke.
         /// </summary>
@@ -115,6 +108,11 @@ namespace Avalonia.Media
             get => GetValue(BrushProperty);
             set => SetValue(BrushProperty, value);
         }
+
+        private static readonly WeakEvent<IAffectsRender, EventArgs> InvalidatedWeakEvent =
+            WeakEvent.Register<IAffectsRender>(
+                (s, h) => s.Invalidated += h,
+                (s, h) => s.Invalidated -= h);
 
         /// <summary>
         /// Gets or sets the stroke thickness.
@@ -165,7 +163,19 @@ namespace Avalonia.Media
         /// <summary>
         /// Raised when the pen changes.
         /// </summary>
-        public event EventHandler? Invalidated;
+        public event EventHandler? Invalidated
+        {
+            add
+            {
+                _invalidated += value;
+                UpdateSubscriptions();
+            }
+            remove
+            {
+                _invalidated -= value; 
+                UpdateSubscriptions();
+            }
+        }
 
         /// <summary>
         /// Creates an immutable clone of the brush.
@@ -182,68 +192,42 @@ namespace Avalonia.Media
                 MiterLimit);
         }
 
-        /// <summary>
-        /// Marks a property as affecting the pen's visual representation.
-        /// </summary>
-        /// <param name="properties">The properties.</param>
-        /// <remarks>
-        /// After a call to this method in a pen's static constructor, any change to the
-        /// property will cause the <see cref="Invalidated"/> event to be raised on the pen.
-        /// </remarks>
-        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
-            where T : Pen
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            _invalidated?.Invoke(this, EventArgs.Empty);
+            if(change.Property == BrushProperty)
+                UpdateSubscription(ref _subscribedToBrush, Brush);
+            if(change.Property == DashStyleProperty)
+                UpdateSubscription(ref _subscribedToDashes, DashStyle);
+            base.OnPropertyChanged(change);
+        }
+
+        
+        void UpdateSubscription(ref IAffectsRender? field, object? value)
+        {
+            if ((_invalidated == null || field != value) && field != null)
             {
-                if (e.Sender is T sender)
-                {
-                    sender.RaiseInvalidated(EventArgs.Empty);
-                }
+                InvalidatedWeakEvent.Unsubscribe(field, this);
+                field = null;
             }
 
-            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
+            if (_invalidated != null && field != value && value is IAffectsRender affectsRender)
             {
-                if (e.Sender is T sender)
-                {
-                    if (e.OldValue is IAffectsRender oldValue)
-                    {
-                        WeakEventHandlerManager.Unsubscribe<EventArgs, T>(
-                            oldValue,
-                            nameof(oldValue.Invalidated),
-                            sender.AffectsRenderInvalidated);
-                    }
-
-                    if (e.NewValue is IAffectsRender newValue)
-                    {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(
-                            newValue,
-                            nameof(newValue.Invalidated),
-                            sender.AffectsRenderInvalidated);
-                    }
-
-                    sender.RaiseInvalidated(EventArgs.Empty);
-                }
-            }
-
-            foreach (var property in properties)
-            {
-                if (property.CanValueAffectRender())
-                {
-                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
-                }
-                else
-                {
-                    property.Changed.Subscribe(e => Invalidate(e));
-                }
+                InvalidatedWeakEvent.Subscribe(affectsRender, this);
+                field = affectsRender;
             }
         }
 
-        /// <summary>
-        /// Raises the <see cref="Invalidated"/> event.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
-
-        private void AffectsRenderInvalidated(object? sender, EventArgs e) => RaiseInvalidated(EventArgs.Empty);
+        void UpdateSubscriptions()
+        {
+            UpdateSubscription(ref _subscribedToBrush, Brush);
+            UpdateSubscription(ref _subscribedToDashes, DashStyle);
+        }
+        
+        void IWeakEventSubscriber<EventArgs>.OnEvent(object? sender, WeakEvent ev, EventArgs e)
+        {
+            if (ev == InvalidatedWeakEvent) 
+                _invalidated?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

@@ -33,7 +33,7 @@ namespace Avalonia.Controls
         }
 
 
-        class CanExecuteChangedSubscriber : IWeakSubscriber<EventArgs>
+        class CanExecuteChangedSubscriber : IWeakEventSubscriber<EventArgs>
         {
             private readonly NativeMenuItem _parent;
 
@@ -42,7 +42,7 @@ namespace Avalonia.Controls
                 _parent = parent;
             }
 
-            public void OnEvent(object sender, EventArgs e)
+            public void OnEvent(object? sender, WeakEvent ev, EventArgs e)
             {
                 _parent.CanExecuteChanged();
             }
@@ -160,14 +160,12 @@ namespace Avalonia.Controls
             set
             {
                 if (_command != null)
-                    WeakSubscriptionManager.Unsubscribe(_command,
-                        nameof(ICommand.CanExecuteChanged), _canExecuteChangedSubscriber);
+                    WeakEvents.CommandCanExecuteChanged.Unsubscribe(_command, _canExecuteChangedSubscriber);
 
                 SetAndRaise(CommandProperty, ref _command, value);
 
                 if (_command != null)
-                    WeakSubscriptionManager.Subscribe(_command,
-                        nameof(ICommand.CanExecuteChanged), _canExecuteChangedSubscriber);
+                    WeakEvents.CommandCanExecuteChanged.Subscribe(_command, _canExecuteChangedSubscriber);
 
                 CanExecuteChanged();
             }
