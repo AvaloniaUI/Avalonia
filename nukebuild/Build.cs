@@ -146,12 +146,19 @@ partial class Build : NukeBuild
             ProcessTasks.StartProcess("xcodebuild", args).AssertZeroExitCode();
         });
 
+    bool IsDotnetCoreOnlyBuild()
+    {
+        //avalonia can't build with msbuild from vs 2019 so we need vs 2022
+        var r = int.Parse(VSWhere("-latest -nologo -property catalog_productLineVersion").First().Text);
+        return ForceDotNetCoreBuild || (r <= 2019);
+    }
+
     Target Compile => _ => _
         .DependsOn(Clean, CompileNative)
         .DependsOn(CompileHtmlPreviewer)
         .Executes(async () =>
         {
-            if (Parameters.IsRunningOnWindows)
+            if (Parameters.IsRunningOnWindows && !IsDotnetCoreOnlyBuild())
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .SetProcessArgumentConfigurator(a => a.Add("/r"))
                     .AddTargets("Build")
@@ -188,7 +195,7 @@ partial class Build : NukeBuild
         }
 
         var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
-        if (Parameters.IsRunningOnWindows)
+        if (Parameters.IsRunningOnWindows && !IsDotnetCoreOnlyBuild())
             MsBuildCommon(eventsProject, c => c
                 .SetProcessArgumentConfigurator(a => a.Add("/r"))
                 .AddTargets("Build")
@@ -332,7 +339,7 @@ partial class Build : NukeBuild
         .After(RunTests)
         .Executes(() =>
         {
-            if (Parameters.IsRunningOnWindows)
+            if (Parameters.IsRunningOnWindows && !IsDotnetCoreOnlyBuild())
 
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .AddTargets("Pack"));
@@ -340,6 +347,7 @@ partial class Build : NukeBuild
                 DotNetPack(c => c
                     .SetProject(Parameters.MSBuildSolution)
                     .SetConfiguration(Parameters.Configuration)
+                    .AddProperty("PackAvaloniaNative", "true")
                     .AddProperty("PackageVersion", Parameters.Version));
         });
 

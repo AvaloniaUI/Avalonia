@@ -22,6 +22,9 @@ public partial class Build
     [Parameter("skip-previewer")]
     public bool SkipPreviewer { get; set; }
 
+    [Parameter("force-dotnetcorebuild")]
+    public bool ForceDotNetCoreBuild { get; set; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
