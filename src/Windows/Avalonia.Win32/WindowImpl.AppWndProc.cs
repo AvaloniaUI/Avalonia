@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Text;
 using Avalonia.Controls;
-using Avalonia.Controls.Remote;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -110,19 +108,6 @@ namespace Avalonia.Win32
                         }
 
                         return IntPtr.Zero;
-                    }
-
-                case WindowsMessage.WM_KEYDOWN:
-                case WindowsMessage.WM_SYSKEYDOWN:
-                    {
-                        e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            _owner,
-                            RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
-                            WindowsKeyboardDevice.Instance.Modifiers);
-                        break;
                     }
 
                 case WindowsMessage.WM_SYSCOMMAND:
@@ -529,6 +514,47 @@ namespace Avalonia.Win32
             {
                 return DefWindowProc(hWnd, msg, wParam, lParam);
             }
+        }
+
+        private protected virtual bool OnPreProcessMessage(in MSG msg)
+        {
+            RawInputEventArgs e = null;
+            uint timestamp = unchecked((uint)GetMessageTime());
+
+            switch ((WindowsMessage)msg.message)
+            {
+                case WindowsMessage.WM_KEYDOWN:
+                case WindowsMessage.WM_SYSKEYDOWN:
+                {
+                    e = new RawKeyEventArgs(
+                        WindowsKeyboardDevice.Instance,
+                        msg.time,
+                        _owner,
+                        RawKeyEventType.KeyDown,
+                        KeyInterop.KeyFromVirtualKey(ToInt32(msg.wParam), ToInt32(msg.lParam)),
+                        WindowsKeyboardDevice.Instance.Modifiers);
+                    break;
+                }
+            }
+
+            if (e is not null)
+            {
+                Input(e);
+                return e.Handled;
+            }
+
+            return false;
+        }
+
+        internal static bool PreProcessMessage(in MSG msg)
+        {
+            foreach (var i in s_instances)
+            {
+                if (i.Hwnd == msg.hwnd)
+                    return i.OnPreProcessMessage(msg);
+            }
+
+            return false;
         }
 
         private void UpdateInputMethod(IntPtr hkl)

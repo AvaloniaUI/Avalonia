@@ -189,8 +189,11 @@ namespace Avalonia.Win32
 
             if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                if (!WindowImpl.PreProcessMessage(msg))
+                {
+                    UnmanagedMethods.TranslateMessage(ref msg);
+                    UnmanagedMethods.DispatchMessage(ref msg);
+                }
             }
             else
             {
@@ -206,8 +209,11 @@ namespace Avalonia.Win32
             while (!cancellationToken.IsCancellationRequested 
                 && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                if (!WindowImpl.PreProcessMessage(msg))
+                {
+                    UnmanagedMethods.TranslateMessage(ref msg);
+                    UnmanagedMethods.DispatchMessage(ref msg);
+                }
             }
             if (result < 0)
             {
