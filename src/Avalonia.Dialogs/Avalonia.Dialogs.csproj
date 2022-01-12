@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\*" />
+    <AvaloniaResource Include="**/*.xaml" />
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />
