@@ -459,8 +459,6 @@ namespace Avalonia.Skia
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
-                ConfigureTextRendering(paintWrapper);
-
                 Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
             }
@@ -604,15 +602,6 @@ namespace Avalonia.Skia
 
                 Canvas.SetMatrix(transform.ToSKMatrix());
             }
-        }
-
-        internal void ConfigureTextRendering(PaintWrapper wrapper)
-        {
-            var paint = wrapper.Paint;
-
-            paint.IsEmbeddedBitmapText = true;
-            paint.SubpixelText = true;
-            paint.LcdRenderText = _canTextUseLcdRendering;
         }
 
         /// <summary>
