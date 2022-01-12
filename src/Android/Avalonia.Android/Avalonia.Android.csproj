@@ -1,15 +1,11 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>monoandroid11.0</TargetFramework>
+    <TargetFramework>net6.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
-    <ProjectReference Include="..\..\Avalonia.PlatformSupport\Avalonia.PlatformSupport.csproj">
-      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
-    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
-  <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="..\..\..\build\AndroidWorkarounds.props" />
 </Project>
