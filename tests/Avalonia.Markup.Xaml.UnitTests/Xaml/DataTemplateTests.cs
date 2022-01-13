@@ -171,9 +171,5 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("NestedType", child.Tag);
             }
         }
-
-        public class NestedType
-        {
-        }
     }
 }
