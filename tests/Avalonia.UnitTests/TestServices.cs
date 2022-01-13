@@ -58,6 +58,12 @@ namespace Avalonia.UnitTests
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());
 
+        public static readonly TestServices TextServices = new TestServices(
+            assetLoader: new AssetLoader(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new HarfBuzzFontManagerImpl(),
+            textShaperImpl: new HarfBuzzTextShaperImpl());
+        
         public TestServices(
             IAssetLoader assetLoader = null,
             IFocusManager focusManager = null,
