@@ -139,6 +139,10 @@ namespace Avalonia.Themes.Default
                 new StyleInclude(baseUri)
                 {
                     Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
+                },
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Default/Accents/Base.xaml")
                 }
             };
             _simpleLight = new Styles
