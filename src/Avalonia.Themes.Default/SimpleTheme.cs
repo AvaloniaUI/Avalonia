@@ -14,6 +14,7 @@ namespace Avalonia.Themes.Default
         private bool _isLoading;
         private Styles _simpleDark = new();
         private Styles _simpleLight = new();
+        private Styles _sharedStyles = new();
         private IStyle? _loaded;
 
         /// <summary>
@@ -32,7 +33,12 @@ namespace Avalonia.Themes.Default
         /// <param name="serviceProvider">The XAML service provider.</param>
         public SimpleTheme(IServiceProvider serviceProvider)
         {
-            _baseUri = ((IUriContext)serviceProvider.GetService(typeof(IUriContext))).BaseUri;
+            var service = serviceProvider.GetService(typeof(IUriContext));
+            if (service == null)
+            {
+                throw new Exception("There is no service object of type IUriContext!");
+            }
+            _baseUri = ((IUriContext)service).BaseUri;
             InitStyles(_baseUri);
         }
 
@@ -46,6 +52,22 @@ namespace Avalonia.Themes.Default
             get => GetValue(ModeProperty);
             set => SetValue(ModeProperty, value);
         }
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == ModeProperty)
+            {
+                if (Mode == SimpleThemeMode.Dark)
+                {
+                    (Loaded as Styles)![1] = _simpleDark[0];
+                }
+                else
+                {
+                    (Loaded as Styles)![1] = _simpleLight[0];
+                }
+            }
+        }
+
         public IStyle Loaded
         {
             get
@@ -56,11 +78,11 @@ namespace Avalonia.Themes.Default
 
                     if (Mode == SimpleThemeMode.Light)
                     {
-                        _loaded = _simpleLight;
+                        _loaded = new Styles { _sharedStyles , _simpleLight};
                     }
                     else if (Mode == SimpleThemeMode.Dark)
                     {
-                        _loaded = _simpleDark;
+                        _loaded = new Styles { _sharedStyles, _simpleDark };
                     }
                     _isLoading = false;
                 }
@@ -110,16 +132,18 @@ namespace Avalonia.Themes.Default
         void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
         private void InitStyles(Uri baseUri)
         {
-
+            _sharedStyles = new Styles
+            {
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
+                }
+            };
             _simpleLight = new Styles
             {
                 new StyleInclude(baseUri)
                 {
                     Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml")
-                },
-                new StyleInclude(baseUri)
-                {
-                    Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
                 }
             };
 
@@ -128,10 +152,6 @@ namespace Avalonia.Themes.Default
                 new StyleInclude(baseUri)
                 {
                     Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseDark.xaml")
-                },
-                new StyleInclude(baseUri)
-                {
-                    Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
                 }
             };
         }
