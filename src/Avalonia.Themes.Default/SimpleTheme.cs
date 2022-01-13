@@ -10,13 +10,15 @@ namespace Avalonia.Themes.Default
 {
     public class SimpleTheme : AvaloniaObject, IStyle, IResourceProvider
     {
+        public static readonly StyledProperty<SimpleThemeMode> ModeProperty =
+        AvaloniaProperty.Register<SimpleTheme, SimpleThemeMode>(nameof(Mode));
+
         private readonly Uri _baseUri;
         private bool _isLoading;
+        private IStyle? _loaded;
+        private Styles _sharedStyles = new();
         private Styles _simpleDark = new();
         private Styles _simpleLight = new();
-        private Styles _sharedStyles = new();
-        private IStyle? _loaded;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SimpleTheme"/> class.
         /// </summary>
@@ -42,61 +44,6 @@ namespace Avalonia.Themes.Default
             InitStyles(_baseUri);
         }
 
-        public static readonly StyledProperty<SimpleThemeMode> ModeProperty =
-        AvaloniaProperty.Register<SimpleTheme, SimpleThemeMode>(nameof(Mode));
-        /// <summary>
-        /// Gets or sets the mode of the fluent theme (light, dark).
-        /// </summary>
-        public SimpleThemeMode Mode
-        {
-            get => GetValue(ModeProperty);
-            set => SetValue(ModeProperty, value);
-        }
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-        {
-            base.OnPropertyChanged(change);
-            if (change.Property == ModeProperty)
-            {
-                if (Mode == SimpleThemeMode.Dark)
-                {
-                    (Loaded as Styles)![1] = _simpleDark[0];
-                }
-                else
-                {
-                    (Loaded as Styles)![1] = _simpleLight[0];
-                }
-            }
-        }
-
-        public IStyle Loaded
-        {
-            get
-            {
-                if (_loaded == null)
-                {
-                    _isLoading = true;
-
-                    if (Mode == SimpleThemeMode.Light)
-                    {
-                        _loaded = new Styles { _sharedStyles , _simpleLight};
-                    }
-                    else if (Mode == SimpleThemeMode.Dark)
-                    {
-                        _loaded = new Styles { _sharedStyles, _simpleDark };
-                    }
-                    _isLoading = false;
-                }
-
-                return _loaded!;
-            }
-        }
-
-        public IResourceHost? Owner => (Loaded as IResourceProvider)?.Owner;
-
-        bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
-
-        IReadOnlyList<IStyle> IStyle.Children => _loaded?.Children ?? Array.Empty<IStyle>();
-
         public event EventHandler OwnerChanged
         {
             add
@@ -115,6 +62,47 @@ namespace Avalonia.Themes.Default
             }
         }
 
+        IReadOnlyList<IStyle> IStyle.Children => _loaded?.Children ?? Array.Empty<IStyle>();
+
+        bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
+
+        public IStyle Loaded
+        {
+            get
+            {
+                if (_loaded == null)
+                {
+                    _isLoading = true;
+
+                    if (Mode == SimpleThemeMode.Light)
+                    {
+                        _loaded = new Styles { _sharedStyles, _simpleLight };
+                    }
+                    else if (Mode == SimpleThemeMode.Dark)
+                    {
+                        _loaded = new Styles { _sharedStyles, _simpleDark };
+                    }
+                    _isLoading = false;
+                }
+
+                return _loaded!;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the mode of the fluent theme (light, dark).
+        /// </summary>
+        public SimpleThemeMode Mode
+        {
+            get => GetValue(ModeProperty);
+            set => SetValue(ModeProperty, value);
+        }
+        public IResourceHost? Owner => (Loaded as IResourceProvider)?.Owner;
+
+        void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
+
+        void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
+
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
 
         public bool TryGetResource(object key, out object? value)
@@ -128,8 +116,22 @@ namespace Avalonia.Themes.Default
             return false;
         }
 
-        void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
-        void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == ModeProperty)
+            {
+                if (Mode == SimpleThemeMode.Dark)
+                {
+                    (Loaded as Styles)![1] = _simpleDark[0];
+                }
+                else
+                {
+                    (Loaded as Styles)![1] = _simpleLight[0];
+                }
+            }
+        }
+
         private void InitStyles(Uri baseUri)
         {
             _sharedStyles = new Styles
