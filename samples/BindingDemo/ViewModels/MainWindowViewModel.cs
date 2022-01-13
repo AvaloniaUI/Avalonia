@@ -115,5 +115,11 @@ namespace BindingDemo.ViewModels
         {
             return BooleanFlag;
         }
+
+        public enum NestedEnum
+        {
+            Nested,
+            Enum,
+        }
     }
 }

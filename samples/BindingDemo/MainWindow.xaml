@@ -4,7 +4,7 @@
         xmlns:vm="clr-namespace:BindingDemo.ViewModels" 
         xmlns:local="clr-namespace:BindingDemo"
         Title="AvaloniaUI Bindings Test"
-        Width="800"
+        Width="1000"
         Height="600"
         x:DataType="vm:MainWindowViewModel">
   <Window.Styles>
@@ -39,6 +39,10 @@
             <TextBox Watermark="Boolean String" UseFloatingWatermark="True" Text="{Binding Path=BooleanString}"/>
             <CheckBox IsChecked="{Binding !BooleanString}">!BooleanString</CheckBox>
             <CheckBox IsChecked="{Binding !!BooleanString}">!!BooleanString</CheckBox>
+          </StackPanel>
+          <StackPanel Margin="18" Spacing="4" Width="200">
+            <TextBlock FontSize="16" Text="Markup Extensions"/>
+            <ComboBox Items="{local:EnumToEnumerable {x:Type vm:MainWindowViewModel+NestedEnum}}" />
           </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
