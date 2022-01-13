@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -131,6 +132,48 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Same(viewModel.Child, target.Presenter.DataContext);
                 Assert.Same(viewModel.Child.Child, canvas.DataContext);
             }
+        }
+
+        [Fact]
+        public void DataType_Can_Be_Nested_Type()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:sys='clr-namespace:System;assembly=netstandard'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.DataTemplates>
+        <DataTemplate DataType='{x:Type local:TestViewModel+NestedType}'>
+            <TextBlock Text='{Binding String}' Tag='NestedType'/>
+        </DataTemplate>
+    </Window.DataTemplates>
+    <ContentControl Name='target' Content='{Binding}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var dataTemplate = (DataTemplate)window.DataTemplates[0];
+                var target = window.FindControl<ContentControl>("target");
+
+                window.DataContext = new TestViewModel.NestedType
+                {
+                    String = "Nested"
+                };
+
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+                ((ContentPresenter)target.Presenter).UpdateChild();
+
+                Assert.Equal(typeof(TestViewModel.NestedType), dataTemplate.DataType);
+                
+                var child = Assert.IsType<TextBlock>(target.Presenter.Child);
+                Assert.Equal("Nested", child.Text);
+                Assert.Equal("NestedType", child.Tag);
+            }
+        }
+
+        public class NestedType
+        {
         }
     }
 }

@@ -37,5 +37,16 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 RaisePropertyChanged();
             }
         }
+
+        public class NestedType
+        {
+            public string String { get; set; }
+        }
+
+        public enum NestedEnum
+        {
+            Item1,
+            Item2,
+        }
     }
 }
