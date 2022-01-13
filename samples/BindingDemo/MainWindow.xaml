@@ -42,7 +42,7 @@
           </StackPanel>
           <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Markup Extensions"/>
-            <ComboBox Items="{local:EnumToEnumerable {x:Type vm:MainWindowViewModel+NestedEnum}}" />
+            <ComboBox Items="{local:EnumToEnumerable {x:Type vm:MainWindowViewModel+NestedEnum}}" SelectedIndex="0"/>
           </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal">

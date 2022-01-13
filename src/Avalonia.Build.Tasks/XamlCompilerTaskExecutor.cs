@@ -255,6 +255,7 @@ namespace Avalonia.Build.Tasks
                                 true),
                             (closureName, closureBaseType) =>
                                 populateBuilder.DefineSubType(closureBaseType, closureName, false),
+                            (s, returnType, parameters) => builder.DefineDelegateSubType(s, false, returnType, parameters),
                             res.Uri, res
                         );
                         
