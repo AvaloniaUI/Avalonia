@@ -33,6 +33,6 @@
         <SolidColorBrush x:Key="ThemeControlHighlightHighBrush" Color="{StaticResource ThemeControlHighlightHighColor}" />
         <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{StaticResource ThemeForegroundColor}" />
 
-        <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource HighlightColor}" />
+        <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />
     </Style.Resources>
 </Style>
