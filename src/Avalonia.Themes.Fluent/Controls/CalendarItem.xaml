@@ -32,6 +32,7 @@
             <Style Selector="Button.CalendarHeader">
               <Setter Property="HorizontalAlignment" Value="Stretch" />
               <Setter Property="VerticalAlignment" Value="Stretch" />
+              <Setter Property="VerticalContentAlignment" Value="Center" />
               <Setter Property="FontSize" Value="20" />
               <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}"/>
               <Setter Property="Template">
