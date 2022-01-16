@@ -106,7 +106,6 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
         private int _count;
         private readonly Action _unsubscribe;
         private bool _compactScheduled;
-        private int _removedSinceLastCompact;
 
         public Subscription(WeakEvent<TSender, TEventArgs> ev, TSender target)
         {
@@ -154,11 +153,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
 
             if (removed)
             {
-                _removedSinceLastCompact++;
                 ScheduleCompact();
-                
-                if (_removedSinceLastCompact > 500)
-                    Compact();
             }
         }
 
@@ -172,10 +167,9 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
         
         void Compact()
         {
-            if(!_compactScheduled || _removedSinceLastCompact == 0)
+            if(!_compactScheduled)
                 return;
             _compactScheduled = false;
-            _removedSinceLastCompact = 0;
             int empty = -1;
             for (var c = 0; c < _count; c++)
             {
