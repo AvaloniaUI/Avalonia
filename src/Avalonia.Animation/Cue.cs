@@ -30,7 +30,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Parses a string to a <see cref="Cue"/> object.
         /// </summary>
-        public static Cue Parse(string value, CultureInfo culture)
+        public static Cue Parse(string value, CultureInfo? culture)
         {
             string v = value;
 
@@ -72,12 +72,12 @@ namespace Avalonia.Animation
 
     public class CueTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             return Cue.Parse((string)value, culture);
         }

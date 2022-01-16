@@ -24,6 +24,11 @@ namespace Avalonia.Animation.Animators
 
         public override IDisposable BindAnimation(Animatable control, IObservable<ISolidColorBrush?> instance)
         {
+            if (Property is null)
+            {
+                throw new InvalidOperationException("Animator has no property specified.");
+            }
+
             return control.Bind((AvaloniaProperty<IBrush?>)Property, instance, BindingPriority.Animation);
         }
     }
