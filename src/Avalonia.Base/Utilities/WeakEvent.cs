@@ -75,7 +75,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
                 get
                 {
                     if (_reference == null)
-                        return false;
+                        return true;
                     if (_reference.TryGetTarget(out var target))
                         return true;
                     _reference = null;
@@ -179,15 +179,15 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             int empty = -1;
             for (var c = 0; c < _count; c++)
             {
-                ref var r = ref _data[c];
+                ref var currentRef = ref _data[c]; 
                 //Mark current index as first empty
-                if (r.IsEmpty && empty == -1)
+                if (currentRef.IsEmpty && empty == -1)
                     empty = c;
                 //If current element isn't null and we have an empty one
-                if (!r.IsEmpty && empty != -1)
+                if (!currentRef.IsEmpty && empty != -1)
                 {
-                    _data[c] = default;
-                    _data[empty] = r;
+                    _data[empty] = currentRef;
+                    currentRef = default;
                     empty++;
                 }
             }
