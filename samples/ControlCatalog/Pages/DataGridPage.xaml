@@ -64,6 +64,18 @@
               <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />
               <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />
               <DataGridCheckBoxColumn Header="Is Banned" Binding="{Binding IsBanned}" Width="*" IsThreeState="{Binding #IsThreeStateCheckBox.IsChecked, Mode=OneWay}" />
+              <DataGridTemplateColumn Header="Age" >
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate DataType="local:Person">
+                    <TextBlock Text="{Binding Age, StringFormat='{}{0} years'}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+                <DataGridTemplateColumn.CellEditingTemplate>
+                  <DataTemplate DataType="local:Person">
+                    <NumericUpDown Value="{Binding Age}" FormatString="N0" HorizontalAlignment="Stretch" Minimum="0" Maximum="120" TemplateApplied="NumericUpDown_OnTemplateApplied" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellEditingTemplate>
+              </DataGridTemplateColumn>
             </DataGrid.Columns>
           </DataGrid>
           <Button Grid.Row="1" Name="btnAdd" Margin="12,0,12,12" Content="Add" HorizontalAlignment="Right" />
