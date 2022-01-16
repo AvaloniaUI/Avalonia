@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
-    public sealed class Pen : AvaloniaObject, IPen, IWeakEventSubscriber<EventArgs>
+    public sealed class Pen : AvaloniaObject, IPen
     {
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
@@ -48,7 +48,8 @@ namespace Avalonia.Media
         private EventHandler? _invalidated;
         private IAffectsRender? _subscribedToBrush;
         private IAffectsRender? _subscribedToDashes;
-        
+        private WeakEventSubscriber<EventArgs>? _weakSubscriber;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Pen"/> class.
         /// </summary>
@@ -207,13 +208,23 @@ namespace Avalonia.Media
         {
             if ((_invalidated == null || field != value) && field != null)
             {
-                InvalidatedWeakEvent.Unsubscribe(field, this);
+                if (_weakSubscriber != null)
+                    InvalidatedWeakEvent.Unsubscribe(field, _weakSubscriber);
                 field = null;
             }
 
             if (_invalidated != null && field != value && value is IAffectsRender affectsRender)
             {
-                InvalidatedWeakEvent.Subscribe(affectsRender, this);
+                if (_weakSubscriber == null)
+                {
+                    _weakSubscriber = new WeakEventSubscriber<EventArgs>();
+                    _weakSubscriber.Event += (_, ev, __) =>
+                    {
+                        if (ev == InvalidatedWeakEvent)
+                            _invalidated?.Invoke(this, EventArgs.Empty);
+                    };
+                }
+                InvalidatedWeakEvent.Subscribe(affectsRender, _weakSubscriber);
                 field = affectsRender;
             }
         }
@@ -222,12 +233,6 @@ namespace Avalonia.Media
         {
             UpdateSubscription(ref _subscribedToBrush, Brush);
             UpdateSubscription(ref _subscribedToDashes, DashStyle);
-        }
-        
-        void IWeakEventSubscriber<EventArgs>.OnEvent(object? sender, WeakEvent ev, EventArgs e)
-        {
-            if (ev == InvalidatedWeakEvent) 
-                _invalidated?.Invoke(this, EventArgs.Empty);
         }
     }
 }
