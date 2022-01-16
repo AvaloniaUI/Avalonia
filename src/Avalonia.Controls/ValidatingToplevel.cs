@@ -49,6 +49,8 @@ internal class ValidatingToplevelImpl : ITopLevelImpl, ITopLevelImplWithNativeCo
         if (impl is ValidatingToplevelImpl)
             return impl;
         return new ValidatingToplevelImpl(impl);
+#else
+        return impl;
 #endif
     }
 
@@ -153,6 +155,8 @@ internal class ValidatingWindowBaseImpl : ValidatingToplevelImpl, IWindowBaseImp
         if (impl is ValidatingToplevelImpl)
             return impl;
         return new ValidatingWindowBaseImpl(impl);
+#else
+        return impl;
 #endif
     }
 
@@ -213,6 +217,8 @@ internal class ValidatingWindowImpl : ValidatingWindowBaseImpl, IWindowImpl
         if (impl is ValidatingToplevelImpl)
             return impl;
         return new ValidatingWindowImpl(impl);
+#else
+        return impl;
 #endif
     }
 
@@ -310,6 +316,8 @@ internal class ValidatingPopupImpl : ValidatingWindowBaseImpl, IPopupImpl
         if (impl is ValidatingToplevelImpl)
             return impl;
         return new ValidatingPopupImpl(impl);
+#else
+        return impl;
 #endif
     }
 
