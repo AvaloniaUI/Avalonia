@@ -17,6 +17,6 @@ public class WeakEventSubscriber<TEventArgs> : IWeakEventSubscriber<TEventArgs> 
 
     void IWeakEventSubscriber<TEventArgs>.OnEvent(object? sender, WeakEvent ev, TEventArgs e)
     {
-        
+        Event?.Invoke(sender, ev, e);
     }
 }

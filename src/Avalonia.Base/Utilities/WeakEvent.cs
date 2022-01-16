@@ -76,10 +76,10 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
                 {
                     if (_reference == null)
                         return true;
-                    if (_reference.TryGetTarget(out var target))
-                        return true;
+                    if (_reference.TryGetTarget(out _))
+                        return false;
                     _reference = null;
-                    return false;
+                    return true;
                 }
             }
 
