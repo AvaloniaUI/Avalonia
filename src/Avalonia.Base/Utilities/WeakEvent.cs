@@ -101,11 +101,10 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             }
         }
 
-        private Entry[] _data =
-            new Entry[16];
-        private int _count;
         private readonly Action _unsubscribe;
+        private readonly WeakHashList<IWeakEventSubscriber<TEventArgs>> _list = new();
         private bool _compactScheduled;
+        private bool _destroyed;
 
         public Subscription(WeakEvent<TSender, TEventArgs> ev, TSender target)
         {
@@ -117,49 +116,27 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
 
         void Destroy()
         {
+            if(_destroyed)
+                return;
+            _destroyed = true;
             _unsubscribe();
             _ev._subscriptions.Remove(_target);
         }
 
-        public void Add(IWeakEventSubscriber<TEventArgs> s)
-        {
-            if (_count == _data.Length)
-            {
-                //Extend capacity
-                var extendedData = new Entry[_data.Length * 2];
-                Array.Copy(_data, extendedData, _data.Length);
-                _data = extendedData;
-            }
-
-            _data[_count] = new(s);
-            _count++;
-        }
+        public void Add(IWeakEventSubscriber<TEventArgs> s) => _list.Add(s);
 
         public void Remove(IWeakEventSubscriber<TEventArgs> s)
         {
-            var removed = false;
-
-            for (int c = 0; c < _count; ++c)
-            {
-                var reference = _data[c];
-
-                if (reference.Equals(s))
-                {
-                    _data[c] = default;
-                    removed = true;
-                    break;
-                }
-            }
-
-            if (removed)
-            {
+            _list.Remove(s);
+            if(_list.IsEmpty)
+                Destroy();
+            else if(_list.NeedCompact && _compactScheduled)
                 ScheduleCompact();
-            }
         }
 
         void ScheduleCompact()
         {
-            if(_compactScheduled)
+            if(_compactScheduled || _destroyed)
                 return;
             _compactScheduled = true;
             Dispatcher.UIThread.Post(_compact, DispatcherPriority.Background);
@@ -170,42 +147,24 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             if(!_compactScheduled)
                 return;
             _compactScheduled = false;
-            int empty = -1;
-            for (var c = 0; c < _count; c++)
-            {
-                ref var currentRef = ref _data[c]; 
-                //Mark current index as first empty
-                if (currentRef.IsEmpty && empty == -1)
-                    empty = c;
-                //If current element isn't null and we have an empty one
-                if (!currentRef.IsEmpty && empty != -1)
-                {
-                    _data[empty] = currentRef;
-                    currentRef = default;
-                    empty++;
-                }
-            }
-
-            if (empty != -1)
-                _count = empty;
-            if (_count == 0)
+            _list.Compact();
+            if (_list.IsEmpty)
                 Destroy();
         }
 
         void OnEvent(object? sender, TEventArgs eventArgs)
         {
-            var needCompact = false;
-            for (var c = 0; c < _count; c++)
+            var alive = _list.GetAlive();
+            if(alive == null)
+                Destroy();
+            else
             {
-                var r = _data[c];
-                if (r.TryGetTarget(out var sub))
-                    sub!.OnEvent(_target, _ev, eventArgs);
-                else
-                    needCompact = true;
+                foreach(var item in alive)
+                    item.OnEvent(_target, _ev, eventArgs);
+                WeakHashList<IWeakEventSubscriber<TEventArgs>>.ReturnToSharedPool(alive);
+                if(_list.NeedCompact && !_compactScheduled)
+                    ScheduleCompact();
             }
-
-            if (needCompact)
-                ScheduleCompact();
         }
     }
 
