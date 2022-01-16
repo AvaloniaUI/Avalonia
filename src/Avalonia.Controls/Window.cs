@@ -237,13 +237,14 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="impl">The window implementation.</param>
         public Window(IWindowImpl impl)
-            : base(impl)
+            : base(ValidatingWindowImpl.Wrap(impl))
         {
-            impl.Closing = HandleClosing;
-            impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
-            impl.WindowStateChanged = HandleWindowStateChanged;
+            var wrapped = (IWindowImpl)base.PlatformImpl!;
+            wrapped.Closing = HandleClosing;
+            wrapped.GotInputWhenDisabled = OnGotInputWhenDisabled;
+            wrapped.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
-            impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;            
+            wrapped.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;            
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, PlatformResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
