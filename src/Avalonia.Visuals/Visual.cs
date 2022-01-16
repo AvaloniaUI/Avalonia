@@ -91,11 +91,17 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<int> ZIndexProperty =
             AvaloniaProperty.Register<Visual, int>(nameof(ZIndex));
+        
+        private static readonly WeakEvent<IAffectsRender, EventArgs> InvalidatedWeakEvent =
+            WeakEvent.Register<IAffectsRender>(
+                (s, h) => s.Invalidated += h,
+                (s, h) => s.Invalidated -= h);
 
         private Rect _bounds;
         private TransformedBounds? _transformedBounds;
         private IRenderRoot? _visualRoot;
         private IVisual? _visualParent;
+        private WeakEventSubscriber<EventArgs>? _affectsRenderWeakSubscriber;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -352,12 +358,21 @@ namespace Avalonia
                 {
                     if (e.OldValue is IAffectsRender oldValue)
                     {
-                        WeakEventHandlerManager.Unsubscribe<EventArgs, T>(oldValue, nameof(oldValue.Invalidated), sender.AffectsRenderInvalidated);
+                        if (sender._affectsRenderWeakSubscriber != null)
+                            InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
                     }
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
+                        if (sender._affectsRenderWeakSubscriber == null)
+                        {
+                            sender._affectsRenderWeakSubscriber = new WeakEventSubscriber<EventArgs>();
+                            sender._affectsRenderWeakSubscriber.Event += delegate
+                            {
+                                sender.InvalidateVisual();
+                            };
+                        }
+                        InvalidatedWeakEvent.Subscribe(newValue, sender._affectsRenderWeakSubscriber);
                     }
 
                     sender.InvalidateVisual();
@@ -607,8 +622,6 @@ namespace Avalonia
 
             OnVisualParentChanged(old, value);
         }
-
-        private void AffectsRenderInvalidated(object? sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.
