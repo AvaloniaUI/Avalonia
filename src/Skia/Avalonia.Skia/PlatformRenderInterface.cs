@@ -198,7 +198,7 @@ namespace Avalonia.Skia
         private static readonly SKFont s_font = new SKFont
         {
             Subpixel = true,
-            Edging = SKFontEdging.Antialias,
+            Edging = SKFontEdging.SubpixelAntialias,
             Hinting = SKFontHinting.Full,
             LinearMetrics = true
         };
