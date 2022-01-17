@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <WasmBuildNative>True</WasmBuildNative>
   </PropertyGroup>
 
   <ItemGroup>

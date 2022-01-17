@@ -36,7 +36,13 @@ namespace Avalonia.MicroCom
 
         public static T CreateProxyFor<T>(void* pObject, bool ownsHandle) => (T)CreateProxyFor(typeof(T), new IntPtr(pObject), ownsHandle);
         public static T CreateProxyFor<T>(IntPtr pObject, bool ownsHandle) => (T)CreateProxyFor(typeof(T), pObject, ownsHandle);
+
+        public static T CreateProxyOrNullFor<T>(void* pObject, bool ownsHandle) where T : class =>
+            pObject == null ? null : (T)CreateProxyFor(typeof(T), new IntPtr(pObject), ownsHandle);
         
+        public static T CreateProxyOrNullFor<T>(IntPtr pObject, bool ownsHandle) where T : class =>
+            pObject == IntPtr.Zero ? null : (T)CreateProxyFor(typeof(T), pObject, ownsHandle);
+
         public static object CreateProxyFor(Type type, IntPtr pObject, bool ownsHandle) => _factories[type](pObject, ownsHandle);
 
         public static IntPtr GetNativeIntPtr<T>(this T obj, bool owned = false) where T : IUnknown

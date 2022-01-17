@@ -35,7 +35,7 @@ namespace Avalonia.Web.Blazor
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardStub>()
-                .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
+                .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
@@ -51,6 +51,9 @@ namespace Avalonia.Web.Blazor
 
         public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
 
+        public Size TouchDoubleClickSize => new Size(16, 16);
+
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public void RunLoop(CancellationToken cancellationToken)
         {
             throw new NotSupportedException();

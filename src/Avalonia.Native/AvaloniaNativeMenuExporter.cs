@@ -70,81 +70,83 @@ namespace Avalonia.Native
             var result = new NativeMenu();
 
             var aboutItem = new NativeMenuItem("About Avalonia");
-            aboutItem.Click += async (sender, e) =>
+            
+            aboutItem.Click += async (_, _) =>
             {
                 var dialog = new AboutAvaloniaDialog();
 
-                var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-
-                await dialog.ShowDialog(mainWindow);
+                if (Application.Current is
+                    { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { MainWindow: { } mainWindow } })
+                {
+                    await dialog.ShowDialog(mainWindow);   
+                }
             };
+            
             result.Add(aboutItem);
-
-            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
-            if (macOpts == null || !macOpts.DisableDefaultApplicationMenuItems)
-            {
-                result.Add(new NativeMenuItemSeparator());
-
-                var servicesMenu = new NativeMenuItem("Services");
-                servicesMenu.Menu = new NativeMenu
-                {
-                    [MacOSNativeMenuCommands.IsServicesSubmenuProperty] = true
-                };
-                result.Add(servicesMenu);
-
-                result.Add(new NativeMenuItemSeparator());
-
-                var hideItem = new NativeMenuItem("Hide " + Application.Current.Name)
-                {
-                    Gesture = new KeyGesture(Key.H, KeyModifiers.Meta)
-                };
-                hideItem.Click += (sender, args) =>
-                {
-                    _applicationCommands.HideApp();
-                };
-                result.Add(hideItem);
-
-
-                var hideOthersItem = new NativeMenuItem("Hide Others")
-                {
-                    Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta | KeyModifiers.Alt)
-                };
-                hideOthersItem.Click += (sender, args) =>
-                {
-                    _applicationCommands.HideOthers();
-                };
-                result.Add(hideOthersItem);
-
-
-                var showAllItem = new NativeMenuItem("Show All");
-                showAllItem.Click += (sender, args) =>
-                {
-                    _applicationCommands.ShowAll();
-                };
-                result.Add(showAllItem);
-
-                result.Add(new NativeMenuItemSeparator());
-
-                var quitItem = new NativeMenuItem("Quit")
-                {
-                    Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta)
-                };
-                quitItem.Click += (sender, args) =>
-                {
-                    _applicationCommands.ShowAll();
-                };
-                result.Add(quitItem);
-            }
-
 
             return result;
         }
 
+        private void PopulateStandardOSXMenuItems(NativeMenu appMenu)
+        {
+            appMenu.Add(new NativeMenuItemSeparator());
+
+            var servicesMenu = new NativeMenuItem("Services");
+            servicesMenu.Menu = new NativeMenu { [MacOSNativeMenuCommands.IsServicesSubmenuProperty] = true };
+
+            appMenu.Add(servicesMenu);
+
+            appMenu.Add(new NativeMenuItemSeparator());
+
+            var hideItem = new NativeMenuItem("Hide " + (Application.Current?.Name ?? "Application"))
+            {
+                Gesture = new KeyGesture(Key.H, KeyModifiers.Meta)
+            };
+
+            hideItem.Click += (_, _) =>
+            {
+                _applicationCommands.HideApp();
+            };
+
+            appMenu.Add(hideItem);
+
+            var hideOthersItem = new NativeMenuItem("Hide Others")
+            {
+                Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta | KeyModifiers.Alt)
+            };
+            hideOthersItem.Click += (_, _) =>
+            {
+                _applicationCommands.HideOthers();
+            };
+            appMenu.Add(hideOthersItem);
+
+            var showAllItem = new NativeMenuItem("Show All");
+            showAllItem.Click += (_, _) =>
+            {
+                _applicationCommands.ShowAll();
+            };
+
+            appMenu.Add(showAllItem);
+
+            appMenu.Add(new NativeMenuItemSeparator());
+
+            var quitItem = new NativeMenuItem("Quit") { Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta) };
+            quitItem.Click += (_, _) =>
+            {
+                if (Application.Current is { ApplicationLifetime: IControlledApplicationLifetime lifetime })
+                {
+                    lifetime.Shutdown();
+                }
+            };
+
+            appMenu.Add(quitItem);
+        }
+
         private void DoLayoutReset(bool forceUpdate = false)
         {
-            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
 
-            if (macOpts != null && macOpts.DisableNativeMenus)
+            if (macOpts.DisableNativeMenus)
             {
                 return;
             }
@@ -219,6 +221,13 @@ namespace Avalonia.Native
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
                 _nativeMenu.Initialize(this, appMenuHolder, "");
+
+                var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
+
+                if (macOpts == null || !macOpts.DisableDefaultApplicationMenuItems)
+                {
+                    PopulateStandardOSXMenuItems(menu);
+                }
 
                 setMenu = true;
             }
