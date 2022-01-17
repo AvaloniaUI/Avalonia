@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Threading;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core.Plugins
@@ -57,6 +58,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             validator.Subscribe(_ => { });
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
             validator.Unsubscribe();
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 

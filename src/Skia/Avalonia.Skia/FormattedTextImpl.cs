@@ -291,7 +291,7 @@ namespace Avalonia.Skia
                     {
                         AvaloniaFormattedTextLine line = _skiaLines[c];
 
-                        float x = TransformX(origin.X, 0, paint.TextAlign);
+                        float x = TransformX(origin.X, line.Width, paint.TextAlign);
 
                         if (!hasCusomFGBrushes)
                         {

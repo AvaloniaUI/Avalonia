@@ -127,15 +127,11 @@ namespace Avalonia.Web.Blazor
 
         public void SetCursor(ICursorImpl cursor)
         {
-            var cur = cursor as CssCursor;
-            var val = CssCursor.Default;
-            if (cur != null && cur.Value != null)
-            {
-                val = cur.Value;
-            }
+            var val = (cursor as CssCursor)?.Value ?? CssCursor.Default;
             if (_currentCursor != val)
             {
                 SetCssCursor?.Invoke(val);
+                _currentCursor = val;
             }
         }
 
