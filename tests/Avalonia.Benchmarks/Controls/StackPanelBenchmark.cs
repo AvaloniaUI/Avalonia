@@ -32,7 +32,7 @@ namespace Avalonia.Benchmarks.Controls
         }
 
         [Benchmark]
-        public void Create_And_Layout_50_Children()
+        public void Create_StackPanel_And_Layout_50_Children()
         {
             var target = new StackPanel();
 
@@ -42,6 +42,23 @@ namespace Avalonia.Benchmarks.Controls
             // Adding children one-by-one as this is how it's done in compiled XAML.
             foreach (var child in _children)
                 target.Children.Add(child);
+
+            target.EndInit();
+
+            _root.LayoutManager.ExecuteLayoutPass();
+            target.Children.Clear();
+        }
+
+        [Benchmark]
+        public void Create_And_Layout_StackPanel_And_50_Children()
+        {
+            var target = new StackPanel();
+
+            target.BeginInit();
+            _root.Child = target;
+
+            for (var i = 0; i < 50; ++i)
+                target.Children.Add(new Border());
 
             target.EndInit();
 
