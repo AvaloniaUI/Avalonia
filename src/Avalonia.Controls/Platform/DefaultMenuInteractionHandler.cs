@@ -101,7 +101,7 @@ namespace Avalonia.Controls.Platform
                 root.Deactivated -= WindowDeactivated;
             }
             
-            if (_root is TopLevel tl)
+            if (_root is TopLevel tl && tl.PlatformImpl != null)
                 tl.PlatformImpl.LostFocus -= TopLevelLostPlatformFocus;
 
             _inputManagerSubscription?.Dispose();
