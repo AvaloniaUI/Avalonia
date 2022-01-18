@@ -1,6 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui" 
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:CompileBindings="True">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Orientation="Vertical" Spacing="20" Width="350">
@@ -71,13 +69,13 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Content="{TemplateBinding Header}"
                         ContentTemplate="{TemplateBinding HeaderTemplate}"
-                        IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                        IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                         IsEnabled="{TemplateBinding IsEnabled}" />
           <Border x:Name="ExpanderContent"
                   Padding="{DynamicResource ExpanderContentPadding}"
                   Background="{DynamicResource ExpanderDropDownBackground}"
                   BorderBrush="{DynamicResource ExpanderDropDownBorderBrush}"
-                  IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}">
+                  IsVisible="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
             <ContentPresenter x:Name="PART_ContentPresenter"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
