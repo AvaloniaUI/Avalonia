@@ -154,6 +154,13 @@ public class Transform3D : Transform
                     matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(RotationY));
                     matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(RotationZ));
 
+                    matrix44 *= Matrix4x4.CreateTranslation((float)CenterX, (float)CenterY, (float)CenterZ);
+                    
+                    var perspectiveMatrix = Matrix4x4.Identity;
+                    perspectiveMatrix.M34 = -1 / (float)50;
+                    
+                    matrix44 *= perspectiveMatrix;
+
                     var matrix = new Matrix(
                         matrix44.M11,
                         matrix44.M12,
