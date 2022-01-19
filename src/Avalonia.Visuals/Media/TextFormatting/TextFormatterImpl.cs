@@ -193,7 +193,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentRun = textRuns[i];
 
-                if (currentLength + currentRun.GlyphRun.Characters.Length < length)
+                if (currentLength + currentRun.GlyphRun.Characters.Length <= length)
                 {
                     currentLength += currentRun.GlyphRun.Characters.Length;
                     continue;
