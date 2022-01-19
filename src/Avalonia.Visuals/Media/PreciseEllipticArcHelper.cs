@@ -1,5 +1,6 @@
 // Copyright © 2003-2004, Luc Maisonobe
 // 2015 - Alexey Rozanov <thehdotx@gmail.com> - Adaptations for Avalonia and oval center computations
+// 2022 - Alexey Rozanov <thehdotx@gmail.com> - Fix for arcs sometimes drawn in inverted order.
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with
@@ -49,12 +50,10 @@
 // Adapted from http://www.spaceroots.org/documents/ellipse/EllipticalArc.java
 
 using System;
-using Avalonia.Media;
-using Avalonia.Platform;
 
-namespace Avalonia.RenderHelpers
+namespace Avalonia.Media
 {
-    static class ArcToHelper
+    static class PreciseEllipticArcHelper
     {
         /// <summary>
         /// This class represents an elliptical arc on a 2D plane.
@@ -291,6 +290,8 @@ namespace Avalonia.RenderHelpers
             /// Indicator used for an early escape in intersection test
             /// </summary>
             internal double G2;
+
+            public bool DrawInOppositeDirection { get; set; }
 
             /// <summary>
             /// Builds an elliptical arc composed of the full unit circle around (0,0)
@@ -850,7 +851,7 @@ namespace Avalonia.RenderHelpers
             /// Builds the arc outline using given StreamGeometryContext and default (max) Bezier curve degree and acceptable error of half a pixel (0.5)
             /// </summary>
             /// <param name="path">A StreamGeometryContext to output the path commands to</param>
-            public void BuildArc(IStreamGeometryContextImpl path)
+            public void BuildArc(StreamGeometryContext path)
             {
                 BuildArc(path, _maxDegree, _defaultFlatness, true);
             }
@@ -862,7 +863,7 @@ namespace Avalonia.RenderHelpers
             /// <param name="degree">degree of the Bezier curve to use</param>
             /// <param name="threshold">acceptable error</param>
             /// <param name="openNewFigure">if true, a new figure will be started in the specified StreamGeometryContext</param>
-            public void BuildArc(IStreamGeometryContextImpl path, int degree, double threshold, bool openNewFigure)
+            public void BuildArc(StreamGeometryContext path, int degree, double threshold, bool openNewFigure)
             {
                 if (degree < 1 || degree > _maxDegree)
                     throw new ArgumentException($"degree should be between {1} and {_maxDegree}", nameof(degree));
@@ -888,8 +889,18 @@ namespace Avalonia.RenderHelpers
                     }
                     n = n << 1;
                 }
-                dEta = (Eta2 - Eta1) / n;
-                etaB = Eta1;
+                if (!DrawInOppositeDirection)
+                {
+                    dEta = (Eta2 - Eta1) / n;
+                    etaB = Eta1;
+                }
+                else
+                {
+                    dEta = (Eta1 - Eta2) / n;
+                    etaB = Eta2;
+                }
+
+
                 double cosEtaB = Math.Cos(etaB);
                 double sinEtaB = Math.Sin(etaB);
                 double aCosEtaB = A * cosEtaB;
@@ -922,6 +933,7 @@ namespace Avalonia.RenderHelpers
                 */
 
                 //otherwise we're supposed to be already at the (xB,yB)
+                 
 
                 double t = Math.Tan(0.5 * dEta);
                 double alpha = Math.Sin(dEta) * (Math.Sqrt(4 + 3 * t * t) - 1) / 3;
@@ -1012,7 +1024,7 @@ namespace Avalonia.RenderHelpers
             /// <param name="theta">Ellipse theta (angle measured from the abscissa)</param>
             /// <param name="isLargeArc">Large Arc Indicator</param>
             /// <param name="clockwise">Clockwise direction flag</param>
-            public static void BuildArc(IStreamGeometryContextImpl path, Point p1, Point p2, Size size, double theta, bool isLargeArc, bool clockwise)
+            public static void BuildArc(StreamGeometryContext path, Point p1, Point p2, Size size, double theta, bool isLargeArc, bool clockwise)
             {
 
                 // var orthogonalizer = new RotateTransform(-theta);
@@ -1058,7 +1070,7 @@ namespace Avalonia.RenderHelpers
 
                 }
 
-                double multiplier = Math.Sqrt(numerator / denominator);
+                double multiplier = Math.Sqrt(Math.Abs(numerator / denominator));
                 Point mulVec = new Point(rx * p1S.Y / ry, -ry * p1S.X / rx);
 
                 int sign = (clockwise != isLargeArc) ? 1 : -1;
@@ -1104,9 +1116,16 @@ namespace Avalonia.RenderHelpers
                 // path.LineTo(c, true, true);
                 // path.LineTo(clockwise ? p1 : p2, true,true);
 
-                path.LineTo(clockwise ? p1 : p2);
                 var arc = new EllipticalArc(c.X, c.Y, rx, ry, theta, thetaStart, thetaEnd, false);
+
+                double ManhattanDistance(Point p1, Point p2) => Math.Abs(p1.X - p2.X) + Math.Abs(p1.Y - p2.Y);
+                if (ManhattanDistance(p2, new Point(arc.X2, arc.Y2)) > ManhattanDistance(p2, new Point(arc.X1, arc.Y1)))
+                {
+                    arc.DrawInOppositeDirection = true;
+                }
+
                 arc.BuildArc(path, arc._maxDegree, arc._defaultFlatness, false);
+                //path.LineTo(p2);
 
                 //uncomment this to draw a pie
                 //path.LineTo(c, true, true);
@@ -1136,9 +1155,9 @@ namespace Avalonia.RenderHelpers
             }
         }
 
-        public static void ArcTo(IStreamGeometryContextImpl streamGeometryContextImpl, Point currentPoint, Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+        public static void ArcTo(StreamGeometryContext streamGeometryContextImpl, Point currentPoint, Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
-            EllipticalArc.BuildArc(streamGeometryContextImpl, currentPoint, point, size, rotationAngle*Math.PI/180,
+            EllipticalArc.BuildArc(streamGeometryContextImpl, currentPoint, point, size, rotationAngle*(Math.PI/180),
                 isLargeArc,
                 sweepDirection == SweepDirection.Clockwise);
         }
