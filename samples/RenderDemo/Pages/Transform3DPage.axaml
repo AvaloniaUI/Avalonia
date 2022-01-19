@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="200"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
              x:Class="RenderDemo.Pages.Transform3DPage">
     <UserControl.Styles>
         <Styles>
@@ -16,10 +16,10 @@
                 </Template>
             </Styles.Resources>
             <Style Selector="Border.Test">
-                <Setter Property="Canvas.Top" Value="-50" />
-                <Setter Property="Canvas.Left" Value="-50" />
-                <Setter Property="Width" Value="100" />
-                <Setter Property="Height" Value="100" />
+                <Setter Property="Canvas.Top" Value="-100" />
+                <Setter Property="Canvas.Left" Value="-100" />
+                <Setter Property="Width" Value="200" />
+                <Setter Property="Height" Value="200" />
                 <Setter Property="Child" Value="{StaticResource Acorn}" />
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="BorderBrush" Value="Black" />
@@ -29,23 +29,23 @@
                     <Animation Duration="0:0:5"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
-                            <Setter Property="Transform3D.RotationX" Value="0" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="0" />
                             <Setter Property="ZIndex" Value="4" />
                         </KeyFrame>
                         <KeyFrame Cue="25%">
-                            <Setter Property="Transform3D.RotationX" Value="90" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="90" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="50%">
-                            <Setter Property="Transform3D.RotationX" Value="180" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="180" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="75%">
-                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="270" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="100%">
-                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="360" />
                             <Setter Property="ZIndex" Value="4" />
                         </KeyFrame>
                     </Animation>
@@ -56,23 +56,23 @@
                     <Animation Duration="0:0:5"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
-                            <Setter Property="Transform3D.RotationX" Value="90" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="90" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="25%">
-                            <Setter Property="Transform3D.RotationX" Value="180" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="180" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="50%">
-                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="270" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="75%">
-                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="360" />
                             <Setter Property="ZIndex" Value="4" />
                         </KeyFrame>
                         <KeyFrame Cue="100%">
-                            <Setter Property="Transform3D.RotationX" Value="450" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="450" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                     </Animation>
@@ -83,23 +83,23 @@
                     <Animation Duration="0:0:5"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
-                            <Setter Property="Transform3D.RotationX" Value="180" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="180" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="25%">
-                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="270" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="50%">
-                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="360" />
                             <Setter Property="ZIndex" Value="4" />
                         </KeyFrame>
                         <KeyFrame Cue="75%">
-                            <Setter Property="Transform3D.RotationX" Value="450" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="450" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="100%">
-                            <Setter Property="Transform3D.RotationX" Value="540" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="540" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                     </Animation>
@@ -110,23 +110,23 @@
                     <Animation Duration="0:0:5"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
-                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="270" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="25%">
-                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="360" />
                             <Setter Property="ZIndex" Value="4" />
                         </KeyFrame>
                         <KeyFrame Cue="50%">
-                            <Setter Property="Transform3D.RotationX" Value="450" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="450" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="75%">
-                            <Setter Property="Transform3D.RotationX" Value="540" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="540" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="100%">
-                            <Setter Property="Transform3D.RotationX" Value="630" />
+                            <Setter Property="Rotate3DTransform.RotationX" Value="630" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                     </Animation>
@@ -134,7 +134,7 @@
             </Style>
         </Styles>
     </UserControl.Styles>
-    <Grid>
+    <Grid RowDefinitions="*,Auto">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
             <StackPanel.Clock>
                 <Clock />
@@ -142,45 +142,34 @@
             <Canvas ClipToBounds="False">
                 <Border Classes="Test Rect1" Background="DarkRed">
                     <Border.RenderTransform>
-                        <Transform3D RotationY="0"
-                                     RotationX="0"
-                                     RotationZ="0"
-                                     CenterX="0"
-                                     CenterY="0"
-                                     CenterZ="-50" />
+                        <Rotate3DTransform CenterZ="-100"
+                                  Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
                 <Border Classes="Test Rect2" Background="DarkGreen">
                     <Border.RenderTransform>
-                        <Transform3D RotationY="0"
-                                     RotationX="0"
-                                     RotationZ="0"
-                                     CenterX="0"
-                                     CenterY="0"
-                                     CenterZ="-50" />
+                        <Rotate3DTransform CenterZ="-100"
+                                  Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
                 <Border Classes="Test Rect3" Background="DarkBlue">
                     <Border.RenderTransform>
-                        <Transform3D RotationY="0"
-                                     RotationX="0"
-                                     RotationZ="0"
-                                     CenterX="0"
-                                     CenterY="0"
-                                     CenterZ="-50" />
+                        <Rotate3DTransform CenterZ="-100"
+                                  Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
                 <Border Classes="Test Rect4" Background="Orange">
                     <Border.RenderTransform>
-                        <Transform3D RotationY="0"
-                                     RotationX="0"
-                                     RotationZ="0"
-                                     CenterX="0"
-                                     CenterY="0"
-                                     CenterZ="-50" />
+                        <Rotate3DTransform CenterZ="-100"
+                                  Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
             </Canvas>
+        </StackPanel>
+        <StackPanel Grid.Row="1">
+            <TextBlock>Depth: </TextBlock>
+            <TextBlock Text="{Binding Depth}" />
+            <Slider VerticalAlignment="Bottom" Value="{Binding Depth}" Minimum="100" Maximum="300" />
         </StackPanel>
     </Grid>
 </UserControl>
