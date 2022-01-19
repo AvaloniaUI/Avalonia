@@ -38,6 +38,12 @@ namespace Avalonia.Web.Blazor
         {
             get
             {
+                if( _blazorSkiaSurface.IsDirty )
+                {
+                    _blazorSkiaSurface.IsDirty = false;
+                    return true;
+                }
+
                 var result = _size.Width != _renderTarget.Width || _size.Height != _renderTarget.Height;
 
                 return result;

@@ -51,6 +51,8 @@ namespace Avalonia.Web.Blazor
                 if (_currentSurface is { })
                 {
                     _currentSurface.Size = new PixelSize((int)size.Width, (int)size.Height);
+
+                    _currentSurface.IsDirty = true;
                 }
 
                 Resized?.Invoke(newSize, PlatformResizeReason.User);

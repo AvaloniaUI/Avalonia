@@ -26,5 +26,7 @@ namespace Avalonia.Web.Blazor
         public double Scaling { get; set; }
 
         public SKHtmlCanvasInterop.GLInfo GlInfo { get; set; }
+
+        public bool IsDirty { get; set; }
     }
 }
