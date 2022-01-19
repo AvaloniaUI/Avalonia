@@ -6,7 +6,7 @@ namespace RenderDemo.ViewModels
 {
     public class Transform3DPageViewModel : ViewModelBase
     {
-        private double _roationX = 0;
+        private double _rotationX = 0;
         private double _rotationY = 0;
         private double _rotationZ = 0;
         
@@ -16,10 +16,10 @@ namespace RenderDemo.ViewModels
         
         private double _depth = 200;
 
-        public double RoationX
+        public double RotationX
         {
-            get => _roationX;
-            set => RaiseAndSetIfChanged(ref _roationX, value);
+            get => _rotationX;
+            set => RaiseAndSetIfChanged(ref _rotationX, value);
         }
         
         public double RotationY

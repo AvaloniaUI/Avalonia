@@ -54,12 +54,11 @@
         <Border Classes="Test" Background="DarkRed">
           <Border.RenderTransform>
             <Transform3D  RotationY="{Binding RotationY}"
-                          Depth="{Binding Depth}"
                           RotationX="{Binding RotationX}"
                           RotationZ="{Binding RotationZ}"
-                          X="{Binding X}"
-                          Y="{Binding Y}"
-                          Z="{Binding Z}" />
+                          CenterX="{Binding X}"
+                          CenterY="{Binding Y}"
+                          CenterZ="{Binding Z}" />
           </Border.RenderTransform>
         </Border>
         <TextBlock>X-Rotation:</TextBlock>

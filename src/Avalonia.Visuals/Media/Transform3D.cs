@@ -8,58 +8,41 @@ public class Transform3D : Transform
             /// <summary>
             /// Defines the <see cref="RotationX"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> s_rotationXProperty =
+            public static readonly StyledProperty<double> RotationXProperty =
                         AvaloniaProperty.Register<Transform3D, double>(nameof(RotationX));
     
             /// <summary>
             /// Defines the <see cref="RotationY"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> s_rotationYProperty =
+            public static readonly StyledProperty<double> RotationYProperty =
                         AvaloniaProperty.Register<Transform3D, double>(nameof(RotationY));
     
             /// <summary>
             /// Defines the <see cref="RotationZ"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> s_rotationZProperty =
+            public static readonly StyledProperty<double> RotationZProperty =
                 AvaloniaProperty.Register<Transform3D, double>(nameof(RotationZ));
             
-            /// <summary>
-            /// Defines the <see cref="Depth"/> property.
-            /// </summary>
-            public static readonly StyledProperty<double> s_depthProperty =
-                AvaloniaProperty.Register<Transform3D, double>(nameof(Depth));
             
             /// <summary>
             /// Defines the <see cref="CenterX"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> s_centerXProperty =
+            public static readonly StyledProperty<double> CenterXProperty =
                 AvaloniaProperty.Register<Transform3D, double>(nameof(CenterX));
+
             
             /// <summary>
             /// Defines the <see cref="CenterY"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> s_centerYProperty =
+            public static readonly StyledProperty<double> CenterYProperty =
                 AvaloniaProperty.Register<Transform3D, double>(nameof(CenterY));
-            
-            /// <summary>
-            /// Defines the <see cref="CenterY"/> property.
-            /// </summary>
-            public static readonly StyledProperty<double> s_xProperty =
-                AvaloniaProperty.Register<Transform3D, double>(nameof(X));
 
             
             /// <summary>
-            /// Defines the <see cref="CenterY"/> property.
+            /// Defines the <see cref="CenterZ"/> property.
             /// </summary>
-            public static readonly StyledProperty<double> s_yProperty =
-                AvaloniaProperty.Register<Transform3D, double>(nameof(Y));
-
-            
-            /// <summary>
-            /// Defines the <see cref="CenterY"/> property.
-            /// </summary>
-            public static readonly StyledProperty<double> s_zProperty =
-                AvaloniaProperty.Register<Transform3D, double>(nameof(Z));
+            public static readonly StyledProperty<double> CenterZProperty =
+                AvaloniaProperty.Register<Transform3D, double>(nameof(CenterZ));
 
 
             /// <summary>
@@ -67,97 +50,93 @@ public class Transform3D : Transform
             /// </summary>
             public Transform3D()
             {
-                this.GetObservable(s_rotationXProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_rotationYProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_rotationZProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_depthProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_centerXProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_centerYProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_xProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_yProperty).Subscribe(_ => RaiseChanged());
-                this.GetObservable(s_zProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(RotationXProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(RotationYProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(RotationZProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(CenterXProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(CenterYProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(CenterXProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(CenterYProperty).Subscribe(_ => RaiseChanged());
+                this.GetObservable(CenterZProperty).Subscribe(_ => RaiseChanged());
             }
     
             /// <summary>
             /// Initializes a new instance of the <see cref="Transform3D"/> class.
             /// </summary>
-            /// <param name="rotationX">The skew angle of X-axis, in degrees.</param>
-            /// <param name="rotationY">The skew angle of Y-axis, in degrees.</param>
-            /// <param name="rotationZ"></param>
+            /// <param name="rotationX">The rotation around the X-Axis</param>
+            /// <param name="rotationY">The rotation around the Y-Axis</param>
+            /// <param name="rotationZ">The rotation around the Z-Axis</param>
+            /// <param name="originCenterX">The origin of the X-Axis</param>
+            /// <param name="originCenterY">The origin of the Y-Axis</param>
+            /// <param name="originCenterZ">The origin of the Z-Axis</param>
             public Transform3D(
                 double rotationX, 
                 double rotationY, 
                 double rotationZ,
-                double depth,
-                double centerX,
-                double centerY) : this()
+                double originCenterX,
+                double originCenterY,
+                double originCenterZ) : this()
             {
                 RotationX = rotationX;
                 RotationY = rotationY;
                 RotationZ = rotationZ;
-                Depth = depth;
-                CenterX = centerX;
-                CenterY = centerY;
+                CenterX = originCenterX;
+                CenterY = originCenterY;
+                CenterZ = originCenterZ;
             }
     
             /// <summary>
-            /// Gets or sets the X property.
+            /// Sets the rotation around the X-Axis
             /// </summary>
             public double RotationX
             {
-                get => GetValue(s_rotationXProperty);
-                set => SetValue(s_rotationXProperty, value);
+                get => GetValue(RotationXProperty);
+                set => SetValue(RotationXProperty, value);
             }
     
             /// <summary>
-            /// Gets or sets the Y property.
+            /// Sets the rotation around the Y-Axis
             /// </summary>
             public double RotationY
             {
-                get => GetValue(s_rotationYProperty);
-                set => SetValue(s_rotationYProperty, value);
+                get => GetValue(RotationYProperty);
+                set => SetValue(RotationYProperty, value);
             }
 
+            /// <summary>
+            ///  Sets the rotation around the Z-Axis
+            /// </summary>
             public double RotationZ
             {
-                get => GetValue(s_rotationZProperty);
-                set => SetValue(s_rotationZProperty, value);
+                get => GetValue(RotationZProperty);
+                set => SetValue(RotationZProperty, value);
             }
 
-            public double Depth
-            {
-                get => GetValue(s_depthProperty);
-                set => SetValue(s_depthProperty, value);
-            }
-
+            /// <summary>
+            ///  Moves the origin of the X-Axis
+            /// </summary>
             public double CenterX
             {
-                get => GetValue(s_centerXProperty);
-                set => SetValue(s_centerXProperty, value);
+                get => GetValue(CenterXProperty);
+                set => SetValue(CenterXProperty, value);
             }
 
+            /// <summary>
+            ///  Moves the origin of the Y-Axis
+            /// </summary>
             public double CenterY
             {
-                get => GetValue(s_centerYProperty);
-                set => SetValue(s_centerYProperty, value);
+                get => GetValue(CenterYProperty);
+                set => SetValue(CenterYProperty, value);
             }
 
-            public double X
+            /// <summary>
+            ///  Moves the origin of the Z-Axis
+            /// </summary>
+            public double CenterZ
             {
-                get => GetValue(s_xProperty);
-                set => SetValue(s_xProperty, value);
-            }
-
-            public double Y
-            {
-                get => GetValue(s_yProperty);
-                set => SetValue(s_yProperty, value);
-            }
-
-            public double Z
-            {
-                get => GetValue(s_zProperty);
-                set => SetValue(s_zProperty, value);
+                get => GetValue(CenterZProperty);
+                set => SetValue(CenterZProperty, value);
             }
 
             /// <summary>
@@ -169,7 +148,7 @@ public class Transform3D : Transform
                 {
                     var matrix44 = Matrix4x4.Identity;
                     
-                    matrix44 *= Matrix4x4.CreateTranslation((float)X, (float)Y, (float)Z);
+                    matrix44 *= Matrix4x4.CreateTranslation(-(float)CenterX, -(float)CenterY, -(float)CenterZ);
                     
                     matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(RotationX));
                     matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(RotationY));
