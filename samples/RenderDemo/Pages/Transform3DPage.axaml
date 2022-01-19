@@ -2,79 +2,185 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
+             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="200"
              x:Class="RenderDemo.Pages.Transform3DPage">
     <UserControl.Styles>
-    <Styles>
-      <Styles.Resources>
-        <Template x:Key="Acorn">
-          <Path Fill="White" Stretch="Uniform"
-                Data="F1 M 16.6309,18.6563C 17.1309,
-                8.15625 29.8809,14.1563 29.8809,
-                14.1563C 30.8809,11.1563 34.1308,
-                11.4063 34.1308,11.4063C 33.5,12 
-                34.6309,13.1563 34.6309,13.1563C 
-                32.1309,13.1562 31.1309,14.9062 
-                31.1309,14.9062C 41.1309,23.9062
-                32.6309,27.9063 32.6309,27.9062C 
-                24.6309,24.9063 21.1309,22.1562 
-                16.6309,18.6563 Z M 16.6309,19.9063C
-                21.6309,24.1563 25.1309,26.1562 
-                31.6309,28.6562C 31.6309,28.6562
-                26.3809,39.1562 18.3809,36.1563C
-                18.3809,36.1563 18,38 16.3809,36.9063C 
-                15,36 16.3809,34.9063 16.3809,34.9063C
-                16.3809,34.9063 10.1309,30.9062 16.6309,19.9063 Z"/>
-        </Template>
-        <Template x:Key="Heart">
-          <Path Fill="Red" Stretch="Uniform" Data="
-          M 272.70141,238.71731 
-          C 206.46141,238.71731 152.70146,292.4773 152.70146,358.71731 
-          C 152.70146,493.47282 288.63461,528.80461 381.26391,662.02535 
-          C 468.83815,529.62199 609.82641,489.17075 609.82641,358.71731 
-          C 609.82641,292.47731 556.06651,238.7173 489.82641,238.71731 
-          C 441.77851,238.71731 400.42481,267.08774 381.26391,307.90481 
-          C 362.10311,267.08773 320.74941,238.7173 272.70141,238.71731 z "/>
-        </Template>
-      </Styles.Resources>
-      <Style Selector="Border.Test">
-        <Setter Property="Margin" Value="15"/>
-        <Setter Property="Width" Value="100"/>
-        <Setter Property="Height" Value="100"/>
-        <Setter Property="Child" Value="{StaticResource Acorn}"/>
-      </Style>
-    </Styles>
-  </UserControl.Styles>
-  <Grid>
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
-      <StackPanel.Clock>
-        <Clock />
-      </StackPanel.Clock>
-      <StackPanel ClipToBounds="False">
-        <Border Classes="Test" Background="DarkRed">
-          <Border.RenderTransform>
-            <Transform3D  RotationY="{Binding RotationY}"
-                          RotationX="{Binding RotationX}"
-                          RotationZ="{Binding RotationZ}"
-                          CenterX="{Binding X}"
-                          CenterY="{Binding Y}"
-                          CenterZ="{Binding Z}" />
-          </Border.RenderTransform>
-        </Border>
-        <TextBlock>X-Rotation:</TextBlock>
-        <Slider Minimum="0" Maximum="360" Value="{Binding RotationX}" Width="100" TickFrequency="1"></Slider>
-        <TextBlock>Y-Rotation:</TextBlock>
-        <Slider Minimum="0" Maximum="360" Value="{Binding RotationY}" Width="100" TickFrequency="1"></Slider>
-        <TextBlock>Z-Rotation:</TextBlock>
-        <Slider Minimum="0" Maximum="360" Value="{Binding RotationZ}" Width="100" TickFrequency="1"></Slider>
-        <TextBlock>X:</TextBlock>
-        <Slider Minimum="-100" Maximum="100" Value="{Binding X}" Width="100" TickFrequency="1"></Slider>
-        <TextBlock>Y:</TextBlock>
-        <Slider Minimum="-100" Maximum="100" Value="{Binding Y}" Width="100" TickFrequency="1"></Slider>
-        <TextBlock>Z:</TextBlock>
-        <Slider Minimum="-100" Maximum="100" Value="{Binding Z}" Width="100" TickFrequency="1"></Slider>
-      </StackPanel>
-    </StackPanel>
-  </Grid>
+        <Styles>
+            <Styles.Resources>
+                <Template x:Key="Acorn">
+                    <Grid RowDefinitions="*,*" ColumnDefinitions="*,*">
+                        <TextBlock>Test</TextBlock>
+                        <Button Grid.Row="0" Grid.Column="1" Content="Ok"></Button>
+                        <Slider Grid.Row="1" Grid.Column="0"></Slider>
+                    </Grid>
+                </Template>
+            </Styles.Resources>
+            <Style Selector="Border.Test">
+                <Setter Property="Canvas.Top" Value="-50" />
+                <Setter Property="Canvas.Left" Value="-50" />
+                <Setter Property="Width" Value="100" />
+                <Setter Property="Height" Value="100" />
+                <Setter Property="Child" Value="{StaticResource Acorn}" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="BorderBrush" Value="Black" />
+            </Style>
+            <Style Selector="Border.Rect1">
+                <Style.Animations>
+                    <Animation Duration="0:0:5"
+                               IterationCount="Infinite">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="Transform3D.RotationX" Value="0" />
+                            <Setter Property="ZIndex" Value="4" />
+                        </KeyFrame>
+                        <KeyFrame Cue="25%">
+                            <Setter Property="Transform3D.RotationX" Value="90" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="50%">
+                            <Setter Property="Transform3D.RotationX" Value="180" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="75%">
+                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="ZIndex" Value="4" />
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+            <Style Selector="Border.Rect2">
+                <Style.Animations>
+                    <Animation Duration="0:0:5"
+                               IterationCount="Infinite">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="Transform3D.RotationX" Value="90" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="25%">
+                            <Setter Property="Transform3D.RotationX" Value="180" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="50%">
+                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="75%">
+                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="ZIndex" Value="4" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="Transform3D.RotationX" Value="450" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+            <Style Selector="Border.Rect3">
+                <Style.Animations>
+                    <Animation Duration="0:0:5"
+                               IterationCount="Infinite">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="Transform3D.RotationX" Value="180" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="25%">
+                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="50%">
+                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="ZIndex" Value="4" />
+                        </KeyFrame>
+                        <KeyFrame Cue="75%">
+                            <Setter Property="Transform3D.RotationX" Value="450" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="Transform3D.RotationX" Value="540" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+            <Style Selector="Border.Rect4">
+                <Style.Animations>
+                    <Animation Duration="0:0:5"
+                               IterationCount="Infinite">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="Transform3D.RotationX" Value="270" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="25%">
+                            <Setter Property="Transform3D.RotationX" Value="360" />
+                            <Setter Property="ZIndex" Value="4" />
+                        </KeyFrame>
+                        <KeyFrame Cue="50%">
+                            <Setter Property="Transform3D.RotationX" Value="450" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="75%">
+                            <Setter Property="Transform3D.RotationX" Value="540" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="Transform3D.RotationX" Value="630" />
+                            <Setter Property="ZIndex" Value="1" />
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+        </Styles>
+    </UserControl.Styles>
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
+            <StackPanel.Clock>
+                <Clock />
+            </StackPanel.Clock>
+            <Canvas ClipToBounds="False">
+                <Border Classes="Test Rect1" Background="DarkRed">
+                    <Border.RenderTransform>
+                        <Transform3D RotationY="0"
+                                     RotationX="0"
+                                     RotationZ="0"
+                                     CenterX="0"
+                                     CenterY="0"
+                                     CenterZ="-50" />
+                    </Border.RenderTransform>
+                </Border>
+                <Border Classes="Test Rect2" Background="DarkGreen">
+                    <Border.RenderTransform>
+                        <Transform3D RotationY="0"
+                                     RotationX="0"
+                                     RotationZ="0"
+                                     CenterX="0"
+                                     CenterY="0"
+                                     CenterZ="-50" />
+                    </Border.RenderTransform>
+                </Border>
+                <Border Classes="Test Rect3" Background="DarkBlue">
+                    <Border.RenderTransform>
+                        <Transform3D RotationY="0"
+                                     RotationX="0"
+                                     RotationZ="0"
+                                     CenterX="0"
+                                     CenterY="0"
+                                     CenterZ="-50" />
+                    </Border.RenderTransform>
+                </Border>
+                <Border Classes="Test Rect4" Background="Orange">
+                    <Border.RenderTransform>
+                        <Transform3D RotationY="0"
+                                     RotationX="0"
+                                     RotationZ="0"
+                                     CenterX="0"
+                                     CenterY="0"
+                                     CenterZ="-50" />
+                    </Border.RenderTransform>
+                </Border>
+            </Canvas>
+        </StackPanel>
+    </Grid>
 </UserControl>
-
