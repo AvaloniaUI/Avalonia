@@ -142,7 +142,7 @@
                         <Rectangle Fill="{DynamicResource SystemControlHighlightAltBaseMediumLowBrush}" Height="1" Margin="0,5,0,0" DockPanel.Dock="Bottom"/>
                         <DockPanel Margin="4,0">
                             <Button Command="{Binding GoUp}" DockPanel.Dock="Left">
-                                <Path Data="M 0 7 L 7 0 L 14 7 M 7 0 L 7 16" Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,1,0,-1"/>
+                                <Path Data="M 0 7 L 7 0 L 14 7 M 7 0 L 7 16" Stroke="{CompiledBinding $parent[Button].Foreground}" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,1,0,-1"/>
                             </Button>
                             <TextBox x:Name="Location" Text="{Binding Location}">
                                 <TextBox.KeyBindings>
