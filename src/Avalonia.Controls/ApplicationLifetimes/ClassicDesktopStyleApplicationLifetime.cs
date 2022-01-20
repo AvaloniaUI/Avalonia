@@ -76,9 +76,9 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 return;
 
             if (ShutdownMode == ShutdownMode.OnLastWindowClose && _windows.Count == 0)
-                Shutdown();
-            else if (ShutdownMode == ShutdownMode.OnMainWindowClose && window == MainWindow)
-                Shutdown();
+                TryShutdown();
+            else if (ShutdownMode == ShutdownMode.OnMainWindowClose && ReferenceEquals(window, MainWindow))
+                TryShutdown();
         }
 
         public void Shutdown(int exitCode = 0)
