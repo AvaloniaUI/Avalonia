@@ -7,7 +7,6 @@
     <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="8">
-      <ComboBox PlaceholderText="Pick an Item" WrapSelection="{Binding WrapSelection}">
     <WrapPanel HorizontalAlignment="Center" Margin="0 16 0 0"
                MaxWidth="660">
       <WrapPanel.Styles>
@@ -16,14 +15,14 @@
           <Setter Property="Margin" Value="10" />
         </Style>
       </WrapPanel.Styles>
-      <ComboBox PlaceholderText="Pick an Item">
+      
+      <ComboBox PlaceholderText="Pick an Item" WrapSelection="{Binding WrapSelection}">
         <ComboBoxItem>Inline Items</ComboBoxItem>
         <ComboBoxItem>Inline Item 2</ComboBoxItem>
         <ComboBoxItem>Inline Item 3</ComboBoxItem>
         <ComboBoxItem>Inline Item 4</ComboBoxItem>
       </ComboBox>
 
-      <ComboBox SelectedIndex="0" WrapSelection="{Binding WrapSelection}">
       <ComboBox>
         <ComboBox.Items>
           <col:ArrayList>
@@ -42,7 +41,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
 
-      <ComboBox SelectedIndex="0">
+        <ComboBox SelectedIndex="0" WrapSelection="{Binding WrapSelection}">
         <ComboBoxItem>
           <Panel>
             <Rectangle Fill="{DynamicResource SystemAccentColor}"/>
