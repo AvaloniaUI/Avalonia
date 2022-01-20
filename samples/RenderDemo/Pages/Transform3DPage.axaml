@@ -162,24 +162,24 @@
                                   Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
-                <Border Classes="Test Rect2">
+                <!--<Border Classes="Test Rect2">
                     <Border.RenderTransform>
                         <Rotate3DTransform CenterZ="-100"
                                   Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
-                </Border>
+                </Border>-->
                 <Border Classes="Test Rect3">
                     <Border.RenderTransform>
                         <Rotate3DTransform CenterZ="-100"
                                   Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
-                <Border Classes="Test Rect4">
+                <!--<Border Classes="Test Rect4">
                     <Border.RenderTransform>
                         <Rotate3DTransform CenterZ="-100"
                                   Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
-                </Border>
+                </Border>-->
             </Canvas>
         </StackPanel>
         <StackPanel Grid.Row="1">

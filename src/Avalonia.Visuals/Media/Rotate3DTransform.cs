@@ -64,6 +64,7 @@ public class Rotate3DTransform : Transform
         this.GetObservable(CenterXProperty).Subscribe(_ => RaiseChanged());
         this.GetObservable(CenterYProperty).Subscribe(_ => RaiseChanged());
         this.GetObservable(CenterZProperty).Subscribe(_ => RaiseChanged());
+        this.GetObservable(DepthProperty).Subscribe(_ => RaiseChanged());
     }
 
     /// <summary>
