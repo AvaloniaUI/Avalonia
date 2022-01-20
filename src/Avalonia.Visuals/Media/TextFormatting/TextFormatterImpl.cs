@@ -255,7 +255,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            return new SplitTextRunsResult(textRuns, null);
+            return new SplitTextRunsResult(textRuns, new());
         }
 
         /// <summary>
@@ -298,11 +298,11 @@ namespace Avalonia.Media.TextFormatting
                         {
                             for (; index < previousLineBreak.RemainingCharacters.Count; index++)
                             {
-                                splitResult.Second!.Add(previousLineBreak.RemainingCharacters[index]);
+                                splitResult.Second.Add(previousLineBreak.RemainingCharacters[index]);
                             }
                         }
 
-                        nextLineBreak = new TextLineBreak(splitResult.Second!);
+                        nextLineBreak = new TextLineBreak(splitResult.Second);
 
                         return splitResult.First;
                     }
@@ -346,7 +346,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var splitResult = SplitTextRuns(textRuns, currentLength + runLineBreak.PositionWrap);
 
-                    nextLineBreak = new TextLineBreak(splitResult.Second!);
+                    nextLineBreak = new TextLineBreak(splitResult.Second);
 
                     return splitResult.First;
                 }
@@ -515,7 +515,7 @@ namespace Avalonia.Media.TextFormatting
 
             var remainingCharacters = splitResult.Second;
 
-            var lineBreak = remainingCharacters?.Count > 0 ? new TextLineBreak(remainingCharacters) : null;
+            var lineBreak = remainingCharacters.Count > 0 ? new TextLineBreak(remainingCharacters) : null;
 
             if (lineBreak is null && currentLineBreak?.TextEndOfLine != null)
             {
@@ -553,7 +553,7 @@ namespace Avalonia.Media.TextFormatting
 
         internal readonly struct SplitTextRunsResult
         {
-            public SplitTextRunsResult(List<ShapedTextCharacters> first, List<ShapedTextCharacters>? second)
+            public SplitTextRunsResult(List<ShapedTextCharacters> first, List<ShapedTextCharacters> second)
             {
                 First = first;
 
@@ -574,7 +574,7 @@ namespace Avalonia.Media.TextFormatting
             /// <value>
             /// The second text runs.
             /// </value>
-            public List<ShapedTextCharacters>? Second { get; }
+            public List<ShapedTextCharacters> Second { get; }
         }
 
         private struct TextRunEnumerator
