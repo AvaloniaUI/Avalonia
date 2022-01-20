@@ -83,7 +83,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         public void Shutdown(int exitCode = 0)
         {
-            DoShutdown(new ShutdownRequestedEventArgs(), exitCode);
+            DoShutdown(new ShutdownRequestedEventArgs(), true, exitCode);
+        }
+
+        public bool TryShutdown(int exitCode = 0)
+        {
+            return DoShutdown(new ShutdownRequestedEventArgs(), false, exitCode);
         }
         
         public int Start(string[] args)
@@ -126,12 +131,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _activeLifetime = null;
         }
 
-        private void DoShutdown(ShutdownRequestedEventArgs e, int exitCode = 0)
+        private bool DoShutdown(ShutdownRequestedEventArgs e, bool force = false, int exitCode = 0)
         {
             ShutdownRequested?.Invoke(this, e);
 
             if (e.Cancel)
-                return;
+                false;
 
             if (_isShuttingDown)
                 throw new InvalidOperationException("Application is already shutting down.");
@@ -155,7 +160,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 if (Windows.Count > 0)
                 {
                     e.Cancel = true;
-                    return;
+                    return false;
                 }
 
                 var e = new ControlledApplicationLifetimeExitEventArgs(exitCode);
@@ -168,6 +173,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _cts = null;
                 _isShuttingDown = false;
             }
+
+            return true;
         }
         
         private void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e) => DoShutdown(e);
