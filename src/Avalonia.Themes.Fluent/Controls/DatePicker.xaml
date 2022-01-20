@@ -7,7 +7,8 @@
 
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=netstandard">
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <DatePicker CornerRadius="10" />
