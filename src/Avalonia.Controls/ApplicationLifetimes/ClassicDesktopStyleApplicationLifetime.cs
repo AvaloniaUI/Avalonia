@@ -83,28 +83,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         public void Shutdown(int exitCode = 0)
         {
-            if (_isShuttingDown)
-                throw new InvalidOperationException("Application is already shutting down.");
-            
-            _exitCode = exitCode;
-            _isShuttingDown = true;
-
-            try
-            {
-                foreach (var w in Windows)
-                    w.Close();
-                var e = new ControlledApplicationLifetimeExitEventArgs(exitCode);
-                Exit?.Invoke(this, e);
-                _exitCode = e.ApplicationExitCode;                
-            }
-            finally
-            {
-                _cts?.Cancel();
-                _cts = null;
-                _isShuttingDown = false;
-            }
+            DoShutdown(new ShutdownRequestedEventArgs(), exitCode);
         }
-        
         
         public int Start(string[] args)
         {
@@ -145,23 +125,52 @@ namespace Avalonia.Controls.ApplicationLifetimes
             if (_activeLifetime == this)
                 _activeLifetime = null;
         }
-        
-        private void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e)
+
+        private void DoShutdown(ShutdownRequestedEventArgs e, int exitCode = 0)
         {
             ShutdownRequested?.Invoke(this, e);
 
             if (e.Cancel)
                 return;
 
-            // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
-            // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
-            // owners.
-            foreach (var w in Windows)
-                if (w.Owner is null)
-                    w.Close();
-            if (Windows.Count > 0)
-                e.Cancel = true;
+            if (_isShuttingDown)
+                throw new InvalidOperationException("Application is already shutting down.");
+            
+            _exitCode = exitCode;
+            _isShuttingDown = true;
+
+            try
+            {
+                // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
+                // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
+                // owners.
+                foreach (var w in Windows)
+                {
+                    if (w.Owner is null)
+                    {
+                        w.Close();
+                    }
+                }
+
+                if (Windows.Count > 0)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                var e = new ControlledApplicationLifetimeExitEventArgs(exitCode);
+                Exit?.Invoke(this, e);
+                _exitCode = e.ApplicationExitCode;                
+            }
+            finally
+            {
+                _cts?.Cancel();
+                _cts = null;
+                _isShuttingDown = false;
+            }
         }
+        
+        private void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e) => DoShutdown(e);
     }
     
     public class ClassicDesktopStyleApplicationLifetimeOptions
