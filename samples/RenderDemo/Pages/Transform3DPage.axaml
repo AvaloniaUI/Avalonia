@@ -8,10 +8,15 @@
         <Styles>
             <Styles.Resources>
                 <Template x:Key="Acorn">
-                    <Grid RowDefinitions="*,*" ColumnDefinitions="*,*">
-                        <TextBlock>Test</TextBlock>
-                        <Button Grid.Row="0" Grid.Column="1" Content="Ok"></Button>
-                        <Slider Grid.Row="1" Grid.Column="0"></Slider>
+                    <Grid RowDefinitions="*,*" ColumnDefinitions="*,*" Margin="5">
+                        <TextBlock>I'm a text</TextBlock>
+                        <Button Grid.Row="0" Grid.Column="1" Content="A Button"></Button>
+                        <Slider Grid.Row="1" 
+                                Grid.Column="0" 
+                                Grid.ColumnSpan="2" 
+                                Value="{Binding Depth}"
+                                Minimum="100"
+                                Maximum="300" />
                     </Grid>
                 </Template>
             </Styles.Resources>
@@ -24,9 +29,16 @@
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="BorderBrush" Value="Black" />
             </Style>
+            <Style Selector="Border.Rect1 TextBlock, Border.Rect2 TextBlock, Border.Rect3 TextBlock">
+                <Setter Property="Foreground" Value="White" />
+            </Style>
+            <Style Selector="Border.Test Button">
+                <Setter Property="Background" Value="White"></Setter>
+                <Setter Property="Foreground" Value="Black" />
+            </Style>
             <Style Selector="Border.Rect1">
                 <Style.Animations>
-                    <Animation Duration="0:0:5"
+                    <Animation Duration="0:0:10"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
                             <Setter Property="Rotate3DTransform.RotationX" Value="0" />
@@ -50,10 +62,11 @@
                         </KeyFrame>
                     </Animation>
                 </Style.Animations>
+                <Setter Property="Background" Value="DarkRed" />
             </Style>
             <Style Selector="Border.Rect2">
                 <Style.Animations>
-                    <Animation Duration="0:0:5"
+                    <Animation Duration="0:0:10"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
                             <Setter Property="Rotate3DTransform.RotationX" Value="90" />
@@ -77,10 +90,11 @@
                         </KeyFrame>
                     </Animation>
                 </Style.Animations>
+                <Setter Property="Background" Value="DarkGreen" />
             </Style>
             <Style Selector="Border.Rect3">
                 <Style.Animations>
-                    <Animation Duration="0:0:5"
+                    <Animation Duration="0:0:10"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
                             <Setter Property="Rotate3DTransform.RotationX" Value="180" />
@@ -104,10 +118,11 @@
                         </KeyFrame>
                     </Animation>
                 </Style.Animations>
+                <Setter Property="Background" Value="DarkBlue" />
             </Style>
             <Style Selector="Border.Rect4">
                 <Style.Animations>
-                    <Animation Duration="0:0:5"
+                    <Animation Duration="0:0:10"
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
                             <Setter Property="Rotate3DTransform.RotationX" Value="270" />
@@ -131,6 +146,7 @@
                         </KeyFrame>
                     </Animation>
                 </Style.Animations>
+                <Setter Property="Background" Value="Orange" />
             </Style>
         </Styles>
     </UserControl.Styles>
@@ -140,25 +156,25 @@
                 <Clock />
             </StackPanel.Clock>
             <Canvas ClipToBounds="False">
-                <Border Classes="Test Rect1" Background="DarkRed">
+                <Border Classes="Test Rect1">
                     <Border.RenderTransform>
                         <Rotate3DTransform CenterZ="-100"
                                   Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
-                <Border Classes="Test Rect2" Background="DarkGreen">
+                <Border Classes="Test Rect2">
                     <Border.RenderTransform>
                         <Rotate3DTransform CenterZ="-100"
                                   Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
-                <Border Classes="Test Rect3" Background="DarkBlue">
+                <Border Classes="Test Rect3">
                     <Border.RenderTransform>
                         <Rotate3DTransform CenterZ="-100"
                                   Depth="{Binding Depth}"/>
                     </Border.RenderTransform>
                 </Border>
-                <Border Classes="Test Rect4" Background="Orange">
+                <Border Classes="Test Rect4">
                     <Border.RenderTransform>
                         <Rotate3DTransform CenterZ="-100"
                                   Depth="{Binding Depth}"/>
