@@ -361,7 +361,7 @@ namespace Avalonia
         {
 
             // ReSharper disable CompareOfFloatsByEqualityOperator
-            return _m31 != 0 || _m32 != 0 || _m33 != 1;
+            return _m13 != 0 || _m23 != 0 || _m33 != 1;
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
