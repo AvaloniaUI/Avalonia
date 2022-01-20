@@ -99,7 +99,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
             
             if(options != null && options.ProcessUrlActivationCommandLine && args.Length > 0)
             {
-                ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
+                if (Application.Current is IApplicationPlatformEvents events)
+                {
+                    events.RaiseUrlsOpened(args);
+                }
             }
 
             var lifetimeEvents = AvaloniaLocator.Current.GetService<IPlatformLifetimeEventsImpl>(); 
@@ -133,14 +136,17 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         private bool DoShutdown(ShutdownRequestedEventArgs e, bool force = false, int exitCode = 0)
         {
-            ShutdownRequested?.Invoke(this, e);
+            if (!force)
+            {
+                ShutdownRequested?.Invoke(this, e);
 
-            if (e.Cancel)
-                false;
+                if (e.Cancel)
+                    return false;
 
-            if (_isShuttingDown)
-                throw new InvalidOperationException("Application is already shutting down.");
-            
+                if (_isShuttingDown)
+                    throw new InvalidOperationException("Application is already shutting down.");
+            }
+
             _exitCode = exitCode;
             _isShuttingDown = true;
 
@@ -157,15 +163,15 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     }
                 }
 
-                if (Windows.Count > 0)
+                if (!force && Windows.Count > 0)
                 {
                     e.Cancel = true;
                     return false;
                 }
 
-                var e = new ControlledApplicationLifetimeExitEventArgs(exitCode);
-                Exit?.Invoke(this, e);
-                _exitCode = e.ApplicationExitCode;                
+                var args = new ControlledApplicationLifetimeExitEventArgs(exitCode);
+                Exit?.Invoke(this, args);
+                _exitCode = args.ApplicationExitCode;                
             }
             finally
             {

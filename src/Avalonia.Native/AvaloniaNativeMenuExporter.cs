@@ -137,9 +137,9 @@ namespace Avalonia.Native
                 {
                     lifetime.TryShutdown();
                 }
-                else
+                else if(Application.Current is {ApplicationLifetime: IControlledApplicationLifetime controlledLifetime})
                 {
-                    lifetime.Shutdown();
+                    controlledLifetime.Shutdown();
                 }
             };
 
