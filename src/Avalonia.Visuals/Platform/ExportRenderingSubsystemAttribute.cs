@@ -6,7 +6,7 @@ namespace Avalonia.Platform
     public class ExportRenderingSubsystemAttribute : Attribute
     {
         public ExportRenderingSubsystemAttribute(OperatingSystemType requiredOS, int priority, string name, Type initializationType, string initializationMethod,
-            Type environmentChecker = null)
+            Type? environmentChecker = null)
         {
             Name = name;
             InitializationType = initializationType;
@@ -17,11 +17,11 @@ namespace Avalonia.Platform
         }
 
         public string InitializationMethod { get; private set; }
-        public Type EnvironmentChecker { get; }
+        public Type? EnvironmentChecker { get; }
         public Type InitializationType { get; private set; }
         public string Name { get; private set; }
         public int Priority { get; private set; }
         public OperatingSystemType RequiredOS { get; private set; }
-        public string RequiresWindowingSubsystem { get; set; }
+        public string? RequiresWindowingSubsystem { get; set; }
     }
 }

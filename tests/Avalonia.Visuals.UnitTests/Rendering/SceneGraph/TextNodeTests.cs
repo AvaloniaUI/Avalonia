@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Moq;
@@ -15,7 +16,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var target = new TextNode(
                 Matrix.Identity,
-                null,
+                Brushes.Black,
                 new Point(10, 10),
                 Mock.Of<IFormattedTextImpl>(x => x.Bounds == new Rect(5, 5, 50, 50)));
 

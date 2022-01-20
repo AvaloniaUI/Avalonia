@@ -3,15 +3,27 @@
              x:Class="ControlCatalog.Pages.DialogsPage">
   <StackPanel Orientation="Vertical" Spacing="4" Margin="4">
       <CheckBox Name="UseFilters">Use filters</CheckBox>
-      <Button Name="OpenFile">Open File</Button>
-      <Button Name="SaveFile">Save File</Button>
-      <Button Name="SelectFolder">Select Folder</Button>
-      <Button Name="OpenBoth">Select Both</Button>
-      <Button Name="DecoratedWindow">Decorated window</Button>
-      <Button Name="DecoratedWindowDialog">Decorated window (dialog)</Button>
-      <Button Name="Dialog">Dialog</Button>
-      <Button Name="DialogNoTaskbar">Dialog (No taskbar icon)</Button>
-      <Button Name="OwnedWindow">Owned window</Button>
-      <Button Name="OwnedWindowNoTaskbar">Owned window (No taskbar icon)</Button>
+      <Button Name="OpenFile">_Open File</Button>
+      <Button Name="OpenMultipleFiles">Open _Multiple File</Button>
+      <Button Name="SaveFile">_Save File</Button>
+      <Button Name="SelectFolder">Select Fo_lder</Button>
+      <Button Name="OpenBoth">Select _Both</Button>
+
+      <TextBlock x:Name="PickerLastResultsVisible"
+                 Classes="h2"
+                 IsVisible="False"
+                 Text="Last picker results:" />
+      <ItemsPresenter x:Name="PickerLastResults" />
+
+      <TextBlock Margin="0, 8, 0, 0"
+                 Classes="h1"
+                 Text="Window dialogs" />
+      <Button Name="DecoratedWindow">Decorated _window</Button>
+      <Button Name="DecoratedWindowDialog">Decorated w_indow (dialog)</Button>
+      <Button Name="Dialog">_Dialog</Button>
+      <Button Name="DialogNoTaskbar">Dialog (_No taskbar icon)</Button>
+      <Button Name="OwnedWindow">Own_ed window</Button>
+      <Button Name="OwnedWindowNoTaskbar">Owned window (No tas_kbar icon)</Button>
+
   </StackPanel>
 </UserControl>

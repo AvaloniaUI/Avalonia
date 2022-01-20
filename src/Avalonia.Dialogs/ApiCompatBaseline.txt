@@ -1,0 +1,3 @@
+Compat issues with assembly Avalonia.Dialogs:
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Dialogs.AboutAvaloniaDialog' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
+Total Issues: 1

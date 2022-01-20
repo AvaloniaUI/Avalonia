@@ -145,6 +145,18 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
+        public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "CopyingToClipboard", RoutingStrategies.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "CuttingToClipboard", RoutingStrategies.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "PastingFromClipboard", RoutingStrategies.Bubble);
+
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -500,10 +512,28 @@ namespace Avalonia.Controls
             }
         }
 
+        public event EventHandler<RoutedEventArgs> CopyingToClipboard
+        {
+            add => AddHandler(CopyingToClipboardEvent, value);
+            remove => RemoveHandler(CopyingToClipboardEvent, value);
+        }
+
+        public event EventHandler<RoutedEventArgs> CuttingToClipboard
+        {
+            add => AddHandler(CuttingToClipboardEvent, value);
+            remove => RemoveHandler(CuttingToClipboardEvent, value);
+        }
+
+        public event EventHandler<RoutedEventArgs> PastingFromClipboard
+        {
+            add => AddHandler(PastingFromClipboardEvent, value);
+            remove => RemoveHandler(PastingFromClipboardEvent, value);
+        }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
-            _imClient.SetPresenter(_presenter);
+            _imClient.SetPresenter(_presenter, this);
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
@@ -612,15 +642,31 @@ namespace Avalonia.Controls
 
             if (!string.IsNullOrEmpty(input))
             {
-                DeleteSelection();
-                caretIndex = CaretIndex;
-                text = Text ?? string.Empty;
-                SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
-                CaretIndex += input.Length;
-                ClearSelection();
-                if (IsUndoEnabled)
+                var oldText = _text;
+
+                _ignoreTextChanges = true;
+
+                try
                 {
-                    _undoRedoHelper.DiscardRedo();
+                    DeleteSelection(false);
+                    caretIndex = CaretIndex;
+                    text = Text ?? string.Empty;
+                    SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
+                    CaretIndex += input.Length;
+                    ClearSelection();
+                    if (IsUndoEnabled)
+                    {
+                        _undoRedoHelper.DiscardRedo();
+                    }
+
+                    if (_text != oldText)
+                    {
+                        RaisePropertyChanged(TextProperty, oldText, _text);
+                    }
+                }
+                finally
+                {
+                    _ignoreTextChanges = false;
                 }
             }
         }
@@ -638,27 +684,54 @@ namespace Avalonia.Controls
         public async void Cut()
         {
             var text = GetSelection();
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
-            SnapshotUndoRedo();
-            Copy();
-            DeleteSelection();
+            var eventArgs = new RoutedEventArgs(CuttingToClipboardEvent);
+            RaiseEvent(eventArgs);
+            if (!eventArgs.Handled)
+            {
+                SnapshotUndoRedo();
+                await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
+                    .SetTextAsync(text);
+                DeleteSelection();
+            }
         }
 
         public async void Copy()
         {
             var text = GetSelection();
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
-            await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
-                .SetTextAsync(text);
+            var eventArgs = new RoutedEventArgs(CopyingToClipboardEvent);
+            RaiseEvent(eventArgs);
+            if (!eventArgs.Handled)
+            {
+                await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
+                    .SetTextAsync(text);
+            }
         }
 
         public async void Paste()
         {
+            var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
+            RaiseEvent(eventArgs);
+            if (eventArgs.Handled)
+            {
+                return;
+            }
+
             var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
 
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
             SnapshotUndoRedo();
             HandleTextInput(text);
@@ -933,11 +1006,28 @@ namespace Avalonia.Controls
             if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
-                var index = CaretIndex = _presenter.GetCaretIndex(point);
+                var index = _presenter.GetCaretIndex(point);
+                var clickToSelect = index != CaretIndex && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
+                if (!clickToSelect)
+                {
+                    CaretIndex = index;
+                }
+
+#pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
-                        SelectionStart = SelectionEnd = index;
+                        if (clickToSelect)
+                        {
+                            SelectionStart = Math.Min(index, CaretIndex);
+                            SelectionEnd = Math.Max(index, CaretIndex);
+                        }
+                        else
+                        {
+                            SelectionStart = SelectionEnd = index;
+                        }
                         break;
                     case 2:
                         if (!StringUtils.IsStartOfWord(text, index))
@@ -1226,7 +1316,7 @@ namespace Avalonia.Controls
             CaretIndex = SelectionEnd;
         }
 
-        private bool DeleteSelection()
+        private bool DeleteSelection(bool raiseTextChanged = true)
         {
             if (!IsReadOnly)
             {
@@ -1238,7 +1328,7 @@ namespace Avalonia.Controls
                     var start = Math.Min(selectionStart, selectionEnd);
                     var end = Math.Max(selectionStart, selectionEnd);
                     var text = Text;
-                    SetTextInternal(text.Substring(0, start) + text.Substring(end));
+                    SetTextInternal(text.Substring(0, start) + text.Substring(end), raiseTextChanged);
                     CaretIndex = start;
                     ClearSelection();
                     return true;
@@ -1289,16 +1379,23 @@ namespace Avalonia.Controls
             return i;
         }
 
-        private void SetTextInternal(string value)
+        private void SetTextInternal(string value, bool raiseTextChanged = true)
         {
-            try
+            if (raiseTextChanged)
             {
-                _ignoreTextChanges = true;
-                SetAndRaise(TextProperty, ref _text, value);
+                try
+                {
+                    _ignoreTextChanges = true;
+                    SetAndRaise(TextProperty, ref _text, value);
+                }
+                finally
+                {
+                    _ignoreTextChanges = false;
+                }
             }
-            finally
+            else
             {
-                _ignoreTextChanges = false;
+                _text = value;
             }
         }
 

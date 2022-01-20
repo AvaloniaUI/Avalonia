@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         public override string Description => $"#{_name}";
 
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
             if (_nameScope.TryGetTarget(out var scope))
                 _subscription = NameScopeLocator.Track(scope, _name).Subscribe(ValueChanged);

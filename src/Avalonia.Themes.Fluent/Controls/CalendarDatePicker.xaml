@@ -33,6 +33,7 @@
     
     <Setter Property="Template">
       <ControlTemplate>
+        <DataValidationErrors>
         <Grid ColumnDefinitions="*,Auto">
 
           <Grid.Styles>
@@ -107,7 +108,6 @@
                    Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
                    UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
-                   DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                    Grid.Column="0"/>
@@ -129,11 +129,19 @@
                  IsLightDismissEnabled="True">
             <Calendar Name="PART_Calendar"
                       FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
-                      IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"/>
+                      IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
+                      SelectedDate="{TemplateBinding SelectedDate, Mode=TwoWay}"
+                      DisplayDate="{TemplateBinding DisplayDate}"
+                      DisplayDateStart="{TemplateBinding DisplayDateStart}"
+                      DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
           </Popup>
         </Grid>
+        </DataValidationErrors>
       </ControlTemplate>
     </Setter>
   </Style>
   
+  <Style Selector="CalendarDatePicker:error TextBox /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
+  </Style>
 </Styles>

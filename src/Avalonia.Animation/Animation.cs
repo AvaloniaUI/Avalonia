@@ -203,7 +203,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="setter">The animation setter.</param>
         /// <returns>The property animator type.</returns>
-        public static Type GetAnimator(IAnimationSetter setter)
+        public static Type? GetAnimator(IAnimationSetter setter)
         {
             if (s_animators.TryGetValue(setter, out var type))
             {
@@ -254,7 +254,7 @@ namespace Avalonia.Animation
             Animators.Insert(0, (condition, typeof(TAnimator)));
         }
 
-        private static Type GetAnimatorType(AvaloniaProperty property)
+        private static Type? GetAnimatorType(AvaloniaProperty property)
         {
             foreach (var (condition, type) in Animators)
             {
@@ -276,6 +276,11 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
+                    if (setter.Property is null)
+                    {
+                        throw new InvalidOperationException("No Setter property assigned.");
+                    }
+
                     var handler = Animation.GetAnimator(setter) ?? GetAnimatorType(setter.Property);
 
                     if (handler == null)
@@ -305,7 +310,7 @@ namespace Avalonia.Animation
 
             foreach (var (handlerType, property) in handlerList)
             {
-                var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
+                var newInstance = (IAnimator)Activator.CreateInstance(handlerType)!;
                 newInstance.Property = property;
                 newAnimatorInstances.Add(newInstance);
             }
@@ -321,32 +326,43 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public IDisposable Apply(Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
+        public IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
             if (animators.Count == 1)
             {
-                subscriptions.Add(animators[0].Apply(this, control, clock, match, onComplete));
+                var subscription = animators[0].Apply(this, control, clock, match, onComplete);
+                
+                if (subscription is not null)
+                {
+                    subscriptions.Add(subscription);
+                }
             }
             else
             {
                 var completionTasks = onComplete != null ? new List<Task>() : null;
                 foreach (IAnimator animator in animators)
                 {
-                    Action animatorOnComplete = null;
+                    Action? animatorOnComplete = null;
                     if (onComplete != null)
                     {
-                        var tcs = new TaskCompletionSource<object>();
+                        var tcs = new TaskCompletionSource<object?>();
                         animatorOnComplete = () => tcs.SetResult(null);
-                        completionTasks.Add(tcs.Task);
+                        completionTasks!.Add(tcs.Task);
                     }
-                    subscriptions.Add(animator.Apply(this, control, clock, match, animatorOnComplete));
+
+                    var subscription = animator.Apply(this, control, clock, match, animatorOnComplete);
+
+                    if (subscription is not null)
+                    {
+                        subscriptions.Add(subscription);
+                    }
                 }
 
                 if (onComplete != null)
                 {
-                    Task.WhenAll(completionTasks).ContinueWith(
-                        (_, state) => ((Action)state).Invoke(),
+                    Task.WhenAll(completionTasks!).ContinueWith(
+                        (_, state) => ((Action)state!).Invoke(),
                         onComplete);
                 }
             }
@@ -354,19 +370,25 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public Task RunAsync(Animatable control, IClock clock = null, CancellationToken cancellationToken = default)
+        public Task RunAsync(Animatable control, IClock? clock = null)
+        {
+            return RunAsync(control, clock, default);
+        }
+
+        /// <inheritdoc/>
+        public Task RunAsync(Animatable control, IClock? clock = null, CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 return Task.CompletedTask;
             }
 
-            var run = new TaskCompletionSource<object>();
+            var run = new TaskCompletionSource<object?>();
 
             if (this.IterationCount == IterationCount.Infinite)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
-            IDisposable subscriptions = null, cancellation = null;
+            IDisposable? subscriptions = null, cancellation = null;
             subscriptions = this.Apply(control, clock, Observable.Return(true), () =>
             {
                 run.TrySetResult(null);

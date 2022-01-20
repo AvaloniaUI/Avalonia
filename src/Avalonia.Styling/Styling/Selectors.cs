@@ -25,10 +25,14 @@ namespace Avalonia.Styling
         /// <param name="previous">The previous selector.</param>
         /// <param name="name">The name of the style class.</param>
         /// <returns>The selector.</returns>
-        public static Selector Class(this Selector previous, string name)
+        public static Selector Class(this Selector? previous, string name)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentException>(!string.IsNullOrWhiteSpace(name));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Name may not be empty", nameof(name));
+            }
 
             var tac = previous as TypeNameAndClassSelector;
 
@@ -48,7 +52,7 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="previous">The previous selector.</param>
         /// <returns>The selector.</returns>
-        public static Selector Descendant(this Selector previous)
+        public static Selector Descendant(this Selector? previous)
         {
             return new DescendantSelector(previous);
         }
@@ -59,9 +63,9 @@ namespace Avalonia.Styling
         /// <param name="previous">The previous selector.</param>
         /// <param name="type">The type.</param>
         /// <returns>The selector.</returns>
-        public static Selector Is(this Selector previous, Type type)
+        public static Selector Is(this Selector? previous, Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             return TypeNameAndClassSelector.Is(previous, type);
         }
@@ -72,7 +76,7 @@ namespace Avalonia.Styling
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="previous">The previous selector.</param>
         /// <returns>The selector.</returns>
-        public static Selector Is<T>(this Selector previous) where T : IStyleable
+        public static Selector Is<T>(this Selector? previous) where T : IStyleable
         {
             return previous.Is(typeof(T));
         }
@@ -83,10 +87,14 @@ namespace Avalonia.Styling
         /// <param name="previous">The previous selector.</param>
         /// <param name="name">The name.</param>
         /// <returns>The selector.</returns>
-        public static Selector Name(this Selector previous, string name)
+        public static Selector Name(this Selector? previous, string name)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentException>(!string.IsNullOrWhiteSpace(name));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Name may not be empty", nameof(name));
+            }
 
             var tac = previous as TypeNameAndClassSelector;
 
@@ -107,7 +115,7 @@ namespace Avalonia.Styling
         /// <param name="previous">The previous selector.</param>
         /// <param name="argument">The selector to be not-ed.</param>
         /// <returns>The selector.</returns>
-        public static Selector Not(this Selector previous, Func<Selector, Selector> argument)
+        public static Selector Not(this Selector? previous, Func<Selector?, Selector> argument)
         {
             return new NotSelector(previous, argument(null));
         }
@@ -118,9 +126,25 @@ namespace Avalonia.Styling
         /// <param name="previous">The previous selector.</param>
         /// <param name="argument">The selector to be not-ed.</param>
         /// <returns>The selector.</returns>
-        public static Selector Not(this Selector previous, Selector argument)
+        public static Selector Not(this Selector? previous, Selector argument)
         {
             return new NotSelector(previous, argument);
+        }
+
+        /// <inheritdoc cref="NthChildSelector"/>
+        /// <inheritdoc cref="NthChildSelector(Selector?, int, int)"/>
+        /// <returns>The selector.</returns>
+        public static Selector NthChild(this Selector? previous, int step, int offset)
+        {
+            return new NthChildSelector(previous, step, offset);
+        }
+
+        /// <inheritdoc cref="NthLastChildSelector"/>
+        /// <inheritdoc cref="NthLastChildSelector(Selector?, int, int)"/>
+        /// <returns>The selector.</returns>
+        public static Selector NthLastChild(this Selector? previous, int step, int offset)
+        {
+            return new NthLastChildSelector(previous, step, offset);
         }
 
         /// <summary>
@@ -129,9 +153,9 @@ namespace Avalonia.Styling
         /// <param name="previous">The previous selector.</param>
         /// <param name="type">The type.</param>
         /// <returns>The selector.</returns>
-        public static Selector OfType(this Selector previous, Type type)
+        public static Selector OfType(this Selector? previous, Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             return TypeNameAndClassSelector.OfType(previous, type);
         }
@@ -142,7 +166,7 @@ namespace Avalonia.Styling
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="previous">The previous selector.</param>
         /// <returns>The selector.</returns>
-        public static Selector OfType<T>(this Selector previous) where T : IStyleable
+        public static Selector OfType<T>(this Selector? previous) where T : IStyleable
         {
             return previous.OfType(typeof(T));
         }
@@ -175,9 +199,9 @@ namespace Avalonia.Styling
         /// <param name="property">The property.</param>
         /// <param name="value">The property value.</param>
         /// <returns>The selector.</returns>
-        public static Selector PropertyEquals<T>(this Selector previous, AvaloniaProperty<T> property, object value)
+        public static Selector PropertyEquals<T>(this Selector? previous, AvaloniaProperty<T> property, object? value)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            _ = property ?? throw new ArgumentNullException(nameof(property));
 
             return new PropertyEqualsSelector(previous, property, value);
         }
@@ -189,9 +213,9 @@ namespace Avalonia.Styling
         /// <param name="property">The property.</param>
         /// <param name="value">The property value.</param>
         /// <returns>The selector.</returns>
-        public static Selector PropertyEquals(this Selector previous, AvaloniaProperty property, object value)
+        public static Selector PropertyEquals(this Selector? previous, AvaloniaProperty property, object? value)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            _ = property ?? throw new ArgumentNullException(nameof(property));
 
             return new PropertyEqualsSelector(previous, property, value);
         }

@@ -15,7 +15,7 @@ namespace Avalonia.Diagnostics.ViewModels
             Nodes = nodes;
 
             PropertiesFilter = new FilterViewModel();
-            PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView.Refresh();
+            PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView?.Refresh();
 
             SettersFilter = new FilterViewModel();
             SettersFilter.RefreshFilter += (s, e) => Details?.UpdateStyleFilters();
@@ -39,6 +39,7 @@ namespace Avalonia.Diagnostics.ViewModels
                     Details = value != null ?
                         new ControlDetailsViewModel(this, value.Visual) :
                         null;
+                    Details?.UpdatePropertiesView(MainView.ShowImplementedInterfaces);
                     Details?.UpdateStyleFilters();
                 }
             }
@@ -86,14 +87,15 @@ namespace Avalonia.Diagnostics.ViewModels
         public void SelectControl(IControl control)
         {
             var node = default(TreeNode);
+            IControl? c = control;
 
-            while (node == null && control != null)
+            while (node == null && c != null)
             {
-                node = FindNode(control);
+                node = FindNode(c);
 
                 if (node == null)
                 {
-                    control = control.GetVisualParent<IControl>();
+                    c = c.GetVisualParent<IControl>();
                 }
             }
 
@@ -133,6 +135,11 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             return null;
+        }
+
+        internal void UpdatePropertiesView()
+        {
+            Details?.UpdatePropertiesView(MainView?.ShowImplementedInterfaces ?? true);
         }
     }
 }

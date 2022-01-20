@@ -19,11 +19,8 @@ namespace Avalonia.LogicalTree
             ILogical source,
             ILogical parent)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
-            Contract.Requires<ArgumentNullException>(source != null);
-
-            Root = root;
-            Source = source;
+            Root = root ?? throw new ArgumentNullException(nameof(root));
+            Source = source ?? throw new ArgumentNullException(nameof(source));
             Parent = parent;
         }
 

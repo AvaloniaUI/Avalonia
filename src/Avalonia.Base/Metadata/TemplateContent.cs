@@ -8,5 +8,6 @@ namespace Avalonia.Metadata
     [AttributeUsage(AttributeTargets.Property)]
     public class TemplateContentAttribute : Attribute
     {
+        public Type? TemplateResultType { get; set; }
     }
 }

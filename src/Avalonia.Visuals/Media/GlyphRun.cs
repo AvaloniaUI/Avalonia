@@ -14,7 +14,7 @@ namespace Avalonia.Media
         private static readonly IComparer<ushort> s_ascendingComparer = Comparer<ushort>.Default;
         private static readonly IComparer<ushort> s_descendingComparer = new ReverseComparer<ushort>();
 
-        private IGlyphRunImpl _glyphRunImpl;
+        private IGlyphRunImpl? _glyphRunImpl;
         private GlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
         private int _biDiLevel;
@@ -26,14 +26,6 @@ namespace Avalonia.Media
         private ReadOnlySlice<Vector> _glyphOffsets;
         private ReadOnlySlice<ushort> _glyphClusters;
         private ReadOnlySlice<char> _characters;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GlyphRun"/> class.
-        /// </summary>
-        public GlyphRun()
-        {
-
-        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GlyphRun"/> class by specifying properties of the class.
@@ -56,7 +48,7 @@ namespace Avalonia.Media
             ReadOnlySlice<ushort> glyphClusters = default,
             int biDiLevel = 0)
         {
-            GlyphTypeface = glyphTypeface;
+            _glyphTypeface = glyphTypeface;
 
             FontRenderingEmSize = fontRenderingEmSize;
 
@@ -74,13 +66,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets or sets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
+        ///     Gets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public GlyphTypeface GlyphTypeface
-        {
-            get => _glyphTypeface;
-            set => Set(ref _glyphTypeface, value);
-        }
+        public GlyphTypeface GlyphTypeface => _glyphTypeface;
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.
@@ -199,7 +187,7 @@ namespace Avalonia.Media
                     Initialize();
                 }
 
-                return _glyphRunImpl;
+                return _glyphRunImpl!;
             }
         }
 
@@ -639,7 +627,7 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this);
         }
@@ -651,7 +639,7 @@ namespace Avalonia.Media
 
         private class ReverseComparer<T> : IComparer<T>
         {
-            public int Compare(T x, T y)
+            public int Compare(T? x, T? y)
             {
                 return Comparer<T>.Default.Compare(y, x);
             }

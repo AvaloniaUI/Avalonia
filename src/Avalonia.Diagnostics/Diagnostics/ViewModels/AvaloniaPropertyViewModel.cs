@@ -3,10 +3,11 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class AvaloniaPropertyViewModel : PropertyViewModel
     {
         private readonly AvaloniaObject _target;
-        private string _type;
+        private System.Type _assignedType;
         private object? _value;
         private string _priority;
         private string _group;
+        private readonly System.Type _propertyType;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -19,7 +20,8 @@ namespace Avalonia.Diagnostics.ViewModels
             Name = property.IsAttached ?
                 $"[{property.OwnerType.Name}.{property.Name}]" :
                 property.Name;
-
+            DeclaringType = property.OwnerType;
+            _propertyType = property.PropertyType;
             Update();
         }
 
@@ -32,9 +34,9 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Priority =>
             _priority;
 
-        public override string Type => _type;
+        public override System.Type AssignedType => _assignedType;
 
-        public override string Value
+        public override string? Value
         {
             get => ConvertToString(_value);
             set
@@ -43,6 +45,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     var convertedValue = ConvertFromString(value, Property.PropertyType);
                     _target.SetValue(Property, convertedValue);
+                    Update();
                 }
                 catch { }
             }
@@ -50,13 +53,16 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public override string Group => _group;
 
+        public override System.Type? DeclaringType { get; }
+        public override System.Type PropertyType => _propertyType;
+
         // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
         public override void Update()
         {
             if (Property.IsDirect)
             {
                 RaiseAndSetIfChanged(ref _value, _target.GetValue(Property), nameof(Value));
-                RaiseAndSetIfChanged(ref _type, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(Type));
+                RaiseAndSetIfChanged(ref _assignedType,_value?.GetType() ?? Property.PropertyType, nameof(AssignedType));
                 RaiseAndSetIfChanged(ref _priority, "Direct", nameof(Priority));
 
                 _group = "Properties";
@@ -66,7 +72,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 var val = _target.GetDiagnostic(Property);
 
                 RaiseAndSetIfChanged(ref _value, val?.Value, nameof(Value));
-                RaiseAndSetIfChanged(ref _type, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(Type));
+                RaiseAndSetIfChanged(ref _assignedType, _value?.GetType() ?? Property.PropertyType, nameof(AssignedType));
 
                 if (val != null)
                 {
@@ -79,6 +85,7 @@ namespace Avalonia.Diagnostics.ViewModels
                     RaiseAndSetIfChanged(ref _group, "Unset", nameof(Group));
                 }
             }
+            RaisePropertyChanged(nameof(Type));
         }
     }
 }

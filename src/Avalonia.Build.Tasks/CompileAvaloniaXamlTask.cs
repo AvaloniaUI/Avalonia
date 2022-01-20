@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
 using Microsoft.Build.Framework;
 
 namespace Avalonia.Build.Tasks
@@ -41,7 +38,7 @@ namespace Avalonia.Build.Tasks
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
                 ProjectDirectory, OutputPath, VerifyIl, outputImportance,
                 (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null,
-                EnableComInteropPatching, SkipXamlCompilation);
+                EnableComInteropPatching, SkipXamlCompilation, DebuggerLaunch);
             if (!res.Success)
                 return false;
             if (!res.WrittenFile)
@@ -87,5 +84,7 @@ namespace Avalonia.Build.Tasks
 
         public IBuildEngine BuildEngine { get; set; }
         public ITaskHost HostObject { get; set; }
+
+        public bool DebuggerLaunch { get; set; }
     }
 }

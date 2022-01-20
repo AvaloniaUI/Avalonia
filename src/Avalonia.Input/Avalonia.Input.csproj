@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Nullable>Enable</Nullable>
-    <WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
@@ -16,4 +14,5 @@
   </ItemGroup>  
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

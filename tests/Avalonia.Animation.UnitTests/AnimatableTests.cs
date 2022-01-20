@@ -1,5 +1,7 @@
 ﻿using System;
+using Avalonia.Animation.Animators;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -34,7 +36,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void Transition_Is_Not_Applied_To_Initial_Style()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            using (Start())
             {
                 var target = CreateTarget();
                 var control = new Control
@@ -72,6 +74,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void Transition_Is_Applied_When_Local_Value_Changes()
         {
+            using var app = Start();
             var target = CreateTarget();
             var control = CreateControl(target.Object);
 
@@ -100,9 +103,75 @@ namespace Avalonia.Animation.UnitTests
                 Times.Never);
         }
 
+
+        [Theory]
+        [InlineData(null)] //null value
+        [InlineData("stringValue")] //string value
+        public void Invalid_Values_In_Animation_Should_Not_Crash_Animations(object invalidValue)
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, 1d),
+                },
+                KeyTime = TimeSpan.FromSeconds(0)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, 2d),
+                },
+                KeyTime = TimeSpan.FromSeconds(2),
+            };
+
+            var keyframe3 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, invalidValue),
+                },
+                KeyTime = TimeSpan.FromSeconds(3),
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                Children =
+                {
+                    keyframe1,
+                    keyframe2,
+                    keyframe3
+                },
+                IterationCount = new IterationCount(5),
+                PlaybackDirection = PlaybackDirection.Alternate,
+            };
+
+            var rect = new Rectangle()
+            {
+                Width = 11,
+            };
+
+            var originalValue = rect.Width;
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(rect, clock);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(rect.Width, 1);
+            clock.Step(TimeSpan.FromSeconds(2));
+            Assert.Equal(rect.Width, 2);
+            clock.Step(TimeSpan.FromSeconds(3));
+            //here we have invalid value so value should be expected and set to initial original value
+            Assert.Equal(rect.Width, originalValue);
+        }
+
         [Fact]
         public void Transition_Is_Not_Applied_When_StyleTrigger_Changes_With_LocalValue_Present()
         {
+            using var app = Start();
             var target = CreateTarget();
             var control = CreateControl(target.Object);
 
@@ -128,6 +197,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void Transition_Is_Disposed_When_Local_Value_Changes()
         {
+            using var app = Start();
             var target = CreateTarget();
             var control = CreateControl(target.Object);
             var sub = new Mock<IDisposable>();
@@ -144,6 +214,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void New_Transition_Is_Applied_When_Local_Value_Changes()
         {
+            using var app = Start();
             var target = CreateTarget();
             var control = CreateControl(target.Object);
 
@@ -172,6 +243,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void Transition_Is_Not_Applied_When_Removed_From_Visual_Tree()
         {
+            using var app = Start();
             var target = CreateTarget();
             var control = CreateControl(target.Object);
 
@@ -199,6 +271,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void Animation_Is_Cancelled_When_Transition_Removed()
         {
+            using var app = Start();
             var target = CreateTarget();
             var control = CreateControl(target.Object);
             var sub = new Mock<IDisposable>();
@@ -218,7 +291,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void Animation_Is_Cancelled_When_New_Style_Activates()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            using (Start())
             {
                 var target = CreateTarget();
                 var control = CreateStyledControl(target.Object);
@@ -234,7 +307,7 @@ namespace Avalonia.Animation.UnitTests
 
                 target.Verify(x => x.Apply(
                     control,
-                    It.IsAny<Clock>(),
+                    It.IsAny<IClock>(),
                     1.0,
                     0.5),
                     Times.Once);
@@ -248,7 +321,7 @@ namespace Avalonia.Animation.UnitTests
         [Fact]
         public void Transition_From_Style_Trigger_Is_Applied()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            using (Start())
             {
                 var target = CreateTransition(Control.WidthProperty);
                 var control = CreateStyledControl(transition2: target.Object);
@@ -259,7 +332,7 @@ namespace Avalonia.Animation.UnitTests
 
                 target.Verify(x => x.Apply(
                     control,
-                    It.IsAny<Clock>(),
+                    It.IsAny<IClock>(),
                     double.NaN,
                     100.0),
                     Times.Once);
@@ -270,7 +343,7 @@ namespace Avalonia.Animation.UnitTests
         public void Replacing_Transitions_During_Animation_Does_Not_Throw_KeyNotFound()
         {
             // Issue #4059
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            using (Start())
             {
                 Border target;
                 var clock = new TestClock();
@@ -359,6 +432,13 @@ namespace Avalonia.Animation.UnitTests
             // Which means that the transition state hasn't been initialized with the new
             // Transitions when the Opacity change notification gets raised here.
             control.EndBatchUpdate();
+        }
+
+        private static IDisposable Start()
+        {
+            var clock = new MockGlobalClock();
+            var services = TestServices.RealStyler.With(globalClock: clock);
+            return UnitTestApplication.Start(services);
         }
 
         private static Mock<ITransition> CreateTarget()

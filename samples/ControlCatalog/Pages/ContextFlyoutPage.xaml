@@ -24,7 +24,6 @@
         <Setter Property="VerticalAlignment" Value="Center" />
       </Style>
     </StackPanel.Styles>
-    <TextBlock Classes="h1">Context Flyout</TextBlock>
     <TextBlock Classes="h2">A right click Flyout that can be applied to any control.</TextBlock>
 
     <UniformGrid HorizontalAlignment="Center" Rows="2">

@@ -57,12 +57,13 @@ namespace Avalonia.Controls
         {
         }
 
-        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver dependencyResolver) : base(impl, dependencyResolver)
+        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver dependencyResolver) : base(ValidatingWindowBaseImpl.Wrap(impl), dependencyResolver)
         {
             Screens = new Screens(PlatformImpl?.Screen);
-            impl.Activated = HandleActivated;
-            impl.Deactivated = HandleDeactivated;
-            impl.PositionChanged = HandlePositionChanged;
+            var wrapped = PlatformImpl!;
+            wrapped.Activated = HandleActivated;
+            wrapped.Deactivated = HandleDeactivated;
+            wrapped.PositionChanged = HandlePositionChanged;
         }
 
         /// <summary>
@@ -193,6 +194,12 @@ namespace Avalonia.Controls
             try
             {
                 IsVisible = false;
+                
+                if (this is IFocusScope scope)
+                {
+                    FocusManager.Instance?.RemoveFocusScope(scope);
+                }
+                
                 base.HandleClosed();
             }
             finally

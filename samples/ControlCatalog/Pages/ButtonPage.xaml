@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ButtonPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">Button</TextBlock>
     <TextBlock Classes="h2">A button control</TextBlock>
 
     <StackPanel Orientation="Horizontal"
@@ -10,7 +9,7 @@
                 HorizontalAlignment="Center"
                 Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8" Width="200">
-        <Button>Standard XAML Button</Button>
+        <Button>Standard _XAML Button</Button>
         <Button Foreground="White">Foreground</Button>
         <Button Background="{DynamicResource SystemAccentColor}">Background</Button>
         <Button IsEnabled="False">Disabled</Button>

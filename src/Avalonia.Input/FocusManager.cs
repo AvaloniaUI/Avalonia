@@ -32,7 +32,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the instance of the <see cref="IFocusManager"/>.
         /// </summary>
-        public static IFocusManager Instance => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public static IFocusManager? Instance => AvaloniaLocator.Current.GetService<IFocusManager>();
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
@@ -162,6 +162,22 @@ namespace Avalonia.Input
             Focus(e);
         }
 
+        public void RemoveFocusScope(IFocusScope scope)
+        {
+            scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            
+            if (_focusScopes.TryGetValue(scope, out _))
+            {
+                SetFocusedElement(scope, null);
+                _focusScopes.Remove(scope);
+            }
+
+            if (Scope == scope)
+            {
+                Scope = null;
+            }
+        }
+
         public static bool GetIsFocusScope(IInputElement e) => e is IFocusScope;
 
         /// <summary>
@@ -199,8 +215,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private static void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
+        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
         {
+            if (sender is null)
+                return;
+
             var ev = (PointerPressedEventArgs)e;
             var visual = (IVisual)sender;
 
