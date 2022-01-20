@@ -53,6 +53,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
 
+        /// <summary>
+        /// Defines the <see cref="WrapSelection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WrapSelectionProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
@@ -65,8 +71,6 @@ namespace Avalonia.Controls
         {
             ItemsProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemsChanged(e));
             ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemTemplateChanged(e));
-
-            SelectingItemsControl.WrapSelectionProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.WrapFocus = (bool)e.NewValue);
         }
 
         /// <summary>
@@ -146,6 +150,16 @@ namespace Avalonia.Controls
         {
             get;
             protected set;
+        }
+
+        /// <summary>
+        /// Gets or sets a value which indicates whether to wrap around when the first
+        /// or last item is reached.
+        /// </summary>
+        public bool WrapSelection
+        {
+            get { return GetValue(WrapSelectionProperty); }
+            set { SetValue(WrapSelectionProperty, value); }
         }
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
@@ -301,12 +315,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value which indicates whether to wrap around when the first
-        /// or last item is reached.
-        /// </summary>
-        private protected bool WrapFocus { get; set; }
-
-        /// <summary>
         /// Handles directional navigation within the <see cref="ItemsControl"/>.
         /// </summary>
         /// <param name="e">The key events.</param>
@@ -332,7 +340,7 @@ namespace Avalonia.Controls
                 {
                     if (current.VisualParent == container && current is IInputElement inputElement)
                     {
-                        IInputElement next = GetNextControl(container, direction.Value, inputElement, WrapFocus);
+                        IInputElement next = GetNextControl(container, direction.Value, inputElement, WrapSelection);
 
                         if (next != null)
                         {

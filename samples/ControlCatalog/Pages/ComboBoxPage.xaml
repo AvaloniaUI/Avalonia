@@ -30,7 +30,7 @@
                     <ComboBoxItem>Inline Item 4</ComboBoxItem>
                 </ComboBox>
 
-                <ComboBox>
+                <ComboBox WrapSelection="{Binding WrapSelection}">
                     <ComboBox.Items>
                         <col:ArrayList>
                             <x:Null />

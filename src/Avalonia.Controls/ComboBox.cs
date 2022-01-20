@@ -10,9 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -210,12 +208,12 @@ namespace Avalonia.Controls
             }
             else if (!IsDropDownOpen)
             {
-                if (e.Key == Key.Down)
+                if (e.Key == Key.Down && WrapSelection == true)
                 {
                     SelectNext();
                     e.Handled = true;
                 }
-                else if (e.Key == Key.Up)
+                else if (e.Key == Key.Up && WrapSelection == true)
                 {
                     SelectPrev();
                     e.Handled = true;
