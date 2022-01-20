@@ -312,5 +312,38 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(hasExit);
             }
         }
+        
+        [Fact]
+        public void TryShutdown_Cancellable_By_Preventing_Window_Close()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var hasExit = false;
+
+                lifetime.Exit += (s, e) => hasExit = true;
+
+                var windowA = new Window();
+
+                windowA.Show();
+
+                var windowB = new Window();
+
+                windowB.Show();
+                
+                var raised = 0;
+
+                windowA.Closing += (sender, e) =>
+                {
+                    e.Cancel = true;
+                    ++raised;
+                };
+
+                lifetime.TryShutdown();
+
+                Assert.Equal(1, raised);
+                Assert.False(hasExit);
+            }
+        }
     }
 }
