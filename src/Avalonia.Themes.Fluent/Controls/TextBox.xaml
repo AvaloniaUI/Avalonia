@@ -166,7 +166,7 @@
     <Setter Property="InnerRightContent">
       <Template>
         <ToggleButton Classes="passwordBoxRevealButton"
-                      IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
+                      IsChecked="{CompiledBinding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
       </Template>
     </Setter>
   </Style>
