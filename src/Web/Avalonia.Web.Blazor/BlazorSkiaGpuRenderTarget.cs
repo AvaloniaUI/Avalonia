@@ -34,20 +34,6 @@ namespace Avalonia.Web.Blazor
             return new BlazorSkiaGpuRenderSession(_blazorSkiaSurface, _renderTarget);
         }
 
-        public bool IsCorrupted
-        {
-            get
-            {
-                if( _blazorSkiaSurface.IsDirty )
-                {
-                    _blazorSkiaSurface.IsDirty = false;
-                    return true;
-                }
-
-                var result = _size.Width != _renderTarget.Width || _size.Height != _renderTarget.Height;
-
-                return result;
-            }
-        }
+        public bool IsCorrupted => _blazorSkiaSurface.Size != _size;
     }
 }
