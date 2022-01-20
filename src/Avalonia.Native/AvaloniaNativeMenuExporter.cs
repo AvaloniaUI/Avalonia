@@ -133,9 +133,9 @@ namespace Avalonia.Native
             var quitItem = new NativeMenuItem("Quit") { Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta) };
             quitItem.Click += (_, _) =>
             {
-                if (Application.Current is { ApplicationLifetime: IControlledApplicationLifetime lifetime })
+                if (Application.Current is { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime lifetime })
                 {
-                    lifetime.Shutdown();
+                    lifetime.TryShutdown();
                 }
             };
 
