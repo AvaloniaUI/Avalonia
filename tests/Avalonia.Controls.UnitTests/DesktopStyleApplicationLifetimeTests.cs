@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var windowA = new Window();
 
@@ -89,7 +89,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var mainWindow = new Window();
 
@@ -117,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var windowA = new Window();
 
@@ -224,7 +224,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
 
-                lifetime.ShutdownRequested += (s, e) =>
+                lifetime.ShutdownRequested += (_, e) =>
                 {
                     e.Cancel = true;
                     ++raised;
@@ -247,7 +247,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var mainWindow = new Window();
 
@@ -261,7 +261,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var raised = 0;
                 
-                lifetime.ShutdownRequested += (s, e) =>
+                lifetime.ShutdownRequested += (_, e) =>
                 {
                     e.Cancel = true;
                     ++raised;
@@ -284,7 +284,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var windowA = new Window();
 
@@ -296,7 +296,7 @@ namespace Avalonia.Controls.UnitTests
                 
                 var raised = 0;
                 
-                lifetime.ShutdownRequested += (s, e) =>
+                lifetime.ShutdownRequested += (_, e) =>
                 {
                     e.Cancel = true;
                     ++raised;
@@ -321,7 +321,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var windowA = new Window();
 
@@ -333,7 +333,7 @@ namespace Avalonia.Controls.UnitTests
                 
                 var raised = 0;
 
-                windowA.Closing += (sender, e) =>
+                windowA.Closing += (_, e) =>
                 {
                     e.Cancel = true;
                     ++raised;
@@ -354,7 +354,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var windowA = new Window();
 
@@ -366,7 +366,7 @@ namespace Avalonia.Controls.UnitTests
                 
                 var raised = 0;
 
-                windowA.Closing += (sender, e) =>
+                windowA.Closing += (_, e) =>
                 {
                     e.Cancel = true;
                     ++raised;
@@ -387,11 +387,11 @@ namespace Avalonia.Controls.UnitTests
             {
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
                 
                 var raised = 0;
 
-                lifetime.ShutdownRequested += (sender, e) =>
+                lifetime.ShutdownRequested += (_, _) =>
                 {
                     ++raised;
                 };
