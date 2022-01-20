@@ -137,6 +137,10 @@ namespace Avalonia.Native
                 {
                     lifetime.TryShutdown();
                 }
+                else
+                {
+                    lifetime.Shutdown();
+                }
             };
 
             appMenu.Add(quitItem);
