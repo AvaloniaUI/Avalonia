@@ -401,14 +401,12 @@ namespace Avalonia.Media.TextFormatting
 
                     previousLine = textLine;
 
-                    if (currentPosition != _text.Length || textLine.TextLineBreak?.RemainingCharacters == null)
+                    if (currentPosition == _text.Length && textLine.NewLineLength > 0)
                     {
-                        continue;
+                        var emptyTextLine = CreateEmptyTextLine(currentPosition);
+
+                        textLines.Add(emptyTextLine);
                     }
-
-                    var emptyTextLine = CreateEmptyTextLine(currentPosition);
-
-                    textLines.Add(emptyTextLine);
                 }
 
                 Size = new Size(width, height);
