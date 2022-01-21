@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.RelativePanelPage">
+  <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Auto">
     <RelativePanel Width="620" Height="700" Margin="32">
         <Border Name="Rect1" Background="Red" Height="50" Width="50">
             <TextBlock Text="Rect1" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -57,4 +59,5 @@
             <TextBlock Text="Rect15 (LeftOf Rect2, AlignTopWith Rect9)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
     </RelativePanel>
+  </ScrollViewer>
 </UserControl>

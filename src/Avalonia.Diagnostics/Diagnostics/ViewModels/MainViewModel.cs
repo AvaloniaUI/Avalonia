@@ -1,32 +1,39 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
+using Avalonia.Metadata;
 using Avalonia.Threading;
+using System.Reactive.Linq;
+using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class MainViewModel : ViewModelBase, IDisposable
     {
-        private readonly TopLevel _root;
+        private readonly AvaloniaObject _root;
         private readonly TreePageViewModel _logicalTree;
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
         private readonly IDisposable _pointerOverSubscription;
-        private ViewModelBase _content;
+        private ViewModelBase? _content;
         private int _selectedTab;
         private string? _focusedControl;
-        private string? _pointerOverElement;
+        private IInputElement? _pointerOverElement;
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
         private bool _freezePopups;
-
-#nullable disable
-        // Remove "nullable disable" after MemberNotNull will work on our CI.
-        public MainViewModel(TopLevel root)
-#nullable restore
+        private string? _pointerOverElementName;
+        private IInputRoot? _pointerOverRoot;
+        private IScreenshotHandler? _screenshotHandler;
+        private bool _showPropertyType;        
+        private bool _showImplementedInterfaces;
+        
+        public MainViewModel(AvaloniaObject root)
         {
             _root = root;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
@@ -34,10 +41,28 @@ namespace Avalonia.Diagnostics.ViewModels
             _events = new EventsPageViewModel(this);
 
             UpdateFocusedControl();
-            KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
+
+            if (KeyboardDevice.Instance is not null)
+                KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
             SelectedTab = 0;
-            _pointerOverSubscription = root.GetObservable(TopLevel.PointerOverElementProperty)
-                .Subscribe(x => PointerOverElement = x?.GetType().Name);
+            if (root is TopLevel topLevel)
+            {
+                _pointerOverSubscription = topLevel.GetObservable(TopLevel.PointerOverElementProperty)
+                    .Subscribe(x => PointerOverElement = x);
+
+            }
+            else
+            {
+#nullable disable
+                _pointerOverSubscription = InputManager.Instance.PreProcess
+                    .OfType<Input.Raw.RawPointerEventArgs>()
+                    .Subscribe(e =>
+                        {
+                            PointerOverRoot = e.Root;
+                            PointerOverElement = e.Root.GetInputElementsAt(e.Position).FirstOrDefault();
+                        });                                     
+#nullable restore
+            }
             Console = new ConsoleViewModel(UpdateConsoleContext);
         }
 
@@ -52,13 +77,26 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
-        
+
         public bool ShouldVisualizeDirtyRects
         {
             get => _shouldVisualizeDirtyRects;
             set
             {
-                _root.Renderer.DrawDirtyRects = value;
+                var changed = true;
+                if (_root is TopLevel topLevel && topLevel.Renderer is { })
+                {
+                    topLevel.Renderer.DrawDirtyRects = value;
+                }
+                else if (_root is Controls.Application app && app.RendererRoot is { })
+                {
+                    app.RendererRoot.DrawDirtyRects = value;
+                }
+                else
+                {
+                    changed = false;
+                }
+                if (changed)
                 RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
             }
         }
@@ -78,8 +116,21 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _showFpsOverlay;
             set
             {
-                _root.Renderer.DrawFps = value;
-                RaiseAndSetIfChanged(ref _showFpsOverlay, value);
+                var changed = true;
+                if (_root is TopLevel topLevel && topLevel.Renderer is { })
+                {
+                    topLevel.Renderer.DrawFps = value;
+                }
+                else if (_root is Controls.Application app && app.RendererRoot is { })
+                {
+                    app.RendererRoot.DrawFps = value;
+                }
+                else
+                {
+                    changed = false;
+                }
+                if(changed)
+                    RaiseAndSetIfChanged(ref _showFpsOverlay, value);
             }
         }
 
@@ -90,10 +141,9 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public ConsoleViewModel Console { get; }
 
-        public ViewModelBase Content
+        public ViewModelBase? Content
         {
             get { return _content; }
-            // [MemberNotNull(nameof(_content))]
             private set
             {
                 if (_content is TreePageViewModel oldTree &&
@@ -152,12 +202,28 @@ namespace Avalonia.Diagnostics.ViewModels
             private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
         }
 
-        public string? PointerOverElement
+        public IInputRoot? PointerOverRoot 
+        { 
+            get => _pointerOverRoot;
+            private  set => RaiseAndSetIfChanged( ref _pointerOverRoot , value); 
+        }
+
+        public IInputElement? PointerOverElement
         {
             get { return _pointerOverElement; }
-            private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
+            private set
+            {
+                RaiseAndSetIfChanged(ref _pointerOverElement, value);
+                PointerOverElementName = value?.GetType()?.Name;
+            }
         }
-        
+
+        public string? PointerOverElementName
+        {
+            get => _pointerOverElementName;
+            private set => RaiseAndSetIfChanged(ref _pointerOverElementName, value);
+        }
+
         private void UpdateConsoleContext(ConsoleContext context)
         {
             context.root = _root;
@@ -185,17 +251,21 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void Dispose()
         {
-            KeyboardDevice.Instance.PropertyChanged -= KeyboardPropertyChanged;
+            if (KeyboardDevice.Instance is not null)
+                KeyboardDevice.Instance.PropertyChanged -= KeyboardPropertyChanged;
             _pointerOverSubscription.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
-            _root.Renderer.DrawDirtyRects = false;
-            _root.Renderer.DrawFps = false;
+            if (_root is TopLevel top)
+            {
+                top.Renderer.DrawDirtyRects = false;
+                top.Renderer.DrawFps = false;
+            }
         }
 
         private void UpdateFocusedControl()
         {
-            FocusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
+            FocusedControl = KeyboardDevice.Instance?.FocusedElement?.GetType().Name;
         }
 
         private void KeyboardPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -221,10 +291,66 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public int? StartupScreenIndex { get; private set; } = default;
+        
+        [DependsOn(nameof(TreePageViewModel.SelectedNode))]
+        [DependsOn(nameof(Content))]
+        bool CanShot(object? parameter)
+        {
+            return Content is TreePageViewModel tree
+                && tree.SelectedNode != null
+                && tree.SelectedNode.Visual is VisualTree.IVisual visual
+                && visual.VisualRoot != null;
+        }
+
+        async void Shot(object? parameter)
+        {
+            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control
+                && _screenshotHandler is { }
+                )
+            {
+                try
+                {
+                    await _screenshotHandler.Take(control);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                    //TODO: Notify error
+                }
+            }
+        }
 
         public void SetOptions(DevToolsOptions options)
         {
+            _screenshotHandler = options.ScreenshotHandler;
             StartupScreenIndex = options.StartupScreenIndex;
+            ShowImplementedInterfaces = options.ShowImplementedInterfaces;
+        }
+
+        public bool ShowImplementedInterfaces 
+        { 
+            get => _showImplementedInterfaces; 
+            private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces , value); 
+        }
+
+        public void ToggleShowImplementedInterfaces(object parametr)
+        {
+            ShowImplementedInterfaces = !ShowImplementedInterfaces;
+            if (Content is TreePageViewModel viewModel)
+            {
+                viewModel.UpdatePropertiesView();
+            }
+        }
+
+        public bool ShowDettailsPropertyType 
+        { 
+            get => _showPropertyType; 
+            private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
+        }
+
+        public void ToggleShowDettailsPropertyType(object paramter)
+        {
+            ShowDettailsPropertyType = !ShowDettailsPropertyType;
         }
     }
 }

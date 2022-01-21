@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using XamlX;
@@ -11,7 +12,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class AvaloniaXamlIlDataContextTypeTransformer : IXamlAstTransformer
     {
-        private const string AvaloniaNs = "https://github.com/avaloniaui";
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (context.ParentNodes().FirstOrDefault() is AvaloniaXamlIlDataContextTypeMetadataNode)
@@ -120,7 +120,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     var parentItemsDataContext = context.ParentNodes().SkipWhile(n => n != parentObject).OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentItemsDataContext != null)
                     {
-                        itemsCollectionType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, parentItemsBinding, parentItemsDataContext.DataContextType);
+                        itemsCollectionType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, parentItemsBinding, () => parentItemsDataContext.DataContextType, parentObject.Type.GetClrType());
                     }
                 }
             }
@@ -153,16 +153,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             else if (obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension))
             {
-                IXamlType startType;
-                var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
-                if (parentDataContextNode is null)
+                Func<IXamlType> startTypeResolver = () =>
                 {
-                    throw new XamlX.XamlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", obj);
-                }
+                    var dataTypeProperty = obj.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "DataType");
+                    if (dataTypeProperty?.Values.Count is 1 && dataTypeProperty.Values[0] is XamlAstTextNode text)
+                    {
+                        return TypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type;
+                    }
 
-                startType = parentDataContextNode.DataContextType;
+                    var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
+                    if (parentDataContextNode is null)
+                    {
+                        throw new XamlX.XamlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", obj);
+                    }
 
-                var bindingResultType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, obj, startType);
+                    return parentDataContextNode.DataContextType;
+                };
+
+                var bindingResultType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, obj, startTypeResolver, on.Type.GetClrType());
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, bindingResultType);
             }
 

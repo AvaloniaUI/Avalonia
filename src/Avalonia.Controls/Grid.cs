@@ -978,7 +978,7 @@ namespace Avalonia.Controls
         /// width is not registered in columns.</param>
         /// <param name="forceInfinityV">Passed through to MeasureCell.
         /// When "true" cells' desired height is not registered in rows.</param>
-        /// <param name="hasDesiredSizeUChanged">return true when desired size has changed</param>
+        /// <param name="hasDesiredSizeUChanged">When the method exits, indicates whether the desired size has changed.</param>
         private void MeasureCellsGroup(
             int cellsHead,
             Size referenceSize,

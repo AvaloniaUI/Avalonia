@@ -7,8 +7,8 @@ namespace Avalonia.Data.Core
     public class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
-        private IPropertyAccessorPlugin _customPlugin;
-        private IPropertyAccessor _accessor;
+        private IPropertyAccessorPlugin? _customPlugin;
+        private IPropertyAccessor? _accessor;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
@@ -25,9 +25,9 @@ namespace Avalonia.Data.Core
 
         public override string Description => PropertyName;
         public string PropertyName { get; }
-        public override Type PropertyType => _accessor?.PropertyType;
+        public override Type? PropertyType => _accessor?.PropertyType;
 
-        protected override bool SetTargetValueCore(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object? value, BindingPriority priority)
         {
             if (_accessor != null)
             {
@@ -41,9 +41,10 @@ namespace Avalonia.Data.Core
             return false;
         }
 
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
-            reference.TryGetTarget(out object target);
+            if (!reference.TryGetTarget(out var target) || target is null)
+                return;
 
             var plugin = _customPlugin ?? GetPropertyAccessorPluginForObject(target);
             var accessor = plugin?.Start(reference, PropertyName);
@@ -51,7 +52,7 @@ namespace Avalonia.Data.Core
             // We need to handle accessor fallback before handling validation. Validators do not support null accessors.
             if (accessor == null)
             {
-                reference.TryGetTarget(out object instance);
+                reference.TryGetTarget(out var instance);
 
                 var message = $"Could not find a matching property accessor for '{PropertyName}' on '{instance}'";
 
@@ -80,7 +81,7 @@ namespace Avalonia.Data.Core
             accessor.Subscribe(ValueChanged);
         }
 
-        private IPropertyAccessorPlugin GetPropertyAccessorPluginForObject(object target)
+        private IPropertyAccessorPlugin? GetPropertyAccessorPluginForObject(object target)
         {
             foreach (IPropertyAccessorPlugin x in ExpressionObserver.PropertyAccessors)
             {
@@ -94,7 +95,7 @@ namespace Avalonia.Data.Core
 
         protected override void StopListeningCore()
         {
-            _accessor.Dispose();
+            _accessor?.Dispose();
             _accessor = null;
         }
     }

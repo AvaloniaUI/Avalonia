@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -23,11 +22,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public RectangleNode(
             Matrix transform,
-            IBrush brush,
-            IPen pen,
+            IBrush? brush,
+            IPen? pen,
             RoundedRect rect,
             BoxShadows boxShadows,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene>? childScenes = null)
             : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform)
         {
             Transform = transform;
@@ -46,12 +45,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the fill brush.
         /// </summary>
-        public IBrush Brush { get; }
+        public IBrush? Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
         /// </summary>
-        public ImmutablePen Pen { get; }
+        public ImmutablePen? Pen { get; }
 
         /// <summary>
         /// Gets the rectangle to draw.
@@ -64,7 +63,7 @@ namespace Avalonia.Rendering.SceneGraph
         public BoxShadows BoxShadows { get; }
 
         /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene> ChildScenes { get; }
+        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -79,7 +78,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows)
+        public bool Equals(Matrix transform, IBrush? brush, IPen? pen, RoundedRect rect, BoxShadows boxShadows)
         {
             return transform == Transform &&
                    Equals(brush, Brush) &&

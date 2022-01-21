@@ -34,7 +34,7 @@ namespace Avalonia.Media
 
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ImmutableExperimentalAcrylicMaterial other && Equals(other);
         }

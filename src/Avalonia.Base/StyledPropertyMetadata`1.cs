@@ -19,7 +19,7 @@ namespace Avalonia
         public StyledPropertyMetadata(
             Optional<TValue> defaultValue = default,
             BindingMode defaultBindingMode = BindingMode.Default,
-            Func<IAvaloniaObject, TValue, TValue> coerce = null)
+            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
                 : base(defaultBindingMode)
         {
             _defaultValue = defaultValue;
@@ -29,14 +29,14 @@ namespace Avalonia
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        public TValue DefaultValue => _defaultValue.GetValueOrDefault();
+        public TValue DefaultValue => _defaultValue.GetValueOrDefault()!;
 
         /// <summary>
         /// Gets the value coercion callback, if any.
         /// </summary>
-        public Func<IAvaloniaObject, TValue, TValue> CoerceValue { get; private set; }
+        public Func<IAvaloniaObject, TValue, TValue>? CoerceValue { get; private set; }
 
-        object IStyledPropertyMetadata.DefaultValue => DefaultValue;
+        object? IStyledPropertyMetadata.DefaultValue => DefaultValue;
 
         /// <inheritdoc/>
         public override void Merge(AvaloniaPropertyMetadata baseMetadata, AvaloniaProperty property)

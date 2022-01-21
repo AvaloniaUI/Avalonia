@@ -20,8 +20,8 @@ namespace Avalonia.Skia
         /// <summary>
         /// Creates an offscreen render target surface
         /// </summary>
-        /// <param name="size">size in pixels</param>
-        /// <param name="session">current Skia render session</param>
+        /// <param name="size">size in pixels.</param>
+        /// <param name="session">An optional custom render session.</param>
         ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session);
     }
     

@@ -5,6 +5,7 @@ using System.Linq;
 using Moq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -594,6 +595,113 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 Assert.True(focus == windowTB);
             }
+        }
+
+        [Fact]
+        public void Popup_Should_Follow_Placement_Target_On_Window_Move()
+        {
+            using (CreateServices())
+            {
+                var popup = new Popup { Width = 400, Height = 200 };
+                var window = PreparedWindow(popup);
+                popup.Open();
+
+                if (popup.Host is PopupRoot popupRoot)
+                {
+                    // Moving the window must move the popup (screen coordinates have changed)
+                    var raised = false;
+                    popupRoot.PositionChanged += (_, args) =>
+                    {
+                        Assert.Equal(new PixelPoint(10, 10), args.Point);
+                        raised = true;
+                    };
+
+                    window.Position = new PixelPoint(10, 10);
+                    Assert.True(raised);
+                }
+            }
+        }
+
+        [Fact]
+        public void Popup_Should_Follow_Placement_Target_On_Window_Resize()
+        {
+            using (CreateServices())
+            {
+
+                var placementTarget = new Panel()
+                {
+                    Width = 10,
+                    Height = 10,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var popup = new Popup() { PlacementTarget = placementTarget, Width = 10, Height = 10 };
+                ((ISetLogicalParent)popup).SetParent(popup.PlacementTarget);
+
+                var window = PreparedWindow(placementTarget);
+                window.Show();
+                popup.Open();
+
+                // The target's initial placement is (395,295) which is a 10x10 panel centered in a 800x600 window
+                Assert.Equal(placementTarget.Bounds, new Rect(395D, 295D, 10, 10));
+
+                if (popup.Host is PopupRoot popupRoot)
+                {
+                    // Resizing the window to 700x500 must move the popup to (345,255) as this is the new
+                    // location of the placement target
+                    var raised = false;
+                    popupRoot.PositionChanged += (_, args) =>
+                    {
+                        Assert.Equal(new PixelPoint(345, 255), args.Point);
+                        raised = true;
+                    };
+
+                    window.PlatformImpl?.Resize(new Size(700D, 500D), PlatformResizeReason.Unspecified);
+                    Assert.True(raised);
+                }
+            }
+        }
+
+        [Fact]
+        public void Popup_Should_Follow_Popup_Root_Placement_Target()
+        {
+            // When the placement target of a popup is another popup (e.g. nested menu items), the child popup must
+            // follow the parent popup if it moves (due to root window movement or resize)
+            using (CreateServices())
+            {
+                // The child popup is placed directly over the parent popup for position testing
+                var parentPopup = new Popup() { Width = 10, Height = 10 };
+                var childPopup = new Popup() {
+                    Width = 20,
+                    Height = 20,
+                    PlacementTarget = parentPopup, 
+                    PlacementMode = PlacementMode.AnchorAndGravity,
+                    PlacementAnchor = PopupAnchor.TopLeft,
+                    PlacementGravity = PopupGravity.BottomRight
+                };
+                ((ISetLogicalParent)childPopup).SetParent(childPopup.PlacementTarget);
+                
+                var window = PreparedWindow(parentPopup);
+                window.Show();
+                parentPopup.Open();
+                childPopup.Open();
+                
+                if (childPopup.Host is PopupRoot popupRoot)
+                {
+                    var raised = false;
+                    popupRoot.PositionChanged += (_, args) =>
+                    {
+                        // The parent's initial placement is (395,295) which is a 10x10 popup centered
+                        // in a 800x600 window. When the window is moved, the child's final placement is (405, 305)
+                        // which is the parent's placement moved 10 pixels left and down.
+                        Assert.Equal(new PixelPoint(405, 305), args.Point);
+                        raised = true;
+                    };
+
+                    window.Position = new PixelPoint(10, 10);
+                    Assert.True(raised);
+                }
+            }            
         }
 
         private IDisposable CreateServices()

@@ -38,8 +38,8 @@ namespace Avalonia.Animation.Animators
         }
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control, IClock clock,
-            IObservable<bool> match, Action onComplete)
+        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock,
+            IObservable<bool> match, Action? onComplete)
         {
             if (TryCreateCustomRegisteredAnimator(out var animator)
                 || TryCreateGradientAnimator(out animator)
@@ -135,15 +135,14 @@ namespace Avalonia.Animation.Animators
 
         private bool TryCreateCustomRegisteredAnimator([NotNullWhen(true)] out IAnimator? animator)
         {
-            if (_brushAnimators.Count > 0)
+            if (_brushAnimators.Count > 0 && this[0].Value?.GetType() is Type firstKeyType)
             {
-                var firstKeyType = this[0].Value.GetType();
                 foreach (var (match, animatorType) in _brushAnimators)
                 {
                     if (!match(firstKeyType))
                         continue;
 
-                    animator = (IAnimator)Activator.CreateInstance(animatorType);
+                    animator = (IAnimator?)Activator.CreateInstance(animatorType);
                     if (animator != null)
                     {
                         animator.Property = Property;

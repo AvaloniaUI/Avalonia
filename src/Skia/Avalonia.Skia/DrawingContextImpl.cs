@@ -415,6 +415,34 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+        {
+            if (rect.Height <= 0 || rect.Width <= 0)
+                return;
+
+            var rc = rect.ToSKRect();
+
+            if (brush != null)
+            {
+                using (var paint = CreatePaint(_fillPaint, brush, rect.Size))
+                {
+                    Canvas.DrawOval(rc, paint.Paint);
+                }
+            }
+
+            if (pen?.Brush != null)
+            {
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Size))
+                {
+                    if (paint.Paint is object)
+                    {
+                        Canvas.DrawOval(rc, paint.Paint);
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds.Size))
@@ -430,8 +458,6 @@ namespace Avalonia.Skia
             using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
-
-                ConfigureTextRendering(paintWrapper);
 
                 Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
@@ -454,7 +480,7 @@ namespace Avalonia.Skia
         public void PushClip(RoundedRect clip)
         {
             Canvas.Save();
-            Canvas.ClipRoundRect(clip.ToSKRoundRect());
+            Canvas.ClipRoundRect(clip.ToSKRoundRect(), antialias:true);
         }
 
         /// <inheritdoc />
@@ -576,15 +602,6 @@ namespace Avalonia.Skia
 
                 Canvas.SetMatrix(transform.ToSKMatrix());
             }
-        }
-
-        internal void ConfigureTextRendering(PaintWrapper wrapper)
-        {
-            var paint = wrapper.Paint;
-
-            paint.IsEmbeddedBitmapText = true;
-            paint.SubpixelText = true;
-            paint.LcdRenderText = _canTextUseLcdRendering;
         }
 
         /// <summary>

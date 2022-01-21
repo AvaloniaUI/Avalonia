@@ -534,7 +534,7 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
-            _imClient.SetPresenter(_presenter);
+            _imClient.SetPresenter(_presenter, this);
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
@@ -643,15 +643,31 @@ namespace Avalonia.Controls
 
             if (!string.IsNullOrEmpty(input))
             {
-                DeleteSelection();
-                caretIndex = CaretIndex;
-                text = Text ?? string.Empty;
-                SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
-                CaretIndex += input.Length;
-                ClearSelection();
-                if (IsUndoEnabled)
+                var oldText = _text;
+
+                _ignoreTextChanges = true;
+
+                try
                 {
-                    _undoRedoHelper.DiscardRedo();
+                    DeleteSelection(false);
+                    caretIndex = CaretIndex;
+                    text = Text ?? string.Empty;
+                    SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
+                    CaretIndex += input.Length;
+                    ClearSelection();
+                    if (IsUndoEnabled)
+                    {
+                        _undoRedoHelper.DiscardRedo();
+                    }
+
+                    if (_text != oldText)
+                    {
+                        RaisePropertyChanged(TextProperty, oldText, _text);
+                    }
+                }
+                finally
+                {
+                    _ignoreTextChanges = false;
                 }
             }
         }
@@ -991,13 +1007,28 @@ namespace Avalonia.Controls
             if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
-                var index = CaretIndex = _presenter.GetCaretIndex(point);
+                var index = _presenter.GetCaretIndex(point);
+                var clickToSelect = index != CaretIndex && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
+                if (!clickToSelect)
+                {
+                    CaretIndex = index;
+                }
+
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
 #pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
-                        SelectionStart = SelectionEnd = index;
+                        if (clickToSelect)
+                        {
+                            SelectionStart = Math.Min(index, CaretIndex);
+                            SelectionEnd = Math.Max(index, CaretIndex);
+                        }
+                        else
+                        {
+                            SelectionStart = SelectionEnd = index;
+                        }
                         break;
                     case 2:
                         if (!StringUtils.IsStartOfWord(text, index))
@@ -1291,7 +1322,7 @@ namespace Avalonia.Controls
             CaretIndex = SelectionEnd;
         }
 
-        private bool DeleteSelection()
+        private bool DeleteSelection(bool raiseTextChanged = true)
         {
             if (!IsReadOnly)
             {
@@ -1303,7 +1334,7 @@ namespace Avalonia.Controls
                     var start = Math.Min(selectionStart, selectionEnd);
                     var end = Math.Max(selectionStart, selectionEnd);
                     var text = Text;
-                    SetTextInternal(text.Substring(0, start) + text.Substring(end));
+                    SetTextInternal(text.Substring(0, start) + text.Substring(end), raiseTextChanged);
                     CaretIndex = start;
                     ClearSelection();
                     return true;
@@ -1354,16 +1385,23 @@ namespace Avalonia.Controls
             return i;
         }
 
-        private void SetTextInternal(string value)
+        private void SetTextInternal(string value, bool raiseTextChanged = true)
         {
-            try
+            if (raiseTextChanged)
             {
-                _ignoreTextChanges = true;
-                SetAndRaise(TextProperty, ref _text, value);
+                try
+                {
+                    _ignoreTextChanges = true;
+                    SetAndRaise(TextProperty, ref _text, value);
+                }
+                finally
+                {
+                    _ignoreTextChanges = false;
+                }
             }
-            finally
+            else
             {
-                _ignoreTextChanges = false;
+                _text = value;
             }
         }
 

@@ -268,7 +268,11 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>().OpenContextMenu;
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.OpenContextMenu;
+
+                if (keymap is null)
+                    return;
+
                 var matches = false;
 
                 for (var index = 0; index < keymap.Count; index++)

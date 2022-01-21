@@ -14,7 +14,7 @@ namespace Avalonia.Media
         /// </returns>
         public static IExperimentalAcrylicMaterial ToImmutable(this IExperimentalAcrylicMaterial material)
         {
-            Contract.Requires<ArgumentNullException>(material != null);
+            _ = material ?? throw new ArgumentNullException(nameof(material));
 
             return (material as IMutableExperimentalAcrylicMaterial)?.ToImmutable() ?? material;
         }
