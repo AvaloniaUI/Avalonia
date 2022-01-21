@@ -255,7 +255,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            return new SplitTextRunsResult(textRuns, new());
+            return new SplitTextRunsResult(textRuns, null);
         }
 
         /// <summary>
@@ -283,16 +283,16 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var shapedCharacters = previousLineBreak.RemainingCharacters[index];
 
-                    if (shapedCharacters == null)
-                    {
-                        continue;
-                    }
-
                     textRuns.Add(shapedCharacters);
 
                     if (TryGetLineBreak(shapedCharacters, out var runLineBreak))
                     {
                         var splitResult = SplitTextRuns(textRuns, currentLength + runLineBreak.PositionWrap);
+
+                        if (splitResult.Second == null)
+                        {
+                            return splitResult.First;
+                        }
 
                         if (++index < previousLineBreak.RemainingCharacters.Count)
                         {
@@ -301,7 +301,7 @@ namespace Avalonia.Media.TextFormatting
                                 splitResult.Second.Add(previousLineBreak.RemainingCharacters[index]);
                             }
                         }
-
+                            
                         nextLineBreak = new TextLineBreak(splitResult.Second);
 
                         return splitResult.First;
@@ -346,7 +346,10 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var splitResult = SplitTextRuns(textRuns, currentLength + runLineBreak.PositionWrap);
 
-                    nextLineBreak = new TextLineBreak(splitResult.Second);
+                    if (splitResult.Second != null)
+                    {
+                        nextLineBreak = new TextLineBreak(splitResult.Second);
+                    }
 
                     return splitResult.First;
                 }
@@ -515,7 +518,7 @@ namespace Avalonia.Media.TextFormatting
 
             var remainingCharacters = splitResult.Second;
 
-            var lineBreak = remainingCharacters.Count > 0 ? new TextLineBreak(remainingCharacters) : null;
+            var lineBreak = remainingCharacters?.Count > 0 ? new TextLineBreak(remainingCharacters) : null;
 
             if (lineBreak is null && currentLineBreak?.TextEndOfLine != null)
             {
@@ -532,7 +535,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The text range that is covered by the text runs.</returns>
         private static TextRange GetTextRange(IReadOnlyList<TextRun> textRuns)
         {
-            if (textRuns is null || textRuns.Count == 0)
+            if (textRuns.Count == 0)
             {
                 return new TextRange();
             }
@@ -553,7 +556,7 @@ namespace Avalonia.Media.TextFormatting
 
         internal readonly struct SplitTextRunsResult
         {
-            public SplitTextRunsResult(List<ShapedTextCharacters> first, List<ShapedTextCharacters> second)
+            public SplitTextRunsResult(List<ShapedTextCharacters> first, List<ShapedTextCharacters>? second)
             {
                 First = first;
 
@@ -574,7 +577,7 @@ namespace Avalonia.Media.TextFormatting
             /// <value>
             /// The second text runs.
             /// </value>
-            public List<ShapedTextCharacters> Second { get; }
+            public List<ShapedTextCharacters>? Second { get; }
         }
 
         private struct TextRunEnumerator
