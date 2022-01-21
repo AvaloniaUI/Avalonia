@@ -144,6 +144,21 @@ export class SKHtmlCanvas {
     {
         this.newWidth = width;
         this.newHeight = height;
+
+        if(this.htmlCanvas.width != this.newWidth)
+        {
+            this.htmlCanvas.width = this.newWidth;
+        }
+
+        if(this.htmlCanvas.height != this.newHeight)
+        {
+            this.htmlCanvas.height = this.newHeight;
+        }
+
+        if (this.glInfo) {
+            // make current
+            GL.makeContextCurrent(this.glInfo.context);
+        }
     }
 
 	public requestAnimationFrame(renderLoop?: boolean) {
@@ -162,9 +177,13 @@ export class SKHtmlCanvas {
                 GL.makeContextCurrent(this.glInfo.context);
             }
             
-            if(this.htmlCanvas.width != this.newWidth || this.htmlCanvas.height != this.newHeight)
+            if(this.htmlCanvas.width != this.newWidth)
             {
                 this.htmlCanvas.width = this.newWidth;
+            }
+
+            if(this.htmlCanvas.height != this.newHeight)
+            {
                 this.htmlCanvas.height = this.newHeight;
             }
 
