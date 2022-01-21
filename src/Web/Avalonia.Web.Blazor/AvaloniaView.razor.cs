@@ -300,6 +300,12 @@ namespace Avalonia.Web.Blazor
                     _topLevel.Prepare();
 
                     _topLevel.Renderer.Start();
+
+                    if (_topLevel.Renderer is DeferredRenderer dr)
+                    {
+                        dr.Render(true);
+                    }
+                    
                     Invalidate();
                 });
             }
