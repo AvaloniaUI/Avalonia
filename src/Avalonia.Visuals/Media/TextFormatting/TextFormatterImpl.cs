@@ -301,7 +301,7 @@ namespace Avalonia.Media.TextFormatting
                                 splitResult.Second.Add(previousLineBreak.RemainingCharacters[index]);
                             }
                         }
-                            
+
                         nextLineBreak = new TextLineBreak(splitResult.Second);
 
                         return splitResult.First;
