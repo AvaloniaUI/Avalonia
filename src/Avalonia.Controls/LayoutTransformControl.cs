@@ -18,7 +18,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<LayoutTransformControl, ITransform>(nameof(LayoutTransform));
 
         public static readonly StyledProperty<bool> UseRenderTransformProperty =
-            AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(LayoutTransform));
+            AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(UseRenderTransform));
 
         static LayoutTransformControl()
         {

@@ -11,6 +11,7 @@ namespace Avalonia.Web.Blazor.Interop
         private const string InitRasterSymbol = "SKHtmlCanvas.initRaster";
         private const string DeinitSymbol = "SKHtmlCanvas.deinit";
         private const string RequestAnimationFrameSymbol = "SKHtmlCanvas.requestAnimationFrame";
+        private const string SetCanvasSizeSymbol = "SKHtmlCanvas.setCanvasSize";
         private const string PutImageDataSymbol = "SKHtmlCanvas.putImageData";
 
         private readonly ElementReference htmlCanvas;
@@ -68,8 +69,11 @@ namespace Avalonia.Web.Blazor.Interop
             callbackReference?.Dispose();
         }
 
-        public void RequestAnimationFrame(bool enableRenderLoop, int rawWidth, int rawHeight) =>
-            Invoke(RequestAnimationFrameSymbol, htmlCanvas, enableRenderLoop, rawWidth, rawHeight);
+        public void RequestAnimationFrame(bool enableRenderLoop) =>
+            Invoke(RequestAnimationFrameSymbol, htmlCanvas, enableRenderLoop);
+
+        public void SetCanvasSize(int rawWidth, int rawHeight) =>
+            Invoke(SetCanvasSizeSymbol, htmlCanvas, rawWidth, rawHeight);
 
         public void PutImageData(IntPtr intPtr, SKSizeI rawSize) =>
             Invoke(PutImageDataSymbol, htmlCanvas, intPtr.ToInt64(), rawSize.Width, rawSize.Height);

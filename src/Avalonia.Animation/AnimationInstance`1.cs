@@ -31,15 +31,15 @@ namespace Avalonia.Animation
         private TimeSpan _initialDelay;
         private TimeSpan _iterationDelay;
         private TimeSpan _duration;
-        private Easings.Easing _easeFunc;
-        private Action _onCompleteAction;
+        private Easings.Easing? _easeFunc;
+        private Action? _onCompleteAction;
         private Func<double, T, T> _interpolator;
-        private IDisposable _timerSub;
+        private IDisposable? _timerSub;
         private readonly IClock _baseClock;
-        private IClock _clock;
-        private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChangedDelegate;
+        private IClock? _clock;
+        private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChangedDelegate;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action OnComplete, Func<double, T, T> Interpolator)
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator)
         {
             _animator = animator;
             _animation = animation;
@@ -47,6 +47,9 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
+            _lastInterpValue = default!;
+            _firstKFValue = default!;
+            _neutralValue = default!;
             FetchProperties();
         }
 
@@ -82,7 +85,7 @@ namespace Avalonia.Animation
 
             _targetControl.PropertyChanged -= _propertyChangedDelegate;
             _timerSub?.Dispose();
-            _clock.PlayState = PlayState.Stop;
+            _clock!.PlayState = PlayState.Stop;
         }
 
         protected override void Subscribed()
@@ -108,6 +111,8 @@ namespace Avalonia.Animation
 
         private void ApplyFinalFill()
         {
+            if (_animator.Property is null)
+                throw new InvalidOperationException("Animator has no property specified.");
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
                 _targetControl.SetValue(_animator.Property, _lastInterpValue, BindingPriority.LocalValue);
         }
@@ -130,12 +135,12 @@ namespace Avalonia.Animation
 
         private void DoPlayStates()
         {
-            if (_clock.PlayState == PlayState.Stop || _baseClock.PlayState == PlayState.Stop)
+            if (_clock!.PlayState == PlayState.Stop || _baseClock.PlayState == PlayState.Stop)
                 DoComplete();
 
             if (!_gotFirstKFValue)
             {
-                _firstKFValue = (T)_animator.First().Value;
+                _firstKFValue = (T)_animator.First().Value!;
                 _gotFirstKFValue = true;
             }
         }
@@ -169,7 +174,7 @@ namespace Avalonia.Animation
                 // and snap the last iteration value to exact values.
                 if ((_currentIteration + 1) > _iterationCount)
                 {
-                    var easedTime = _easeFunc.Ease(_playbackReversed ? 0.0 : 1.0);
+                    var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
                     _lastInterpValue = _interpolator(easedTime, _neutralValue);
                     DoComplete();
                 }
@@ -203,7 +208,7 @@ namespace Avalonia.Animation
                         normalizedTime = 1 - normalizedTime;
 
                     // Ease and interpolate
-                    var easedTime = _easeFunc.Ease(normalizedTime);
+                    var easedTime = _easeFunc!.Ease(normalizedTime);
                     _lastInterpValue = _interpolator(easedTime, _neutralValue);
 
                     PublishNext(_lastInterpValue);
@@ -223,14 +228,14 @@ namespace Avalonia.Animation
 
         private void UpdateNeutralValue()
         {
-            var property = _animator.Property;
+            var property = _animator.Property ?? throw new InvalidOperationException("Animator has no property specified.");
             var baseValue = _targetControl.GetBaseValue(property, BindingPriority.LocalValue);
 
             _neutralValue = baseValue != AvaloniaProperty.UnsetValue ?
-                (T)baseValue : (T)_targetControl.GetValue(property);
+                (T)baseValue! : (T)_targetControl.GetValue(property)!;
         }
 
-        private void ControlPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void ControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == _animator.Property && e.Priority > BindingPriority.Animation)
             {

@@ -4,7 +4,7 @@ namespace Avalonia.Animation
 {
     public class Clock : ClockBase
     {
-        public static IClock GlobalClock => AvaloniaLocator.Current.GetService<IGlobalClock>();
+        public static IClock GlobalClock => AvaloniaLocator.Current.GetRequiredService<IGlobalClock>();
 
         private readonly IDisposable _parentSubscription;
 
