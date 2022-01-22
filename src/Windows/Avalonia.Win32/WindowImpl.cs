@@ -76,7 +76,7 @@ namespace Avalonia.Win32
         private bool _multitouch;
         private IInputRoot _owner;
         private WindowProperties _windowProperties;
-        private bool _trackingMouse;
+        private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
         private WindowState _showWindowState;

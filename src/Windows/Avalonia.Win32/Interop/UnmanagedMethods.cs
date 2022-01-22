@@ -730,7 +730,7 @@ namespace Avalonia.Win32.Interop
             WM_TOUCHHITTESTING = 0x024D,
             WM_POINTERWHEEL = 0x024E,
             WM_POINTERHWHEEL = 0x024F,
-            WM_POINTERHITTEST = 0x0250,
+            DM_POINTERHITTEST = 0x0250,
 
             WM_IME_SETCONTEXT = 0x0281,
             WM_IME_NOTIFY = 0x0282,

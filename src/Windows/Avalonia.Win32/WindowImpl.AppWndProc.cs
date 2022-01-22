@@ -227,10 +227,6 @@ namespace Avalonia.Win32
                     }
                 // Mouse capture is lost
                 case WindowsMessage.WM_CANCELMODE:
-                    if (BelowWin8)
-                    {
-                        break;
-                    }
                     _mouseDevice.Capture(null);
                     break;
 
@@ -263,7 +259,8 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawPointerEventType.Move,
-                            DipFromLParam(lParam), GetMouseModifiers(wParam));
+                            DipFromLParam(lParam), 
+                            GetMouseModifiers(wParam));
 
                         break;
                     }
@@ -279,7 +276,8 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             PointToClient(PointFromLParam(lParam)),
-                            new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), GetMouseModifiers(wParam));
+                            new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), 
+                            GetMouseModifiers(wParam));
                         break;
                     }
 
@@ -294,7 +292,8 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             PointToClient(PointFromLParam(lParam)),
-                            new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), GetMouseModifiers(wParam));
+                            new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), 
+                            GetMouseModifiers(wParam));
                         break;
                     }
 
@@ -310,7 +309,8 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawPointerEventType.LeaveWindow,
-                            new Point(-1, -1), WindowsKeyboardDevice.Instance.Modifiers);
+                            new Point(-1, -1), 
+                            WindowsKeyboardDevice.Instance.Modifiers);
                         break;
                     }
 
@@ -386,16 +386,24 @@ namespace Avalonia.Win32
 
 
                 case WindowsMessage.WM_POINTERDEVICECHANGE:
+                    {
+                        //notifies about changes in the settings of a monitor that has a digitizer attached to it.
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdevicechange
+                        break;
+                    }
                 case WindowsMessage.WM_POINTERDEVICEINRANGE:
                 case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
                     {
-
+                        //notifies about proximity of pointer device to the digitizer.
+                        //contains pointer id and proximity.
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdeviceinrange
                         break;
                     }
                 case WindowsMessage.WM_NCPOINTERUPDATE:
                 case WindowsMessage.WM_NCPOINTERDOWN:
                 case WindowsMessage.WM_NCPOINTERUP:
                     {
+                        //NC stands for non-client area - window header and window border
 
                         break;
                     }
@@ -407,60 +415,79 @@ namespace Avalonia.Win32
                         break;
                     }
                 case WindowsMessage.WM_POINTERENTER:
+                    {
+                        //this is not handled by WM_MOUSEENTER so I think there is no need to handle this too.
+                        //but we can detect a new pointer by this message and calling IS_POINTER_NEW_WPARAM
+
+                        //note: by using a pen there can be a pointer leave or enter inside a window coords
+                        //when you are just lift up the pen above the display
+                        break;
+                    }
                 case WindowsMessage.WM_POINTERLEAVE:
                     {
+                        GetDeviceInfo(wParam, out var device, out var info);
+                        var point = PointToClient(PointFromLParam(lParam));
 
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERACTIVATE:
-                case WindowsMessage.WM_POINTERCAPTURECHANGED:
-                    {
-
-                        break;
-                    }
-                case WindowsMessage.WM_TOUCHHITTESTING:
-                    {
-
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERWHEEL:
-                    {
-                        var pointerId = ToPointerId(wParam);
-                        GetPointerType(pointerId, out var type);
-                        IInputDevice device;
-                        switch (type)
-                        {
-                            case PointerInputType.PT_PEN:
-                                device = _penDevice;
-                                break;
-                            case PointerInputType.PT_TOUCH:
-                                device = _touchDevice;
-                                break;
-                            default:
-                                device = _mouseDevice;
-                                break;
-                        }
-
-
-                        var delta = GetWheelDelta(wParam);
-                        var point = PointFromLParam(lParam);
-                        e = new RawMouseWheelEventArgs(
+                        e = new RawPointerEventArgs(
                             device,
                             timestamp,
                             _owner,
-                            PointToClient(point),
-                            new Vector(0, delta / wheelDelta),
-                            GetMouseModifiers(wParam));
+                            RawPointerEventType.LeaveWindow,
+                            point,
+                            WindowsKeyboardDevice.Instance.Modifiers);
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERACTIVATE:
+                    {
+                        //occurs when a pointer activates an inactive window.
+                        //we should handle this and return PA_ACTIVATE or PA_NOACTIVATE
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointeractivate
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERCAPTURECHANGED:
+                    {
+                        _mouseDevice.Capture(null);
+                        return IntPtr.Zero;
+                    }
+                case WindowsMessage.WM_POINTERWHEEL:
+                    {
+                        GetDeviceInfo(wParam, out var device, out var info);
+
+                        var point = PointToClient(PointFromLParam(lParam));
+                        var modifiers = GetInputModifiers(info.dwKeyStates);
+                        var delta = new Vector(0, GetWheelDelta(wParam) / wheelDelta);
+                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
                         break;
                     }
                 case WindowsMessage.WM_POINTERHWHEEL:
                     {
+                        GetDeviceInfo(wParam, out var device, out var info);
 
+                        var point = PointToClient(PointFromLParam(lParam));
+                        var modifiers = GetInputModifiers(info.dwKeyStates);
+                        var delta = new Vector(GetWheelDelta(wParam) / wheelDelta, 0);
+                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
                         break;
                     }
-                case WindowsMessage.WM_POINTERHITTEST:
+                case WindowsMessage.DM_POINTERHITTEST:
                     {
-
+                        //DM stands for direct manipulation.
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/directmanipulation/direct-manipulation-portal
+                        break;
+                    }
+                case WindowsMessage.WM_TOUCHHITTESTING:
+                    {
+                        //This is to determine the most probable touch target.
+                        //provides an input bounding box and receives hit proximity
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-touchhittesting
+                        //https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-touch_hit_testing_input
+                        break;
+                    }
+                case WindowsMessage.WM_PARENTNOTIFY:
+                    {
+                        //This message is sent in a dialog scenarios. Contains mouse position in an old-way,
+                        //but listed in the wm_pointer reference
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-parentnotify
                         break;
                     }
 
@@ -687,13 +714,36 @@ namespace Avalonia.Win32
             }
         }
 
+        private void GetDeviceInfo(IntPtr wParam, out IInputDevice device, out POINTER_INFO info)
+        {
+            var pointerId = ToPointerId(wParam);
+            GetPointerType(pointerId, out var type);//ToDo we can cache this and invalidate in WM_POINTERDEVICECHANGE
+            switch (type)
+            {
+                case PointerInputType.PT_PEN:
+                    device = _penDevice;
+                    GetPointerPenInfo(pointerId, out var penInfo);
+                    info = penInfo.pointerInfo;
+                    break;
+                case PointerInputType.PT_TOUCH:
+                    device = _touchDevice;
+                    GetPointerTouchInfo(pointerId, out var touchInfo);
+                    info = touchInfo.pointerInfo;
+                    break;
+                default:
+                    device = _mouseDevice;
+                    GetPointerInfo(pointerId, out info);
+                    break;
+            }
+        }
+
         public static uint GetWheelDelta(IntPtr wParam) => HIWORD(wParam);
         public static uint ToPointerId(IntPtr wParam) => LOWORD(wParam);
         public static uint LOWORD(IntPtr param) => (uint)param & 0xffff;
         public static uint HIWORD(IntPtr param) => (uint)param >> 16;
 
 
-        public bool BelowWin8 => Win32Platform.WindowsVersion < PlatformConstants.Windows8;
+        public readonly bool BelowWin8 = Win32Platform.WindowsVersion < PlatformConstants.Windows8;
 
         private void UpdateInputMethod(IntPtr hkl)
         {
@@ -747,6 +797,11 @@ namespace Avalonia.Win32
         private static RawInputModifiers GetMouseModifiers(IntPtr wParam)
         {
             var keys = (ModifierKeys)ToInt32(wParam);
+            return GetInputModifiers(keys);
+        }
+
+        private static RawInputModifiers GetInputModifiers(ModifierKeys keys)
+        {
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
 
             if (keys.HasAllFlags(ModifierKeys.MK_LBUTTON))
