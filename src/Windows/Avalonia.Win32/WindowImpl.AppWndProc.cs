@@ -427,17 +427,17 @@ namespace Avalonia.Win32
                     {
                         var pointerId = ToPointerId(wParam);
                         GetPointerType(pointerId, out var type);
-                        IInputDevice device = _mouseDevice;
+                        IInputDevice device;
                         switch (type)
                         {
-                            case InputType.PEN:
-
+                            case PointerInputType.PT_PEN:
+                                device = _penDevice;
                                 break;
-                            case InputType.TOUCH:
+                            case PointerInputType.PT_TOUCH:
                                 device = _touchDevice;
                                 break;
-                            case InputType.TOUCHPAD:
-
+                            default:
+                                device = _mouseDevice;
                                 break;
                         }
 
@@ -445,7 +445,7 @@ namespace Avalonia.Win32
                         var delta = GetWheelDelta(wParam);
                         var point = PointFromLParam(lParam);
                         e = new RawMouseWheelEventArgs(
-                            _mouseDevice,
+                            device,
                             timestamp,
                             _owner,
                             PointToClient(point),

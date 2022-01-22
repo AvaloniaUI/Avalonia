@@ -64,6 +64,7 @@ namespace Avalonia.Win32
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
+        private readonly PenDevice _penDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
@@ -96,6 +97,7 @@ namespace Avalonia.Win32
         {
             _touchDevice = new TouchDevice();
             _mouseDevice = new WindowsMouseDevice();
+            _penDevice = new PenDevice();
 
 #if USE_MANAGED_DRAG
             _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>

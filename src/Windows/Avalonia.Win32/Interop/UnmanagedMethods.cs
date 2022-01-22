@@ -225,20 +225,17 @@ namespace Avalonia.Win32.Interop
         [Flags]
         public enum ModifierKeys
         {
-            MK_CONTROL = 0x0008,
+            MK_NONE    = 0x0001,
 
             MK_LBUTTON = 0x0001,
-
-            MK_MBUTTON = 0x0010,
-
             MK_RBUTTON = 0x0002,
 
-            MK_SHIFT = 0x0004,
+            MK_SHIFT   = 0x0004,
+            MK_CONTROL = 0x0008,
 
-            MK_ALT = 0x0020,
-
+            MK_MBUTTON  = 0x0010,
+            MK_ALT      = 0x0020,
             MK_XBUTTON1 = 0x0020,
-
             MK_XBUTTON2 = 0x0040
         }
 
@@ -531,14 +528,14 @@ namespace Avalonia.Win32.Interop
             PDC_MODE_ASPECTRATIOPRESERVED = 0x800
         }
 
-        public enum InputType
+        public enum PointerInputType
         {
-            NONE = 0x00000000,
-            POINTER = 0x00000001,
-            TOUCH = 0x00000002,
-            PEN = 0x00000003,
-            MOUSE = 0x00000004,
-            TOUCHPAD = 0x00000005
+            PT_NONE = 0x00000000,
+            PT_POINTER = 0x00000001,
+            PT_TOUCH = 0x00000002,
+            PT_PEN = 0x00000003,
+            PT_MOUSE = 0x00000004,
+            PT_TOUCHPAD = 0x00000005
         }
 
         public enum WindowsMessage : uint
@@ -882,6 +879,134 @@ namespace Avalonia.Win32.Interop
             SCF_ISSECURE = 0x00000001,
         }
 
+        [Flags]
+        public enum PointerFlags
+        {
+            POINTER_FLAG_NONE = 0x00000000,
+            POINTER_FLAG_NEW = 0x00000001,
+            POINTER_FLAG_INRANGE = 0x00000002,
+            POINTER_FLAG_INCONTACT = 0x00000004,
+            POINTER_FLAG_FIRSTBUTTON = 0x00000010,
+            POINTER_FLAG_SECONDBUTTON = 0x00000020,
+            POINTER_FLAG_THIRDBUTTON = 0x00000040,
+            POINTER_FLAG_FOURTHBUTTON = 0x00000080,
+            POINTER_FLAG_FIFTHBUTTON = 0x00000100,
+            POINTER_FLAG_PRIMARY = 0x00002000,
+            POINTER_FLAG_CONFIDENCE = 0x00000400,
+            POINTER_FLAG_CANCELED = 0x00000800,
+            POINTER_FLAG_DOWN = 0x00010000,
+            POINTER_FLAG_UPDATE = 0x00020000,
+            POINTER_FLAG_UP = 0x00040000,
+            POINTER_FLAG_WHEEL = 0x00080000,
+            POINTER_FLAG_HWHEEL = 0x00100000,
+            POINTER_FLAG_CAPTURECHANGED = 0x00200000,
+            POINTER_FLAG_HASTRANSFORM = 0x00400000
+        }
+
+        public enum PointerButtonChangeType : ulong
+        {
+            POINTER_CHANGE_NONE,
+            POINTER_CHANGE_FIRSTBUTTON_DOWN,
+            POINTER_CHANGE_FIRSTBUTTON_UP,
+            POINTER_CHANGE_SECONDBUTTON_DOWN,
+            POINTER_CHANGE_SECONDBUTTON_UP,
+            POINTER_CHANGE_THIRDBUTTON_DOWN,
+            POINTER_CHANGE_THIRDBUTTON_UP,
+            POINTER_CHANGE_FOURTHBUTTON_DOWN,
+            POINTER_CHANGE_FOURTHBUTTON_UP,
+            POINTER_CHANGE_FIFTHBUTTON_DOWN,
+            POINTER_CHANGE_FIFTHBUTTON_UP
+        }
+
+        [Flags]
+        public enum PenFlags
+        {
+            PEN_FLAGS_NONE = 0x00000000,
+            PEN_FLAGS_BARREL = 0x00000001,
+            PEN_FLAGS_INVERTED = 0x00000002,
+            PEN_FLAGS_ERASER = 0x00000004,
+        }
+
+        [Flags]
+        public enum PenMask
+        {
+            PEN_MASK_NONE = 0x00000000,
+            PEN_MASK_PRESSURE = 0x00000001,
+            PEN_MASK_ROTATION = 0x00000002,
+            PEN_MASK_TILT_X = 0x00000004,
+            PEN_MASK_TILT_Y = 0x00000008
+        }
+
+        [Flags]
+        public enum TouchFlags
+        {
+            TOUCH_FLAG_NONE = 0x00000000
+        }
+
+        [Flags]
+        public enum TouchMask
+        {
+            TOUCH_MASK_NONE = 0x00000000,
+            TOUCH_MASK_CONTACTAREA = 0x00000001,
+            TOUCH_MASK_ORIENTATION = 0x00000002,
+            TOUCH_MASK_PRESSURE = 0x00000004,
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct POINTER_TOUCH_INFO
+        {
+            public POINTER_INFO pointerInfo;
+            public TouchFlags touchFlags;
+            public TouchMask touchMask;
+            public int rcContactLeft;
+            public int rcContactTop;
+            public int rcContactRight;
+            public int rcContactBottom;
+            public int rcContactRawLeft;
+            public int rcContactRawTop;
+            public int rcContactRawRight;
+            public int rcContactRawBottom;
+            public uint orientation;
+            public uint pressure;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct POINTER_PEN_INFO
+        {
+            public POINTER_INFO pointerInfo;
+            public PenFlags penFlags;
+            public PenMask penMask;
+            public uint pressure;
+            public uint rotation;
+            public int tiltX;
+            public int tiltY;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct POINTER_INFO
+        {
+            public PointerInputType pointerType;
+            public uint pointerId;
+            public uint frameId;
+            public PointerFlags pointerFlags;
+            public IntPtr sourceDevice;
+            public IntPtr hwndTarget;
+            public int ptPixelLocationX;
+            public int ptPixelLocationY;
+            public int ptHimetricLocationX;
+            public int ptHimetricLocationY;
+            public int ptPixelLocationRawX;
+            public int ptPixelLocationRawY;
+            public int ptHimetricLocationRawX;
+            public int ptHimetricLocationRawY;
+            public uint dwTime;
+            public uint historyCount;
+            public int inputData;
+            public ModifierKeys dwKeyStates;
+            public UInt64 PerformanceCount;
+            public PointerButtonChangeType ButtonChangeType;
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct RGBQUAD
         {
@@ -956,7 +1081,16 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetPointerCursorId(uint pointerID, out uint cursorId);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool GetPointerType(uint pointerID, out InputType pointerType);
+        public static extern bool GetPointerType(uint pointerID, out PointerInputType pointerType);
+
+        [DllImport("User32.dll", SetLastError = true)]
+        public static extern bool GetPointerInfo(uint pointerID, out POINTER_INFO pointerInfo);
+
+        [DllImport("User32.dll", SetLastError = true)]
+        public static extern bool GetPointerPenInfo(uint pointerID, out POINTER_PEN_INFO penInfo);
+
+        [DllImport("User32.dll", SetLastError = true)]
+        public static extern bool GetPointerTouchInfo(uint pointerID, out POINTER_TOUCH_INFO touchInfo);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern void GetUnpredictedMessagePos();
