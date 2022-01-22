@@ -166,6 +166,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONDOWN:
                 case WindowsMessage.WM_XBUTTONDOWN:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         shouldTakeFocus = ShouldTakeFocusOnClick;
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
@@ -195,6 +199,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
@@ -219,11 +227,19 @@ namespace Avalonia.Win32
                     }
                 // Mouse capture is lost
                 case WindowsMessage.WM_CANCELMODE:
+                    if (BelowWin8)
+                    {
+                        break;
+                    }
                     _mouseDevice.Capture(null);
                     break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
@@ -254,6 +270,10 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEWHEEL:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
@@ -265,6 +285,10 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEHWHEEL:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
@@ -276,6 +300,10 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSELEAVE:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         _trackingMouse = false;
                         e = new RawPointerEventArgs(
                             _mouseDevice,
@@ -291,6 +319,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCMBUTTONDOWN:
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
@@ -311,6 +343,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_TOUCH:
                     {
+                        if (BelowWin8)
+                        {
+                            break;
+                        }
                         var touchInputCount = wParam.ToInt32();
 
                         var pTouchInputs = stackalloc TOUCHINPUT[touchInputCount];
@@ -338,6 +374,117 @@ namespace Avalonia.Win32
 
                         break;
                     }
+
+
+
+
+
+
+
+
+
+
+
+                case WindowsMessage.WM_POINTERDEVICECHANGE:
+                case WindowsMessage.WM_POINTERDEVICEINRANGE:
+                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
+                    {
+
+                        break;
+                    }
+                case WindowsMessage.WM_NCPOINTERUPDATE:
+                case WindowsMessage.WM_NCPOINTERDOWN:
+                case WindowsMessage.WM_NCPOINTERUP:
+                    {
+
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERUPDATE:
+                case WindowsMessage.WM_POINTERDOWN:
+                case WindowsMessage.WM_POINTERUP:
+                    {
+
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERENTER:
+                case WindowsMessage.WM_POINTERLEAVE:
+                    {
+
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERACTIVATE:
+                case WindowsMessage.WM_POINTERCAPTURECHANGED:
+                    {
+
+                        break;
+                    }
+                case WindowsMessage.WM_TOUCHHITTESTING:
+                    {
+
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERWHEEL:
+                    {
+                        var pointerId = ToPointerId(wParam);
+                        GetPointerType(pointerId, out var type);
+                        IInputDevice device = _mouseDevice;
+                        switch (type)
+                        {
+                            case InputType.PEN:
+
+                                break;
+                            case InputType.TOUCH:
+                                device = _touchDevice;
+                                break;
+                            case InputType.TOUCHPAD:
+
+                                break;
+                        }
+
+
+                        var delta = GetWheelDelta(wParam);
+                        var point = PointFromLParam(lParam);
+                        e = new RawMouseWheelEventArgs(
+                            _mouseDevice,
+                            timestamp,
+                            _owner,
+                            PointToClient(point),
+                            new Vector(0, delta / wheelDelta),
+                            GetMouseModifiers(wParam));
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERHWHEEL:
+                    {
+
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERHITTEST:
+                    {
+
+                        break;
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 case WindowsMessage.WM_NCPAINT:
                     {
                         if (!HasFullDecorations)
@@ -539,6 +686,14 @@ namespace Avalonia.Win32
                 return DefWindowProc(hWnd, msg, wParam, lParam);
             }
         }
+
+        public static uint GetWheelDelta(IntPtr wParam) => HIWORD(wParam);
+        public static uint ToPointerId(IntPtr wParam) => LOWORD(wParam);
+        public static uint LOWORD(IntPtr param) => (uint)param & 0xffff;
+        public static uint HIWORD(IntPtr param) => (uint)param >> 16;
+
+
+        public bool BelowWin8 => Win32Platform.WindowsVersion < PlatformConstants.Windows8;
 
         private void UpdateInputMethod(IntPtr hkl)
         {

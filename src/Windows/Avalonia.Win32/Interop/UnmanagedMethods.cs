@@ -514,6 +514,33 @@ namespace Avalonia.Win32.Interop
             CS_DROPSHADOW = 0x00020000
         }
 
+        [Flags]
+        public enum PointerDeviceChangeFlags
+        {
+            PDC_ARRIVAL = 0x001,
+            PDC_REMOVAL = 0x002,
+            PDC_ORIENTATION_0 = 0x004,
+            PDC_ORIENTATION_90 = 0x008,
+            PDC_ORIENTATION_180 = 0x010,
+            PDC_ORIENTATION_270 = 0x020,
+            PDC_MODE_DEFAULT = 0x040,
+            PDC_MODE_CENTERED = 0x080,
+            PDC_MAPPING_CHANGE = 0x100,
+            PDC_RESOLUTION = 0x200,
+            PDC_ORIGIN = 0x400,
+            PDC_MODE_ASPECTRATIOPRESERVED = 0x800
+        }
+
+        public enum InputType
+        {
+            NONE = 0x00000000,
+            POINTER = 0x00000001,
+            TOUCH = 0x00000002,
+            PEN = 0x00000003,
+            MOUSE = 0x00000004,
+            TOUCHPAD = 0x00000005
+        }
+
         public enum WindowsMessage : uint
         {
             WM_NULL = 0x0000,
@@ -689,6 +716,25 @@ namespace Avalonia.Win32.Interop
             WM_EXITSIZEMOVE = 0x0232,
             WM_DROPFILES = 0x0233,
             WM_MDIREFRESHMENU = 0x0234,
+
+            WM_POINTERDEVICECHANGE = 0x0238,
+            WM_POINTERDEVICEINRANGE = 0x239,
+            WM_POINTERDEVICEOUTOFRANGE = 0x23A,
+            WM_NCPOINTERUPDATE = 0x0241,
+            WM_NCPOINTERDOWN = 0x0242,
+            WM_NCPOINTERUP = 0x0243,
+            WM_POINTERUPDATE = 0x0245,
+            WM_POINTERDOWN = 0x0246,
+            WM_POINTERUP = 0x0247,
+            WM_POINTERENTER = 0x0249,
+            WM_POINTERLEAVE = 0x024A,
+            WM_POINTERACTIVATE = 0x024B,
+            WM_POINTERCAPTURECHANGED = 0x024C,
+            WM_TOUCHHITTESTING = 0x024D,
+            WM_POINTERWHEEL = 0x024E,
+            WM_POINTERHWHEEL = 0x024F,
+            WM_POINTERHITTEST = 0x0250,
+
             WM_IME_SETCONTEXT = 0x0281,
             WM_IME_NOTIFY = 0x0282,
             WM_IME_CONTROL = 0x0283,
@@ -902,6 +948,24 @@ namespace Avalonia.Win32.Interop
         }
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern int EnableMouseInPointer(bool enable);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerCursorId(uint pointerID, out uint cursorId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerType(uint pointerID, out InputType pointerType);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern void GetUnpredictedMessagePos();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool IsMouseInPointerEnabled();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SkipPointerFrameMessages(uint pointerID);
 
         [DllImport("user32.dll")]
         public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
