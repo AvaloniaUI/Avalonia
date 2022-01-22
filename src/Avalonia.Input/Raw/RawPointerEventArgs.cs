@@ -28,6 +28,9 @@ namespace Avalonia.Input.Raw
         PenCancel,
         BarrelUp,
         BarrelDown,
+        Magnify,
+        Rotate,
+        Swipe
     }
 
     /// <summary>

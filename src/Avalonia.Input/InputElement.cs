@@ -196,7 +196,7 @@ namespace Avalonia.Input
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
-
+        
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isKeyboardFocusWithin;
@@ -349,14 +349,14 @@ namespace Avalonia.Input
         }
         
         /// <summary>
-        /// Occurs when the mouse wheen is scrolled over the control.
+        /// Occurs when the mouse is scrolled over the control.
         /// </summary>
         public event EventHandler<PointerWheelEventArgs> PointerWheelChanged
         {
             add { AddHandler(PointerWheelChangedEvent, value); }
             remove { RemoveHandler(PointerWheelChangedEvent, value); }
         }
-
+        
         /// <summary>
         /// Occurs when a tap gesture occurs on the control.
         /// </summary>

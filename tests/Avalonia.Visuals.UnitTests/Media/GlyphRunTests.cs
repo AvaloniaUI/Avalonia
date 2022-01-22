@@ -22,6 +22,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Theory]
         public void Should_Get_Distance_From_CharacterHit(double[] advances, ushort[] clusters, int start, int trailingLength, double expectedDistance)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var characterHit = new CharacterHit(start, trailingLength);
@@ -40,6 +41,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         public void Should_Get_CharacterHit_FromDistance(double[] advances, ushort[] clusters, double distance, int start,
             int trailingLengthExpected, bool isInsideExpected)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var textBounds = glyphRun.GetCharacterHitFromDistance(distance, out var isInside);
@@ -63,6 +65,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         public void Should_Find_Nearest_CharacterHit(double[] advances, ushort[] clusters, int bidiLevel,
             int index, int expectedIndex, int expectedLength, double expectedWidth)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
                 var textBounds = glyphRun.FindNearestCharacterHit(index, out var width);
@@ -87,6 +90,7 @@ namespace Avalonia.Visuals.UnitTests.Media
             int nextIndex, int nextLength,
             int bidiLevel)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
                 var characterHit = glyphRun.GetNextCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
@@ -109,6 +113,7 @@ namespace Avalonia.Visuals.UnitTests.Media
             int previousIndex, int previousLength,
             int bidiLevel)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
                 var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
@@ -128,6 +133,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Theory]
         public void Should_Find_Glyph_Index(double[] advances, ushort[] clusters, int bidiLevel)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
                 if (glyphRun.IsLeftToRight)
