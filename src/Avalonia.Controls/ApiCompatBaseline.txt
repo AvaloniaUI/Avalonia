@@ -36,6 +36,7 @@ CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.WindowBase' does not i
 InterfacesShouldHaveSameMembers : Interface member 'public System.EventHandler<Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.ShutdownRequested' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.add_ShutdownRequested(System.EventHandler<Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs>)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.remove_ShutdownRequested(System.EventHandler<Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs>)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.TryShutdown(System.Int32)' is present in the implementation but not in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.Embedding.EmbeddableControlRoot' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
 MembersMustExist : Member 'public System.Action<Avalonia.Size> Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.Resized.get()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.Resized.set(System.Action<Avalonia.Size>)' does not exist in the implementation but it does exist in the contract.
@@ -62,4 +63,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.ITrayIconImpl Avalonia.Platform.IWindowingPlatform.CreateTrayIcon()' is present in the implementation but not in the contract.
-Total Issues: 63
+Total Issues: 64

@@ -193,7 +193,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentRun = textRuns[i];
 
-                if (currentLength + currentRun.GlyphRun.Characters.Length < length)
+                if (currentLength + currentRun.GlyphRun.Characters.Length <= length)
                 {
                     currentLength += currentRun.GlyphRun.Characters.Length;
                     continue;
@@ -283,26 +283,26 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var shapedCharacters = previousLineBreak.RemainingCharacters[index];
 
-                    if (shapedCharacters == null)
-                    {
-                        continue;
-                    }
-
                     textRuns.Add(shapedCharacters);
 
                     if (TryGetLineBreak(shapedCharacters, out var runLineBreak))
                     {
                         var splitResult = SplitTextRuns(textRuns, currentLength + runLineBreak.PositionWrap);
 
+                        if (splitResult.Second == null)
+                        {
+                            return splitResult.First;
+                        }
+
                         if (++index < previousLineBreak.RemainingCharacters.Count)
                         {
                             for (; index < previousLineBreak.RemainingCharacters.Count; index++)
                             {
-                                splitResult.Second!.Add(previousLineBreak.RemainingCharacters[index]);
+                                splitResult.Second.Add(previousLineBreak.RemainingCharacters[index]);
                             }
                         }
 
-                        nextLineBreak = new TextLineBreak(splitResult.Second!);
+                        nextLineBreak = new TextLineBreak(splitResult.Second);
 
                         return splitResult.First;
                     }
@@ -346,7 +346,10 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var splitResult = SplitTextRuns(textRuns, currentLength + runLineBreak.PositionWrap);
 
-                    nextLineBreak = new TextLineBreak(splitResult.Second!);
+                    if (splitResult.Second != null)
+                    {
+                        nextLineBreak = new TextLineBreak(splitResult.Second);
+                    }
 
                     return splitResult.First;
                 }
@@ -532,7 +535,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The text range that is covered by the text runs.</returns>
         private static TextRange GetTextRange(IReadOnlyList<TextRun> textRuns)
         {
-            if (textRuns is null || textRuns.Count == 0)
+            if (textRuns.Count == 0)
             {
                 return new TextRange();
             }
