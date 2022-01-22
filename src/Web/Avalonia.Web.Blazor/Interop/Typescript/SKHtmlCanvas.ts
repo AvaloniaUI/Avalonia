@@ -25,6 +25,8 @@ export class SKHtmlCanvas {
 	renderFrameCallback: DotNet.DotNetObjectReference;
 	renderLoopEnabled: boolean = false;
 	renderLoopRequest: number = 0;
+    newWidth: number;
+    newHeight: number;
 
 	public static initGL(element: HTMLCanvasElement, elementId: string, callback: DotNet.DotNetObjectReference): SKGLViewInfo {
 		var view = SKHtmlCanvas.init(true, element, elementId, callback);
@@ -75,13 +77,22 @@ export class SKHtmlCanvas {
 		htmlCanvas.SKHtmlCanvas = undefined;
 	}
 
-	public static requestAnimationFrame(element: HTMLCanvasElement, renderLoop?: boolean, width?: number, height?: number) {
+	public static requestAnimationFrame(element: HTMLCanvasElement, renderLoop?: boolean) {
 		const htmlCanvas = element as SKHtmlCanvasElement;
 		if (!htmlCanvas || !htmlCanvas.SKHtmlCanvas)
 			return;
 
-		htmlCanvas.SKHtmlCanvas.requestAnimationFrame(renderLoop, width, height);
+		htmlCanvas.SKHtmlCanvas.requestAnimationFrame(renderLoop);
 	}
+    
+    public static setCanvasSize(element: HTMLCanvasElement, width: number, height: number)
+    {
+        const htmlCanvas = element as SKHtmlCanvasElement;
+        if (!htmlCanvas || !htmlCanvas.SKHtmlCanvas)
+            return;
+        
+        htmlCanvas.SKHtmlCanvas.setCanvasSize(width, height);
+    }
 
 	public static setEnableRenderLoop(element: HTMLCanvasElement, enable: boolean) {
 		const htmlCanvas = element as SKHtmlCanvasElement;
@@ -128,17 +139,32 @@ export class SKHtmlCanvas {
 	public deinit() {
 		this.setEnableRenderLoop(false);
 	}
+    
+    public setCanvasSize(width: number, height: number)
+    {
+        this.newWidth = width;
+        this.newHeight = height;
 
-	public requestAnimationFrame(renderLoop?: boolean, width?: number, height?: number) {
+        if(this.htmlCanvas.width != this.newWidth)
+        {
+            this.htmlCanvas.width = this.newWidth;
+        }
+
+        if(this.htmlCanvas.height != this.newHeight)
+        {
+            this.htmlCanvas.height = this.newHeight;
+        }
+
+        if (this.glInfo) {
+            // make current
+            GL.makeContextCurrent(this.glInfo.context);
+        }
+    }
+
+	public requestAnimationFrame(renderLoop?: boolean) {
 		// optionally update the render loop
 		if (renderLoop !== undefined && this.renderLoopEnabled !== renderLoop)
 			this.setEnableRenderLoop(renderLoop);
-
-		// make sure the canvas is scaled correctly for the drawing
-		if (width && height) {
-			this.htmlCanvas.width = width;
-			this.htmlCanvas.height = height;
-		}
 
 		// skip because we have a render loop
 		if (this.renderLoopRequest !== 0)
@@ -146,10 +172,20 @@ export class SKHtmlCanvas {
 
 		// add the draw to the next frame
 		this.renderLoopRequest = window.requestAnimationFrame(() => {
-			if (this.glInfo) {
-				// make current
-				GL.makeContextCurrent(this.glInfo.context);
-			}
+            if (this.glInfo) {
+                // make current
+                GL.makeContextCurrent(this.glInfo.context);
+            }
+            
+            if(this.htmlCanvas.width != this.newWidth)
+            {
+                this.htmlCanvas.width = this.newWidth;
+            }
+
+            if(this.htmlCanvas.height != this.newHeight)
+            {
+                this.htmlCanvas.height = this.newHeight;
+            }
 
 			this.renderFrameCallback.invokeMethod('Invoke');
 			this.renderLoopRequest = 0;

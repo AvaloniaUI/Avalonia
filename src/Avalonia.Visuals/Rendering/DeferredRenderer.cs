@@ -304,7 +304,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void Render(bool forceComposite)
+        internal void Render(bool forceComposite)
         {
             using (var l = _lock.TryLock())
             {
