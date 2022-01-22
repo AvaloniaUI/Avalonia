@@ -166,7 +166,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONDOWN:
                 case WindowsMessage.WM_XBUTTONDOWN:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -199,7 +199,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -232,7 +232,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -267,7 +267,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEWHEEL:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -283,7 +283,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEHWHEEL:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -299,7 +299,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSELEAVE:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -319,7 +319,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCMBUTTONDOWN:
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -343,7 +343,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_TOUCH:
                     {
-                        if (BelowWin8)
+                        if (Win8Plus)
                         {
                             break;
                         }
@@ -400,18 +400,53 @@ namespace Avalonia.Win32
                         break;
                     }
                 case WindowsMessage.WM_NCPOINTERUPDATE:
-                case WindowsMessage.WM_NCPOINTERDOWN:
-                case WindowsMessage.WM_NCPOINTERUP:
                     {
                         //NC stands for non-client area - window header and window border
-
+                        //As I found above in an old message handling - we dont need to handle NC pointer move/updates.
+                        //All we need is pointer down and up. So this is skipped for now.
                         break;
                     }
-                case WindowsMessage.WM_POINTERUPDATE:
+                case WindowsMessage.WM_NCPOINTERDOWN:
+                case WindowsMessage.WM_NCPOINTERUP:
                 case WindowsMessage.WM_POINTERDOWN:
                 case WindowsMessage.WM_POINTERUP:
                     {
+                        GetDeviceInfo(wParam, out var device, out var info);
+                        var point = PointToClient(PointFromLParam(lParam));
+                        var modifiers = GetInputModifiers(info.dwKeyStates);
+                        var eventType = info.ButtonChangeType switch
+                            {
+                                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_DOWN => RawPointerEventType.LeftButtonDown,
+                                PointerButtonChangeType.POINTER_CHANGE_SECONDBUTTON_DOWN => RawPointerEventType.RightButtonDown,
+                                PointerButtonChangeType.POINTER_CHANGE_THIRDBUTTON_DOWN => RawPointerEventType.MiddleButtonDown,
+                                PointerButtonChangeType.POINTER_CHANGE_FOURTHBUTTON_DOWN => RawPointerEventType.XButton1Down,
+                                PointerButtonChangeType.POINTER_CHANGE_FIFTHBUTTON_DOWN => RawPointerEventType.XButton2Down,
 
+                                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_UP => RawPointerEventType.LeftButtonUp,
+                                PointerButtonChangeType.POINTER_CHANGE_SECONDBUTTON_UP => RawPointerEventType.RightButtonUp,
+                                PointerButtonChangeType.POINTER_CHANGE_THIRDBUTTON_UP => RawPointerEventType.MiddleButtonUp,
+                                PointerButtonChangeType.POINTER_CHANGE_FOURTHBUTTON_UP => RawPointerEventType.XButton1Up,
+                                PointerButtonChangeType.POINTER_CHANGE_FIFTHBUTTON_UP => RawPointerEventType.XButton2Up,
+                            };
+                        if (eventType == RawPointerEventType.NonClientLeftButtonDown &&
+                            (WindowsMessage)msg == WindowsMessage.WM_NCPOINTERDOWN)
+                        {
+                            eventType = RawPointerEventType.NonClientLeftButtonDown;
+                        }
+                        e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERUPDATE:
+                    {
+                        if (ShouldIgnoreTouchEmulatedMessage())
+                        {
+                            break;
+                        }
+                        GetDeviceInfo(wParam, out var device, out var info);
+                        var point = PointToClient(PointFromLParam(lParam));
+                        var modifiers = GetInputModifiers(info.dwKeyStates);
+
+                        e = new RawPointerEventArgs(device, timestamp, _owner, RawPointerEventType.Move, point, modifiers);
                         break;
                     }
                 case WindowsMessage.WM_POINTERENTER:
@@ -455,7 +490,7 @@ namespace Avalonia.Win32
 
                         var point = PointToClient(PointFromLParam(lParam));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
-                        var delta = new Vector(0, GetWheelDelta(wParam) / wheelDelta);
+                        var delta = new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta);
                         e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
                         break;
                     }
@@ -465,7 +500,7 @@ namespace Avalonia.Win32
 
                         var point = PointToClient(PointFromLParam(lParam));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
-                        var delta = new Vector(GetWheelDelta(wParam) / wheelDelta, 0);
+                        var delta = new Vector((ToInt32(wParam) >> 16) / wheelDelta, 0);
                         e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
                         break;
                     }
@@ -716,7 +751,7 @@ namespace Avalonia.Win32
 
         private void GetDeviceInfo(IntPtr wParam, out IInputDevice device, out POINTER_INFO info)
         {
-            var pointerId = ToPointerId(wParam);
+            var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
             GetPointerType(pointerId, out var type);//ToDo we can cache this and invalidate in WM_POINTERDEVICECHANGE
             switch (type)
             {
@@ -737,13 +772,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public static uint GetWheelDelta(IntPtr wParam) => HIWORD(wParam);
-        public static uint ToPointerId(IntPtr wParam) => LOWORD(wParam);
-        public static uint LOWORD(IntPtr param) => (uint)param & 0xffff;
-        public static uint HIWORD(IntPtr param) => (uint)param >> 16;
-
-
-        public readonly bool BelowWin8 = Win32Platform.WindowsVersion < PlatformConstants.Windows8;
+        public readonly bool Win8Plus = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
         private void UpdateInputMethod(IntPtr hkl)
         {

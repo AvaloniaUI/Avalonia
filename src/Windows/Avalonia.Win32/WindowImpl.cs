@@ -126,6 +126,11 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
+            if (Win8Plus && !IsMouseInPointerEnabled())
+            {
+                EnableMouseInPointer(true);
+            }
+
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
             UpdateInputMethod(GetKeyboardLayout(0));
