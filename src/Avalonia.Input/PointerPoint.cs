@@ -20,6 +20,14 @@ namespace Avalonia.Input
         public bool IsRightButtonPressed { get; }
         public bool IsXButton1Pressed { get; }
         public bool IsXButton2Pressed { get; }
+        public bool IsBarrelButtonPressed { get; }
+        public bool IsEraser { get; }
+
+        public float Twist { get; }
+        public float Pressure { get; }
+        public float XTilt { get; }
+        public float YTilt { get; }
+
 
         public PointerUpdateKind PointerUpdateKind { get; }
 
@@ -36,10 +44,12 @@ namespace Avalonia.Input
             IsRightButtonPressed = modifiers.HasAllFlags(RawInputModifiers.RightMouseButton);
             IsXButton1Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton1MouseButton);
             IsXButton2Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton2MouseButton);
+            IsBarrelButtonPressed = modifiers.HasAllFlags(RawInputModifiers.BarrelPenButton);
+            IsEraser = modifiers.HasAllFlags(RawInputModifiers.PenEraser);
 
             // The underlying input source might be reporting the previous state,
             // so make sure that we reflect the current state
-            
+
             if (kind == PointerUpdateKind.LeftButtonPressed)
                 IsLeftButtonPressed = true;
             if (kind == PointerUpdateKind.LeftButtonReleased)
@@ -60,6 +70,20 @@ namespace Avalonia.Input
                 IsXButton2Pressed = true;
             if (kind == PointerUpdateKind.XButton2Released)
                 IsXButton2Pressed = false;
+            if (kind == PointerUpdateKind.BarrelButtonPressed)
+                IsBarrelButtonPressed = true;
+            if (kind == PointerUpdateKind.BarrelButtonReleased)
+                IsBarrelButtonPressed = false;
+        }
+
+        public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind,
+            float twist, float pressure, float xTilt, float yTilt
+            ) : this (modifiers, kind)
+        {
+            Twist = twist;
+            Pressure = pressure;
+            XTilt = xTilt;
+            YTilt = yTilt;
         }
 
         public static PointerPointProperties None { get; } = new PointerPointProperties();
@@ -77,7 +101,9 @@ namespace Avalonia.Input
         RightButtonReleased,
         XButton1Released,
         XButton2Released,
-        Other
+        Other,
+        BarrelButtonPressed,
+        BarrelButtonReleased
     }
 
     public static class PointerUpdateKindExtensions

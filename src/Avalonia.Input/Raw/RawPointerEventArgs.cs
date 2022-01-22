@@ -21,7 +21,13 @@ namespace Avalonia.Input.Raw
         TouchBegin,
         TouchUpdate,
         TouchEnd,
-        TouchCancel
+        TouchCancel,
+        PenBegin,
+        PenUpdate,
+        PenEnd,
+        PenCancel,
+        BarrelUp,
+        BarrelDown,
     }
 
     /// <summary>

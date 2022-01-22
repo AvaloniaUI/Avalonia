@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -13,17 +12,13 @@ namespace Avalonia.Input
     /// </summary>
     public class PenDevice : IPenDevice, IDisposable
     {
-        private int _clickCount;
-        private Rect _lastClickRect;
-        private ulong _lastClickTime;
-
         private readonly Pointer _pointer;
         private bool _disposed;
         private PixelPoint? _position; 
 
         public PenDevice(Pointer? pointer = null)
         {
-            _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Pen, true);
         }
         
         /// <summary>
@@ -36,16 +31,6 @@ namespace Avalonia.Input
         /// </remarks>
         [Obsolete("Use IPointer instead")]
         public IInputElement? Captured => _pointer.Captured;
-
-        /// <summary>
-        /// Gets the mouse position, in screen coordinates.
-        /// </summary>
-        [Obsolete("Use events instead")]
-        public PixelPoint Position
-        {
-            get => _position ?? new PixelPoint(-1, -1);
-            protected set => _position = value;
-        }
 
         /// <summary>
         /// Captures mouse input to the specified control.
@@ -76,7 +61,7 @@ namespace Avalonia.Input
             }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            var rootPoint = relativeTo.VisualRoot.PointToClient(Position);
+            var rootPoint = relativeTo.VisualRoot.PointToClient(_position ?? new PixelPoint(-1, -1));
 #pragma warning restore CS0618 // Type or member is obsolete
             var transform = relativeTo.VisualRoot.TransformToVisual(relativeTo);
             return rootPoint * transform!.Value;
@@ -120,29 +105,13 @@ namespace Avalonia.Input
                 }
             }
         }
-
-        int ButtonCount(PointerPointProperties props)
-        {
-            var rv = 0;
-            if (props.IsLeftButtonPressed)
-                rv++;
-            if (props.IsMiddleButtonPressed)
-                rv++;
-            if (props.IsRightButtonPressed)
-                rv++;
-            if (props.IsXButton1Pressed)
-                rv++;
-            if (props.IsXButton2Pressed)
-                rv++;
-            return rv;
-        }
         
         private void ProcessRawEvent(RawPointerEventArgs e)
         {
             e = e ?? throw new ArgumentNullException(nameof(e));
 
-            var mouse = (PenDevice)e.Device;
-            if(mouse._disposed)
+            var pen = (PenDevice)e.Device;
+            if(pen._disposed)
                 return;
 
             _position = e.Root.PointToScreen(e.Position);
@@ -151,34 +120,16 @@ namespace Avalonia.Input
             switch (e.Type)
             {
                 case RawPointerEventType.LeaveWindow:
-                    LeaveWindow(mouse, e.Timestamp, e.Root, props, keyModifiers);
+                    LeaveWindow(pen, e.Timestamp, e.Root, props, keyModifiers);
                     break;
-                case RawPointerEventType.LeftButtonDown:
-                case RawPointerEventType.RightButtonDown:
-                case RawPointerEventType.MiddleButtonDown:
-                case RawPointerEventType.XButton1Down:
-                case RawPointerEventType.XButton2Down:
-                    if (ButtonCount(props) > 1)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
-                    else
-                        e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position,
-                            props, keyModifiers);
+                case RawPointerEventType.PenBegin:
+                    e.Handled = PenDown(pen, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     break;
-                case RawPointerEventType.LeftButtonUp:
-                case RawPointerEventType.RightButtonUp:
-                case RawPointerEventType.MiddleButtonUp:
-                case RawPointerEventType.XButton1Up:
-                case RawPointerEventType.XButton2Up:
-                    if (ButtonCount(props) != 0)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
-                    else
-                        e.Handled = MouseUp(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
+                case RawPointerEventType.PenEnd:
+                    e.Handled = PenUp(pen, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     break;
-                case RawPointerEventType.Move:
-                    e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
-                    break;
-                case RawPointerEventType.Wheel:
-                    e.Handled = MouseWheel(mouse, e.Timestamp, e.Root, e.Position, props, ((RawMouseWheelEventArgs)e).Delta, keyModifiers);
+                case RawPointerEventType.PenUpdate:
+                    e.Handled = PenMove(pen, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     break;
             }
         }
@@ -196,35 +147,18 @@ namespace Avalonia.Input
 
         PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
-
             var kind = PointerUpdateKind.Other;
 
-            if (args.Type == RawPointerEventType.LeftButtonDown)
+            if (args.Type == RawPointerEventType.PenBegin)
                 kind = PointerUpdateKind.LeftButtonPressed;
-            if (args.Type == RawPointerEventType.MiddleButtonDown)
-                kind = PointerUpdateKind.MiddleButtonPressed;
-            if (args.Type == RawPointerEventType.RightButtonDown)
-                kind = PointerUpdateKind.RightButtonPressed;
-            if (args.Type == RawPointerEventType.XButton1Down)
-                kind = PointerUpdateKind.XButton1Pressed;
-            if (args.Type == RawPointerEventType.XButton2Down)
-                kind = PointerUpdateKind.XButton2Pressed;
-            if (args.Type == RawPointerEventType.LeftButtonUp)
+            if (args.Type == RawPointerEventType.PenEnd)
                 kind = PointerUpdateKind.LeftButtonReleased;
-            if (args.Type == RawPointerEventType.MiddleButtonUp)
-                kind = PointerUpdateKind.MiddleButtonReleased;
-            if (args.Type == RawPointerEventType.RightButtonUp)
-                kind = PointerUpdateKind.RightButtonReleased;
-            if (args.Type == RawPointerEventType.XButton1Up)
-                kind = PointerUpdateKind.XButton1Released;
-            if (args.Type == RawPointerEventType.XButton2Up)
-                kind = PointerUpdateKind.XButton2Released;
             
             return new PointerPointProperties(args.InputModifiers, kind);
         }
 
         private MouseButton _lastMouseDownButton;
-        private bool MouseDown(IPenDevice device, ulong timestamp, IInputElement root, Point p,
+        private bool PenDown(IPenDevice device, ulong timestamp, IInputElement root, Point p,
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
@@ -239,21 +173,8 @@ namespace Avalonia.Input
                 var source = GetSource(hit);
                 if (source != null)
                 {
-                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                    var doubleClickTime = settings?.DoubleClickTime.TotalMilliseconds ?? 500;
-                    var doubleClickSize = settings?.DoubleClickSize ?? new Size(4, 4);
-
-                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
-                    {
-                        _clickCount = 0;
-                    }
-
-                    ++_clickCount;
-                    _lastClickTime = timestamp;
-                    _lastClickRect = new Rect(p, new Size())
-                        .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                     _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                    var e = new PointerPressedEventArgs(source, _pointer, root, p, timestamp, properties, inputModifiers, _clickCount);
+                    var e = new PointerPressedEventArgs(source, _pointer, root, p, timestamp, properties, inputModifiers, 1);
                     source.RaiseEvent(e);
                     return e.Handled;
                 }
@@ -262,7 +183,7 @@ namespace Avalonia.Input
             return false;
         }
 
-        private bool MouseMove(IPenDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties properties,
+        private bool PenMove(IPenDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
@@ -292,7 +213,7 @@ namespace Avalonia.Input
             return false;
         }
 
-        private bool MouseUp(IPenDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties props,
+        private bool PenUp(IPenDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties props,
             KeyModifiers inputModifiers)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
@@ -308,27 +229,6 @@ namespace Avalonia.Input
 
                 source?.RaiseEvent(e);
                 _pointer.Capture(null);
-                return e.Handled;
-            }
-
-            return false;
-        }
-
-        private bool MouseWheel(IPenDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props,
-            Vector delta, KeyModifiers inputModifiers)
-        {
-            device = device ?? throw new ArgumentNullException(nameof(device));
-            root = root ?? throw new ArgumentNullException(nameof(root));
-
-            var hit = HitTest(root, p);
-            var source = GetSource(hit);
-
-            if (source is not null)
-            {
-                var e = new PointerWheelEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
-
-                source?.RaiseEvent(e);
                 return e.Handled;
             }
 

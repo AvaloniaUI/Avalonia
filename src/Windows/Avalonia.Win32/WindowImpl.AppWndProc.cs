@@ -374,17 +374,6 @@ namespace Avalonia.Win32
 
                         break;
                     }
-
-
-
-
-
-
-
-
-
-
-
                 case WindowsMessage.WM_POINTERDEVICECHANGE:
                     {
                         //notifies about changes in the settings of a monitor that has a digitizer attached to it.
@@ -414,7 +403,10 @@ namespace Avalonia.Win32
                         GetDeviceInfo(wParam, out var device, out var info);
                         var point = PointToClient(PointFromLParam(lParam));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
-                        var eventType = info.ButtonChangeType switch
+
+                        if (info.ButtonChangeType != PointerButtonChangeType.POINTER_CHANGE_NONE)
+                        {
+                            var eventType = info.ButtonChangeType switch
                             {
                                 PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_DOWN => RawPointerEventType.LeftButtonDown,
                                 PointerButtonChangeType.POINTER_CHANGE_SECONDBUTTON_DOWN => RawPointerEventType.RightButtonDown,
@@ -428,12 +420,13 @@ namespace Avalonia.Win32
                                 PointerButtonChangeType.POINTER_CHANGE_FOURTHBUTTON_UP => RawPointerEventType.XButton1Up,
                                 PointerButtonChangeType.POINTER_CHANGE_FIFTHBUTTON_UP => RawPointerEventType.XButton2Up,
                             };
-                        if (eventType == RawPointerEventType.NonClientLeftButtonDown &&
-                            (WindowsMessage)msg == WindowsMessage.WM_NCPOINTERDOWN)
-                        {
-                            eventType = RawPointerEventType.NonClientLeftButtonDown;
+                            if (eventType == RawPointerEventType.NonClientLeftButtonDown &&
+                                (WindowsMessage)msg == WindowsMessage.WM_NCPOINTERDOWN)
+                            {
+                                eventType = RawPointerEventType.NonClientLeftButtonDown;
+                            }
+                            e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
                         }
-                        e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
                         break;
                     }
                 case WindowsMessage.WM_POINTERUPDATE:
@@ -446,7 +439,8 @@ namespace Avalonia.Win32
                         var point = PointToClient(PointFromLParam(lParam));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
 
-                        e = new RawPointerEventArgs(device, timestamp, _owner, RawPointerEventType.Move, point, modifiers);
+                        e = new RawPointerEventArgs(
+                            device, timestamp, _owner, RawPointerEventType.Move, point, modifiers);
                         break;
                     }
                 case WindowsMessage.WM_POINTERENTER:
@@ -462,14 +456,10 @@ namespace Avalonia.Win32
                     {
                         GetDeviceInfo(wParam, out var device, out var info);
                         var point = PointToClient(PointFromLParam(lParam));
+                        var modifiers = GetInputModifiers(info.dwKeyStates);
 
                         e = new RawPointerEventArgs(
-                            device,
-                            timestamp,
-                            _owner,
-                            RawPointerEventType.LeaveWindow,
-                            point,
-                            WindowsKeyboardDevice.Instance.Modifiers);
+                            device, timestamp, _owner, RawPointerEventType.LeaveWindow, point, modifiers);
                         break;
                     }
                 case WindowsMessage.WM_POINTERACTIVATE:
@@ -520,33 +510,11 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_PARENTNOTIFY:
                     {
-                        //This message is sent in a dialog scenarios. Contains mouse position in an old-way,
-                        //but listed in the wm_pointer reference
+                        //This message is sent in a dialog scenarios. Contains mouse position.
+                        //Old message, but listed in the wm_pointer reference
                         //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-parentnotify
                         break;
                     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 case WindowsMessage.WM_NCPAINT:
                     {
                         if (!HasFullDecorations)

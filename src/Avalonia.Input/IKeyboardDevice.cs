@@ -47,6 +47,8 @@ namespace Avalonia.Input
         MiddleMouseButton = 64,
         XButton1MouseButton = 128,
         XButton2MouseButton = 256,
+        BarrelPenButton = 512,
+        PenEraser = 1024,
         KeyboardMask = Alt | Control | Shift | Meta
     }
 

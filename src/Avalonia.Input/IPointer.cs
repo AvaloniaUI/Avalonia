@@ -13,6 +13,7 @@ namespace Avalonia.Input
     public enum PointerType
     {
         Mouse,
-        Touch
+        Touch,
+        Pen
     }
 }
