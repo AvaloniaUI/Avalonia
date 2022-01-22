@@ -7,8 +7,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     public abstract class IndexerNodeBase : SettableNode
@@ -25,18 +23,16 @@ namespace Avalonia.Data.Core
 
             if (incc != null)
             {
-                inputs.Add(WeakObservable.FromEventPattern<INotifyCollectionChanged, NotifyCollectionChangedEventArgs>(
-                    incc,
-                    nameof(incc.CollectionChanged))
+                inputs.Add(WeakObservable.FromEventPattern(
+                    incc, WeakEvents.CollectionChanged)
                     .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
                     .Select(_ => GetValue(target)));
             }
 
             if (inpc != null)
             {
-                inputs.Add(WeakObservable.FromEventPattern<INotifyPropertyChanged, PropertyChangedEventArgs>(
-                    inpc,
-                    nameof(inpc.PropertyChanged))
+                inputs.Add(WeakObservable.FromEventPattern(
+                    inpc, WeakEvents.PropertyChanged)
                     .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
                     .Select(_ => GetValue(target)));
             }
@@ -72,12 +68,12 @@ namespace Avalonia.Data.Core
                         return index >= e.OldStartingIndex;
                     case NotifyCollectionChangedAction.Replace:
                         return index >= e.NewStartingIndex &&
-                               index < e.NewStartingIndex + e.NewItems.Count;
+                               index < e.NewStartingIndex + e.NewItems!.Count;
                     case NotifyCollectionChangedAction.Move:
                         return (index >= e.NewStartingIndex &&
-                                index < e.NewStartingIndex + e.NewItems.Count) ||
+                                index < e.NewStartingIndex + e.NewItems!.Count) ||
                                (index >= e.OldStartingIndex &&
-                                index < e.OldStartingIndex + e.OldItems.Count);
+                                index < e.OldStartingIndex + e.OldItems!.Count);
                     case NotifyCollectionChangedAction.Reset:
                         return true;
                 }

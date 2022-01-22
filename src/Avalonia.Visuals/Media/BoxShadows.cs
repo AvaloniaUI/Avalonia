@@ -8,7 +8,7 @@ namespace Avalonia.Media
     public struct BoxShadows
     {
         private readonly BoxShadow _first;
-        private readonly BoxShadow[] _list;
+        private readonly BoxShadow[]? _list;
         public int Count { get; }
 
         static BoxShadows()
@@ -39,7 +39,7 @@ namespace Avalonia.Media
                     throw new IndexOutOfRangeException();
                 if (c == 0)
                     return _first;
-                return _list[c - 1];
+                return _list![c - 1];
             }
         }
 
@@ -134,7 +134,7 @@ namespace Avalonia.Media
             return true;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BoxShadows other && Equals(other);
         }

@@ -16,7 +16,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
-        private readonly IVisual _control;
+        private readonly IAvaloniaObject _avaloniaObject;
         private IDictionary<object, List<PropertyViewModel>>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
@@ -27,21 +27,23 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly Stack<(string Name,object Entry)> _selectedEntitiesStack = new();
         private string? _selectedEntityName;
         private string? _selectedEntityType;
+        private bool _showImplementedInterfaces;
 
-        public ControlDetailsViewModel(TreePageViewModel treePage, IVisual control)
+        public ControlDetailsViewModel(TreePageViewModel treePage, IAvaloniaObject avaloniaObject)
         {
-            _control = control;
+            _avaloniaObject = avaloniaObject;
 
-            TreePage = treePage;
-            
-            Layout = new ControlLayoutViewModel(control);
+            TreePage = treePage;            
+                        Layout =  avaloniaObject is IVisual 
+                ?  new ControlLayoutViewModel((IVisual)avaloniaObject)
+                : default;
 
-            NavigateToProperty(control, (control as IControl)?.Name ?? control.ToString()); 
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString()); 
 
             AppliedStyles = new ObservableCollection<StyleViewModel>();
             PseudoClasses = new ObservableCollection<PseudoClassViewModel>();
 
-            if (control is StyledElement styledElement)
+            if (avaloniaObject is StyledElement styledElement)
             {
                 styledElement.Classes.CollectionChanged += OnClassesChanged;
 
@@ -181,7 +183,7 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _styleStatus, value);
         }
 
-        public ControlLayoutViewModel Layout { get; }
+        public ControlLayoutViewModel? Layout { get; }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
@@ -215,17 +217,17 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void Dispose()
         {
-            if (_control is INotifyPropertyChanged inpc)
+            if (_avaloniaObject is INotifyPropertyChanged inpc)
             {
                 inpc.PropertyChanged -= ControlPropertyChanged;
             }
 
-            if (_control is AvaloniaObject ao)
+            if (_avaloniaObject is AvaloniaObject ao)
             {
                 ao.PropertyChanged -= ControlPropertyChanged;
             }
 
-            if (_control is StyledElement se)
+            if (_avaloniaObject is StyledElement se)
             {
                 se.Classes.CollectionChanged -= OnClassesChanged;
             }
@@ -245,18 +247,21 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetClrProperties(object o)
+        private IEnumerable<PropertyViewModel> GetClrProperties(object o, bool showImplementedInterfaces)
         {
             foreach (var p in GetClrProperties(o, o.GetType()))
             {
                 yield return p;
             }
 
-            foreach (var i in o.GetType().GetInterfaces())
+            if (showImplementedInterfaces)
             {
-                foreach (var p in GetClrProperties(o, i))
+                foreach (var i in o.GetType().GetInterfaces())
                 {
-                    yield return p;
+                    foreach (var p in GetClrProperties(o, i))
+                    {
+                        yield return p;
+                    }
                 }
             }
         }
@@ -278,7 +283,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
 
-            Layout.ControlPropertyChanged(sender, e);
+            Layout?.ControlPropertyChanged(sender, e);
         }
 
         private void ControlPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -403,7 +408,11 @@ namespace Avalonia.Diagnostics.ViewModels
             var selectedProperty = SelectedProperty;
             var selectedEntity = SelectedEntity;
             var selectedEntityName = SelectedEntityName;
-            if (selectedEntity == null ||  selectedProperty == null)
+            if (selectedEntity == null 
+                || selectedProperty == null 
+                || selectedProperty.PropertyType == typeof(string)
+                || selectedProperty.PropertyType.IsValueType
+                )
                 return;
 
             object? property;
@@ -416,7 +425,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 property = selectedEntity.GetType().GetProperties()
                      .FirstOrDefault(pi => pi.Name == selectedProperty.Name
                            && pi.DeclaringType == selectedProperty.DeclaringType
-                           && pi.PropertyType.Name == selectedProperty.Type)
+                           && pi.PropertyType.Name == selectedProperty.PropertyType.Name)
                      ?.GetValue(selectedEntity);
             }
             if (property == null) return;
@@ -433,7 +442,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
         
-        protected  void NavigateToProperty(object o, string entityName)
+        protected  void NavigateToProperty(object o, string? entityName)
         {
             var oldSelectedEntity = SelectedEntity;
             if (oldSelectedEntity is IAvaloniaObject ao1)
@@ -449,7 +458,7 @@ namespace Avalonia.Diagnostics.ViewModels
             SelectedEntityName = entityName;
             SelectedEntityType = o.ToString();
             var properties = GetAvaloniaProperties(o)
-                .Concat(GetClrProperties(o))
+                .Concat(GetClrProperties(o, _showImplementedInterfaces))
                 .OrderBy(x => x, PropertyComparer.Instance)
                 .ThenBy(x => x.Name)
                 .ToList();
@@ -469,6 +478,13 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 inpc2.PropertyChanged += ControlPropertyChanged;
             }
+        }
+
+        internal void UpdatePropertiesView(bool showImplementedInterfaces)
+        {
+            _showImplementedInterfaces = showImplementedInterfaces;
+            SelectedProperty = null;
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString());
         }
     }
 }

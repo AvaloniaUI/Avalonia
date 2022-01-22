@@ -94,9 +94,11 @@ namespace Avalonia.X11
             {
                 var size = Marshal.SizeOf<XcursorImage>() +
                     (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
+                var runtimePlatform = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
+                var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
                 _pixelSize = bitmap.PixelSize;
-                _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(size);
+                _blob = runtimePlatform.AllocBlob(size);
                 
                 var image = (XcursorImage*)_blob.Address;
                 image->version = 1;
@@ -107,7 +109,7 @@ namespace Avalonia.X11
                 image->yhot = hotSpot.Y;
                 image->pixels = (IntPtr)(image + 1);
                
-                using (var renderTarget = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderTarget(new[] { this }))
+                using (var renderTarget = platformRenderInterface.CreateRenderTarget(new[] { this }))
                 using (var ctx = renderTarget.CreateDrawingContext(null))
                 {
                     var r = new Rect(_pixelSize.ToSize(1)); 

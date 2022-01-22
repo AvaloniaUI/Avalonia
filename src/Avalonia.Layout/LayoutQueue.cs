@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace Avalonia.Layout
 {
     internal class LayoutQueue<T> : IReadOnlyCollection<T>, IDisposable
+        where T : notnull
     {
         private struct Info
         {

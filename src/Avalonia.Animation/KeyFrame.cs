@@ -19,7 +19,7 @@ namespace Avalonia.Animation
     {
         private TimeSpan _ktimeSpan;
         private Cue _kCue;
-        private KeySpline _kKeySpline;
+        private KeySpline? _kKeySpline;
 
         public KeyFrame()
         {
@@ -79,7 +79,7 @@ namespace Avalonia.Animation
         /// Gets or sets the KeySpline of this <see cref="KeyFrame"/>.
         /// </summary>
         /// <value>The key spline.</value>
-        public KeySpline KeySpline
+        public KeySpline? KeySpline
         {
             get
             {

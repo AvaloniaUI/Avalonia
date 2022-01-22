@@ -13,8 +13,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading;
 
-#nullable enable
-
 namespace Avalonia.Collections.Pooled
 {
     /// <summary>
@@ -656,14 +654,15 @@ namespace Avalonia.Collections.Pooled
         // compatible array type.  
         void ICollection.CopyTo(Array array, int arrayIndex)
         {
-            if ((array != null) && (array.Rank != 1))
+            _ = array ?? throw new ArgumentNullException(nameof(array));
+
+            if (array.Rank != 1)
             {
                 ThrowHelper.ThrowArgumentException(ExceptionResource.Arg_RankMultiDimNotSupported);
             }
 
             try
             {
-                // Array.Copy will check for NULL.
                 Array.Copy(_items, 0, array, arrayIndex, _size);
             }
             catch (ArrayTypeMismatchException)
@@ -1336,7 +1335,7 @@ namespace Avalonia.Collections.Pooled
             _version++;
         }
 
-        public void Sort(Func<T, T, int> comparison)
+        public void Sort(Func<T?, T?, int> comparison)
         {
             if (comparison == null)
             {
@@ -1442,7 +1441,7 @@ namespace Avalonia.Collections.Pooled
             _version++;
         }
 
-        void IDeserializationCallback.OnDeserialization(object sender)
+        void IDeserializationCallback.OnDeserialization(object? sender)
         {
             // We can't serialize array pools, so deserialized PooledLists will
             // have to use the shared pool, even if they were using a custom pool
@@ -1522,14 +1521,14 @@ namespace Avalonia.Collections.Pooled
 
         private readonly struct Comparer : IComparer<T>
         {
-            private readonly Func<T, T, int> _comparison;
+            private readonly Func<T?, T?, int> _comparison;
 
-            public Comparer(Func<T, T, int> comparison)
+            public Comparer(Func<T?, T?, int> comparison)
             {
                 _comparison = comparison;
             }
 
-            public int Compare(T x, T y) => _comparison(x, y);
+            public int Compare(T? x, T? y) => _comparison(x, y);
         }
     }
 }

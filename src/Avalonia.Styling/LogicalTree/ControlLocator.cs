@@ -9,19 +9,19 @@ namespace Avalonia.LogicalTree
     /// </summary>
     public static class ControlLocator
     {
-        public static IObservable<ILogical> Track(ILogical relativeTo, int ancestorLevel, Type ancestorType = null)
+        public static IObservable<ILogical?> Track(ILogical relativeTo, int ancestorLevel, Type? ancestorType = null)
         {
             return new ControlTracker(relativeTo, ancestorLevel, ancestorType);
         }
 
-        private class ControlTracker : LightweightObservableBase<ILogical>
+        private class ControlTracker : LightweightObservableBase<ILogical?>
         {
             private readonly ILogical _relativeTo;
             private readonly int _ancestorLevel;
-            private readonly Type _ancestorType;
-            private ILogical _value;
+            private readonly Type? _ancestorType;
+            private ILogical? _value;
 
-            public ControlTracker(ILogical relativeTo, int ancestorLevel, Type ancestorType)
+            public ControlTracker(ILogical relativeTo, int ancestorLevel, Type? ancestorType)
             {
                 _relativeTo = relativeTo;
                 _ancestorLevel = ancestorLevel;
@@ -43,18 +43,18 @@ namespace Avalonia.LogicalTree
                 _value = null;
             }
 
-            protected override void Subscribed(IObserver<ILogical> observer, bool first)
+            protected override void Subscribed(IObserver<ILogical?> observer, bool first)
             {
                 observer.OnNext(_value);
             }
 
-            private void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            private void Attached(object? sender, LogicalTreeAttachmentEventArgs e)
             {
                 Update();
                 PublishNext(_value);
             }
 
-            private void Detached(object sender, LogicalTreeAttachmentEventArgs e)
+            private void Detached(object? sender, LogicalTreeAttachmentEventArgs e)
             {
                 _value = null;
                 PublishNext(null);

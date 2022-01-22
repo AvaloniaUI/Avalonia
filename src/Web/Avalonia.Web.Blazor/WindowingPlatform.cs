@@ -12,7 +12,7 @@ namespace Avalonia.Web.Blazor
     public class BlazorWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
         private bool _signaled;
-        private static int s_uiThreadId = -1;
+        private static KeyboardDevice? s_keyboard;
 
         public IWindowImpl CreateWindow() => throw new NotSupportedException();
 
@@ -26,16 +26,17 @@ namespace Avalonia.Web.Blazor
             return null;
         }
 
-        public static KeyboardDevice Keyboard { get; private set; }
+        public static KeyboardDevice Keyboard => s_keyboard ??
+            throw new InvalidOperationException("BlazorWindowingPlatform not registered.");
 
         public static void Register()
         {
             var instance = new BlazorWindowingPlatform();
-            Keyboard = new KeyboardDevice();
+            s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardStub>()
-                .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
-                .Bind<IKeyboardDevice>().ToConstant(Keyboard)
+                .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
+                .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
@@ -50,6 +51,9 @@ namespace Avalonia.Web.Blazor
 
         public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
 
+        public Size TouchDoubleClickSize => new Size(16, 16);
+
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public void RunLoop(CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
@@ -57,7 +61,7 @@ namespace Avalonia.Web.Blazor
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            return AvaloniaLocator.Current.GetService<IRuntimePlatform>()
+            return GetRuntimePlatform()
                 .StartSystemTimer(interval, () =>
                 {
                     Dispatcher.UIThread.RunJobs(priority);
@@ -74,7 +78,7 @@ namespace Avalonia.Web.Blazor
             
             IDisposable? disp = null;
             
-            disp = AvaloniaLocator.Current.GetService<IRuntimePlatform>()
+            disp = GetRuntimePlatform()
                 .StartSystemTimer(TimeSpan.FromMilliseconds(1),
                     () =>
                     {
@@ -95,6 +99,9 @@ namespace Avalonia.Web.Blazor
 
         public event Action<DispatcherPriority?>? Signaled;
 
-        
+        private static IRuntimePlatform GetRuntimePlatform()
+        {
+            return AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
+        }
     }
 }

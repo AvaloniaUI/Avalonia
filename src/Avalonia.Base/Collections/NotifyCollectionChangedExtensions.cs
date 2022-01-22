@@ -4,8 +4,6 @@ using System.Reactive.Linq;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Collections
 {
     public static class NotifyCollectionChangedExtensions
@@ -61,7 +59,7 @@ namespace Avalonia.Collections
         }
 
         private class WeakCollectionChangedObservable : LightweightObservableBase<NotifyCollectionChangedEventArgs>,
-            IWeakSubscriber<NotifyCollectionChangedEventArgs>
+            IWeakEventSubscriber<NotifyCollectionChangedEventArgs>
         {
             private WeakReference<INotifyCollectionChanged> _sourceReference;
 
@@ -70,31 +68,22 @@ namespace Avalonia.Collections
                 _sourceReference = source;
             }
 
-            public void OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+            public void OnEvent(object? sender,
+                WeakEvent ev,
+                NotifyCollectionChangedEventArgs e)
             {
                 PublishNext(e);
             }
-
             protected override void Initialize()
             {
-                if (_sourceReference.TryGetTarget(out INotifyCollectionChanged instance))
-                {
-                    WeakSubscriptionManager.Subscribe(
-                    instance,
-                    nameof(instance.CollectionChanged),
-                    this);
-                }
+                if (_sourceReference.TryGetTarget(out var instance))
+                    WeakEvents.CollectionChanged.Subscribe(instance, this);
             }
 
             protected override void Deinitialize()
             {
-                if (_sourceReference.TryGetTarget(out INotifyCollectionChanged instance))
-                {
-                    WeakSubscriptionManager.Unsubscribe(
-                        instance,
-                        nameof(instance.CollectionChanged),
-                        this);
-                }
+                if (_sourceReference.TryGetTarget(out var instance))
+                    WeakEvents.CollectionChanged.Unsubscribe(instance, this);
             }
         }
     }

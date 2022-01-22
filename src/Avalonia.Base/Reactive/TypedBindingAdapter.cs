@@ -2,8 +2,6 @@
 using Avalonia.Data;
 using Avalonia.Logging;
 
-#nullable enable
-
 namespace Avalonia.Reactive
 {
     internal class TypedBindingAdapter<T> : SingleSubscriberObservableBase<BindingValue<T>>,

@@ -68,6 +68,7 @@ namespace Avalonia.X11
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))

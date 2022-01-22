@@ -1,7 +1,5 @@
 ﻿using System;
 
-#nullable enable
-
 namespace Avalonia.Data
 {
     /// <summary>
@@ -214,8 +212,10 @@ namespace Avalonia.Data
         /// <param name="type">The error type.</param>
         public void AddError(Exception e, BindingErrorType type)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
-            Contract.Requires<ArgumentException>(type != BindingErrorType.None);
+            _ = e ?? throw new ArgumentNullException(nameof(e));
+
+            if (type == BindingErrorType.None)
+                throw new ArgumentException("BindingErrorType may not be None", nameof(type));
 
             Error = Error != null ? new AggregateException(Error, e) : e;
 

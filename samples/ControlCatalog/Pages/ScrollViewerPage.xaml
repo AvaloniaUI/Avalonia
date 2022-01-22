@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ScrollViewerPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">ScrollViewer</TextBlock>
     <TextBlock Classes="h2">Allows for horizontal and vertical content scrolling.</TextBlock>
 
     <Grid ColumnDefinitions="Auto, *">

@@ -533,7 +533,7 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
-            _imClient.SetPresenter(_presenter);
+            _imClient.SetPresenter(_presenter, this);
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
@@ -1006,13 +1006,28 @@ namespace Avalonia.Controls
             if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
-                var index = CaretIndex = _presenter.GetCaretIndex(point);
+                var index = _presenter.GetCaretIndex(point);
+                var clickToSelect = index != CaretIndex && e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
+                if (!clickToSelect)
+                {
+                    CaretIndex = index;
+                }
+
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
 #pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
-                        SelectionStart = SelectionEnd = index;
+                        if (clickToSelect)
+                        {
+                            SelectionStart = Math.Min(index, CaretIndex);
+                            SelectionEnd = Math.Max(index, CaretIndex);
+                        }
+                        else
+                        {
+                            SelectionStart = SelectionEnd = index;
+                        }
                         break;
                     case 2:
                         if (!StringUtils.IsStartOfWord(text, index))

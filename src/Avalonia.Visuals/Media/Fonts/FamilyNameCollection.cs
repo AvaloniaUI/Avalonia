@@ -122,12 +122,12 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        public static bool operator !=(FamilyNameCollection a, FamilyNameCollection b)
+        public static bool operator !=(FamilyNameCollection? a, FamilyNameCollection? b)
         {
             return !(a == b);
         }
 
-        public static bool operator ==(FamilyNameCollection a, FamilyNameCollection b)
+        public static bool operator ==(FamilyNameCollection? a, FamilyNameCollection? b)
         {
             if (ReferenceEquals(a, b))
             {
@@ -144,7 +144,7 @@ namespace Avalonia.Media.Fonts
         /// <returns>
         ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (!(obj is FamilyNameCollection other))
             {

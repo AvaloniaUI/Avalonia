@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.VisualTree;
@@ -19,9 +20,8 @@ namespace Avalonia.Rendering
             for (var i = scene.Layers.Count - 1; i >= 0; --i)
             {
                 var src = scene.Layers[i];
-                RenderLayer layer;
 
-                if (!_index.TryGetValue(src.LayerRoot, out layer))
+                if (!_index.TryGetValue(src.LayerRoot, out var layer))
                 {
                     layer = new RenderLayer(context, scene.Size, scene.Scaling, src.LayerRoot);
                     _inner.Add(layer);
@@ -59,7 +59,7 @@ namespace Avalonia.Rendering
             _inner.Clear();
         }
 
-        public bool TryGetValue(IVisual layerRoot, out RenderLayer value)
+        public bool TryGetValue(IVisual layerRoot, [NotNullWhen(true)] out RenderLayer? value)
         {
             return _index.TryGetValue(layerRoot, out value);
         }

@@ -71,5 +71,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public CompiledBindingPath Path { get; set; }
 
         public object Source { get; set; }
+
+        public Type DataType { get; set; }
     }
 }

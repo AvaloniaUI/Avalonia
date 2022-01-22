@@ -2,8 +2,6 @@
 using Avalonia.Data;
 using Avalonia.Threading;
 
-#nullable enable
-
 namespace Avalonia.PropertyStore
 {
     /// <summary>

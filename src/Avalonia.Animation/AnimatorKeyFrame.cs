@@ -12,22 +12,22 @@ namespace Avalonia.Animation
     /// </summary>
     public class AnimatorKeyFrame : AvaloniaObject
     {
-        public static readonly DirectProperty<AnimatorKeyFrame, object> ValueProperty =
-            AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
+        public static readonly DirectProperty<AnimatorKeyFrame, object?> ValueProperty =
+            AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object?>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
 
         public AnimatorKeyFrame()
         {
 
         }
 
-        public AnimatorKeyFrame(Type animatorType, Cue cue)
+        public AnimatorKeyFrame(Type? animatorType, Cue cue)
         {
             AnimatorType = animatorType;
             Cue = cue;
             KeySpline = null;
         }
 
-        public AnimatorKeyFrame(Type animatorType, Cue cue, KeySpline keySpline)
+        public AnimatorKeyFrame(Type? animatorType, Cue cue, KeySpline? keySpline)
         {
             AnimatorType = animatorType;
             Cue = cue;
@@ -35,14 +35,14 @@ namespace Avalonia.Animation
         }
 
         internal bool isNeutral;
-        public Type AnimatorType { get; }
+        public Type? AnimatorType { get; }
         public Cue Cue { get; }
-        public KeySpline KeySpline { get; }
-        public AvaloniaProperty Property { get; private set; }
+        public KeySpline? KeySpline { get; }
+        public AvaloniaProperty? Property { get; private set; }
 
-        private object _value;
+        private object? _value;
 
-        public object Value
+        public object? Value
         {
             get => _value;
             set => SetAndRaise(ValueProperty, ref _value, value);
@@ -80,7 +80,7 @@ namespace Avalonia.Animation
                 throw new InvalidCastException($"KeyFrame value doesnt match property type.");
             }
 
-            return (T)typeConv.ConvertTo(Value, typeof(T));
+            return (T)typeConv.ConvertTo(Value, typeof(T))!;
         }
     }
 }

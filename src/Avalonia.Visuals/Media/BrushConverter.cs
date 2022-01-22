@@ -9,14 +9,14 @@ namespace Avalonia.Media
     /// </summary>
     public class BrushConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
         {
-            return Brush.Parse((string)value);
+            return value is string s ? Brush.Parse(s) : null;
         }
     }
 }

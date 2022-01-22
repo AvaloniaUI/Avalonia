@@ -47,7 +47,12 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var visual = (Visual)node.Visual;
+            var visual = node.Visual as Visual;
+
+            if (visual is null)
+            {
+                return;
+            }
 
             _currentLayer = AdornerLayer.GetAdornerLayer(visual);
 
