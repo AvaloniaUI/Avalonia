@@ -121,6 +121,21 @@ namespace Avalonia.Threading
             return null;
         }
 
+        public bool HasJobsWithPriority(DispatcherPriority minimumPriority)
+        {
+            for (int c = (int)minimumPriority; c < (int)DispatcherPriority.MaxValue; c++)
+            {
+                var q = _queues[c];
+                lock (q)
+                {
+                    if (q.Count > 0)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         private interface IJob
         {
             /// <summary>
