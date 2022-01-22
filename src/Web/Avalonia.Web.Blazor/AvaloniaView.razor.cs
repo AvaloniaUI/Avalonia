@@ -301,6 +301,12 @@ namespace Avalonia.Web.Blazor
 
                     _topLevel.Renderer.Start();
 
+                    // Note: this is technically a hack, but it's a kinda unique use case when
+                    // we want to blit the previous frame
+                    // renderer doesn't have much control over the render target
+                    // we render on the UI thread
+                    // We also don't want to have it as a meaningful public API.
+                    // Therefore we have InternalsVisibleTo hack here.
                     if (_topLevel.Renderer is DeferredRenderer dr)
                     {
                         dr.Render(true);
