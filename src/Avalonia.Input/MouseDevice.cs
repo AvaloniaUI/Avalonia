@@ -345,8 +345,7 @@ namespace Avalonia.Input
         }
         
         private bool GestureMagnify(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props,
-            Vector delta, KeyModifiers inputModifiers)
+            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
@@ -356,7 +355,8 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerTouchPadGestureMagnifyEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta.X);
+                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureMagnifyEvent, source,
+                    _pointer, root, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
                 return e.Handled;
@@ -366,8 +366,7 @@ namespace Avalonia.Input
         }
         
         private bool GestureRotate(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props,
-            Vector delta, KeyModifiers inputModifiers)
+            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
@@ -377,7 +376,8 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerTouchPadGestureRotateEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta.X);
+                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureRotateEvent, source,
+                    _pointer, root, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
                 return e.Handled;
@@ -387,8 +387,7 @@ namespace Avalonia.Input
         }
         
         private bool GestureSwipe(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
-            PointerPointProperties props,
-            Vector delta, KeyModifiers inputModifiers)
+            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
@@ -398,7 +397,8 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerTouchPadGestureSwipeEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
+                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureSwipeEvent, source, 
+                    _pointer, root, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
                 return e.Handled;

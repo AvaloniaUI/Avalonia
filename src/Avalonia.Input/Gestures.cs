@@ -30,16 +30,16 @@ namespace Avalonia.Input
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
         
-        public static readonly RoutedEvent<PointerTouchPadGestureMagnifyEventArgs> PointerTouchPadGestureMagnifyEvent =
-            RoutedEvent.Register<PointerTouchPadGestureMagnifyEventArgs>(
+        public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
+            RoutedEvent.Register<PointerDeltaEventArgs>(
                 "PointerMagnifyGesture", RoutingStrategies.Bubble, typeof(Gestures));
         
-        public static readonly RoutedEvent<PointerTouchPadGestureRotateEventArgs> PointerTouchPadGestureRotateEvent =
-            RoutedEvent.Register<PointerTouchPadGestureRotateEventArgs>(
+        public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureRotateEvent =
+            RoutedEvent.Register<PointerDeltaEventArgs>(
                 "PointerRotateGesture", RoutingStrategies.Bubble, typeof(Gestures));
         
-        public static readonly RoutedEvent<PointerTouchPadGestureSwipeEventArgs> PointerTouchPadGestureSwipeEvent =
-            RoutedEvent.Register<PointerTouchPadGestureSwipeEventArgs>(
+        public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureSwipeEvent =
+            RoutedEvent.Register<PointerDeltaEventArgs>(
                 "PointerSwipeGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.

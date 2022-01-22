@@ -197,24 +197,6 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
         
-        /// <summary>
-        /// Defines the <see cref="PointerTouchPadGestureMagnify"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<PointerTouchPadGestureMagnifyEventArgs> PointerTouchPadGestureMagnifyEvent 
-            = Gestures.PointerTouchPadGestureMagnifyEvent;
-        
-        /// <summary>
-        /// Defines the <see cref="PointerTouchPadGestureRotate"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<PointerTouchPadGestureRotateEventArgs> PointerTouchPadGestureRotateEvent 
-            = Gestures.PointerTouchPadGestureRotateEvent;
-        
-        /// <summary>
-        /// Defines the <see cref="PointerTouchPadGestureSwipe"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<PointerTouchPadGestureSwipeEventArgs> PointerTouchPadGestureSwipeEvent 
-            = Gestures.PointerTouchPadGestureSwipeEvent;
-
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isKeyboardFocusWithin;
@@ -375,36 +357,6 @@ namespace Avalonia.Input
             remove { RemoveHandler(PointerWheelChangedEvent, value); }
         }
         
-        /// <summary>
-        /// Occurs when the user uses magnify (Pitch to Zoom) gesture on a trackpad and pointer is over the control.
-        /// Works only on macOS.
-        /// </summary>
-        public event EventHandler<PointerTouchPadGestureMagnifyEventArgs> PointerTouchPadGestureMagnify
-        {
-            add { AddHandler(PointerTouchPadGestureMagnifyEvent, value); }
-            remove { RemoveHandler(PointerTouchPadGestureMagnifyEvent, value); }
-        }
-        
-        /// <summary>
-        /// Occurs when the user uses rotate gesture on a trackpad and pointer is over the control.
-        /// Works only on macOS.
-        /// </summary>
-        public event EventHandler<PointerTouchPadGestureRotateEventArgs> PointerTouchPadGestureRotate
-        {
-            add { AddHandler(PointerTouchPadGestureRotateEvent, value); }
-            remove { RemoveHandler(PointerTouchPadGestureRotateEvent, value); }
-        }
-        
-        /// <summary>
-        /// Occurs when the user uses swipe gesture on a trackpad and pointer is over the control.
-        /// Works only on macOS.
-        /// </summary>
-        public event EventHandler<PointerTouchPadGestureSwipeEventArgs> PointerTouchPadGestureSwipe
-        {
-            add { AddHandler(PointerTouchPadGestureSwipeEvent, value); }
-            remove { RemoveHandler(PointerTouchPadGestureSwipeEvent, value); }
-        }
-
         /// <summary>
         /// Occurs when a tap gesture occurs on the control.
         /// </summary>
