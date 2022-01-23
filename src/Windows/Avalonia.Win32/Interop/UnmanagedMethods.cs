@@ -1075,31 +1075,34 @@ namespace Avalonia.Win32.Interop
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int EnableMouseInPointer(bool enable);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool GetPointerCursorId(uint pointerID, out uint cursorId);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool GetPointerType(uint pointerID, out PointerInputType pointerType);
-
-        [DllImport("User32.dll", SetLastError = true)]
-        public static extern bool GetPointerInfo(uint pointerID, out POINTER_INFO pointerInfo);
-
-        [DllImport("User32.dll", SetLastError = true)]
-        public static extern bool GetPointerPenInfo(uint pointerID, out POINTER_PEN_INFO penInfo);
-
-        [DllImport("User32.dll", SetLastError = true)]
-        public static extern bool GetPointerTouchInfo(uint pointerID, out POINTER_TOUCH_INFO touchInfo);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern void GetUnpredictedMessagePos();
-
-        [DllImport("user32.dll", SetLastError = true)]
         public static extern bool IsMouseInPointerEnabled();
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool SkipPointerFrameMessages(uint pointerID);
+        public static extern int EnableMouseInPointer(bool enable);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerCursorId(uint pointerId, out uint cursorId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerType(uint pointerId, out PointerInputType pointerType);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerInfo(uint pointerId, out POINTER_INFO pointerInfo);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_INFO[] pointerInfos);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerPenInfo(uint pointerId, out POINTER_PEN_INFO penInfo);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerPenInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_PEN_INFO[] penInfos);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerTouchInfo(uint pointerId, out POINTER_TOUCH_INFO touchInfo);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerTouchInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_TOUCH_INFO[] touchInfos);
 
         [DllImport("user32.dll")]
         public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,

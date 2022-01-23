@@ -401,26 +401,41 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERUP:
                     {
                         var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                        GetDeviceInfo(wParam, out var device, out var info);
+                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
                         var eventType = GetEventType(message, info);
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
 
-                        e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
+                        if (device is TouchDevice)
+                        {
+                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, eventType, point, modifiers, info.pointerId);
+                        }
+                        else
+                        {
+                            e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
+                        }
                         break;
                     }
                 case WindowsMessage.WM_POINTERUPDATE:
                     {
-                        if (ShouldIgnoreTouchEmulatedMessage())
-                        {
-                            break;
-                        }
-                        GetDeviceInfo(wParam, out var device, out var info);
+                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
-                        var eventType = device is TouchDevice ? RawPointerEventType.TouchUpdate : RawPointerEventType.Move;
 
-                        e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
+                        if (device is TouchDevice)
+                        {
+                            if (ShouldIgnoreTouchEmulatedMessage())
+                            {
+                                break;
+                            }
+                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, 
+                                RawPointerEventType.TouchUpdate, point, modifiers, info.pointerId);
+                        }
+                        else
+                        {
+                            e = new RawPointerEventArgs(device, timestamp, _owner, 
+                                RawPointerEventType.Move, point, modifiers);
+                        }
                         break;
                     }
                 case WindowsMessage.WM_POINTERENTER:
@@ -434,7 +449,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERLEAVE:
                     {
-                        GetDeviceInfo(wParam, out var device, out var info);
+                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
 
@@ -456,7 +471,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERWHEEL:
                     {
-                        GetDeviceInfo(wParam, out var device, out var info);
+                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
 
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
@@ -466,7 +481,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERHWHEEL:
                     {
-                        GetDeviceInfo(wParam, out var device, out var info);
+                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
 
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
@@ -697,6 +712,49 @@ namespace Avalonia.Win32
             }
         }
 
+        private unsafe void ApplyPenInfo(POINTER_PEN_INFO penInfo)
+        {
+            _penDevice.IsBarrel = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_BARREL);
+            _penDevice.IsEraser = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_ERASER);
+            _penDevice.IsInverted = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_INVERTED);
+
+            _penDevice.XTilt = penInfo.tiltX;
+            _penDevice.YTilt = penInfo.tiltY;
+            _penDevice.Pressure = penInfo.pressure;
+            _penDevice.Twist = penInfo.rotation;
+        }
+
+        private void GetDeviceInfo(IntPtr wParam, out IInputDevice device, out POINTER_INFO info, ref uint timestamp)
+        {
+            var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+            GetPointerType(pointerId, out var type);
+            //GetPointerCursorId(pointerId, out var cursorId);
+            switch (type)
+            {
+                case PointerInputType.PT_PEN:
+                    device = _penDevice;
+                    GetPointerPenInfo(pointerId, out var penInfo);
+                    info = penInfo.pointerInfo;
+
+                    ApplyPenInfo(penInfo);
+                    break;
+                case PointerInputType.PT_TOUCH:
+                    device = _touchDevice;
+                    GetPointerTouchInfo(pointerId, out var touchInfo);
+                    info = touchInfo.pointerInfo;
+                    break;
+                default:
+                    device = _mouseDevice;
+                    GetPointerInfo(pointerId, out info);
+                    break;
+            }
+
+            if (info.dwTime != 0)
+            {
+                timestamp = info.dwTime;
+            }
+        }
+
         private static RawPointerEventType GetEventType(WindowsMessage message, POINTER_INFO info)
         {
             switch (info.pointerType)
@@ -720,43 +778,6 @@ namespace Avalonia.Win32
                         eventType = RawPointerEventType.NonClientLeftButtonDown;
                     }
                     return eventType;
-            }
-        }
-
-        private unsafe void ApplyPenInfo(POINTER_PEN_INFO penInfo)
-        {
-            _penDevice.IsBarrel = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_BARREL);
-            _penDevice.IsEraser = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_BARREL);
-            _penDevice.IsInverted = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_INVERTED);
-
-            _penDevice.XTilt = penInfo.tiltX;
-            _penDevice.YTilt = penInfo.tiltY;
-            _penDevice.Pressure = penInfo.pressure;
-            _penDevice.Twist = penInfo.rotation;
-        }
-
-        private void GetDeviceInfo(IntPtr wParam, out IInputDevice device, out POINTER_INFO info)
-        {
-            var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-            GetPointerType(pointerId, out var type);//ToDo we can cache this and invalidate in WM_POINTERDEVICECHANGE
-            switch (type)
-            {
-                case PointerInputType.PT_PEN:
-                    device = _penDevice;
-                    GetPointerPenInfo(pointerId, out var penInfo);
-                    info = penInfo.pointerInfo;
-
-                    ApplyPenInfo(penInfo);
-                    break;
-                case PointerInputType.PT_TOUCH:
-                    device = _touchDevice;
-                    GetPointerTouchInfo(pointerId, out var touchInfo);
-                    info = touchInfo.pointerInfo;
-                    break;
-                default:
-                    device = _mouseDevice;
-                    GetPointerInfo(pointerId, out info);
-                    break;
             }
         }
 
