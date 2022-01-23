@@ -26,8 +26,8 @@ namespace Avalonia.Web.Blazor
         private InputHelperInterop _canvasHelper = null!;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
-        private double _dpi;
-        private SKSize _canvasSize;
+        private double _dpi = 1;
+        private SKSize _canvasSize = new (100, 100);
 
         private GRContext? _context;
         private GRGlInterface? _glInterface;
@@ -249,71 +249,55 @@ namespace Avalonia.Web.Blazor
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-        protected override void OnAfterRender(bool firstRender)
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                Threading.Dispatcher.UIThread.Post(async () =>
+                _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
+                _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
+
+                _inputHelper.Hide();
+                _canvasHelper.SetCursor("default");
+                _topLevelImpl.SetCssCursor = x =>
                 {
-                    _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
-                    _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
+                    _inputHelper.SetCursor(x); //macOS
+                    _canvasHelper.SetCursor(x); //windows
+                };
 
-                    _inputHelper.Hide();
-                    _canvasHelper.SetCursor("default");
-                    _topLevelImpl.SetCssCursor = x =>
-                    {
-                        _inputHelper.SetCursor(x);//macOS
-                        _canvasHelper.SetCursor(x);//windows
-                    };
+                Console.WriteLine("starting html canvas setup");
+                _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
 
-                    Console.WriteLine("starting html canvas setup");
-                    _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
+                Console.WriteLine("Interop created");
+                _jsGlInfo = _interop.InitGL();
 
-                    Console.WriteLine("Interop created");
-                    _jsGlInfo = _interop.InitGL();
+                Console.WriteLine("jsglinfo created - init gl");
 
-                    Console.WriteLine("jsglinfo created - init gl");
+                // create the SkiaSharp context
+                if (_context == null)
+                {
+                    Console.WriteLine("create glcontext");
+                    _glInterface = GRGlInterface.Create();
+                    _context = GRContext.CreateGl(_glInterface);
 
-                    _sizeWatcher = await SizeWatcherInterop.ImportAsync(Js, _htmlCanvas, OnSizeChanged);
-                    _dpiWatcher = await DpiWatcherInterop.ImportAsync(Js, OnDpiChanged);
+                    var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
+                    // bump the default resource cache limit
+                    _context.SetResourceCacheLimit(options?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
+                    Console.WriteLine("glcontext created and resource limit set");
+                }
 
-                    Console.WriteLine("watchers created.");
+                _topLevelImpl.SetSurface(_context, _jsGlInfo, ColorType,
+                    new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi);
 
-                    // create the SkiaSharp context
-                    if (_context == null)
-                    {
-                        Console.WriteLine("create glcontext");
-                        _glInterface = GRGlInterface.Create();
-                        _context = GRContext.CreateGl(_glInterface);
+                _initialised = true;
 
-                        var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
-                        // bump the default resource cache limit
-                        _context.SetResourceCacheLimit(options?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
-                        Console.WriteLine("glcontext created and resource limit set");
-                    }
+                _topLevel.Prepare();
 
-                    _topLevelImpl.SetSurface(_context, _jsGlInfo, ColorType,
-                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi);
+                _topLevel.Renderer.Start();
 
-                    _initialised = true;
+                Invalidate();
 
-                    _topLevel.Prepare();
-
-                    _topLevel.Renderer.Start();
-
-                    // Note: this is technically a hack, but it's a kinda unique use case when
-                    // we want to blit the previous frame
-                    // renderer doesn't have much control over the render target
-                    // we render on the UI thread
-                    // We also don't want to have it as a meaningful public API.
-                    // Therefore we have InternalsVisibleTo hack here.
-                    if (_topLevel.Renderer is DeferredRenderer dr)
-                    {
-                        dr.Render(true);
-                    }
-                    
-                    Invalidate();
-                });
+                _sizeWatcher = await SizeWatcherInterop.ImportAsync(Js, _htmlCanvas, OnSizeChanged);
+                _dpiWatcher = await DpiWatcherInterop.ImportAsync(Js, OnDpiChanged);
             }
         }
 
@@ -335,16 +319,28 @@ namespace Avalonia.Web.Blazor
             _interop.Dispose();
         }
 
+        private void ForceBlit()
+        {
+            // Note: this is technically a hack, but it's a kinda unique use case when
+            // we want to blit the previous frame
+            // renderer doesn't have much control over the render target
+            // we render on the UI thread
+            // We also don't want to have it as a meaningful public API.
+            // Therefore we have InternalsVisibleTo hack here.
+
+            if (_topLevel.Renderer is DeferredRenderer dr)
+            {
+                dr.Render(true);
+            }
+        }
+
         private void OnDpiChanged(double newDpi)
         {
             _dpi = newDpi;
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
             
-            if (_topLevel.Renderer is DeferredRenderer dr)
-            {
-                dr.Render(true);
-            }
+            ForceBlit();
 
             Invalidate();
         }
@@ -357,17 +353,14 @@ namespace Avalonia.Web.Blazor
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            if (_topLevel.Renderer is DeferredRenderer dr)
-            {
-                dr.Render(true);
-            }
+            ForceBlit();
 
             Invalidate();
         }
 
         public void Invalidate()
         {
-            if (!_initialised || _canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0 || _jsGlInfo == null)
+            if (!_initialised || _jsGlInfo == null)
             {
                 Console.WriteLine("invalidate ignored");
                 return;
