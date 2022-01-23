@@ -236,7 +236,18 @@ internal class ValidatingWindowImpl : ValidatingWindowBaseImpl, IWindowImpl
 
     public void SetTitle(string title) => Inner.SetTitle(title);
 
-    public void SetParent(IWindowImpl parent) => Inner.SetParent(parent);
+    public void SetParent(IWindowImpl parent)
+    {
+        //Workaround. SetParent will cast IWindowImpl to WindowImpl but  ValidatingWindowImpl isn't actual WindowImpl so it will fail with InvalidCastException.
+        if (parent is ValidatingWindowImpl validatingToplevelImpl)
+        {
+            Inner.SetParent(validatingToplevelImpl.Inner);
+        }
+        else
+        {
+            Inner.SetParent(parent);
+        }
+    }
 
     public void SetEnabled(bool enable) => Inner.SetEnabled(enable);
 
