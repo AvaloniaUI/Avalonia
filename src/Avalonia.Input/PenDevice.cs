@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -12,6 +13,10 @@ namespace Avalonia.Input
     /// </summary>
     public class PenDevice : IPenDevice, IDisposable
     {
+        private int _clickCount;
+        private Rect _lastClickRect;
+        private ulong _lastClickTime;
+
         private readonly Pointer _pointer;
         private bool _disposed;
         private PixelPoint? _position; 
@@ -182,8 +187,21 @@ namespace Avalonia.Input
                 var source = GetSource(hit);
                 if (source != null)
                 {
+                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                    var doubleClickTime = settings?.DoubleClickTime.TotalMilliseconds ?? 500;
+                    var doubleClickSize = settings?.DoubleClickSize ?? new Size(4, 4);
+
+                    if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
+                    {
+                        _clickCount = 0;
+                    }
+
+                    ++_clickCount;
+                    _lastClickTime = timestamp;
+                    _lastClickRect = new Rect(p, new Size())
+                        .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                     _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                    var e = new PointerPressedEventArgs(source, _pointer, root, p, timestamp, properties, inputModifiers, 1);
+                    var e = new PointerPressedEventArgs(source, _pointer, root, p, timestamp, properties, inputModifiers, _clickCount);
                     source.RaiseEvent(e);
                     return e.Handled;
                 }
