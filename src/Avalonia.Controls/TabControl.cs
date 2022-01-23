@@ -211,7 +211,8 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.Pointer.Type == PointerType.Mouse)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && 
+                (e.Pointer.Type == PointerType.Mouse || e.Pointer.Type == PointerType.Pen))
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
@@ -219,7 +220,8 @@ namespace Avalonia.Controls
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (e.InitialPressMouseButton == MouseButton.Left && e.Pointer.Type != PointerType.Mouse)
+            if (e.InitialPressMouseButton == MouseButton.Left &&
+                (e.Pointer.Type == PointerType.Mouse || e.Pointer.Type == PointerType.Pen))
             {
                 var container = GetContainerFromEventSource(e.Source);
                 if (container != null

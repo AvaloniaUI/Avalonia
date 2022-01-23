@@ -101,7 +101,7 @@ namespace Avalonia.Input
         RightButtonReleased,
         XButton1Released,
         XButton2Released,
-        Other,
+        Other
     }
 
     public static class PointerUpdateKindExtensions

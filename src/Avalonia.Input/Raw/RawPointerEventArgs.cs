@@ -22,8 +22,6 @@ namespace Avalonia.Input.Raw
         TouchUpdate,
         TouchEnd,
         TouchCancel,
-        BarrelUp,
-        BarrelDown,
         Magnify,
         Rotate,
         Swipe
