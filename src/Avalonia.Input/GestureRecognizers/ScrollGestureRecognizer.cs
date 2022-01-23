@@ -101,7 +101,7 @@ namespace Avalonia.Input.GestureRecognizers
                 if (_scrolling)
                 {
                     var vector = _trackedRootPoint - rootPoint;
-                    var elapsed = _lastMoveTimestamp.HasValue ?
+                    var elapsed = _lastMoveTimestamp.HasValue && _lastMoveTimestamp < e.Timestamp ?
                         TimeSpan.FromMilliseconds(e.Timestamp - _lastMoveTimestamp.Value) :
                         TimeSpan.Zero;
                     

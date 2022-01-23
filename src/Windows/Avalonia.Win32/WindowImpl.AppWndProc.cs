@@ -488,6 +488,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERLEAVE:
                     {
                         GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
+                        if (device is TouchDevice)
+                        {
+                            break;
+                        }
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
 
@@ -798,8 +802,7 @@ namespace Avalonia.Win32
                 case PointerInputType.PT_PEN:
                     return ToEventType(info.ButtonChangeType);
                 case PointerInputType.PT_TOUCH:
-                    if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED) ||
-                        !info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CONFIDENCE))
+                    if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED))
                     {
                         return RawPointerEventType.TouchCancel;
                     }

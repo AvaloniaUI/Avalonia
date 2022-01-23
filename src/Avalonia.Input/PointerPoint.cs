@@ -45,8 +45,6 @@ namespace Avalonia.Input
             IsRightButtonPressed = modifiers.HasAllFlags(RawInputModifiers.RightMouseButton);
             IsXButton1Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton1MouseButton);
             IsXButton2Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton2MouseButton);
-            IsBarrelButtonPressed = modifiers.HasAllFlags(RawInputModifiers.BarrelPenButton);
-            IsEraser = modifiers.HasAllFlags(RawInputModifiers.PenEraser);
 
             // The underlying input source might be reporting the previous state,
             // so make sure that we reflect the current state
