@@ -402,6 +402,62 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERUPDATE:
                     {
                         GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
+
+                        if (info.historyCount > 1)
+                        {
+                            if (info.pointerType == PointerInputType.PT_TOUCH)
+                            {
+                                if (ShouldIgnoreTouchEmulatedMessage())
+                                {
+                                    break;
+                                }
+
+                                var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+                                var historyCount = (int)info.historyCount;
+                                var historyTouchInfos = new POINTER_TOUCH_INFO[historyCount];
+                                if (GetPointerTouchInfoHistory(pointerId, ref historyCount, historyTouchInfos))
+                                {
+                                    //last info is the same as the current so skip it
+                                    for (int i = 0; i < historyCount - 1; i++)
+                                    {
+                                        var historyTouchInfo = historyTouchInfos[i];
+                                        var historyInfo = historyTouchInfo.pointerInfo;
+                                        var historyEventType = GetEventType(message, historyInfo);
+                                        var historyPoint = PointToClient(new PixelPoint(
+                                            historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
+                                        var historyModifiers = GetInputModifiers(historyInfo.dwKeyStates);
+                                        var historyTimestamp = historyInfo.dwTime == 0 ? timestamp : historyInfo.dwTime;
+                                        Input?.Invoke(new RawTouchEventArgs(_touchDevice, historyTimestamp, _owner,
+                                            historyEventType, historyPoint, historyModifiers, historyInfo.pointerId));
+                                    }
+                                }
+                            }
+                            else if (info.pointerType == PointerInputType.PT_PEN)
+                            {
+                                var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+                                var historyCount = (int)info.historyCount;
+                                var historyPenInfos = new POINTER_PEN_INFO[historyCount];
+                                if (GetPointerPenInfoHistory(pointerId, ref historyCount, historyPenInfos))
+                                {
+                                    //last info is the same as the current so skip it
+                                    for (int i = 0; i < historyCount - 1; i++)
+                                    {
+                                        var historyPenInfo = historyPenInfos[i];
+                                        var historyInfo = historyPenInfo.pointerInfo;
+                                        var historyEventType = GetEventType(message, historyInfo);
+                                        var historyPoint = PointToClient(new PixelPoint(
+                                            historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
+                                        var historyModifiers = GetInputModifiers(historyInfo.dwKeyStates);
+                                        var historyTimestamp = historyInfo.dwTime == 0 ? timestamp : historyInfo.dwTime;
+
+                                        ApplyPenInfo(historyPenInfo);
+                                        Input?.Invoke(new RawPointerEventArgs(_penDevice, historyTimestamp, _owner,
+                                            historyEventType, historyPoint, historyModifiers));
+                                    }
+                                }
+                            }
+                        }
+
                         var eventType = GetEventType(message, info);
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
@@ -447,7 +503,7 @@ namespace Avalonia.Win32
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
                         var val = (ToInt32(wParam) >> 16) / wheelDelta;
-                        var delta = message == WindowsMessage.WM_POINTERHWHEEL ? new Vector(0, val) : new Vector(val, 0);
+                        var delta = message == WindowsMessage.WM_POINTERWHEEL ? new Vector(0, val) : new Vector(val, 0);
                         e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
                         break;
                     }
