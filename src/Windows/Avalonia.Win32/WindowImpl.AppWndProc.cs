@@ -399,26 +399,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCPOINTERUP:
                 case WindowsMessage.WM_POINTERDOWN:
                 case WindowsMessage.WM_POINTERUP:
-                    {
-                        var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
-                        var eventType = GetEventType(message, info);
-                        var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
-                        var modifiers = GetInputModifiers(info.dwKeyStates);
-
-                        if (device is TouchDevice)
-                        {
-                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, eventType, point, modifiers, info.pointerId);
-                        }
-                        else
-                        {
-                            e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
-                        }
-                        break;
-                    }
                 case WindowsMessage.WM_POINTERUPDATE:
                     {
-                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
+                        GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
+                        var eventType = GetEventType(message, info);
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
 
@@ -428,13 +412,11 @@ namespace Avalonia.Win32
                             {
                                 break;
                             }
-                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, 
-                                RawPointerEventType.TouchUpdate, point, modifiers, info.pointerId);
+                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, eventType, point, modifiers, info.pointerId);
                         }
                         else
                         {
-                            e = new RawPointerEventArgs(device, timestamp, _owner, 
-                                RawPointerEventType.Move, point, modifiers);
+                            e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
                         }
                         break;
                     }
@@ -449,12 +431,24 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERLEAVE:
                     {
-                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
+                        GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
 
                         e = new RawPointerEventArgs(
                             device, timestamp, _owner, RawPointerEventType.LeaveWindow, point, modifiers);
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERWHEEL:
+                case WindowsMessage.WM_POINTERHWHEEL:
+                    {
+                        GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
+
+                        var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
+                        var modifiers = GetInputModifiers(info.dwKeyStates);
+                        var val = (ToInt32(wParam) >> 16) / wheelDelta;
+                        var delta = message == WindowsMessage.WM_POINTERHWHEEL ? new Vector(0, val) : new Vector(val, 0);
+                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
                         break;
                     }
                 case WindowsMessage.WM_POINTERACTIVATE:
@@ -468,26 +462,6 @@ namespace Avalonia.Win32
                     {
                         _mouseDevice.Capture(null);
                         return IntPtr.Zero;
-                    }
-                case WindowsMessage.WM_POINTERWHEEL:
-                    {
-                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
-
-                        var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
-                        var modifiers = GetInputModifiers(info.dwKeyStates);
-                        var delta = new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta);
-                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERHWHEEL:
-                    {
-                        GetDeviceInfo(wParam, out var device, out var info, ref timestamp);
-
-                        var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
-                        var modifiers = GetInputModifiers(info.dwKeyStates);
-                        var delta = new Vector((ToInt32(wParam) >> 16) / wheelDelta, 0);
-                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
-                        break;
                     }
                 case WindowsMessage.DM_POINTERHITTEST:
                     {
@@ -724,7 +698,7 @@ namespace Avalonia.Win32
             _penDevice.Twist = penInfo.rotation;
         }
 
-        private void GetDeviceInfo(IntPtr wParam, out IInputDevice device, out POINTER_INFO info, ref uint timestamp)
+        private void GetDevicePointerInfo(IntPtr wParam, out IInputDevice device, out POINTER_INFO info, ref uint timestamp)
         {
             var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
             GetPointerType(pointerId, out var type);
@@ -757,6 +731,12 @@ namespace Avalonia.Win32
 
         private static RawPointerEventType GetEventType(WindowsMessage message, POINTER_INFO info)
         {
+            if (message == WindowsMessage.WM_POINTERUPDATE)
+            {
+                return info.pointerType == PointerInputType.PT_TOUCH 
+                    ? RawPointerEventType.TouchUpdate
+                    : RawPointerEventType.Move;
+            }
             switch (info.pointerType)
             {
                 case PointerInputType.PT_PEN:
