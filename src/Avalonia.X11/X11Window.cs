@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -49,8 +50,6 @@ namespace Avalonia.X11
         private double? _scalingOverride;
         private bool _disabled;
         private TransparencyHelper _transparencyHelper;
-
-        public object SyncRoot { get; } = new object();
 
         class InputEventContainer
         {
@@ -317,13 +316,8 @@ namespace Avalonia.X11
 
         public double RenderScaling
         {
-            get
-            {
-                lock (SyncRoot)
-                    return _scaling;
-
-            }
-            private set => _scaling = value;
+            get => Interlocked.CompareExchange(ref _scaling, 0.0, 0.0); 
+            private set => Interlocked.Exchange(ref _scaling, value); 
         }
         
         public double DesktopScaling => RenderScaling;
@@ -378,11 +372,6 @@ namespace Avalonia.X11
         }
 
         void OnEvent(ref XEvent ev)
-        {
-            lock (SyncRoot)
-                OnEventSync(ref ev);
-        }
-        void OnEventSync(ref XEvent ev)
         {
             if (ev.type == XEventName.MapNotify)
             {
@@ -544,32 +533,29 @@ namespace Avalonia.X11
 
         private bool UpdateScaling(bool skipResize = false)
         {
-            lock (SyncRoot)
+            double newScaling;
+            if (_scalingOverride.HasValue)
+                newScaling = _scalingOverride.Value;
+            else
             {
-                double newScaling;
-                if (_scalingOverride.HasValue)
-                    newScaling = _scalingOverride.Value;
-                else
-                {
-                    var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
-                        .FirstOrDefault(m => m.Bounds.Contains(Position));
-                    newScaling = monitor?.PixelDensity ?? RenderScaling;
-                }
-
-                if (RenderScaling != newScaling)
-                {
-                    var oldScaledSize = ClientSize;
-                    RenderScaling = newScaling;
-                    ScalingChanged?.Invoke(RenderScaling);
-                    UpdateImePosition();
-                    SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
-                    if(!skipResize)
-                        Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
-                    return true;
-                }
-
-                return false;
+                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
+                    .FirstOrDefault(m => m.Bounds.Contains(Position));
+                newScaling = monitor?.PixelDensity ?? RenderScaling;
             }
+
+            if (RenderScaling != newScaling)
+            {
+                var oldScaledSize = ClientSize;
+                RenderScaling = newScaling;
+                ScalingChanged?.Invoke(RenderScaling);
+                UpdateImePosition();
+                SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
+                if(!skipResize)
+                    Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
+                return true;
+            }
+            
+            return false;
         }
 
         private WindowState _lastWindowState;
