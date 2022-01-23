@@ -32,6 +32,14 @@ namespace Avalonia.Input
         [Obsolete("Use IPointer instead")]
         public IInputElement? Captured => _pointer.Captured;
 
+        public bool IsEraser { get; set; }
+        public bool IsInverted { get; set; }
+        public bool IsBarrel { get; set; }
+        public int XTilt { get; set; }
+        public int YTilt { get; set; }
+        public uint Pressure { get; set; }
+        public uint Twist { get; set; }
+
         /// <summary>
         /// Captures mouse input to the specified control.
         /// </summary>
@@ -122,13 +130,13 @@ namespace Avalonia.Input
                 case RawPointerEventType.LeaveWindow:
                     LeaveWindow(pen, e.Timestamp, e.Root, props, keyModifiers);
                     break;
-                case RawPointerEventType.PenBegin:
+                case RawPointerEventType.LeftButtonDown:
                     e.Handled = PenDown(pen, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     break;
-                case RawPointerEventType.PenEnd:
+                case RawPointerEventType.LeftButtonUp:
                     e.Handled = PenUp(pen, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     break;
-                case RawPointerEventType.PenUpdate:
+                case RawPointerEventType.Move:
                     e.Handled = PenMove(pen, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     break;
             }
@@ -145,16 +153,17 @@ namespace Avalonia.Input
         }
 
 
-        PointerPointProperties CreateProperties(RawPointerEventArgs args)
+        private PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
             var kind = PointerUpdateKind.Other;
 
-            if (args.Type == RawPointerEventType.PenBegin)
+            if (args.Type == RawPointerEventType.LeftButtonDown)
                 kind = PointerUpdateKind.LeftButtonPressed;
-            if (args.Type == RawPointerEventType.PenEnd)
+            if (args.Type == RawPointerEventType.LeftButtonUp)
                 kind = PointerUpdateKind.LeftButtonReleased;
-            
-            return new PointerPointProperties(args.InputModifiers, kind);
+
+            return new PointerPointProperties(args.InputModifiers, kind, 
+                Twist, Pressure, XTilt, YTilt, IsEraser, IsInverted, IsBarrel);
         }
 
         private MouseButton _lastMouseDownButton;

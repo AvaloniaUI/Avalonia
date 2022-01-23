@@ -1003,7 +1003,7 @@ namespace Avalonia.Win32.Interop
             public uint historyCount;
             public int inputData;
             public ModifierKeys dwKeyStates;
-            public UInt64 PerformanceCount;
+            public ulong PerformanceCount;
             public PointerButtonChangeType ButtonChangeType;
         }
 

@@ -22,6 +22,7 @@ namespace Avalonia.Input
         public bool IsXButton2Pressed { get; }
         public bool IsBarrelButtonPressed { get; }
         public bool IsEraser { get; }
+        public bool IsInverted { get; }
 
         public float Twist { get; }
         public float Pressure { get; }
@@ -70,20 +71,19 @@ namespace Avalonia.Input
                 IsXButton2Pressed = true;
             if (kind == PointerUpdateKind.XButton2Released)
                 IsXButton2Pressed = false;
-            if (kind == PointerUpdateKind.BarrelButtonPressed)
-                IsBarrelButtonPressed = true;
-            if (kind == PointerUpdateKind.BarrelButtonReleased)
-                IsBarrelButtonPressed = false;
         }
 
         public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind,
-            float twist, float pressure, float xTilt, float yTilt
+            float twist, float pressure, float xTilt, float yTilt, bool isEraser, bool isInverted, bool isBarrel
             ) : this (modifiers, kind)
         {
             Twist = twist;
             Pressure = pressure;
             XTilt = xTilt;
             YTilt = yTilt;
+            IsEraser = isEraser;
+            IsInverted = isInverted;
+            IsBarrelButtonPressed = isBarrel;
         }
 
         public static PointerPointProperties None { get; } = new PointerPointProperties();
@@ -102,8 +102,6 @@ namespace Avalonia.Input
         XButton1Released,
         XButton2Released,
         Other,
-        BarrelButtonPressed,
-        BarrelButtonReleased
     }
 
     public static class PointerUpdateKindExtensions
