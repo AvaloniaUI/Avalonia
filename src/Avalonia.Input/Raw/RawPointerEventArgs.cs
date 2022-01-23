@@ -22,7 +22,10 @@ namespace Avalonia.Input.Raw
         TouchBegin,
         TouchUpdate,
         TouchEnd,
-        TouchCancel
+        TouchCancel,
+        Magnify,
+        Rotate,
+        Swipe
     }
 
     /// <summary>

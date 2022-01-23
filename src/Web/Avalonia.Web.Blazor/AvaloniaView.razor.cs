@@ -3,6 +3,7 @@ using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Rendering;
 using Avalonia.Web.Blazor.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -299,6 +300,18 @@ namespace Avalonia.Web.Blazor
                     _topLevel.Prepare();
 
                     _topLevel.Renderer.Start();
+
+                    // Note: this is technically a hack, but it's a kinda unique use case when
+                    // we want to blit the previous frame
+                    // renderer doesn't have much control over the render target
+                    // we render on the UI thread
+                    // We also don't want to have it as a meaningful public API.
+                    // Therefore we have InternalsVisibleTo hack here.
+                    if (_topLevel.Renderer is DeferredRenderer dr)
+                    {
+                        dr.Render(true);
+                    }
+                    
                     Invalidate();
                 });
             }
@@ -327,6 +340,11 @@ namespace Avalonia.Web.Blazor
             _dpi = newDpi;
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+            
+            if (_topLevel.Renderer is DeferredRenderer dr)
+            {
+                dr.Render(true);
+            }
 
             Invalidate();
         }
@@ -334,8 +352,15 @@ namespace Avalonia.Web.Blazor
         private void OnSizeChanged(SKSize newSize)
         {
             _canvasSize = newSize;
+            
+            _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+
+            if (_topLevel.Renderer is DeferredRenderer dr)
+            {
+                dr.Render(true);
+            }
 
             Invalidate();
         }
@@ -348,7 +373,7 @@ namespace Avalonia.Web.Blazor
                 return;
             }
 
-            _interop.RequestAnimationFrame(true, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+            _interop.RequestAnimationFrame(true);
         }
 
         public void SetActive(bool active)
