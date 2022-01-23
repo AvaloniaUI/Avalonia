@@ -11,6 +11,7 @@ namespace Avalonia.Controls
     public class ContextRequestedEventArgs : RoutedEventArgs
     {
         private readonly PointerEventArgs? _pointerEventArgs;
+        private readonly Point? _position;
 
         /// <summary>
         /// Initializes a new instance of the ContextRequestedEventArgs class.
@@ -19,6 +20,12 @@ namespace Avalonia.Controls
             : base(Control.ContextRequestedEvent)
         {
 
+        }
+
+        public ContextRequestedEventArgs(Point position)
+            : base(Control.ContextRequestedEvent)
+        {
+            _position = position;
         }
 
         /// <inheritdoc cref="ContextRequestedEventArgs()" />
@@ -45,6 +52,11 @@ namespace Avalonia.Controls
         /// </returns>
         public bool TryGetPosition(Control? relativeTo, out Point point)
         {
+            if (_position != null)
+            {
+                point = _position.Value;
+                return true;
+            }
             if (_pointerEventArgs is null)
             {
                 point = default;

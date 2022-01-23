@@ -338,6 +338,13 @@ namespace Avalonia.Win32
 
                         break;
                     }
+                case WindowsMessage.WM_CONTEXTMENU:
+                    {
+                        var pos = DipFromLParam(lParam);
+                        KeyboardDevice.Instance.FocusedElement?.RaiseEvent(new ContextRequestedEventArgs(pos));
+                        break;
+                    }
+
                 case WindowsMessage.WM_NCPAINT:
                     {
                         if (!HasFullDecorations)
