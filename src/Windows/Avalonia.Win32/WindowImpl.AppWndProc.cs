@@ -340,9 +340,16 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_CONTEXTMENU:
                     {
+                        var posPix = PointFromLParam(lParam);
+                        if (posPix.X == -1 && posPix.Y == -1)//this pos means it launched by keyboard
+                        {
+                            //keyboard shortcuts are resolved inside avalonia via handling of keyUP events...
+                            break;
+                        }
+
                         var pos = DipFromLParam(lParam);
                         KeyboardDevice.Instance.FocusedElement?.RaiseEvent(new ContextRequestedEventArgs(pos));
-                        break;
+                        return IntPtr.Zero;
                     }
 
                 case WindowsMessage.WM_NCPAINT:
