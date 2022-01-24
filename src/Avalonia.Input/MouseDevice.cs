@@ -205,31 +205,20 @@ namespace Avalonia.Input
 
         PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
-
-            var kind = PointerUpdateKind.Other;
-
-            if (args.Type == RawPointerEventType.LeftButtonDown)
-                kind = PointerUpdateKind.LeftButtonPressed;
-            if (args.Type == RawPointerEventType.MiddleButtonDown)
-                kind = PointerUpdateKind.MiddleButtonPressed;
-            if (args.Type == RawPointerEventType.RightButtonDown)
-                kind = PointerUpdateKind.RightButtonPressed;
-            if (args.Type == RawPointerEventType.XButton1Down)
-                kind = PointerUpdateKind.XButton1Pressed;
-            if (args.Type == RawPointerEventType.XButton2Down)
-                kind = PointerUpdateKind.XButton2Pressed;
-            if (args.Type == RawPointerEventType.LeftButtonUp)
-                kind = PointerUpdateKind.LeftButtonReleased;
-            if (args.Type == RawPointerEventType.MiddleButtonUp)
-                kind = PointerUpdateKind.MiddleButtonReleased;
-            if (args.Type == RawPointerEventType.RightButtonUp)
-                kind = PointerUpdateKind.RightButtonReleased;
-            if (args.Type == RawPointerEventType.XButton1Up)
-                kind = PointerUpdateKind.XButton1Released;
-            if (args.Type == RawPointerEventType.XButton2Up)
-                kind = PointerUpdateKind.XButton2Released;
-            
-            return new PointerPointProperties(args.InputModifiers, kind);
+            return new PointerPointProperties(args.InputModifiers, args.Type switch
+            {
+                RawPointerEventType.LeftButtonDown => PointerUpdateKind.LeftButtonPressed,
+                RawPointerEventType.MiddleButtonDown => PointerUpdateKind.MiddleButtonPressed,
+                RawPointerEventType.RightButtonDown => PointerUpdateKind.RightButtonPressed,
+                RawPointerEventType.XButton1Down => PointerUpdateKind.XButton1Pressed,
+                RawPointerEventType.XButton2Down => PointerUpdateKind.XButton2Pressed,
+                RawPointerEventType.LeftButtonUp => PointerUpdateKind.LeftButtonReleased,
+                RawPointerEventType.MiddleButtonUp => PointerUpdateKind.MiddleButtonReleased,
+                RawPointerEventType.RightButtonUp => PointerUpdateKind.RightButtonReleased,
+                RawPointerEventType.XButton1Up => PointerUpdateKind.XButton1Released,
+                RawPointerEventType.XButton2Up => PointerUpdateKind.XButton2Released,
+                _ => PointerUpdateKind.Other,
+            });
         }
 
         private MouseButton _lastMouseDownButton;

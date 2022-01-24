@@ -160,13 +160,12 @@ namespace Avalonia.Input
 
         private PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
-            var kind = PointerUpdateKind.Other;
-
-            if (args.Type == RawPointerEventType.LeftButtonDown)
-                kind = PointerUpdateKind.LeftButtonPressed;
-            if (args.Type == RawPointerEventType.LeftButtonUp)
-                kind = PointerUpdateKind.LeftButtonReleased;
-
+            var kind = args.Type switch
+            {
+                RawPointerEventType.LeftButtonDown => PointerUpdateKind.LeftButtonPressed,
+                RawPointerEventType.LeftButtonUp => PointerUpdateKind.LeftButtonReleased,
+                _ => PointerUpdateKind.Other,
+            };
             return new PointerPointProperties(args.InputModifiers, kind, 
                 Twist, Pressure, XTilt, YTilt, IsEraser, IsInverted, IsBarrel);
         }
