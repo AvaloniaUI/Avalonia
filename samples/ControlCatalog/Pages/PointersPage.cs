@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,7 +26,8 @@ public class PointersPage : Decorator
             Items = new[]
             {
                 new TabItem() { Header = "Contacts", Content = new PointerContactsTab() },
-                new TabItem() { Header = "IntermediatePoints", Content = new PointerIntermediatePointsTab() }
+                new TabItem() { Header = "IntermediatePoints", Content = new PointerIntermediatePointsTab() },
+                new TabItem() { Header = "Pressure", Content = new PointerPressureTab() }
             }
         };
     }
@@ -148,7 +150,7 @@ public class PointersPage : Decorator
             {
                 Children =
                 {
-                    new PointerCanvas(slider, status),
+                    new PointerCanvas(slider, status, true),
                     new Border
                     {
                         Background = Brushes.LightYellow,
@@ -182,140 +184,210 @@ public class PointersPage : Decorator
                 }
             };
         }
+    }
 
-        class PointerCanvas : Control
+    public class PointerPressureTab : Decorator
+    {
+        public PointerPressureTab()
         {
-            private readonly Slider _slider;
-            private readonly TextBlock _status;
-            private int _events;
-            private Stopwatch _stopwatch = Stopwatch.StartNew();
-            private Dictionary<int, PointerPoints> _pointers = new();
-            class PointerPoints
-            {
-                struct CanvasPoint
-                {
-                    public IBrush Brush;
-                    public Point Point;
-                    public double Radius;
-                }
+            this[TextBlock.ForegroundProperty] = Brushes.Black;
 
-                readonly CanvasPoint[] _points = new CanvasPoint[1000];
-                int _index;
-                
-                public  void Render(DrawingContext context)
+            var status = new TextBlock()
+            {
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                FontSize = 12
+            };
+            Child = new Grid
+            {
+                Children =
                 {
-                    
-                    CanvasPoint? prev = null;
-                    for (var c = 0; c < _points.Length; c++)
+                    new PointerCanvas(null, status, false),
+                    status
+                }
+            };
+        }
+    }
+
+    class PointerCanvas : Control
+    {
+        private readonly Slider? _slider;
+        private readonly TextBlock _status;
+        private readonly bool _drawPoints;
+        private int _events;
+        private Stopwatch _stopwatch = Stopwatch.StartNew();
+        private IDisposable? _statusUpdated;
+        private Dictionary<int, PointerPoints> _pointers = new();
+        private PointerPointProperties? _lastProperties;
+        class PointerPoints
+        {
+            struct CanvasPoint
+            {
+                public IBrush Brush;
+                public Point Point;
+                public double Radius;
+                public double Pressure;
+            }
+
+            readonly CanvasPoint[] _points = new CanvasPoint[1000];
+            int _index;
+
+            public void Render(DrawingContext context, bool drawPoints)
+            {
+
+                CanvasPoint? prev = null;
+                for (var c = 0; c < _points.Length; c++)
+                {
+                    var i = (c + _index) % _points.Length;
+                    var pt = _points[i];
+                    var thickness = pt.Pressure == 0 ? 1 : (pt.Pressure / 1024) * 5;
+
+                    if (drawPoints)
                     {
-                        var i = (c + _index) % _points.Length;
-                        var pt = _points[i];
                         if (prev.HasValue && prev.Value.Brush != null && pt.Brush != null)
-                            context.DrawLine(new Pen(Brushes.Black), prev.Value.Point, pt.Point);
-                        prev = pt;
+                            context.DrawLine(new Pen(Brushes.Black, thickness), prev.Value.Point, pt.Point);
                         if (pt.Brush != null)
                             context.DrawEllipse(pt.Brush, null, pt.Point, pt.Radius, pt.Radius);
-
                     }
-
-                }
-
-                void AddPoint(Point pt, IBrush brush, double radius)
-                {
-                    _points[_index] = new CanvasPoint { Point = pt, Brush = brush, Radius = radius };
-                    _index = (_index + 1) % _points.Length;
-                }
-
-                public void HandleEvent(PointerEventArgs e, Visual v)
-                {
-                    e.Handled = true;
-                    if (e.RoutedEvent == PointerPressedEvent)
-                        AddPoint(e.GetPosition(v), Brushes.Green, 10);
-                    else if (e.RoutedEvent == PointerReleasedEvent)
-                        AddPoint(e.GetPosition(v), Brushes.Red, 10);
                     else
                     {
-                        var pts = e.GetIntermediatePoints(v);
-                        for (var c = 0; c < pts.Count; c++)
-                        {
-                            var pt = pts[c];
-                            AddPoint(pt.Position, c == pts.Count - 1 ? Brushes.Blue : Brushes.Black,
-                                c == pts.Count - 1 ? 5 : 2);
-                        }
+                        if (prev.HasValue && prev.Value.Brush != null && pt.Brush != null)
+                            context.DrawLine(new Pen(Brushes.Black, thickness, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), prev.Value.Point, pt.Point);
+                    }
+                    prev = pt;
+                }
+
+            }
+
+            void AddPoint(Point pt, IBrush brush, double radius, float pressure)
+            {
+                _points[_index] = new CanvasPoint { Point = pt, Brush = brush, Radius = radius, Pressure = pressure };
+                _index = (_index + 1) % _points.Length;
+            }
+
+            public void HandleEvent(PointerEventArgs e, Visual v)
+            {
+                e.Handled = true;
+                var currentPoint = e.GetCurrentPoint(v);
+                if (e.RoutedEvent == PointerPressedEvent)
+                    AddPoint(currentPoint.Position, Brushes.Green, 10, currentPoint.Properties.Pressure);
+                else if (e.RoutedEvent == PointerReleasedEvent)
+                    AddPoint(currentPoint.Position, Brushes.Red, 10, currentPoint.Properties.Pressure);
+                else
+                {
+                    var pts = e.GetIntermediatePoints(v);
+                    for (var c = 0; c < pts.Count; c++)
+                    {
+                        var pt = pts[c];
+                        AddPoint(pt.Position, c == pts.Count - 1 ? Brushes.Blue : Brushes.Black,
+                            c == pts.Count - 1 ? 5 : 2, pt.Properties.Pressure);
                     }
                 }
+            }
+        }
+
+        public PointerCanvas(Slider? slider, TextBlock status, bool drawPoints)
+        {
+            _slider = slider;
+            _status = status;
+            _drawPoints = drawPoints;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            _statusUpdated = DispatcherTimer.Run(() =>
+            {
+                if (_stopwatch.Elapsed.TotalSeconds > 1)
+                {
+                    _status.Text = $@"Events per second: {(_events / _stopwatch.Elapsed.TotalSeconds)}
+PointerUpdateKind: {_lastProperties?.PointerUpdateKind}
+IsLeftButtonPressed: {_lastProperties?.IsLeftButtonPressed}
+IsRightButtonPressed: {_lastProperties?.IsRightButtonPressed}
+IsMiddleButtonPressed: {_lastProperties?.IsMiddleButtonPressed}
+IsXButton1Pressed: {_lastProperties?.IsXButton1Pressed}
+IsXButton2Pressed: {_lastProperties?.IsXButton2Pressed}
+IsBarrelButtonPressed: {_lastProperties?.IsBarrelButtonPressed}
+IsEraser: {_lastProperties?.IsEraser}
+IsInverted: {_lastProperties?.IsInverted}
+Pressure: {_lastProperties?.Pressure}
+XTilt: {_lastProperties?.XTilt}
+YTilt: {_lastProperties?.YTilt}
+Twist: {_lastProperties?.Twist}";
+                    _stopwatch.Restart();
+                    _events = 0;
+                }
+
+                return true;
+            }, TimeSpan.FromMilliseconds(10));
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _statusUpdated?.Dispose();
+        }
+
+        void HandleEvent(PointerEventArgs e)
+        {
+            _events++;
+            if (_slider != null)
+            {
+                Thread.Sleep((int)_slider.Value);
+            }
+            InvalidateVisual();
+
+            if (e.RoutedEvent == PointerReleasedEvent && e.Pointer.Type == PointerType.Touch)
+            {
+                _pointers.Remove(e.Pointer.Id);
+                return;
             }
             
-            public PointerCanvas(Slider slider, TextBlock status)
+            var lastPointer = e.GetCurrentPoint(this);
+            _lastProperties = lastPointer.Properties;
+
+            if (e.Pointer.Type != PointerType.Pen
+                || lastPointer.Properties.Pressure > 0)
             {
-                _slider = slider;
-                _status = status;
-                DispatcherTimer.Run(() =>
-                {
-                    if (_stopwatch.Elapsed.TotalSeconds > 1)
-                    {
-                        _status.Text = "Events per second: " + (_events / _stopwatch.Elapsed.TotalSeconds);
-                        _stopwatch.Restart();
-                        _events = 0;
-                    }
-
-                    return this.GetVisualRoot() != null;
-                }, TimeSpan.FromMilliseconds(10));
-            }
-
-
-            void HandleEvent(PointerEventArgs e)
-            {
-                _events++;
-                Thread.Sleep((int)_slider.Value);
-                InvalidateVisual();
-
-                if (e.RoutedEvent == PointerReleasedEvent && e.Pointer.Type == PointerType.Touch)
-                {
-                    _pointers.Remove(e.Pointer.Id);
-                    return;
-                }
-
                 if (!_pointers.TryGetValue(e.Pointer.Id, out var pt))
                     _pointers[e.Pointer.Id] = pt = new PointerPoints();
                 pt.HandleEvent(e, this);
-                
-                
-            }
-            
-            public override void Render(DrawingContext context)
-            {
-                context.FillRectangle(Brushes.White, Bounds);
-                foreach(var pt in _pointers.Values)
-                    pt.Render(context);
-                base.Render(context);
-            }
-
-            protected override void OnPointerPressed(PointerPressedEventArgs e)
-            {
-                if (e.ClickCount == 2)
-                {
-                    _pointers.Clear();
-                    InvalidateVisual();
-                    return;
-                }
-                
-                HandleEvent(e);
-                base.OnPointerPressed(e);
-            }
-
-            protected override void OnPointerMoved(PointerEventArgs e)
-            {
-                HandleEvent(e);
-                base.OnPointerMoved(e);
-            }
-
-            protected override void OnPointerReleased(PointerReleasedEventArgs e)
-            {
-                HandleEvent(e);
-                base.OnPointerReleased(e);
             }
         }
-    
+
+        public override void Render(DrawingContext context)
+        {
+            context.FillRectangle(Brushes.White, Bounds);
+            foreach (var pt in _pointers.Values)
+                pt.Render(context, _drawPoints);
+            base.Render(context);
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                _pointers.Clear();
+                InvalidateVisual();
+                return;
+            }
+
+            HandleEvent(e);
+            base.OnPointerPressed(e);
+        }
+
+        protected override void OnPointerMoved(PointerEventArgs e)
+        {
+            HandleEvent(e);
+            base.OnPointerMoved(e);
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            HandleEvent(e);
+            base.OnPointerReleased(e);
+        }
     }
 }
