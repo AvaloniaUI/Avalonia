@@ -402,6 +402,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERUPDATE:
                     {
                         GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
+                        Point[]? intermediatePoints = null;
 
                         if (info.historyCount > 1)
                         {
@@ -456,6 +457,23 @@ namespace Avalonia.Win32
                                     }
                                 }
                             }
+                            else
+                            {
+                                var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+                                var historyCount = (int)info.historyCount;
+                                var historyInfos = new POINTER_INFO[historyCount];
+                                if (GetPointerInfoHistory(pointerId, ref historyCount, historyInfos))
+                                {
+                                    //last info is the same as the current so skip it
+                                    intermediatePoints = new Point[historyCount - 1];
+                                    for (int i = 0;i < historyCount - 1; i++)
+                                    {
+                                        var historyInfo = historyInfos[i];
+                                        intermediatePoints[i] = PointToClient(new PixelPoint(
+                                            historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
+                                    }
+                                }
+                            }
                         }
 
                         var eventType = GetEventType(message, info);
@@ -468,11 +486,17 @@ namespace Avalonia.Win32
                             {
                                 break;
                             }
-                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, eventType, point, modifiers, info.pointerId);
+                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, eventType, point, modifiers, info.pointerId)
+                            {
+                                IntermediatePoints = intermediatePoints
+                            };
                         }
                         else
                         {
-                            e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers);
+                            e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers)
+                            {
+                                IntermediatePoints = intermediatePoints
+                            };
                         }
                         break;
                     }
