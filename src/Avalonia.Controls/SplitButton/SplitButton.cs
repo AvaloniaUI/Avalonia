@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Windows.Input;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,6 +13,7 @@ namespace Avalonia.Controls
     /// A button with primary and secondary parts that can each be invoked separately.
     /// The primary part behaves like a button and the secondary part opens a flyout.
     /// </summary>
+    //[PseudoClasses(":pressed")]
     public class SplitButton : ContentControl, ICommandSource
     {
         /// <summary>
@@ -141,109 +143,156 @@ namespace Avalonia.Controls
         /// </summary>
         private void UpdatePseudoClasses()
         {
-            /*
-            // place the secondary button
-            if (m_lastPointerDeviceType == winrt::PointerDeviceType::Touch || m_isKeyDown)
+            bool internalIsChecked = false;
+
+            string pcNormal   = ":normal";
+            string pcDisabled = ":disabled";
+
+            string pcSecondaryButtonRight = ":secondaryButtonRight";
+            string pcSecondaryButtonSpan  = ":secondaryButtonSpan";
+
+            string pcCheckedFlyoutOpen = ":checkedFlyoutOpen";
+            string pcFlyoutOpen        = ":flyoutOpen";
+
+            string pcCheckedTouchPressed         = ":checkedTouchPressed";
+            string pcChecked                     = ":checked";
+            string pcCheckedPrimaryPressed       = ":checkedPrimaryPressed";
+            string pcCheckedPrimaryPointerOver   = ":checkedPrimaryPointerOver";
+            string pcCheckedSecondaryPressed     = ":checkedSecondaryPressed";
+            string pcCheckedSecondaryPointerOver = ":checkedSecondaryPointerOver";
+
+            string pcTouchPressed         = ":touchPressed";
+            string pcPrimaryPressed       = ":primaryPressed";
+            string pcPrimaryPointerOver   = ":primaryPointerOver";
+            string pcSecondaryPressed     = ":secondaryPressed";
+            string pcSecondaryPointerOver = ":secondaryPointerOver";
+
+            // Place the secondary button
+            // These are mutually exclusive PseudoClasses handled separately from SetExclusivePseudoClass().
+            // They must be applied in addition to the others.
+            if (_lastPointerType == PointerType.Touch || _isKeyDown)
             {
-                winrt::VisualStateManager::GoToState(*this, L"SecondaryButtonSpan", useTransitions);
+                PseudoClasses.Set(pcSecondaryButtonSpan, true);
+                PseudoClasses.Set(pcSecondaryButtonRight, false);
             }
             else
             {
-                winrt::VisualStateManager::GoToState(*this, L"SecondaryButtonRight", useTransitions);
+                PseudoClasses.Set(pcSecondaryButtonSpan, false);
+                PseudoClasses.Set(pcSecondaryButtonRight, true);
             }
 
-            // change visual state
-            auto primaryButton = m_primaryButton.get();
-            auto secondaryButton = m_secondaryButton.get();
-
-            if (!IsEnabled())
+            // Change the visual state
+            if (!IsEnabled)
             {
-                winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+                SetExclusivePseudoClass(pcDisabled);
             }
-            else if (primaryButton && secondaryButton)
+            else if (_primaryButton != null && _secondaryButton != null)
             {
-                if (m_isFlyoutOpen)
+                if (_isFlyoutOpen)
                 {
-                    if (InternalIsChecked())
+                    if (internalIsChecked)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"CheckedFlyoutOpen", useTransitions);
+                        SetExclusivePseudoClass(pcCheckedFlyoutOpen);
                     }
                     else
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"FlyoutOpen", useTransitions);
+                        SetExclusivePseudoClass(pcFlyoutOpen);
                     }
                 }
                 // SplitButton and ToggleSplitButton share a template -- this section is driving the checked states for ToggleSplitButton.
-                else if (InternalIsChecked())
+                else if (internalIsChecked)
                 {
-                    if (m_lastPointerDeviceType == winrt::PointerDeviceType::Touch || m_isKeyDown)
+                    if (_lastPointerType == PointerType.Touch || _isKeyDown)
                     {
-                        if (primaryButton.IsPressed() || secondaryButton.IsPressed() || m_isKeyDown)
+                        if (_primaryButton.IsPressed || _secondaryButton.IsPressed || _isKeyDown)
                         {
-                            winrt::VisualStateManager::GoToState(*this, L"CheckedTouchPressed", useTransitions);
+                            SetExclusivePseudoClass(pcCheckedTouchPressed);
                         }
                         else
                         {
-                            winrt::VisualStateManager::GoToState(*this, L"Checked", useTransitions);
+                            SetExclusivePseudoClass(pcChecked);
                         }
                     }
-                    else if (primaryButton.IsPressed())
+                    else if (_primaryButton.IsPressed)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"CheckedPrimaryPressed", useTransitions);
+                        SetExclusivePseudoClass(pcCheckedPrimaryPressed);
                     }
-                    else if (primaryButton.IsPointerOver())
+                    else if (_primaryButton.IsPointerOver)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"CheckedPrimaryPointerOver", useTransitions);
+                        SetExclusivePseudoClass(pcCheckedPrimaryPointerOver);
                     }
-                    else if (secondaryButton.IsPressed())
+                    else if (_secondaryButton.IsPressed)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"CheckedSecondaryPressed", useTransitions);
+                        SetExclusivePseudoClass(pcCheckedSecondaryPressed);
                     }
-                    else if (secondaryButton.IsPointerOver())
+                    else if (_secondaryButton.IsPointerOver)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"CheckedSecondaryPointerOver", useTransitions);
+                        SetExclusivePseudoClass(pcCheckedSecondaryPointerOver);
                     }
                     else
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"Checked", useTransitions);
+                        SetExclusivePseudoClass(pcChecked);
                     }
                 }
                 else
                 {
-                    if (m_lastPointerDeviceType == winrt::PointerDeviceType::Touch || m_isKeyDown)
+                    if (_lastPointerType == PointerType.Touch || _isKeyDown)
                     {
-                        if (primaryButton.IsPressed() || secondaryButton.IsPressed() || m_isKeyDown)
+                        if (_primaryButton.IsPressed || _secondaryButton.IsPressed || _isKeyDown)
                         {
-                            winrt::VisualStateManager::GoToState(*this, L"TouchPressed", useTransitions);
+                            SetExclusivePseudoClass(pcTouchPressed);
                         }
                         else
                         {
-                            winrt::VisualStateManager::GoToState(*this, L"Normal", useTransitions);
+                            SetExclusivePseudoClass(pcNormal);
                         }
                     }
-                    else if (primaryButton.IsPressed())
+                    else if (_primaryButton.IsPressed)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"PrimaryPressed", useTransitions);
+                        SetExclusivePseudoClass(pcPrimaryPressed);
                     }
-                    else if (primaryButton.IsPointerOver())
+                    else if (_primaryButton.IsPointerOver)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"PrimaryPointerOver", useTransitions);
+                        SetExclusivePseudoClass(pcPrimaryPointerOver);
                     }
-                    else if (secondaryButton.IsPressed())
+                    else if (_secondaryButton.IsPressed)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"SecondaryPressed", useTransitions);
+                        SetExclusivePseudoClass(pcSecondaryPressed);
                     }
-                    else if (secondaryButton.IsPointerOver())
+                    else if (_secondaryButton.IsPointerOver)
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"SecondaryPointerOver", useTransitions);
+                        SetExclusivePseudoClass(pcSecondaryPointerOver);
                     }
                     else
                     {
-                        winrt::VisualStateManager::GoToState(*this, L"Normal", useTransitions);
+                        SetExclusivePseudoClass(pcNormal);
                     }
                 }
             }
-            */
+
+            // Local function to enable the specified PseudoClass and disable all others
+            // This more closely matches the VisualStateManager of WinUI where the default style originated
+            void SetExclusivePseudoClass(string pseudoClass = "")
+            {
+                PseudoClasses.Set(pcNormal, pseudoClass == pcNormal);
+                PseudoClasses.Set(pcDisabled, pseudoClass == pcDisabled);
+
+                PseudoClasses.Set(pcCheckedFlyoutOpen, pseudoClass == pcCheckedFlyoutOpen);
+                PseudoClasses.Set(pcFlyoutOpen, pseudoClass == pcFlyoutOpen);
+
+                PseudoClasses.Set(pcCheckedTouchPressed, pseudoClass == pcCheckedTouchPressed);
+                PseudoClasses.Set(pcChecked, pseudoClass == pcChecked);
+                PseudoClasses.Set(pcCheckedPrimaryPressed, pseudoClass == pcCheckedPrimaryPressed);
+                PseudoClasses.Set(pcCheckedPrimaryPointerOver, pseudoClass == pcCheckedPrimaryPointerOver);
+                PseudoClasses.Set(pcCheckedSecondaryPressed, pseudoClass == pcCheckedSecondaryPressed);
+                PseudoClasses.Set(pcCheckedSecondaryPointerOver, pseudoClass == pcCheckedSecondaryPointerOver);
+
+                PseudoClasses.Set(pcTouchPressed, pseudoClass == pcTouchPressed);
+                PseudoClasses.Set(pcPrimaryPressed, pseudoClass == pcPrimaryPressed);
+                PseudoClasses.Set(pcPrimaryPointerOver, pseudoClass == pcPrimaryPointerOver);
+                PseudoClasses.Set(pcSecondaryPressed, pseudoClass == pcSecondaryPressed);
+                PseudoClasses.Set(pcSecondaryPointerOver, pseudoClass == pcSecondaryPointerOver);
+            }
         }
 
         /// <summary>
@@ -342,8 +391,8 @@ namespace Avalonia.Controls
             UnregisterEvents();
             UnregisterFlyoutEvents(Flyout);
 
-            _primaryButton   = e.NameScope.Find<Button>("PrimaryButton");
-            _secondaryButton = e.NameScope.Find<Button>("SecondaryButton");
+            _primaryButton   = e.NameScope.Find<Button>("PART_PrimaryButton");
+            _secondaryButton = e.NameScope.Find<Button>("PART_SecondaryButton");
 
             _buttonPropertyChangedDisposable = new CompositeDisposable();
 
