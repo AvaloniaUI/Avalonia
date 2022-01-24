@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Windows.Input;
-using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -399,8 +398,6 @@ namespace Avalonia.Controls
             if (_primaryButton != null)
             {
                 _primaryButton.Click += PrimaryButton_Click;
-
-                _primaryButton.GetPropertyChangedObservable(Button.IsPressedProperty);
 
                 _buttonPropertyChangedDisposable.Add(_primaryButton.GetPropertyChangedObservable(Button.IsPressedProperty).Subscribe(Button_VisualPropertyChanged));
                 _buttonPropertyChangedDisposable.Add(_primaryButton.GetPropertyChangedObservable(Button.IsPointerOverProperty).Subscribe(Button_VisualPropertyChanged));
