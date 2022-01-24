@@ -381,11 +381,16 @@ namespace Avalonia.Win32
                         break;
                     }
                 case WindowsMessage.WM_POINTERDEVICEINRANGE:
-                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
                     {
+                        _mouseDevice.Capture(null);
                         //notifies about proximity of pointer device to the digitizer.
                         //contains pointer id and proximity.
                         //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdeviceinrange
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
+                    {
+                        _penDevice.Capture(null);
                         break;
                     }
                 case WindowsMessage.WM_NCPOINTERUPDATE:
@@ -545,6 +550,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERCAPTURECHANGED:
                     {
                         _mouseDevice.Capture(null);
+                        _penDevice.Capture(null);
                         return IntPtr.Zero;
                     }
                 case WindowsMessage.DM_POINTERHITTEST:
