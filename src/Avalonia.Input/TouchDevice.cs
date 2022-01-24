@@ -104,7 +104,7 @@ namespace Avalonia.Input
                 target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, args.Root,
                     args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), PointerUpdateKind.Other),
-                    GetKeyModifiers(args.InputModifiers)));
+                    GetKeyModifiers(args.InputModifiers), args.IntermediatePoints));
             }
 
 
