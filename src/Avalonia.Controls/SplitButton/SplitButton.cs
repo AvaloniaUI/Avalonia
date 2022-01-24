@@ -48,9 +48,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<SplitButton, object>(
                 nameof(CommandParameter));
 
-		/// <summary>
-		/// Defines the <see cref="Flyout"/> property
-		/// </summary>
+        /// <summary>
+        /// Defines the <see cref="Flyout"/> property
+        /// </summary>
         public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
             AvaloniaProperty.Register<SplitButton, FlyoutBase>(
                 nameof(Flyout));
@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         private PointerType _lastPointerType   = PointerType.Mouse;
 
         private CompositeDisposable _buttonPropertyChangedDisposable;
-		private IDisposable         _flyoutPropertyChangedDisposable;
+        private IDisposable         _flyoutPropertyChangedDisposable;
 
         ////////////////////////////////////////////////////////////////////////
         // 
@@ -88,32 +88,32 @@ namespace Avalonia.Controls
         //
         ////////////////////////////////////////////////////////////////////////
 
-		/// <summary>
-		/// Gets or sets the <see cref="ICommand"/> invoked when the primary part is pressed.
-		/// </summary>
-		public ICommand Command
-		{
-			get => _Command;
-			set => SetAndRaise(CommandProperty, ref _Command, value);
-		}
+        /// <summary>
+        /// Gets or sets the <see cref="ICommand"/> invoked when the primary part is pressed.
+        /// </summary>
+        public ICommand Command
+        {
+            get => _Command;
+            set => SetAndRaise(CommandProperty, ref _Command, value);
+        }
 
-		/// <summary>
-		/// Gets or sets a parameter to be passed to the <see cref="Command"/>.
-		/// </summary>
-		public object CommandParameter
-		{
-			get => GetValue(CommandParameterProperty);
-			set => SetValue(CommandParameterProperty, value);
-		}
+        /// <summary>
+        /// Gets or sets a parameter to be passed to the <see cref="Command"/>.
+        /// </summary>
+        public object CommandParameter
+        {
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
+        }
 
-		/// <summary>
-		/// Gets or sets the <see cref="FlyoutBase"/> that is shown when the secondary part is pressed.
-		/// </summary>
-		public FlyoutBase Flyout
-		{
+        /// <summary>
+        /// Gets or sets the <see cref="FlyoutBase"/> that is shown when the secondary part is pressed.
+        /// </summary>
+        public FlyoutBase Flyout
+        {
             get => GetValue(FlyoutProperty);
             set => SetValue(FlyoutProperty, value);
-		}
+        }
 
         ////////////////////////////////////////////////////////////////////////
         // 
@@ -338,12 +338,12 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-		{
+        {
             UnregisterEvents();
             UnregisterFlyoutEvents(Flyout);
 
-			_primaryButton   = e.NameScope.Find<Button>("PrimaryButton");
-			_secondaryButton = e.NameScope.Find<Button>("SecondaryButton");
+            _primaryButton   = e.NameScope.Find<Button>("PrimaryButton");
+            _secondaryButton = e.NameScope.Find<Button>("SecondaryButton");
 
             _buttonPropertyChangedDisposable = new CompositeDisposable();
 
@@ -353,7 +353,7 @@ namespace Avalonia.Controls
 
                 _primaryButton.GetPropertyChangedObservable(Button.IsPressedProperty);
 
-				_buttonPropertyChangedDisposable.Add(_primaryButton.GetPropertyChangedObservable(Button.IsPressedProperty).Subscribe(Button_VisualPropertyChanged));
+                _buttonPropertyChangedDisposable.Add(_primaryButton.GetPropertyChangedObservable(Button.IsPressedProperty).Subscribe(Button_VisualPropertyChanged));
                 _buttonPropertyChangedDisposable.Add(_primaryButton.GetPropertyChangedObservable(Button.IsPointerOverProperty).Subscribe(Button_VisualPropertyChanged));
 
                 // Register for pointer events to keep track of the last used pointer type and update visual states
@@ -410,13 +410,13 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-		protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> changedEventArgs)
-		{
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> changedEventArgs)
+        {
             if (changedEventArgs.Property == FlyoutProperty)
             {
                 // Must unregister events here while a ref to the old flyout still exists
                 if (changedEventArgs.OldValue.GetValueOrDefault() is FlyoutBase oldFlyout)
-				{
+                {
                     UnregisterFlyoutEvents(oldFlyout);
                 }
 
@@ -428,12 +428,12 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-			base.OnPropertyChanged(changedEventArgs);
-		}
+            base.OnPropertyChanged(changedEventArgs);
+        }
 
         /// <inheritdoc/>
-		protected override void OnKeyDown(KeyEventArgs e)
-		{
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
             var key = e.Key;
 
             if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
@@ -442,12 +442,12 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-			base.OnKeyDown(e);
-		}
+            base.OnKeyDown(e);
+        }
 
         /// <inheritdoc/>
-		protected override void OnKeyUp(KeyEventArgs e)
-		{
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
             var key = e.Key;
 
             if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
@@ -538,14 +538,14 @@ namespace Avalonia.Controls
         /// Event handler for when pointer events occur in the primary or secondary buttons.
         /// </summary>
         private void Button_PointerEvent(object sender, PointerEventArgs e)
-		{
+        {
             // Warning: Code must match with Button_PointerCaptureLost
-			if (_lastPointerType != e.Pointer.Type)
-			{
-				_lastPointerType = e.Pointer.Type;
-				UpdatePseudoClasses();
-			}
-		}
+            if (_lastPointerType != e.Pointer.Type)
+            {
+                _lastPointerType = e.Pointer.Type;
+                UpdatePseudoClasses();
+            }
+        }
 
         /// <summary>
         /// Event handler for when the pointer capture is lost in the primary or secondary buttons.
@@ -553,15 +553,15 @@ namespace Avalonia.Controls
         /// <remarks>
         /// In upstream WinUI this is not a separate event handler. However, Avalonia has different args.
         /// </remarks>
-		private void Button_PointerCaptureLost(object sender, PointerCaptureLostEventArgs e)
-		{
+        private void Button_PointerCaptureLost(object sender, PointerCaptureLostEventArgs e)
+        {
             // Warning: Code must match with Button_PointerEvent
-			if (_lastPointerType != e.Pointer.Type)
-			{
-				_lastPointerType = e.Pointer.Type;
-				UpdatePseudoClasses();
-			}
-		}
+            if (_lastPointerType != e.Pointer.Type)
+            {
+                _lastPointerType = e.Pointer.Type;
+                UpdatePseudoClasses();
+            }
+        }
 
         /// <summary>
         /// Called when a primary or secondary button property changes that affects the visual states.
