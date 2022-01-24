@@ -225,7 +225,7 @@ namespace Avalonia.Win32.Interop
         [Flags]
         public enum ModifierKeys
         {
-            MK_NONE    = 0x0001,
+            MK_NONE    = 0x0000,
 
             MK_LBUTTON = 0x0001,
             MK_RBUTTON = 0x0002,
