@@ -2,5 +2,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.SplitButtonPage">
   <StackPanel Orientation="Vertical" Spacing="4">
+    <SplitButton>
+      <TextBlock Text="Content" />
+      <SplitButton.Flyout>
+        <MenuFlyout>
+          <MenuItem Header="Item 1">
+            <MenuItem Header="Subitem 1" />
+            <MenuItem Header="Subitem 2" />
+            <MenuItem Header="Subitem 3" />
+          </MenuItem>
+          <MenuItem Header="Item 2"
+                    InputGesture="Ctrl+A" />
+          <MenuItem Header="Item 3" />
+        </MenuFlyout>
+      </SplitButton.Flyout>
+    </SplitButton>
+    <SplitButton
+      IsEnabled="False">
+      <TextBlock Text="Content" />
+      <SplitButton.Flyout>
+        <MenuFlyout>
+          <MenuItem Header="Item 1">
+            <MenuItem Header="Subitem 1" />
+            <MenuItem Header="Subitem 2" />
+            <MenuItem Header="Subitem 3" />
+          </MenuItem>
+          <MenuItem Header="Item 2"
+                    InputGesture="Ctrl+A" />
+          <MenuItem Header="Item 3" />
+        </MenuFlyout>
+      </SplitButton.Flyout>
+    </SplitButton>
   </StackPanel>
 </UserControl>
