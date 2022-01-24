@@ -121,6 +121,9 @@
       <TabItem Header="Slider">
         <pages:SliderPage />
       </TabItem>
+      <TabItem Header="SplitButton">
+        <pages:SplitButtonPage />
+      </TabItem>
       <TabItem Header="SplitView">
         <pages:SplitViewPage />
       </TabItem>
