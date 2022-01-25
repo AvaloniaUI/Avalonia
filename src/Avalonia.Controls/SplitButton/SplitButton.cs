@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Windows.Input;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -9,16 +10,32 @@ using Avalonia.LogicalTree;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A button with primary and secondary parts that can each be invoked separately.
-    /// The primary part behaves like a button and the secondary part opens a flyout.
+    /// A button with primary and secondary parts that can each be pressed separately.
+    /// The primary part behaves like a <see cref="Button"/> and the secondary part opens a flyout.
     /// </summary>
-    //[PseudoClasses(":pressed")]
+    [PseudoClasses(
+        ":disabled",
+        ":secondaryButtonRight",
+        ":secondaryButtonSpan",
+        ":checkedFlyoutOpen",
+        ":flyoutOpen",
+        ":checkedTouchPressed",
+        ":checked",
+        ":checkedPrimaryPressed",
+        ":checkedPrimaryPointerOver",
+        ":checkedSecondaryPressed",
+        ":checkedSecondaryPointerOver",
+        ":touchPressed",
+        ":primaryPressed",
+        ":primaryPointerOver",
+        ":secondaryPressed",
+        ":secondaryPointerOver")]
     public class SplitButton : ContentControl, ICommandSource
     {
         /// <summary>
         /// Raised when the user presses the primary part of the <see cref="SplitButton"/>.
         /// </summary>
-        public event EventHandler<SplitButtonClickEventArgs> Click
+        public event EventHandler<RoutedEventArgs> Click
         {
             add => AddHandler(ClickEvent, value);
             remove => RemoveHandler(ClickEvent, value);
@@ -27,8 +44,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Click"/> event.
         /// </summary>
-        public static readonly RoutedEvent<SplitButtonClickEventArgs> ClickEvent =
-            RoutedEvent.Register<SplitButton, SplitButtonClickEventArgs>(
+        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
+            RoutedEvent.Register<SplitButton, RoutedEventArgs>(
                 nameof(Click),
                 RoutingStrategies.Bubble);
 
@@ -61,11 +78,12 @@ namespace Avalonia.Controls
         private Button _primaryButton   = null;
         private Button _secondaryButton = null;
 
-        private bool        _commandCanExecute = true;
-        protected bool      _hasLoaded         = false;
-        private bool        _isFlyoutOpen      = false;
-        private bool        _isKeyDown         = false;
-        private PointerType _lastPointerType   = PointerType.Mouse;
+        private bool        _commandCanExecute       = true;
+        protected bool      _hasLoaded               = false;
+        private bool        _isAttachedToLogicalTree = false;
+        private bool        _isFlyoutOpen            = false;
+        private bool        _isKeyDown               = false;
+        private PointerType _lastPointerType         = PointerType.Mouse;
 
         private CompositeDisposable _buttonPropertyChangedDisposable;
         private IDisposable         _flyoutPropertyChangedDisposable;
@@ -116,6 +134,19 @@ namespace Avalonia.Controls
             set => SetValue(FlyoutProperty, value);
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the button is currently checked.
+        /// </summary>
+        /// <remarks>
+        /// This property exists only for the derived <see cref="ToggleSplitButton"/> and is
+        /// unused (set to false) within <see cref="SplitButton"/>. Doing this allows the
+        /// two controls to share a default style.
+        /// </remarks>
+        internal virtual bool InternalIsChecked => false;
+
+        /// <inheritdoc/>
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
+
         ////////////////////////////////////////////////////////////////////////
         // 
         // Methods
@@ -134,17 +165,12 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <inheritdoc/>
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
-
         /// <summary>
         /// Updates the visual state of the control by applying latest PseudoClasses.
         /// </summary>
-        private void UpdatePseudoClasses()
+        protected void UpdatePseudoClasses()
         {
-            bool internalIsChecked = false;
-
-            string pcNormal   = ":normal";
+            string pcNormal   = ":normal"; // Not supported in XAML style
             string pcDisabled = ":disabled";
 
             string pcSecondaryButtonRight = ":secondaryButtonRight";
@@ -189,7 +215,7 @@ namespace Avalonia.Controls
             {
                 if (_isFlyoutOpen)
                 {
-                    if (internalIsChecked)
+                    if (InternalIsChecked)
                     {
                         SetExclusivePseudoClass(pcCheckedFlyoutOpen);
                     }
@@ -199,7 +225,7 @@ namespace Avalonia.Controls
                     }
                 }
                 // SplitButton and ToggleSplitButton share a template -- this section is driving the checked states for ToggleSplitButton.
-                else if (internalIsChecked)
+                else if (InternalIsChecked)
                 {
                     if (_lastPointerType == PointerType.Touch || _isKeyDown)
                     {
@@ -273,23 +299,23 @@ namespace Avalonia.Controls
             // This more closely matches the VisualStateManager of WinUI where the default style originated
             void SetExclusivePseudoClass(string pseudoClass = "")
             {
-                PseudoClasses.Set(pcNormal, pseudoClass == pcNormal);
+                PseudoClasses.Set(pcNormal,   pseudoClass == pcNormal);
                 PseudoClasses.Set(pcDisabled, pseudoClass == pcDisabled);
 
                 PseudoClasses.Set(pcCheckedFlyoutOpen, pseudoClass == pcCheckedFlyoutOpen);
-                PseudoClasses.Set(pcFlyoutOpen, pseudoClass == pcFlyoutOpen);
+                PseudoClasses.Set(pcFlyoutOpen,        pseudoClass == pcFlyoutOpen);
 
-                PseudoClasses.Set(pcCheckedTouchPressed, pseudoClass == pcCheckedTouchPressed);
-                PseudoClasses.Set(pcChecked, pseudoClass == pcChecked);
-                PseudoClasses.Set(pcCheckedPrimaryPressed, pseudoClass == pcCheckedPrimaryPressed);
-                PseudoClasses.Set(pcCheckedPrimaryPointerOver, pseudoClass == pcCheckedPrimaryPointerOver);
-                PseudoClasses.Set(pcCheckedSecondaryPressed, pseudoClass == pcCheckedSecondaryPressed);
+                PseudoClasses.Set(pcCheckedTouchPressed,         pseudoClass == pcCheckedTouchPressed);
+                PseudoClasses.Set(pcChecked,                     pseudoClass == pcChecked);
+                PseudoClasses.Set(pcCheckedPrimaryPressed,       pseudoClass == pcCheckedPrimaryPressed);
+                PseudoClasses.Set(pcCheckedPrimaryPointerOver,   pseudoClass == pcCheckedPrimaryPointerOver);
+                PseudoClasses.Set(pcCheckedSecondaryPressed,     pseudoClass == pcCheckedSecondaryPressed);
                 PseudoClasses.Set(pcCheckedSecondaryPointerOver, pseudoClass == pcCheckedSecondaryPointerOver);
 
-                PseudoClasses.Set(pcTouchPressed, pseudoClass == pcTouchPressed);
-                PseudoClasses.Set(pcPrimaryPressed, pseudoClass == pcPrimaryPressed);
-                PseudoClasses.Set(pcPrimaryPointerOver, pseudoClass == pcPrimaryPointerOver);
-                PseudoClasses.Set(pcSecondaryPressed, pseudoClass == pcSecondaryPressed);
+                PseudoClasses.Set(pcTouchPressed,         pseudoClass == pcTouchPressed);
+                PseudoClasses.Set(pcPrimaryPressed,       pseudoClass == pcPrimaryPressed);
+                PseudoClasses.Set(pcPrimaryPointerOver,   pseudoClass == pcPrimaryPointerOver);
+                PseudoClasses.Set(pcSecondaryPressed,     pseudoClass == pcSecondaryPressed);
                 PseudoClasses.Set(pcSecondaryPointerOver, pseudoClass == pcSecondaryPointerOver);
             }
         }
@@ -297,7 +323,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Opens the secondary button's flyout.
         /// </summary>
-        private void OpenFlyout()
+        protected void OpenFlyout()
         {
             if (Flyout != null)
             {
@@ -308,7 +334,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Closes the secondary button's flyout.
         /// </summary>
-        private void CloseFlyout()
+        protected void CloseFlyout()
         {
             if (Flyout != null)
             {
@@ -447,26 +473,63 @@ namespace Avalonia.Controls
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged += CanExecuteChanged;
+                CanExecuteChanged(this, EventArgs.Empty);
+            }
+
+            _isAttachedToLogicalTree = true;
         }
 
         /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged -= CanExecuteChanged;
+            }
+
+            _isAttachedToLogicalTree = false;
         }
 
         /// <inheritdoc/>
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> changedEventArgs)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> e)
         {
-            if (changedEventArgs.Property == FlyoutProperty)
+            if (e.Property == CommandProperty)
             {
-                // Must unregister events here while a ref to the old flyout still exists
-                if (changedEventArgs.OldValue.GetValueOrDefault() is FlyoutBase oldFlyout)
+                if (_isAttachedToLogicalTree)
+                {
+                    // Must unregister events here while a reference to the old command still exists
+                    if (e.OldValue is ICommand oldCommand)
+                    {
+                        oldCommand.CanExecuteChanged -= CanExecuteChanged;
+                    }
+
+                    if (e.NewValue is ICommand newCommand)
+                    {
+                        newCommand.CanExecuteChanged += CanExecuteChanged;
+                    }
+                }
+
+                CanExecuteChanged(this, EventArgs.Empty);
+            }
+            else if (e.Property == CommandParameterProperty)
+            {
+                CanExecuteChanged(this, EventArgs.Empty);
+            }
+            else if (e.Property == FlyoutProperty)
+            {
+                // Must unregister events here while a reference to the old flyout still exists
+                if (e.OldValue.GetValueOrDefault() is FlyoutBase oldFlyout)
                 {
                     UnregisterFlyoutEvents(oldFlyout);
                 }
 
-                if (changedEventArgs.NewValue.GetValueOrDefault() is FlyoutBase newFlyout)
+                if (e.NewValue.GetValueOrDefault() is FlyoutBase newFlyout)
                 {
                     RegisterFlyoutEvents(newFlyout);
                 }
@@ -474,7 +537,7 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-            base.OnPropertyChanged(changedEventArgs);
+            base.OnPropertyChanged(e);
         }
 
         /// <inheritdoc/>
@@ -526,7 +589,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Invokes the <see cref="Click"/> when the primary button part is clicked.
+        /// Invokes the <see cref="Click"/> event when the primary button part is clicked.
         /// </summary>
         /// <param name="e">The event args from the internal Click event.</param>
         protected virtual void OnClickPrimary(RoutedEventArgs e)
@@ -534,7 +597,7 @@ namespace Avalonia.Controls
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
-                var eventArgs = new SplitButtonClickEventArgs(ClickEvent);
+                var eventArgs = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(eventArgs);
 
                 if (!eventArgs.Handled && Command?.CanExecute(CommandParameter) == true)

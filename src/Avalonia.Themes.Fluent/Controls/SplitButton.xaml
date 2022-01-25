@@ -235,124 +235,127 @@
   </Style>
 
   <!-- Checked State -->
-  <!--<VisualState x:Name="Checked">
-    <VisualState.Setters>
-      <Setter Target="PrimaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundChecked}" />
-      <Setter Target="SecondaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundChecked}" />
-      <Setter Target="Border.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushChecked}" />
-      <Setter Target="PrimaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundChecked}" />
-      <Setter Target="SecondaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundChecked}" />
-    </VisualState.Setters>
-  </VisualState>-->
+  <Style Selector="SplitButton:checked /template/ Rectangle#PrimaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Rectangle#SecondaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Border#Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Button#PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Button#SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
 
   <!-- CheckedFlyoutOpen State -->
-  <!--<VisualState x:Name="CheckedFlyoutOpen">
-    <VisualState.Setters>
-      <Setter Target="PrimaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-      <Setter Target="SecondaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-      <Setter Target="Border.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
-      <Setter Target="PrimaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
-      <Setter Target="SecondaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
-    </VisualState.Setters>
-  </VisualState>-->
+  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Rectangle#PrimaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Rectangle#SecondaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Border#Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Button#PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Button#SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
 
   <!-- CheckedTouchPressed State -->
-  <!--<VisualState x:Name="CheckedTouchPressed">
-    <VisualState.Setters>
-      <Setter Target="PrimaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-      <Setter Target="SecondaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-      <Setter Target="Border.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
-      <Setter Target="PrimaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
-      <Setter Target="SecondaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
-    </VisualState.Setters>
-  </VisualState>-->
+  <Style Selector="SplitButton:checkedTouchPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedTouchPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedTouchPressed /template/ Border#Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedTouchPressed /template/ Button#PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedTouchPressed /template/ Button#SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
 
   <!-- CheckedPrimaryPointerOver State -->
-  <!--<VisualState x:Name="CheckedPrimaryPointerOver">
-    <VisualState.Setters>
-      <Setter Target="Border.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushChecked}" />
-      <Setter Target="PrimaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
-      <Setter Target="PrimaryButton.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
-      <Setter Target="PrimaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
-      <Setter Target="SecondaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundChecked}" />
-      <Setter Target="SecondaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundChecked}" />
-    </VisualState.Setters>
-  </VisualState>-->
+  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Border#Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Rectangle#PrimaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Rectangle#SecondaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Button#PrimaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Button#SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
 
   <!-- CheckedPrimaryPressed State -->
-  <!--<VisualState x:Name="CheckedPrimaryPressed">
-    <VisualState.Setters>
-      <Setter Target="Border.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushChecked}" />
-      <Setter Target="PrimaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-      <Setter Target="PrimaryButton.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
-      <Setter Target="PrimaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
-      <Setter Target="SecondaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundChecked}" />
-      <Setter Target="SecondaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundChecked}" />
-    </VisualState.Setters>
-  </VisualState>-->
+  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Border#Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Button#PrimaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Button#SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
 
   <!-- CheckedSecondaryPointerOver State -->
-  <!--<VisualState x:Name="CheckedSecondaryPointerOver">
-    <VisualState.Setters>
-      <Setter Target="Border.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushChecked}" />
-      <Setter Target="PrimaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundChecked}" />
-      <Setter Target="PrimaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundChecked}" />
-      <Setter Target="SecondaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
-      <Setter Target="SecondaryButton.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
-      <Setter Target="SecondaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
-    </VisualState.Setters>
-  </VisualState>-->
+  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Border#Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Rectangle#PrimaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Rectangle#SecondaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Button#PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Button#SecondaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
+  </Style>
 
   <!-- CheckedSecondaryPressed State -->
-  <!--<VisualState x:Name="CheckedSecondaryPressed">
-    <VisualState.Setters>
-      <Setter Target="Border.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushChecked}" />
-      <Setter Target="PrimaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundChecked}" />
-      <Setter Target="PrimaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundChecked}" />
-      <Setter Target="SecondaryBackgroundRectangle.Fill"
-              Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-      <Setter Target="SecondaryButton.BorderBrush"
-              Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
-      <Setter Target="SecondaryButton.Foreground"
-              Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
-    </VisualState.Setters>
-  </VisualState>-->
+  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Border#Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Button#PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Button#SecondaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
 
   <!--VisualStateGroup x:Name="SecondaryButtonPlacementStates">
     <VisualState x:Name="SecondaryButtonRight" />
