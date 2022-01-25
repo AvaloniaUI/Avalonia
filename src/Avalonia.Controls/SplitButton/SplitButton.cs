@@ -685,8 +685,19 @@ namespace Avalonia.Controls
         /// </summary>
         private void Flyout_Opened(object sender, EventArgs e)
         {
-            _isFlyoutOpen = true;
-            UpdatePseudoClasses();
+            var flyout = sender as FlyoutBase;
+
+            // It is possible to share flyouts among multiple controls including SplitButton.
+            // This can cause a problem here since all controls that share a flyout receive
+            // the same Opened/Closed events at the same time.
+            // For SplitButton that means they all would be updating their pseudoclasses accordingly.
+            // In other words, all SplitButtons with a shared Flyout would have the backgrounds changed together.
+            // To fix this, only continue here if the Flyout target matches this SplitButton instance.
+            if (object.ReferenceEquals(flyout?.Target, this))
+            {
+                _isFlyoutOpen = true;
+                UpdatePseudoClasses();
+            }
         }
 
         /// <summary>
@@ -694,8 +705,14 @@ namespace Avalonia.Controls
         /// </summary>
         private void Flyout_Closed(object sender, EventArgs e)
         {
-            _isFlyoutOpen = false;
-            UpdatePseudoClasses();
+            var flyout = sender as FlyoutBase;
+
+            // See comments in Flyout_Opened
+            if (object.ReferenceEquals(flyout?.Target, this))
+            {
+                _isFlyoutOpen = false;
+                UpdatePseudoClasses();
+            }
         }
     }
 }
