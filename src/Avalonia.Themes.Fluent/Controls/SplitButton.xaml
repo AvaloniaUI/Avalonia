@@ -250,6 +250,9 @@
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
+  <Style Selector="SplitButton:checked /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
 
   <!-- CheckedFlyoutOpen State -->
   <Style Selector="SplitButton:checked-flyout-open /template/ Rectangle#PrimaryBackgroundRectangle">
@@ -267,6 +270,9 @@
   <Style Selector="SplitButton:checked-flyout-open /template/ Button#PART_SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
+  <Style Selector="SplitButton:checked-flyout-open /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
 
   <!-- CheckedTouchPressed State -->
   <Style Selector="SplitButton:checked-touch-pressed /template/ Rectangle#PrimaryBackgroundRectangle">
@@ -283,6 +289,9 @@
   </Style>
   <Style Selector="SplitButton:checked-touch-pressed /template/ Button#PART_SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
   <!-- CheckedPrimaryPointerOver State -->
@@ -302,6 +311,9 @@
   <Style Selector="SplitButton:checked-primary-pointerover /template/ Button#PART_SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
 
   <!-- CheckedPrimaryPressed State -->
   <Style Selector="SplitButton:checked-primary-pressed /template/ Border#Border">
@@ -319,6 +331,9 @@
   </Style>
   <Style Selector="SplitButton:checked-primary-pressed /template/ Button#PART_SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
 
   <!-- CheckedSecondaryPointerOver State -->
@@ -338,6 +353,9 @@
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
   </Style>
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
+  </Style>
 
   <!-- CheckedSecondaryPressed State -->
   <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#Border">
@@ -355,6 +373,9 @@
   <Style Selector="SplitButton:checked-secondary-pressed /template/ Button#PART_SecondaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
   <!--VisualStateGroup x:Name="SecondaryButtonPlacementStates">
