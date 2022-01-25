@@ -1,4 +1,15 @@
 Compat issues with assembly Avalonia.Styling:
+MembersMustExist : Member 'protected Avalonia.Collections.IAvaloniaList<Avalonia.LogicalTree.ILogical> Avalonia.StyledElement.LogicalChildren.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.StyledElement.LogicalChildrenCollectionChanged(System.Object, System.Collections.Specialized.NotifyCollectionChangedEventArgs)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Collections.IAvaloniaReadOnlyList<Avalonia.LogicalTree.ILogical> Avalonia.LogicalTree.ILogical.LogicalChildren' is present in the contract but not in the implementation.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Int32 Avalonia.LogicalTree.ILogical.LogicalChildrenCount' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.EventHandler Avalonia.LogicalTree.ILogical.LogicalChildrenChanged' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.LogicalTree.ILogical.add_LogicalChildrenChanged(System.EventHandler)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.LogicalTree.ILogical Avalonia.LogicalTree.ILogical.GetLogicalChild(System.Int32)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Collections.IAvaloniaReadOnlyList<Avalonia.LogicalTree.ILogical> Avalonia.LogicalTree.ILogical.LogicalChildren.get()' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public Avalonia.Collections.IAvaloniaReadOnlyList<Avalonia.LogicalTree.ILogical> Avalonia.LogicalTree.ILogical.LogicalChildren.get()' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Int32 Avalonia.LogicalTree.ILogical.LogicalChildrenCount.get()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.LogicalTree.ILogical.remove_LogicalChildrenChanged(System.EventHandler)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Styling.IStyleInstance.IsActive' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Styling.IStyleInstance.IsActive.get()' is present in the implementation but not in the contract.
-Total Issues: 2
+Total Issues: 13

@@ -1,4 +1,6 @@
 Compat issues with assembly Avalonia.Visuals:
+MembersMustExist : Member 'protected void Avalonia.Visual.LogicalChildrenCollectionChanged(System.Object, System.Collections.Specialized.NotifyCollectionChangedEventArgs)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected Avalonia.Collections.IAvaloniaList<Avalonia.VisualTree.IVisual> Avalonia.Visual.VisualChildren.get()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.CompositePageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.CrossFade.Start(Avalonia.Visual, Avalonia.Visual)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' is present in the contract but not in the implementation.
@@ -86,4 +88,14 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avaloni
 InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avalonia.Platform.IPlatformSettings.TouchDoubleClickSize.get()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime.get()' is present in the implementation but not in the contract.
-Total Issues: 87
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Collections.IAvaloniaReadOnlyList<Avalonia.VisualTree.IVisual> Avalonia.VisualTree.IVisual.VisualChildren' is present in the contract but not in the implementation.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Int32 Avalonia.VisualTree.IVisual.VisualChildrenCount' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.EventHandler Avalonia.VisualTree.IVisual.VisualChildrenChanged' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.VisualTree.IVisual.add_VisualChildrenChanged(System.EventHandler)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.VisualTree.IVisual Avalonia.VisualTree.IVisual.GetVisualChild(System.Int32)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.VisualTree.IVisual.remove_VisualChildrenChanged(System.EventHandler)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Collections.IAvaloniaReadOnlyList<Avalonia.VisualTree.IVisual> Avalonia.VisualTree.IVisual.VisualChildren.get()' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public Avalonia.Collections.IAvaloniaReadOnlyList<Avalonia.VisualTree.IVisual> Avalonia.VisualTree.IVisual.VisualChildren.get()' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Int32 Avalonia.VisualTree.IVisual.VisualChildrenCount.get()' is present in the implementation but not in the contract.
+MembersMustExist : Member 'public System.Collections.Generic.IEnumerable<Avalonia.VisualTree.IVisual> Avalonia.VisualTree.VisualExtensions.SortByZIndex(System.Collections.Generic.IEnumerable<Avalonia.VisualTree.IVisual>)' does not exist in the implementation but it does exist in the contract.
+Total Issues: 99
