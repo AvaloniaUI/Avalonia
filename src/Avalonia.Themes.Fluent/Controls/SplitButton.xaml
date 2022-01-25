@@ -36,41 +36,9 @@
           <Border Background="Transparent"
                   CornerRadius="{TemplateBinding CornerRadius}"
                   ClipToBounds="True">
-            <Border.Styles>
-              <!-- Override the style of the inner buttons so that they don't affect background/foreground/border colors -->
-              <Style Selector="Button">
-                <Setter Property="Foreground" Value="{DynamicResource SplitButtonForeground}" />
-                <Setter Property="BorderBrush" Value="Transparent" />
-                <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonBorderThemeThickness}" />
-                <Setter Property="HorizontalAlignment" Value="Left" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-                <!--<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-                <Setter Property="FontWeight" Value="Normal" />
-                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-                <Setter Property="FocusVisualMargin" Value="-3" />-->
-                <Setter Property="Template">
-                  <ControlTemplate>
-                    <!-- Switched from Grid to Border to optimize and support Foreground/Background properties -->
-                    <Border x:Name="RootBorder"
-                            Background="Transparent">
-                      <ContentPresenter x:Name="ContentPresenter"
-                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                        Content="{TemplateBinding Content}"
-                                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                                        Padding="{TemplateBinding Padding}"
-                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                    </Border>
-                  </ControlTemplate>
-                </Setter>
-              </Style>
-              <Style Selector="Button:disabled">
-                <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundDisabled}" />
-                <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundDisabled}" />
-              </Style>
-            </Border.Styles>
+            <!-- In WinUI, a separate child style for the inner buttons is provided here.
+                 For avalonia that style is simplified and pulled out separately below.
+                 A style is needed to override any button default background/foreground/border colors, etc. -->
             <Grid>
               
               <Grid.ColumnDefinitions>
@@ -148,12 +116,45 @@
     </Setter>
   </Style>
 
+  <!-- Normal State (not a PseudoClass) -->
+  <!-- The 'Button' style here was moved out of the main style above.
+       In WinUI there is a child, customized style shared for both primary and secondary buttons.
+       In Avalonia, we can use selectors to make a 'normal' style apply only to those buttons but
+       pull it out separately from the full style above. -->
+  <Style Selector="SplitButton /template/ Button">
+    <!-- Applies to both Primary/Secondary buttons -->
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForeground}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonBorderThemeThickness}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <!-- Switched from Grid to Border to optimize and support Foreground/Background properties -->
+        <!-- It is important for the background to be clear and no CornerRadius set. -->
+        <Border Background="Transparent">
+          <ContentPresenter x:Name="ContentPresenter"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
   <!-- Disabled State -->
   <Style Selector="SplitButton:disabled /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushDisabled}" />
   </Style>
   <Style Selector="SplitButton:disabled /template/ Path#DropDownGlyphPath">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundDisabled}" />
+  </Style>
+  <Style Selector="SplitButton:disabled /template/ Button">
+    <!-- Applies to both Primary/Secondary buttons -->
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundDisabled}" />
   </Style>
 
   <!-- FlyoutOpen State -->
