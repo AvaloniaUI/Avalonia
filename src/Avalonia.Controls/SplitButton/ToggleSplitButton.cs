@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
@@ -11,23 +10,6 @@ namespace Avalonia.Controls
     /// The primary part behaves like a <see cref="ToggleButton"/> with two states and
     /// the secondary part opens a flyout.
     /// </summary>
-    [PseudoClasses(
-        ":disabled",
-        ":secondaryButtonRight",
-        ":secondaryButtonSpan",
-        ":checkedFlyoutOpen",
-        ":flyoutOpen",
-        ":checkedTouchPressed",
-        ":checked",
-        ":checkedPrimaryPressed",
-        ":checkedPrimaryPointerOver",
-        ":checkedSecondaryPressed",
-        ":checkedSecondaryPointerOver",
-        ":touchPressed",
-        ":primaryPressed",
-        ":primaryPointerOver",
-        ":secondaryPressed",
-        ":secondaryPointerOver")]
     public class ToggleSplitButton : SplitButton, IStyleable
     {
         /// <summary>

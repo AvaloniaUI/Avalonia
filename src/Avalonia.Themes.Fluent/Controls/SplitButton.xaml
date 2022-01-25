@@ -153,83 +153,83 @@
   </Style>
 
   <!-- FlyoutOpen State -->
-  <Style Selector="SplitButton:flyoutOpen /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:flyout-open /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:flyoutOpen /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:flyout-open /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:flyoutOpen /template/ Border#Border">
+  <Style Selector="SplitButton:flyout-open /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
   </Style>
-  <Style Selector="SplitButton:flyoutOpen /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:flyout-open /template/ Button#PrimaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:flyoutOpen /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:flyout-open /template/ Button#SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
 
   <!-- TouchPressed State -->
-  <Style Selector="SplitButton:touchPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:touch-pressed /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:touchPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:touch-pressed /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:touchPressed /template/ Border#Border">
+  <Style Selector="SplitButton:touch-pressed /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
   </Style>
-  <Style Selector="SplitButton:touchPressed /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:touch-pressed /template/ Button#PrimaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:touchPressed /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:touch-pressed /template/ Button#SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
 
   <!-- PrimaryPointerOver State -->
-  <Style Selector="SplitButton:primaryPointerOver /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:primary-pointerover /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPointerOver}" />
   </Style>
-  <Style Selector="SplitButton:primaryPointerOver /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:primary-pointerover /template/ Button#PrimaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPointerOver}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
   </Style>
-  <Style Selector="SplitButton:primaryPointerOver /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:primary-pointerover /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackground}" />
   </Style>
 
   <!-- PrimaryPressed State -->
-  <Style Selector="SplitButton:primaryPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:primary-pressed /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:primaryPressed /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:primary-pressed /template/ Button#PrimaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:primaryPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:primary-pressed /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackground}" />
   </Style>
 
   <!-- SecondaryPointerOver State -->
-  <Style Selector="SplitButton:secondaryPointerOver /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:secondary-pointerover /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackground}" />
   </Style>
-  <Style Selector="SplitButton:secondaryPointerOver /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:secondary-pointerover /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPointerOver}" />
   </Style>
-  <Style Selector="SplitButton:secondaryPointerOver /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:secondary-pointerover /template/ Button#SecondaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPointerOver}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
   </Style>
 
   <!-- SecondaryPressed State -->
-  <Style Selector="SplitButton:secondaryPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:secondary-pressed /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackground}" />
   </Style>
-  <Style Selector="SplitButton:secondaryPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:secondary-pressed /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:secondaryPressed /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:secondary-pressed /template/ Button#SecondaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
@@ -252,107 +252,107 @@
   </Style>
 
   <!-- CheckedFlyoutOpen State -->
-  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-flyout-open /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-flyout-open /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Border#Border">
+  <Style Selector="SplitButton:checked-flyout-open /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:checked-flyout-open /template/ Button#PrimaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedFlyoutOpen /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:checked-flyout-open /template/ Button#SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
   <!-- CheckedTouchPressed State -->
-  <Style Selector="SplitButton:checkedTouchPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedTouchPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedTouchPressed /template/ Border#Border">
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedTouchPressed /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Button#PrimaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedTouchPressed /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Button#SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
   <!-- CheckedPrimaryPointerOver State -->
-  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Border#Border">
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Button#PrimaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPointerOver /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Button#SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
 
   <!-- CheckedPrimaryPressed State -->
-  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Border#Border">
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Button#PrimaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedPrimaryPressed /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Button#SecondaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
 
   <!-- CheckedSecondaryPointerOver State -->
-  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Border#Border">
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Button#PrimaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPointerOver /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Button#SecondaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
   </Style>
 
   <!-- CheckedSecondaryPressed State -->
-  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Border#Border">
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Rectangle#PrimaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Rectangle#PrimaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Rectangle#SecondaryBackgroundRectangle">
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Rectangle#SecondaryBackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Button#PrimaryButton">
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Button#PrimaryButton">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
-  <Style Selector="SplitButton:checkedSecondaryPressed /template/ Button#SecondaryButton">
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Button#SecondaryButton">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>

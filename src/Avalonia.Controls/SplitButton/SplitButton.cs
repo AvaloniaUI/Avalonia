@@ -15,21 +15,21 @@ namespace Avalonia.Controls
     /// </summary>
     [PseudoClasses(
         ":disabled",
-        ":secondaryButtonRight",
-        ":secondaryButtonSpan",
-        ":checkedFlyoutOpen",
-        ":flyoutOpen",
-        ":checkedTouchPressed",
+        ":secondary-button-right",
+        ":secondary-button-span",
+        ":checked-flyout-open",
+        ":flyout-open",
+        ":checked-touch-pressed",
         ":checked",
-        ":checkedPrimaryPressed",
-        ":checkedPrimaryPointerOver",
-        ":checkedSecondaryPressed",
-        ":checkedSecondaryPointerOver",
-        ":touchPressed",
-        ":primaryPressed",
-        ":primaryPointerOver",
-        ":secondaryPressed",
-        ":secondaryPointerOver")]
+        ":checked-primary-pressed",
+        ":checked-primary-pointerover",
+        ":checked-secondary-pressed",
+        ":checked-secondary-pointerover",
+        ":touch-pressed",
+        ":primary-pressed",
+        ":primary-pointerover",
+        ":secondary-pressed",
+        ":secondary-pointerover")]
     public class SplitButton : ContentControl, ICommandSource
     {
         /// <summary>
@@ -167,24 +167,24 @@ namespace Avalonia.Controls
             string pcNormal   = ":normal"; // Not supported in XAML style
             string pcDisabled = ":disabled";
 
-            string pcSecondaryButtonRight = ":secondaryButtonRight";
-            string pcSecondaryButtonSpan  = ":secondaryButtonSpan";
+            string pcSecondaryButtonRight = ":secondary-button-right";
+            string pcSecondaryButtonSpan  = ":secondary-button-span";
 
-            string pcCheckedFlyoutOpen = ":checkedFlyoutOpen";
-            string pcFlyoutOpen        = ":flyoutOpen";
+            string pcCheckedFlyoutOpen = ":checked-flyout-open";
+            string pcFlyoutOpen        = ":flyout-open";
 
-            string pcCheckedTouchPressed         = ":checkedTouchPressed";
+            string pcCheckedTouchPressed         = ":checked-touch-pressed";
             string pcChecked                     = ":checked";
-            string pcCheckedPrimaryPressed       = ":checkedPrimaryPressed";
-            string pcCheckedPrimaryPointerOver   = ":checkedPrimaryPointerOver";
-            string pcCheckedSecondaryPressed     = ":checkedSecondaryPressed";
-            string pcCheckedSecondaryPointerOver = ":checkedSecondaryPointerOver";
+            string pcCheckedPrimaryPressed       = ":checked-primary-pressed";
+            string pcCheckedPrimaryPointerOver   = ":checked-primary-pointerover";
+            string pcCheckedSecondaryPressed     = ":checked-secondary-pressed";
+            string pcCheckedSecondaryPointerOver = ":checked-secondary-pointerover";
 
-            string pcTouchPressed         = ":touchPressed";
-            string pcPrimaryPressed       = ":primaryPressed";
-            string pcPrimaryPointerOver   = ":primaryPointerOver";
-            string pcSecondaryPressed     = ":secondaryPressed";
-            string pcSecondaryPointerOver = ":secondaryPointerOver";
+            string pcTouchPressed         = ":touch-pressed";
+            string pcPrimaryPressed       = ":primary-pressed";
+            string pcPrimaryPointerOver   = ":primary-pointerover";
+            string pcSecondaryPressed     = ":secondary-pressed";
+            string pcSecondaryPointerOver = ":secondary-pointerover";
 
             // Place the secondary button
             // These are mutually exclusive PseudoClasses handled separately from SetExclusivePseudoClass().
