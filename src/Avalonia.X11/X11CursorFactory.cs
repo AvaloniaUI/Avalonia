@@ -94,10 +94,8 @@ namespace Avalonia.X11
             {
                 var size = Marshal.SizeOf<XcursorImage>() +
                     (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
-                var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>() ??
-                    throw new InvalidOperationException("Unable to locate IRuntimePlatform");
-                var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                    throw new InvalidOperationException("Unable to locate IPlatformRenderInterface");
+                var runtimePlatform = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
+                var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
                 _pixelSize = bitmap.PixelSize;
                 _blob = runtimePlatform.AllocBlob(size);

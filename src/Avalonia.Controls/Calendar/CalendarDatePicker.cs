@@ -185,7 +185,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
                 o => o.SelectedDate,
-                (o, v) => o.SelectedDate = v);
+                (o, v) => o.SelectedDate = v,
+                enableDataValidation: true);
 
         public static readonly StyledProperty<CalendarDatePickerFormat> SelectedDateFormatProperty =
             AvaloniaProperty.Register<CalendarDatePicker, CalendarDatePickerFormat>(
@@ -533,13 +534,11 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == SelectedDateProperty)
+            if (property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, change.NewValue.Error);
+                DataValidationErrors.SetError(this, value.Error);
             }
         }
 

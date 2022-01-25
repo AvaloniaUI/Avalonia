@@ -88,8 +88,7 @@ namespace Avalonia.Media
             if (figures is null)
                 return null;
 
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var geometry = factory.CreateStreamGeometry();
 
             using (var ctx = new StreamGeometryContext(geometry.Open()))

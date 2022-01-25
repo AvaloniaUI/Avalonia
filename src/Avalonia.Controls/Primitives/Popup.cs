@@ -429,16 +429,20 @@ namespace Avalonia.Controls.Primitives
                     (x, handler) => x.LostFocus += handler,
                     (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
 
-                SubscribeToEventHandler<IWindowImpl, Action<PixelPoint>>(window.PlatformImpl, WindowPositionChanged,
-                    (x, handler) => x.PositionChanged += handler,
-                    (x, handler) => x.PositionChanged -= handler).DisposeWith(handlerCleanup);
-                    
-                if (placementTarget is Layoutable layoutTarget)
+                // Recalculate popup position on parent moved/resized, but not if placement was on pointer
+                if (PlacementMode != PlacementMode.Pointer)
                 {
-                    // If the placement target is moved, update the popup position
-                    SubscribeToEventHandler<Layoutable, EventHandler>(layoutTarget, PlacementTargetLayoutUpdated,
-                        (x, handler) => x.LayoutUpdated += handler,
-                        (x, handler) => x.LayoutUpdated -= handler).DisposeWith(handlerCleanup);
+                    SubscribeToEventHandler<IWindowImpl, Action<PixelPoint>>(window.PlatformImpl, WindowPositionChanged,
+                        (x, handler) => x.PositionChanged += handler,
+                        (x, handler) => x.PositionChanged -= handler).DisposeWith(handlerCleanup);
+
+                    if (placementTarget is Layoutable layoutTarget)
+                    {
+                        // If the placement target is moved, update the popup position
+                        SubscribeToEventHandler<Layoutable, EventHandler>(layoutTarget, PlacementTargetLayoutUpdated,
+                            (x, handler) => x.LayoutUpdated += handler,
+                            (x, handler) => x.LayoutUpdated -= handler).DisposeWith(handlerCleanup);
+                    }
                 }
             }
             else if (topLevel is PopupRoot parentPopupRoot)

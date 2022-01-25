@@ -58,6 +58,12 @@ namespace Avalonia.UnitTests
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());
 
+        public static readonly TestServices TextServices = new TestServices(
+            assetLoader: new AssetLoader(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new HarfBuzzFontManagerImpl(),
+            textShaperImpl: new HarfBuzzTextShaperImpl());
+        
         public TestServices(
             IAssetLoader assetLoader = null,
             IFocusManager focusManager = null,
@@ -168,7 +174,7 @@ namespace Avalonia.UnitTests
             };
 
             var baseLight = (IStyle)AvaloniaXamlLoader.Load(
-                new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
+                new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"));
             result.Add(baseLight);
 
             return result;

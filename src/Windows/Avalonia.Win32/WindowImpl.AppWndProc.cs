@@ -151,8 +151,8 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_CHAR:
                     {
-                        // Ignore control chars
-                        if (ToInt32(wParam) >= 32)
+                        // Ignore control chars and chars that were handled in WM_KEYDOWN.
+                        if (ToInt32(wParam) >= 32 && !_ignoreWmChar)
                         {
                             e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _owner,
                                 new string((char)ToInt32(wParam), 1));
@@ -518,6 +518,15 @@ namespace Avalonia.Win32
             if (e != null && Input != null)
             {
                 Input(e);
+
+                if ((WindowsMessage)msg == WindowsMessage.WM_KEYDOWN)
+                {
+                    // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
+                    // be ignored. This should be safe to do as WM_CHAR should only be produced in
+                    // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
+                    // is handled.
+                    _ignoreWmChar = e.Handled;
+                }
 
                 if (e.Handled)
                 {

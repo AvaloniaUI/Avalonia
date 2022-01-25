@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using XamlX.Ast;
 using XamlX.Transform;
+using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
@@ -15,7 +16,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 IXamlType startType = null;
                 var sourceProperty = binding.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "Source");
-                if ((sourceProperty?.Values.Count ?? 0) == 1)
+                var dataTypeProperty = binding.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "DataType");
+                if (sourceProperty?.Values.Count is 1)
                 {
                     var sourceValue = sourceProperty.Values[0];
                     switch (sourceValue)
@@ -97,6 +99,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             startType = staticExtension.Type?.GetClrType();
                             break;
                     }
+                }
+
+                if (dataTypeProperty?.Values.Count is 1 && dataTypeProperty.Values[0] is XamlAstTextNode text)
+                {
+                    startType = TypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type;
                 }
 
                 Func<IXamlType> startTypeResolver = startType is not null ? () => startType : () =>

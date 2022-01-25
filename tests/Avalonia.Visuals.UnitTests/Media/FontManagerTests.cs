@@ -48,7 +48,16 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Should_Use_FontManagerOptions_FontFallback()
         {
-            var options = new FontManagerOptions { FontFallbacks = new[] { new FontFallback { FontFamily = new FontFamily("MyFont"), UnicodeRange = UnicodeRange.Default} } };
+            var options = new FontManagerOptions
+            {
+                FontFallbacks = new[]
+                {
+                    new FontFallback
+                    {
+                        FontFamily = new FontFamily("MyFont"), UnicodeRange = UnicodeRange.Default
+                    }
+                }
+            };
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(fontManagerImpl: new MockFontManagerImpl())))

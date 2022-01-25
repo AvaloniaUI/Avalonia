@@ -51,6 +51,6 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the timestamp associated with the event.
         /// </summary>
-        public ulong Timestamp { get; private set; }
+        public ulong Timestamp { get; set; }
     }
 }

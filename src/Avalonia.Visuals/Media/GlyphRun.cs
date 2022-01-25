@@ -627,8 +627,7 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                throw new InvalidOperationException("Unable to locate IPlatformRenderInterface");
+            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this);
         }
