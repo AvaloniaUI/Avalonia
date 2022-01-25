@@ -550,7 +550,7 @@
     <Thickness x:Key="TreeViewItemBorderThemeThickness">1</Thickness>
     <x:Double x:Key="TreeViewItemMinHeight">32</x:Double>
 
-    <!-- Resources for SplitButton.xaml -->
+    <!-- Resources for SplitButton.xaml (shared with ToggleSplitButton) -->
     <StaticResource x:Key="SplitButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <SolidColorBrush x:Key="SplitButtonBackgroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
     <StaticResource x:Key="SplitButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
