@@ -14,24 +14,45 @@ namespace Avalonia.Controls
     /// The primary part behaves like a <see cref="Button"/> and the secondary part opens a flyout.
     /// </summary>
     [PseudoClasses(
-        ":disabled",
-        ":secondary-button-right",
-        ":secondary-button-span",
-        ":checked-flyout-open",
-        ":flyout-open",
-        ":checked-touch-pressed",
-        ":checked",
-        ":checked-primary-pressed",
-        ":checked-primary-pointerover",
-        ":checked-secondary-pressed",
-        ":checked-secondary-pointerover",
-        ":touch-pressed",
-        ":primary-pressed",
-        ":primary-pointerover",
-        ":secondary-pressed",
-        ":secondary-pointerover")]
+        pcDisabled,
+        pcSecondaryButtonRight,
+        pcSecondaryButtonSpan,
+        pcCheckedFlyoutOpen,
+        pcFlyoutOpen,
+        pcCheckedTouchPressed,
+        pcChecked,
+        pcCheckedPrimaryPressed,
+        pcCheckedPrimaryPointerOver,
+        pcCheckedSecondaryPressed,
+        pcCheckedSecondaryPointerOver,
+        pcTouchPressed,
+        pcPrimaryPressed,
+        pcPrimaryPointerOver,
+        pcSecondaryPressed,
+        pcSecondaryPointerOver)]
     public class SplitButton : ContentControl, ICommandSource
     {
+        private const string pcDisabled = ":disabled";
+
+        private const string pcSecondaryButtonRight = ":secondary-button-right";
+        private const string pcSecondaryButtonSpan  = ":secondary-button-span";
+
+        private const string pcCheckedFlyoutOpen = ":checked-flyout-open";
+        private const string pcFlyoutOpen        = ":flyout-open";
+
+        private const string pcCheckedTouchPressed         = ":checked-touch-pressed";
+        private const string pcChecked                     = ":checked";
+        private const string pcCheckedPrimaryPressed       = ":checked-primary-pressed";
+        private const string pcCheckedPrimaryPointerOver   = ":checked-primary-pointerover";
+        private const string pcCheckedSecondaryPressed     = ":checked-secondary-pressed";
+        private const string pcCheckedSecondaryPointerOver = ":checked-secondary-pointerover";
+
+        private const string pcTouchPressed         = ":touch-pressed";
+        private const string pcPrimaryPressed       = ":primary-pressed";
+        private const string pcPrimaryPointerOver   = ":primary-pointerover";
+        private const string pcSecondaryPressed     = ":secondary-pressed";
+        private const string pcSecondaryPointerOver = ":secondary-pointerover";
+
         /// <summary>
         /// Raised when the user presses the primary part of the <see cref="SplitButton"/>.
         /// </summary>
@@ -164,27 +185,6 @@ namespace Avalonia.Controls
         /// </summary>
         protected void UpdatePseudoClasses()
         {
-            string pcDisabled = ":disabled";
-
-            string pcSecondaryButtonRight = ":secondary-button-right";
-            string pcSecondaryButtonSpan  = ":secondary-button-span";
-
-            string pcCheckedFlyoutOpen = ":checked-flyout-open";
-            string pcFlyoutOpen        = ":flyout-open";
-
-            string pcCheckedTouchPressed         = ":checked-touch-pressed";
-            string pcChecked                     = ":checked";
-            string pcCheckedPrimaryPressed       = ":checked-primary-pressed";
-            string pcCheckedPrimaryPointerOver   = ":checked-primary-pointerover";
-            string pcCheckedSecondaryPressed     = ":checked-secondary-pressed";
-            string pcCheckedSecondaryPointerOver = ":checked-secondary-pointerover";
-
-            string pcTouchPressed         = ":touch-pressed";
-            string pcPrimaryPressed       = ":primary-pressed";
-            string pcPrimaryPointerOver   = ":primary-pointerover";
-            string pcSecondaryPressed     = ":secondary-pressed";
-            string pcSecondaryPointerOver = ":secondary-pointerover";
-
             // Place the secondary button
             // These are mutually exclusive PseudoClasses handled separately from SetExclusivePseudoClass().
             // They must be applied in addition to the others.
