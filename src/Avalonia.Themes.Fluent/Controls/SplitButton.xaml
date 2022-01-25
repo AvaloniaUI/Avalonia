@@ -382,17 +382,11 @@
     <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
-  <!--VisualStateGroup x:Name="SecondaryButtonPlacementStates">
-    <VisualState x:Name="SecondaryButtonRight" />
-
-    <VisualState x:Name="SecondaryButtonSpan">
-      <VisualState.Setters>
-        <Setter Target="PART_SecondaryButton.(Grid.Column)"
-                Value="0" />
-        <Setter Target="PART_SecondaryButton.(Grid.ColumnSpan)"
-                Value="3" />
-      </VisualState.Setters>
-    </VisualState>
-  </VisualStateGroup-->
+  <!-- SecondaryButtonPlacement States -->
+  <!-- Note: ':secondary-button-right' is the default -->
+  <!--<Style Selector="SplitButton:secondary-button-span /template/ Button#PART_SecondaryButton">
+    <Setter Property="(Grid.Column)" Value="0" />
+    <Setter Property="(Grid.ColumnSpan)" Value="3" />
+  </Style>-->
 
 </Styles>
