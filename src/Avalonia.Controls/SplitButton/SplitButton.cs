@@ -164,7 +164,6 @@ namespace Avalonia.Controls
         /// </summary>
         protected void UpdatePseudoClasses()
         {
-            string pcNormal   = ":normal"; // Not supported in XAML style
             string pcDisabled = ":disabled";
 
             string pcSecondaryButtonRight = ":secondary-button-right";
@@ -263,7 +262,9 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            SetExclusivePseudoClass(pcNormal);
+                            // Calling without a parameter is treated as ':normal' and will clear all other
+                            // PseudoClasses returning to the default state
+                            SetExclusivePseudoClass();
                         }
                     }
                     else if (_primaryButton.IsPressed)
@@ -284,7 +285,9 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        SetExclusivePseudoClass(pcNormal);
+                        // Calling without a parameter is treated as ':normal' and will clear all other
+                        // PseudoClasses returning to the default state
+                        SetExclusivePseudoClass();
                     }
                 }
             }
@@ -293,7 +296,6 @@ namespace Avalonia.Controls
             // This more closely matches the VisualStateManager of WinUI where the default style originated
             void SetExclusivePseudoClass(string pseudoClass = "")
             {
-                PseudoClasses.Set(pcNormal,   pseudoClass == pcNormal);
                 PseudoClasses.Set(pcDisabled, pseudoClass == pcDisabled);
 
                 PseudoClasses.Set(pcCheckedFlyoutOpen, pseudoClass == pcCheckedFlyoutOpen);
