@@ -76,6 +76,9 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="IsPressed"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
 
@@ -102,6 +105,9 @@ namespace Avalonia.Controls
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>((lbl, args) => lbl.OnAccessKey(args));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Button"/> class.
+        /// </summary>
         public Button()
         {
             UpdatePseudoClasses(IsPressed);
@@ -112,8 +118,8 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<RoutedEventArgs> Click
         {
-            add { AddHandler(ClickEvent, value); }
-            remove { RemoveHandler(ClickEvent, value); }
+            add => AddHandler(ClickEvent, value);
+            remove => RemoveHandler(ClickEvent, value);
         }
 
         /// <summary>
@@ -121,8 +127,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ClickMode ClickMode
         {
-            get { return GetValue(ClickModeProperty); }
-            set { SetValue(ClickModeProperty, value); }
+            get => GetValue(ClickModeProperty);
+            set => SetValue(ClickModeProperty, value);
         }
 
         /// <summary>
@@ -130,8 +136,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand Command
         {
-            get { return _command; }
-            set { SetAndRaise(CommandProperty, ref _command, value); }
+            get => _command;
+            set => SetAndRaise(CommandProperty, ref _command, value);
         }
 
         /// <summary>
@@ -139,8 +145,8 @@ namespace Avalonia.Controls
         /// </summary>
         public KeyGesture HotKey
         {
-            get { return GetValue(HotKeyProperty); }
-            set { SetValue(HotKeyProperty, value); }
+            get => GetValue(HotKeyProperty);
+            set => SetValue(HotKeyProperty, value);
         }
 
         /// <summary>
@@ -148,8 +154,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object CommandParameter
         {
-            get { return GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
+            get => GetValue(CommandParameterProperty);
+            set => SetValue(CommandParameterProperty, value);
         }
 
         /// <summary>
@@ -158,8 +164,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsDefault
         {
-            get { return GetValue(IsDefaultProperty); }
-            set { SetValue(IsDefaultProperty, value); }
+            get => GetValue(IsDefaultProperty);
+            set => SetValue(IsDefaultProperty, value);
         }
 
         /// <summary>
@@ -168,18 +174,21 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsCancel
         {
-            get { return GetValue(IsCancelProperty); }
-            set { SetValue(IsCancelProperty, value); }
-        }
-
-        public bool IsPressed
-        {
-            get { return GetValue(IsPressedProperty); }
-            private set { SetValue(IsPressedProperty, value); }
+            get => GetValue(IsCancelProperty);
+            set => SetValue(IsCancelProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the Flyout that should be shown with this button
+        /// Gets or sets a value indicating whether the button is currently pressed.
+        /// </summary>
+        public bool IsPressed
+        {
+            get => GetValue(IsPressedProperty);
+            private set => SetValue(IsPressedProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the Flyout that should be shown with this button.
         /// </summary>
         public FlyoutBase Flyout
         {
@@ -187,7 +196,8 @@ namespace Avalonia.Controls
             set => SetValue(FlyoutProperty, value);
         }
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
+        /// <inheritdoc/>
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -224,6 +234,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
@@ -240,6 +251,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             // This will cause the hotkey manager to dispose the observer and the reference to this control
@@ -358,12 +370,14 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
+        /// <inheritdoc/>
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;
         }
 
+        /// <inheritdoc/>
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
@@ -371,6 +385,7 @@ namespace Avalonia.Controls
             IsPressed = false;
         }
 
+        /// <inheritdoc/>
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
@@ -391,6 +406,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
             base.UpdateDataValidation(property, value);
@@ -493,7 +509,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void CanExecuteChanged(object sender, EventArgs e)
+        public void CanExecuteChanged(object sender, EventArgs e)
         {
             var canExecute = Command == null || Command.CanExecute(CommandParameter);
 
@@ -566,11 +582,12 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Updates the visual state of the control by applying latest PseudoClasses.
+        /// </summary>
         private void UpdatePseudoClasses(bool isPressed)
         {
             PseudoClasses.Set(":pressed", isPressed);
         }
-
-        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
     }
 }
