@@ -534,13 +534,25 @@ namespace Avalonia.Controls
             }
             else if (e.Property == FlyoutProperty)
             {
+                var oldFlyout = e.OldValue.GetValueOrDefault() as FlyoutBase;
+                var newFlyout = e.NewValue.GetValueOrDefault() as FlyoutBase;
+
+                // If flyout is changed while one is already open, make sure we 
+                // close the old one first
+                // This is the same behavior as Button
+                if (oldFlyout != null &&
+                    oldFlyout.IsOpen)
+                {
+                    oldFlyout.Hide();
+                }
+
                 // Must unregister events here while a reference to the old flyout still exists
-                if (e.OldValue.GetValueOrDefault() is FlyoutBase oldFlyout)
+                if (oldFlyout != null)
                 {
                     UnregisterFlyoutEvents(oldFlyout);
                 }
 
-                if (e.NewValue.GetValueOrDefault() is FlyoutBase newFlyout)
+                if (newFlyout != null)
                 {
                     RegisterFlyoutEvents(newFlyout);
                 }
@@ -593,6 +605,13 @@ namespace Avalonia.Controls
             else if (key == Key.F4 && IsEffectivelyEnabled)
             {
                 OpenFlyout();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape && _isFlyoutOpen)
+            {
+                // If Flyout doesn't have focusable content, close the flyout here
+                // This is the same behavior as Button
+                CloseFlyout();
                 e.Handled = true;
             }
 
