@@ -31,8 +31,12 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <!-- A Border was added here since Avalonia does not support Background/Border/CornerRadius on Grid directly -->
-          <Border Background="Transparent"
+          <!-- A Border was added here since Avalonia does not support Background/Border/CornerRadius on Grid directly
+               This also allowed removing the extra background border and integrating it here. -->
+          <Border x:Name="RootBorder"
+                  Background="Transparent"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <!-- In WinUI, a separate child style for the inner buttons is provided here.
                  For avalonia that style is simplified and pulled out separately below.
@@ -55,13 +59,6 @@
                       Background="{TemplateBinding Background}"
                       Grid.Column="2"
                       CornerRadius="{Binding $parent[SplitButton].CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
-
-              <!-- Changed from Grid to Border to support Background/Border/CornerRadius properties -->
-              <Border x:Name="Border"
-                      Grid.ColumnSpan="3"
-                      BorderBrush="{TemplateBinding BorderBrush}"
-                      BorderThickness="{TemplateBinding BorderThickness}"
-                      CornerRadius="{TemplateBinding CornerRadius}" />
 
               <Button x:Name="PART_PrimaryButton"
                       Grid.Column="0"
@@ -148,7 +145,7 @@
   </Style>
 
   <!-- Disabled State -->
-  <Style Selector="SplitButton:disabled /template/ Border#Border">
+  <Style Selector="SplitButton:disabled /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushDisabled}" />
   </Style>
   <Style Selector="SplitButton:disabled /template/ Path#DropDownGlyphPath">
@@ -167,7 +164,7 @@
   <Style Selector="SplitButton:flyout-open /template/ Border#SecondaryBackgroundBorder">
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:flyout-open /template/ Border#Border">
+  <Style Selector="SplitButton:flyout-open /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
   </Style>
   <Style Selector="SplitButton:flyout-open /template/ Button#PART_PrimaryButton">
@@ -184,7 +181,7 @@
   <Style Selector="SplitButton:touch-pressed /template/ Border#SecondaryBackgroundBorder">
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
   </Style>
-  <Style Selector="SplitButton:touch-pressed /template/ Border#Border">
+  <Style Selector="SplitButton:touch-pressed /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
   </Style>
   <Style Selector="SplitButton:touch-pressed /template/ Button#PART_PrimaryButton">
@@ -249,7 +246,7 @@
   <Style Selector="SplitButton:checked /template/ Border#SecondaryBackgroundBorder">
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
   </Style>
-  <Style Selector="SplitButton:checked /template/ Border#Border">
+  <Style Selector="SplitButton:checked /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_PrimaryButton">
@@ -269,7 +266,7 @@
   <Style Selector="SplitButton:checked-flyout-open /template/ Border#SecondaryBackgroundBorder">
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checked-flyout-open /template/ Border#Border">
+  <Style Selector="SplitButton:checked-flyout-open /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:checked-flyout-open /template/ Button#PART_PrimaryButton">
@@ -289,7 +286,7 @@
   <Style Selector="SplitButton:checked-touch-pressed /template/ Border#SecondaryBackgroundBorder">
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
   </Style>
-  <Style Selector="SplitButton:checked-touch-pressed /template/ Border#Border">
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:checked-touch-pressed /template/ Button#PART_PrimaryButton">
@@ -303,7 +300,7 @@
   </Style>
 
   <!-- CheckedPrimaryPointerOver State -->
-  <Style Selector="SplitButton:checked-primary-pointerover /template/ Border#Border">
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
   <Style Selector="SplitButton:checked-primary-pointerover /template/ Border#PrimaryBackgroundBorder">
@@ -324,7 +321,7 @@
   </Style>
 
   <!-- CheckedPrimaryPressed State -->
-  <Style Selector="SplitButton:checked-primary-pressed /template/ Border#Border">
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
   <Style Selector="SplitButton:checked-primary-pressed /template/ Border#PrimaryBackgroundBorder">
@@ -345,7 +342,7 @@
   </Style>
 
   <!-- CheckedSecondaryPointerOver State -->
-  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Border#Border">
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
   <Style Selector="SplitButton:checked-secondary-pointerover /template/ Border#PrimaryBackgroundBorder">
@@ -366,7 +363,7 @@
   </Style>
 
   <!-- CheckedSecondaryPressed State -->
-  <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#Border">
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#RootBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
   </Style>
   <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#PrimaryBackgroundBorder">
