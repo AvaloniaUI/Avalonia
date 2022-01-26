@@ -357,7 +357,7 @@ namespace Avalonia
         /// <summary>
         ///  Determines if the current matrix contains perspective (non-affine) transforms (true) or only (affine) transforms that could be mapped into an 2x3 matrix (false).
         /// </summary>
-        private bool ContainsPerspective()
+        public bool ContainsPerspective()
         {
 
             // ReSharper disable CompareOfFloatsByEqualityOperator

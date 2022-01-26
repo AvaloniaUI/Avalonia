@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Numerics;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -244,6 +245,22 @@ namespace Avalonia
         /// <returns>The transformed point.</returns>
         public Point Transform(Matrix transform)
         {
+            if (transform.ContainsPerspective())
+            {
+                var m44 = new Matrix4x4(
+                    (float)transform.M11, (float)transform.M12, (float)transform.M13, 0,
+                    (float)transform.M21, (float)transform.M22, (float)transform.M23, 0,
+                    (float)transform.M31, (float)transform.M32, (float)transform.M33, 0,
+                    0, 0, 0, 1
+                );
+            
+                var vector = new Vector3((float)X, (float)Y, 1);
+                var transformedVector = Vector3.Transform(vector, m44);
+                var z = 1 / transformedVector.Z;
+            
+                return new Point(transformedVector.X * z, transformedVector.Y * z);
+            }
+            
             var x = X;
             var y = Y;
             var xadd = y * transform.M21 + transform.M31;
