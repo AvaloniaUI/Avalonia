@@ -1,0 +1,430 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
+
+  <!-- This style is heavily based on the Fluent v1 style.
+       The base resources are switched out along with a few minor changes such as Padding, CornerRadius. -->
+
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <SplitButton />
+    </Border>
+  </Design.PreviewWith>
+
+  <Styles.Resources>
+    <x:Double x:Key="SplitButtonPrimaryButtonSize">32</x:Double>
+    <GridLength x:Key="SplitButtonSecondaryButtonSize">32</GridLength>
+    <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
+    
+    <StaticResource x:Key="SplitButtonBackground" ResourceKey="ThemeControlMidBrush" />
+    <StaticResource x:Key="SplitButtonBackgroundPointerOver" ResourceKey="ThemeControlMidBrush" />
+    <StaticResource x:Key="SplitButtonBackgroundPressed" ResourceKey="ThemeControlHighBrush" />
+    <SolidColorBrush x:Key="SplitButtonBackgroundDisabled" Color="{DynamicResource ThemeControlMidColor}" Opacity="{DynamicResource ThemeDisabledOpacity}" />
+    <StaticResource x:Key="SplitButtonBackgroundChecked" ResourceKey="ThemeControlHighBrush" />
+    <StaticResource x:Key="SplitButtonBackgroundCheckedPointerOver" ResourceKey="ThemeControlHighBrush" />
+    <StaticResource x:Key="SplitButtonBackgroundCheckedPressed" ResourceKey="ThemeControlHighBrush" />
+    <SolidColorBrush x:Key="SplitButtonBackgroundCheckedDisabled" Color="{DynamicResource ThemeControlHighColor}" Opacity="{DynamicResource ThemeDisabledOpacity}" />
+    
+    <StaticResource x:Key="SplitButtonForeground" ResourceKey="ThemeForegroundBrush" />
+    <StaticResource x:Key="SplitButtonForegroundPointerOver" ResourceKey="ThemeForegroundBrush" />
+    <StaticResource x:Key="SplitButtonForegroundPressed" ResourceKey="ThemeForegroundBrush" />
+    <StaticResource x:Key="SplitButtonForegroundDisabled" ResourceKey="ThemeForegroundBrush" />
+    <StaticResource x:Key="SplitButtonForegroundChecked" ResourceKey="ThemeForegroundBrush" />
+    <StaticResource x:Key="SplitButtonForegroundCheckedPointerOver" ResourceKey="ThemeForegroundBrush" />
+    <StaticResource x:Key="SplitButtonForegroundCheckedPressed" ResourceKey="ThemeForegroundBrush" />
+    <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="ThemeForegroundBrush" />
+
+    <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ThemeBorderLowBrush" />
+    <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ThemeBorderMidBrush" />
+    <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="ThemeBorderLowBrush" />
+    <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ThemeBorderLowBrush" />
+    <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="ThemeBorderMidBrush" />
+    <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="ThemeBorderMidBrush" />
+    <StaticResource x:Key="SplitButtonBorderBrushCheckedPressed" ResourceKey="ThemeControlHighBrush" />
+    <SolidColorBrush x:Key="SplitButtonBorderBrushCheckedDisabled" Color="{DynamicResource ThemeControlMidColor}" Opacity="{DynamicResource ThemeDisabledOpacity}" />
+  </Styles.Resources>
+
+  <Style Selector="SplitButton">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForeground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonBorderThemeThickness}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <!--<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+    <Setter Property="UseSystemFocusVisuals" Value="True" />
+    <Setter Property="FocusVisualMargin" Value="-3" />-->
+    <Setter Property="KeyboardNavigation.IsTabStop" Value="True" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <!-- A Border was added here since Avalonia does not support Background/Border/CornerRadius on Grid directly
+               This also allowed removing the extra background border and integrating it here. -->
+          <Border x:Name="RootBorder"
+                  Background="Transparent"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <!-- In WinUI, a separate child style for the inner buttons is provided here.
+                 For avalonia that style is simplified and pulled out separately below.
+                 A style is needed to override any button default background/foreground/border colors, etc. -->
+            <Grid>
+              
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"
+                                  MinWidth="{StaticResource SplitButtonPrimaryButtonSize}" />
+                <ColumnDefinition Width="1" />
+                <ColumnDefinition Width="{StaticResource SplitButtonSecondaryButtonSize}" />
+              </Grid.ColumnDefinitions>
+
+              <!-- Changed from Grid to Border since Avalonia does not support Background/CornerRadius on Grid directly -->
+              <Border x:Name="PrimaryBackgroundBorder"
+                      Background="{TemplateBinding Background}"
+                      CornerRadius="{Binding $parent[SplitButton].CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+
+              <Border x:Name="SecondaryBackgroundBorder"
+                      Background="{TemplateBinding Background}"
+                      Grid.Column="2"
+                      CornerRadius="{Binding $parent[SplitButton].CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+
+              <Button x:Name="PART_PrimaryButton"
+                      Grid.Column="0"
+                      Foreground="{TemplateBinding Foreground}"
+                      Background="{TemplateBinding Background}"
+                      BorderThickness="{TemplateBinding BorderThickness}"
+                      BorderBrush="Transparent"
+                      Content="{TemplateBinding Content}"
+                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                      Command="{TemplateBinding Command}"
+                      CommandParameter="{TemplateBinding CommandParameter}"
+                      CornerRadius="{Binding $parent[SplitButton].CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
+                      FontFamily="{TemplateBinding FontFamily}"
+                      FontSize="{TemplateBinding FontSize}"
+                      FontWeight="{TemplateBinding FontWeight}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                      Padding="{TemplateBinding Padding}"
+                      KeyboardNavigation.IsTabStop="False" />
+
+              <Button x:Name="PART_SecondaryButton"
+                      Grid.Column="2"
+                      CornerRadius="{Binding $parent[SplitButton].CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
+                      Foreground="{TemplateBinding Foreground}"
+                      Background="{TemplateBinding Background}"
+                      BorderThickness="{TemplateBinding BorderThickness}"
+                      BorderBrush="Transparent"
+                      HorizontalContentAlignment="Right"
+                      VerticalContentAlignment="Center"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      KeyboardNavigation.IsTabStop="False"
+                      Padding="0,0,10,0">
+                <Button.Content>
+                  <!-- TextBlock converted to a Path and placed within Viewbox -->
+                  <Viewbox UseLayoutRounding="False"
+                           IsHitTestVisible="False"
+                           Height="12"
+                           Width="12">
+                    <Path x:Name="DropDownGlyphPath"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Right"
+                          Fill="{TemplateBinding Foreground}"
+                          Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z"
+                          Stretch="Uniform" />
+                  </Viewbox>
+                </Button.Content>
+              </Button>
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Normal State (not a PseudoClass) -->
+  <!-- The 'Button' style here was moved out of the main style above.
+       In WinUI there is a child, customized style shared for both primary and secondary buttons.
+       In Avalonia, we can use selectors to make a 'normal' style apply only to those buttons but
+       pull it out separately from the full style above. -->
+  <Style Selector="SplitButton /template/ Button">
+    <!-- Applies to both Primary/Secondary buttons -->
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForeground}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonBorderThemeThickness}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <!-- Switched from Grid to Border to optimize and support Foreground/Background properties -->
+        <!-- It is important for the background to be clear and no CornerRadius set. -->
+        <Border Background="Transparent">
+          <ContentPresenter x:Name="ContentPresenter"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Disabled State -->
+  <Style Selector="SplitButton:disabled /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushDisabled}" />
+  </Style>
+  <Style Selector="SplitButton:disabled /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundDisabled}" />
+  </Style>
+  <Style Selector="SplitButton:disabled /template/ Button">
+    <!-- Applies to both Primary/Secondary buttons -->
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundDisabled}" />
+  </Style>
+
+  <!-- FlyoutOpen State -->
+  <Style Selector="SplitButton:flyout-open /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:flyout-open /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:flyout-open /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+  </Style>
+  <Style Selector="SplitButton:flyout-open /template/ Button#PART_PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:flyout-open /template/ Button#PART_SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+
+  <!-- TouchPressed State -->
+  <Style Selector="SplitButton:touch-pressed /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:touch-pressed /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:touch-pressed /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+  </Style>
+  <Style Selector="SplitButton:touch-pressed /template/ Button#PART_PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:touch-pressed /template/ Button#PART_SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+
+  <!-- PrimaryPointerOver State -->
+  <Style Selector="SplitButton:primary-pointerover /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:primary-pointerover /template/ Button#PART_PrimaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:primary-pointerover /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
+  </Style>
+
+  <!-- PrimaryPressed State -->
+  <Style Selector="SplitButton:primary-pressed /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:primary-pressed /template/ Button#PART_PrimaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:primary-pressed /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
+  </Style>
+
+  <!-- SecondaryPointerOver State -->
+  <Style Selector="SplitButton:secondary-pointerover /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
+  </Style>
+  <Style Selector="SplitButton:secondary-pointerover /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:secondary-pointerover /template/ Button#PART_SecondaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
+  </Style>
+
+  <!-- SecondaryPressed State -->
+  <Style Selector="SplitButton:secondary-pressed /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
+  </Style>
+  <Style Selector="SplitButton:secondary-pressed /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:secondary-pressed /template/ Button#PART_SecondaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+
+  <!-- Checked State -->
+  <Style Selector="SplitButton:checked /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Button#PART_PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+
+  <!-- CheckedFlyoutOpen State -->
+  <Style Selector="SplitButton:checked-flyout-open /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-flyout-open /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-flyout-open /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-flyout-open /template/ Button#PART_PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-flyout-open /template/ Button#PART_SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-flyout-open /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+
+  <!-- CheckedTouchPressed State -->
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Button#PART_PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Button#PART_SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-touch-pressed /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+
+  <!-- CheckedPrimaryPointerOver State -->
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Button#PART_PrimaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Button#PART_SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pointerover /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+
+  <!-- CheckedPrimaryPressed State -->
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Button#PART_PrimaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Button#PART_SecondaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-primary-pressed /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+
+  <!-- CheckedSecondaryPointerOver State -->
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Button#PART_PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Button#PART_SecondaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pointerover /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
+  </Style>
+
+  <!-- CheckedSecondaryPressed State -->
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#RootBorder">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#PrimaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Border#SecondaryBackgroundBorder">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Button#PART_PrimaryButton">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Button#PART_SecondaryButton">
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:checked-secondary-pressed /template/ Path#DropDownGlyphPath">
+    <Setter Property="Fill" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+
+  <!-- SecondaryButtonPlacement States -->
+  <!-- Note: Setting Grid attached properties doesn't work here for some unknown reason.
+       They simply are never changed. In addition, touch-device changes of secondary button
+       size are currently disabled in code-behind. -->
+  <Style Selector="SplitButton:secondary-button-right /template/ Button#PART_SecondaryButton">
+    <Setter Property="(Grid.Column)" Value="2" />
+    <Setter Property="(Grid.ColumnSpan)" Value="1" />
+  </Style>
+  <Style Selector="SplitButton:secondary-button-span /template/ Button#PART_SecondaryButton">
+    <Setter Property="(Grid.Column)" Value="0" />
+    <Setter Property="(Grid.ColumnSpan)" Value="3" />
+  </Style>
+
+</Styles>
