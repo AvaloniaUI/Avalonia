@@ -74,25 +74,21 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Command"/> property.
         /// </summary>
         public static readonly DirectProperty<SplitButton, ICommand> CommandProperty =
-            AvaloniaProperty.RegisterDirect<SplitButton, ICommand>(
-                nameof(Command),
+            Button.CommandProperty.AddOwner<SplitButton>(
                 splitButton => splitButton.Command,
-                (splitButton, command) => splitButton.Command = command,
-                enableDataValidation: true);
+                (splitButton, command) => splitButton.Command = command);
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
         public static readonly StyledProperty<object> CommandParameterProperty =
-            AvaloniaProperty.Register<SplitButton, object>(
-                nameof(CommandParameter));
+            Button.CommandParameterProperty.AddOwner<SplitButton>();
 
         /// <summary>
         /// Defines the <see cref="Flyout"/> property
         /// </summary>
         public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
-            AvaloniaProperty.Register<SplitButton, FlyoutBase>(
-                nameof(Flyout));
+            Button.FlyoutProperty.AddOwner<SplitButton>();
 
         private ICommand _Command;
 
