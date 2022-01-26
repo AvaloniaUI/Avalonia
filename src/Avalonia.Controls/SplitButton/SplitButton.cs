@@ -186,8 +186,24 @@ namespace Avalonia.Controls
         protected void UpdatePseudoClasses()
         {
             // Place the secondary button
-            // These are mutually exclusive PseudoClasses handled separately from SetExclusivePseudoClass().
-            // They must be applied in addition to the others.
+            //
+            // In WinUI, the span of the secondary button is changed to full-width for touch-based
+            // devices in certain conditions. The full reasoning for this is unknown. Some theories
+            // include:
+            //
+            //   My guess is that the design team at MS decided that it's a better experience
+            //   for touch users to make them select from the drop down rather than the shortcut
+            //   top level button, so touch basically just turns this into a drop down button.
+            //   Whether that's ideal or not is going is a subjective opinion.
+            //
+            // For Avalonia, it may not always make sense to disable the primary button like that
+            // on touch-first platforms. Users and developers would normally expect a control to
+            // function the same on all platforms. Therefore, this functionality is disabled here
+            // but could be re-enabled in the future if more reasons become known.
+            //
+            // Finally, these are mutually exclusive PseudoClasses handled separately from
+            // SetExclusivePseudoClass(). They must be applied in addition to the others.
+            /*
             if (_lastPointerType == PointerType.Touch || _isKeyDown)
             {
                 PseudoClasses.Set(pcSecondaryButtonSpan, true);
@@ -198,9 +214,10 @@ namespace Avalonia.Controls
                 PseudoClasses.Set(pcSecondaryButtonSpan, false);
                 PseudoClasses.Set(pcSecondaryButtonRight, true);
             }
+            */
 
             // Change the visual state
-            if (!IsEnabled)
+            if (!IsEffectivelyEnabled)
             {
                 SetExclusivePseudoClass(pcDisabled);
             }
