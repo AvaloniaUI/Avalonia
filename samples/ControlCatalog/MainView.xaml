@@ -22,8 +22,8 @@
       <TabItem Header="Border">
         <pages:BorderPage />
       </TabItem>
-      <TabItem Header="Button">
-        <pages:ButtonPage />
+      <TabItem Header="Buttons">
+        <pages:ButtonsPage />
       </TabItem>
       <TabItem Header="ButtonSpinner">
         <pages:ButtonSpinnerPage />
@@ -120,9 +120,6 @@
       </TabItem>
       <TabItem Header="Slider">
         <pages:SliderPage />
-      </TabItem>
-      <TabItem Header="SplitButton">
-        <pages:SplitButtonPage />
       </TabItem>
       <TabItem Header="SplitView">
         <pages:SplitViewPage />

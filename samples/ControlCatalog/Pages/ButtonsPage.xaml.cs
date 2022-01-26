@@ -3,11 +3,11 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages
 {
-    public class ButtonPage : UserControl
+    public class ButtonsPage : UserControl
     {
         private int repeatButtonClickCount = 0;
 
-        public ButtonPage()
+        public ButtonsPage()
         {
             InitializeComponent();
 
