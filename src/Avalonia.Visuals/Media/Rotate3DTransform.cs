@@ -57,16 +57,7 @@ public class Rotate3DTransform : Transform
     /// <summary>
     /// Initializes a new instance of the <see cref="Rotate3DTransform"/> class.
     /// </summary>
-    public Rotate3DTransform()
-    {
-        this.GetObservable(AngleXProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(AngleYProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(AngleZProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(CenterXProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(CenterYProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(CenterZProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(DepthProperty).Subscribe(_ => RaiseChanged());
-    }
+    public Rotate3DTransform() { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Rotate3DTransform"/> class.
@@ -194,4 +185,6 @@ public class Rotate3DTransform : Transform
             return matrix;
         }
     }
+
+    protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change) => RaiseChanged();
 }
