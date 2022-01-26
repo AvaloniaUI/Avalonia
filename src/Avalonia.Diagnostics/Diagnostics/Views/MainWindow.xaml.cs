@@ -27,7 +27,7 @@ namespace Avalonia.Diagnostics.Views
 
             _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
-                .Where(x => x.Type == RawKeyEventType.KeyDown)
+                .Where(x => x.Type == RawKeyEventType.KeyUp)
                 .Subscribe(RawKeyDown);
 
             _frozenPopupStates = new Dictionary<Popup, IDisposable>();
