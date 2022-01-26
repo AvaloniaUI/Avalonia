@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Input.Raw
 {
@@ -71,6 +72,12 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the input modifiers.
         /// </summary>
-        public RawInputModifiers InputModifiers { get; private set; }
+        public RawInputModifiers InputModifiers { get; set; }
+        
+        /// <summary>
+        /// Points that were traversed by a pointer since the previous relevant event,
+        /// only valid for Move and TouchUpdate
+        /// </summary>
+        public IReadOnlyList<Point>? IntermediatePoints { get; set; }
     }
 }
