@@ -1,4 +1,50 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:i="using:Avalonia.Xaml.Interactivity"
+        xmlns:sandbox="clr-namespace:Sandbox"
         x:Class="Sandbox.MainWindow">
+    <Window.DataContext>
+        <sandbox:PrivacyControlViewModel />
+    </Window.DataContext>
+
+    <DockPanel>
+        <ItemsControl DockPanel.Dock="Bottom" Items="{Binding LabelsBlackList}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="sandbox:LabelViewModel">
+                    <Button Classes="plain" Margin="5" Content="{Binding Value}" Command="{Binding ClickedCommand}" Padding="10">
+                        <i:Interaction.Behaviors>
+                            <sandbox:BindPointerOverBehavior
+                                IsPointerOver="{Binding IsPointerOver, Mode=OneWayToSource}" />
+                        </i:Interaction.Behaviors>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Separator DockPanel.Dock="Bottom" />
+
+        <ItemsControl Items="{Binding LabelsWhiteList}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="sandbox:LabelViewModel">
+                    <Button Classes="plain" Margin="5" Content="{Binding Value}" Command="{Binding ClickedCommand}" Padding="10">
+                        <i:Interaction.Behaviors>
+                            <sandbox:BindPointerOverBehavior
+                                IsPointerOver="{Binding IsPointerOver, Mode=OneWayToSource}" />
+                        </i:Interaction.Behaviors>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </DockPanel>
 </Window>

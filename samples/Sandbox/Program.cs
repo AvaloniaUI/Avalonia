@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.ReactiveUI;
 
 namespace Sandbox
 {
@@ -10,6 +11,7 @@ namespace Sandbox
         public static AppBuilder BuildAvaloniaApp() =>
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .UseReactiveUI ()
                 .LogToTrace();
     }
 }
