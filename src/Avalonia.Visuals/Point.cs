@@ -243,34 +243,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="transform">The transform.</param>
         /// <returns>The transformed point.</returns>
-        public Point Transform(Matrix transform)
-        {
-            if (transform.ContainsPerspective())
-            {
-                var m44 = new Matrix4x4(
-                    (float)transform.M11, (float)transform.M12, (float)transform.M13, 0,
-                    (float)transform.M21, (float)transform.M22, (float)transform.M23, 0,
-                    (float)transform.M31, (float)transform.M32, (float)transform.M33, 0,
-                    0, 0, 0, 1
-                );
-            
-                var vector = new Vector3((float)X, (float)Y, 1);
-                var transformedVector = Vector3.Transform(vector, m44);
-                var z = 1 / transformedVector.Z;
-            
-                return new Point(transformedVector.X * z, transformedVector.Y * z);
-            }
-            
-            var x = X;
-            var y = Y;
-            var xadd = y * transform.M21 + transform.M31;
-            var yadd = x * transform.M12 + transform.M32;
-            x *= transform.M11;
-            x += xadd;
-            y *= transform.M22;
-            y += yadd;
-            return new Point(x, y);
-        }
+        public Point Transform(Matrix transform) => transform.Transform(this);
 
         /// <summary>
         /// Returns a new point with the specified X coordinate.

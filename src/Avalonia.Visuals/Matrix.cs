@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -277,7 +278,7 @@ namespace Avalonia
         {
             return angle * 0.0174532925;
         }
-
+        
         /// <summary>
         /// Appends another matrix as post-multiplication operation.
         /// Equivalent to this * value;
@@ -310,12 +311,55 @@ namespace Avalonia
         /// </remarks>
         public double GetDeterminant()
         {
-            //return (_m11 * _m22) - (_m12 * _m21); //TODO: ensure new implementation yields the same result as before, when pers is 0,0,1
-
             // implemented using "Laplace expansion":
             return _m11 * (_m22 * _m33 - _m23 * _m32)
                  - _m12 * (_m21 * _m33 - _m23 * _m31)
                  + _m13 * (_m21 * _m32 - _m22 * _m31);
+        }
+
+        /// <summary>
+        ///  Transforms the point with the matrix
+        /// </summary>
+        /// <param name="p">The point to be transformed</param>
+        /// <returns>The transformed point</returns>
+        public Point Transform(Point p)
+        {
+            Point transformedResult;
+            
+            // If this matrix contains a non-affine transform with need to extend
+            // the point to a 3D vector and flatten it back for 2d display
+            // by multiplying X and Y with the inverse of the Z axis.
+            // The code below also works with affine transformations, but for performance (and compatibility)
+            // reasons we will use the more complex calculation only if necessary
+            if (ContainsPerspective())
+            {
+                var m44 = new Matrix4x4(
+                    (float)M11, (float)M12, (float)M13, 0,
+                    (float)M21, (float)M22, (float)M23, 0,
+                    (float)M31, (float)M32, (float)M33, 0,
+                    0, 0, 0, 1
+                );
+            
+                var vector = new Vector3((float)p.X, (float)p.Y, 1);
+                var transformedVector = Vector3.Transform(vector, m44);
+                var z = 1 / transformedVector.Z;
+            
+                transformedResult = new Point(transformedVector.X * z, transformedVector.Y * z);
+            }
+            else
+            {
+                var x = p.X;
+                var y = p.Y;
+                var xAdd = y * M21 + M31;
+                var yAdd = x * M12 + M32;
+                x *= M11;
+                x += xAdd;
+                y *= M22;
+                y += yAdd;
+                transformedResult = new Point(x, y);
+            }
+
+            return transformedResult;
         }
 
         /// <summary>

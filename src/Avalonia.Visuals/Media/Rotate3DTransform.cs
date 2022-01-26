@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media;
 
@@ -9,22 +10,22 @@ namespace Avalonia.Media;
 public class Rotate3DTransform : Transform
 {
     /// <summary>
-    /// Defines the <see cref="RotationX"/> property.
+    /// Defines the <see cref="AngleX"/> property.
     /// </summary>
-    public static readonly StyledProperty<double> RotationXProperty =
-        AvaloniaProperty.Register<Rotate3DTransform, double>(nameof(RotationX));
+    public static readonly StyledProperty<double> AngleXProperty =
+        AvaloniaProperty.Register<Rotate3DTransform, double>(nameof(AngleX));
 
     /// <summary>
-    /// Defines the <see cref="RotationY"/> property.
+    /// Defines the <see cref="AngleY"/> property.
     /// </summary>
-    public static readonly StyledProperty<double> RotationYProperty =
-        AvaloniaProperty.Register<Rotate3DTransform, double>(nameof(RotationY));
+    public static readonly StyledProperty<double> AngleYProperty =
+        AvaloniaProperty.Register<Rotate3DTransform, double>(nameof(AngleY));
 
     /// <summary>
-    /// Defines the <see cref="RotationZ"/> property.
+    /// Defines the <see cref="AngleZ"/> property.
     /// </summary>
-    public static readonly StyledProperty<double> RotationZProperty =
-        AvaloniaProperty.Register<Rotate3DTransform, double>(nameof(RotationZ));
+    public static readonly StyledProperty<double> AngleZProperty =
+        AvaloniaProperty.Register<Rotate3DTransform, double>(nameof(AngleZ));
 
 
     /// <summary>
@@ -58,9 +59,9 @@ public class Rotate3DTransform : Transform
     /// </summary>
     public Rotate3DTransform()
     {
-        this.GetObservable(RotationXProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(RotationYProperty).Subscribe(_ => RaiseChanged());
-        this.GetObservable(RotationZProperty).Subscribe(_ => RaiseChanged());
+        this.GetObservable(AngleXProperty).Subscribe(_ => RaiseChanged());
+        this.GetObservable(AngleYProperty).Subscribe(_ => RaiseChanged());
+        this.GetObservable(AngleZProperty).Subscribe(_ => RaiseChanged());
         this.GetObservable(CenterXProperty).Subscribe(_ => RaiseChanged());
         this.GetObservable(CenterYProperty).Subscribe(_ => RaiseChanged());
         this.GetObservable(CenterZProperty).Subscribe(_ => RaiseChanged());
@@ -70,23 +71,23 @@ public class Rotate3DTransform : Transform
     /// <summary>
     /// Initializes a new instance of the <see cref="Rotate3DTransform"/> class.
     /// </summary>
-    /// <param name="rotationX">The rotation around the X-Axis</param>
-    /// <param name="rotationY">The rotation around the Y-Axis</param>
-    /// <param name="rotationZ">The rotation around the Z-Axis</param>
+    /// <param name="angleX">The rotation around the X-Axis</param>
+    /// <param name="angleY">The rotation around the Y-Axis</param>
+    /// <param name="angleZ">The rotation around the Z-Axis</param>
     /// <param name="centerX">The origin of the X-Axis</param>
     /// <param name="centerY">The origin of the Y-Axis</param>
     /// <param name="centerZ">The origin of the Z-Axis</param>
     public Rotate3DTransform(
-        double rotationX,
-        double rotationY,
-        double rotationZ,
+        double angleX,
+        double angleY,
+        double angleZ,
         double centerX,
         double centerY,
         double centerZ) : this()
     {
-        RotationX = rotationX;
-        RotationY = rotationY;
-        RotationZ = rotationZ;
+        AngleX = angleX;
+        AngleY = angleY;
+        AngleZ = angleZ;
         CenterX = centerX;
         CenterY = centerY;
         CenterZ = centerZ;
@@ -95,32 +96,32 @@ public class Rotate3DTransform : Transform
     /// <summary>
     /// Sets the rotation around the X-Axis
     /// </summary>
-    public double RotationX
+    public double AngleX
     {
-        get => GetValue(RotationXProperty);
-        set => SetValue(RotationXProperty, value);
+        get => GetValue(AngleXProperty);
+        set => SetValue(AngleXProperty, value);
     }
 
     /// <summary>
     /// Sets the rotation around the Y-Axis
     /// </summary>
-    public double RotationY
+    public double AngleY
     {
-        get => GetValue(RotationYProperty);
-        set => SetValue(RotationYProperty, value);
+        get => GetValue(AngleYProperty);
+        set => SetValue(AngleYProperty, value);
     }
 
     /// <summary>
     ///  Sets the rotation around the Z-Axis
     /// </summary>
-    public double RotationZ
+    public double AngleZ
     {
-        get => GetValue(RotationZProperty);
-        set => SetValue(RotationZProperty, value);
+        get => GetValue(AngleZProperty);
+        set => SetValue(AngleZProperty, value);
     }
 
     /// <summary>
-    ///  Moves the origin of the X-Axis
+    ///  Moves the origin the X-Axis rotates around
     /// </summary>
     public double CenterX
     {
@@ -129,7 +130,7 @@ public class Rotate3DTransform : Transform
     }
 
     /// <summary>
-    ///  Moves the origin of the Y-Axis
+    ///  Moves the origin the Y-Axis rotates around
     /// </summary>
     public double CenterY
     {
@@ -138,7 +139,7 @@ public class Rotate3DTransform : Transform
     }
 
     /// <summary>
-    ///  Moves the origin of the Z-Axis
+    ///  Moves the origin the Z-Axis rotates around
     /// </summary>
     public double CenterZ
     {
@@ -166,9 +167,9 @@ public class Rotate3DTransform : Transform
 
             matrix44 *= Matrix4x4.CreateTranslation(-(float)CenterX, -(float)CenterY, -(float)CenterZ);
 
-            matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(RotationX));
-            matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(RotationY));
-            matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(RotationZ));
+            matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(AngleX));
+            matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(AngleY));
+            matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(AngleZ));
 
             matrix44 *= Matrix4x4.CreateTranslation((float)CenterX, (float)CenterY, (float)CenterZ);
 
