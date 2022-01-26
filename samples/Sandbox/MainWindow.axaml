@@ -16,12 +16,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="sandbox:LabelViewModel">
-                    <Button Classes="plain" Margin="5" Content="{Binding Value}" Command="{Binding ClickedCommand}" Padding="10">
-                        <i:Interaction.Behaviors>
-                            <sandbox:BindPointerOverBehavior
-                                IsPointerOver="{Binding IsPointerOver, Mode=OneWayToSource}" />
-                        </i:Interaction.Behaviors>
-                    </Button>
+                    <Button Classes="plain" Margin="5" Content="{Binding Value}" Command="{Binding ClickedCommand}" Padding="10"  IsPointerOver="{Binding IsPointerOver, Mode=OneWayToSource}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -36,12 +31,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="sandbox:LabelViewModel">
-                    <Button Classes="plain" Margin="5" Content="{Binding Value}" Command="{Binding ClickedCommand}" Padding="10">
-                        <i:Interaction.Behaviors>
-                            <sandbox:BindPointerOverBehavior
-                                IsPointerOver="{Binding IsPointerOver, Mode=OneWayToSource}" />
-                        </i:Interaction.Behaviors>
-                    </Button>
+                    <Button Classes="plain" Margin="5" Content="{Binding Value}" Command="{Binding ClickedCommand}" Padding="10"  IsPointerOver="{Binding IsPointerOver, Mode=OneWayToSource}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
