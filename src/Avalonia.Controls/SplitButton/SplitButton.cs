@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Disposables;
 using System.Windows.Input;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -13,45 +12,11 @@ namespace Avalonia.Controls
     /// A button with primary and secondary parts that can each be pressed separately.
     /// The primary part behaves like a <see cref="Button"/> and the secondary part opens a flyout.
     /// </summary>
-    [PseudoClasses(
-        pcDisabled,
-        pcSecondaryButtonRight,
-        pcSecondaryButtonSpan,
-        pcCheckedFlyoutOpen,
-        pcFlyoutOpen,
-        pcCheckedTouchPressed,
-        pcChecked,
-        pcCheckedPrimaryPressed,
-        pcCheckedPrimaryPointerOver,
-        pcCheckedSecondaryPressed,
-        pcCheckedSecondaryPointerOver,
-        pcTouchPressed,
-        pcPrimaryPressed,
-        pcPrimaryPointerOver,
-        pcSecondaryPressed,
-        pcSecondaryPointerOver)]
+    [PseudoClasses(pcFlyoutOpen)]
     public class SplitButton : ContentControl, ICommandSource
     {
-        private const string pcDisabled = ":disabled";
-
-        private const string pcSecondaryButtonRight = ":secondary-button-right";
-        private const string pcSecondaryButtonSpan  = ":secondary-button-span";
-
-        private const string pcCheckedFlyoutOpen = ":checked-flyout-open";
         private const string pcFlyoutOpen        = ":flyout-open";
-
-        private const string pcCheckedTouchPressed         = ":checked-touch-pressed";
-        private const string pcChecked                     = ":checked";
-        private const string pcCheckedPrimaryPressed       = ":checked-primary-pressed";
-        private const string pcCheckedPrimaryPointerOver   = ":checked-primary-pointerover";
-        private const string pcCheckedSecondaryPressed     = ":checked-secondary-pressed";
-        private const string pcCheckedSecondaryPointerOver = ":checked-secondary-pointerover";
-
-        private const string pcTouchPressed         = ":touch-pressed";
-        private const string pcPrimaryPressed       = ":primary-pressed";
-        private const string pcPrimaryPointerOver   = ":primary-pointerover";
-        private const string pcSecondaryPressed     = ":secondary-pressed";
-        private const string pcSecondaryPointerOver = ":secondary-pointerover";
+        protected const string pcChecked = ":checked";
 
         /// <summary>
         /// Raised when the user presses the primary part of the <see cref="SplitButton"/>.
@@ -62,13 +27,7 @@ namespace Avalonia.Controls
             remove => RemoveHandler(ClickEvent, value);
         }
 
-        /// <summary>
-        /// Defines the <see cref="Click"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-            RoutedEvent.Register<SplitButton, RoutedEventArgs>(
-                nameof(Click),
-                RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent = Button.ClickEvent;
 
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -96,13 +55,9 @@ namespace Avalonia.Controls
         private Button _secondaryButton = null;
 
         private bool        _commandCanExecute       = true;
-        protected bool      _hasLoaded               = false;
         private bool        _isAttachedToLogicalTree = false;
         private bool        _isFlyoutOpen            = false;
-        private bool        _isKeyDown               = false;
-        private PointerType _lastPointerType         = PointerType.Mouse;
 
-        private CompositeDisposable _buttonPropertyChangedDisposable;
         private IDisposable         _flyoutPropertyChangedDisposable;
 
         ////////////////////////////////////////////////////////////////////////
@@ -181,152 +136,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected void UpdatePseudoClasses()
         {
-            // Place the secondary button
-            //
-            // In WinUI, the span of the secondary button is changed to full-width for touch-based
-            // devices in certain conditions. The full reasoning for this is unknown. Some theories
-            // include:
-            //
-            //   My guess is that the design team at MS decided that it's a better experience
-            //   for touch users to make them select from the drop down rather than the shortcut
-            //   top level button, so touch basically just turns this into a drop down button.
-            //   Whether that's ideal or not is going is a subjective opinion.
-            //
-            // For Avalonia, it may not always make sense to disable the primary button like that
-            // on touch-first platforms. Users and developers would normally expect a control to
-            // function the same on all platforms. Therefore, this functionality is disabled here
-            // but could be re-enabled in the future if more reasons become known.
-            //
-            // Finally, these are mutually exclusive PseudoClasses handled separately from
-            // SetExclusivePseudoClass(). They must be applied in addition to the others.
-            /*
-            if (_lastPointerType == PointerType.Touch || _isKeyDown)
-            {
-                PseudoClasses.Set(pcSecondaryButtonSpan, true);
-                PseudoClasses.Set(pcSecondaryButtonRight, false);
-            }
-            else
-            {
-                PseudoClasses.Set(pcSecondaryButtonSpan, false);
-                PseudoClasses.Set(pcSecondaryButtonRight, true);
-            }
-            */
-
-            // Change the visual state
-            if (!IsEffectivelyEnabled)
-            {
-                SetExclusivePseudoClass(pcDisabled);
-            }
-            else if (_primaryButton != null && _secondaryButton != null)
-            {
-                if (_isFlyoutOpen)
-                {
-                    if (InternalIsChecked)
-                    {
-                        SetExclusivePseudoClass(pcCheckedFlyoutOpen);
-                    }
-                    else
-                    {
-                        SetExclusivePseudoClass(pcFlyoutOpen);
-                    }
-                }
-                // SplitButton and ToggleSplitButton share a template -- this section is driving the checked states for ToggleSplitButton.
-                else if (InternalIsChecked)
-                {
-                    if (_lastPointerType == PointerType.Touch || _isKeyDown)
-                    {
-                        if (_primaryButton.IsPressed || _secondaryButton.IsPressed || _isKeyDown)
-                        {
-                            SetExclusivePseudoClass(pcCheckedTouchPressed);
-                        }
-                        else
-                        {
-                            SetExclusivePseudoClass(pcChecked);
-                        }
-                    }
-                    else if (_primaryButton.IsPressed)
-                    {
-                        SetExclusivePseudoClass(pcCheckedPrimaryPressed);
-                    }
-                    else if (_primaryButton.IsPointerOver)
-                    {
-                        SetExclusivePseudoClass(pcCheckedPrimaryPointerOver);
-                    }
-                    else if (_secondaryButton.IsPressed)
-                    {
-                        SetExclusivePseudoClass(pcCheckedSecondaryPressed);
-                    }
-                    else if (_secondaryButton.IsPointerOver)
-                    {
-                        SetExclusivePseudoClass(pcCheckedSecondaryPointerOver);
-                    }
-                    else
-                    {
-                        SetExclusivePseudoClass(pcChecked);
-                    }
-                }
-                else
-                {
-                    if (_lastPointerType == PointerType.Touch || _isKeyDown)
-                    {
-                        if (_primaryButton.IsPressed || _secondaryButton.IsPressed || _isKeyDown)
-                        {
-                            SetExclusivePseudoClass(pcTouchPressed);
-                        }
-                        else
-                        {
-                            // Calling without a parameter is treated as ':normal' and will clear all other
-                            // PseudoClasses returning to the default state
-                            SetExclusivePseudoClass();
-                        }
-                    }
-                    else if (_primaryButton.IsPressed)
-                    {
-                        SetExclusivePseudoClass(pcPrimaryPressed);
-                    }
-                    else if (_primaryButton.IsPointerOver)
-                    {
-                        SetExclusivePseudoClass(pcPrimaryPointerOver);
-                    }
-                    else if (_secondaryButton.IsPressed)
-                    {
-                        SetExclusivePseudoClass(pcSecondaryPressed);
-                    }
-                    else if (_secondaryButton.IsPointerOver)
-                    {
-                        SetExclusivePseudoClass(pcSecondaryPointerOver);
-                    }
-                    else
-                    {
-                        // Calling without a parameter is treated as ':normal' and will clear all other
-                        // PseudoClasses returning to the default state
-                        SetExclusivePseudoClass();
-                    }
-                }
-            }
-
-            // Local function to enable the specified PseudoClass and disable all others
-            // This more closely matches the VisualStateManager of WinUI where the default style originated
-            void SetExclusivePseudoClass(string pseudoClass = "")
-            {
-                PseudoClasses.Set(pcDisabled, pseudoClass == pcDisabled);
-
-                PseudoClasses.Set(pcCheckedFlyoutOpen, pseudoClass == pcCheckedFlyoutOpen);
-                PseudoClasses.Set(pcFlyoutOpen,        pseudoClass == pcFlyoutOpen);
-
-                PseudoClasses.Set(pcCheckedTouchPressed,         pseudoClass == pcCheckedTouchPressed);
-                PseudoClasses.Set(pcChecked,                     pseudoClass == pcChecked);
-                PseudoClasses.Set(pcCheckedPrimaryPressed,       pseudoClass == pcCheckedPrimaryPressed);
-                PseudoClasses.Set(pcCheckedPrimaryPointerOver,   pseudoClass == pcCheckedPrimaryPointerOver);
-                PseudoClasses.Set(pcCheckedSecondaryPressed,     pseudoClass == pcCheckedSecondaryPressed);
-                PseudoClasses.Set(pcCheckedSecondaryPointerOver, pseudoClass == pcCheckedSecondaryPointerOver);
-
-                PseudoClasses.Set(pcTouchPressed,         pseudoClass == pcTouchPressed);
-                PseudoClasses.Set(pcPrimaryPressed,       pseudoClass == pcPrimaryPressed);
-                PseudoClasses.Set(pcPrimaryPointerOver,   pseudoClass == pcPrimaryPointerOver);
-                PseudoClasses.Set(pcSecondaryPressed,     pseudoClass == pcSecondaryPressed);
-                PseudoClasses.Set(pcSecondaryPointerOver, pseudoClass == pcSecondaryPointerOver);
-            }
+            PseudoClasses.Set(pcFlyoutOpen, _isFlyoutOpen);
+            PseudoClasses.Set(pcChecked, GetValue(ToggleSplitButton.IsCheckedProperty));
         }
 
         /// <summary>
@@ -387,29 +198,14 @@ namespace Avalonia.Controls
         /// </summary>
         private void UnregisterEvents()
         {
-            _buttonPropertyChangedDisposable?.Dispose();
-            _buttonPropertyChangedDisposable = null;
-
             if (_primaryButton != null)
             {
                 _primaryButton.Click -= PrimaryButton_Click;
-
-                _primaryButton.PointerEnter       -= Button_PointerEvent;
-                _primaryButton.PointerLeave       -= Button_PointerEvent;
-                _primaryButton.PointerPressed     -= Button_PointerEvent;
-                _primaryButton.PointerReleased    -= Button_PointerEvent;
-                _primaryButton.PointerCaptureLost -= Button_PointerCaptureLost;
             }
 
             if (_secondaryButton != null)
             {
                 _secondaryButton.Click -= SecondaryButton_Click;
-
-                _secondaryButton.PointerEnter       -= Button_PointerEvent;
-                _secondaryButton.PointerLeave       -= Button_PointerEvent;
-                _secondaryButton.PointerPressed     -= Button_PointerEvent;
-                _secondaryButton.PointerReleased    -= Button_PointerEvent;
-                _secondaryButton.PointerCaptureLost -= Button_PointerCaptureLost;
             }
         }
 
@@ -426,54 +222,18 @@ namespace Avalonia.Controls
             _primaryButton   = e.NameScope.Find<Button>("PART_PrimaryButton");
             _secondaryButton = e.NameScope.Find<Button>("PART_SecondaryButton");
 
-            _buttonPropertyChangedDisposable = new CompositeDisposable();
-
             if (_primaryButton != null)
             {
                 _primaryButton.Click += PrimaryButton_Click;
-
-                _buttonPropertyChangedDisposable.Add(_primaryButton.GetPropertyChangedObservable(Button.IsPressedProperty).Subscribe(Button_VisualPropertyChanged));
-                _buttonPropertyChangedDisposable.Add(_primaryButton.GetPropertyChangedObservable(Button.IsPointerOverProperty).Subscribe(Button_VisualPropertyChanged));
-
-                // Register for pointer events to keep track of the last used pointer type and update visual states
-                _primaryButton.PointerEnter       += Button_PointerEvent;
-                _primaryButton.PointerLeave       += Button_PointerEvent;
-                _primaryButton.PointerPressed     += Button_PointerEvent;
-                _primaryButton.PointerReleased    += Button_PointerEvent;
-                _primaryButton.PointerCaptureLost += Button_PointerCaptureLost;
             }
 
             if (_secondaryButton != null)
             {
                 _secondaryButton.Click += SecondaryButton_Click;
-
-                _buttonPropertyChangedDisposable.Add(_secondaryButton.GetPropertyChangedObservable(Button.IsPressedProperty).Subscribe(Button_VisualPropertyChanged));
-                _buttonPropertyChangedDisposable.Add(_secondaryButton.GetPropertyChangedObservable(Button.IsPointerOverProperty).Subscribe(Button_VisualPropertyChanged));
-
-                // Register for pointer events to keep track of the last used pointer type and update visual states
-                _secondaryButton.PointerEnter       += Button_PointerEvent;
-                _secondaryButton.PointerLeave       += Button_PointerEvent;
-                _secondaryButton.PointerPressed     += Button_PointerEvent;
-                _secondaryButton.PointerReleased    += Button_PointerEvent;
-                _secondaryButton.PointerCaptureLost += Button_PointerCaptureLost;
             }
 
             RegisterFlyoutEvents(Flyout);
             UpdatePseudoClasses();
-
-            _hasLoaded = true;
-        }
-
-        /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-        }
-
-        /// <inheritdoc/>
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromVisualTree(e);
         }
 
         /// <inheritdoc/>
@@ -566,7 +326,6 @@ namespace Avalonia.Controls
 
             if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
             {
-                _isKeyDown = true;
                 UpdatePseudoClasses();
             }
 
@@ -580,7 +339,6 @@ namespace Avalonia.Controls
 
             if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
             {
-                _isKeyDown = false;
                 UpdatePseudoClasses();
 
                 // Consider this a click on the primary button
@@ -623,7 +381,7 @@ namespace Avalonia.Controls
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
-                var eventArgs = new RoutedEventArgs(ClickEvent);
+                var eventArgs = new RoutedEventArgs(Button.ClickEvent);
                 RaiseEvent(eventArgs);
 
                 if (!eventArgs.Handled && Command?.CanExecute(CommandParameter) == true)
@@ -665,43 +423,6 @@ namespace Avalonia.Controls
         private void SecondaryButton_Click(object sender, RoutedEventArgs e)
         {
             OnClickSecondary(e);
-        }
-
-        /// <summary>
-        /// Event handler for when pointer events occur in the primary or secondary buttons.
-        /// </summary>
-        private void Button_PointerEvent(object sender, PointerEventArgs e)
-        {
-            // Warning: Code must match with Button_PointerCaptureLost
-            if (_lastPointerType != e.Pointer.Type)
-            {
-                _lastPointerType = e.Pointer.Type;
-                UpdatePseudoClasses();
-            }
-        }
-
-        /// <summary>
-        /// Event handler for when the pointer capture is lost in the primary or secondary buttons.
-        /// </summary>
-        /// <remarks>
-        /// In upstream WinUI this is not a separate event handler. However, Avalonia has different args.
-        /// </remarks>
-        private void Button_PointerCaptureLost(object sender, PointerCaptureLostEventArgs e)
-        {
-            // Warning: Code must match with Button_PointerEvent
-            if (_lastPointerType != e.Pointer.Type)
-            {
-                _lastPointerType = e.Pointer.Type;
-                UpdatePseudoClasses();
-            }
-        }
-
-        /// <summary>
-        /// Called when a primary or secondary button property changes that affects the visual states.
-        /// </summary>
-        private void Button_VisualPropertyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            UpdatePseudoClasses();
         }
 
         /// <summary>

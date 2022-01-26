@@ -1,4 +1,6 @@
 ﻿using System;
+
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
@@ -10,6 +12,7 @@ namespace Avalonia.Controls
     /// The primary part behaves like a <see cref="ToggleButton"/> with two states and
     /// the secondary part opens a flyout.
     /// </summary>
+    [PseudoClasses(pcChecked)]
     public class ToggleSplitButton : SplitButton, IStyleable
     {
         /// <summary>
@@ -101,7 +104,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void OnIsCheckedChanged()
         {
-            if (_hasLoaded)
+            // IsLoaded check
+            if (Parent is not null)
             {
                 var eventArgs = new RoutedEventArgs(IsCheckedChangedEvent);
                 RaiseEvent(eventArgs);
