@@ -27,7 +27,7 @@ namespace Avalonia.Diagnostics.Views
 
             _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
-                .Where(x => x.Type == RawKeyEventType.KeyUp)
+                .Where(x => x.Type == RawKeyEventType.KeyDown)
                 .Subscribe(RawKeyDown);
 
             _frozenPopupStates = new Dictionary<Popup, IDisposable>();
@@ -169,7 +169,9 @@ namespace Avalonia.Diagnostics.Views
 
             switch (e.Modifiers)
             {
-                case RawInputModifiers.Control | RawInputModifiers.Shift:
+                case RawInputModifiers.Control when (e.Key == Key.LeftShift || e.Key == Key.RightShift):
+                case RawInputModifiers.Shift when (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl):
+                case RawInputModifiers.Shift | RawInputModifiers.Control:
                 {
                     IControl? control = null;
 
