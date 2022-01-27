@@ -123,7 +123,10 @@ namespace Avalonia.Controls
         ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
-        public void CanExecuteChanged(object sender, EventArgs e)
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
+
+        /// <inheritdoc cref="ICommandSource.CanExecuteChanged"/>
+        private void CanExecuteChanged(object sender, EventArgs e)
         {
             var canExecute = Command == null || Command.CanExecute(CommandParameter);
 
