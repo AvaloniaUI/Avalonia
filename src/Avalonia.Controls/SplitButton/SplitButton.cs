@@ -140,7 +140,7 @@ namespace Avalonia.Controls
         protected void UpdatePseudoClasses()
         {
             PseudoClasses.Set(pcFlyoutOpen, _isFlyoutOpen);
-            PseudoClasses.Set(pcChecked, GetValue(ToggleSplitButton.IsCheckedProperty));
+            PseudoClasses.Set(pcChecked, InternalIsChecked);
         }
 
         /// <summary>
