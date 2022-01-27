@@ -15,8 +15,8 @@ namespace Avalonia.Controls
     [PseudoClasses(pcFlyoutOpen)]
     public class SplitButton : ContentControl, ICommandSource
     {
-        private const string pcFlyoutOpen        = ":flyout-open";
-        protected const string pcChecked = ":checked";
+        protected const string pcChecked    = ":checked";
+        protected const string pcFlyoutOpen = ":flyout-open";
 
         /// <summary>
         /// Raised when the user presses the primary part of the <see cref="SplitButton"/>.
@@ -27,6 +27,9 @@ namespace Avalonia.Controls
             remove => RemoveHandler(ClickEvent, value);
         }
 
+        /// <summary>
+        /// Defines the <see cref="Click"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent = Button.ClickEvent;
 
         /// <summary>
@@ -54,11 +57,11 @@ namespace Avalonia.Controls
         private Button _primaryButton   = null;
         private Button _secondaryButton = null;
 
-        private bool        _commandCanExecute       = true;
-        private bool        _isAttachedToLogicalTree = false;
-        private bool        _isFlyoutOpen            = false;
+        private bool _commandCanExecute       = true;
+        private bool _isAttachedToLogicalTree = false;
+        private bool _isFlyoutOpen            = false;
 
-        private IDisposable         _flyoutPropertyChangedDisposable;
+        private IDisposable _flyoutPropertyChangedDisposable;
 
         ////////////////////////////////////////////////////////////////////////
         // Constructor / Destructors
