@@ -24,7 +24,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
         private Points _points;
-        private IDisposable _pointsObserver;
+        private IDisposable? _pointsObserver;
 
         static PolylineGeometry()
         {
@@ -37,7 +37,7 @@ namespace Avalonia.Media
         /// </summary>
         public PolylineGeometry()
         {
-            Points = new Points();
+            _points = new Points();
         }
 
         /// <summary>
@@ -74,9 +74,9 @@ namespace Avalonia.Media
             return new PolylineGeometry(Points, IsFilled);
         }
 
-        protected override IGeometryImpl CreateDefiningGeometry()
+        protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var geometry = factory.CreateStreamGeometry();
 
             using (var context = geometry.Open())
@@ -97,7 +97,7 @@ namespace Avalonia.Media
             return geometry;
         }
 
-        private void OnPointsChanged(Points newValue)
+        private void OnPointsChanged(Points? newValue)
         {
             _pointsObserver?.Dispose();
             _pointsObserver = newValue?.ForEachItem(

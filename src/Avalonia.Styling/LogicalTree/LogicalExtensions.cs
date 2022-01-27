@@ -15,14 +15,14 @@ namespace Avalonia.LogicalTree
         /// <returns>The logical's ancestors.</returns>
         public static IEnumerable<ILogical> GetLogicalAncestors(this ILogical logical)
         {
-            Contract.Requires<ArgumentNullException>(logical != null);
+            _ = logical ?? throw new ArgumentNullException(nameof(logical));
 
-            logical = logical.LogicalParent;
+            ILogical? l = logical.LogicalParent;
 
-            while (logical != null)
+            while (l != null)
             {
-                yield return logical;
-                logical = logical.LogicalParent;
+                yield return l;
+                l = l.LogicalParent;
             }
         }
 
@@ -48,14 +48,14 @@ namespace Avalonia.LogicalTree
         /// <param name="logical">The logical.</param>
         /// <param name="includeSelf">If given logical should be included in search.</param>
         /// <returns>First ancestor of given type.</returns>
-        public static T FindLogicalAncestorOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
+        public static T? FindLogicalAncestorOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
         {
             if (logical is null)
             {
                 return null;
             }
 
-            ILogical parent = includeSelf ? logical : logical.LogicalParent;
+            var parent = includeSelf ? logical : logical.LogicalParent;
 
             while (parent != null)
             {
@@ -120,7 +120,7 @@ namespace Avalonia.LogicalTree
         /// <param name="logical">The logical.</param>
         /// <param name="includeSelf">If given logical should be included in search.</param>
         /// <returns>First descendant of given type.</returns>
-        public static T FindLogicalDescendantOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
+        public static T? FindLogicalDescendantOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
         {
             if (logical is null)
             {
@@ -140,7 +140,7 @@ namespace Avalonia.LogicalTree
         /// </summary>
         /// <param name="logical">The logical.</param>
         /// <returns>The parent, or null if the logical is unparented.</returns>
-        public static ILogical GetLogicalParent(this ILogical logical)
+        public static ILogical? GetLogicalParent(this ILogical logical)
         {
             return logical.LogicalParent;
         }
@@ -153,7 +153,7 @@ namespace Avalonia.LogicalTree
         /// <returns>
         /// The parent, or null if the logical is unparented or its parent is not of type <typeparamref name="T"/>.
         /// </returns>
-        public static T GetLogicalParent<T>(this ILogical logical) where T : class
+        public static T? GetLogicalParent<T>(this ILogical logical) where T : class
         {
             return logical.LogicalParent as T;
         }
@@ -165,7 +165,7 @@ namespace Avalonia.LogicalTree
         /// <returns>The logical siblings.</returns>
         public static IEnumerable<ILogical> GetLogicalSiblings(this ILogical logical)
         {
-            ILogical parent = logical.LogicalParent;
+            var parent = logical.LogicalParent;
 
             if (parent != null)
             {
@@ -187,7 +187,7 @@ namespace Avalonia.LogicalTree
         /// </returns>
         public static bool IsLogicalAncestorOf(this ILogical logical, ILogical target)
         {
-            ILogical current = target?.LogicalParent;
+            var current = target?.LogicalParent;
 
             while (current != null)
             {
@@ -202,7 +202,7 @@ namespace Avalonia.LogicalTree
             return false;
         }
 
-        private static T FindDescendantOfTypeCore<T>(ILogical logical) where T : class
+        private static T? FindDescendantOfTypeCore<T>(ILogical logical) where T : class
         {
             var logicalChildren = logical.LogicalChildren;
             var logicalChildrenCount = logicalChildren.Count;

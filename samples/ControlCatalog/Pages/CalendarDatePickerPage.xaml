@@ -1,8 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
+             x:DataType="vm:MainWindowViewModel"
              x:Class="ControlCatalog.Pages.CalendarDatePickerPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">CalendarDatePicker</TextBlock>
     <TextBlock Classes="h2">A control for selecting dates with a calendar drop-down</TextBlock>
         
     <StackPanel Orientation="Horizontal"
@@ -40,6 +41,9 @@
                 
         <TextBlock Text="Disabled"/>
         <CalendarDatePicker IsEnabled="False"/>
+        
+        <TextBlock Text="Validation Example"/>
+        <CalendarDatePicker SelectedDate="{CompiledBinding ValidatedDateExample, Mode=TwoWay}"/>
       </StackPanel>
 
     </StackPanel> 

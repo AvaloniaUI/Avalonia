@@ -104,11 +104,13 @@ namespace Avalonia.Controls
         {
             HotKeyProperty.Changed.Subscribe(args =>
             {
+                if (args.NewValue.Value is null) return;
+
                 var control = args.Sender as IControl;
-                if (args.OldValue != null || control == null || !(control is ICommandSource))
+                if (control is not ICommandSource)
                 {
-                    Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.
-                        Log(control, $"The element {args.Sender.GetType().Name} does not support binding a HotKey ({args.NewValue}).");
+                    Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.Log(control,
+                        $"The element {args.Sender.GetType().Name} does not implement ICommandSource and does not support binding a HotKey ({args.NewValue}).");
                     return;
                 }
 

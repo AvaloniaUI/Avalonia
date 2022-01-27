@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
         xmlns:diag="clr-namespace:Avalonia.Diagnostics"
+        xmlns:default="using:Avalonia.Themes.Default"
         Title="Avalonia DevTools"
         x:Class="Avalonia.Diagnostics.Views.MainWindow">
   <Window.DataTemplates>
@@ -9,8 +10,7 @@
   </Window.DataTemplates>
   
   <Window.Styles>
-    <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
-    <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
+    <default:SimpleTheme Mode="Light"/>
     <StyleInclude Source="resm:Avalonia.Controls.DataGrid.Themes.Default.xaml?assembly=Avalonia.Controls.DataGrid"/>
     <Style Selector="DataGrid ContextMenu">
       <Setter Property="Foreground" Value="Black"/>
@@ -18,6 +18,8 @@
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />
   </Window.Styles>
-  
+  <Window.KeyBindings>
+    <KeyBinding Gesture="F8" Command="{Binding Shot}"/>
+  </Window.KeyBindings>
   <views:MainView/>
 </Window>

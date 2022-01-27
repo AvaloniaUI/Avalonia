@@ -6,7 +6,9 @@
 -->
 
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True"
+        x:DataType="CalendarItem">
   <Design.PreviewWith>
     <Border Padding="20">
       <Calendar />
@@ -32,6 +34,7 @@
             <Style Selector="Button.CalendarHeader">
               <Setter Property="HorizontalAlignment" Value="Stretch" />
               <Setter Property="VerticalAlignment" Value="Stretch" />
+              <Setter Property="VerticalContentAlignment" Value="Center" />
               <Setter Property="FontSize" Value="20" />
               <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}"/>
               <Setter Property="Template">

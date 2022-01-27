@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.UnitTests;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Threading;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -160,6 +161,9 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime));
             target.DataContext = source;
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, source.SubscriberCount);
         }
 
@@ -608,6 +612,9 @@ namespace Avalonia.Markup.UnitTests.Data
                 root.DataContext = source;
             }
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, source.SubscriberCount);
         }
 

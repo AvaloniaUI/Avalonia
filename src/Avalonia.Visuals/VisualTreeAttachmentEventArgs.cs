@@ -17,11 +17,8 @@ namespace Avalonia
         /// <param name="root">The root visual.</param>
         public VisualTreeAttachmentEventArgs(IVisual parent, IRenderRoot root)
         {
-            Contract.Requires<ArgumentNullException>(parent != null);
-            Contract.Requires<ArgumentNullException>(root != null);
-
-            Parent = parent;
-            Root = root;
+            Parent = parent ?? throw new ArgumentNullException(nameof(parent));
+            Root = root ?? throw new ArgumentNullException(nameof(root));
         }
 
         /// <summary>

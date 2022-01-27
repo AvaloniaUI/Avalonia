@@ -18,7 +18,7 @@ namespace Avalonia.Platform
         /// A render to be used to render visual brushes. May be null if no visual brushes are
         /// to be drawn.
         /// </param>
-        IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer);
+        IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? visualBrushRenderer);
     }
 
     public interface IRenderTargetWithCorruptionInfo : IRenderTarget

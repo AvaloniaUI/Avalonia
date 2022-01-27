@@ -66,8 +66,8 @@ namespace Avalonia.Controls
         {
             if(parent == null)
                 throw new ArgumentNullException(nameof(parent));
-            return ((await AvaloniaLocator.Current.GetService<ISystemDialogImpl>()
-                 .ShowFileDialogAsync(this, parent)) ??
+            var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
+            return (await service.ShowFileDialogAsync(this, parent) ??
              Array.Empty<string>()).FirstOrDefault();
         }
     }
@@ -94,7 +94,8 @@ namespace Avalonia.Controls
         {
             if(parent == null)
                 throw new ArgumentNullException(nameof(parent));
-            return AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, parent);
+            var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
+            return service.ShowFileDialogAsync(this, parent);
         }
     }
 
@@ -122,7 +123,8 @@ namespace Avalonia.Controls
         {
             if(parent == null)
                 throw new ArgumentNullException(nameof(parent));
-            return AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFolderDialogAsync(this, parent);
+            var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
+            return service.ShowFolderDialogAsync(this, parent);
         }
     }
 

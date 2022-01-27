@@ -46,7 +46,7 @@ namespace Avalonia.Media.Imaging
 
         public static WriteableBitmap Decode(Stream stream)
         {
-            var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var ri = GetFactory();
 
             return new WriteableBitmap(ri.LoadWriteableBitmap(stream));
         }
@@ -61,7 +61,7 @@ namespace Avalonia.Media.Imaging
         /// <returns>An instance of the <see cref="WriteableBitmap"/> class.</returns>
         public new static WriteableBitmap DecodeToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var ri = GetFactory();
 
             return new WriteableBitmap(ri.LoadWriteableBitmapToWidth(stream, width, interpolationMode));
         }
@@ -76,19 +76,24 @@ namespace Avalonia.Media.Imaging
         /// <returns>An instance of the <see cref="WriteableBitmap"/> class.</returns>
         public new static WriteableBitmap DecodeToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var ri = GetFactory();
 
             return new WriteableBitmap(ri.LoadWriteableBitmapToHeight(stream, height, interpolationMode));
         }
 
         private static IBitmapImpl CreatePlatformImpl(PixelSize size, in Vector dpi, PixelFormat? format, AlphaFormat? alphaFormat)
         {
-            var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var ri = GetFactory();
 
             PixelFormat finalFormat = format ?? ri.DefaultPixelFormat;
             AlphaFormat finalAlphaFormat = alphaFormat ?? ri.DefaultAlphaFormat;
 
             return ri.CreateWriteableBitmap(size, dpi, finalFormat, finalAlphaFormat);
+        }
+
+        private static IPlatformRenderInterface GetFactory()
+        {
+            return AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
         }
     }
 }

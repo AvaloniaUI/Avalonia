@@ -21,9 +21,10 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         public override string Description => "[" + string.Join(",", Arguments) + "]";
 
-        protected override bool SetTargetValueCore(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object? value, BindingPriority priority)
         {
-            Target.TryGetTarget(out object target);
+            if (!Target.TryGetTarget(out var target) || target is null)
+                return false;
 
             var typeInfo = target.GetType().GetTypeInfo();
             var list = target as IList;
@@ -44,7 +45,7 @@ namespace Avalonia.Markup.Parsers.Nodes
                         return false;
                     }
 
-                    convertedObjectArray[i] = temp;
+                    convertedObjectArray[i] = temp!;
                 }
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
@@ -103,7 +104,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return false;
         }
 
-        private bool SetValueInArray(Array array, object value)
+        private bool SetValueInArray(Array array, object? value)
         {
             int[] intArgs;
             if (!ConvertArgumentsToInts(out intArgs))
@@ -112,7 +113,7 @@ namespace Avalonia.Markup.Parsers.Nodes
         }
 
 
-        private bool SetValueInArray(Array array, int[] indices, object value)
+        private bool SetValueInArray(Array array, int[] indices, object? value)
         {
             if (ValidBounds(indices, array))
             {
@@ -129,7 +130,7 @@ namespace Avalonia.Markup.Parsers.Nodes
         {
             get
             {
-                if (!Target.TryGetTarget(out object target))
+                if (!Target.TryGetTarget(out var target) || target is null)
                 {
                     return null;
                 }
@@ -138,8 +139,11 @@ namespace Avalonia.Markup.Parsers.Nodes
             }
         }
 
-        protected override object GetValue(object target)
+        protected override object? GetValue(object? target)
         {
+            if (target is null)
+                return null;
+
             var typeInfo = target.GetType().GetTypeInfo();
             var list = target as IList;
             var dictionary = target as IDictionary;
@@ -159,7 +163,7 @@ namespace Avalonia.Markup.Parsers.Nodes
                         return AvaloniaProperty.UnsetValue;
                     }
 
-                    convertedObjectArray[i] = temp;
+                    convertedObjectArray[i] = temp!;
                 }
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
@@ -211,7 +215,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return AvaloniaProperty.UnsetValue;
         }
 
-        private object GetValueFromArray(Array array)
+        private object? GetValueFromArray(Array array)
         {
             int[] intArgs;
             if (!ConvertArgumentsToInts(out intArgs))
@@ -219,7 +223,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return GetValueFromArray(array, intArgs);
         }
 
-        private object GetValueFromArray(Array array, int[] indices)
+        private object? GetValueFromArray(Array array, int[] indices)
         {
             if (ValidBounds(indices, array))
             {
@@ -234,14 +238,14 @@ namespace Avalonia.Markup.Parsers.Nodes
 
             for (int i = 0; i < Arguments.Count; ++i)
             {
-                object value;
+                object? value;
 
                 if (!TypeUtilities.TryConvert(typeof(int), Arguments[i], CultureInfo.InvariantCulture, out value))
                 {
                     return false;
                 }
 
-                intArgs[i] = (int)value;
+                intArgs[i] = (int)value!;
             }
             return true;
         }
@@ -254,7 +258,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             {
                 // Check for the default indexer name first to make this faster.
                 // This will only be false when a class in VB has a custom indexer name.
-                if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)) != null)
+                if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)!) != null)
                 {
                     return indexer;
                 }
@@ -291,8 +295,10 @@ namespace Avalonia.Markup.Parsers.Nodes
             }
         }
 
-        protected override bool ShouldUpdate(object sender, PropertyChangedEventArgs e)
+        protected override bool ShouldUpdate(object? sender, PropertyChangedEventArgs e)
         {
+            if (sender is null || e.PropertyName is null)
+                return false;
             var typeInfo = sender.GetType().GetTypeInfo();
             return typeInfo.GetDeclaredProperty(e.PropertyName)?.GetIndexParameters().Any() ?? false;
         }

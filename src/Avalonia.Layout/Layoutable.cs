@@ -794,7 +794,7 @@ namespace Avalonia.Layout
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void LayoutManagedLayoutUpdated(object sender, EventArgs e) => _layoutUpdated?.Invoke(this, e);
+        private void LayoutManagedLayoutUpdated(object? sender, EventArgs e) => _layoutUpdated?.Invoke(this, e);
 
         /// <summary>
         /// Tests whether any of a <see cref="Rect"/>'s properties include negative values,

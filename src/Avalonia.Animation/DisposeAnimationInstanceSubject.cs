@@ -8,15 +8,15 @@ namespace Avalonia.Animation
     /// </summary>
     internal class DisposeAnimationInstanceSubject<T> : IObserver<bool>, IDisposable
     {
-        private IDisposable _lastInstance;
+        private IDisposable? _lastInstance;
         private bool _lastMatch;
         private Animator<T> _animator;
         private Animation _animation;
         private Animatable _control;
-        private Action _onComplete;
-        private IClock _clock;
+        private Action? _onComplete;
+        private IClock? _clock;
 
-        public DisposeAnimationInstanceSubject(Animator<T> animator, Animation animation, Animatable control, IClock clock, Action onComplete)
+        public DisposeAnimationInstanceSubject(Animator<T> animator, Animation animation, Animatable control, IClock? clock, Action? onComplete)
         {
             this._animator = animator;
             this._animation = animation;
