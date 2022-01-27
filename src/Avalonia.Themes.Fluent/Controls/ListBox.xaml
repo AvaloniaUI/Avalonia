@@ -20,6 +20,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
+                ClipToBounds="{TemplateBinding ClipToBounds}"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"

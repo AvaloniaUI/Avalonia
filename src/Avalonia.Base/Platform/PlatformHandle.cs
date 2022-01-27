@@ -14,7 +14,7 @@ namespace Avalonia.Platform
         /// <param name="descriptor">
         /// An optional string that describes what <paramref name="handle"/> represents.
         /// </param>
-        public PlatformHandle(IntPtr handle, string descriptor)
+        public PlatformHandle(IntPtr handle, string? descriptor)
         {
             Handle = handle;
             HandleDescriptor = descriptor;
@@ -28,6 +28,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets an optional string that describes what <see cref="Handle"/> represents.
         /// </summary>
-        public string HandleDescriptor { get; }
+        public string? HandleDescriptor { get; }
     }
 }

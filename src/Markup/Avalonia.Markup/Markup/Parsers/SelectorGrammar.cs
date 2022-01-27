@@ -25,6 +25,7 @@ namespace Avalonia.Markup.Parsers
             Traversal,
             TypeName,
             Property,
+            AttachedProperty,
             Template,
             End,
         }
@@ -73,6 +74,9 @@ namespace Avalonia.Markup.Parsers
                         break;
                     case State.Name:
                         (state, syntax) = ParseName(ref r);
+                        break;
+                    case State.AttachedProperty:
+                        (state, syntax) = ParseAttachedProperty(ref r);
                         break;
                 }
                 if (syntax != null)
@@ -270,11 +274,15 @@ namespace Avalonia.Markup.Parsers
             return (State.CanHaveType, ParseType(ref r, new OfTypeSyntax()));
         }
 
-        private static (State, ISyntax) ParseProperty(ref CharacterReader r)
+        private static (State, ISyntax?) ParseProperty(ref CharacterReader r)
         {
             var property = r.ParseIdentifier();
 
-            if (!r.TakeIf('='))
+            if (r.TakeIf('('))
+            {
+                return (State.AttachedProperty, default);
+            }
+            else if (!r.TakeIf('='))
             {
                 throw new ExpressionParseException(r.Position, $"Expected '=', got '{r.Peek}'");
             }
@@ -284,6 +292,42 @@ namespace Avalonia.Markup.Parsers
             r.Take();
 
             return (State.CanHaveType, new PropertySyntax { Property = property.ToString(), Value = value.ToString() });
+        }
+
+        private static (State, ISyntax) ParseAttachedProperty(ref CharacterReader r)
+        {
+            var syntax = ParseType(ref r, new AttachedPropertySyntax());
+            if (!r.TakeIf('.'))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected '.', got '{r.Peek}'");
+            }
+            var property = r.ParseIdentifier();
+            if (property.IsEmpty)
+            {
+                throw new ExpressionParseException(r.Position, $"Expected Attached Property Name, got '{r.Peek}'");
+            }
+            syntax.Property = property.ToString();
+
+            if (!r.TakeIf(')'))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected ')', got '{r.Peek}'");
+            }
+
+            if (!r.TakeIf('='))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected '=', got '{r.Peek}'");
+            }
+
+            var value = r.TakeUntil(']');
+
+            syntax.Value = value.ToString();
+
+            r.Take();
+
+            var state = r.End
+                ? State.End
+                : State.Middle;
+            return (state, syntax);
         }
 
         private static TSyntax ParseType<TSyntax>(ref CharacterReader r, TSyntax syntax)
@@ -458,6 +502,26 @@ namespace Avalonia.Markup.Parsers
             {
                 var other = obj as OfTypeSyntax;
                 return other != null && other.TypeName == TypeName && other.Xmlns == Xmlns;
+            }
+        }
+
+        public class AttachedPropertySyntax : ISyntax, ITypeSyntax
+        {
+            public string Xmlns { get; set; } = string.Empty;
+
+            public string TypeName { get; set; } = string.Empty;
+
+            public string Property { get; set; } = string.Empty;
+
+            public string Value { get; set; } = string.Empty;
+
+            public override bool Equals(object? obj)
+            {
+                return obj is AttachedPropertySyntax syntax
+                    && syntax.Xmlns == Xmlns
+                    && syntax.TypeName == TypeName
+                    && syntax.Property == Property
+                    && syntax.Value == Value;
             }
         }
 

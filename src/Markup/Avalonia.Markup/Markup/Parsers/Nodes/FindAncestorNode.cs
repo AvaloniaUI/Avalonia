@@ -31,9 +31,9 @@ namespace Avalonia.Markup.Parsers.Nodes
             }
         }
 
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
-            if (reference.TryGetTarget(out object target) && target is ILogical logical)
+            if (reference.TryGetTarget(out var target) && target is ILogical logical)
             {
                 _subscription = ControlLocator.Track(logical, _level, _ancestorType).Subscribe(ValueChanged);
             }

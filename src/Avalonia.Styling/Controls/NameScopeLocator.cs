@@ -11,9 +11,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="scope">The scope relative from which the object should be resolved.</param>
         /// <param name="name">The name of the object to find.</param>
-        public static IObservable<object> Track(INameScope scope, string name)
+        public static IObservable<object?> Track(INameScope scope, string name)
         {
-            return new NeverEndingSynchronousCompletionAsyncResultObservable<object>(scope.FindAsync(name));
+            return new NeverEndingSynchronousCompletionAsyncResultObservable<object?>(scope.FindAsync(name));
         }
         
         // This class is implemented in such weird way because for some reason
@@ -22,7 +22,7 @@ namespace Avalonia.Controls
 
         private class NeverEndingSynchronousCompletionAsyncResultObservable<T> : IObservable<T>
         {
-            private T _value;
+            private T? _value;
             private SynchronousCompletionAsyncResult<T>? _asyncResult;
 
             public NeverEndingSynchronousCompletionAsyncResultObservable(SynchronousCompletionAsyncResult<T> task)
@@ -47,7 +47,7 @@ namespace Avalonia.Controls
                         observer.OnNext(_asyncResult.Value.GetResult());
                     });
                 else
-                    observer.OnNext(_value);
+                    observer.OnNext(_value!);
                 
                 return Disposable.Empty;
             }

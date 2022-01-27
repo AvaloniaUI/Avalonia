@@ -305,15 +305,18 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void OnClick()
         {
-            OpenFlyout();
-
-            var e = new RoutedEventArgs(ClickEvent);
-            RaiseEvent(e);
-
-            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
+            if (IsEffectivelyEnabled)
             {
-                Command.Execute(CommandParameter);
-                e.Handled = true;
+                OpenFlyout();
+
+                var e = new RoutedEventArgs(ClickEvent);
+                RaiseEvent(e);
+
+                if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
+                {
+                    Command.Execute(CommandParameter);
+                    e.Handled = true;
+                }
             }
         }
 

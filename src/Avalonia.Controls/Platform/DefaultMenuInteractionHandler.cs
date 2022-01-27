@@ -101,7 +101,7 @@ namespace Avalonia.Controls.Platform
                 root.Deactivated -= WindowDeactivated;
             }
             
-            if (_root is TopLevel tl)
+            if (_root is TopLevel tl && tl.PlatformImpl != null)
                 tl.PlatformImpl.LostFocus -= TopLevelLostPlatformFocus;
 
             _inputManagerSubscription?.Dispose();
@@ -116,7 +116,7 @@ namespace Avalonia.Controls.Platform
 
         protected IMenu? Menu { get; private set; }
 
-        public static TimeSpan MenuShowDelay { get; set; } = TimeSpan.FromMilliseconds(400);
+        protected static TimeSpan MenuShowDelay { get; } = TimeSpan.FromMilliseconds(400);
 
         protected internal virtual void GotFocus(object sender, GotFocusEventArgs e)
         {

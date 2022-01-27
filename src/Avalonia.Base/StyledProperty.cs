@@ -21,8 +21,8 @@ namespace Avalonia
             Type ownerType,
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
-            Func<TValue, bool> validate = null,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Func<TValue, bool>? validate = null,
+            Action<IAvaloniaObject, bool>? notifying = null)
             : base(name, ownerType, metadata, inherits, validate, notifying)
         {
         }

@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -93,7 +94,7 @@
   </Style>
 
   <!--  Selected Pressed state  -->
-  <Style Selector="TabStripItem:pressed /template/ Border#PART_LayoutRoot">
+  <Style Selector="TabStripItem:selected:pressed /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
   </Style>

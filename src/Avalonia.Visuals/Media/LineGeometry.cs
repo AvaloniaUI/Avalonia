@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -67,9 +68,9 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        protected override IGeometryImpl CreateDefiningGeometry()
+        protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
             return factory.CreateLineGeometry(StartPoint, EndPoint);
         }

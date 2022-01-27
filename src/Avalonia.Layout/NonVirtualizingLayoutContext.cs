@@ -12,7 +12,7 @@ namespace Avalonia.Layout
     /// </summary>
     public abstract class NonVirtualizingLayoutContext : LayoutContext
     {
-        private VirtualizingLayoutContext _contextAdapter;
+        private VirtualizingLayoutContext? _contextAdapter;
 
         /// <summary>
         /// Gets the collection of child controls from the container that provides the context.
@@ -26,6 +26,6 @@ namespace Avalonia.Layout
         protected abstract IReadOnlyList<ILayoutable> ChildrenCore { get; }
 
         internal VirtualizingLayoutContext GetVirtualizingContextAdapter() =>
-            _contextAdapter ?? (_contextAdapter = new LayoutContextAdapter(this));
+            _contextAdapter ??= new LayoutContextAdapter(this);
     }
 }

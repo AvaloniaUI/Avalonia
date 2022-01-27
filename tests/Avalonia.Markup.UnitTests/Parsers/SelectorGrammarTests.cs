@@ -198,6 +198,42 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void OfType_AttachedProperty()
+        {
+            var result = SelectorGrammar.Parse("Button[(Grid.Column)=1]");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.AttachedPropertySyntax { 
+                        Xmlns = string.Empty,
+                        TypeName="Grid",
+                        Property = "Column",
+                        Value = "1" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_AttachedProperty_WithNamespace()
+        {
+            var result = SelectorGrammar.Parse("Button[(x|Grid.Column)=1]");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.AttachedPropertySyntax {
+                        Xmlns = "x",
+                        TypeName="Grid",
+                        Property = "Column",
+                        Value = "1" },
+                },
+                result);
+        }
+
+        [Fact]
         public void Not_OfType()
         {
             var result = SelectorGrammar.Parse(":not(Button)");

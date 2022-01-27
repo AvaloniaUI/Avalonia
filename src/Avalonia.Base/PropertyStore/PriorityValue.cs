@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Data;
 
-#nullable enable
-
 namespace Avalonia.PropertyStore
 {
     /// <summary>
@@ -90,7 +88,7 @@ namespace Avalonia.PropertyStore
         public StyledPropertyBase<T> Property { get; }
         public BindingPriority Priority { get; private set; } = BindingPriority.Unset;
         public IReadOnlyList<IPriorityValueEntry<T>> Entries => _entries;
-        Optional<object> IValue.GetValue() => _value.ToObject();
+        Optional<object?> IValue.GetValue() => _value.ToObject();
 
         public void BeginBatchUpdate()
         {
@@ -191,8 +189,8 @@ namespace Avalonia.PropertyStore
             IValueSink sink,
             IAvaloniaObject owner,
             AvaloniaProperty property,
-            Optional<object> oldValue,
-            Optional<object> newValue)
+            Optional<object?> oldValue,
+            Optional<object?> newValue)
         {
             sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,

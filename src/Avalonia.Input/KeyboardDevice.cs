@@ -14,11 +14,11 @@ namespace Avalonia.Input
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public static IKeyboardDevice Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+        public static IKeyboardDevice? Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
-        public IInputManager InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
+        public IInputManager? InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
 
-        public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public IFocusManager? FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
         
         // This should live in the FocusManager, but with the current outdated architecture
         // the source of truth about the input focus is in KeyboardDevice

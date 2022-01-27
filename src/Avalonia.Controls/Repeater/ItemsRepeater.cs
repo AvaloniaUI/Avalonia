@@ -20,7 +20,7 @@ namespace Avalonia.Controls
     /// Represents a data-driven collection control that incorporates a flexible layout system,
     /// custom views, and virtualization.
     /// </summary>
-    public class ItemsRepeater : Panel, IChildIndexProvider
+    public class ItemsRepeater : Panel, IChildIndexProvider, IWeakEventSubscriber<EventArgs>
     {
         /// <summary>
         /// Defines the <see cref="HorizontalCacheLength"/> property.
@@ -723,14 +723,8 @@ namespace Avalonia.Controls
             {
                 oldValue.UninitializeForContext(LayoutContext);
 
-                WeakEventHandlerManager.Unsubscribe<EventArgs, ItemsRepeater>(
-                    oldValue,
-                    nameof(AttachedLayout.MeasureInvalidated),
-                    InvalidateMeasureForLayout);
-                WeakEventHandlerManager.Unsubscribe<EventArgs, ItemsRepeater>(
-                    oldValue,
-                    nameof(AttachedLayout.ArrangeInvalidated),
-                    InvalidateArrangeForLayout);
+                AttachedLayout.MeasureInvalidatedWeakEvent.Unsubscribe(oldValue, this);
+                AttachedLayout.ArrangeInvalidatedWeakEvent.Unsubscribe(oldValue, this);
 
                 // Walk through all the elements and make sure they are cleared
                 foreach (var element in Children)
@@ -748,14 +742,8 @@ namespace Avalonia.Controls
             {
                 newValue.InitializeForContext(LayoutContext);
 
-                WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
-                    newValue,
-                    nameof(AttachedLayout.MeasureInvalidated),
-                    InvalidateMeasureForLayout);
-                WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
-                    newValue,
-                    nameof(AttachedLayout.ArrangeInvalidated),
-                    InvalidateArrangeForLayout);
+                AttachedLayout.MeasureInvalidatedWeakEvent.Subscribe(newValue, this);
+                AttachedLayout.ArrangeInvalidatedWeakEvent.Subscribe(newValue, this);
             }
 
             bool isVirtualizingLayout = newValue != null && newValue is VirtualizingLayout;
@@ -806,9 +794,13 @@ namespace Avalonia.Controls
             _viewportManager.OnBringIntoViewRequested(e);
         }
 
-        private void InvalidateMeasureForLayout(object sender, EventArgs e) => InvalidateMeasure();
-
-        private void InvalidateArrangeForLayout(object sender, EventArgs e) => InvalidateArrange();
+        void IWeakEventSubscriber<EventArgs>.OnEvent(object? sender, WeakEvent ev, EventArgs e)
+        {
+            if(ev == AttachedLayout.ArrangeInvalidatedWeakEvent)
+                InvalidateArrange();
+            else if (ev == AttachedLayout.MeasureInvalidatedWeakEvent)
+                InvalidateMeasure();
+        }
 
         private VirtualizingLayoutContext GetLayoutContext()
         {

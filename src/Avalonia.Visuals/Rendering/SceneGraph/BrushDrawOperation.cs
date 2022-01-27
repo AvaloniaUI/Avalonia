@@ -17,6 +17,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets a collection of child scenes that are needed to draw visual brushes.
         /// </summary>
-        public abstract IDictionary<IVisual, Scene> ChildScenes { get; }
+        public abstract IDictionary<IVisual, Scene>? ChildScenes { get; }
     }
 }

@@ -14,10 +14,10 @@ namespace Avalonia.Rendering
     /// </remarks>
     public class DefaultRenderTimer : IRenderTimer
     {
-        private IRuntimePlatform _runtime;
+        private IRuntimePlatform? _runtime;
         private int _subscriberCount;
-        private Action<TimeSpan> _tick;
-        private IDisposable _subscription;
+        private Action<TimeSpan>? _tick;
+        private IDisposable? _subscription;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultRenderTimer"/> class.
@@ -77,10 +77,7 @@ namespace Avalonia.Rendering
         /// </remarks>
         protected virtual IDisposable StartCore(Action<TimeSpan> tick)
         {
-            if (_runtime == null)
-            {
-                _runtime = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
-            }
+            _runtime ??= AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
 
             return _runtime.StartSystemTimer(
                 TimeSpan.FromSeconds(1.0 / FramesPerSecond),
@@ -92,13 +89,13 @@ namespace Avalonia.Rendering
         /// </summary>
         protected void Stop()
         {
-            _subscription.Dispose();
+            _subscription?.Dispose();
             _subscription = null;
         }
 
         private void InternalTick(TimeSpan tickCount)
         {
-            _tick(tickCount);
+            _tick?.Invoke(tickCount);
         }
     }
 }

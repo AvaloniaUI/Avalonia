@@ -7,6 +7,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
@@ -26,9 +27,9 @@ namespace Avalonia.Win32
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    public partial class WindowImpl : IWindowImpl,
-        EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithNativeControlHost
+    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+        ITopLevelImplWithNativeControlHost,
+        ITopLevelImplWithTextInputMethod
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -90,6 +91,8 @@ namespace Avalonia.Win32
         private bool _isCloseRequested;
         private bool _shown;
         private bool _hiddenWindowIsParent;
+        private uint _langid;
+        private bool _ignoreWmChar;
 
         public WindowImpl()
         {
@@ -125,7 +128,7 @@ namespace Avalonia.Win32
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-            
+            UpdateInputMethod(GetKeyboardLayout(0));
             if (glPlatform != null)
             {
                 if (_isUsingComposition)
@@ -148,7 +151,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
 
-            _nativeControlHost = new Win32NativeControlHost(this);
+            _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
             s_instances.Add(this);
         }
 
@@ -1356,6 +1359,8 @@ namespace Avalonia.Win32
 
             public void Dispose() => _owner._resizeReason = _restore;
         }
+
+        public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
 
         private class WindowImplPlatformHandle : IPlatformHandle
         {

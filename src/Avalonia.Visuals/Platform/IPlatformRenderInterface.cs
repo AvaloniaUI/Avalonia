@@ -29,7 +29,7 @@ namespace Avalonia.Platform
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans);
+            IReadOnlyList<FormattedTextStyleSpan>? spans);
 
         /// <summary>
         /// Creates an ellipse geometry implementation.

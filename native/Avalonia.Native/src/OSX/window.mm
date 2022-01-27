@@ -51,6 +51,7 @@ public:
         StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
         Window = [[AvnWindow alloc] initWithParent:this];
+        [Window setContentView: StandardContainer];
         
         lastPositionSet.X = 100;
         lastPositionSet.Y = 100;
@@ -137,8 +138,6 @@ public:
             SetPosition(lastPositionSet);
             UpdateStyle();
             
-            [Window setContentView: StandardContainer];
-            
             [Window setTitle:_lastTitle];
             
             if(ShouldTakeFocusOnShow() && activate)
@@ -188,7 +187,7 @@ public:
         {
             if(Window != nullptr)
             {
-                [Window makeKeyWindow];
+                [Window makeKeyAndOrderFront:nil];
                 [NSApp activateIgnoringOtherApps:YES];
             }
         }
@@ -341,8 +340,8 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
-                [StandardContainer setFrameSize:NSSize{x,y}];
-                [Window setContentSize:NSSize{x, y}];
+                [Window setContentSize:NSSize{x,y}];
+                [Window invalidateShadow];
             }
             @finally
             {
@@ -1642,6 +1641,19 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             return;
         }
     }
+    else if (type == Magnify)
+    {
+        delta.X = delta.Y = [event magnification];
+    }
+    else if (type == Rotate)
+    {
+        delta.X = delta.Y = [event rotation];
+    }
+    else if (type == Swipe)
+    {
+        delta.X = [event deltaX];
+        delta.Y = [event deltaY];
+    }
     
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
@@ -1766,6 +1778,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     [self mouseEvent:event withType:Wheel];
     [super scrollWheel:event];
+}
+
+- (void)magnifyWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Magnify];
+    [super magnifyWithEvent:event];
+}
+
+- (void)rotateWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Rotate];
+    [super rotateWithEvent:event];
+}
+
+- (void)swipeWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Swipe];
+    [super swipeWithEvent:event];
 }
 
 - (void)mouseEntered:(NSEvent *)event

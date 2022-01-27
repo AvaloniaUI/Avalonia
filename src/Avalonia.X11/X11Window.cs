@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Automation.Peers;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -50,15 +50,7 @@ namespace Avalonia.X11
         private double? _scalingOverride;
         private bool _disabled;
         private TransparencyHelper _transparencyHelper;
-
-        public object SyncRoot { get; } = new object();
-
-        class InputEventContainer
-        {
-            public RawInputEventArgs Event;
-        }
-        private readonly Queue<InputEventContainer> _inputQueue = new Queue<InputEventContainer>();
-        private InputEventContainer _lastEvent;
+        private RawEventGrouper _rawEventGrouper;
         private bool _useRenderWindow = false;
         public X11Window(AvaloniaX11Platform platform, IWindowImpl popupParent)
         {
@@ -182,6 +174,8 @@ namespace Avalonia.X11
             UpdateMotifHints();
             UpdateSizeHints(null);
 
+            _rawEventGrouper = new RawEventGrouper(e => Input?.Invoke(e));
+            
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
 
@@ -318,13 +312,8 @@ namespace Avalonia.X11
 
         public double RenderScaling
         {
-            get
-            {
-                lock (SyncRoot)
-                    return _scaling;
-
-            }
-            private set => _scaling = value;
+            get => Interlocked.CompareExchange(ref _scaling, 0.0, 0.0); 
+            private set => Interlocked.Exchange(ref _scaling, value); 
         }
         
         public double DesktopScaling => RenderScaling;
@@ -342,9 +331,13 @@ namespace Avalonia.X11
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged
         {
-            get => _transparencyHelper.TransparencyLevelChanged;
-            set => _transparencyHelper.TransparencyLevelChanged = value;
-        }        
+            get => _transparencyHelper?.TransparencyLevelChanged;
+            set
+            {
+                if (_transparencyHelper != null)
+                    _transparencyHelper.TransparencyLevelChanged = value;
+            }
+        }
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
@@ -375,11 +368,6 @@ namespace Avalonia.X11
         }
 
         void OnEvent(ref XEvent ev)
-        {
-            lock (SyncRoot)
-                OnEventSync(ref ev);
-        }
-        void OnEventSync(ref XEvent ev)
         {
             if (ev.type == XEventName.MapNotify)
             {
@@ -541,32 +529,29 @@ namespace Avalonia.X11
 
         private bool UpdateScaling(bool skipResize = false)
         {
-            lock (SyncRoot)
+            double newScaling;
+            if (_scalingOverride.HasValue)
+                newScaling = _scalingOverride.Value;
+            else
             {
-                double newScaling;
-                if (_scalingOverride.HasValue)
-                    newScaling = _scalingOverride.Value;
-                else
-                {
-                    var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
-                        .FirstOrDefault(m => m.Bounds.Contains(Position));
-                    newScaling = monitor?.PixelDensity ?? RenderScaling;
-                }
-
-                if (RenderScaling != newScaling)
-                {
-                    var oldScaledSize = ClientSize;
-                    RenderScaling = newScaling;
-                    ScalingChanged?.Invoke(RenderScaling);
-                    UpdateImePosition();
-                    SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
-                    if(!skipResize)
-                        Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
-                    return true;
-                }
-
-                return false;
+                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
+                    .FirstOrDefault(m => m.Bounds.Contains(Position));
+                newScaling = monitor?.PixelDensity ?? RenderScaling;
             }
+
+            if (RenderScaling != newScaling)
+            {
+                var oldScaledSize = ClientSize;
+                RenderScaling = newScaling;
+                ScalingChanged?.Invoke(RenderScaling);
+                UpdateImePosition();
+                SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
+                if(!skipResize)
+                    Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
+                return true;
+            }
+            
+            return false;
         }
 
         private WindowState _lastWindowState;
@@ -732,33 +717,14 @@ namespace Avalonia.X11
             if (args is RawDragEvent drag)
                 drag.Location = drag.Location / RenderScaling;
             
-            _lastEvent = new InputEventContainer() {Event = args};
-            _inputQueue.Enqueue(_lastEvent);
-            if (_inputQueue.Count == 1)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    while (_inputQueue.Count > 0)
-                    {
-                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-                        var ev = _inputQueue.Dequeue();
-                        Input?.Invoke(ev.Event);
-                    }
-                }, DispatcherPriority.Input);
-            }
+            _rawEventGrouper.HandleEvent(args);
         }
         
         void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
-                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods)); 
-            if(type == RawPointerEventType.Move && _inputQueue.Count>0 && _lastEvent.Event is RawPointerEventArgs ma)
-                if (ma.Type == RawPointerEventType.Move)
-                {
-                    _lastEvent.Event = mev;
-                    return;
-                }
+                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods));
             ScheduleInput(mev, ref ev);
         }
 
@@ -786,6 +752,18 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_rawEventGrouper != null)
+            {
+                _rawEventGrouper.Dispose();
+                _rawEventGrouper = null;
+            }
+            
+            if (_transparencyHelper != null)
+            {
+                _transparencyHelper.Dispose();
+                _transparencyHelper = null;
+            }
+            
             if (_imeControl != null)
             {
                 _imeControl.Dispose();
@@ -1152,13 +1130,14 @@ namespace Avalonia.X11
         public ITextInputMethodImpl TextInputMethod => _ime;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
-            _transparencyHelper.SetTransparencyRequest(transparencyLevel);
+            _transparencyHelper?.SetTransparencyRequest(transparencyLevel);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
         }
 
-        public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;
+        public WindowTransparencyLevel TransparencyLevel =>
+            _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 

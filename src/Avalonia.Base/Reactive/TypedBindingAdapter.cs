@@ -2,29 +2,27 @@
 using Avalonia.Data;
 using Avalonia.Logging;
 
-#nullable enable
-
 namespace Avalonia.Reactive
 {
     internal class TypedBindingAdapter<T> : SingleSubscriberObservableBase<BindingValue<T>>,
-        IObserver<BindingValue<object>>
+        IObserver<BindingValue<object?>>
     {
         private readonly IAvaloniaObject _target;
         private readonly AvaloniaProperty<T> _property;
-        private readonly IObservable<BindingValue<object>> _source;
+        private readonly IObservable<BindingValue<object?>> _source;
         private IDisposable? _subscription;
 
         public TypedBindingAdapter(
             IAvaloniaObject target,
             AvaloniaProperty<T> property,
-            IObservable<BindingValue<object>> source)
+            IObservable<BindingValue<object?>> source)
         {
             _target = target;
             _property = property;
             _source = source;
         }
 
-        public void OnNext(BindingValue<object> value)
+        public void OnNext(BindingValue<object?> value)
         {
             try
             {
@@ -49,7 +47,7 @@ namespace Avalonia.Reactive
         public static IObservable<BindingValue<T>> Create(
             IAvaloniaObject target,
             AvaloniaProperty<T> property,
-            IObservable<BindingValue<object>> source)
+            IObservable<BindingValue<object?>> source)
         {
             return source is IObservable<BindingValue<T>> result ?
                 result :
