@@ -477,7 +477,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        public void CanExecuteChanged(object sender, EventArgs e)
+        private void CanExecuteChanged(object sender, EventArgs e)
         {
             var canExecute = Command == null || Command.CanExecute(CommandParameter);
 
@@ -557,5 +557,7 @@ namespace Avalonia.Controls
         {
             PseudoClasses.Set(":pressed", isPressed);
         }
+
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
     }
 }
