@@ -271,12 +271,12 @@ namespace Avalonia.Controls
                 if (_isAttachedToLogicalTree)
                 {
                     // Must unregister events here while a reference to the old command still exists
-                    if (e.OldValue is ICommand oldCommand)
+                    if (e.OldValue.GetValueOrDefault() is ICommand oldCommand)
                     {
                         oldCommand.CanExecuteChanged -= CanExecuteChanged;
                     }
 
-                    if (e.NewValue is ICommand newCommand)
+                    if (e.NewValue.GetValueOrDefault() is ICommand newCommand)
                     {
                         newCommand.CanExecuteChanged += CanExecuteChanged;
                     }
