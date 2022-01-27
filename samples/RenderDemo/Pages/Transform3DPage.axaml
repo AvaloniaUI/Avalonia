@@ -46,14 +46,6 @@
                             <Setter Property="Rotate3DTransform.AngleX" Value="90" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
-                        <KeyFrame Cue="50%">
-                            <Setter Property="Rotate3DTransform.AngleX" Value="180" />
-                            <Setter Property="ZIndex" Value="1" />
-                        </KeyFrame>
-                        <KeyFrame Cue="75%">
-                            <Setter Property="Rotate3DTransform.AngleX" Value="270" />
-                            <Setter Property="ZIndex" Value="1" />
-                        </KeyFrame>
                         <KeyFrame Cue="100%">
                             <Setter Property="Rotate3DTransform.AngleX" Value="360" />
                             <Setter Property="ZIndex" Value="4" />
@@ -74,10 +66,6 @@
                             <Setter Property="Rotate3DTransform.AngleX" Value="180" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
-                        <KeyFrame Cue="50%">
-                            <Setter Property="Rotate3DTransform.AngleX" Value="270" />
-                            <Setter Property="ZIndex" Value="1" />
-                        </KeyFrame>
                         <KeyFrame Cue="75%">
                             <Setter Property="Rotate3DTransform.AngleX" Value="360" />
                             <Setter Property="ZIndex" Value="4" />
@@ -96,10 +84,6 @@
                                IterationCount="Infinite">
                         <KeyFrame Cue="0%">
                             <Setter Property="Rotate3DTransform.AngleX" Value="180" />
-                            <Setter Property="ZIndex" Value="1" />
-                        </KeyFrame>
-                        <KeyFrame Cue="25%">
-                            <Setter Property="Rotate3DTransform.AngleX" Value="270" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="50%">
@@ -132,10 +116,6 @@
                         </KeyFrame>
                         <KeyFrame Cue="50%">
                             <Setter Property="Rotate3DTransform.AngleX" Value="450" />
-                            <Setter Property="ZIndex" Value="1" />
-                        </KeyFrame>
-                        <KeyFrame Cue="75%">
-                            <Setter Property="Rotate3DTransform.AngleX" Value="540" />
                             <Setter Property="ZIndex" Value="1" />
                         </KeyFrame>
                         <KeyFrame Cue="100%">
