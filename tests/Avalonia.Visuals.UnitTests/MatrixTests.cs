@@ -12,11 +12,6 @@ namespace Avalonia.Visuals.UnitTests;
 /// </summary>
 public class MatrixTests
 {
-    private double ReducePrecision(double input)
-    {
-        return Math.Truncate(input * 10000);
-    }
-
     /// <summary>
     ///  Because Avalonia is working internally with doubles, but System.Numerics Vector and Matrix implementations
     ///  only make use of floats, we need to reduce precision, comparing them. It should be sufficient to compare
@@ -26,6 +21,8 @@ public class MatrixTests
     /// <param name="actual">The actual transformed point</param>
     private void AssertCoordinatesEqualWithReducedPrecision(Vector2 expected, Point actual)
     {
+        double ReducePrecision(double input) => Math.Truncate(input * 10000);
+        
         var expectedX = ReducePrecision(expected.X);
         var expectedY = ReducePrecision(expected.Y);
         
