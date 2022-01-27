@@ -351,11 +351,8 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
-            else if (key == Key.Down && IsEffectivelyEnabled)
+            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
             {
-                // WinUI requires the VirtualKey.Menu (alt) + VirtualKey.Down to open the flyout
-                // Avalonia will only require Key.Down which is better cross-platform
-
                 OpenFlyout();
                 e.Handled = true;
             }
