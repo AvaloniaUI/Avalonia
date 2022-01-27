@@ -22,7 +22,6 @@
   <Styles.Resources>
     <x:Double x:Key="SplitButtonPrimaryButtonSize">32</x:Double>
     <x:Double x:Key="SplitButtonSecondaryButtonSize">32</x:Double>
-    <StreamGeometry x:Key="SplitButtonSecondaryButtonIconGeometry">M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z</StreamGeometry>
   </Styles.Resources>
 
   <Style Selector="SplitButton">
@@ -99,7 +98,7 @@
       <Template>
         <PathIcon Height="12"
                   Width="12"
-                  Data="{StaticResource SplitButtonSecondaryButtonIconGeometry}" />
+                  Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
       </Template>
     </Setter>
   </Style>
