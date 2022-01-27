@@ -448,10 +448,20 @@ namespace Avalonia.Win32
             {
                 GetWindowRect(_hwnd, out var rc);
 
+                // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
+                if (Win32Platform.WindowsVersion.Major >= 10 && HasFullDecorations)
+                {
+                    return new PixelPoint(rc.left + (int)(7 * _scaling), rc.top);
+                }
+
                 return new PixelPoint(rc.left, rc.top);
             }
             set
             {
+                if (Win32Platform.WindowsVersion.Major >= 10 && HasFullDecorations)
+                {
+                    value = new PixelPoint(value.X - (int)(7 * _scaling), value.Y);
+                }
                 SetWindowPos(
                     Handle.Handle,
                     IntPtr.Zero,
