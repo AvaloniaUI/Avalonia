@@ -70,13 +70,15 @@ public class Rotate3DTransform : Transform
     /// <param name="centerX">The origin of the X-Axis</param>
     /// <param name="centerY">The origin of the Y-Axis</param>
     /// <param name="centerZ">The origin of the Z-Axis</param>
+    /// <param name="depth">The depth of the 3D effect</param>
     public Rotate3DTransform(
         double angleX,
         double angleY,
         double angleZ,
         double centerX,
         double centerY,
-        double centerZ) : this()
+        double centerZ,
+        double depth) : this()
     {
         _isInitializing = true;
         AngleX = angleX;
@@ -85,6 +87,7 @@ public class Rotate3DTransform : Transform
         CenterX = centerX;
         CenterY = centerY;
         CenterZ = centerZ;
+        Depth = depth;
         _isInitializing = false;
     }
 
