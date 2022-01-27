@@ -59,13 +59,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Button, object>(nameof(CommandParameter));
 
         /// <summary>
-        /// Defines the <see cref="IsDefault"/> property.
+        /// Defines the <see cref="IsDefaultProperty"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsDefaultProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsDefault));
 
         /// <summary>
-        /// Defines the <see cref="IsCancel"/> property.
+        /// Defines the <see cref="IsCancelProperty"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsCancelProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsCancel));
@@ -98,6 +98,10 @@ namespace Avalonia.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
+            CommandProperty.Changed.Subscribe(CommandChanged);
+            CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
+            IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
+            IsCancelProperty.Changed.Subscribe(IsCancelChanged);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>((lbl, args) => lbl.OnAccessKey(args));
         }
 
@@ -386,60 +390,7 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == CommandProperty)
-            {
-                if (((ILogical)this).IsAttachedToLogicalTree)
-                {
-                    if (change.OldValue.GetValueOrDefault() is ICommand oldCommand)
-                    {
-                        oldCommand.CanExecuteChanged -= CanExecuteChanged;
-                    }
-
-                    if (change.NewValue.GetValueOrDefault() is ICommand newCommand)
-                    {
-                        newCommand.CanExecuteChanged += CanExecuteChanged;
-                    }
-                }
-
-                CanExecuteChanged(this, EventArgs.Empty);
-            }
-            else if (change.Property == CommandParameterProperty)
-            {
-                CanExecuteChanged(this, EventArgs.Empty);
-            }
-            else if (change.Property == IsCancelProperty)
-            {
-                var isCancel = change.NewValue.GetValueOrDefault<bool>();
-
-                if (VisualRoot is IInputElement inputRoot)
-                {
-                    if (isCancel)
-                    {
-                        ListenForCancel(inputRoot);
-                    }
-                    else
-                    {
-                        StopListeningForCancel(inputRoot);
-                    }
-                }
-            }
-            else if (change.Property == IsDefaultProperty)
-            {
-                var isDefault = change.NewValue.GetValueOrDefault<bool>();
-
-                if (VisualRoot is IInputElement inputRoot)
-                {
-                    if (isDefault)
-                    {
-                        ListenForDefault(inputRoot);
-                    }
-                    else
-                    {
-                        StopListeningForDefault(inputRoot);
-                    }
-                }
-            }
-            else if (change.Property == IsPressedProperty)
+            if (change.Property == IsPressedProperty)
             {
                 UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
             }
@@ -468,6 +419,87 @@ namespace Avalonia.Controls
                         _commandCanExecute = false;
                         UpdateIsEffectivelyEnabled();
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Command"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Button button)
+            {
+                if (((ILogical)button).IsAttachedToLogicalTree)
+                {
+                    if (e.OldValue is ICommand oldCommand)
+                    {
+                        oldCommand.CanExecuteChanged -= button.CanExecuteChanged;
+                    }
+
+                    if (e.NewValue is ICommand newCommand)
+                    {
+                        newCommand.CanExecuteChanged += button.CanExecuteChanged;
+                    }
+                }
+
+                button.CanExecuteChanged(button, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="CommandParameter"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandParameterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Button button)
+            {
+                button.CanExecuteChanged(button, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="IsDefault"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void IsDefaultChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var button = e.Sender as Button;
+            var isDefault = (bool)e.NewValue;
+
+            if (button?.VisualRoot is IInputElement inputRoot)
+            {
+                if (isDefault)
+                {
+                    button.ListenForDefault(inputRoot);
+                }
+                else
+                {
+                    button.StopListeningForDefault(inputRoot);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="IsCancel"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void IsCancelChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var button = e.Sender as Button;
+            var isCancel = (bool)e.NewValue;
+
+            if (button?.VisualRoot is IInputElement inputRoot)
+            {
+                if (isCancel)
+                {
+                    button.ListenForCancel(inputRoot);
+                }
+                else
+                {
+                    button.StopListeningForCancel(inputRoot);
                 }
             }
         }
