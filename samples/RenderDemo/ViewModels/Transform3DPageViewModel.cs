@@ -8,7 +8,6 @@ namespace RenderDemo.ViewModels
     {
         private double _depth = 200;
 
-        private double _depth2 = 200;
         private double _centerX = 0;
         private double _centerY = 0;
         private double _centerZ = 0;
@@ -22,11 +21,6 @@ namespace RenderDemo.ViewModels
             set => RaiseAndSetIfChanged(ref _depth, value);
         }
         
-        public double Depth2
-        {
-            get => _depth2;
-            set => RaiseAndSetIfChanged(ref _depth2, value);
-        }
         public double CenterX
         {
             get => _centerX;
