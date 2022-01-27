@@ -348,15 +348,9 @@ namespace Avalonia
             }
             else
             {
-                var x = p.X;
-                var y = p.Y;
-                var xAdd = y * M21 + M31;
-                var yAdd = x * M12 + M32;
-                x *= M11;
-                x += xAdd;
-                y *= M22;
-                y += yAdd;
-                transformedResult = new Point(x, y);
+                return new Point(
+                    (p.X * M11) + (p.Y * M21) + M31,
+                    (p.X * M12) + (p.Y * M22) + M32);
             }
 
             return transformedResult;
