@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -10,6 +11,7 @@ namespace Avalonia.Input
         private readonly IVisual? _rootVisual;
         private readonly Point _rootVisualPosition;
         private readonly PointerPointProperties _properties;
+        private readonly IReadOnlyList<Point>? _previousPoints;
 
         public PointerEventArgs(RoutedEvent routedEvent,
             IInteractive? source,
@@ -28,6 +30,20 @@ namespace Avalonia.Input
             Timestamp = timestamp;
             KeyModifiers = modifiers;
         }
+        
+        public PointerEventArgs(RoutedEvent routedEvent,
+            IInteractive? source,
+            IPointer pointer,
+            IVisual? rootVisual, Point rootVisualPosition,
+            ulong timestamp,
+            PointerPointProperties properties,
+            KeyModifiers modifiers,
+            IReadOnlyList<Point>? previousPoints)
+            : this(routedEvent, source, pointer, rootVisual, rootVisualPosition, timestamp, properties, modifiers)
+        {
+            _previousPoints = previousPoints;
+        }
+        
 
         class EmulatedDevice : IPointerDevice
         {
@@ -76,14 +92,16 @@ namespace Avalonia.Input
         
         public KeyModifiers KeyModifiers { get; }
 
-        public Point GetPosition(IVisual? relativeTo)
+        private Point GetPosition(Point pt, IVisual? relativeTo)
         {
             if (_rootVisual == null)
                 return default;
             if (relativeTo == null)
-                return _rootVisualPosition;
-            return _rootVisualPosition * _rootVisual.TransformToVisual(relativeTo) ?? default;
+                return pt;
+            return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
+        
+        public Point GetPosition(IVisual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
 
         [Obsolete("Use GetCurrentPoint")]
         public PointerPoint GetPointerPoint(IVisual? relativeTo) => GetCurrentPoint(relativeTo);
@@ -95,6 +113,26 @@ namespace Avalonia.Input
         /// <returns></returns>
         public PointerPoint GetCurrentPoint(IVisual? relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
+
+        /// <summary>
+        /// Returns the PointerPoint associated with the current event
+        /// </summary>
+        /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
+        /// <returns></returns>
+        public IReadOnlyList<PointerPoint> GetIntermediatePoints(IVisual? relativeTo)
+        {
+            if (_previousPoints == null || _previousPoints.Count == 0)
+                return new[] { GetCurrentPoint(relativeTo) };
+            var points = new PointerPoint[_previousPoints.Count + 1];
+            for (var c = 0; c < _previousPoints.Count; c++)
+            {
+                var pt = _previousPoints[c];
+                points[c] = new PointerPoint(Pointer, GetPosition(pt, relativeTo), _properties);
+            }
+
+            points[points.Length - 1] = GetCurrentPoint(relativeTo);
+            return points;
+        }
 
         /// <summary>
         /// Returns the current pointer point properties
