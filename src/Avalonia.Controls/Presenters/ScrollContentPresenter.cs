@@ -61,11 +61,12 @@ namespace Avalonia.Controls.Presenters
                 (o, v) => o.Viewport = v);
 
         /// <summary>
-        /// Defines the <see cref="BubbleUpScrollOnEndReached"/> property.
+        /// Defines the <see cref="IsScrollChainingEnabled"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> BubbleUpScrollOnEndReachedProperty =
+        public static readonly StyledProperty<bool> IsScrollChainingEnabledProperty =
             AvaloniaProperty.Register<ScrollContentPresenter, bool>(
-                nameof(BubbleUpScrollOnEndReached));
+                nameof(IsScrollChainingEnabled), 
+                defaultValue: true);
 
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
@@ -146,12 +147,17 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets a value that indicates whether the scroll event should be bubbled up to the parent scroll viewer when the end is reached.
+        ///  Gets or sets if scroll chaining is enabled. The default value is true.
         /// </summary>
-        public bool BubbleUpScrollOnEndReached
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public bool IsScrollChainingEnabled
         {
-            get => GetValue(BubbleUpScrollOnEndReachedProperty);
-            set => SetValue(BubbleUpScrollOnEndReachedProperty, value);
+            get => GetValue(IsScrollChainingEnabledProperty);
+            set => SetValue(IsScrollChainingEnabledProperty, value);
         }
 
         /// <inheritdoc/>
@@ -425,7 +431,7 @@ namespace Avalonia.Controls.Presenters
                 bool offsetChanged = newOffset != Offset;
                 Offset = newOffset;
 
-                e.Handled = !BubbleUpScrollOnEndReached || offsetChanged;
+                e.Handled = !IsScrollChainingEnabled || offsetChanged;
             }
         }
 
@@ -463,7 +469,7 @@ namespace Avalonia.Controls.Presenters
                 bool offsetChanged = newOffset != Offset;
                 Offset = newOffset;
 
-                e.Handled = !BubbleUpScrollOnEndReached || offsetChanged;
+                e.Handled = !IsScrollChainingEnabled || offsetChanged;
             }
         }
 

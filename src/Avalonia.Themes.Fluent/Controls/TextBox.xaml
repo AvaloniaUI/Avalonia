@@ -41,7 +41,7 @@
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
-    <Setter Property="ScrollViewer.BubbleUpScrollOnEndReached" Value="True" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
     <Setter Property="ContextFlyout" Value="{StaticResource DefaultTextBoxContextFlyout}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -69,7 +69,7 @@
                              DockPanel.Dock="Top" />
                   <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                 VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
-                                BubbleUpScrollOnEndReached="{TemplateBinding (ScrollViewer.BubbleUpScrollOnEndReached)}"
+                                IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                                 AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
                       <Panel>
                         <TextBlock Name="PART_Watermark"

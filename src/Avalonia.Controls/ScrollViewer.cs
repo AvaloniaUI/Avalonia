@@ -182,12 +182,12 @@ namespace Avalonia.Controls
                 true);
 
         /// <summary>
-        /// Defines the <see cref="BubbleUpScrollOnEndReached"/> property.
+        /// Defines the <see cref="IsScrollChainingEnabled"/> property.
         /// </summary>
-        public static readonly AttachedProperty<bool> BubbleUpScrollOnEndReachedProperty =
+        public static readonly AttachedProperty<bool> IsScrollChainingEnabledProperty =
             AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
-                nameof(BubbleUpScrollOnEndReached),
-                false);
+                nameof(IsScrollChainingEnabled),
+                defaultValue: true);
 
         /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
@@ -427,12 +427,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets a value that indicates whether the scroll event should be bubbled up to the parent scroll viewer when the end is reached.
+        ///  Gets or sets if scroll chaining is enabled. The default value is true.
         /// </summary>
-        public bool BubbleUpScrollOnEndReached
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public bool IsScrollChainingEnabled
         {
-            get => GetValue(BubbleUpScrollOnEndReachedProperty);
-            set => SetValue(BubbleUpScrollOnEndReachedProperty, value);
+            get => GetValue(IsScrollChainingEnabledProperty);
+            set => SetValue(IsScrollChainingEnabledProperty, value);
         }
 
         /// <summary>
@@ -566,23 +571,33 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the value of the BubbleUpScrollOnEndReachedProperty attached property.
+        /// Sets the value of the IsScrollChainingEnabled attached property.
         /// </summary>
         /// <param name="control">The control to set the value on.</param>
         /// <param name="value">The value of the property.</param>
-        public static void SetBubbleUpScrollOnEndReached(Control control, bool value)
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public static void SetIsScrollChainingEnabled(Control control, bool value)
         {
-            control.SetValue(BubbleUpScrollOnEndReachedProperty, value);
+            control.SetValue(IsScrollChainingEnabledProperty, value);
         }
 
         /// <summary>
-        /// Gets the value of the BubbleUpScrollOnEndReachedProperty attached property.
+        ///  Gets the value of the IsScrollChainingEnabled attached property.
         /// </summary>
         /// <param name="control">The control to read the value from.</param>
         /// <returns>The value of the property.</returns>
-        public static bool GetBubbleUpScrollOnEndReached(Control control)
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public static bool GetIsScrollChainingEnabled(Control control)
         {
-            return control.GetValue(BubbleUpScrollOnEndReachedProperty);
+            return control.GetValue(IsScrollChainingEnabledProperty);
         }
 
         /// <summary>

@@ -35,7 +35,7 @@
                                   Margin="{TemplateBinding Padding}"
                                   Offset="{TemplateBinding Offset, Mode=TwoWay}"
                                   Viewport="{TemplateBinding Viewport, Mode=TwoWay}"
-                                  BubbleUpScrollOnEndReached="{TemplateBinding BubbleUpScrollOnEndReached}">
+                                  IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
             <ScrollContentPresenter.GestureRecognizers>
               <ScrollGestureRecognizer
                 CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"

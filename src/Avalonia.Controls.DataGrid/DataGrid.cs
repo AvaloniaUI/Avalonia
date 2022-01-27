@@ -2221,7 +2221,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                e.Handled = e.Handled || !ScrollViewer.GetBubbleUpScrollOnEndReached(this);
+                e.Handled = e.Handled || !ScrollViewer.GetIsScrollChainingEnabled(this);
             }
         }
 
