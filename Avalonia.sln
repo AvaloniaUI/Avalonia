@@ -230,9 +230,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTestApp", "samples\IntegrationTestApp\IntegrationTestApp.csproj", "{676D6BFD-029D-4E43-BFC7-3892265CE251}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.IntegrationTests.Appium", "tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj", "{F2CE566B-E7F6-447A-AB1A-3F574A6FE43A}"
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.MicroCom", "src\Avalonia.MicroCom\Avalonia.MicroCom.csproj", "{FE2F3E5E-1E34-4972-8DC1-5C2C588E5ECE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniMvvm", "samples\MiniMvvm\MiniMvvm.csproj", "{BC594FD5-4AF2-409E-A1E6-04123F54D7C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{86A3F706-DC3C-43C6-BE1B-B98F5BAAA268}"
 EndProject
