@@ -29,6 +29,7 @@
         <ComboBoxItem>None</ComboBoxItem>
         <ComboBoxItem>Slide</ComboBoxItem>
         <ComboBoxItem>Crossfade</ComboBoxItem>
+        <ComboBoxItem>3D Rotation</ComboBoxItem>
       </ComboBox>
     </StackPanel>
 

@@ -9,6 +9,8 @@ namespace Avalonia.Media;
 /// </summary>
 public class Rotate3DTransform : Transform
 {
+    private readonly bool _isInitializing;
+    
     /// <summary>
     /// Defines the <see cref="AngleX"/> property.
     /// </summary>
@@ -76,12 +78,14 @@ public class Rotate3DTransform : Transform
         double centerY,
         double centerZ) : this()
     {
+        _isInitializing = true;
         AngleX = angleX;
         AngleY = angleY;
         AngleZ = angleZ;
         CenterX = centerX;
         CenterY = centerY;
         CenterZ = centerZ;
+        _isInitializing = false;
     }
 
     /// <summary>
@@ -148,21 +152,22 @@ public class Rotate3DTransform : Transform
     }
 
     /// <summary>
-    /// Gets the transform's <see cref="Matrix"/>.
+    /// Gets the transform's <see cref="Matrix"/>. 
     /// </summary>
     public override Matrix Value
     {
         get
         {
             var matrix44 = Matrix4x4.Identity;
+            var centerSum = CenterX + CenterY + CenterZ;
+            
+            if (centerSum != 0) matrix44 *= Matrix4x4.CreateTranslation(-(float)CenterX, -(float)CenterY, -(float)CenterZ);
 
-            matrix44 *= Matrix4x4.CreateTranslation(-(float)CenterX, -(float)CenterY, -(float)CenterZ);
+            if (AngleX != 0) matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(AngleX));
+            if (AngleY != 0) matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(AngleY));
+            if (AngleZ != 0) matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(AngleZ));
 
-            matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(AngleX));
-            matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(AngleY));
-            matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(AngleZ));
-
-            matrix44 *= Matrix4x4.CreateTranslation((float)CenterX, (float)CenterY, (float)CenterZ);
+            if (centerSum != 0) matrix44 *= Matrix4x4.CreateTranslation((float)CenterX, (float)CenterY, (float)CenterZ);
 
             if (Depth != 0)
             {
@@ -186,5 +191,8 @@ public class Rotate3DTransform : Transform
         }
     }
 
-    protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change) => RaiseChanged();
+    protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+    {
+        if (!_isInitializing) RaiseChanged();
+    } 
 }
