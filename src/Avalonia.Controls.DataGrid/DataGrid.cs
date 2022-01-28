@@ -2215,7 +2215,14 @@ namespace Avalonia.Controls
         /// <param name="e">PointerWheelEventArgs</param>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            e.Handled = e.Handled || UpdateScroll(e.Delta * DATAGRID_mouseWheelDelta);
+            if(UpdateScroll(e.Delta * DATAGRID_mouseWheelDelta))
+            {
+                e.Handled = true;
+            }
+            else
+            {
+                e.Handled = e.Handled || !ScrollViewer.GetIsScrollChainingEnabled(this);
+            }
         }
 
         internal bool UpdateScroll(Vector delta)
