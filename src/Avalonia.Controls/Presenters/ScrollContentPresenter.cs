@@ -64,9 +64,7 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="IsScrollChainingEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsScrollChainingEnabledProperty =
-            AvaloniaProperty.Register<ScrollContentPresenter, bool>(
-                nameof(IsScrollChainingEnabled), 
-                defaultValue: true);
+            ScrollViewer.IsScrollChainingEnabledProperty.AddOwner<ScrollContentPresenter>();
 
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
