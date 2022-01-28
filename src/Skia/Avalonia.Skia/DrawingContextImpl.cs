@@ -441,17 +441,7 @@ namespace Avalonia.Skia
                 }
             }
         }
-
-        /// <inheritdoc />
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-        {
-            using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds.Size))
-            {
-                var textImpl = (FormattedTextImpl) text;
-                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
-            }
-        }
-
+       
         /// <inheritdoc />
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {

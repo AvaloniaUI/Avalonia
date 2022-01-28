@@ -37,15 +37,13 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a list of <see cref="ShapeableTextCharacters"/>.
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
-        internal IList<ShapeableTextCharacters> GetShapeableCharacters()
+        internal IList<ShapeableTextCharacters> GetShapeableCharacters(ReadOnlySlice<char> runText, sbyte biDiLevel)
         {
             var shapeableCharacters = new List<ShapeableTextCharacters>(2);
 
-            var runText = Text;
-
             while (!runText.IsEmpty)
             {
-                var shapeableRun = CreateShapeableRun(runText, Properties);
+                var shapeableRun = CreateShapeableRun(runText, Properties, biDiLevel);
 
                 shapeableCharacters.Add(shapeableRun);
 
@@ -60,34 +58,48 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="text">The text to create text runs from.</param>
         /// <param name="defaultProperties">The default text run properties.</param>
+        /// <param name="biDiLevel">The bidi level of the run.</param>
         /// <returns>A list of shapeable text runs.</returns>
-        private ShapeableTextCharacters CreateShapeableRun(ReadOnlySlice<char> text, TextRunProperties defaultProperties)
+        private ShapeableTextCharacters CreateShapeableRun(ReadOnlySlice<char> text, TextRunProperties defaultProperties, sbyte biDiLevel)
         {
             var defaultTypeface = defaultProperties.Typeface;
 
             var currentTypeface = defaultTypeface;
 
-            if (TryGetRunProperties(text, currentTypeface, defaultTypeface, out var count))
+            if (TryGetShapeableLength(text, currentTypeface, defaultTypeface, out var count))
             {
                 return new ShapeableTextCharacters(text.Take(count),
                     new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                        defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
-
+                        defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
             }
 
-            var codepoint = Codepoint.ReadAt(text, count, out _);
+            var codepoint = Codepoint.ReplacementCodepoint;
 
+            var codepointEnumerator = new CodepointEnumerator(text.Skip(count));
+
+            while (codepointEnumerator.MoveNext())
+            {
+                if (codepointEnumerator.Current.IsWhiteSpace)
+                {
+                    continue;
+                }
+                
+                codepoint = codepointEnumerator.Current;
+                    
+                break;
+            }
+            
             //ToDo: Fix FontFamily fallback
             var matchFound =
                 FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
                     defaultTypeface.FontFamily, defaultProperties.CultureInfo, out currentTypeface);
 
-            if (matchFound && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
+            if (matchFound && TextCharacters.TryGetShapeableLength(text, currentTypeface, defaultTypeface, out count))
             {
                 //Fallback found
                 return new ShapeableTextCharacters(text.Take(count),
                     new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
             }
 
             // no fallback found
@@ -111,7 +123,7 @@ namespace Avalonia.Media.TextFormatting
 
             return new ShapeableTextCharacters(text.Take(count),
                 new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
         }
 
         /// <summary>
@@ -120,22 +132,21 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="defaultTypeface"></param>
         /// <param name="text"></param>
         /// <param name="typeface">The typeface that is used to find matching characters.</param>
-        /// <param name="count"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
-        protected bool TryGetRunProperties(ReadOnlySlice<char> text, Typeface typeface, Typeface defaultTypeface,
-            out int count)
+        protected static bool TryGetShapeableLength(ReadOnlySlice<char> text, Typeface typeface, Typeface defaultTypeface,
+            out int length)
         {
             if (text.Length == 0)
             {
-                count = 0;
+                length = 0;
                 return false;
             }
 
             var isFallback = typeface != defaultTypeface;
 
-            count = 0;
+            length = 0;
             var script = Script.Unknown;
-            var direction = BiDiClass.LeftToRight;
 
             var font = typeface.GlyphTypeface;
             var defaultFont = defaultTypeface.GlyphTypeface;
@@ -148,20 +159,9 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
 
-                var currentDirection = currentGrapheme.FirstCodepoint.BiDiClass;
-
-                //// ToDo: Implement BiDi algorithm
-                //if (currentScript.HorizontalDirection != direction)
-                //{
-                //    if (!UnicodeUtility.IsWhiteSpace(grapheme.FirstCodepoint))
-                //    {
-                //        break;
-                //    }
-                //}
-
                 if (currentScript != script)
                 {
-                    if (script is Script.Unknown)
+                    if (script is Script.Unknown || currentScript != Script.Common && (script is Script.Common || script is Script.Inherited))
                     {
                         script = currentScript;
                     }
@@ -175,7 +175,7 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 //Only handle non whitespace here
-                if (!currentGrapheme.FirstCodepoint.IsWhiteSpace)
+                if(!currentGrapheme.FirstCodepoint.IsWhiteSpace)
                 {
                     //Stop at the first glyph that is present in the default typeface.
                     if (isFallback && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
@@ -195,16 +195,10 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                if (direction == BiDiClass.RightToLeft && currentDirection  == BiDiClass.CommonSeparator)
-                {
-                    break;
-                }
-
-                count += currentGrapheme.Text.Length;
-                direction = currentDirection;
+                length += currentGrapheme.Text.Length;
             }
 
-            return count > 0;
+            return length > 0;
         }
     }
 }

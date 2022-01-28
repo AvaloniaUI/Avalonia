@@ -115,6 +115,10 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
+                target.ApplyTemplate();
+                
+                target.Measure(Size.Infinity);
+                
                 target.CaretIndex = 3;
                 RaiseKeyEvent(target, Key.Right, 0);
 
@@ -209,9 +213,13 @@ namespace Avalonia.Controls.UnitTests
             {
                 TextBox textBox = new TextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
-                    CaretIndex = 5
+                    SelectionStart = 5,
+                    SelectionEnd = 5
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
                 RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
@@ -248,9 +256,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 TextBox textBox = new TextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
-                    CaretIndex = 19
+                    CaretIndex = 19,
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
                 RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
@@ -335,6 +346,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = false,
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -352,6 +365,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -370,6 +385,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -409,6 +426,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectionStart = 0;
                 target.SelectionEnd = 9;
@@ -431,6 +450,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectionStart = 8;
                 target.SelectionEnd = 9;
@@ -474,6 +495,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 Assert.True(target.SelectedText == "");
 
@@ -494,6 +517,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectedText = "AA";
                 Assert.True(target.Text == "AA0123");
@@ -701,7 +726,9 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var source = new Class1 { Bar = "bar" };
-                var target = new TextBox { DataContext = source };
+                var target = new TextBox { Template = CreateTemplate(), DataContext = source };
+
+                target.ApplyTemplate();
 
                 target.Bind(TextBox.TextProperty, new Binding("Bar"));
 
@@ -736,6 +763,8 @@ namespace Avalonia.Controls.UnitTests
                     SelectionStart = selectionStart,
                     SelectionEnd = selectionEnd
                 };
+                
+                target.Measure(Size.Infinity);
                 
                 if (fromClipboard)
                 {
@@ -773,6 +802,7 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     AcceptsTab = true
                 };
+                target.ApplyTemplate();
                 target.SelectionStart = 1;
                 target.SelectionEnd = 3;
                 AvaloniaLocator.CurrentMutable
@@ -837,13 +867,15 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new MockTextShaperImpl(),
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            fontManagerImpl: new MockFontManagerImpl());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            renderInterface: new MockPlatformRenderInterface(),
+            textShaperImpl: new MockTextShaperImpl(), 
+            fontManagerImpl: new MockFontManagerImpl());
 
         private IControlTemplate CreateTemplate()
         {
@@ -858,6 +890,13 @@ namespace Avalonia.Controls.UnitTests
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
+                    [!!TextPresenter.CaretIndexProperty] = new Binding
+                    {
+                        Path = "CaretIndex",
+                        Mode = BindingMode.TwoWay,
+                        Priority = BindingPriority.TemplatedParent,
+                        RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                    }
                 }.RegisterInNameScope(scope));
         }
 

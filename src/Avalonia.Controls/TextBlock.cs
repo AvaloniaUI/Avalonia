@@ -131,21 +131,8 @@ namespace Avalonia.Controls
         static TextBlock()
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
-
-            AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty,
-                TextAlignmentProperty, TextDecorationsProperty);
-
-            AffectsMeasure<TextBlock>(FontSizeProperty, FontWeightProperty,
-                FontStyleProperty, TextWrappingProperty, FontFamilyProperty,
-                TextTrimmingProperty, TextProperty, PaddingProperty, LineHeightProperty, MaxLinesProperty);
-
-            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, ForegroundProperty.Changed,
-                TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
-                TextTrimmingProperty.Changed, FontSizeProperty.Changed,
-                FontStyleProperty.Changed, FontWeightProperty.Changed,
-                FontFamilyProperty.Changed, TextDecorationsProperty.Changed,
-                PaddingProperty.Changed, MaxLinesProperty.Changed, LineHeightProperty.Changed
-            ).AddClassHandler<TextBlock>((x, _) => x.InvalidateTextLayout());
+            
+            AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty);
         }
 
         /// <summary>
@@ -460,6 +447,7 @@ namespace Avalonia.Controls
                 TextWrapping,
                 TextTrimming,
                 TextDecorations,
+                FlowDirection,
                 constraint.Width,
                 constraint.Height,
                 maxLines: MaxLines,
@@ -472,6 +460,8 @@ namespace Avalonia.Controls
         protected void InvalidateTextLayout()
         {
             _textLayout = null;
+            
+            InvalidateMeasure();
         }
 
         /// <summary>
@@ -507,12 +497,40 @@ namespace Avalonia.Controls
             base.OnAttachedToLogicalTree(e);
 
             InvalidateTextLayout();
-
-            InvalidateMeasure();
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
 
         private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            switch (change.Property.Name)
+            {
+                case nameof (FontSize):
+                case nameof (FontWeight):
+                case nameof (FontStyle):
+                case nameof (FontFamily):
+
+                case nameof (TextWrapping):
+                case nameof (TextTrimming):
+                case nameof (TextAlignment):
+                case nameof (FlowDirection):
+
+                case nameof (Padding):
+                case nameof (LineHeight):
+                case nameof (MaxLines):
+
+                case nameof (Text):
+                case nameof (TextDecorations):
+                case nameof (Foreground):
+                {
+                    InvalidateTextLayout();
+                    break;
+                }
+            }
+        }
     }
 }

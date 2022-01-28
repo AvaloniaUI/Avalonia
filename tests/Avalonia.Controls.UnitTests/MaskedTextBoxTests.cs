@@ -115,7 +115,10 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
+                target.ApplyTemplate();
                 target.CaretIndex = 3;
+                target.Measure(Size.Infinity);
+                
                 RaiseKeyEvent(target, Key.Right, 0);
 
                 Assert.Equal(4, target.CaretIndex);
@@ -892,7 +895,9 @@ namespace Avalonia.Controls.UnitTests
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),     
+            textShaperImpl: new MockTextShaperImpl(), 
+            fontManagerImpl: new MockFontManagerImpl());
 
         private IControlTemplate CreateTemplate()
         {
@@ -907,6 +912,13 @@ namespace Avalonia.Controls.UnitTests
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
+                    [!!TextPresenter.CaretIndexProperty] = new Binding
+                    {
+                        Path = "CaretIndex",
+                        Mode = BindingMode.TwoWay,
+                        Priority = BindingPriority.TemplatedParent,
+                        RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                    }
                 }.RegisterInNameScope(scope));
         }
 
