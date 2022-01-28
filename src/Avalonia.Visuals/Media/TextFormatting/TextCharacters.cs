@@ -190,7 +190,7 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 //Stop at the first missing glyph
-                if (!font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                 {
                     break;
                 }
