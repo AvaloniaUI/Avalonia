@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Logging;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
@@ -19,14 +20,13 @@ namespace Avalonia.OpenGL.Egl
             PrimaryEglContext = display.CreateContext(null);
         }
         
-        public static void TryInitialize()
+        public static void TryInitialize(IList<GlVersion> glProfiles)
         {
-            var feature = TryCreate();
+            var feature = TryCreate(() => new EglDisplay(true, glProfiles));
             if (feature != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(feature);
         }
-        
-        public static EglPlatformOpenGlInterface TryCreate() => TryCreate(() => new EglDisplay());
+
         public static EglPlatformOpenGlInterface TryCreate(Func<EglDisplay> displayFactory)
         {
             try

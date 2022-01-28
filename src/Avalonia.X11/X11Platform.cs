@@ -96,7 +96,7 @@ namespace Avalonia.X11
             if (options.UseGpu)
             {
                 if (options.UseEGL)
-                    EglPlatformOpenGlInterface.TryInitialize();
+                    EglPlatformOpenGlInterface.TryInitialize(Options.GlProfiles);
                 else
                     GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
             }

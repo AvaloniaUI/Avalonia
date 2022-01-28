@@ -136,7 +136,12 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(_gbmTargetSurface == null)
                 throw new InvalidOperationException("Unable to create GBM surface");
 
-            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, 0x31D7, device, null);
+            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, 0x31D7, device, null, 
+                new List<GlVersion>
+                {
+                    new (GlProfileType.OpenGLES,3,2),
+                    new (GlProfileType.OpenGLES,2,0)
+                });
             _platformGl = new EglPlatformOpenGlInterface(_eglDisplay);
             _eglSurface =  _platformGl.CreateWindowSurface(_gbmTargetSurface);
 

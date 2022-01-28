@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -10,6 +11,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Dialogs;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
+using Avalonia.OpenGL;
 using Avalonia.Threading;
 
 namespace ControlCatalog.NetCore
@@ -111,6 +113,11 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    UseEGL = true,
+                    GlProfiles = new List<GlVersion>()
+                    {
+                        new GlVersion(GlProfileType.OpenGL, 4, 0)
+                    }
                 })
                 .With(new Win32PlatformOptions
                 {

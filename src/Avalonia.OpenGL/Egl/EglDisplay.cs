@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
@@ -19,7 +21,7 @@ namespace Avalonia.OpenGL.Egl
         private int _stencilSize;
         private GlVersion _version;
 
-        public EglDisplay(EglInterface egl, bool supportsSharing) : this(egl, supportsSharing, -1, IntPtr.Zero, null)
+        public EglDisplay(EglInterface egl, bool supportsSharing, IList<GlVersion> glProfiles) : this(egl, supportsSharing, -1, IntPtr.Zero, null, glProfiles)
         {
             
         }
@@ -44,13 +46,13 @@ namespace Avalonia.OpenGL.Egl
             return display;
         }
 
-        public EglDisplay(EglInterface egl, bool supportsSharing, int platformType, IntPtr platformDisplay, int[] attrs)
-            : this(egl, supportsSharing, CreateDisplay(egl, platformType, platformDisplay, attrs))
+        public EglDisplay(EglInterface egl, bool supportsSharing, int platformType, IntPtr platformDisplay, int[] attrs, IList<GlVersion> glProfiles)
+            : this(egl, supportsSharing, CreateDisplay(egl, platformType, platformDisplay, attrs), glProfiles)
         {
 
         }
 
-        public EglDisplay(EglInterface egl, bool supportsSharing, IntPtr display)
+        public EglDisplay(EglInterface egl, bool supportsSharing, IntPtr display, IList<GlVersion> glProfiles)
         {
             _egl = egl;
             SupportsSharing = supportsSharing;
@@ -61,13 +63,6 @@ namespace Avalonia.OpenGL.Egl
             
             if (!_egl.Initialize(_display, out var major, out var minor))
                 throw OpenGlException.GetFormattedException("eglInitialize", _egl);
-
-            var glProfiles = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-                                    ?? new[]
-                                    {
-                                        new GlVersion(GlProfileType.OpenGLES, 3, 0),
-                                        new GlVersion(GlProfileType.OpenGLES, 2, 0)
-                                    };
 
             var cfgs = glProfiles.Select(x =>
             {
@@ -139,12 +134,12 @@ namespace Avalonia.OpenGL.Egl
                 throw new OpenGlException("No suitable EGL config was found");
         }
 
-        public EglDisplay() : this(true)
+        public EglDisplay() : this(true, new List<GlVersion>())
         {
             
         }
         
-        public EglDisplay(bool supportsSharing) : this(new EglInterface(), supportsSharing)
+        public EglDisplay(bool supportsSharing, IList<GlVersion> glProfiles) : this(new EglInterface(), supportsSharing, glProfiles)
         {
             
         }
