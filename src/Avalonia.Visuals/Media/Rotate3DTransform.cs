@@ -175,9 +175,9 @@ public class Rotate3DTransform : Transform
             
             if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation(-(float)copyCenterX, -(float)copyCenterY, -(float)copyCenterZ);
 
-            if (AngleX != 0) matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(copyAngleX));
-            if (AngleY != 0) matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(copyAngleY));
-            if (AngleZ != 0) matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(copyAngleZ));
+            if (copyAngleX != 0) matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(copyAngleX));
+            if (copyAngleY != 0) matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(copyAngleY));
+            if (copyAngleZ != 0) matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(copyAngleZ));
 
             if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation((float)copyCenterX, (float)copyCenterY, (float)copyCenterZ);
 
