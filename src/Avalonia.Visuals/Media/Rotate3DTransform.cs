@@ -162,20 +162,29 @@ public class Rotate3DTransform : Transform
         get
         {
             var matrix44 = Matrix4x4.Identity;
-            var centerSum = CenterX + CenterY + CenterZ;
+            //Copy values first, because it's not guaranteed, that values will not change during calculation
+            var (copyCenterX, 
+                 copyCenterY, 
+                 copyCenterZ, 
+                 copyAngleX, 
+                 copyAngleY, 
+                 copyAngleZ, 
+                 copyDepth) = (CenterX, CenterY, CenterZ, AngleX, AngleY, AngleZ, Depth);
             
-            if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation(-(float)CenterX, -(float)CenterY, -(float)CenterZ);
+            var centerSum = copyCenterX + copyCenterY + copyCenterZ;
+            
+            if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation(-(float)copyCenterX, -(float)copyCenterY, -(float)copyCenterZ);
 
-            if (AngleX != 0) matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(AngleX));
-            if (AngleY != 0) matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(AngleY));
-            if (AngleZ != 0) matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(AngleZ));
+            if (AngleX != 0) matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(copyAngleX));
+            if (AngleY != 0) matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(copyAngleY));
+            if (AngleZ != 0) matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(copyAngleZ));
 
-            if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation((float)CenterX, (float)CenterY, (float)CenterZ);
+            if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation((float)copyCenterX, (float)copyCenterY, (float)copyCenterZ);
 
-            if (Depth != 0)
+            if (copyDepth != 0)
             {
                 var perspectiveMatrix = Matrix4x4.Identity;
-                perspectiveMatrix.M34 = -1 / (float)Depth;
+                perspectiveMatrix.M34 = -1 / (float)copyDepth;
                 matrix44 *= perspectiveMatrix;
             }
 
