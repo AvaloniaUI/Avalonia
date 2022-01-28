@@ -60,6 +60,12 @@ namespace Avalonia.Controls.Presenters
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
 
+        /// <summary>
+        /// Defines the <see cref="IsScrollChainingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsScrollChainingEnabledProperty =
+            ScrollViewer.IsScrollChainingEnabledProperty.AddOwner<ScrollContentPresenter>();
+
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private bool _arranging;
@@ -136,6 +142,20 @@ namespace Avalonia.Controls.Presenters
         {
             get { return _viewport; }
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+        }
+
+        /// <summary>
+        ///  Gets or sets if scroll chaining is enabled. The default value is true.
+        /// </summary>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public bool IsScrollChainingEnabled
+        {
+            get => GetValue(IsScrollChainingEnabledProperty);
+            set => SetValue(IsScrollChainingEnabledProperty, value);
         }
 
         /// <inheritdoc/>
@@ -405,8 +425,11 @@ namespace Avalonia.Controls.Presenters
                     _activeLogicalGestureScrolls[e.Id] = delta;
                 }
 
-                Offset = new Vector(x, y);
-                e.Handled = true;
+                Vector newOffset = new Vector(x, y);
+                bool offsetChanged = newOffset != Offset;
+                Offset = newOffset;
+
+                e.Handled = !IsScrollChainingEnabled || offsetChanged;
             }
         }
 
@@ -440,8 +463,11 @@ namespace Avalonia.Controls.Presenters
                     x = Math.Min(x, Extent.Width - Viewport.Width);
                 }
 
-                Offset = new Vector(x, y);
-                e.Handled = true;
+                Vector newOffset = new Vector(x, y);
+                bool offsetChanged = newOffset != Offset;
+                Offset = newOffset;
+
+                e.Handled = !IsScrollChainingEnabled || offsetChanged;
             }
         }
 
