@@ -334,6 +334,11 @@ namespace Avalonia.Input
             var hit = HitTest(root, p);
             var source = GetSource(hit);
 
+            if (inputModifiers == KeyModifiers.Shift)
+            {
+                delta = new Vector(delta.Y, delta.X);
+            }
+
             if (source is not null)
             {
                 var e = new PointerWheelEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
