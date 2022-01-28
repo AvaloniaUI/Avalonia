@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Platform;
 using Avalonia.Win32.Interop.Automation;
 
 #nullable enable
@@ -21,7 +22,7 @@ namespace Avalonia.Win32.Automation
 
         public override IRawElementProviderFragmentRoot? FragmentRoot => this;
         public new IRootProvider Peer { get; }
-        public WindowImpl? WindowImpl => Peer.PlatformImpl as WindowImpl;
+        public IWindowImpl? WindowImpl => Peer.PlatformImpl as IWindowImpl;
         
         public IRawElementProviderFragment? ElementProviderFromPoint(double x, double y)
         {
