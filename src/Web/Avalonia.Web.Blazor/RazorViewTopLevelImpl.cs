@@ -44,6 +44,16 @@ namespace Avalonia.Web.Blazor
         {
             var newSize = new Size(size.Width, size.Height);
 
+            if (Math.Abs(RenderScaling - dpi) > 0.0001)
+            {
+                if (_currentSurface is { })
+                {
+                    _currentSurface.Scaling = dpi;
+                }
+                
+                ScalingChanged?.Invoke(dpi);
+            }
+
             if (newSize != _clientSize)
             {
                 _clientSize = newSize;

@@ -303,7 +303,10 @@ enum AvnRawMouseEventType
     TouchBegin,
     TouchUpdate,
     TouchEnd,
-    TouchCancel
+    TouchCancel,
+    Magnify,
+    Rotate,
+    Swipe,
 }
 
 enum AvnRawKeyEventType

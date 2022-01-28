@@ -1,6 +1,8 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="using:System">
+        xmlns:sys="using:System"
+        x:CompileBindings="True"
+        x:DataType="DataValidationErrors">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -27,7 +29,7 @@
   <Style Selector="DataValidationErrors">
     <Style.Resources>
       <DataTemplate x:Key="InlineDataValidationErrorTemplate">
-        <ItemsControl Items="{Binding}" TextBlock.Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}">
+        <ItemsControl Items="{Binding}" x:DataType="DataValidationErrors" TextBlock.Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}">
           <ItemsControl.Styles>
             <Style Selector="TextBlock">
               <Setter Property="TextWrapping" Value="Wrap" />
@@ -54,7 +56,7 @@
         </DockPanel>
       </ControlTemplate>
 
-      <DataTemplate x:Key="TooltipDataValidationErrorTemplate">
+      <DataTemplate x:DataType="DataValidationErrors" x:Key="TooltipDataValidationErrorTemplate">
         <Panel Name="PART_InlineErrorTemplatePanel" Background="Transparent">
           <Panel.Styles>
             <Style Selector="Panel#PART_InlineErrorTemplatePanel">
