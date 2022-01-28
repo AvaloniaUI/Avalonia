@@ -71,17 +71,20 @@ namespace Avalonia.OpenGL.Egl
 
             var cfgs = glProfiles.Select(x =>
             {
-                var typeBit = EGL_OPENGL_ES3_BIT;
+                var typeBit = x.Type == GlProfileType.OpenGLES ? EGL_OPENGL_ES3_BIT : EGL_OPENGL_BIT;
 
-                switch (x.Major)
+                if (x.Type == GlProfileType.OpenGLES)
                 {
-                    case 2:
-                        typeBit = EGL_OPENGL_ES2_BIT;
-                        break;
+                    switch (x.Major)
+                    {
+                        case 2:
+                            typeBit = EGL_OPENGL_ES2_BIT;
+                            break;
 
-                    case 1:
-                        typeBit = EGL_OPENGL_ES_BIT;
-                        break;
+                        case 1:
+                            typeBit = EGL_OPENGL_ES_BIT;
+                            break;
+                    }
                 }
 
                 return new
@@ -92,7 +95,7 @@ namespace Avalonia.OpenGL.Egl
                         EGL_CONTEXT_MINOR_VERSION, x.Minor,
                         EGL_NONE
                     },
-                    Api = EGL_OPENGL_ES_API,
+                    Api = x.Type == GlProfileType.OpenGLES ? EGL_OPENGL_ES_API : EGL_OPENGL_API,
                     RenderableTypeBit = typeBit,
                     Version = x
                 };
@@ -136,7 +139,7 @@ namespace Avalonia.OpenGL.Egl
                 throw new OpenGlException("No suitable EGL config was found");
         }
 
-        public EglDisplay() : this(false)
+        public EglDisplay() : this(true)
         {
             
         }
