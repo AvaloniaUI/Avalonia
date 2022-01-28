@@ -152,6 +152,15 @@ namespace Avalonia.Media.TextFormatting
 
             var first = new ShapedTextCharacters(splitBuffer.First, Properties);
 
+            #if DEBUG
+
+            if (first.Text.Length != length)
+            {
+                throw new InvalidOperationException("Split length mismatch.");
+            }
+            
+            #endif
+
             var second = new ShapedTextCharacters(splitBuffer.Second!, Properties);
 
             return new SplitResult<ShapedTextCharacters>(first, second);

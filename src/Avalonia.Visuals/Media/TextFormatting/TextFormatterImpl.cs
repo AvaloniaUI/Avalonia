@@ -208,6 +208,7 @@ namespace Avalonia.Media.TextFormatting
             var levelIndex = 0;
             var runLevel = levels[0];
 
+            TextRunProperties? previousProperties = null;
             TextCharacters? currentRun = null;
             var runText = ReadOnlySlice<char>.Empty;
 
@@ -231,7 +232,7 @@ namespace Avalonia.Media.TextFormatting
 
                     if (j == runText.Length)
                     {
-                        yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel);
+                        yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties);
 
                         runLevel = levels[levelIndex];
 
@@ -244,7 +245,7 @@ namespace Avalonia.Media.TextFormatting
                     }
 
                     // End of this run
-                    yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel);
+                    yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties);
 
                     runText = runText.Skip(j);
 
@@ -260,7 +261,7 @@ namespace Avalonia.Media.TextFormatting
                 yield break;
             }
 
-            yield return currentRun.GetShapeableCharacters(runText, runLevel);
+            yield return currentRun.GetShapeableCharacters(runText, runLevel, ref previousProperties);
         }
 
         /// <summary>

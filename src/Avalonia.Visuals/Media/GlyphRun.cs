@@ -669,6 +669,15 @@ namespace Avalonia.Media
 
                     var codepointIndex = IsLeftToRight ? cluster - _characters.Start : _characters.End - cluster;
 
+                    if (codepointIndex < 0)
+                    {
+                        trailingWhitespaceLength = _characters.Length;
+                        
+                        glyphCount = GlyphClusters.Count;
+                        
+                        break;
+                    }
+                    
                     var codepoint = Codepoint.ReadAt(_characters, codepointIndex, out _);
 
                     if (!codepoint.IsWhiteSpace)
@@ -682,6 +691,7 @@ namespace Avalonia.Media
                     }
 
                     trailingWhitespaceLength++;
+                    
                     glyphCount++;
                 }
             }

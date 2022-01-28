@@ -461,6 +461,38 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(expectedOffset, textLine.Start);
             }
         }
+        
+        [Fact]
+        public void Should_Wrap_Syriac()
+        {
+            using (Start())
+            {
+                const string text =
+                    "܀ ܁ ܂ ܃ ܄ ܅ ܆ ܇ ܈ ܉ ܊ ܋ ܌ ܍ ܏ ܐ ܑ ܒ ܓ ܔ ܕ ܖ ܗ ܘ ܙ ܚ ܛ ܜ ܝ ܞ ܟ ܠ ܡ ܢ ܣ ܤ ܥ ܦ ܧ ܨ ܩ ܪ ܫ ܬ ܰ ܱ ܲ ܳ ܴ ܵ ܶ ܷ ܸ ܹ ܺ ܻ ܼ ܽ ܾ ܿ ݀ ݁ ݂ ݃ ݄ ݅ ݆ ݇ ݈ ݉ ݊";
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties =
+                    new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textPosition = 87;
+                TextLineBreak lastBreak = null;
+
+                while (textPosition < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, textPosition, 50, paragraphProperties, lastBreak);
+
+                    Assert.Equal(textLine.TextRange.Length, textLine.TextRuns.Sum(x => x.TextSourceLength));
+                    
+                    textPosition += textLine.TextRange.Length;
+
+                    lastBreak = textLine.TextLineBreak;
+                }
+            }
+        }
 
         [Fact]
         public void Should_FormatLine_With_Emergency_Breaks()

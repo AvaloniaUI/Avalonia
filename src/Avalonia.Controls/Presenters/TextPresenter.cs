@@ -515,9 +515,11 @@ namespace Avalonia.Controls.Presenters
         
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (availableSize != Size.Infinity)
+            if (!double.IsInfinity(availableSize.Width) && availableSize != _constraint)
             {
                 _constraint = availableSize;
+                
+                InvalidateTextLayout();
             }
 
             return TextLayout.Size;
