@@ -164,13 +164,13 @@ public class Rotate3DTransform : Transform
             var matrix44 = Matrix4x4.Identity;
             var centerSum = CenterX + CenterY + CenterZ;
             
-            if (centerSum != 0) matrix44 *= Matrix4x4.CreateTranslation(-(float)CenterX, -(float)CenterY, -(float)CenterZ);
+            if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation(-(float)CenterX, -(float)CenterY, -(float)CenterZ);
 
             if (AngleX != 0) matrix44 *= Matrix4x4.CreateRotationX((float)Matrix.ToRadians(AngleX));
             if (AngleY != 0) matrix44 *= Matrix4x4.CreateRotationY((float)Matrix.ToRadians(AngleY));
             if (AngleZ != 0) matrix44 *= Matrix4x4.CreateRotationZ((float)Matrix.ToRadians(AngleZ));
 
-            if (centerSum != 0) matrix44 *= Matrix4x4.CreateTranslation((float)CenterX, (float)CenterY, (float)CenterZ);
+            if (Math.Abs(centerSum) > double.Epsilon) matrix44 *= Matrix4x4.CreateTranslation((float)CenterX, (float)CenterY, (float)CenterZ);
 
             if (Depth != 0)
             {
