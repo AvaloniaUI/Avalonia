@@ -394,12 +394,12 @@ namespace Avalonia.Media.TextFormatting
             {
                 var textLine = TextLines[index];
 
-                if (textLine.TextRange.End < charIndex)
+                if (textLine.TextRange.Start + textLine.TextRange.Length < charIndex)
                 {
                     continue;
                 }
 
-                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.End)
+                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.Start + textLine.TextRange.Length)
                 {
                     return index;
                 }
