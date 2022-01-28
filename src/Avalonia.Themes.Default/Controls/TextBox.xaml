@@ -25,6 +25,7 @@
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}"/>
     <Setter Property="Padding" Value="4"/>
     <Setter Property="ContextFlyout" Value="{StaticResource DefaultTextBoxContextFlyout}" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
@@ -59,6 +60,7 @@
                 <ScrollViewer Grid.Column="1" Grid.ColumnSpan="1"
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                              IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                               AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
                   <Panel>
                     <TextBlock Name="watermark"
