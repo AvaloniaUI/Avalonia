@@ -82,7 +82,7 @@ namespace Avalonia.OpenGL.Egl
             finally
             {
                 if(!success)
-                    Monitor.Enter(_lock);
+                    Monitor.Exit(_lock);
             }
         }
         
