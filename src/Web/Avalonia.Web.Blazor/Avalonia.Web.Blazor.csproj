@@ -10,7 +10,6 @@
   
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-    <Compile Include="..\..\Shared\PlatformSupport\AssetLoader.cs" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -51,7 +50,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\Avalonia.PlatformSupport\Avalonia.PlatformSupport.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
 </Project>
