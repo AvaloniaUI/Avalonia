@@ -56,6 +56,10 @@ namespace Avalonia.Themes.Fluent
 
         public static readonly StyledProperty<FluentThemeMode> ModeProperty =
             AvaloniaProperty.Register<FluentTheme, FluentThemeMode>(nameof(Mode));
+
+        public static readonly StyledProperty<DensityStyle> DensityStyleProperty =
+            AvaloniaProperty.Register<FluentTheme, DensityStyle>(nameof(DensityStyle));
+
         /// <summary>
         /// Gets or sets the mode of the fluent theme (light, dark).
         /// </summary>
@@ -64,9 +68,7 @@ namespace Avalonia.Themes.Fluent
             get => GetValue(ModeProperty);
             set => SetValue(ModeProperty, value);
         }
-        
-        public static readonly StyledProperty<DensityStyle> DensityStyleProperty =
-            AvaloniaProperty.Register<FluentTheme, DensityStyle>(nameof(DensityStyle));
+
         /// <summary>
         /// Gets or sets the density style of the fluent theme (normal, compact).
         /// </summary>
@@ -97,16 +99,9 @@ namespace Avalonia.Themes.Fluent
             {
                 if (DensityStyle == DensityStyle.Compact)
                 {
-                    if ((Loaded as Styles)!.Count > 3)
-                    {
-                        (Loaded as Styles)![3] = _densityStyles[0];
-                    }
-                    else
-                    {
-                        (Loaded as Styles)!.Add( _densityStyles[0]);
-                    }
+                    (Loaded as Styles)!.Add(_densityStyles[0]);
                 }
-                else if(DensityStyle == DensityStyle.Normal)
+                else if (DensityStyle == DensityStyle.Normal)
                 {
                     (Loaded as Styles)!.Remove(_densityStyles[0]);
                 }
