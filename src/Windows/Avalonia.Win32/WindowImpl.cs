@@ -448,20 +448,14 @@ namespace Avalonia.Win32
             {
                 GetWindowRect(_hwnd, out var rc);
 
-                // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
-                if (Win32Platform.WindowsVersion.Major >= 10 && HasFullDecorations)
-                {
-                    return new PixelPoint(rc.left + (int)(7 * _scaling), rc.top);
-                }
-
-                return new PixelPoint(rc.left, rc.top);
+                var border = HiddenBorderSize;
+                return new PixelPoint(rc.left + border.Width, rc.top + border.Height);
             }
             set
             {
-                if (Win32Platform.WindowsVersion.Major >= 10 && HasFullDecorations)
-                {
-                    value = new PixelPoint(value.X - (int)(7 * _scaling), value.Y);
-                }
+                var border = HiddenBorderSize;
+                value = new PixelPoint(value.X - border.Width, value.Y - border.Height);
+
                 SetWindowPos(
                     Handle.Handle,
                     IntPtr.Zero,
@@ -474,6 +468,24 @@ namespace Avalonia.Win32
         }
 
         private bool HasFullDecorations => _windowProperties.Decorations == SystemDecorations.Full;
+
+        private PixelSize HiddenBorderSize
+        {
+            get
+            {
+                // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
+                if (Win32Platform.WindowsVersion.Major < 10 || !HasFullDecorations)
+                {
+                    return PixelSize.Empty;
+                }
+
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf(typeof(RECT)));
+                GetWindowRect(_hwnd, out var frameRect);
+                var borderWidth = GetSystemMetrics(SystemMetric.SM_CXBORDER);
+
+                return new PixelSize(clientRect.left - frameRect.left - borderWidth, 0);
+            }
+        }
 
         public void Move(PixelPoint point) => Position = point;
 
