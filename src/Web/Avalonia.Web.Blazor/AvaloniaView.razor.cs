@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.Web.Blazor.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -313,6 +314,8 @@ namespace Avalonia.Web.Blazor
                 Console.WriteLine("nothing to render");
                 return;
             }
+            
+            Threading.Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
 
             ManualTriggerRenderTimer.Instance.RaiseTick();
         }
