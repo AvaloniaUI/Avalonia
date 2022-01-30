@@ -245,7 +245,7 @@ export class SKHtmlCanvas {
 			minorVersion: 0,
 			enableExtensionsByDefault: 1,
 			explicitSwapControl: 0,
-			renderViaOffscreenBackBuffer: 1,
+			renderViaOffscreenBackBuffer: 0,
 		};
 
 		let ctx: WebGLRenderingContext = GL.createContext(htmlCanvas, contextAttributes);
