@@ -119,7 +119,7 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, IPen pen, Geometry geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry)
         {
             if (geometry.PlatformImpl is not null)
                 DrawGeometry(brush, pen, geometry.PlatformImpl);
@@ -131,7 +131,7 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
             _ = geometry ?? throw new ArgumentNullException(nameof(geometry));
 
