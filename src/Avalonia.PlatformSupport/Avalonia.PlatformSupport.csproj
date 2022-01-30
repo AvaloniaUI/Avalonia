@@ -1,14 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net461;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
       <ProjectReference Include="../Avalonia.Base/Avalonia.Base.csproj" />
-      <ProjectReference Include="../Avalonia.Visuals/Avalonia.Visuals.csproj" />
-      <ProjectReference Include="../Avalonia.Controls/Avalonia.Controls.csproj" />
-      <ProjectReference Include="../Avalonia.PlatformSupport/Avalonia.PlatformSupport.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,5 +14,5 @@
 
   <Import Project="..\..\build\NetCore.props" />
   <Import Project="..\..\build\NetFX.props" />
-  <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>
