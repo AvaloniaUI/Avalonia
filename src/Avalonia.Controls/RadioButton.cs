@@ -22,7 +22,7 @@ namespace Avalonia.Controls
             readonly Dictionary<string, List<WeakReference<RadioButton>>> s_registeredGroups
                 = new Dictionary<string, List<WeakReference<RadioButton>>>();
 
-            public static RadioButtonGroupManager GetOrCreateForRoot(IRenderRoot root)
+            public static RadioButtonGroupManager GetOrCreateForRoot(IRenderRoot? root)
             {
                 if (root == null)
                     return Default;
@@ -33,7 +33,7 @@ namespace Avalonia.Controls
             {
                 lock (s_registeredGroups)
                 {
-                    string groupName = radioButton.GroupName;
+                    string groupName = radioButton.GroupName!;
                     if (!s_registeredGroups.TryGetValue(groupName, out var group))
                     {
                         group = new List<WeakReference<RadioButton>>();
@@ -71,7 +71,7 @@ namespace Avalonia.Controls
             {
                 lock (s_registeredGroups)
                 {
-                    string groupName = radioButton.GroupName;
+                    string groupName = radioButton.GroupName!;
                     if (s_registeredGroups.TryGetValue(groupName, out var group))
                     {
                         int i = 0;
@@ -95,21 +95,21 @@ namespace Avalonia.Controls
             }
         }
 
-        public static readonly DirectProperty<RadioButton, string> GroupNameProperty =
-            AvaloniaProperty.RegisterDirect<RadioButton, string>(
+        public static readonly DirectProperty<RadioButton, string?> GroupNameProperty =
+            AvaloniaProperty.RegisterDirect<RadioButton, string?>(
                 nameof(GroupName),
                 o => o.GroupName,
                 (o, v) => o.GroupName = v);
 
-        private string _groupName;
-        private RadioButtonGroupManager _groupManager;
+        private string? _groupName;
+        private RadioButtonGroupManager? _groupManager;
 
         public RadioButton()
         {
             this.GetObservable(IsCheckedProperty).Subscribe(IsCheckedChanged);
         }
 
-        public string GroupName
+        public string? GroupName
         {
             get { return _groupName; }
             set { SetGroupName(value); }
@@ -127,7 +127,7 @@ namespace Avalonia.Controls
         {
             if (!string.IsNullOrEmpty(GroupName))
             {
-                _groupManager?.Remove(this, _groupName);
+                _groupManager?.Remove(this, GroupName);
 
                 _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(e.Root);
 
@@ -142,13 +142,13 @@ namespace Avalonia.Controls
 
             if (!string.IsNullOrEmpty(GroupName))
             {
-                _groupManager?.Remove(this, _groupName);
+                _groupManager?.Remove(this, GroupName);
             }
         }
 
-        private void SetGroupName(string newGroupName)
+        private void SetGroupName(string? newGroupName)
         {
-            string oldGroupName = GroupName;
+            var oldGroupName = GroupName;
             if (newGroupName != oldGroupName)
             {
                 if (!string.IsNullOrEmpty(oldGroupName))
@@ -169,7 +169,7 @@ namespace Avalonia.Controls
 
         private void IsCheckedChanged(bool? value)
         {
-            string groupName = GroupName;
+            var groupName = GroupName;
             if (string.IsNullOrEmpty(groupName))
             {
                 var parent = this.GetVisualParent();

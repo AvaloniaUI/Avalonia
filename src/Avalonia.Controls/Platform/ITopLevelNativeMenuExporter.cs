@@ -24,6 +24,6 @@ namespace Avalonia.Controls.Platform
     
     public interface ITopLevelImplWithNativeMenuExporter : ITopLevelImpl
     {
-        ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+        ITopLevelNativeMenuExporter? NativeMenuExporter { get; }
     }
 }

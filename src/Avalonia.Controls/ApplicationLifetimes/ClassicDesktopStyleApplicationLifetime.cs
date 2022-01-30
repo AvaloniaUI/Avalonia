@@ -15,26 +15,26 @@ namespace Avalonia.Controls.ApplicationLifetimes
     public class ClassicDesktopStyleApplicationLifetime : IClassicDesktopStyleApplicationLifetime, IDisposable
     {
         private int _exitCode;
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource? _cts;
         private bool _isShuttingDown;
         private HashSet<Window> _windows = new HashSet<Window>();
 
-        private static ClassicDesktopStyleApplicationLifetime _activeLifetime;
+        private static ClassicDesktopStyleApplicationLifetime? _activeLifetime;
         static ClassicDesktopStyleApplicationLifetime()
         {
             Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
             Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent);
         }
 
-        private static void WindowClosedEvent(object sender, RoutedEventArgs e)
+        private static void WindowClosedEvent(object? sender, RoutedEventArgs e)
         {
-            _activeLifetime?._windows.Remove((Window)sender);
-            _activeLifetime?.HandleWindowClosed((Window)sender);
+            _activeLifetime?._windows.Remove((Window)sender!);
+            _activeLifetime?.HandleWindowClosed((Window)sender!);
         }
 
-        private static void OnWindowOpened(object sender, RoutedEventArgs e)
+        private static void OnWindowOpened(object? sender, RoutedEventArgs e)
         {
-            _activeLifetime?._windows.Add((Window)sender);
+            _activeLifetime?._windows.Add((Window)sender!);
         }
 
         public ClassicDesktopStyleApplicationLifetime()
@@ -46,24 +46,24 @@ namespace Avalonia.Controls.ApplicationLifetimes
         }
 
         /// <inheritdoc/>
-        public event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
+        public event EventHandler<ControlledApplicationLifetimeStartupEventArgs>? Startup;
 
         /// <inheritdoc/>
-        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
         /// <inheritdoc/>
-        public event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
+        public event EventHandler<ControlledApplicationLifetimeExitEventArgs>? Exit;
 
         /// <summary>
         /// Gets the arguments passed to the AppBuilder Start method.
         /// </summary>
-        public string[] Args { get; set; }
+        public string[]? Args { get; set; }
         
         /// <inheritdoc/>
         public ShutdownMode ShutdownMode { get; set; }
         
         /// <inheritdoc/>
-        public Window MainWindow { get; set; }
+        public Window? MainWindow { get; set; }
 
         public IReadOnlyList<Window> Windows => _windows.ToList();
 
@@ -183,7 +183,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             return true;
         }
         
-        private void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e) => DoShutdown(e);
+        private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e) => DoShutdown(e);
     }
     
     public class ClassicDesktopStyleApplicationLifetimeOptions

@@ -66,7 +66,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextPresenter>();
 
         private readonly DispatcherTimer _caretTimer;
@@ -75,7 +75,7 @@ namespace Avalonia.Controls.Presenters
         private int _selectionEnd;
         private bool _caretBlink;
         private string _text;
-        private FormattedText _formattedText;
+        private FormattedText? _formattedText;
         private Size _constraint;
 
         static TextPresenter()
@@ -96,7 +96,7 @@ namespace Avalonia.Controls.Presenters
                 SelectionForegroundBrushProperty.Changed, PasswordCharProperty.Changed, RevealPasswordProperty.Changed
             ).AddClassHandler<TextPresenter>((x, _) => x.InvalidateFormattedText());
 
-            CaretIndexProperty.Changed.AddClassHandler<TextPresenter>((x, e) => x.CaretIndexChanged((int)e.NewValue));
+            CaretIndexProperty.Changed.AddClassHandler<TextPresenter>((x, e) => x.CaretIndexChanged((int)e.NewValue!));
         }
 
         public TextPresenter()
@@ -109,7 +109,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get => GetValue(BackgroundProperty);
             set => SetValue(BackgroundProperty, value);
@@ -164,7 +164,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
-        public IBrush Foreground
+        public IBrush? Foreground
         {
             get => TextBlock.GetForeground(this);
             set => TextBlock.SetForeground(this, value);
@@ -334,7 +334,8 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            context.DrawText(Foreground, new Point(0, top), FormattedText);
+            if (Foreground is IBrush foreground)
+                context.DrawText(foreground, new Point(0, top), FormattedText);
         }
 
         public override void Render(DrawingContext context)
@@ -457,7 +458,7 @@ namespace Avalonia.Controls.Presenters
         /// <returns>A <see cref="FormattedText"/> object.</returns>
         protected virtual FormattedText CreateFormattedText()
         {
-            FormattedText result = null;
+            FormattedText? result = null;
 
             var text = Text;
 
@@ -540,7 +541,7 @@ namespace Avalonia.Controls.Presenters
             return Math.Max(0, Math.Min(length, value));
         }
 
-        private void CaretTimerTick(object sender, EventArgs e)
+        private void CaretTimerTick(object? sender, EventArgs e)
         {
             _caretBlink = !_caretBlink;
             InvalidateVisual();

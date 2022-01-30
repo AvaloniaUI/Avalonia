@@ -138,7 +138,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Occurs when the control's selection changes.
         /// </summary>
-        public event EventHandler<SelectionChangedEventArgs> SelectionChanged
+        public event EventHandler<SelectionChangedEventArgs>? SelectionChanged
         {
             add { AddHandler(SelectionChangedEvent, value); }
             remove { RemoveHandler(SelectionChangedEvent, value); }
@@ -386,9 +386,9 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
-        protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ItemsCollectionChanged(sender, e);
+            base.ItemsCollectionChanged(sender!, e);
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
@@ -406,7 +406,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            void ExecuteScrollWhenLayoutUpdated(object sender, EventArgs e)
+            void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
             {
                 LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
                 AutoScrollToSelectedItemIfNecessary();
@@ -443,9 +443,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnContainersDematerialized(e);
 
-            var panel = (InputElement)Presenter.Panel;
-
-            if (panel != null)
+            if (Presenter?.Panel is InputElement panel)
             {
                 foreach (var container in e.Containers)
                 {
@@ -523,7 +521,7 @@ namespace Avalonia.Controls.Primitives
                     info.ContainerControl is IContentControl control &&
                     control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
 
-                var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
+                var info = ItemContainerGenerator?.Containers.FirstOrDefault(match);
 
                 if (info != null)
                 {
@@ -594,7 +592,7 @@ namespace Avalonia.Controls.Primitives
         /// <returns>True if the selection was moved; otherwise false.</returns>
         protected bool MoveSelection(NavigationDirection direction, bool wrap)
         {
-            var from = SelectedIndex != -1 ? ItemContainerGenerator.ContainerFromIndex(SelectedIndex) : null;
+            var from = SelectedIndex != -1 ? ItemContainerGenerator?.ContainerFromIndex(SelectedIndex) : null;
             return MoveSelection(from, direction, wrap);
         }
 
@@ -610,7 +608,7 @@ namespace Avalonia.Controls.Primitives
             if (Presenter?.Panel is INavigableContainer container &&
                 GetNextControl(container, direction, from, wrap) is IControl next)
             {
-                var index = ItemContainerGenerator.IndexFromContainer(next);
+                var index = ItemContainerGenerator?.IndexFromContainer(next) ?? -1;
 
                 if (index != -1)
                 {
@@ -688,7 +686,7 @@ namespace Avalonia.Controls.Primitives
 
             if (Presenter?.Panel != null)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(index);
+                var container = ItemContainerGenerator?.ContainerFromIndex(index);
                 KeyboardNavigation.SetTabOnceActiveElement(
                     (InputElement)Presenter.Panel,
                     container);
@@ -755,7 +753,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnSelectionModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnSelectionModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
@@ -789,11 +787,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnSelectionModelSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        private void OnSelectionModelSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
         {
             void Mark(int index, bool selected)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(index);
+                var container = ItemContainerGenerator?.ContainerFromIndex(index);
 
                 if (container != null)
                 {
@@ -829,7 +827,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnSelectionModelLostSelection(object sender, EventArgs e)
+        private void OnSelectionModelLostSelection(object? sender, EventArgs e)
         {
             if (AlwaysSelected && Items is object)
             {
@@ -912,7 +910,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     MarkContainerSelected(
                         container,
-                        Selection.IsSelected(ItemContainerGenerator.IndexFromContainer(container)));
+                        Selection.IsSelected(ItemContainerGenerator!.IndexFromContainer(container)));
                 }
             }
         }
@@ -1034,7 +1032,7 @@ namespace Avalonia.Controls.Primitives
             _textSearchTimer = null;
         }
 
-        private void TextSearchTimer_Tick(object sender, EventArgs e)
+        private void TextSearchTimer_Tick(object? sender, EventArgs e)
         {
             _textSearchTerm = string.Empty;
             StopTextSearchTimer();

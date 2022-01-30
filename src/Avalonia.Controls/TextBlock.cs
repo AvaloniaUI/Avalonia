@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
         /// <summary>
@@ -65,8 +65,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly AttachedProperty<IBrush> ForegroundProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, IBrush>(
+        public static readonly AttachedProperty<IBrush?> ForegroundProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, IBrush?>(
                 nameof(Foreground),
                 Brushes.Black,
                 inherits: true);
@@ -91,8 +91,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly DirectProperty<TextBlock, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<TextBlock, string>(
+        public static readonly DirectProperty<TextBlock, string?> TextProperty =
+            AvaloniaProperty.RegisterDirect<TextBlock, string?>(
                 nameof(Text),
                 o => o.Text,
                 (o, v) => o.Text = v);
@@ -118,11 +118,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TextDecorations"/> property.
         /// </summary>
-        public static readonly StyledProperty<TextDecorationCollection> TextDecorationsProperty =
-            AvaloniaProperty.Register<TextBlock, TextDecorationCollection>(nameof(TextDecorations));
+        public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
+            AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
 
-        private string _text;
-        private TextLayout _textLayout;
+        private string? _text;
+        private TextLayout? _textLayout;
         private Size _constraint;
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout
+        public TextLayout? TextLayout
         {
             get
             {
@@ -179,7 +179,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -189,7 +189,7 @@ namespace Avalonia.Controls
         /// Gets or sets the text.
         /// </summary>
         [Content]
-        public string Text
+        public string? Text
         {
             get { return _text; }
             set { SetAndRaise(TextProperty, ref _text, value); }
@@ -234,7 +234,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
-        public IBrush Foreground
+        public IBrush? Foreground
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }
@@ -288,7 +288,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text decorations.
         /// </summary>
-        public TextDecorationCollection TextDecorations
+        public TextDecorationCollection? TextDecorations
         {
             get => GetValue(TextDecorationsProperty);
             set => SetValue(TextDecorationsProperty, value);
@@ -339,7 +339,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns>The foreground.</returns>
-        public static IBrush GetForeground(Control control)
+        public static IBrush? GetForeground(Control control)
         {
             return control.GetValue(ForegroundProperty);
         }
@@ -394,7 +394,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
         /// <returns>The font family.</returns>
-        public static void SetForeground(Control control, IBrush value)
+        public static void SetForeground(Control control, IBrush? value)
         {
             control.SetValue(ForegroundProperty, value);
         }
@@ -444,7 +444,7 @@ namespace Avalonia.Controls
         /// <param name="constraint">The constraint of the text.</param>
         /// <param name="text">The text to format.</param>
         /// <returns>A <see cref="TextLayout"/> object.</returns>
-        protected virtual TextLayout CreateTextLayout(Size constraint, string text)
+        protected virtual TextLayout? CreateTextLayout(Size constraint, string? text)
         {
             if (constraint == Size.Empty)
             {
@@ -455,7 +455,7 @@ namespace Avalonia.Controls
                 text ?? string.Empty,
                 new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize,
-                Foreground,
+                Foreground ?? Brushes.Transparent,
                 TextAlignment,
                 TextWrapping,
                 TextTrimming,

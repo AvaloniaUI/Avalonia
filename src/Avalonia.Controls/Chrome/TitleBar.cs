@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Chrome
                     }
                 }
 
-                IsVisible = window.PlatformImpl.NeedsManagedDecorations;
+                IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
             }
         }
 

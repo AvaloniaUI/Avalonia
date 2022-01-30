@@ -177,13 +177,13 @@ namespace Avalonia
         /// </summary>
         public IApplicationLifetime? ApplicationLifetime { get; set; }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
             remove => _stylesAdded -= value;
         }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesRemoved
         {
             add => _stylesRemoved += value;
             remove => _stylesRemoved -= value;

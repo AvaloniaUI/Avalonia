@@ -109,7 +109,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when the control's template is applied.
         /// </summary>
-        public event EventHandler<TemplateAppliedEventArgs> TemplateApplied
+        public event EventHandler<TemplateAppliedEventArgs>? TemplateApplied
         {
             add { AddHandler(TemplateAppliedEvent, value); }
             remove { RemoveHandler(TemplateAppliedEvent, value); }

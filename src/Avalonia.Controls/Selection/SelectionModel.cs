@@ -78,8 +78,7 @@ namespace Avalonia.Controls.Selection
 
         public IReadOnlyList<int> SelectedIndexes => _selectedIndexes ??= new SelectedIndexes<T>(this);
 
-        [MaybeNull, AllowNull]
-        public T SelectedItem
+        public T? SelectedItem
         {
             get
             {
@@ -89,7 +88,7 @@ namespace Avalonia.Controls.Selection
                 }
                 else if (_initSelectedItems is object && _initSelectedItems.Count > 0)
                 {
-                    return (T)_initSelectedItems[0];
+                    return (T?)_initSelectedItems[0];
                 }
 
                 return default;
@@ -394,9 +393,7 @@ namespace Avalonia.Controls.Selection
             {
                 if (SingleSelect)
                 {
-#pragma warning disable CS8604
-                    removed = new List<T> { (T)items[SelectedIndex - index] };
-#pragma warning restore CS8604
+                    removed = new List<T> { (T)items[SelectedIndex - index]! };
                 }
 
                 _selectedIndex = GetFirstSelectedIndexFromRanges();
@@ -466,12 +463,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (e.NewStartingIndex <= _selectedIndex)
                 {
-                    return _selectedIndex + e.NewItems.Count < ItemsView.Count;
+                    return _selectedIndex + e.NewItems!.Count < ItemsView.Count;
                 }
 
                 if (e.NewStartingIndex <= _anchorIndex)
                 {
-                    return _anchorIndex + e.NewItems.Count < ItemsView.Count;
+                    return _anchorIndex + e.NewItems!.Count < ItemsView.Count;
                 }
             }
 

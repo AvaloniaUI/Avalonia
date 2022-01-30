@@ -368,7 +368,7 @@ namespace Avalonia.Controls
             });
         }
 
-        private void PopupOpened(object sender, EventArgs e)
+        private void PopupOpened(object? sender, EventArgs e)
         {
             _previousFocus = FocusManager.Instance?.Current;
             Focus();
@@ -376,12 +376,12 @@ namespace Avalonia.Controls
             _popupHostChangedHandler?.Invoke(_popup!.Host);
         }
 
-        private void PopupClosing(object sender, CancelEventArgs e)
+        private void PopupClosing(object? sender, CancelEventArgs e)
         {
             e.Cancel = CancelClosing();
         }
 
-        private void PopupClosed(object sender, EventArgs e)
+        private void PopupClosed(object? sender, EventArgs e)
         {
             foreach (var i in LogicalChildren)
             {
@@ -411,7 +411,7 @@ namespace Avalonia.Controls
             _popupHostChangedHandler?.Invoke(null);
         }
 
-        private void PopupKeyUp(object sender, KeyEventArgs e)
+        private void PopupKeyUp(object? sender, KeyEventArgs e)
         {
             if (IsOpen)
             {
@@ -426,7 +426,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void ControlContextRequested(object sender, ContextRequestedEventArgs e)
+        private static void ControlContextRequested(object? sender, ContextRequestedEventArgs e)
         {
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu
@@ -439,7 +439,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void ControlDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private static void ControlDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu)
