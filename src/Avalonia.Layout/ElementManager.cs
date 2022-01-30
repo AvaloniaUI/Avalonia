@@ -263,7 +263,7 @@ namespace Avalonia.Layout
             return intersects;
         }
 
-        public void DataSourceChanged(object source, NotifyCollectionChangedEventArgs args)
+        public void DataSourceChanged(object? source, NotifyCollectionChangedEventArgs args)
         {
             if (_realizedElements.Count > 0)
             {

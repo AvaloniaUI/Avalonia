@@ -135,7 +135,7 @@ namespace Avalonia.Layout
         }
 
         public void OnItemsSourceChanged(
-            object source,
+            object? source,
             NotifyCollectionChangedEventArgs args,
             VirtualizingLayoutContext context)
         {
