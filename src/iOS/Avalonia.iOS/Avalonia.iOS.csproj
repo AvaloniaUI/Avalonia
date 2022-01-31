@@ -5,18 +5,13 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="Boilerplate\Shared.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Boilerplate\RuntimePlatform.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\..\Avalonia.PlatformSupport\Avalonia.PlatformSupport.csproj">
+      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
+    </ProjectReference>
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
 </Project>
