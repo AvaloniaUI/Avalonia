@@ -135,6 +135,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
@@ -212,9 +214,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 MaskedTextBox textBox = new MaskedTextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
                     CaretIndex = 5
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
                 RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
@@ -251,9 +256,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 var textBox = new MaskedTextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
                     CaretIndex = 19
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
                 RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
@@ -355,6 +363,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -470,6 +480,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -836,6 +848,8 @@ namespace Avalonia.Controls.UnitTests
                     SelectionStart = selectionStart,
                     SelectionEnd = selectionEnd
                 };
+                
+                target.ApplyTemplate();
 
                 if (fromClipboard)
                 {
