@@ -599,7 +599,7 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Contract.Requires<NullReferenceException>(_data != null);
+            Debug.Assert(_data != null);
 
             //  actual value calculations require structure to be up-to-date
             if (!ColumnDefinitionsDirty)
@@ -621,7 +621,7 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Contract.Requires<NullReferenceException>(_data != null);
+            Debug.Assert(_data != null);
 
             //  actual value calculations require structure to be up-to-date
             if (!RowDefinitionsDirty)

@@ -921,7 +921,6 @@ namespace Avalonia.Controls.Primitives
                     if (b.IsEnabled && !b.IsBlackout)
                     {
                         DateTime selectedDate = (DateTime)b.DataContext!;
-                        Contract.Requires<ArgumentNullException>(selectedDate != null);
                         _isMouseLeftButtonDown = true;
                         // null check is added for unit tests
                         if (e != null)
