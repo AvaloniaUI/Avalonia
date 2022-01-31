@@ -50,12 +50,14 @@ namespace Avalonia.Interactivity
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         public void AddHandler<TEventArgs>(
             RoutedEvent<TEventArgs> routedEvent,
-            EventHandler<TEventArgs> handler,
+            EventHandler<TEventArgs>? handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
             routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
-            handler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+            if (handler is null)
+                return;
 
             static void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
             {
@@ -99,10 +101,11 @@ namespace Avalonia.Interactivity
         /// <typeparam name="TEventArgs">The type of the event's args.</typeparam>
         /// <param name="routedEvent">The routed event.</param>
         /// <param name="handler">The handler.</param>
-        public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
+        public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs>? handler)
             where TEventArgs : RoutedEventArgs
         {
-            RemoveHandler(routedEvent, (Delegate)handler);
+            if (handler is not null)
+                RemoveHandler(routedEvent, (Delegate)handler);
         }
 
         /// <summary>
