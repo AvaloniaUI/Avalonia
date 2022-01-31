@@ -550,6 +550,8 @@ namespace Avalonia.Controls.Presenters
             {
                 UpdateCaret(trailingEdge ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex));
             }
+
+            _navigationPosition = _caretBounds.Position;
         } 
         
         public void MoveCaretToPoint(Point point)
