@@ -1,7 +1,5 @@
 using Avalonia.LogicalTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Templates
 {
     /// <summary>

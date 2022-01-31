@@ -8,8 +8,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     public abstract class FlyoutBase : AvaloniaObject, IPopupHostProvider

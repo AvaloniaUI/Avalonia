@@ -4,8 +4,6 @@ using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>

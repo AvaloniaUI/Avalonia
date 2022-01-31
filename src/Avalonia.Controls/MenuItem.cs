@@ -14,8 +14,6 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

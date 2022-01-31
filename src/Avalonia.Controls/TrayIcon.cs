@@ -8,8 +8,6 @@ using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public sealed class TrayIcons : AvaloniaList<TrayIcon>

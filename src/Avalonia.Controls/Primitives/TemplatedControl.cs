@@ -6,8 +6,6 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>

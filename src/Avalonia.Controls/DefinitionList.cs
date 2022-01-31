@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public abstract class DefinitionList<T> : AvaloniaList<T> where T : DefinitionBase

@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;

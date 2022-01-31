@@ -7,8 +7,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>

@@ -14,8 +14,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

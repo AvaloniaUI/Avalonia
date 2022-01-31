@@ -9,8 +9,6 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Platform
 {
     /// <summary>

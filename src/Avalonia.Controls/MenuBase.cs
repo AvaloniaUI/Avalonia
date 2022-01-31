@@ -8,8 +8,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

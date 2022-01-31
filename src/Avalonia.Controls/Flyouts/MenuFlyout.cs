@@ -4,8 +4,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public class MenuFlyout : FlyoutBase

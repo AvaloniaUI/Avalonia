@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Controls.Templates
+﻿namespace Avalonia.Controls.Templates
 {
     /// <summary>
     /// An <see cref="IDataTemplate"/> that supports recycling existing elements.

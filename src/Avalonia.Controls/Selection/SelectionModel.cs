@@ -6,8 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     public class SelectionModel<T> : SelectionNodeBase<T>, ISelectionModel

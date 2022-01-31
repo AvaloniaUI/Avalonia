@@ -14,8 +14,6 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>

@@ -8,8 +8,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public class MaskedTextBox : TextBox, IStyleable

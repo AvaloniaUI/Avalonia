@@ -5,8 +5,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Utils;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     public abstract class SelectionNodeBase<T> : ICollectionChangedListener

@@ -13,7 +13,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
-#nullable enable
 
 namespace Avalonia
 {

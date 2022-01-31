@@ -6,8 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     internal class InternalSelectionModel : SelectionModel<object?>
