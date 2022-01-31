@@ -32,7 +32,7 @@ namespace Avalonia.Controls
     /// A button control.
     /// </summary>
     [PseudoClasses(":pressed")]
-    public class Button : ContentControl, ICommandSource
+    public class Button : ContentControl, ICommandSource, IClickableControl
     {
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
@@ -566,5 +566,7 @@ namespace Avalonia.Controls
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
+
+        void IClickableControl.RaiseClick() => OnClick();
     }
 }
