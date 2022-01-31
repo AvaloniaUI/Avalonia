@@ -182,6 +182,14 @@ namespace Avalonia.Controls
                 true);
 
         /// <summary>
+        /// Defines the <see cref="IsScrollChainingEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsScrollChainingEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(IsScrollChainingEnabled),
+                defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -419,6 +427,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        ///  Gets or sets if scroll chaining is enabled. The default value is true.
+        /// </summary>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public bool IsScrollChainingEnabled
+        {
+            get => GetValue(IsScrollChainingEnabledProperty);
+            set => SetValue(IsScrollChainingEnabledProperty, value);
+        }
+
+        /// <summary>
         /// Scrolls the content up one line.
         /// </summary>
         public void LineUp()
@@ -546,6 +568,36 @@ namespace Avalonia.Controls
         public static bool GetAllowAutoHide(Control control)
         {
             return control.GetValue(AllowAutoHideProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the IsScrollChainingEnabled attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public static void SetIsScrollChainingEnabled(Control control, bool value)
+        {
+            control.SetValue(IsScrollChainingEnabledProperty, value);
+        }
+
+        /// <summary>
+        ///  Gets the value of the IsScrollChainingEnabled attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public static bool GetIsScrollChainingEnabled(Control control)
+        {
+            return control.GetValue(IsScrollChainingEnabledProperty);
         }
 
         /// <summary>
