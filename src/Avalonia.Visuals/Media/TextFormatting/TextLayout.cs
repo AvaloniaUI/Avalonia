@@ -10,7 +10,7 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public class TextLayout
     {
-        private static readonly char[] s_empty = { '\u200B' };
+        private static readonly char[] s_empty = { ' ' };
 
         private readonly ReadOnlySlice<char> _text;
         private readonly TextParagraphProperties _paragraphProperties;
@@ -378,14 +378,14 @@ namespace Avalonia.Media.TextFormatting
         }
 
         
-        public int GetLineIndexFromCharacterIndex(int charIndex)
+        public int GetLineIndexFromCharacterIndex(int charIndex, bool trailingEdge)
         {
             if (charIndex < 0)
             {
-                return -1;
+                return 0;
             }
 
-            if (charIndex > _text.Length - 1)
+            if (charIndex > _text.Length)
             {
                 return TextLines.Count - 1;
             }
@@ -399,7 +399,7 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.Start + textLine.TextRange.Length)
+                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.End + (trailingEdge ? 1 : 0))
                 {
                     return index;
                 }
@@ -430,7 +430,13 @@ namespace Avalonia.Media.TextFormatting
             {
                 textPosition -= textLine.NewLineLength;
             }
-            
+
+            if (textLine.NewLineLength > 0 && textPosition + textLine.NewLineLength ==
+                characterHit.FirstCharacterIndex + characterHit.TrailingLength)
+            {
+                characterHit = new CharacterHit(characterHit.FirstCharacterIndex);
+            }
+
             return new TextHitTestResult(characterHit, textPosition, isInside, isTrailing);
         }
 

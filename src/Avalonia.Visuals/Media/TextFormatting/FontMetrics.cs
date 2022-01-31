@@ -30,6 +30,9 @@
             StrikethroughPosition = glyphTypeface.StrikethroughPosition * scale;
         }
 
+        /// <summary>
+        /// Em size of font used to format and display text
+        /// </summary>
         public double FontRenderingEmSize { get; }
 
         /// <summary>

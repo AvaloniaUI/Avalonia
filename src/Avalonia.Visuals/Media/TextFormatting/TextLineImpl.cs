@@ -557,7 +557,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var characterIndex = codepointIndex - run.Text.Start;
 
-                if (characterIndex < 0 && characterHit.TrailingLength == 0)
+                if (characterIndex < 0 && run.ShapedBuffer.IsLeftToRight)
                 {
                     foundCharacterHit = new CharacterHit(foundCharacterHit.FirstCharacterIndex);
                 }

@@ -907,14 +907,14 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_TextPresenter",
                     [!!TextPresenter.TextProperty] = new Binding
                     {
-                        Path = "Text",
+                        Path = nameof(TextPresenter.Text),
                         Mode = BindingMode.TwoWay,
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
                     [!!TextPresenter.CaretIndexProperty] = new Binding
                     {
-                        Path = "CaretIndex",
+                        Path = nameof(TextPresenter.CaretIndex),
                         Mode = BindingMode.TwoWay,
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),

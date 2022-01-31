@@ -385,9 +385,8 @@ namespace Avalonia.Controls.Presenters
             }
 
             var (p1, p2) = GetCaretPoints();
-            context.DrawLine(
-                new ImmutablePen(caretBrush, 1),
-                p1, p2);
+
+            context.DrawLine(new ImmutablePen(caretBrush), p1, p2);
         }
         
         private (Point, Point) GetCaretPoints()
@@ -396,13 +395,7 @@ namespace Avalonia.Controls.Presenters
             var y = Math.Floor(_caretBounds.Y) + 0.5;
             var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
 
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(_caretIndex);
-
-            var textLine = TextLayout.TextLines[lineIndex];
-
-            var posX = textLine.Start + x;
-            
-            if (posX >= Bounds.Width)
+            if (x >= Bounds.Width)
             {
                 x = Math.Floor(_caretBounds.X - 1) + 0.5;
             }
@@ -444,8 +437,6 @@ namespace Avalonia.Controls.Presenters
 
                 if (IsMeasureValid)
                 {
-                    //var rect = TextLayout.HitTestTextPosition(caretIndex);
-                    //_caretPosition = rect;
                     this.BringIntoView(_caretBounds);
                 }
                 else
@@ -456,7 +447,6 @@ namespace Avalonia.Controls.Presenters
                     Dispatcher.UIThread.Post(
                         () =>
                         {
-                            //var rect = TextLayout.HitTestTextPosition(caretIndex);
                             this.BringIntoView(_caretBounds);
                         },
                         DispatcherPriority.Render);
@@ -540,7 +530,7 @@ namespace Avalonia.Controls.Presenters
 
         public void MoveCaretToTextPosition(int textPosition, bool trailingEdge = false)
         {
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition);
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, trailingEdge);
             var textLine = TextLayout.TextLines[lineIndex];
 
             var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(textPosition));
@@ -573,16 +563,14 @@ namespace Avalonia.Controls.Presenters
 
         public void MoveCaretVertical(LogicalDirection direction = LogicalDirection.Forward)
         {
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(CaretIndex);
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(CaretIndex, _lastCharacterHit.TrailingLength > 0);
 
             if (lineIndex < 0)
             {
                 return;
             }
 
-            var currentX = _navigationPosition.X;
-
-            var currentY = _navigationPosition.Y;
+            var (currentX, currentY) = _navigationPosition;
 
             if (direction == LogicalDirection.Forward)
             {
@@ -607,9 +595,11 @@ namespace Avalonia.Controls.Presenters
                 currentY -= textLine.Height;
             }
 
+            var navigationPosition = _navigationPosition;
+            
             MoveCaretToPoint(new Point(currentX, currentY));
             
-            _navigationPosition = _navigationPosition.WithY(_caretBounds.Y);
+            _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
         }
 
         public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
@@ -617,7 +607,7 @@ namespace Avalonia.Controls.Presenters
             var characterHit = _lastCharacterHit;
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
             
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex);
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
 
             if (lineIndex < 0)
             {
@@ -634,11 +624,23 @@ namespace Avalonia.Controls.Presenters
 
                     caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                    if (caretIndex - textLine.TrailingWhitespaceLength == textLine.TextRange.End)
+                    if (textLine.NewLineLength > 0 && caretIndex == textLine.TextRange.Start + textLine.TextRange.Length)
+                    {
+                        characterHit = new CharacterHit(caretIndex);
+                    }
+                    
+                    if (caretIndex >= Text.Length)
+                    {
+                        characterHit = new CharacterHit(Text.Length);
+                        
+                        break;
+                    }
+
+                    if (caretIndex - textLine.NewLineLength == textLine.TextRange.Start + textLine.TextRange.Length)
                     {
                         break;
                     }
-                    
+
                     if (caretIndex <= CaretIndex)
                     {
                         lineIndex++;
@@ -681,7 +683,7 @@ namespace Avalonia.Controls.Presenters
             
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
             
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex);
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, characterHit.TrailingLength > 0);
             var textLine = TextLayout.TextLines[lineIndex];
             var distanceX = textLine.GetDistanceFromCharacterHit(characterHit);
 

@@ -69,13 +69,11 @@ namespace Avalonia.Media.TextFormatting
             TextRunProperties defaultProperties, sbyte biDiLevel, ref TextRunProperties? previousProperties)
         {
             var defaultTypeface = defaultProperties.Typeface;
-
             var currentTypeface = defaultTypeface;
+            var previousTypeface = previousProperties?.Typeface;
 
             if (TryGetShapeableLength(text, currentTypeface, out var count, out var script))
             {
-                var previousTypeface = previousProperties?.Typeface;
-                
                 if (script == Script.Common && previousTypeface is not null)
                 {
                     if(TryGetShapeableLength(text, previousTypeface.Value, out var fallbackCount, out _))
@@ -89,6 +87,16 @@ namespace Avalonia.Media.TextFormatting
                 return new ShapeableTextCharacters(text.Take(count),
                     new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
                         defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+            }
+            
+            if (previousTypeface is not null)
+            {
+                if(TryGetShapeableLength(text, previousTypeface.Value, out count, out _))
+                {
+                    return new ShapeableTextCharacters(text.Take(count),
+                        new GenericTextRunProperties(previousTypeface.Value, defaultProperties.FontRenderingEmSize,
+                            defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                }
             }
 
             var codepoint = Codepoint.ReplacementCodepoint;
@@ -176,7 +184,7 @@ namespace Avalonia.Media.TextFormatting
                 if (currentScript != script)
                 {
                     if (script is Script.Unknown || currentScript != Script.Common &&
-                        (script is Script.Common || script is Script.Inherited))
+                        script is Script.Common or Script.Inherited)
                     {
                         script = currentScript;
                     }

@@ -22,25 +22,13 @@ namespace Avalonia.Utilities
     /// <summary>
     /// Extension methods for binary searching an IReadOnlyList collection
     /// </summary>
-    public static class BinarySearchExtension
+    internal static class BinarySearchExtension
     {
         private static int GetMedian(int low, int hi)
         {
             System.Diagnostics.Debug.Assert(low <= hi);
             System.Diagnostics.Debug.Assert(hi - low >= 0, "Length overflow!");
             return low + (hi - low >> 1);
-        }
-
-        /// <summary>
-        /// Performs a binary search on the entire contents of an IReadOnlyList
-        /// </summary>
-        /// <typeparam name="T">The list element type</typeparam>
-        /// <param name="list">The list to be searched</param>
-        /// <param name="value">The value to search for</param>
-        /// <returns>The index of the found item; otherwise the bitwise complement of the index of the next larger item</returns>
-        public static int BinarySearch<T>(this IReadOnlyList<T> list, T value) where T : IComparable
-        {
-            return list.BinarySearch(value, Comparer<T>.Default);
         }
 
         /// <summary>
@@ -60,7 +48,6 @@ namespace Avalonia.Utilities
         /// Performs a binary search on a a subset of an IReadOnlyList
         /// </summary>
         /// <typeparam name="T">The list element type</typeparam>
-        /// <typeparam name="U">The value type being searched for</typeparam>
         /// <param name="list">The list to be searched</param>
         /// <param name="index">The start of the range to be searched</param>
         /// <param name="length">The length of the range to be searched</param>

@@ -829,6 +829,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
             }
         }
+        
+        [Fact]
+        public void Should_Layout_Empty_String()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    string.Empty,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black);
+                
+                Assert.True(layout.Size.Height > 0);
+            }
+        }
 
         private static IDisposable Start()
         {

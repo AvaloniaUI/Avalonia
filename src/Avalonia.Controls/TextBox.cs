@@ -307,7 +307,7 @@ namespace Avalonia.Controls
                 
                 if (SelectionStart == SelectionEnd)
                 {
-                    CaretIndex = SelectionEnd;
+                    CaretIndex = SelectionStart;
                 }
             }
         }
@@ -327,11 +327,6 @@ namespace Avalonia.Controls
                 if (changed)
                 {
                     UpdateCommandStates();
-                }
-                
-                if (SelectionStart == SelectionEnd)
-                {
-                    CaretIndex = SelectionEnd;
                 }
             }
         }
@@ -760,6 +755,11 @@ namespace Avalonia.Controls
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            if (_presenter == null)
+            {
+                return;
+            }
+            
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
             var movement = false;
@@ -905,25 +905,45 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Up:
-                        _presenter?.MoveCaretVertical(LogicalDirection.Backward);
-                        if (caretIndex != CaretIndex)
+                    {
+                        selection = DetectSelection();
+                        
+                        _presenter.MoveCaretVertical(LogicalDirection.Backward);
+                        
+                        if (caretIndex != _presenter.CaretIndex)
                         {
                             movement = true;
                         }
-                        selection = DetectSelection();
-                        break;
 
+                        if (selection)
+                        {
+                            SelectionEnd = _presenter.CaretIndex;
+                        }
+                        
+                        break;
+                    }
                     case Key.Down:
-                        _presenter?.MoveCaretVertical(LogicalDirection.Forward);
-                        if (caretIndex != CaretIndex)
+                    {
+                        selection = DetectSelection();
+                        
+                        _presenter?.MoveCaretVertical();
+                        
+                        if (caretIndex != _presenter.CaretIndex)
                         {
                             movement = true;
                         }
-                        selection = DetectSelection();
+  
+                        if (selection)
+                        {
+                            SelectionEnd = _presenter.CaretIndex;
+                        }
+                        
                         break;
-
+                    }
                     case Key.Back:
+                    {
                         SnapshotUndoRedo();
+                        
                         if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
                             SetSelectionForControlBackspace();
@@ -952,15 +972,18 @@ namespace Avalonia.Controls
 
                             SetTextInternal(text.Substring(0, length) +
                                             text.Substring(caretIndex));
+                            
                             CaretIndex = caretIndex - removedCharacters;
+                            
                             ClearSelection();
                         }
 
                         handled = true;
                         break;
-
+                    }
                     case Key.Delete:
                         SnapshotUndoRedo();
+                        
                         if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
                             SetSelectionForControlDelete();
@@ -968,16 +991,16 @@ namespace Avalonia.Controls
 
                         if (!DeleteSelection() && caretIndex < text.Length)
                         {
-                           _presenter.MoveCaretHorizontal();
+                            _presenter.MoveCaretHorizontal();
 
-                           var removedCharacters = Math.Max(0, _presenter.CaretIndex - caretIndex);
+                            var removedCharacters = Math.Max(0, _presenter.CaretIndex - caretIndex);
 
-                           SetTextInternal(text.Substring(0, caretIndex) +
-                                           text.Substring(caretIndex + removedCharacters));
-                           
-                           CaretIndex = caretIndex;
+                            SetTextInternal(text.Substring(0, caretIndex) +
+                                            text.Substring(caretIndex + removedCharacters));
+
+                            CaretIndex = caretIndex;
                         }
-                        
+
                         SnapshotUndoRedo();
 
                         handled = true;
@@ -1017,11 +1040,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (movement && selection)
-            {
-                SelectionEnd = CaretIndex;
-            }
-            else if (movement)
+            if (movement && !selection)
             {
                 ClearSelection();
             }
@@ -1034,23 +1053,29 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
+            if (_presenter == null)
+            {
+                return;
+            }
+            
             var text = Text;
-
             var clickInfo = e.GetCurrentPoint(this);
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
+
+            if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
+                !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
 
                 var oldIndex = CaretIndex;
-                
+
                 _presenter.MoveCaretToPoint(point);
-                
+
                 var index = _presenter.CaretIndex;
 
                 var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, index);
-                
+
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -1065,6 +1090,7 @@ namespace Avalonia.Controls
                         {
                             SelectionStart = SelectionEnd = index;
                         }
+
                         break;
                     case 2:
                         if (!StringUtils.IsStartOfWord(text, index))
@@ -1086,8 +1112,13 @@ namespace Avalonia.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            if (_presenter == null)
+            {
+                return;
+            }
+            
             // selection should not change during pointer move if the user right clicks
-            if (_presenter != null && e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1095,7 +1126,7 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
-                _presenter?.MoveCaretToPoint(point);
+                _presenter.MoveCaretToPoint(point);
 
                 SelectionEnd = _presenter.CaretIndex;
             }
@@ -1103,27 +1134,37 @@ namespace Avalonia.Controls
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (_presenter != null && e.Pointer.Captured == _presenter)
+            if (_presenter == null)
             {
-                if (e.InitialPressMouseButton == MouseButton.Right)
-                {
-                    var point = e.GetPosition(_presenter);
-                    _presenter?.MoveCaretToPoint(point);
-                    var caretIndex = _presenter.CaretIndex;
-
-                    // see if mouse clicked inside current selection
-                    // if it did not, we change the selection to where the user clicked
-                    var firstSelection = Math.Min(SelectionStart, SelectionEnd);
-                    var lastSelection = Math.Max(SelectionStart, SelectionEnd);
-                    var didClickInSelection = SelectionStart != SelectionEnd &&
-                        caretIndex >= firstSelection && caretIndex <= lastSelection;
-                    if (!didClickInSelection)
-                    {
-                        CaretIndex = SelectionEnd = SelectionStart = caretIndex;
-                    }
-                }
-                e.Pointer.Capture(null);
+                return;
             }
+
+            if (e.Pointer.Captured != _presenter)
+            {
+                return;
+            }
+
+            if (e.InitialPressMouseButton == MouseButton.Right)
+            {
+                var point = e.GetPosition(_presenter);
+                    
+                _presenter.MoveCaretToPoint(point);
+                    
+                var caretIndex = _presenter.CaretIndex;
+
+                // see if mouse clicked inside current selection
+                // if it did not, we change the selection to where the user clicked
+                var firstSelection = Math.Min(SelectionStart, SelectionEnd);
+                var lastSelection = Math.Max(SelectionStart, SelectionEnd);
+                var didClickInSelection = SelectionStart != SelectionEnd &&
+                                          caretIndex >= firstSelection && caretIndex <= lastSelection;
+                if (!didClickInSelection)
+                {
+                    CaretIndex = SelectionEnd = SelectionStart = caretIndex;
+                }
+            }
+            
+            e.Pointer.Capture(null);
         }
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
@@ -1170,31 +1211,37 @@ namespace Avalonia.Controls
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
         {
             var text = Text ?? string.Empty;
-            var caretIndex = CaretIndex;
+            var selectionStart = SelectionStart;
 
             if (!wholeWord)
             {
-                if (SelectionStart != SelectionEnd && !isSelecting)
+                if (_presenter == null)
                 {
-                    var start = Math.Min(SelectionStart, SelectionEnd);
-                    var end = Math.Max(SelectionStart, SelectionEnd);
-                    CaretIndex = direction < 0 ? start : end;
                     return;
                 }
-
+                
                 _presenter.MoveCaretHorizontal(direction > 0 ? LogicalDirection.Forward : LogicalDirection.Backward);
+
+                if (isSelecting)
+                {
+                    SelectionEnd = _presenter.CaretIndex;
+                }
+                else
+                {
+                    SelectionStart = SelectionEnd = _presenter.CaretIndex;
+                }
             }
             else
             {
                 if (direction > 0)
                 {
-                    var offset = StringUtils.NextWord(text, caretIndex) - caretIndex;
+                    var offset = StringUtils.NextWord(text, selectionStart) - selectionStart;
                     
                     CaretIndex += offset;
                 }
                 else
                 {
-                    var offset = StringUtils.PreviousWord(text, caretIndex) - caretIndex;
+                    var offset = StringUtils.PreviousWord(text, selectionStart) - selectionStart;
                     
                     CaretIndex += offset;
                 }
@@ -1277,7 +1324,7 @@ namespace Avalonia.Controls
                 caretIndex = pos;
             }
 
-            CaretIndex = text.Length;
+            CaretIndex = caretIndex;
         }
 
         /// <summary>
