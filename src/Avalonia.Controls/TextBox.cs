@@ -540,6 +540,11 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
             
             _imClient.SetPresenter(_presenter, this);
             
@@ -554,8 +559,6 @@ namespace Avalonia.Controls
             base.OnDetachedFromVisualTree(e);
             
             _imClient.SetPresenter(null, null);
-
-            _presenter = null;
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
