@@ -136,6 +136,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
@@ -304,6 +306,7 @@ namespace Avalonia.Controls.UnitTests
 
                 textBox.SelectionStart = 2;
                 textBox.SelectionEnd = 2;
+                
                 Assert.Equal(2, textBox.CaretIndex);
             }
         }

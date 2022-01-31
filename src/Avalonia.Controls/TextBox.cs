@@ -305,7 +305,7 @@ namespace Avalonia.Controls
                     UpdateCommandStates();
                 }
                 
-                if (SelectionStart == SelectionEnd)
+                if (value == SelectionEnd)
                 {
                     CaretIndex = SelectionStart;
                 }
@@ -327,6 +327,11 @@ namespace Avalonia.Controls
                 if (changed)
                 {
                     UpdateCommandStates();
+                }
+
+                if (value == SelectionStart)
+                {
+                    CaretIndex = value;
                 }
             }
         }
