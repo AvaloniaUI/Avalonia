@@ -821,7 +821,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 410;
                     target.LayoutManager.ExecuteLayoutPass();
 
-                    var windowImpl = Mock.Get(target.PlatformImpl);
+                    var windowImpl = Mock.Get(ValidatingWindowImpl.Unwrap(target.PlatformImpl));
                     windowImpl.Verify(x => x.Resize(new Size(410, 800), PlatformResizeReason.Application));
                     Assert.Equal(410, target.Width);
                 }

@@ -10,6 +10,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
     public interface IClassicDesktopStyleApplicationLifetime : IControlledApplicationLifetime
     {
         /// <summary>
+        /// Tries to Shutdown the application. <see cref="ShutdownRequested" /> event can be used to cancel the shutdown.
+        /// </summary>
+        /// <param name="exitCode">An integer exit code for an application. The default exit code is 0.</param>
+        bool TryShutdown(int exitCode = 0);
+
+        /// <summary>
         /// Gets the arguments passed to the
         /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime{T}(T, string[], ShutdownMode)"/>
         /// method.

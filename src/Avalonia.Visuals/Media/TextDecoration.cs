@@ -154,11 +154,12 @@ namespace Avalonia.Media
         /// Draws the <see cref="TextDecoration"/> at given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
-        /// <param name="shapedTextCharacters">The shaped characters that are decorated.</param>
-        internal void Draw(DrawingContext drawingContext, ShapedTextCharacters shapedTextCharacters)
+        /// <param name="glyphRun">The decorated run.</param>
+        /// <param name="fontMetrics">The font metrics of the decorated run.</param>
+        /// <param name="defaultBrush">The default brush that is used to draw the decoration.</param>
+        internal void Draw(DrawingContext drawingContext, GlyphRun glyphRun, FontMetrics fontMetrics, IBrush defaultBrush)
         {
-            var fontRenderingEmSize = shapedTextCharacters.Properties.FontRenderingEmSize;
-            var fontMetrics = shapedTextCharacters.FontMetrics;
+            var baselineOrigin = glyphRun.BaselineOrigin;
             var thickness = StrokeThickness;
 
             switch (StrokeThicknessUnit)
@@ -176,7 +177,7 @@ namespace Avalonia.Media
 
                     break;
                 case TextDecorationUnit.FontRenderingEmSize:
-                    thickness = fontRenderingEmSize * thickness;
+                    thickness = fontMetrics.FontRenderingEmSize * thickness;
                     break;
             }
 
@@ -185,32 +186,30 @@ namespace Avalonia.Media
             switch (Location)
             {
                 case TextDecorationLocation.Baseline:
-                    origin += shapedTextCharacters.GlyphRun.BaselineOrigin;
+                    origin += glyphRun.BaselineOrigin;
                     break;
                 case TextDecorationLocation.Strikethrough:
-                    origin += new Point(shapedTextCharacters.GlyphRun.BaselineOrigin.X,
-                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y + fontMetrics.StrikethroughPosition);
+                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + fontMetrics.StrikethroughPosition);
                     break;
                 case TextDecorationLocation.Underline:
-                    origin += new Point(shapedTextCharacters.GlyphRun.BaselineOrigin.X,
-                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y + fontMetrics.UnderlinePosition);
+                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + fontMetrics.UnderlinePosition);
                     break;
             }
 
             switch (StrokeOffsetUnit)
             {
                 case TextDecorationUnit.FontRenderingEmSize:
-                    origin += new Point(0, StrokeOffset * fontRenderingEmSize);
+                    origin += new Point(0, StrokeOffset * fontMetrics.FontRenderingEmSize);
                     break;
                 case TextDecorationUnit.Pixel:
                     origin += new Point(0, StrokeOffset);
                     break;
             }
 
-            var pen = new Pen(Stroke ?? shapedTextCharacters.Properties.ForegroundBrush, thickness,
+            var pen = new Pen(Stroke ?? defaultBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
 
-            drawingContext.DrawLine(pen, origin, origin + new Point(shapedTextCharacters.Size.Width, 0));
+            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Size.Width, 0));
         }
     }
 }

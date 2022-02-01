@@ -41,7 +41,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     unsafe
                     {
-                        fixed (char* charsPtr = _textRun.Text.Buffer.Span)
+                        fixed (char* charsPtr = _textRun.Text.Span)
                         {
                             return new string(charsPtr, 0, _textRun.Text.Length);
                         }

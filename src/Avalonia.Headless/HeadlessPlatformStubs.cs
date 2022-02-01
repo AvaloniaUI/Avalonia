@@ -133,14 +133,10 @@ namespace Avalonia.Headless
 
     class HeadlessTextShaperStub : ITextShaperImpl
     {
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
+            CultureInfo culture, sbyte bidiLevel)
         {
-            return new GlyphRun(new GlyphTypeface(typeface), 10,
-                new ReadOnlySlice<ushort>(new ushort[] { 1, 2, 3 }),
-                new ReadOnlySlice<double>(new double[] { 1, 2, 3 }),
-                new ReadOnlySlice<Vector>(new Vector[] { new Vector(1, 1), new Vector(2, 2), new Vector(3, 3) }),
-                text,
-                new ReadOnlySlice<ushort>(new ushort[] { 1, 2, 3 }));
+            return new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
         }
     }
 

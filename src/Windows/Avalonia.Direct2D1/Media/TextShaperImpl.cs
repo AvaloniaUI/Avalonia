@@ -1,31 +1,42 @@
 ﻿using System;
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
+using GlyphInfo = HarfBuzzSharp.GlyphInfo;
 
 namespace Avalonia.Direct2D1.Media
 {
-    internal class TextShaperImpl : ITextShaperImpl
+
+internal class TextShaperImpl : ITextShaperImpl
     {
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
+            CultureInfo culture, sbyte bidiLevel)
         {
             using (var buffer = new Buffer())
             {
-                FillBuffer(buffer, text);
+                buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
-
+                MergeBreakPair(buffer);
+                
                 buffer.GuessSegmentProperties();
 
-                var glyphTypeface = typeface.GlyphTypeface;
+                buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
-                var font = ((GlyphTypefaceImpl)glyphTypeface.PlatformImpl).Font;
+                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
+
+                var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
 
                 font.Shape(buffer);
+
+                if (buffer.Direction == Direction.RightToLeft)
+                {
+                    buffer.Reverse();
+                }
 
                 font.GetScale(out var scaleX, out _);
 
@@ -33,113 +44,99 @@ namespace Avalonia.Direct2D1.Media
 
                 var bufferLength = buffer.Length;
 
+                var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
+
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
                 var glyphPositions = buffer.GetGlyphPositionSpan();
 
-                var glyphIndices = new ushort[bufferLength];
-
-                var clusters = new ushort[bufferLength];
-
-                double[] glyphAdvances = null;
-
-                Vector[] glyphOffsets = null;
-
                 for (var i = 0; i < bufferLength; i++)
                 {
-                    glyphIndices[i] = (ushort)glyphInfos[i].Codepoint;
+                    var sourceInfo = glyphInfos[i];
 
-                    clusters[i] = (ushort)glyphInfos[i].Cluster;
+                    var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                    if (!glyphTypeface.IsFixedPitch)
-                    {
-                        SetAdvance(glyphPositions, i, textScale, ref glyphAdvances);
-                    }
+                    var glyphCluster = (int)sourceInfo.Cluster;
 
-                    SetOffset(glyphPositions, i, textScale, ref glyphOffsets);
+                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
+
+                    var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
+
+                    var targetInfo =
+                        new Avalonia.Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance,
+                            glyphOffset);
+
+                    shapedBuffer[i] = targetInfo;
                 }
 
-                return new GlyphRun(glyphTypeface, fontRenderingEmSize,
-                    new ReadOnlySlice<ushort>(glyphIndices),
-                    new ReadOnlySlice<double>(glyphAdvances),
-                    new ReadOnlySlice<Vector>(glyphOffsets),
-                    text,
-                    new ReadOnlySlice<ushort>(clusters));
+                return shapedBuffer;
             }
         }
 
-        private static void FillBuffer(Buffer buffer, ReadOnlySlice<char> text)
+        private static void MergeBreakPair(Buffer buffer)
         {
-            buffer.ContentType = ContentType.Unicode;
+            var length = buffer.Length;
 
-            var i = 0;
+            var glyphInfos = buffer.GetGlyphInfoSpan();
+            
+            var second = glyphInfos[length - 1];
 
-            while (i < text.Length)
-            {
-                var codepoint = Codepoint.ReadAt(text, i, out var count);
-
-                var cluster = (uint)(text.Start + i);
-
-                if (codepoint.IsBreakChar)
-                {
-                    if (i + 1 < text.Length)
-                    {
-                        var nextCodepoint = Codepoint.ReadAt(text, i + 1, out _);
-
-                        if (nextCodepoint == '\r' && codepoint == '\n' || nextCodepoint == '\n' && codepoint == '\r')
-                        {
-                            count++;
-
-                            buffer.Add('\u200C', cluster);
-
-                            buffer.Add('\u200D', cluster);
-                        }
-                        else
-                        {
-                            buffer.Add('\u200C', cluster);
-                        }
-                    }
-                    else
-                    {
-                        buffer.Add('\u200C', cluster);
-                    }
-                }
-                else
-                {
-                    buffer.Add(codepoint, cluster);
-                }
-
-                i += count;
-            }
-        }
-
-        private static void SetOffset(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale,
-            ref Vector[] offsetBuffer)
-        {
-            var position = glyphPositions[index];
-
-            if (position.XOffset == 0 && position.YOffset == 0)
+            if (!new Codepoint((int)second.Codepoint).IsBreakChar)
             {
                 return;
             }
 
-            offsetBuffer ??= new Vector[glyphPositions.Length];
+            if (length > 1 && glyphInfos[length - 2].Codepoint == '\r' && second.Codepoint == '\n')
+            {
+                var first = glyphInfos[length - 2];
+                
+                first.Codepoint = '\u200C';
+                second.Codepoint = '\u200C';
+                second.Cluster = first.Cluster;
+
+                unsafe
+                {
+                    fixed (GlyphInfo* p = &glyphInfos[length - 2])
+                    {
+                        *p = first;
+                    }
+                
+                    fixed (GlyphInfo* p = &glyphInfos[length - 1])
+                    {
+                        *p = second;
+                    }
+                }
+            }
+            else
+            {
+                second.Codepoint = '\u200C';
+
+                unsafe
+                {
+                    fixed (GlyphInfo* p = &glyphInfos[length - 1])
+                    {
+                        *p = second;
+                    }
+                }
+            }
+        }
+
+        private static Vector GetGlyphOffset(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale)
+        {
+            var position = glyphPositions[index];
 
             var offsetX = position.XOffset * textScale;
 
             var offsetY = position.YOffset * textScale;
 
-            offsetBuffer[index] = new Vector(offsetX, offsetY);
+            return new Vector(offsetX, offsetY);
         }
 
-        private static void SetAdvance(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale,
-            ref double[] advanceBuffer)
+        private static double GetGlyphAdvance(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale)
         {
-            advanceBuffer ??= new double[glyphPositions.Length];
-
             // Depends on direction of layout
             // advanceBuffer[index] = buffer.GlyphPositions[index].YAdvance * textScale;
-            advanceBuffer[index] = glyphPositions[index].XAdvance * textScale;
+            return glyphPositions[index].XAdvance * textScale;
         }
     }
 }

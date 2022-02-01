@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Utilities
 {
-    public struct ImmutableReadOnlyListStructEnumerator<T> : IEnumerator, IEnumerator<T>
+    public struct ImmutableReadOnlyListStructEnumerator<T> : IEnumerator<T>
     {
         private readonly IReadOnlyList<T> _readOnlyList;
         private int _pos;

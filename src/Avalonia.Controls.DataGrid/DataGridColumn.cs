@@ -448,7 +448,7 @@ namespace Avalonia.Controls
             internal set;
         }
 
-        public bool IsReadOnly
+        public virtual bool IsReadOnly
         {
             get
             {
@@ -680,7 +680,7 @@ namespace Avalonia.Controls
         public void ClearSort()
         {
             //InvokeProcessSort is already validating if sorting is possible
-            _headerCell?.InvokeProcessSort(Input.KeyModifiers.Control);
+            _headerCell?.InvokeProcessSort(KeyboardHelper.GetPlatformCtrlOrCmdKeyModifier());
         }
 
         /// <summary>

@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Primitives
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
         public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver dependencyResolver)
-            : base(impl, dependencyResolver)
+            : base(ValidatingPopupImpl.Wrap(impl), dependencyResolver)
         {
             _parent = parent;
         }
@@ -74,7 +74,11 @@ namespace Avalonia.Controls.Primitives
         IStyleHost IStyleHost.StylingParent => Parent;
 
         /// <inheritdoc/>
-        public void Dispose() => PlatformImpl?.Dispose();
+        public void Dispose()
+        {
+            PlatformImpl?.Dispose();
+            HandleClosed();
+        }
 
         private void UpdatePosition()
         {
