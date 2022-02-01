@@ -46,8 +46,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
-        public static readonly DirectProperty<ComboBox, object> SelectionBoxItemProperty =
-            AvaloniaProperty.RegisterDirect<ComboBox, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
+        public static readonly DirectProperty<ComboBox, object?> SelectionBoxItemProperty =
+            AvaloniaProperty.RegisterDirect<ComboBox, object?>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
         /// <summary>
         /// Defines the <see cref="VirtualizationMode"/> property.
@@ -58,14 +58,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<string> PlaceholderTextProperty =
-            AvaloniaProperty.Register<ComboBox, string>(nameof(PlaceholderText));
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            AvaloniaProperty.Register<ComboBox, string?>(nameof(PlaceholderText));
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> PlaceholderForegroundProperty =
-            AvaloniaProperty.Register<ComboBox, IBrush>(nameof(PlaceholderForeground));
+        public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
+            AvaloniaProperty.Register<ComboBox, IBrush?>(nameof(PlaceholderForeground));
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -80,8 +80,8 @@ namespace Avalonia.Controls
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
         private bool _isDropDownOpen;
-        private Popup _popup;
-        private object _selectionBoxItem;
+        private Popup? _popup;
+        private object? _selectionBoxItem;
         private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the item to display as the control's content.
         /// </summary>
-        protected object SelectionBoxItem
+        protected object? SelectionBoxItem
         {
             get { return _selectionBoxItem; }
             set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
@@ -126,7 +126,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the PlaceHolder text.
         /// </summary>
-        public string PlaceholderText
+        public string? PlaceholderText
         {
             get { return GetValue(PlaceholderTextProperty); }
             set { SetValue(PlaceholderTextProperty, value); }
@@ -135,7 +135,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the Brush that renders the placeholder text.
         /// </summary>
-        public IBrush PlaceholderForeground
+        public IBrush? PlaceholderForeground
         {
             get { return GetValue(PlaceholderForegroundProperty); }
             set { SetValue(PlaceholderForegroundProperty, value); }
@@ -262,9 +262,9 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (!e.Handled)
+            if (!e.Handled && e.Source is IVisual source)
             {
-                if (_popup?.IsInsidePopup((IVisual)e.Source) == true)
+                if (_popup?.IsInsidePopup(source) == true)
                 {
                     if (UpdateSelectionFromEventSource(e.Source))
                     {
@@ -304,7 +304,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void PopupClosed(object sender, EventArgs e)
+        private void PopupClosed(object? sender, EventArgs e)
         {
             _subscriptionsOnOpen.Clear();
 
@@ -314,7 +314,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void PopupOpened(object sender, EventArgs e)
+        private void PopupOpened(object? sender, EventArgs e)
         {
             TryFocusSelectedItem();
 
@@ -326,7 +326,7 @@ namespace Avalonia.Controls
                 toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
                 {
                     //eat wheel scroll event outside dropdown popup while it's open
-                    if (IsDropDownOpen && (ev.Source as IVisual).GetVisualRoot() == toplevel)
+                    if (IsDropDownOpen && (ev.Source as IVisual)?.GetVisualRoot() == toplevel)
                     {
                         ev.Handled = true;
                     }
@@ -360,12 +360,12 @@ namespace Avalonia.Controls
             var selectedIndex = SelectedIndex;
             if (IsDropDownOpen && selectedIndex != -1)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                var container = ItemContainerGenerator!.ContainerFromIndex(selectedIndex);
 
                 if (container == null && SelectedIndex != -1)
                 {
                     ScrollIntoView(Selection.SelectedIndex);
-                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                    container = ItemContainerGenerator!.ContainerFromIndex(selectedIndex);
                 }
 
                 if (container != null && CanFocus(container))
@@ -377,7 +377,7 @@ namespace Avalonia.Controls
 
         private bool CanFocus(IControl control) => control.Focusable && control.IsEffectivelyEnabled && control.IsVisible;
 
-        private void UpdateSelectionBoxItem(object item)
+        private void UpdateSelectionBoxItem(object? item)
         {
             var contentControl = item as IContentControl;
 
@@ -415,7 +415,7 @@ namespace Avalonia.Controls
 
         private void SelectFocusedItem()
         {
-            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
+            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator!.Containers)
             {
                 if (dropdownItem.ContainerControl.IsFocused)
                 {

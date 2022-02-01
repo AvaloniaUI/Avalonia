@@ -4,8 +4,6 @@ using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -142,12 +140,12 @@ namespace Avalonia.Controls.Primitives
             clip.Rect = clipBounds;
         }
 
-        private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (Visual i in e.NewItems)
+                    foreach (Visual i in e.NewItems!)
                     {
                         UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
                     }

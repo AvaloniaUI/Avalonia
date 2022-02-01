@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextPresenter>();
 
         private readonly DispatcherTimer _caretTimer;
@@ -78,14 +78,14 @@ namespace Avalonia.Controls.Presenters
         private int _selectionEnd;
         private bool _caretBlink;
         private string _text;
-        private TextLayout _textLayout;
+        private TextLayout? _textLayout;
         private Size _constraint = Size.Infinity;
 
         private CharacterHit _lastCharacterHit;
         private Rect _caretBounds;
         private Point _navigationPosition;
 
-        private ScrollViewer _scrollViewer;
+        private ScrollViewer? _scrollViewer;
 
         static TextPresenter()
         {
@@ -99,12 +99,12 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Tick += CaretTimerTick;
         }
 
-        public event EventHandler CaretBoundsChanged;
+        public event EventHandler? CaretBoundsChanged;
         
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get => GetValue(BackgroundProperty);
             set => SetValue(BackgroundProperty, value);
@@ -159,7 +159,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
-        public IBrush Foreground
+        public IBrush? Foreground
         {
             get => TextBlock.GetForeground(this);
             set => TextBlock.SetForeground(this, value);
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout
+        public TextLayout? TextLayout
         {
             get
             {
@@ -284,13 +284,20 @@ namespace Avalonia.Controls.Presenters
         /// <param name="typeface"></param>
         /// <param name="textStyleOverrides"></param>
         /// <returns>A <see cref="TextLayout"/> object.</returns>
-        private TextLayout CreateTextLayoutInternal(Size constraint, string text, Typeface typeface,
-            IReadOnlyList<ValueSpan<TextRunProperties>> textStyleOverrides)
+        private TextLayout? CreateTextLayoutInternal(Size constraint, string text, Typeface typeface,
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides)
         {
+            var foreground = Foreground;
+
+            if (foreground == null)
+            {
+                return null;
+            }
+
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
             
-            var textLayout = new TextLayout(text ?? string.Empty, typeface, FontSize, Foreground, TextAlignment,
+            var textLayout = new TextLayout(text ?? string.Empty, typeface, FontSize, foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides, 
                 flowDirection: FlowDirection);
 
@@ -308,6 +315,11 @@ namespace Avalonia.Controls.Presenters
             if (background != null)
             {
                 context.FillRectangle(background, new Rect(Bounds.Size));
+            }
+
+            if (TextLayout == null)
+            {
+                return;
             }
 
             var top = 0d;
@@ -344,7 +356,7 @@ namespace Avalonia.Controls.Presenters
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
-            if (selectionStart != selectionEnd)
+            if (selectionStart != selectionEnd && TextLayout != null)
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
@@ -458,9 +470,9 @@ namespace Avalonia.Controls.Presenters
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
         /// <returns>A <see cref="TextLayout"/> object.</returns>
-        protected virtual TextLayout CreateTextLayout()
+        protected virtual TextLayout? CreateTextLayout()
         {
-            TextLayout result;
+            TextLayout? result;
 
             var text = Text;
 
@@ -471,7 +483,7 @@ namespace Avalonia.Controls.Presenters
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
-            IReadOnlyList<ValueSpan<TextRunProperties>> textStyleOverrides = null;
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
             
             if (length > 0)
             {
@@ -512,7 +524,7 @@ namespace Avalonia.Controls.Presenters
                 InvalidateTextLayout();
             }
 
-            return TextLayout.Size;
+            return TextLayout?.Size ?? default;
         }
 
         private int CoerceCaretIndex(int value)
@@ -522,7 +534,7 @@ namespace Avalonia.Controls.Presenters
             return Math.Max(0, Math.Min(length, value));
         }
 
-        private void CaretTimerTick(object sender, EventArgs e)
+        private void CaretTimerTick(object? sender, EventArgs e)
         {
             _caretBlink = !_caretBlink;
             InvalidateVisual();
@@ -530,6 +542,11 @@ namespace Avalonia.Controls.Presenters
 
         public void MoveCaretToTextPosition(int textPosition, bool trailingEdge = false)
         {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, trailingEdge);
             var textLine = TextLayout.TextLines[lineIndex];
 
@@ -556,6 +573,11 @@ namespace Avalonia.Controls.Presenters
         
         public void MoveCaretToPoint(Point point)
         {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
             var hit = TextLayout.HitTestPoint(point);
 
             UpdateCaret(hit.CharacterHit);
@@ -565,6 +587,11 @@ namespace Avalonia.Controls.Presenters
 
         public void MoveCaretVertical(LogicalDirection direction = LogicalDirection.Forward)
         {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(CaretIndex, _lastCharacterHit.TrailingLength > 0);
 
             if (lineIndex < 0)
@@ -606,6 +633,11 @@ namespace Avalonia.Controls.Presenters
 
         public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
         {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
             var characterHit = _lastCharacterHit;
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
             
@@ -681,6 +713,11 @@ namespace Avalonia.Controls.Presenters
 
         private void UpdateCaret(CharacterHit characterHit)
         {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
             _lastCharacterHit = characterHit;
             
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;

@@ -11,8 +11,6 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -129,7 +127,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>
-        public event EventHandler<ContextRequestedEventArgs> ContextRequested
+        public event EventHandler<ContextRequestedEventArgs>? ContextRequested
         {
             add => AddHandler(ContextRequestedEvent, value);
             remove => RemoveHandler(ContextRequestedEvent, value);

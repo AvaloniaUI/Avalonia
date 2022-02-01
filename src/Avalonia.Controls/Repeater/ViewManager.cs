@@ -22,10 +22,10 @@ namespace Avalonia.Controls
         private readonly ItemsRepeater _owner;
         private readonly List<PinnedElementInfo> _pinnedPool = new List<PinnedElementInfo>();
         private readonly UniqueIdElementPool _resetPool;
-        private IControl _lastFocusedElement;
+        private IControl? _lastFocusedElement;
         private bool _isDataSourceStableResetPending;
-        private ElementFactoryGetArgs _elementFactoryGetArgs;
-        private ElementFactoryRecycleArgs _elementFactoryRecycleArgs;
+        private ElementFactoryGetArgs? _elementFactoryGetArgs;
+        private ElementFactoryRecycleArgs? _elementFactoryRecycleArgs;
         private int _firstRealizedElementIndexHeldByLayout = FirstRealizedElementIndexDefault;
         private int _lastRealizedElementIndexHeldByLayout = LastRealizedElementIndexDefault;
         private bool _eventsSubscribed;
@@ -170,7 +170,7 @@ namespace Avalonia.Controls
                 _lastFocusedElement = focusedChild;
 
                 // Add pin to hold the focused element.
-                UpdatePin(focusedChild, true /* addPin */);
+                UpdatePin(focusedChild!, true /* addPin */);
             }
             else
             {
@@ -179,14 +179,14 @@ namespace Avalonia.Controls
             }
         }
 
-        IControl FindFocusCandidate(int clearedIndex, out IControl focusedChild)
+        IControl? FindFocusCandidate(int clearedIndex, out IControl? focusedChild)
         {
             // Walk through all the children and find elements with index before and after the cleared index.
             // Note that during a delete the next element would now have the same index.
             int previousIndex = int.MinValue;
             int nextIndex = int.MaxValue;
-            IControl nextElement = null;
-            IControl previousElement = null;
+            IControl? nextElement = null;
+            IControl? previousElement = null;
 
             foreach (var child in _owner.Children)
             {
@@ -287,7 +287,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public void OnItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs args)
+        public void OnItemsSourceChanged(object? sender, NotifyCollectionChangedEventArgs args)
         {
             // Note: For items that have been removed, the index will not be touched. It will hold
             // the old index before it was removed. It is not valid anymore.
@@ -296,7 +296,7 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Add:
                     {
                         var newIndex = args.NewStartingIndex;
-                        var newCount = args.NewItems.Count;
+                        var newCount = args.NewItems!.Count;
                         EnsureFirstLastRealizedIndices();
                         if (newIndex <= _lastRealizedElementIndexHeldByLayout)
                         {
@@ -343,8 +343,8 @@ namespace Avalonia.Controls
                         //         depending on the counts.
                         var oldStartIndex = args.OldStartingIndex;
                         var newStartingIndex = args.NewStartingIndex;
-                        var oldCount = args.OldItems.Count;
-                        var newCount = args.NewItems.Count;
+                        var oldCount = args.OldItems!.Count;
+                        var newCount = args.NewItems!.Count;
                         if (oldStartIndex != newStartingIndex)
                         {
                             throw new NotSupportedException("Replace is only allowed with OldStartingIndex equals to NewStartingIndex.");
@@ -388,7 +388,7 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Remove:
                     {
                         var oldStartIndex = args.OldStartingIndex;
-                        var oldCount = args.OldItems.Count;
+                        var oldCount = args.OldItems!.Count;
                         foreach (var element in _owner.Children)
                         {
                             var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
@@ -417,7 +417,7 @@ namespace Avalonia.Controls
                     // running layout, we dont have to clear all the elements again.
                     if (!_isDataSourceStableResetPending)
                     {
-                        if (_owner.ItemsSourceView.HasKeyIndexMapping)
+                        if (_owner.ItemsSourceView!.HasKeyIndexMapping)
                         {
                             _isDataSourceStableResetPending = true;
                         }
@@ -482,9 +482,9 @@ namespace Avalonia.Controls
         // If an index that is realized is requested by the layout, we unfortunately have to walk the
         // children. Not ideal, but a reasonable default to provide consistent behavior between virtualizing
         // and non-virtualizing hosts.
-        private IControl GetElementIfAlreadyHeldByLayout(int index)
+        private IControl? GetElementIfAlreadyHeldByLayout(int index)
         {
-            IControl element = null;
+            IControl? element = null;
 
             bool cachedFirstLastIndicesInvalid = _firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault;
             bool isRequestedIndexInRealizedRange = (_firstRealizedElementIndexHeldByLayout <= index && index <= _lastRealizedElementIndexHeldByLayout);
@@ -518,9 +518,9 @@ namespace Avalonia.Controls
             return element;
         }
 
-        private IControl GetElementFromUniqueIdResetPool(int index)
+        private IControl? GetElementFromUniqueIdResetPool(int index)
         {
-            IControl element = null;
+            IControl? element = null;
             // See if you can get it from the reset pool.
             if (_isDataSourceStableResetPending)
             {
@@ -541,9 +541,9 @@ namespace Avalonia.Controls
             return element;
         }
 
-        private IControl GetElementFromPinnedElements(int index)
+        private IControl? GetElementFromPinnedElements(int index)
         {
-            IControl element = null;
+            IControl? element = null;
 
             // See if you can find something among the pinned elements.
             for (var i = 0; i < _pinnedPool.Count; ++i)
@@ -583,7 +583,7 @@ namespace Avalonia.Controls
         private IControl GetElementFromElementFactory(int index)
         {
             // The view generator is the provider of last resort.
-            var data = _owner.ItemsSourceView.GetAt(index);
+            var data = _owner.ItemsSourceView!.GetAt(index);
             var providedElementFactory = _owner.ItemTemplateShim;
 
             IElementFactory GetElementFactory()
@@ -592,7 +592,7 @@ namespace Avalonia.Controls
                 {
                     var factory = FuncDataTemplate.Default;
                     _owner.ItemTemplate = factory;
-                    return _owner.ItemTemplateShim;
+                    return _owner.ItemTemplateShim!;
                 }
 
                 return providedElementFactory;
@@ -697,9 +697,9 @@ namespace Avalonia.Controls
 
         private void UpdateFocusedElement()
         {
-            IControl focusedElement = null;
+            IControl? focusedElement = null;
 
-            var child = FocusManager.Instance.Current;
+            var child = FocusManager.Instance?.Current;
 
             if (child != null)
             {
@@ -713,7 +713,9 @@ namespace Avalonia.Controls
                     if (parent is ItemsRepeater repeater)
                     {
                         var element = child as IControl;
-                        if (repeater == owner && ItemsRepeater.GetVirtualizationInfo(element).IsRealized)
+                        if (repeater == owner &&
+                            element is not null &&
+                            ItemsRepeater.GetVirtualizationInfo(element).IsRealized)
                         {
                             focusedElement = element;
                         }
@@ -722,7 +724,7 @@ namespace Avalonia.Controls
                     }
 
                     child = parent as IInputElement;
-                    parent = child.VisualParent;
+                    parent = child?.VisualParent;
                 }
             }
 
@@ -744,7 +746,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnFocusChanged(object sender, RoutedEventArgs e) => UpdateFocusedElement();
+        private void OnFocusChanged(object? sender, RoutedEventArgs e) => UpdateFocusedElement();
 
         private void EnsureEventSubscriptions()
         {

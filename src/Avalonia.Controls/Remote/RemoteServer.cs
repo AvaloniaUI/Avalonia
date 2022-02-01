@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Remote
             //TODO: Somehow react on closed connection?
         }
 
-        public object Content
+        public object? Content
         {
             get => _topLevel.Content;
             set => _topLevel.Content = value;

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Controls.Diagnostics
+﻿namespace Avalonia.Controls.Diagnostics
 {
     /// <summary>
     /// Helper class to provide diagnostics information for <see cref="ToolTip"/>.
