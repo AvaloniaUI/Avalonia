@@ -223,31 +223,47 @@ namespace Avalonia.Media.TextFormatting
                 for (var index = 0; index < textLine.TextRuns.Count; index++)
                 {
                     var currentRun = (ShapedTextCharacters)textLine.TextRuns[index];
+                    ShapedTextCharacters? nextRun = null;
 
                     if (index + 1 < textLine.TextRuns.Count)
                     {
-                        if (currentRun.ShapedBuffer.IsLeftToRight)
+                        nextRun = (ShapedTextCharacters)textLine.TextRuns[index + 1];
+                    }
+
+                    if (nextRun != null)
+                    {
+                        if (nextRun.Text.Start < currentRun.Text.Start && start + length < currentRun.Text.End)
                         {
-                            if (currentRun.Text.End < start)
-                            {
-                                startX += currentRun.Size.Width;
-
-                                currentPosition = currentRun.Text.End;
-
-                                continue;
-                            }
+                            goto skip;
                         }
-                        else
+
+                        if (currentRun.Text.Start >= start + length)
                         {
-                            if (currentRun.Text.Start < start || currentRun.Text.End >= start + length)
-                            {
-                                startX += currentRun.Size.Width;
-
-                                currentPosition = currentRun.Text.Start;
-
-                                continue;
-                            }
+                            goto skip;
                         }
+
+                        if (currentRun.Text.Start > nextRun.Text.Start && currentRun.Text.Start < start)
+                        {
+                            goto skip;
+                        }
+
+                        if (currentRun.Text.End < start)
+                        {
+                            goto skip;
+                        }
+                        
+                        goto noop;
+                        
+                        skip:
+                        {
+                            startX += currentRun.Size.Width;
+
+                            currentPosition = currentRun.Text.Start;
+                        }
+                        
+                        continue;
+                        
+                        noop:{ }
                     }
 
                     var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(
@@ -270,10 +286,8 @@ namespace Avalonia.Media.TextFormatting
                     
                     currentPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                    if(index + 1 < textLine.TextRuns.Count)
+                    if(nextRun != null)
                     {
-                        var nextRun = (ShapedTextCharacters)textLine.TextRuns[index + 1];
-
                         if (currentRun.ShapedBuffer.IsLeftToRight == nextRun.ShapedBuffer.IsLeftToRight)
                         {
                             endOffset = nextRun.GlyphRun.GetDistanceFromCharacterHit(
@@ -296,7 +310,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     }
 
-                    if (endX < startX)
+u                    if (endX < startX)
                     {
                         (endX, startX) = (startX, endX);
                     }
@@ -307,11 +321,22 @@ namespace Avalonia.Media.TextFormatting
 
                     if (currentRun.ShapedBuffer.IsLeftToRight)
                     {
-                        if (currentPosition >= start + length)
+                        if (nextRun != null)
                         {
-                            break;
+                            if (nextRun.Text.Start > currentRun.Text.Start)
+                            {
+                                break;
+                            }
+                          
+                            currentPosition = nextRun.Text.End;
                         }
-                        
+                        else
+                        {
+                            if (currentPosition >= start + length)
+                            {
+                                break;
+                            }
+                        }
                     }
                     else
                     {
