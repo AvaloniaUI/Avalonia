@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 
 namespace Avalonia
 {

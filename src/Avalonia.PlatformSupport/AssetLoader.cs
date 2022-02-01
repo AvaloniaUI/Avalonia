@@ -6,9 +6,7 @@ using System.Reflection;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
-#nullable enable
-
-namespace Avalonia.Shared.PlatformSupport
+namespace Avalonia.PlatformSupport
 {
     /// <summary>
     /// Loads assets compiled into the application binary.
@@ -233,14 +231,15 @@ namespace Avalonia.Shared.PlatformSupport
                 else
                 {
                     // iOS does not support loading assemblies dynamically!
-                    //
-#if __IOS__
-                    throw new InvalidOperationException(
-                        $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
-#else
+#if NET6_0_OR_GREATER
+                    if (OperatingSystem.IsIOS())
+                    {
+                        throw new InvalidOperationException(
+                            $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
+                    }
+#endif
                     name = Uri.UnescapeDataString(name);
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
-#endif
                 }
             }
 

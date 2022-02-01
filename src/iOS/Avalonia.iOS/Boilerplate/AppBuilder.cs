@@ -1,6 +1,5 @@
 using Avalonia.Controls;
-using Avalonia.iOS;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 
 namespace Avalonia
 {

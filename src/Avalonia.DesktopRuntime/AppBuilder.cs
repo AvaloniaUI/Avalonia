@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 
 namespace Avalonia
 {

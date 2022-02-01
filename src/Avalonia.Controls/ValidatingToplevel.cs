@@ -184,7 +184,7 @@ internal class ValidatingWindowBaseImpl : ValidatingToplevelImpl, IWindowBaseImp
     public Action? Activated
     {
         get => Inner.Activated;
-        set => Inner.Deactivated = value;
+        set => Inner.Activated = value;
     }
 
     public IPlatformHandle Handle => Inner.Handle;
@@ -211,6 +211,13 @@ internal class ValidatingWindowImpl : ValidatingWindowBaseImpl, IWindowImpl
         }
     }
     
+    public static IWindowImpl Unwrap(IWindowImpl impl)
+    {
+        if (impl is ValidatingWindowImpl v)
+            return v.Inner;
+        return impl;
+    }
+
     public static IWindowImpl Wrap(IWindowImpl impl)
     {
 #if DEBUG

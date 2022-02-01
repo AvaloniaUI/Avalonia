@@ -10,7 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 
 namespace Avalonia.UnitTests
 {
