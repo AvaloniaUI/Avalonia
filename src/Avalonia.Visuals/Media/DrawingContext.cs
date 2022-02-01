@@ -226,17 +226,13 @@ namespace Avalonia.Media
         /// <summary>
         /// Draws text.
         /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(FormattedText text, Point origin)
         {
             _ = text ?? throw new ArgumentNullException(nameof(text));
-
-            if (foreground != null)
-            {
-                PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
-            }
+         
+           text.Draw(this, origin);            
         }
 
         /// <summary>

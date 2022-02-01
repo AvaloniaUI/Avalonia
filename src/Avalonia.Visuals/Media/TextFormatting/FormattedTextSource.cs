@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
-namespace Avalonia.Skia.UnitTests.Media.TextFormatting
+namespace Avalonia.Media.TextFormatting
 {
     internal readonly struct FormattedTextSource : ITextSource
     {
         private readonly ReadOnlySlice<char> _text;
         private readonly TextRunProperties _defaultProperties;
-        private readonly IReadOnlyList<ValueSpan<TextRunProperties>> _textModifier;
+        private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 
         public FormattedTextSource(ReadOnlySlice<char> text, TextRunProperties defaultProperties,
-            IReadOnlyList<ValueSpan<TextRunProperties>> textModifier)
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
             _text = text;
             _defaultProperties = defaultProperties;
             _textModifier = textModifier;
         }
 
-        public TextRun GetTextRun(int textSourceIndex)
+        public TextRun? GetTextRun(int textSourceIndex)
         {
-            if (textSourceIndex > _text.End)
+            if (textSourceIndex > _text.Length)
             {
                 return null;
             }
@@ -48,7 +48,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         /// The created text style run.
         /// </returns>
         private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySlice<char> text,
-            TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>> textModifier)
+            TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
             if (textModifier == null || textModifier.Count == 0)
             {
@@ -69,7 +69,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textRange = new TextRange(propertiesOverride.Start, propertiesOverride.Length);
 
-                if (textRange.End < text.Start)
+                if (textRange.Start + textRange.Length < text.Start)
                 {
                     continue;
                 }
@@ -90,7 +90,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     }
                 }
 
-                length += Math.Min(text.Length - length, textRange.Length);
+                length += Math.Max(0, textRange.Start + textRange.Length - text.Start);
 
                 if (hasOverride)
                 {
@@ -108,6 +108,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     length = text.Length;
                 }
+            }
+
+            if (length == 0 && currentProperties != defaultProperties)
+            {
+                currentProperties = defaultProperties;
+                length = text.Length;
             }
 
             if (length != text.Length)
