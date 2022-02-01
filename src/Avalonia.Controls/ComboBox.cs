@@ -89,7 +89,7 @@ namespace Avalonia.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
-            SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x,e) => x.SelectedItemChanged(e));
+            SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.SelectedItemChanged(e));
             KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
         }
@@ -208,12 +208,12 @@ namespace Avalonia.Controls
             }
             else if (!IsDropDownOpen)
             {
-                if (e.Key == Key.Down && WrapSelection == true)
+                if (e.Key == Key.Down)
                 {
                     SelectNext();
                     e.Handled = true;
                 }
-                else if (e.Key == Key.Up && WrapSelection == true)
+                else if (e.Key == Key.Up)
                 {
                     SelectPrev();
                     e.Handled = true;
@@ -428,7 +428,18 @@ namespace Avalonia.Controls
             int next = SelectedIndex + 1;
 
             if (next >= ItemCount)
-                next = 0;
+            {
+                if (WrapSelection == true)
+                {
+                    next = 0;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+
 
             SelectedIndex = next;
         }
@@ -438,7 +449,16 @@ namespace Avalonia.Controls
             int prev = SelectedIndex - 1;
 
             if (prev < 0)
-                prev = ItemCount - 1;
+            {
+                if (WrapSelection == true)
+                {
+                    prev = ItemCount - 1;
+                }
+                else
+                {
+                    return;
+                }
+            }
 
             SelectedIndex = prev;
         }
