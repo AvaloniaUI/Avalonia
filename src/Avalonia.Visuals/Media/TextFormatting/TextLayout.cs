@@ -310,7 +310,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     }
 
-u                    if (endX < startX)
+                    if (endX < startX)
                     {
                         (endX, startX) = (startX, endX);
                     }
