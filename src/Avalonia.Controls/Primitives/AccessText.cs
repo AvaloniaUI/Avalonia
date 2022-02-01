@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -111,6 +112,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="text">The text.</param>
         /// <returns>The text with the first underscore stripped.</returns>
+        [return: NotNullIfNotNull("text")]
         private string? StripAccessKey(string? text)
         {
             if (text is null)
