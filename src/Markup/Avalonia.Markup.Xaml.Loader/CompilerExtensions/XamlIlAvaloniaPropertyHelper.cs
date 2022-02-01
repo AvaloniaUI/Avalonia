@@ -189,7 +189,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             CustomAttributes = original.CustomAttributes;
             if (!original.CustomAttributes.Any(ca => ca.Type.Equals(types.AssignBindingAttribute)))
                 Setters.Insert(0, new BindingSetter(types, original.DeclaringType, field));
-            
+
+            if (field.FieldType.GenericTypeDefinition == types.StyledPropertyT)
+            {
+                var propertyType = field.FieldType.GenericArguments[0];
+                Setters.Insert(1, new SetValueWithPrioritySetter(types, original.DeclaringType, field, propertyType));
+            }
+
             Setters.Insert(0, new UnsetValueSetter(types, original.DeclaringType, field));
         }
 
@@ -237,6 +243,39 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         // TODO: provide anchor?
                         .Ldnull();
                 emitter.EmitCall(Types.AvaloniaObjectBindMethod, true);
+            }
+        }
+
+        class SetValueWithPrioritySetter : AvaloniaPropertyCustomSetter
+        {
+            public SetValueWithPrioritySetter(AvaloniaXamlIlWellKnownTypes types, IXamlType declaringType, IXamlField avaloniaProperty,
+                IXamlType propertyType)
+                : base(types, declaringType, avaloniaProperty)
+            {
+                Parameters = new[] { types.BindingPriority, propertyType };
+            }
+
+            public override void Emit(IXamlILEmitter emitter)
+            {
+                var method = Types.AvaloniaObject
+                    .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
+                                     && m.Parameters.Count == 3
+                                     && m.Parameters[0].Name == "StyledPropertyBase`1"
+                                     && m.Parameters[2].Equals(Types.BindingPriority));
+
+                if (method == null)
+                    throw new XamlTypeSystemException(
+                        $"Unable to find AvaloniaObject.SetValue<T>(StyledPropertyBase<T>, T, BindingPriority).");
+
+                method = method.MakeGenericMethod(new[] { Parameters[1] });
+
+                using (var bloc = emitter.LocalsPool.GetLocal(Parameters[1]))
+                    emitter
+                        .Stloc(bloc.Local)
+                        .Ldsfld(AvaloniaProperty)
+                        .Ldloc(bloc.Local)
+                        .Ldc_I4(0)
+                        .EmitCall(method, true);
             }
         }
 
