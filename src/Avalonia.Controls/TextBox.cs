@@ -937,7 +937,7 @@ namespace Avalonia.Controls
                     {
                         selection = DetectSelection();
                         
-                        _presenter?.MoveCaretVertical();
+                        _presenter.MoveCaretVertical();
                         
                         if (caretIndex != _presenter.CaretIndex)
                         {
@@ -1273,7 +1273,7 @@ namespace Avalonia.Controls
             {
                 caretIndex = 0;
             }
-            else
+            else if (_presenter.TextLayout is not null)
             {
                 var lines = _presenter.TextLayout.TextLines;
                 var pos = 0;
@@ -1308,7 +1308,7 @@ namespace Avalonia.Controls
             {
                 caretIndex = text.Length;
             }
-            else
+            else if (_presenter.TextLayout is not null)
             {
                 var lines = _presenter.TextLayout.TextLines;
                 var pos = 0;
