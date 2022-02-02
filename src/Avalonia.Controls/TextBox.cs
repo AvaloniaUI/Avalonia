@@ -540,6 +540,11 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
+            
+            if (IsFocused)
+            {
+                _presenter?.ShowCaret();
+            }
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
