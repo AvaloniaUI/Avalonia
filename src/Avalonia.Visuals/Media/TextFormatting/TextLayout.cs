@@ -317,13 +317,22 @@ namespace Avalonia.Media.TextFormatting
 
                     var width = endX - startX;
 
-                    result.Add(new Rect(startX, currentY, width, textLine.Height));
+                    if (result.Count > 0 && MathUtilities.AreClose(result[result.Count - 1].Right, startX))
+                    {
+                        var rect = result[result.Count - 1];
 
+                        result[result.Count - 1] = rect.WithWidth(rect.Width + width);
+                    }
+                    else
+                    {
+                        result.Add(new Rect(startX, currentY, width, textLine.Height));
+                    }
+                    
                     if (currentRun.ShapedBuffer.IsLeftToRight)
                     {
                         if (nextRun != null)
                         {
-                            if (nextRun.Text.Start > currentRun.Text.Start)
+                            if (nextRun.Text.Start > currentRun.Text.Start && nextRun.Text.Start >= start + length)
                             {
                                 break;
                             }
