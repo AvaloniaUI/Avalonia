@@ -8,17 +8,22 @@ namespace Avalonia.Win32
 {
     class DragSource : IPlatformDragSource
     {
-        public Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent,
+        public unsafe Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent,
             IDataObject data, DragDropEffects allowedEffects)
         {
             Dispatcher.UIThread.VerifyAccess();
-            triggerEvent.Pointer.Capture(null);
-            OleDragSource src = new OleDragSource();
-            DataObject dataObject = new DataObject(data);
-            int allowed = (int)OleDropTarget.ConvertDropEffect(allowedEffects);
 
-            UnmanagedMethods.DoDragDrop(dataObject, src, allowed, out var finalEffect);
-            return Task.FromResult(OleDropTarget.ConvertDropEffect((DropEffect)finalEffect));
+            triggerEvent.Pointer.Capture(null);
+            
+            var dataObject = new DataObject(data);
+            var src = new OleDragSource();
+            var allowed = OleDropTarget.ConvertDropEffect(allowedEffects);
+            
+            var objPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject, true);
+            var srcPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src, true);
+
+            UnmanagedMethods.DoDragDrop(objPtr, srcPtr, allowed, out var finalEffect);
+            return Task.FromResult(OleDropTarget.ConvertDropEffect(finalEffect));
         }
     }
 }
