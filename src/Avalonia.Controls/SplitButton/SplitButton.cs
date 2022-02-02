@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<SplitButton, ICommand> CommandProperty =
+        public static readonly DirectProperty<SplitButton, ICommand?> CommandProperty =
             Button.CommandProperty.AddOwner<SplitButton>(
                 splitButton => splitButton.Command,
                 (splitButton, command) => splitButton.Command = command);
@@ -43,25 +43,25 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> CommandParameterProperty =
+        public static readonly StyledProperty<object?> CommandParameterProperty =
             Button.CommandParameterProperty.AddOwner<SplitButton>();
 
         /// <summary>
         /// Defines the <see cref="Flyout"/> property
         /// </summary>
-        public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
+        public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
             Button.FlyoutProperty.AddOwner<SplitButton>();
 
-        private ICommand _Command;
+        private ICommand? _Command;
 
-        private Button _primaryButton   = null;
-        private Button _secondaryButton = null;
+        private Button? _primaryButton   = null;
+        private Button? _secondaryButton = null;
 
         private bool _commandCanExecute       = true;
         private bool _isAttachedToLogicalTree = false;
         private bool _isFlyoutOpen            = false;
 
-        private IDisposable _flyoutPropertyChangedDisposable;
+        private IDisposable? _flyoutPropertyChangedDisposable;
 
         ////////////////////////////////////////////////////////////////////////
         // Constructor / Destructors
@@ -81,7 +81,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the <see cref="ICommand"/> invoked when the primary part is pressed.
         /// </summary>
-        public ICommand Command
+        public ICommand? Command
         {
             get => _Command;
             set => SetAndRaise(CommandProperty, ref _Command, value);
@@ -90,7 +90,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a parameter to be passed to the <see cref="Command"/>.
         /// </summary>
-        public object CommandParameter
+        public object? CommandParameter
         {
             get => GetValue(CommandParameterProperty);
             set => SetValue(CommandParameterProperty, value);
@@ -99,7 +99,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the <see cref="FlyoutBase"/> that is shown when the secondary part is pressed.
         /// </summary>
-        public FlyoutBase Flyout
+        public FlyoutBase? Flyout
         {
             get => GetValue(FlyoutProperty);
             set => SetValue(FlyoutProperty, value);
@@ -126,7 +126,7 @@ namespace Avalonia.Controls
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
         /// <inheritdoc cref="ICommandSource.CanExecuteChanged"/>
-        private void CanExecuteChanged(object sender, EventArgs e)
+        private void CanExecuteChanged(object? sender, EventArgs e)
         {
             var canExecute = Command == null || Command.CanExecute(CommandParameter);
 
@@ -172,7 +172,7 @@ namespace Avalonia.Controls
         /// Registers all flyout events.
         /// </summary>
         /// <param name="flyout">The flyout to connect events to.</param>
-        private void RegisterFlyoutEvents(FlyoutBase flyout)
+        private void RegisterFlyoutEvents(FlyoutBase? flyout)
         {
             if (flyout != null)
             {
@@ -187,7 +187,7 @@ namespace Avalonia.Controls
         /// Explicitly unregisters all flyout events.
         /// </summary>
         /// <param name="flyout">The flyout to disconnect events from.</param>
-        private void UnregisterFlyoutEvents(FlyoutBase flyout)
+        private void UnregisterFlyoutEvents(FlyoutBase? flyout)
         {
             if (flyout != null)
             {
@@ -379,7 +379,7 @@ namespace Avalonia.Controls
         /// Invokes the <see cref="Click"/> event when the primary button part is clicked.
         /// </summary>
         /// <param name="e">The event args from the internal Click event.</param>
-        protected virtual void OnClickPrimary(RoutedEventArgs e)
+        protected virtual void OnClickPrimary(RoutedEventArgs? e)
         {
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
@@ -399,7 +399,7 @@ namespace Avalonia.Controls
         /// Invoked when the secondary button part is clicked.
         /// </summary>
         /// <param name="e">The event args from the internal Click event.</param>
-        protected virtual void OnClickSecondary(RoutedEventArgs e)
+        protected virtual void OnClickSecondary(RoutedEventArgs? e)
         {
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
@@ -415,7 +415,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Event handler for when the internal primary button part is pressed.
         /// </summary>
-        private void PrimaryButton_Click(object sender, RoutedEventArgs e)
+        private void PrimaryButton_Click(object? sender, RoutedEventArgs e)
         {
             OnClickPrimary(e);
         }
@@ -423,7 +423,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Event handler for when the internal secondary button part is pressed.
         /// </summary>
-        private void SecondaryButton_Click(object sender, RoutedEventArgs e)
+        private void SecondaryButton_Click(object? sender, RoutedEventArgs e)
         {
             OnClickSecondary(e);
         }
@@ -439,7 +439,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Event handler for when the split button's flyout is opened.
         /// </summary>
-        private void Flyout_Opened(object sender, EventArgs e)
+        private void Flyout_Opened(object? sender, EventArgs e)
         {
             var flyout = sender as FlyoutBase;
 
@@ -459,7 +459,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Event handler for when the split button's flyout is closed.
         /// </summary>
-        private void Flyout_Closed(object sender, EventArgs e)
+        private void Flyout_Closed(object? sender, EventArgs e)
         {
             var flyout = sender as FlyoutBase;
 

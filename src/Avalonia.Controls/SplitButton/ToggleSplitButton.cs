@@ -115,7 +115,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnClickPrimary(RoutedEventArgs e)
+        protected override void OnClickPrimary(RoutedEventArgs? e)
         {
             Toggle();
 
