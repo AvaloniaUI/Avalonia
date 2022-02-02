@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,10 +13,11 @@ namespace Avalonia.Controls
     /// A button with primary and secondary parts that can each be pressed separately.
     /// The primary part behaves like a <see cref="Button"/> and the secondary part opens a flyout.
     /// </summary>
-    [PseudoClasses(pcFlyoutOpen)]
+    [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public class SplitButton : ContentControl, ICommandSource
     {
         protected const string pcChecked    = ":checked";
+        protected const string pcPressed    = ":pressed";
         protected const string pcFlyoutOpen = ":flyout-open";
 
         /// <summary>
@@ -61,6 +63,7 @@ namespace Avalonia.Controls
         private bool _commandCanExecute       = true;
         private bool _isAttachedToLogicalTree = false;
         private bool _isFlyoutOpen            = false;
+        private bool _isKeyboardPressed       = false;
 
         private IDisposable? _flyoutPropertyChangedDisposable;
 
@@ -144,6 +147,7 @@ namespace Avalonia.Controls
         protected void UpdatePseudoClasses()
         {
             PseudoClasses.Set(pcFlyoutOpen, _isFlyoutOpen);
+            PseudoClasses.Set(pcPressed, _isKeyboardPressed);
             PseudoClasses.Set(pcChecked, InternalIsChecked);
         }
 
@@ -333,6 +337,7 @@ namespace Avalonia.Controls
 
             if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
             {
+                _isKeyboardPressed = true;
                 UpdatePseudoClasses();
             }
 
@@ -346,6 +351,7 @@ namespace Avalonia.Controls
 
             if (key == Key.Space || key == Key.Enter) // Key.GamepadA is not currently supported
             {
+                _isKeyboardPressed = false;
                 UpdatePseudoClasses();
 
                 // Consider this a click on the primary button

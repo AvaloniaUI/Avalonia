@@ -125,6 +125,17 @@
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
 
+  <!-- SplitButton Pressed State -->
+  <Style Selector="SplitButton:pressed /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
+         SplitButton:pressed /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+  <Style Selector="SplitButton:pressed /template/ Button#PART_SecondaryButton PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+  </Style>
+
   <!-- Primary and Secondary buttons Flyout Open State -->
   <Style Selector="SplitButton:flyout-open /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
          SplitButton:flyout-open /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
@@ -177,6 +188,17 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton:pressed PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+
+  <!-- SplitButton Checked Pressed State -->
+  <Style Selector="SplitButton:pressed:checked /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
+         SplitButton:pressed:checked /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+  </Style>
+  <Style Selector="SplitButton:pressed:checked /template/ Button#PART_SecondaryButton PathIcon">
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
