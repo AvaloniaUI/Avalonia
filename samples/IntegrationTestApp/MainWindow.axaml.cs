@@ -10,15 +10,32 @@ namespace IntegrationTestApp
 {
     public class MainWindow : Window
     {
+        private int _repeatButtonClickCount = 0;
+        private bool _repeatButtonClickHandlerAdded = false;
         public MainWindow()
         {
             InitializeComponent();
             InitializeViewMenu();
             this.AttachDevTools();
             AddHandler(Button.ClickEvent, OnButtonClick);
+            var buttons = this.Find<TabItem>("buttons");
+            buttons!.GetObservable(TabItem.IsSelectedProperty).Subscribe(x =>
+            {
+                if (x == true && _repeatButtonClickHandlerAdded == false)
+                {
+                    this.Find<RepeatButton>("RepeatButton")!.Click += (a, e) =>
+                    {
+                        _repeatButtonClickCount++;
+                        var textBlock = this.FindControl<TextBlock>("RepeatButtonTextBlock");
+                        textBlock.Text = $"Repeat Button: {_repeatButtonClickCount}";
+                    };
+                    _repeatButtonClickHandlerAdded = true;
+                }
+            });
             ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
             DataContext = this;
         }
+
 
         public List<string> ListBoxItems { get; }
 

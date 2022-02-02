@@ -34,7 +34,7 @@
         </StackPanel>
       </TabItem>
       
-      <TabItem Header="Button">
+      <TabItem Header="Button" Name="buttons">
         <StackPanel>
           <Button Name="DisabledButton" IsEnabled="False">
             Disabled Button
@@ -46,6 +46,9 @@
             <TextBlock>Button with TextBlock</TextBlock>
           </Button>
           <Button Name="ButtonWithAcceleratorKey" HotKey="Ctrl+B">Button with Accelerator Key</Button>
+          <RepeatButton Name="RepeatButton">
+            <TextBlock Name="RepeatButtonTextBlock" Text="Repeat Button: 0" />
+          </RepeatButton>
         </StackPanel>
       </TabItem>
 

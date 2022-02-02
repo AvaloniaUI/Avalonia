@@ -37,6 +37,16 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [Fact]
+        public void RepeatButton()
+        {
+            var button = _session.FindElementByAccessibilityId("RepeatButton");
+            button.Click();
+            Assert.Equal("Repeat Button: 1", button.Text);
+            button.Click();
+            Assert.Equal("Repeat Button: 2", button.Text);
+        }
+
+        [Fact]
         public void ButtonWithTextBlock()
         {
             var button = _session.FindElementByAccessibilityId("ButtonWithTextBlock");
