@@ -22,8 +22,8 @@ namespace Avalonia.Win32
             var objPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject, true);
             var srcPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src, true);
 
-            UnmanagedMethods.DoDragDrop(objPtr, srcPtr, allowed, out var finalEffect);
-            return Task.FromResult(OleDropTarget.ConvertDropEffect(finalEffect));
+            UnmanagedMethods.DoDragDrop(objPtr, srcPtr, (int)allowed, out var finalEffect);
+            return Task.FromResult(OleDropTarget.ConvertDropEffect((Win32Com.DropEffect)finalEffect));
         }
     }
 }

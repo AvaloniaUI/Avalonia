@@ -16,9 +16,9 @@ namespace Avalonia.Win32
         {
             public ushort Format { get; private set; }
             public string Name { get; private set; }
-            public short[] Synthesized { get; private set; }
+            public ushort[] Synthesized { get; private set; }
 
-            public ClipboardFormat(string name, ushort format, params short[] synthesized)
+            public ClipboardFormat(string name, ushort format, params ushort[] synthesized)
             {
                 Format = format;
                 Name = name;
@@ -28,7 +28,7 @@ namespace Avalonia.Win32
 
         private static readonly List<ClipboardFormat> FormatList = new List<ClipboardFormat>()
         {
-            new ClipboardFormat(DataFormats.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, (short)UnmanagedMethods.ClipboardFormat.CF_TEXT),
+            new ClipboardFormat(DataFormats.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT),
             new ClipboardFormat(DataFormats.FileNames, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP),
         };
 
