@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Linq;
-using Avalonia.Input.TextInput;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
@@ -66,7 +69,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextPresenter>();
 
         private readonly DispatcherTimer _caretTimer;
@@ -75,28 +78,18 @@ namespace Avalonia.Controls.Presenters
         private int _selectionEnd;
         private bool _caretBlink;
         private string _text;
-        private FormattedText _formattedText;
-        private Size _constraint;
+        private TextLayout? _textLayout;
+        private Size _constraint = Size.Infinity;
+
+        private CharacterHit _lastCharacterHit;
+        private Rect _caretBounds;
+        private Point _navigationPosition;
+
+        private ScrollViewer? _scrollViewer;
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(SelectionBrushProperty, TextBlock.ForegroundProperty, 
-                                         SelectionForegroundBrushProperty, CaretBrushProperty,
-                                         SelectionStartProperty, SelectionEndProperty);
-            
-            AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, RevealPasswordProperty, 
-                TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
-                TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
-
-            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
-                TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
-                TextBlock.FontSizeProperty.Changed, TextBlock.FontStyleProperty.Changed, 
-                TextBlock.FontWeightProperty.Changed, TextBlock.FontFamilyProperty.Changed,
-                SelectionStartProperty.Changed, SelectionEndProperty.Changed,
-                SelectionForegroundBrushProperty.Changed, PasswordCharProperty.Changed, RevealPasswordProperty.Changed
-            ).AddClassHandler<TextPresenter>((x, _) => x.InvalidateFormattedText());
-
-            CaretIndexProperty.Changed.AddClassHandler<TextPresenter>((x, e) => x.CaretIndexChanged((int)e.NewValue));
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty);
         }
 
         public TextPresenter()
@@ -106,10 +99,12 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Tick += CaretTimerTick;
         }
 
+        public event EventHandler? CaretBoundsChanged;
+        
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get => GetValue(BackgroundProperty);
             set => SetValue(BackgroundProperty, value);
@@ -164,7 +159,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
-        public IBrush Foreground
+        public IBrush? Foreground
         {
             get => TextBlock.GetForeground(this);
             set => TextBlock.SetForeground(this, value);
@@ -189,13 +184,22 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets the <see cref="FormattedText"/> used to render the text.
+        /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public FormattedText FormattedText
+        public TextLayout? TextLayout
         {
             get
             {
-                return _formattedText ?? (_formattedText = CreateFormattedText());
+                if (_textLayout != null)
+                {
+                    return _textLayout;
+                }
+                
+                _textLayout = CreateTextLayout();
+
+                UpdateCaret(_lastCharacterHit);
+                
+                return _textLayout;
             }
         }
 
@@ -205,11 +209,12 @@ namespace Avalonia.Controls.Presenters
             {
                 return _caretIndex;
             }
-
             set
             {
-                value = CoerceCaretIndex(value);
-                SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
+                if (value != _caretIndex)
+                {
+                    MoveCaretToTextPosition(value);
+                }
             }
         }
 
@@ -271,37 +276,32 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        public int GetCaretIndex(Point point)
-        {
-            var hit = FormattedText.HitTestPoint(point);
-            return hit.TextPosition + (hit.IsTrailing ? 1 : 0);
-        }
-
         /// <summary>
-        /// Creates the <see cref="FormattedText"/> used to render the text.
+        /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
         /// <param name="constraint">The constraint of the text.</param>
         /// <param name="text">The text to format.</param>
-        /// <returns>A <see cref="FormattedText"/> object.</returns>
-        private FormattedText CreateFormattedTextInternal(Size constraint, string text)
+        /// <param name="typeface"></param>
+        /// <param name="textStyleOverrides"></param>
+        /// <returns>A <see cref="TextLayout"/> object.</returns>
+        private TextLayout? CreateTextLayoutInternal(Size constraint, string text, Typeface typeface,
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides)
         {
-            return new FormattedText
-            {
-                Constraint = constraint,
-                Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
-                FontSize = FontSize,
-                Text = text ?? string.Empty,
-                TextAlignment = TextAlignment,
-                TextWrapping = TextWrapping,
-            };
-        }
+            var foreground = Foreground;
 
-        /// <summary>
-        /// Invalidates <see cref="FormattedText"/>.
-        /// </summary>
-        protected void InvalidateFormattedText()
-        {
-            _formattedText = null;
+            if (foreground == null)
+            {
+                return null;
+            }
+
+            var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
+            var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
+            
+            var textLayout = new TextLayout(text ?? string.Empty, typeface, FontSize, foreground, TextAlignment,
+                TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides, 
+                flowDirection: FlowDirection);
+
+            return textLayout;
         }
 
         /// <summary>
@@ -317,41 +317,51 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            double top = 0;
-            var textSize = FormattedText.Bounds.Size;
+            if (TextLayout == null)
+            {
+                return;
+            }
 
-            if (Bounds.Height < textSize.Height)
+            var top = 0d;
+            var left = 0.0;
+
+            var (_, textHeight) = TextLayout.Size;
+
+            if (Bounds.Height < textHeight)
             {
                 switch (VerticalAlignment)
                 {
                     case VerticalAlignment.Center:
-                        top += (Bounds.Height - textSize.Height) / 2;
+                        top += (Bounds.Height - textHeight) / 2;
                         break;
 
                     case VerticalAlignment.Bottom:
-                        top += (Bounds.Height - textSize.Height);
+                        top += (Bounds.Height - textHeight);
                         break;
                 }
             }
 
-            context.DrawText(Foreground, new Point(0, top), FormattedText);
+            TextLayout.Draw(context, new Point(left, top));
         }
 
         public override void Render(DrawingContext context)
         {
-            FormattedText.Constraint = Bounds.Size;
-
-            _constraint = Bounds.Size;
+            if (double.IsPositiveInfinity (_constraint.Width))
+            {
+                _constraint = _scrollViewer?.Viewport ?? Size.Infinity;
+                
+                InvalidateTextLayout();
+            }
 
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
-            if (selectionStart != selectionEnd)
+            if (selectionStart != selectionEnd && TextLayout != null)
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
-                var rects = FormattedText.HitTestTextRange(start, length);
+                var rects = TextLayout.HitTestTextRange(start, length);
 
                 foreach (var rect in rects)
                 {
@@ -361,40 +371,47 @@ namespace Avalonia.Controls.Presenters
 
             RenderInternal(context);
 
-            if (selectionStart == selectionEnd && _caretBlink)
+            if (selectionStart != selectionEnd || !_caretBlink)
             {
-                var caretBrush = CaretBrush?.ToImmutable();
-
-                if (caretBrush is null)
-                {
-                    var backgroundColor = (Background as ISolidColorBrush)?.Color;
-                    if (backgroundColor.HasValue)
-                    {
-                        byte red = (byte)~(backgroundColor.Value.R);
-                        byte green = (byte)~(backgroundColor.Value.G);
-                        byte blue = (byte)~(backgroundColor.Value.B);
-
-                        caretBrush = new ImmutableSolidColorBrush(Color.FromRgb(red, green, blue));
-                    }
-                    else
-                    {
-                        caretBrush = Brushes.Black;
-                    }
-                }
-
-                var (p1, p2) = GetCaretPoints();
-                context.DrawLine(
-                    new ImmutablePen(caretBrush, 1),
-                    p1, p2);
+                return;
             }
-        }
+            
+            var caretBrush = CaretBrush?.ToImmutable();
 
-        (Point, Point) GetCaretPoints()
+            if (caretBrush is null)
+            {
+                var backgroundColor = (Background as ISolidColorBrush)?.Color;
+
+                if (backgroundColor.HasValue)
+                {
+                    var red = (byte)~(backgroundColor.Value.R);
+                    var green = (byte)~(backgroundColor.Value.G);
+                    var blue = (byte)~(backgroundColor.Value.B);
+
+                    caretBrush = new ImmutableSolidColorBrush(Color.FromRgb(red, green, blue));
+                }
+                else
+                {
+                    caretBrush = Brushes.Black;
+                }
+            }
+
+            var (p1, p2) = GetCaretPoints();
+
+            context.DrawLine(new ImmutablePen(caretBrush), p1, p2);
+        }
+        
+        private (Point, Point) GetCaretPoints()
         {
-            var charPos = FormattedText.HitTestTextPosition(CaretIndex);
-            var x = Math.Floor(charPos.X) + 0.5;
-            var y = Math.Floor(charPos.Y) + 0.5;
-            var b = Math.Ceiling(charPos.Bottom) - 0.5;
+            var x = Math.Floor(_caretBounds.X) + 0.5;
+            var y = Math.Floor(_caretBounds.Y) + 0.5;
+            var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
+
+            if (x >= Bounds.Width)
+            {
+                x = Math.Floor(_caretBounds.X - 1) + 0.5;
+            }
+            
             return (new Point(x, y), new Point(x, b));
         }
 
@@ -412,7 +429,7 @@ namespace Avalonia.Controls.Presenters
             InvalidateVisual();
         }
 
-        internal void CaretIndexChanged(int caretIndex)
+        internal void CaretChanged()
         {
             if (this.GetVisualParent() != null)
             {
@@ -432,8 +449,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (IsMeasureValid)
                 {
-                    var rect = FormattedText.HitTestTextPosition(caretIndex);
-                    this.BringIntoView(rect);
+                    this.BringIntoView(_caretBounds);
                 }
                 else
                 {
@@ -443,8 +459,7 @@ namespace Avalonia.Controls.Presenters
                     Dispatcher.UIThread.Post(
                         () =>
                         {
-                            var rect = FormattedText.HitTestTextPosition(caretIndex);
-                            this.BringIntoView(rect);
+                            this.BringIntoView(_caretBounds);
                         },
                         DispatcherPriority.Render);
                 }
@@ -452,85 +467,64 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Creates the <see cref="FormattedText"/> used to render the text.
+        /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected virtual FormattedText CreateFormattedText()
+        /// <returns>A <see cref="TextLayout"/> object.</returns>
+        protected virtual TextLayout? CreateTextLayout()
         {
-            FormattedText result = null;
+            TextLayout? result;
 
             var text = Text;
 
-            if (PasswordChar != default(char) && !RevealPassword)
-            {
-                result = CreateFormattedTextInternal(_constraint, new string(PasswordChar, text?.Length ?? 0));
-            }
-            else
-            {
-                result = CreateFormattedTextInternal(_constraint, text);
-            }
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+            
             if (length > 0)
             {
-                result.Spans = new[]
+                textStyleOverrides = new[]
                 {
-                    new FormattedTextStyleSpan(start, length, SelectionForegroundBrush),
+                    new ValueSpan<TextRunProperties>(start, length,
+                        new GenericTextRunProperties(typeface, FontSize,
+                            foregroundBrush: SelectionForegroundBrush ?? Brushes.White))
                 };
+            }
+
+            if (PasswordChar != default(char) && !RevealPassword)
+            {
+                result = CreateTextLayoutInternal(_constraint, new string(PasswordChar, text?.Length ?? 0), typeface,
+                    textStyleOverrides);
+            }
+            else
+            {
+                result = CreateTextLayoutInternal(_constraint, text, typeface, textStyleOverrides);
             }
 
             return result;
         }
 
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size for the control.</param>
-        /// <returns>The desired size.</returns>
-        private Size MeasureInternal(Size availableSize)
+        protected virtual void InvalidateTextLayout()
         {
-            if (!string.IsNullOrEmpty(Text))
-            {
-                if (TextWrapping == TextWrapping.Wrap)
-                {
-                    _constraint = new Size(availableSize.Width, double.PositiveInfinity);
-                }
-                else
-                {
-                    _constraint = Size.Infinity;
-                }
-
-                _formattedText = null;
-
-                return FormattedText.Bounds.Size;
-            }
-
-            return new Size();
+            _textLayout = null;
+            
+            InvalidateMeasure();
         }
-
+        
         protected override Size MeasureOverride(Size availableSize)
         {
-            var text = Text;
+            if (!double.IsInfinity(availableSize.Width) && availableSize != _constraint)
+            {
+                _constraint = availableSize;
+                
+                InvalidateTextLayout();
+            }
 
-            if (!string.IsNullOrEmpty(text))
-            {
-                return MeasureInternal(availableSize);
-            }
-            else
-            {
-                return new FormattedText
-                {
-                    Text = "X",
-                    Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
-                    FontSize = FontSize,
-                    TextAlignment = TextAlignment,
-                    Constraint = availableSize,
-                }.Bounds.Size;
-            }
+            return TextLayout?.Size ?? default;
         }
 
         private int CoerceCaretIndex(int value)
@@ -540,16 +534,268 @@ namespace Avalonia.Controls.Presenters
             return Math.Max(0, Math.Min(length, value));
         }
 
-        private void CaretTimerTick(object sender, EventArgs e)
+        private void CaretTimerTick(object? sender, EventArgs e)
         {
             _caretBlink = !_caretBlink;
             InvalidateVisual();
         }
 
+        public void MoveCaretToTextPosition(int textPosition, bool trailingEdge = false)
+        {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, trailingEdge);
+            var textLine = TextLayout.TextLines[lineIndex];
+
+            var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(textPosition));
+            
+            var nextCaretCharacterHit = textLine.GetNextCaretCharacterHit(characterHit);
+
+            if (nextCaretCharacterHit.FirstCharacterIndex <= textPosition)
+            {
+                characterHit = nextCaretCharacterHit;
+            }
+
+            if (textPosition == characterHit.FirstCharacterIndex + characterHit.TrailingLength)
+            {
+                UpdateCaret(characterHit);
+            }
+            else
+            {
+                UpdateCaret(trailingEdge ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex));
+            }
+
+            _navigationPosition = _caretBounds.Position;
+        } 
+        
+        public void MoveCaretToPoint(Point point)
+        {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
+            var hit = TextLayout.HitTestPoint(point);
+
+            UpdateCaret(hit.CharacterHit);
+
+            _navigationPosition = _caretBounds.Position;
+        }
+
+        public void MoveCaretVertical(LogicalDirection direction = LogicalDirection.Forward)
+        {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(CaretIndex, _lastCharacterHit.TrailingLength > 0);
+
+            if (lineIndex < 0)
+            {
+                return;
+            }
+
+            var (currentX, currentY) = _navigationPosition;
+
+            if (direction == LogicalDirection.Forward)
+            {
+                if (lineIndex + 1 > TextLayout.TextLines.Count - 1)
+                {
+                    return;
+                }
+
+                var textLine = TextLayout.TextLines[lineIndex];
+                
+                currentY += textLine.Height;
+            }
+            else
+            {
+                if (lineIndex - 1 < 0)
+                {
+                    return;
+                }
+
+                var textLine = TextLayout.TextLines[--lineIndex];
+
+                currentY -= textLine.Height;
+            }
+
+            var navigationPosition = _navigationPosition;
+            
+            MoveCaretToPoint(new Point(currentX, currentY));
+            
+            _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
+        }
+
+        public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
+        {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
+            var characterHit = _lastCharacterHit;
+            var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+            
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
+
+            if (lineIndex < 0)
+            {
+                return;
+            }
+
+            if (direction == LogicalDirection.Forward)
+            {
+                while (lineIndex < TextLayout.TextLines.Count)
+                {
+                    var textLine = TextLayout.TextLines[lineIndex];
+
+                    characterHit = textLine.GetNextCaretCharacterHit(characterHit);
+
+                    caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+                    if (textLine.NewLineLength > 0 && caretIndex == textLine.TextRange.Start + textLine.TextRange.Length)
+                    {
+                        characterHit = new CharacterHit(caretIndex);
+                    }
+                    
+                    if (caretIndex >= Text.Length)
+                    {
+                        characterHit = new CharacterHit(Text.Length);
+                        
+                        break;
+                    }
+
+                    if (caretIndex - textLine.NewLineLength == textLine.TextRange.Start + textLine.TextRange.Length)
+                    {
+                        break;
+                    }
+
+                    if (caretIndex <= CaretIndex)
+                    {
+                        lineIndex++;
+                        
+                        continue;
+                    }
+                    
+                    break;
+                }
+            }
+            else
+            {
+                while (lineIndex >= 0)
+                {
+                    var textLine = TextLayout.TextLines[lineIndex];
+
+                    characterHit = textLine.GetPreviousCaretCharacterHit(characterHit);
+
+                    caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+                    if (caretIndex >= CaretIndex)
+                    {
+                        lineIndex--;
+
+                        continue;
+                    }
+
+                    break;
+                }
+            }
+
+            UpdateCaret(characterHit);
+
+            _navigationPosition = _caretBounds.Position;
+        }
+
+        private void UpdateCaret(CharacterHit characterHit)
+        {
+            if (TextLayout == null)
+            {
+                return;
+            }
+
+            _lastCharacterHit = characterHit;
+            
+            var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+            
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, characterHit.TrailingLength > 0);
+            var textLine = TextLayout.TextLines[lineIndex];
+            var distanceX = textLine.GetDistanceFromCharacterHit(characterHit);
+
+            var distanceY = 0d;
+
+            for (var i = 0; i < lineIndex; i++)
+            {
+                var currentLine = TextLayout.TextLines[i];
+
+                distanceY += currentLine.Height;
+            }
+
+            var caretBounds = new Rect(distanceX, distanceY, 0, textLine.Height);
+            
+            if (caretBounds != _caretBounds)
+            {
+                _caretBounds = caretBounds;
+
+                CaretBoundsChanged?.Invoke(this, EventArgs.Empty);
+            }
+            
+            CaretChanged();
+            
+            SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
+        }
+
         internal Rect GetCursorRectangle()
         {
-            var (p1, p2) = GetCaretPoints();
-            return new Rect(p1, p2);
+            return _caretBounds;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _scrollViewer = null;
+            
+            _caretTimer.Stop();
+            
+            _caretTimer.Tick -= CaretTimerTick;
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            
+            switch (change.Property.Name)
+            {
+                case nameof (TextBlock.Foreground):
+                case nameof (TextBlock.FontSize):
+                case nameof (TextBlock.FontStyle):
+                case nameof (TextBlock.FontWeight):
+                case nameof (TextBlock.FontFamily):
+                case nameof (Text):
+                case nameof (TextAlignment):
+                case nameof (TextWrapping):
+                case nameof (SelectionStart):
+                case nameof (SelectionEnd):
+                case nameof (SelectionForegroundBrush):
+                case nameof (PasswordChar):
+                case nameof (RevealPassword):
+                {
+                    InvalidateTextLayout();
+                    break;
+                }
+            }
         }
     }
 }

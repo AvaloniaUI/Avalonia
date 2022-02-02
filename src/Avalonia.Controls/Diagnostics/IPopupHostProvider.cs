@@ -1,8 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Controls.Diagnostics
 {
     /// <summary>

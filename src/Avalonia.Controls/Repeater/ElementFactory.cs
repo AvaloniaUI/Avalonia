@@ -4,7 +4,7 @@ namespace Avalonia.Controls
 {
     public abstract class ElementFactory : IElementFactory
     {
-        public IControl Build(object data)
+        public IControl Build(object? data)
         {
             return GetElementCore(new ElementFactoryGetArgs { Data = data });
         }
@@ -14,7 +14,7 @@ namespace Avalonia.Controls
             return GetElementCore(args);
         }
 
-        public bool Match(object data) => true;
+        public bool Match(object? data) => true;
 
         public void RecycleElement(ElementFactoryRecycleArgs args)
         {

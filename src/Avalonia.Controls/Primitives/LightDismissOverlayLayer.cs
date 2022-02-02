@@ -7,8 +7,6 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -52,7 +50,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (InputPassThroughElement is object)
             {
-                var hit = VisualRoot.GetVisualAt(point, x => x != this);
+                var hit = VisualRoot?.GetVisualAt(point, x => x != this);
 
                 if (hit is object)
                 {

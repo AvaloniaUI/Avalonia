@@ -7,8 +7,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
@@ -59,6 +57,12 @@ namespace Avalonia.Controls.Presenters
             ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>(
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
+
+        /// <summary>
+        /// Defines the <see cref="IsScrollChainingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsScrollChainingEnabledProperty =
+            ScrollViewer.IsScrollChainingEnabledProperty.AddOwner<ScrollContentPresenter>();
 
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
@@ -136,6 +140,20 @@ namespace Avalonia.Controls.Presenters
         {
             get { return _viewport; }
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+        }
+
+        /// <summary>
+        ///  Gets or sets if scroll chaining is enabled. The default value is true.
+        /// </summary>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public bool IsScrollChainingEnabled
+        {
+            get => GetValue(IsScrollChainingEnabledProperty);
+            set => SetValue(IsScrollChainingEnabledProperty, value);
         }
 
         /// <inheritdoc/>
@@ -268,8 +286,8 @@ namespace Avalonia.Controls.Presenters
         private Size ArrangeWithAnchoring(Size finalSize)
         {
             var size = new Size(
-                CanHorizontallyScroll ? Math.Max(Child.DesiredSize.Width, finalSize.Width) : finalSize.Width,
-                CanVerticallyScroll ? Math.Max(Child.DesiredSize.Height, finalSize.Height) : finalSize.Height);
+                CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Width, finalSize.Width) : finalSize.Width,
+                CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Height, finalSize.Height) : finalSize.Height);
 
             Vector TrackAnchor()
             {
@@ -277,7 +295,7 @@ namespace Avalonia.Controls.Presenters
                 // arrange then that change wasn't just due to scrolling (as scrolling doesn't adjust
                 // relative positions within Child).
                 if (_anchorElement != null &&
-                    TranslateBounds(_anchorElement, Child, out var updatedBounds) &&
+                    TranslateBounds(_anchorElement, Child!, out var updatedBounds) &&
                     updatedBounds.Position != _anchorElementBounds.Position)
                 {
                     var offset = updatedBounds.Position - _anchorElementBounds.Position;
@@ -337,13 +355,13 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
-            Extent = Child.Bounds.Size.Inflate(Child.Margin);
+            Extent = Child!.Bounds.Size.Inflate(Child.Margin);
             _isAnchorElementDirty = true;
 
             return finalSize;
         }
 
-        private void OnScrollGesture(object sender, ScrollGestureEventArgs e)
+        private void OnScrollGesture(object? sender, ScrollGestureEventArgs e)
         {
             if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
             {
@@ -405,12 +423,15 @@ namespace Avalonia.Controls.Presenters
                     _activeLogicalGestureScrolls[e.Id] = delta;
                 }
 
-                Offset = new Vector(x, y);
-                e.Handled = true;
+                Vector newOffset = new Vector(x, y);
+                bool offsetChanged = newOffset != Offset;
+                Offset = newOffset;
+
+                e.Handled = !IsScrollChainingEnabled || offsetChanged;
             }
         }
 
-        private void OnScrollGestureEnded(object sender, ScrollGestureEndedEventArgs e)
+        private void OnScrollGestureEnded(object? sender, ScrollGestureEndedEventArgs e)
             => _activeLogicalGestureScrolls?.Remove(e.Id);
 
         /// <inheritdoc/>
@@ -440,8 +461,11 @@ namespace Avalonia.Controls.Presenters
                     x = Math.Min(x, Extent.Width - Viewport.Width);
                 }
 
-                Offset = new Vector(x, y);
-                e.Handled = true;
+                Vector newOffset = new Vector(x, y);
+                bool offsetChanged = newOffset != Offset;
+                Offset = newOffset;
+
+                e.Handled = !IsScrollChainingEnabled || offsetChanged;
             }
         }
 
@@ -455,9 +479,10 @@ namespace Avalonia.Controls.Presenters
             base.OnPropertyChanged(change);
         }
 
-        private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
+        private void BringIntoViewRequested(object? sender, RequestBringIntoViewEventArgs e)
         {
-            e.Handled = BringDescendantIntoView(e.TargetObject, e.TargetRect);
+            if (e.TargetObject is not null)
+                e.Handled = BringDescendantIntoView(e.TargetObject, e.TargetRect);
         }
 
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
@@ -496,9 +521,9 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void ScrollInvalidated(object sender, EventArgs e)
+        private void ScrollInvalidated(object? sender, EventArgs e)
         {
-            UpdateFromScrollable((ILogicalScrollable)sender);
+            UpdateFromScrollable((ILogicalScrollable)sender!);
         }
 
         private void UpdateFromScrollable(ILogicalScrollable scrollable)
@@ -555,7 +580,7 @@ namespace Avalonia.Controls.Presenters
                 // We have a candidate, calculate its bounds relative to Child. Because these
                 // bounds aren't relative to the ScrollContentPresenter itself, if they change
                 // then we know it wasn't just due to scrolling.
-                var unscrolledBounds = TranslateBounds(bestCandidate, Child);
+                var unscrolledBounds = TranslateBounds(bestCandidate, Child!);
                 _anchorElement = bestCandidate;
                 _anchorElementBounds = unscrolledBounds;
             }
@@ -563,7 +588,7 @@ namespace Avalonia.Controls.Presenters
 
         private bool GetViewportBounds(IControl element, out Rect bounds)
         {
-            if (TranslateBounds(element, Child, out var childBounds))
+            if (TranslateBounds(element, Child!, out var childBounds))
             {
                 // We want the bounds relative to the new Offset, regardless of whether the child
                 // control has actually been arranged to this offset yet, so translate first to the

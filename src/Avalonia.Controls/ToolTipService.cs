@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     {
         public static ToolTipService Instance { get; } = new ToolTipService();
 
-        private DispatcherTimer _timer;
+        private DispatcherTimer? _timer;
 
         private ToolTipService() { }
 
@@ -46,7 +46,7 @@ namespace Avalonia.Controls
                 {
                     var tip = control.GetValue(ToolTip.ToolTipProperty);
 
-                    tip.Content = e.NewValue;
+                    tip!.Content = e.NewValue;
                 }
             }
         }
@@ -67,9 +67,9 @@ namespace Avalonia.Controls
             }
         }
         
-        private void ControlDetaching(object sender, VisualTreeAttachmentEventArgs e)
+        private void ControlDetaching(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            var control = (Control)sender;
+            var control = (Control)sender!;
             control.DetachedFromVisualTree -= ControlDetaching;
             control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
             Close(control);
@@ -80,11 +80,11 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerEnter(object sender, PointerEventArgs e)
+        private void ControlPointerEnter(object? sender, PointerEventArgs e)
         {
             StopTimer();
 
-            var control = (Control)sender;
+            var control = (Control)sender!;
             var showDelay = ToolTip.GetShowDelay(control);
             if (showDelay == 0)
             {
@@ -101,15 +101,15 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerLeave(object sender, PointerEventArgs e)
+        private void ControlPointerLeave(object? sender, PointerEventArgs e)
         {
-            var control = (Control)sender;
+            var control = (Control)sender!;
             Close(control);
         }
 
-        private void ControlEffectiveViewportChanged(object sender, Layout.EffectiveViewportChangedEventArgs e)
+        private void ControlEffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
         {
-            var control = (Control)sender;
+            var control = (Control)sender!;
             var toolTip = control.GetValue(ToolTip.ToolTipProperty);
             toolTip?.RecalculatePosition(control);
         }

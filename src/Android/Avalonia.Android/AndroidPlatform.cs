@@ -10,7 +10,7 @@ using Avalonia.Input.Platform;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 using Avalonia.Skia;
 
 namespace Avalonia
@@ -59,8 +59,7 @@ namespace Avalonia.Android
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IAssetLoader>().ToConstant(new AssetLoader(appType.Assembly));
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
             SkiaPlatform.Initialize();
 

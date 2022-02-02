@@ -23,15 +23,15 @@ namespace Avalonia.Controls.Primitives
             _positioner = new ManagedPopupPositioner(this);
         }
 
-        public void SetChild(IControl control)
+        public void SetChild(IControl? control)
         {
             Content = control;
         }
 
-        public IVisual HostedVisualTreeRoot => null;
+        public IVisual? HostedVisualTreeRoot => null;
         
         /// <inheritdoc/>
-        IInteractive IInteractive.InteractiveParent => Parent;
+        IInteractive? IInteractive.InteractiveParent => Parent;
 
         public void Dispose() => Hide();
 
@@ -75,7 +75,7 @@ namespace Avalonia.Controls.Primitives
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
-            _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot(), target, placement, offset, anchor,
+            _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot()!, target, placement, offset, anchor,
                 gravity, constraintAdjustment, rect);
             UpdatePosition();
         }
@@ -126,11 +126,11 @@ namespace Avalonia.Controls.Primitives
 
         double IManagedPopupPositionerPopup.Scaling => 1;
        
-        public static IPopupHost CreatePopupHost(IVisual target, IAvaloniaDependencyResolver dependencyResolver)
+        public static IPopupHost CreatePopupHost(IVisual target, IAvaloniaDependencyResolver? dependencyResolver)
         {
             var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();
             if (platform != null)
-                return new PopupRoot((TopLevel)target.GetVisualRoot(), platform, dependencyResolver);
+                return new PopupRoot((TopLevel)target.GetVisualRoot()!, platform, dependencyResolver);
             
             var overlayLayer = OverlayLayer.GetOverlayLayer(target);
             if (overlayLayer == null)

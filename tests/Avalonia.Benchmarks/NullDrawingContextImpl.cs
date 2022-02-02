@@ -43,10 +43,6 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-        {
-        }
-
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
         }

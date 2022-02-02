@@ -48,7 +48,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the font family.
         /// </summary>
-        public FontFamily? FontFamily { get; }
+        public FontFamily FontFamily { get; }
 
         /// <summary>
         /// Gets the font style.

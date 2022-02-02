@@ -33,10 +33,10 @@ namespace Avalonia.Controls.Primitives
         private const string PART_ElementMonthView = "MonthView";
         private const string PART_ElementYearView = "YearView";
 
-        private Button _headerButton;
-        private Button _nextButton;
-        private Button _previousButton;
-        private ITemplate<IControl> _dayTitleTemplate;
+        private Button? _headerButton;
+        private Button? _nextButton;
+        private Button? _previousButton;
+        private ITemplate<IControl>? _dayTitleTemplate;
         
         private DateTime _currentMonth;
         private bool _isMouseLeftButtonDown = false;
@@ -45,11 +45,11 @@ namespace Avalonia.Controls.Primitives
 
         private System.Globalization.Calendar _calendar = new System.Globalization.GregorianCalendar();
 
-        private PointerPressedEventArgs _downEventArg;
-        private PointerPressedEventArgs _downEventArgYearView;
+        private PointerPressedEventArgs? _downEventArg;
+        private PointerPressedEventArgs? _downEventArgYearView;
 
-        internal Calendar Owner { get; set; }
-        internal CalendarDayButton CurrentButton { get; set; }
+        internal Calendar? Owner { get; set; }
+        internal CalendarDayButton? CurrentButton { get; set; }
 
         public static readonly StyledProperty<IBrush> HeaderBackgroundProperty = Calendar.HeaderBackgroundProperty.AddOwner<CalendarItem>();
         public IBrush HeaderBackground
@@ -57,13 +57,13 @@ namespace Avalonia.Controls.Primitives
             get { return GetValue(HeaderBackgroundProperty); }
             set { SetValue(HeaderBackgroundProperty, value); }
         }
-        public static readonly DirectProperty<CalendarItem, ITemplate<IControl>> DayTitleTemplateProperty =
-                AvaloniaProperty.RegisterDirect<CalendarItem, ITemplate<IControl>>(
+        public static readonly DirectProperty<CalendarItem, ITemplate<IControl>?> DayTitleTemplateProperty =
+                AvaloniaProperty.RegisterDirect<CalendarItem, ITemplate<IControl>?>(
                     nameof(DayTitleTemplate),
                     o => o.DayTitleTemplate,
                     (o,v) => o.DayTitleTemplate = v,
                     defaultBindingMode: BindingMode.OneTime);
-        public ITemplate<IControl> DayTitleTemplate
+        public ITemplate<IControl>? DayTitleTemplate
         {
             get { return _dayTitleTemplate; }
             set { SetAndRaise(DayTitleTemplateProperty, ref _dayTitleTemplate, value); }
@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets the button that allows switching between month mode, year mode,
         /// and decade mode. 
         /// </summary>
-        internal Button HeaderButton
+        internal Button? HeaderButton
         {
             get { return _headerButton; }
             private set
@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets the button that displays the next page of the calendar when it
         /// is clicked.
         /// </summary>
-        internal Button NextButton
+        internal Button? NextButton
         {
             get { return _nextButton; }
             private set
@@ -125,7 +125,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets the button that displays the previous page of the calendar when
         /// it is clicked.
         /// </summary>
-        internal Button PreviousButton
+        internal Button? PreviousButton
         {
             get { return _previousButton; }
             private set
@@ -156,11 +156,11 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the Grid that hosts the content when in month mode.
         /// </summary>
-        internal Grid MonthView { get; set; }
+        internal Grid? MonthView { get; set; }
         /// <summary>
         /// Gets the Grid that hosts the content when in year or decade mode.
         /// </summary>
-        internal Grid YearView { get; set; }
+        internal Grid? YearView { get; set; }
         
         private void PopulateGrids()
         {
@@ -294,7 +294,7 @@ namespace Avalonia.Controls.Primitives
         {
             for (int childIndex = 0; childIndex < Calendar.ColumnsPerMonth; childIndex++)
             {
-                var daytitle = MonthView.Children[childIndex];
+                var daytitle = MonthView!.Children[childIndex];
                 if (daytitle != null)
                 {
                     if (Owner != null)
@@ -495,8 +495,7 @@ namespace Avalonia.Controls.Primitives
 
             for (int childIndex = Calendar.ColumnsPerMonth; childIndex < count; childIndex++)
             {
-                CalendarDayButton childButton = MonthView.Children[childIndex] as CalendarDayButton;
-                Contract.Requires<ArgumentNullException>(childButton != null);
+                CalendarDayButton childButton = (CalendarDayButton)MonthView!.Children[childIndex];
 
                 childButton.Index = childIndex;
                 SetButtonState(childButton, dateToAdd);
@@ -532,8 +531,7 @@ namespace Avalonia.Controls.Primitives
                     childIndex++;
                     for (int i = childIndex; i < count; i++)
                     {
-                        childButton = MonthView.Children[i] as CalendarDayButton;
-                        Contract.Requires<ArgumentNullException>(childButton != null);
+                        childButton = (CalendarDayButton)MonthView.Children[i];
                         // button needs a content to occupy the necessary space
                         // for the content presenter
                         childButton.Content = i.ToString(DateTimeHelper.GetCurrentDateFormat());
@@ -626,10 +624,9 @@ namespace Avalonia.Controls.Primitives
         private void SetMonthButtonsForYearMode()
         {
             int count = 0;
-            foreach (object child in YearView.Children)
+            foreach (object child in YearView!.Children)
             {
-                CalendarButton childButton = child as CalendarButton;
-                Contract.Requires<ArgumentNullException>(childButton != null);
+                CalendarButton childButton = (CalendarButton)child;
                 // There should be no time component. Time is 12:00 AM
                 DateTime day = new DateTime(_currentMonth.Year, count + 1, 1);
                 childButton.DataContext = day;
@@ -703,7 +700,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (Owner != null && calendarButton != null && calendarButton.DataContext != null)
             {
-                Owner.FocusCalendarButton.IsCalendarButtonFocused = false;
+                Owner.FocusCalendarButton!.IsCalendarButtonFocused = false;
                 Owner.FocusCalendarButton = calendarButton;
                 calendarButton.IsCalendarButtonFocused = Owner.HasFocusInternal;
 
@@ -722,10 +719,9 @@ namespace Avalonia.Controls.Primitives
         {
             int year;
             int count = -1;
-            foreach (object child in YearView.Children)
+            foreach (object child in YearView!.Children)
             {
-                CalendarButton childButton = child as CalendarButton;
-                Contract.Requires<ArgumentNullException>(childButton != null);
+                CalendarButton childButton = (CalendarButton)child;
                 year = decade + count;
 
                 if (year <= DateTime.MaxValue.Year && year >= DateTime.MinValue.Year)
@@ -797,7 +793,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        internal void HeaderButton_Click(object sender, RoutedEventArgs e)
+        internal void HeaderButton_Click(object? sender, RoutedEventArgs e)
         {
             if (Owner != null)
             {
@@ -805,7 +801,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     Owner.Focus();
                 }
-                Button b = (Button)sender;
+                Button b = (Button)sender!;
                 DateTime d;
 
                 if (b.IsEnabled)
@@ -833,7 +829,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
         }
-        internal void PreviousButton_Click(object sender, RoutedEventArgs e)
+        internal void PreviousButton_Click(object? sender, RoutedEventArgs e)
         {
             if (Owner != null)
             {
@@ -842,14 +838,14 @@ namespace Avalonia.Controls.Primitives
                     Owner.Focus();
                 }
 
-                Button b = (Button)sender;
+                Button b = (Button)sender!;
                 if (b.IsEnabled)
                 {
                     Owner.OnPreviousClick();
                 }
             }
         }
-        internal void NextButton_Click(object sender, RoutedEventArgs e)
+        internal void NextButton_Click(object? sender, RoutedEventArgs e)
         {
             if (Owner != null)
             {
@@ -857,7 +853,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     Owner.Focus();
                 }
-                Button b = (Button)sender;
+                Button b = (Button)sender!;
 
                 if (b.IsEnabled)
                 {
@@ -866,7 +862,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        internal void Cell_MouseEnter(object sender, PointerEventArgs e)
+        internal void Cell_MouseEnter(object? sender, PointerEventArgs e)
         {
             if (Owner != null)
             {
@@ -878,7 +874,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         case CalendarSelectionMode.SingleDate:
                             {
-                                DateTime selectedDate = (DateTime)b.DataContext;
+                                DateTime selectedDate = (DateTime)b.DataContext!;
                                 Owner.CalendarDatePickerDisplayDateFlag = true;
                                 if (Owner.SelectedDates.Count == 0)
                                 {
@@ -906,7 +902,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
         
-        internal void Cell_MouseLeftButtonDown(object sender, PointerPressedEventArgs e)
+        internal void Cell_MouseLeftButtonDown(object? sender, PointerPressedEventArgs e)
         {
             if (Owner != null)
             {
@@ -917,15 +913,14 @@ namespace Avalonia.Controls.Primitives
 
                 bool ctrl, shift;
                 CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out ctrl, out shift);
-                CalendarDayButton b = sender as CalendarDayButton;
+                CalendarDayButton b = (CalendarDayButton)sender!;
 
                 if (b != null)
                 {
                     _isControlPressed = ctrl;
                     if (b.IsEnabled && !b.IsBlackout)
                     {
-                        DateTime selectedDate = (DateTime)b.DataContext;
-                        Contract.Requires<ArgumentNullException>(selectedDate != null);
+                        DateTime selectedDate = (DateTime)b.DataContext!;
                         _isMouseLeftButtonDown = true;
                         // null check is added for unit tests
                         if (e != null)
@@ -1027,7 +1022,7 @@ namespace Avalonia.Controls.Primitives
             if (Owner != null)
             {
                 Owner.HoverEndIndex = b.Index;
-                Owner.HoverEnd = (DateTime)b.DataContext;
+                Owner.HoverEnd = (DateTime)b.DataContext!;
 
                 if (Owner.HoverEnd != null && Owner.HoverStart != null)
                 {
@@ -1041,11 +1036,11 @@ namespace Avalonia.Controls.Primitives
                 }
             }
         }
-        internal void Cell_MouseLeftButtonUp(object sender, PointerReleasedEventArgs e)
+        internal void Cell_MouseLeftButtonUp(object? sender, PointerReleasedEventArgs e)
         {
             if (Owner != null)
             {
-                CalendarDayButton b = sender as CalendarDayButton;
+                CalendarDayButton? b = sender as CalendarDayButton;
                 if (b != null && !b.IsBlackout)
                 {
                     Owner.OnDayButtonMouseUp(e);
@@ -1094,14 +1089,13 @@ namespace Avalonia.Controls.Primitives
                 }
             }
         }
-        private void Cell_Click(object sender, RoutedEventArgs e)
+        private void Cell_Click(object? sender, RoutedEventArgs e)
         {
             if (Owner != null)
             {
                 if (_isControlPressed && Owner.SelectionMode == CalendarSelectionMode.MultipleRange)
                 {
-                    CalendarDayButton b = sender as CalendarDayButton;
-                    Contract.Requires<ArgumentNullException>(b != null);
+                    CalendarDayButton b = (CalendarDayButton)sender!;
 
                     if (b.IsSelected)
                     {
@@ -1118,10 +1112,9 @@ namespace Avalonia.Controls.Primitives
             _isControlPressed = false;
         }
 
-        private void Month_CalendarButtonMouseDown(object sender, PointerPressedEventArgs e)
+        private void Month_CalendarButtonMouseDown(object? sender, PointerPressedEventArgs e)
         {
-            CalendarButton b = sender as CalendarButton;
-            Contract.Requires<ArgumentNullException>(b != null);
+            CalendarButton b = (CalendarButton)sender!;
 
             _isMouseLeftButtonDownYearView = true;
 
@@ -1133,13 +1126,13 @@ namespace Avalonia.Controls.Primitives
             UpdateYearViewSelection(b);
         }
 
-        internal void Month_CalendarButtonMouseUp(object sender, PointerReleasedEventArgs e)
+        internal void Month_CalendarButtonMouseUp(object? sender, PointerReleasedEventArgs e)
         {
             _isMouseLeftButtonDownYearView = false;
 
             if (Owner != null)
             {
-                DateTime newmonth = (DateTime)((CalendarButton)sender).DataContext;
+                DateTime newmonth = (DateTime)((CalendarButton)sender!).DataContext!;
 
                 if (Owner.DisplayMode == CalendarMode.Year)
                 {
@@ -1155,12 +1148,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void Month_MouseEnter(object sender, PointerEventArgs e)
+        private void Month_MouseEnter(object? sender, PointerEventArgs e)
         {
             if (_isMouseLeftButtonDownYearView)
             {
-                CalendarButton b = sender as CalendarButton;
-                Contract.Requires<ArgumentNullException>(b != null);
+                CalendarButton b = (CalendarButton)sender!;
                 UpdateYearViewSelection(b);
             }
         }

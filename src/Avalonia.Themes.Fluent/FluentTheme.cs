@@ -15,6 +15,12 @@ namespace Avalonia.Themes.Fluent
         Dark,
     }
 
+    public enum DensityStyle
+    {
+        Normal,
+        Compact
+    }
+
     /// <summary>
     /// Includes the fluent theme in an application.
     /// </summary>
@@ -24,6 +30,7 @@ namespace Avalonia.Themes.Fluent
         private Styles _fluentDark = new();
         private Styles _fluentLight = new();
         private Styles _sharedStyles = new();
+        private Styles _densityStyles = new();
         private bool _isLoading;
         private IStyle? _loaded;
 
@@ -47,9 +54,12 @@ namespace Avalonia.Themes.Fluent
             InitStyles(_baseUri);
         }
 
-
         public static readonly StyledProperty<FluentThemeMode> ModeProperty =
             AvaloniaProperty.Register<FluentTheme, FluentThemeMode>(nameof(Mode));
+
+        public static readonly StyledProperty<DensityStyle> DensityStyleProperty =
+            AvaloniaProperty.Register<FluentTheme, DensityStyle>(nameof(DensityStyle));
+
         /// <summary>
         /// Gets or sets the mode of the fluent theme (light, dark).
         /// </summary>
@@ -58,6 +68,16 @@ namespace Avalonia.Themes.Fluent
             get => GetValue(ModeProperty);
             set => SetValue(ModeProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets the density style of the fluent theme (normal, compact).
+        /// </summary>
+        public DensityStyle DensityStyle
+        {
+            get => GetValue(DensityStyleProperty);
+            set => SetValue(DensityStyleProperty, value);
+        }
+        
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
@@ -72,6 +92,18 @@ namespace Avalonia.Themes.Fluent
                 {
                     (Loaded as Styles)![1] = _fluentLight[0];
                     (Loaded as Styles)![2] = _fluentLight[1];
+                }
+            }
+
+            if (change.Property == DensityStyleProperty)
+            {
+                if (DensityStyle == DensityStyle.Compact)
+                {
+                    (Loaded as Styles)!.Add(_densityStyles[0]);
+                }
+                else if (DensityStyle == DensityStyle.Normal)
+                {
+                    (Loaded as Styles)!.Remove(_densityStyles[0]);
                 }
             }
         }
@@ -97,6 +129,12 @@ namespace Avalonia.Themes.Fluent
                     {
                         _loaded = new Styles() { _sharedStyles, _fluentDark[0], _fluentDark[1] };
                     }
+
+                    if (DensityStyle == DensityStyle.Compact)
+                    {
+                        (_loaded as Styles)!.Add(_densityStyles[0]);
+                    }
+
                     _isLoading = false;
                 }
 
@@ -181,6 +219,14 @@ namespace Avalonia.Themes.Fluent
                 new StyleInclude(baseUri)
                 {
                     Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesDark.xaml")
+                }
+            };
+            
+            _densityStyles = new Styles
+            {
+                new StyleInclude(baseUri)
+                {
+                    Source = new Uri("avares://Avalonia.Themes.Fluent/DensityStyles/Compact.xaml")
                 }
             };
         }

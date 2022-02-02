@@ -3,8 +3,6 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

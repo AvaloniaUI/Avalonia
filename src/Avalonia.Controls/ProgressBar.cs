@@ -96,7 +96,7 @@ namespace Avalonia.Controls
 
         private double _indeterminateStartingOffset;
         private double _indeterminateEndingOffset;
-        private Border _indicator;
+        private Border? _indicator;
 
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -9,10 +10,10 @@ namespace Avalonia.Controls
 {
     public class NativeControlHost : Control
     {
-        private TopLevel _currentRoot;
-        private INativeControlHostImpl _currentHost;
-        private INativeControlHostControlTopLevelAttachment _attachment;
-        private IPlatformHandle _nativeControlHandle;
+        private TopLevel? _currentRoot;
+        private INativeControlHostImpl? _currentHost;
+        private INativeControlHostControlTopLevelAttachment? _attachment;
+        private IPlatformHandle? _nativeControlHandle;
         private bool _queuedForDestruction;
         private bool _queuedForMoveResize;
         private readonly List<Visual> _propertyChangedSubscriptions = new List<Visual>();
@@ -35,7 +36,7 @@ namespace Avalonia.Controls
             UpdateHost();
         }
 
-        private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.IsEffectiveValueChange && (e.Property == BoundsProperty || e.Property == IsVisibleProperty))
                 EnqueueForMoveResize();
@@ -58,9 +59,8 @@ namespace Avalonia.Controls
         {
             _queuedForMoveResize = false;
             _currentHost = (_currentRoot?.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
-            var needsAttachment = _currentHost != null;
             
-            if (needsAttachment)
+            if (_currentHost != null)
             {
                 // If there is an existing attachment, ensure that we are attached to the proper host or destroy the attachment
                 if (_attachment != null && _attachment.AttachedTo != _currentHost)
@@ -119,6 +119,8 @@ namespace Avalonia.Controls
         
         private Rect? GetAbsoluteBounds()
         {
+            Debug.Assert(_currentRoot is not null);
+
             var bounds = Bounds;
             var position = this.TranslatePoint(default, _currentRoot);
             if (position == null)
@@ -140,9 +142,8 @@ namespace Avalonia.Controls
                 return false;
             
             var bounds = GetAbsoluteBounds();
-            var needsShow = IsEffectivelyVisible && bounds.HasValue;
 
-            if (needsShow)
+            if (IsEffectivelyVisible && bounds.HasValue)
             {
                 if (bounds.Value.IsEmpty)
                     return false;

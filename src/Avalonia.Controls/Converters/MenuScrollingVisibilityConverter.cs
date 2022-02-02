@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Converters
     {
         public static readonly MenuScrollingVisibilityConverter Instance = new MenuScrollingVisibilityConverter();
 
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             if (parameter == null ||
                 values == null ||

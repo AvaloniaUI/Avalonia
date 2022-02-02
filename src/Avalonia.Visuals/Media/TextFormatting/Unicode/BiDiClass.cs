@@ -1,6 +1,6 @@
 namespace Avalonia.Media.TextFormatting.Unicode
 {
-    public enum BiDiClass
+    public enum BidiClass
     {
         LeftToRight, //L
         ArabicLetter, //AL
