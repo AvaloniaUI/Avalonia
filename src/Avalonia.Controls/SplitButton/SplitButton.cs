@@ -30,7 +30,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Click"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent = Button.ClickEvent;
+        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
+            RoutedEvent.Register<SplitButton, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -384,7 +385,7 @@ namespace Avalonia.Controls
             // Note: It is not currently required to check enabled status; however, this is a failsafe
             if (IsEffectivelyEnabled)
             {
-                var eventArgs = new RoutedEventArgs(Button.ClickEvent);
+                var eventArgs = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(eventArgs);
 
                 if (!eventArgs.Handled && Command?.CanExecute(CommandParameter) == true)
@@ -417,6 +418,8 @@ namespace Avalonia.Controls
         /// </summary>
         private void PrimaryButton_Click(object? sender, RoutedEventArgs e)
         {
+            // Handle internal button click, so it won't bubble outside together with SplitButton.ClickEvent.
+            e.Handled = true;
             OnClickPrimary(e);
         }
 
@@ -425,6 +428,8 @@ namespace Avalonia.Controls
         /// </summary>
         private void SecondaryButton_Click(object? sender, RoutedEventArgs e)
         {
+            // Handle internal button click, so it won't bubble outside.
+            e.Handled = true;
             OnClickSecondary(e);
         }
 
