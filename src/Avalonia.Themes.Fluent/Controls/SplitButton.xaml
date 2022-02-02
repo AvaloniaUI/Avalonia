@@ -75,7 +75,8 @@
                     Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    HorizontalContentAlignment="Right"
+                    Padding="0"
+                    HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
@@ -93,7 +94,6 @@
   </Style>
   <Style Selector="SplitButton /template/ Button#PART_SecondaryButton">
     <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
-    <Setter Property="Padding" Value="9,0" />
     <Setter Property="Content">
       <Template>
         <PathIcon Height="12"
