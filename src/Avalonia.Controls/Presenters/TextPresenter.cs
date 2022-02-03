@@ -638,6 +638,13 @@ namespace Avalonia.Controls.Presenters
                 return;
             }
 
+            if (FlowDirection == FlowDirection.RightToLeft)
+            {
+                direction = direction == LogicalDirection.Forward ?
+                    LogicalDirection.Backward :
+                    LogicalDirection.Forward;
+            }
+
             var characterHit = _lastCharacterHit;
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
             
