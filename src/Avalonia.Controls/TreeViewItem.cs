@@ -89,7 +89,7 @@ namespace Avalonia.Controls
         /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
         /// </summary>
         public new ITreeItemContainerGenerator ItemContainerGenerator =>
-            (ITreeItemContainerGenerator)base.ItemContainerGenerator!;
+            (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator() => CreateTreeItemContainerGenerator<TreeViewItem>();

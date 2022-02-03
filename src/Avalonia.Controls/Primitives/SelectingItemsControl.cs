@@ -908,7 +908,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     MarkContainerSelected(
                         container,
-                        Selection.IsSelected(ItemContainerGenerator!.IndexFromContainer(container)));
+                        Selection.IsSelected(ItemContainerGenerator.IndexFromContainer(container)));
                 }
             }
         }

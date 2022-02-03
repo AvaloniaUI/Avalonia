@@ -26,18 +26,15 @@ Install-Package Avalonia.Desktop
 ## Showcase
 
 Examples of UIs built with Avalonia
-![image](https://user-images.githubusercontent.com/4672627/84707589-5b69a880-af35-11ea-87a6-7ad57a31d314.png)
+<video src="https://user-images.githubusercontent.com/4672627/152325602-28df36ec-6444-44a6-aebe-90ad52c8f27a.mp4"></video>
+([Lunacy](https://icons8.com/lunacy))
 
-([Synfonia](https://github.com/jmacato/Synfonia))
+![image](https://user-images.githubusercontent.com/4672627/152325740-261c27a3-e6f0-4662-bff7-4796d4940e04.png)
+([PlasticSCM](https://www.plasticscm.com/))
 
-![image](https://user-images.githubusercontent.com/4672627/85069644-d8419000-b18a-11ea-8732-be9055bb61fd.PNG)
-([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
+![image](https://user-images.githubusercontent.com/4672627/152326453-14944c4d-33da-4d50-a268-b87f80927adb.png)
+([WasabiWallet](https://www.wasabiwallet.io/))
 
-![image](https://user-images.githubusercontent.com/4672627/85069659-dc6dad80-b18a-11ea-8375-39ef95315b5c.PNG)
-([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
-
-![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
-([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
 
 ## JetBrains Rider
 
