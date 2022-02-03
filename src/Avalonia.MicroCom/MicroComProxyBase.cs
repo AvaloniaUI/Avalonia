@@ -61,22 +61,6 @@ namespace Avalonia.MicroCom
             throw new COMException("QueryInterface failed", rv);
         }
 
-        public bool TryQueryInterface<T>(out T result) where T : IUnknown
-        {
-            var guid = MicroComRuntime.GetGuidFor(typeof(T));
-            var rv = QueryInterface(guid, out var ppv);
-            if (rv == 0)
-            {
-                result = (T)MicroComRuntime.CreateProxyFor(typeof(T), ppv, true);
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
         public bool IsDisposed => _nativePointer == IntPtr.Zero;
 
         protected virtual void Dispose(bool disposing)

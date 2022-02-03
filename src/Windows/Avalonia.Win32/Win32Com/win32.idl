@@ -267,11 +267,6 @@ interface IDataObject : IUnknown
         [out] void** ppenumAdvise);
 }
 
-[uuid(3d74307e-12be-460a-b098-4dd320eec7d5)]
-interface IAvnDataObject : IDataObject
-{
-}
-
 [
     local,
     object,

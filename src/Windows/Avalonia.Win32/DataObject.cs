@@ -31,25 +31,16 @@ namespace Avalonia.Win32
                 return disposableDataObject;
             }
 
-            // If DataObject was created on the our side (drag'n'drop initiated by Avalonia),
-            // then pDataObj will implement IAvnDataObject interface as well. So we can safely case it back to DataObject.
-            if (((MicroComProxyBase)pDataObj).TryQueryInterface<Win32Com.IAvnDataObject>(out var avnInterface))
+            var dataObject = MicroComRuntime.TryUnwrapManagedObject(pDataObj) as DataObject;
+            if (dataObject is not null)
             {
-                using (avnInterface)
-                {
-                    var ppv = MicroComRuntime.GetNativeIntPtr(avnInterface);
-                    return MicroComRuntime.GetObjectFromCcw(ppv) as DataObject;
-                }
+                return dataObject;
             }
-            // Otherwise wrap pDataObj into OleDataObject.
-            else
-            {
-                return new OleDataObject(pDataObj);
-            }
+            return new OleDataObject(pDataObj);
         }
     }
 
-    internal class DataObject : CallbackBase, IDisposableDataObject, Win32Com.IAvnDataObject
+    internal class DataObject : CallbackBase, IDisposableDataObject, Win32Com.IDataObject
     {
         // Compatibility with WinForms + WPF...
         internal static readonly byte[] SerializedObjectGUID = new Guid("FD9EA796-3B13-4370-A679-56106BB288FB").ToByteArray();
