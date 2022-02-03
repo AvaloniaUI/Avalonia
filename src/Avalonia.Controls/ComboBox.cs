@@ -360,12 +360,12 @@ namespace Avalonia.Controls
             var selectedIndex = SelectedIndex;
             if (IsDropDownOpen && selectedIndex != -1)
             {
-                var container = ItemContainerGenerator!.ContainerFromIndex(selectedIndex);
+                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
 
                 if (container == null && SelectedIndex != -1)
                 {
                     ScrollIntoView(Selection.SelectedIndex);
-                    container = ItemContainerGenerator!.ContainerFromIndex(selectedIndex);
+                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 
                 if (container != null && CanFocus(container))
@@ -415,7 +415,7 @@ namespace Avalonia.Controls
 
         private void SelectFocusedItem()
         {
-            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator!.Containers)
+            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
             {
                 if (dropdownItem.ContainerControl.IsFocused)
                 {

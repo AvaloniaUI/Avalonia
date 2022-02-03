@@ -79,7 +79,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="IItemContainerGenerator"/> for the control.
         /// </summary>
-        public IItemContainerGenerator? ItemContainerGenerator
+        public IItemContainerGenerator ItemContainerGenerator
         {
             get
             {
@@ -87,13 +87,10 @@ namespace Avalonia.Controls
                 {
                     _itemContainerGenerator = CreateItemContainerGenerator();
 
-                    if (_itemContainerGenerator != null)
-                    {
-                        _itemContainerGenerator.ItemTemplate = ItemTemplate;
-                        _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
-                        _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
-                        _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
-                    }
+                    _itemContainerGenerator.ItemTemplate = ItemTemplate;
+                    _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
+                    _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
+                    _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
                 }
 
                 return _itemContainerGenerator;
@@ -240,14 +237,8 @@ namespace Avalonia.Controls
         /// Creates the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
         /// <returns>
-        /// An <see cref="IItemContainerGenerator"/> or null.
+        /// An <see cref="IItemContainerGenerator"/>.
         /// </returns>
-        /// <remarks>
-        /// Certain controls such as <see cref="TabControl"/> don't actually create item 
-        /// containers; however they want it to be ItemsControls so that they have an Items 
-        /// property etc. In this case, a derived class can override this method to return null
-        /// in order to disable the creation of item containers.
-        /// </remarks>
         protected virtual IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
