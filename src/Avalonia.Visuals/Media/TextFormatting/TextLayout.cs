@@ -38,7 +38,7 @@ namespace Avalonia.Media.TextFormatting
             string? text,
             Typeface typeface,
             double fontSize,
-            IBrush foreground,
+            IBrush? foreground,
             TextAlignment textAlignment = TextAlignment.Left,
             TextWrapping textWrapping = TextWrapping.NoWrap,
             TextTrimming textTrimming = TextTrimming.None,
@@ -478,7 +478,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="lineHeight">The height of each line of text.</param>
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
-            IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping,
+            IBrush? foreground, TextAlignment textAlignment, TextWrapping textWrapping,
             TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight)
         {
             var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
