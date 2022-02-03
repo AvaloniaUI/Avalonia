@@ -7,15 +7,13 @@ using DropEffect = Avalonia.Win32.Win32Com.DropEffect;
 
 namespace Avalonia.Win32
 {
-    internal class OleDropTarget : Win32Com.IDropTarget, IMicroComShadowContainer
+    internal class OleDropTarget : CallbackBase, Win32Com.IDropTarget
     {
         private readonly IInputRoot _target;
         private readonly ITopLevelImpl _tl;
         private readonly IDragDropDevice _dragDevice;
         
         private IDisposableDataObject _currentDrag = null;
-
-        public MicroComShadow Shadow { get; set; }
 
         public OleDropTarget(ITopLevelImpl tl, IInputRoot target)
         {
@@ -180,17 +178,9 @@ namespace Avalonia.Win32
             return _target.PointToClient(screenPt);
         }
 
-        public void Dispose()
+        protected override void Destroyed()
         {
             _currentDrag?.Dispose();
-        }
-
-        public void OnReferencedFromNative()
-        {
-        }
-
-        public void OnUnreferencedFromNative()
-        {
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Avalonia.Native
 {
     internal class PlatformThreadingInterface : IPlatformThreadingInterface
     {
-        class TimerCallback : CallbackBase, IAvnActionCallback
+        class TimerCallback : NativeCallbackBase, IAvnActionCallback
         {
             readonly Action _tick;
 
@@ -24,7 +24,7 @@ namespace Avalonia.Native
             }
         }
 
-        class SignaledCallback : CallbackBase, IAvnSignaledCallback
+        class SignaledCallback : NativeCallbackBase, IAvnSignaledCallback
         {
             readonly PlatformThreadingInterface _parent;
 

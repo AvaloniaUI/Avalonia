@@ -6,7 +6,7 @@ using Avalonia.Win32.Win32Com;
 
 namespace Avalonia.Win32
 {
-    internal class OleDragSource : IDropSource, IMicroComShadowContainer
+    internal class OleDragSource : CallbackBase, IDropSource
     {
         private const int DRAGDROP_S_USEDEFAULTCURSORS = 0x00040102;
         private const int DRAGDROP_S_DROP = 0x00040100;
@@ -17,8 +17,6 @@ namespace Avalonia.Win32
             (int)UnmanagedMethods.ModifierKeys.MK_MBUTTON,
             (int)UnmanagedMethods.ModifierKeys.MK_RBUTTON
         };
-
-        public MicroComShadow Shadow { get; set; }
 
         public int QueryContinueDrag(int fEscapePressed, int grfKeyState)
         {
@@ -38,18 +36,6 @@ namespace Avalonia.Win32
         public int GiveFeedback(DropEffect dwEffect)
         {
             return DRAGDROP_S_USEDEFAULTCURSORS;
-        }
-
-        public void Dispose()
-        {
-        }
-
-        public void OnReferencedFromNative()
-        {
-        }
-
-        public void OnUnreferencedFromNative()
-        {
         }
     }
 }

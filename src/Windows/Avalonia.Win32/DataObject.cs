@@ -49,17 +49,15 @@ namespace Avalonia.Win32
         }
     }
 
-    internal class DataObject : IDisposableDataObject, Win32Com.IAvnDataObject, IMicroComShadowContainer
+    internal class DataObject : CallbackBase, IDisposableDataObject, Win32Com.IAvnDataObject
     {
         // Compatibility with WinForms + WPF...
         internal static readonly byte[] SerializedObjectGUID = new Guid("FD9EA796-3B13-4370-A679-56106BB288FB").ToByteArray();
 
-        class FormatEnumerator : Win32Com.IEnumFORMATETC, IMicroComShadowContainer
+        class FormatEnumerator : CallbackBase, Win32Com.IEnumFORMATETC
         {
             private FORMATETC[] _formats;
             private uint _current;
-
-            public MicroComShadow Shadow { get; set; }
 
             private FormatEnumerator(FORMATETC[] formats, uint current)
             {
@@ -76,7 +74,7 @@ namespace Avalonia.Win32
             private FORMATETC ConvertToFormatEtc(string aFormatName)
             {
                 FORMATETC result = default(FORMATETC);
-                result.cfFormat = (ushort)ClipboardFormats.GetFormat(aFormatName);
+                result.cfFormat = ClipboardFormats.GetFormat(aFormatName);
                 result.dwAspect = DVASPECT.DVASPECT_CONTENT;
                 result.ptd = IntPtr.Zero;
                 result.lindex = -1;
@@ -123,18 +121,6 @@ namespace Avalonia.Win32
             {
                 return new FormatEnumerator(_formats, _current);
             }
-
-            public void Dispose()
-            {
-            }
-
-            public void OnReferencedFromNative()
-            {
-            }
-
-            public void OnUnreferencedFromNative()
-            {
-            }
         }
 
         private const uint DV_E_TYMED = 0x80040069;
@@ -148,8 +134,6 @@ namespace Avalonia.Win32
 
 
         IDataObject _wrapped;
-
-        public MicroComShadow Shadow { get; set; }
 
         public DataObject(IDataObject wrapped)
         {
@@ -426,18 +410,10 @@ namespace Avalonia.Win32
             }
         }
 
-        public void Dispose()
+        protected override void Destroyed()
         {
+            base.Destroyed();
         }
-
-        public void OnReferencedFromNative()
-        {
-        }
-
-        public void OnUnreferencedFromNative()
-        {
-        }
-
         #endregion
     }
 }
