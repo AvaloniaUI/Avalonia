@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Threading.Tasks;
-using OpenQA.Selenium.Appium;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Remote;
 using Xunit;
+using static Avalonia.IntegrationTests.Appium.TestAppFixture;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
     public class ContextMenuTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AvaloniaWebDriver _session;
 
         public ContextMenuTests(TestAppFixture fixture)
         {
             _session = fixture.Session;
 
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("ContextMenu");
+            var tab = tabs.FindElement(By.Name("ContextMenu"));
             tab.Click();
         }
 
@@ -25,7 +27,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var rootMenuItem = _session.FindElementByAccessibilityId("ContextMenuTb");
             rootMenuItem.Click();
-            new Actions(rootMenuItem.WrappedDriver).ContextClick().Perform();
+            //new Actions(rootMenuItem.WrappedDriver).ContextClick().Perform();
         }
     }
 }

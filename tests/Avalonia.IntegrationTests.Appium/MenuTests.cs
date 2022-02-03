@@ -1,19 +1,22 @@
-﻿using OpenQA.Selenium.Appium;
+﻿
+using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 using Xunit;
+using static Avalonia.IntegrationTests.Appium.TestAppFixture;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
     public class MenuTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AvaloniaWebDriver _session;
 
         public MenuTests(TestAppFixture fixture)
         {
             _session = fixture.Session;
 
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Menu");
+            var tab = tabs.FindElement(By.Name("Menu"));
             tab.Click();
         }
 
@@ -55,7 +58,7 @@ namespace Avalonia.IntegrationTests.Appium
             
             rootMenuItem.SendClick();
 
-            var childMenuItem = _session.FindElementByAccessibilityId("Child1MenuItem");
+            var childMenuItem = _session.FindElementByName("_Child 1");
 
             Assert.Equal("Ctrl+O", childMenuItem.GetAttribute("AcceleratorKey"));
         }

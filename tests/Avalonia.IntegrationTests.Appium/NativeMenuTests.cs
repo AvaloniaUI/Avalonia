@@ -1,19 +1,21 @@
-﻿using OpenQA.Selenium.Appium;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 using Xunit;
+using static Avalonia.IntegrationTests.Appium.TestAppFixture;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
     public class NativeMenuTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AvaloniaWebDriver _session;
 
         public NativeMenuTests(TestAppFixture fixture)
         {
             _session = fixture.Session;
 
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Automation");
+            var tab = tabs.FindElement(By.Name("Automation"));
             tab.Click();
         }
 
@@ -21,14 +23,14 @@ namespace Avalonia.IntegrationTests.Appium
         public void View_Menu_Select_Button_Tab()
         {
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var buttonTab = tabs.FindElementByName("Button");
+            var buttonTab = tabs.FindElement(By.Name("Button"));
             var menuBar = _session.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
-            var viewMenu = menuBar.FindElementByName("View");
+            var viewMenu = menuBar.FindElement(By.Name("View"));
             
             Assert.False(buttonTab.Selected);
             
             viewMenu.Click();
-            var buttonMenu = viewMenu.FindElementByName("Button");
+            var buttonMenu = viewMenu.FindElement(By.Name("Button"));
             buttonMenu.Click();
 
             Assert.True(buttonTab.Selected);

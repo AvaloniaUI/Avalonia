@@ -1,19 +1,21 @@
-﻿using OpenQA.Selenium.Appium;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 using Xunit;
+using static Avalonia.IntegrationTests.Appium.TestAppFixture;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
     public class AutomationTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AvaloniaWebDriver _session;
 
         public AutomationTests(TestAppFixture fixture)
         {
             _session = fixture.Session;
 
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Automation");
+            var tab = tabs.FindElement(By.Name("Automation"));
             tab.Click();
         }
 

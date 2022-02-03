@@ -1,26 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     internal static class ElementExtensions
     {
-        public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
-            element.FindElementsByXPath("*/*");
+        public static IReadOnlyList<IWebElement> GetChildren(this IWebElement element) =>
+            element.FindElements(By.XPath("*/*"));
 
-        public static string GetComboBoxValue(this AppiumWebElement element)
+        public static string GetComboBoxValue(this IWebElement element)
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 element.Text :
                 element.GetAttribute("value");
         }
-        
-        public static string GetName(this AppiumWebElement element) => GetAttribute(element, "Name", "title");
 
-        public static bool? GetIsChecked(this AppiumWebElement element) =>
+        public static string GetName(this IWebElement element) => GetAttribute(element, "Name", "title");
+
+        public static bool? GetIsChecked(this IWebElement element) =>
             GetAttribute(element, "Toggle.ToggleState", "value") switch
             {
                 "0" => false,
@@ -29,7 +29,7 @@ namespace Avalonia.IntegrationTests.Appium
                 _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
             };
 
-        public static void SendClick(this AppiumWebElement element)
+        public static void SendClick(this IWebElement element)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -37,14 +37,14 @@ namespace Avalonia.IntegrationTests.Appium
             }
             else
             {
-                // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
-                // such as list items don't support this action, so instead simulate a physical click as VoiceOver
-                // does.
-                new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
+                //// The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
+                //// such as list items don't support this action, so instead simulate a physical click as VoiceOver
+                //// does.
+                //new Actions(element.dr).MoveToElement(element).Click().Perform();
             }
         }
 
-        public static string GetAttribute(AppiumWebElement element, string windows, string macOS)
+        public static string GetAttribute(IWebElement element, string windows, string macOS)
         {
             return element.GetAttribute(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? windows : macOS);
         }

@@ -1,19 +1,21 @@
-﻿using OpenQA.Selenium.Appium;
+﻿using System.Reflection;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 using Xunit;
+using static Avalonia.IntegrationTests.Appium.TestAppFixture;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
     public class ButtonTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AvaloniaWebDriver _session;
 
         public ButtonTests(TestAppFixture fixture)
         {
             _session = fixture.Session;
-
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Button");
+            var tab = tabs.FindElement(By.Name("Button"));
             tab.Click();
         }
 
