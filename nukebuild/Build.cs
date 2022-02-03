@@ -87,7 +87,8 @@ partial class Build : NukeBuild
             Console.WriteLine(preamble);
             Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
         }
-        ExecWait("dotnet version:", "dotnet", "--version");
+        ExecWait("dotnet version:", "dotnet", "--info");
+        ExecWait("dotnet workloads:", "dotnet", "workload list");
     }
 
     IReadOnlyCollection<Output> MsBuildCommon(
