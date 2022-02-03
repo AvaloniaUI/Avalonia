@@ -1,6 +1,7 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:CompileBindings="True">
+        x:CompileBindings="True"
+        xmlns:converters="using:Avalonia.Controls.Converters">
 
   <Design.PreviewWith>
     <Border Padding="60">
@@ -22,6 +23,10 @@
   <Styles.Resources>
     <x:Double x:Key="SplitButtonPrimaryButtonSize">32</x:Double>
     <x:Double x:Key="SplitButtonSecondaryButtonSize">32</x:Double>
+
+    <converters:MarginMultiplierConverter x:Key="PrimaryButtonBorderMultiplier" Left="True" Top="True" Bottom="True" Indent="1" />
+    <converters:MarginMultiplierConverter x:Key="SecondaryButtonBorderMultiplier" Right="True" Top="True" Bottom="True" Indent="1" />
+    <converters:MarginMultiplierConverter x:Key="SeparatorBorderMultiplier" Top="True" Bottom="True" Indent="1" />
   </Styles.Resources>
 
   <Style Selector="SplitButton">
@@ -44,6 +49,7 @@
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <Button x:Name="PART_PrimaryButton"
@@ -51,7 +57,7 @@
                     MinWidth="{DynamicResource SplitButtonPrimaryButtonSize}"
                     Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
+                    BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource PrimaryButtonBorderMultiplier}}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     Content="{TemplateBinding Content}"
                     ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -68,13 +74,20 @@
                     Focusable="False"
                     KeyboardNavigation.IsTabStop="False" />
 
-            <Button x:Name="PART_SecondaryButton"
+            <Border x:Name="SeparatorBorder"
                     Grid.Column="1"
+                    Background="Transparent"
+                    Width="1"
+                    BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource SeparatorBorderMultiplier}}"
+                    BorderBrush="{TemplateBinding BorderBrush}" />
+
+            <Button x:Name="PART_SecondaryButton"
+                    Grid.Column="2"
                     MinWidth="{DynamicResource SplitButtonSecondaryButtonSize}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
+                    BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource SecondaryButtonBorderMultiplier}}"
                     Padding="0"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
@@ -106,8 +119,8 @@
   <!-- Primary and Secondary buttons PointerOver State -->
   <Style Selector="SplitButton /template/ Button#PART_PrimaryButton:pointerover /template/ ContentPresenter,
          SplitButton /template/ Button#PART_SecondaryButton:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPointerOver}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPointerOver}" />
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundPointerOver}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPointerOver}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
   </Style>
   <Style Selector="SplitButton /template/ Button#PART_SecondaryButton:pointerover PathIcon">
@@ -117,8 +130,8 @@
   <!-- Primary and Secondary buttons Pressed State -->
   <Style Selector="SplitButton /template/ Button#PART_PrimaryButton:pressed /template/ ContentPresenter,
          SplitButton /template/ Button#PART_SecondaryButton:pressed /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
   <Style Selector="SplitButton /template/ Button#PART_SecondaryButton:pressed PathIcon">
@@ -127,9 +140,10 @@
 
   <!-- SplitButton Pressed State -->
   <Style Selector="SplitButton:pressed /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
-         SplitButton:pressed /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+         SplitButton:pressed /template/ Button#PART_SecondaryButton /template/ ContentPresenter,
+         SplitButton:pressed /template/ Border#SeparatorBorder">
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
   <Style Selector="SplitButton:pressed /template/ Button#PART_SecondaryButton PathIcon">
@@ -138,9 +152,10 @@
 
   <!-- Primary and Secondary buttons Flyout Open State -->
   <Style Selector="SplitButton:flyout-open /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
-         SplitButton:flyout-open /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
+         SplitButton:flyout-open /template/ Button#PART_SecondaryButton /template/ ContentPresenter,
+         SplitButton:flyout-open /template/ Border#SeparatorBorder">
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundPressed}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
   <Style Selector="SplitButton:flyout-open /template/ Button#PART_SecondaryButton PathIcon">
@@ -149,9 +164,10 @@
 
   <!-- Disabled State -->
   <Style Selector="SplitButton:disabled /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
-         SplitButton:disabled /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundDisabled}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushDisabled}" />
+         SplitButton:disabled /template/ Button#PART_SecondaryButton /template/ ContentPresenter,
+         SplitButton:disabled /template/ Border#SeparatorBorder">
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundDisabled}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushDisabled}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundDisabled}" />
   </Style>
   <Style Selector="SplitButton:disabled /template/ Button#PART_SecondaryButton PathIcon">
@@ -160,9 +176,10 @@
 
   <!-- Checked State -->
   <Style Selector="SplitButton:checked /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
-         SplitButton:checked /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
+         SplitButton:checked /template/ Button#PART_SecondaryButton /template/ ContentPresenter,
+         SplitButton:checked /template/ Border#SeparatorBorder">
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundChecked}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushChecked}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton PathIcon">
@@ -172,8 +189,8 @@
   <!-- Checked PointerOver State -->
   <Style Selector="SplitButton:checked /template/ Button#PART_PrimaryButton:pointerover /template/ ContentPresenter,
          SplitButton:checked /template/ Button#PART_SecondaryButton:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundCheckedPointerOver}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPointerOver}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton:pointerover PathIcon">
@@ -183,8 +200,8 @@
   <!-- Checked Pressed State -->
   <Style Selector="SplitButton:checked /template/ Button#PART_PrimaryButton:pressed /template/ ContentPresenter,
          SplitButton:checked /template/ Button#PART_SecondaryButton:pressed /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton:pressed PathIcon">
@@ -193,9 +210,10 @@
 
   <!-- SplitButton Checked Pressed State -->
   <Style Selector="SplitButton:pressed:checked /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
-         SplitButton:pressed:checked /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+         SplitButton:pressed:checked /template/ Button#PART_SecondaryButton /template/ ContentPresenter,
+         SplitButton:pressed:checked /template/ Border#SeparatorBorder">
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:pressed:checked /template/ Button#PART_SecondaryButton PathIcon">
@@ -204,9 +222,10 @@
 
   <!-- Checked Flyout Open State -->
   <Style Selector="SplitButton:checked:flyout-open /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
-         SplitButton:checked:flyout-open /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
+         SplitButton:checked:flyout-open /template/ Button#PART_SecondaryButton /template/ ContentPresenter,
+         SplitButton:checked:flyout-open /template/ Border#SeparatorBorder">
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundCheckedPressed}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:checked:flyout-open /template/ Button#PART_SecondaryButton PathIcon">
@@ -215,9 +234,10 @@
 
   <!-- Disabled Checked State -->
   <Style Selector="SplitButton:checked:disabled /template/ Button#PART_PrimaryButton /template/ ContentPresenter,
-         SplitButton:checked:disabled /template/ Button#PART_SecondaryButton /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SplitButtonBackgroundCheckedDisabled}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedDisabled}" />
+         SplitButton:checked:disabled /template/ Button#PART_SecondaryButton /template/ ContentPresenter,
+         SplitButton:checked:disabled /template/ Border#SeparatorBorder">
+    <Setter Property="Border.Background" Value="{DynamicResource SplitButtonBackgroundCheckedDisabled}" />
+    <Setter Property="Border.BorderBrush" Value="{DynamicResource SplitButtonBorderBrushCheckedDisabled}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedDisabled}" />
   </Style>
   <Style Selector="SplitButton:checked:disabled /template/ Button#PART_SecondaryButton PathIcon">
