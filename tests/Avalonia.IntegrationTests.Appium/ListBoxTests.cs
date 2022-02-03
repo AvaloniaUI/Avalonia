@@ -16,7 +16,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             _session = fixture.Session;
 
-            var tabs = _session.FindElement(By.Name("MainTabs"));
+            var tabs = _session.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElement(By.Name("ListBox"));
             tab.Click();
         }
