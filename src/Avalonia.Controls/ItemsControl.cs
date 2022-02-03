@@ -79,7 +79,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="IItemContainerGenerator"/> for the control.
         /// </summary>
-        public IItemContainerGenerator? ItemContainerGenerator
+        public IItemContainerGenerator ItemContainerGenerator
         {
             get
             {
@@ -87,13 +87,10 @@ namespace Avalonia.Controls
                 {
                     _itemContainerGenerator = CreateItemContainerGenerator();
 
-                    if (_itemContainerGenerator != null)
-                    {
-                        _itemContainerGenerator.ItemTemplate = ItemTemplate;
-                        _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
-                        _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
-                        _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
-                    }
+                    _itemContainerGenerator.ItemTemplate = ItemTemplate;
+                    _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
+                    _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
+                    _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
                 }
 
                 return _itemContainerGenerator;
