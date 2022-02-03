@@ -35,7 +35,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
         public TextLayout(
-            string text,
+            string? text,
             Typeface typeface,
             double fontSize,
             IBrush foreground,
