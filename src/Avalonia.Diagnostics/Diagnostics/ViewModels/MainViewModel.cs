@@ -163,8 +163,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             }
                             catch { }
                         },
-                        TimeSpan.FromMilliseconds(0),
-                        DispatcherPriority.ApplicationIdle);
+                        TimeSpan.FromMilliseconds(0));
                 }
 
                 RaiseAndSetIfChanged(ref _content, value);
