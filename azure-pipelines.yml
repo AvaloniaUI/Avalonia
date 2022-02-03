@@ -147,6 +147,12 @@ jobs:
       version: 6.0.100
 
   - task: CmdLine@2
+    displayName: 'Install Androi Workload'
+    inputs:
+      script: |
+       dotnet workload install android 
+
+  - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
