@@ -3,7 +3,6 @@ using Avalonia.Input.Raw;
 using Avalonia.MicroCom;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
-using IDataObject = Avalonia.Input.IDataObject;
 using DropEffect = Avalonia.Win32.Win32Com.DropEffect;
 
 namespace Avalonia.Win32
@@ -14,7 +13,7 @@ namespace Avalonia.Win32
         private readonly ITopLevelImpl _tl;
         private readonly IDragDropDevice _dragDevice;
         
-        private IDataObject _currentDrag = null;
+        private IDisposableDataObject _currentDrag = null;
 
         public MicroComShadow Shadow { get; set; }
 
@@ -77,7 +76,12 @@ namespace Avalonia.Win32
                 *pdwEffect= (int)DropEffect.None;
             }
 
-            _currentDrag = pDataObj.GetAvaloniaObject();
+            var newDrag = pDataObj.GetAvaloniaObjectFromCOM();
+            if (_currentDrag != newDrag)
+            {
+                _currentDrag?.Dispose();
+                _currentDrag = newDrag;
+            }
 
             var args = new RawDragEvent(
                 _dragDevice,
@@ -85,7 +89,7 @@ namespace Avalonia.Win32
                 _target,
                 GetDragLocation(pt),
                 _currentDrag, 
-                ConvertDropEffect((*pdwEffect)),
+                ConvertDropEffect(*pdwEffect),
                 ConvertKeyState(grfKeyState)
             );
             dispatch(args);
@@ -129,6 +133,7 @@ namespace Avalonia.Win32
             }
             finally
             {
+                _currentDrag?.Dispose();
                 _currentDrag = null;
             }
         }
@@ -143,7 +148,12 @@ namespace Avalonia.Win32
                     *pdwEffect = (int)DropEffect.None;
                 }
 
-                _currentDrag = pDataObj.GetAvaloniaObject();
+                var newDrag = pDataObj.GetAvaloniaObjectFromCOM();
+                if (_currentDrag != newDrag)
+                {
+                    _currentDrag?.Dispose();
+                    _currentDrag = newDrag;
+                }
 
                 var args = new RawDragEvent(
                     _dragDevice, 
@@ -159,6 +169,7 @@ namespace Avalonia.Win32
             }
             finally
             {
+                _currentDrag?.Dispose();
                 _currentDrag = null;
             }
         }
@@ -171,6 +182,7 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
+            _currentDrag?.Dispose();
         }
 
         public void OnReferencedFromNative()

@@ -8,17 +8,18 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Avalonia.Input;
+using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    internal class OleDataObject : Avalonia.Input.IDataObject
+    internal class OleDataObject : IDisposableDataObject
     {
         private readonly Win32Com.IDataObject _wrapped;
 
         public OleDataObject(Win32Com.IDataObject wrapped)
         {
-            _wrapped = wrapped;
+            _wrapped = wrapped.CloneReference();
         }
 
         public bool Contains(string dataFormat)
@@ -182,6 +183,11 @@ namespace Avalonia.Win32
                 }
             }
             return formatsList;
+        }
+
+        public void Dispose()
+        {
+            _wrapped.Dispose();
         }
     }
 }

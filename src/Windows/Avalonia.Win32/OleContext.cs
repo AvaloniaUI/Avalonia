@@ -47,7 +47,7 @@ namespace Avalonia.Win32
                 return false;
             }
 
-            var trgPtr = MicroCom.MicroComRuntime.GetNativeIntPtr(target, false);
+            var trgPtr = MicroCom.MicroComRuntime.GetNativeIntPtr(target);
             return UnmanagedMethods.RegisterDragDrop(hwnd.Handle, trgPtr) == UnmanagedMethods.HRESULT.S_OK;
         }
 

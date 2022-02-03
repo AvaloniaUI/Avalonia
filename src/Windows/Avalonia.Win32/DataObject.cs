@@ -16,33 +16,43 @@ using IDataObject = Avalonia.Input.IDataObject;
 
 namespace Avalonia.Win32
 {
+    public interface IDisposableDataObject : IDataObject, IDisposable { }
+
     internal static class DataObjectEx
     {
-        public static unsafe IDataObject GetAvaloniaObject(this Win32Com.IDataObject pDataObj)
+        public static unsafe IDisposableDataObject GetAvaloniaObjectFromCOM(this Win32Com.IDataObject pDataObj)
         {
-            switch (pDataObj)
+            if (pDataObj is null)
             {
-                case null:
-                    throw new ArgumentNullException(nameof(pDataObj));
-                case DataObject avnObj:
-                    return avnObj;
-                case OleDataObject oleAvnObj:
-                    return oleAvnObj;
-                default:
-                    var guid = MicroComRuntime.GetGuidFor(typeof(Win32Com.IAvnDataObject));
-                    var rv = ((MicroComProxyBase)pDataObj).QueryInterface(guid, out var ppv);
-                    return rv == 0
-                        ? MicroComRuntime.GetObjectFromCcw(ppv) as DataObject
-                        : new OleDataObject(pDataObj);
+                throw new ArgumentNullException(nameof(pDataObj));
+            }
+            if (pDataObj is IDisposableDataObject disposableDataObject)
+            {
+                return disposableDataObject;
+            }
+
+            // If DataObject was created on the our side (drag'n'drop initiated by Avalonia),
+            // then pDataObj will implement IAvnDataObject interface as well. So we can safely case it back to DataObject.
+            if (((MicroComProxyBase)pDataObj).TryQueryInterface<Win32Com.IAvnDataObject>(out var avnInterface))
+            {
+                using (avnInterface)
+                {
+                    var ppv = MicroComRuntime.GetNativeIntPtr(avnInterface);
+                    return MicroComRuntime.GetObjectFromCcw(ppv) as DataObject;
+                }
+            }
+            // Otherwise wrap pDataObj into OleDataObject.
+            else
+            {
+                return new OleDataObject(pDataObj);
             }
         }
     }
 
-    internal class DataObject : IDataObject, Win32Com.IAvnDataObject, IMicroComShadowContainer
+    internal class DataObject : IDisposableDataObject, Win32Com.IAvnDataObject, IMicroComShadowContainer
     {
         // Compatibility with WinForms + WPF...
         internal static readonly byte[] SerializedObjectGUID = new Guid("FD9EA796-3B13-4370-A679-56106BB288FB").ToByteArray();
-        private static Dictionary<IntPtr, IDataObject> _avnDataObject = new Dictionary<IntPtr, IDataObject>();
 
         class FormatEnumerator : Win32Com.IEnumFORMATETC, IMicroComShadowContainer
         {
@@ -143,7 +153,7 @@ namespace Avalonia.Win32
 
         public DataObject(IDataObject wrapped)
         {
-            if (_wrapped is DataObject)
+            if (_wrapped is DataObject || _wrapped is OleDataObject)
             {
                 throw new InvalidOperationException();
             }

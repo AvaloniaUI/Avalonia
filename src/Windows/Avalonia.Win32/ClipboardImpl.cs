@@ -83,7 +83,7 @@ namespace Avalonia.Win32
 
             while (true)
             {
-                var ptr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(wrapper, true);
+                var ptr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(wrapper);
                 var hr = UnmanagedMethods.OleSetClipboard(ptr);
 
                 if (hr == 0)
@@ -107,8 +107,8 @@ namespace Avalonia.Win32
 
                 if (hr == 0)
                 {
-                    using var proxy = MicroCom.MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, false);
-                    var wrapper = new OleDataObject(proxy);
+                    using var proxy = MicroCom.MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
+                    using var wrapper = new OleDataObject(proxy);
                     var formats = wrapper.GetDataFormats().ToArray();
                     return formats;
                 }
@@ -131,8 +131,8 @@ namespace Avalonia.Win32
 
                 if (hr == 0)
                 {
-                    using var proxy = MicroCom.MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, false);
-                    var wrapper = new OleDataObject(proxy);
+                    using var proxy = MicroCom.MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
+                    using var wrapper = new OleDataObject(proxy);
                     var rv = wrapper.Get(format);
                     return rv;
                 }

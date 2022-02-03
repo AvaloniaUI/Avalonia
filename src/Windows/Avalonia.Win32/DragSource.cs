@@ -15,12 +15,12 @@ namespace Avalonia.Win32
 
             triggerEvent.Pointer.Capture(null);
             
-            var dataObject = new DataObject(data);
-            var src = new OleDragSource();
+            using var dataObject = new DataObject(data);
+            using var src = new OleDragSource();
             var allowed = OleDropTarget.ConvertDropEffect(allowedEffects);
             
-            var objPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject, true);
-            var srcPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src, true);
+            var objPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject);
+            var srcPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src);
 
             UnmanagedMethods.DoDragDrop(objPtr, srcPtr, (int)allowed, out var finalEffect);
             return Task.FromResult(OleDropTarget.ConvertDropEffect((Win32Com.DropEffect)finalEffect));
