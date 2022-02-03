@@ -1,98 +1,139 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="IntegrationTestApp.MainWindow"
-        Title="IntegrationTestApp">
-  <NativeMenu.Menu>
-    <NativeMenu>
-      <NativeMenuItem Header="File">
+<Window
+    x:Class="IntegrationTestApp.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="IntegrationTestApp"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <NativeMenu.Menu>
         <NativeMenu>
-          <NativeMenuItem Header="Open..."/>
+            <NativeMenuItem Header="File">
+                <NativeMenu>
+                    <NativeMenuItem Header="Open..." />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="View">
+                <NativeMenu />
+            </NativeMenuItem>
         </NativeMenu>
-      </NativeMenuItem>
-      <NativeMenuItem Header="View">
-        <NativeMenu/>
-      </NativeMenuItem>  
-    </NativeMenu>
-  </NativeMenu.Menu>
-  <DockPanel>
-    <NativeMenuBar DockPanel.Dock="Top"/>
-    
-    <TabControl TabStripPlacement="Left" Name="MainTabs">
-      <TabItem Header="Automation">
-        <StackPanel>
-          <TextBlock Name="TextBlockWithName">TextBlockWithName</TextBlock>
-          <TextBlock Name="NotTheAutomationId" AutomationProperties.AutomationId="TextBlockWithNameAndAutomationId">
-            TextBlockWithNameAndAutomationId
-          </TextBlock>
-          <TextBlock Name="TextBlockAsLabel">Label for TextBox</TextBlock>
-          <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}">
-            Foo
-          </TextBox>
-        </StackPanel>
-      </TabItem>
-      
-      <TabItem Header="Button" Name="buttons">
-        <StackPanel>
-          <Button Name="DisabledButton" IsEnabled="False">
-            Disabled Button
-          </Button>
-          <Button Name="BasicButton">
-            Basic Button
-          </Button>
-          <Button Name="ButtonWithTextBlock">
-            <TextBlock>Button with TextBlock</TextBlock>
-          </Button>
-          <Button Name="ButtonWithAcceleratorKey" HotKey="Ctrl+B">Button with Accelerator Key</Button>
-          <RepeatButton Name="RepeatButton">
-            <TextBlock Name="RepeatButtonTextBlock" Text="Repeat Button: 0" />
-          </RepeatButton>
-        </StackPanel>
-      </TabItem>
+    </NativeMenu.Menu>
+    <DockPanel>
+        <NativeMenuBar DockPanel.Dock="Top" />
 
-      <TabItem Header="CheckBox">
-        <StackPanel>
-          <CheckBox Name="UncheckedCheckBox">Unchecked</CheckBox>
-          <CheckBox Name="CheckedCheckBox" IsChecked="True">Checked</CheckBox>
-          <CheckBox Name="ThreeStateCheckBox" IsThreeState="True" IsChecked="{x:Null}">ThreeState</CheckBox>
-        </StackPanel>
-      </TabItem>
+        <TabControl Name="MainTabs" TabStripPlacement="Left">
+            <TabItem Header="Automation">
+                <StackPanel>
+                    <TextBlock Name="TextBlockWithName">TextBlockWithName</TextBlock>
+                    <TextBlock Name="NotTheAutomationId" AutomationProperties.AutomationId="TextBlockWithNameAndAutomationId">
+                        TextBlockWithNameAndAutomationId
+                    </TextBlock>
+                    <TextBlock Name="TextBlockAsLabel">Label for TextBox</TextBlock>
+                    <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}">
+                        Foo
+                    </TextBox>
+                </StackPanel>
+            </TabItem>
 
-      <TabItem Header="ComboBox">
-        <StackPanel>
-          <ComboBox Name="BasicComboBox">
-            <ComboBoxItem>Item 0</ComboBoxItem>
-            <ComboBoxItem>Item 1</ComboBoxItem>
-          </ComboBox>
-          <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
-          <Button Name="ComboBoxSelectFirst">Select First</Button>
-        </StackPanel>
-      </TabItem>
+            <TabItem Name="buttons" Header="Button">
+                <StackPanel>
+                    <Button Name="DisabledButton" IsEnabled="False">
+                        Disabled Button
+                    </Button>
+                    <Button Name="BasicButton">
+                        Basic Button
+                    </Button>
+                    <Button Name="ButtonWithTextBlock">
+                        <TextBlock>Button with TextBlock</TextBlock>
+                    </Button>
+                    <Button Name="ButtonWithAcceleratorKey" HotKey="Ctrl+B">Button with Accelerator Key</Button>
+                    <RepeatButton Name="RepeatButton">
+                        <TextBlock Name="RepeatButtonTextBlock" Text="Repeat Button: 0" />
+                    </RepeatButton>
+                </StackPanel>
+            </TabItem>
 
-      <TabItem Header="ListBox">
-        <DockPanel>
-          <StackPanel DockPanel.Dock="Bottom">
-            <Button Name="ListBoxSelectionClear">Clear Selection</Button>
-          </StackPanel>
-          <ListBox Name="BasicListBox" Items="{Binding ListBoxItems}" SelectionMode="Multiple"/>
-        </DockPanel>
-      </TabItem>
-      
-      <TabItem Header="Menu">
-        <DockPanel>
-          <Menu DockPanel.Dock="Top">
-            <MenuItem Name="RootMenuItem" Header="_Root">
-              <MenuItem Name="Child1MenuItem" Header="_Child 1" InputGesture="Ctrl+O" Click="MenuClicked"/>
-              <MenuItem Name="Child2MenuItem" Header="_Child 1">
-                <MenuItem Name="GrandchildMenuItem" Header="_Grandchild" Click="MenuClicked"/>
-              </MenuItem>
-            </MenuItem>
-          </Menu>
-          <TextBlock Name="ClickedMenuItem">None</TextBlock>
-        </DockPanel>
-      </TabItem>
-    </TabControl>
-  </DockPanel>
+            <TabItem Header="CheckBox">
+                <StackPanel>
+                    <CheckBox Name="UncheckedCheckBox">Unchecked</CheckBox>
+                    <CheckBox Name="CheckedCheckBox" IsChecked="True">Checked</CheckBox>
+                    <CheckBox
+                        Name="ThreeStateCheckBox"
+                        IsChecked="{x:Null}"
+                        IsThreeState="True">
+                        ThreeState
+                    </CheckBox>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="ComboBox">
+                <StackPanel>
+                    <ComboBox Name="BasicComboBox">
+                        <ComboBoxItem>Item 0</ComboBoxItem>
+                        <ComboBoxItem>Item 1</ComboBoxItem>
+                    </ComboBox>
+                    <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
+                    <Button Name="ComboBoxSelectFirst">Select First</Button>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="ContextMenu">
+                <TextBlock Name="ContextMenuTb" Text="Right click me">
+                    <TextBlock.ContextMenu>
+                        <ContextMenu Name="ContextMenuTest">
+                            <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+                            <MenuItem
+                                Header="_Disabled Menu Item"
+                                InputGesture="Ctrl+D"
+                                IsEnabled="False" />
+                            <Separator />
+                            <MenuItem Name="RootMenuItem2" Header="Menu with _Submenu">
+                                <MenuItem Header="Submenu _1">
+                                    <MenuItem Header="Submenu" />
+                                </MenuItem>
+                                <MenuItem Header="Submenu _2" />
+                            </MenuItem>
+                            <MenuItem Header="Menu Item that won't close on click" StaysOpenOnClick="True" />
+                        </ContextMenu>
+                    </TextBlock.ContextMenu>
+                </TextBlock>
+
+            </TabItem>
+
+            <TabItem Header="ListBox">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <Button Name="ListBoxSelectionClear">Clear Selection</Button>
+                    </StackPanel>
+                    <ListBox
+                        Name="BasicListBox"
+                        Items="{Binding ListBoxItems}"
+                        SelectionMode="Multiple" />
+                </DockPanel>
+            </TabItem>
+
+            <TabItem Header="Menu">
+                <DockPanel>
+                    <Menu DockPanel.Dock="Top">
+                        <MenuItem Name="RootMenuItem" Header="_Root">
+                            <MenuItem
+                                Name="Child1MenuItem"
+                                Click="MenuClicked"
+                                Header="_Child 1"
+                                InputGesture="Ctrl+O" />
+                            <MenuItem Name="Child2MenuItem" Header="_Child 1">
+                                <MenuItem
+                                    Name="GrandchildMenuItem"
+                                    Click="MenuClicked"
+                                    Header="_Grandchild" />
+                            </MenuItem>
+                        </MenuItem>
+                    </Menu>
+                    <TextBlock Name="ClickedMenuItem">None</TextBlock>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </Window>

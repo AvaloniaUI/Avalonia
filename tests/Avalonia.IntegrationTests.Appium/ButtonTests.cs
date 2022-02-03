@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using OpenQA.Selenium.Appium;
+﻿using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
