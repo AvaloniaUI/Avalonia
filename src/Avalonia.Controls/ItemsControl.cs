@@ -53,12 +53,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
 
-        /// <summary>
-        /// Defines the <see cref="WrapSelection"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> WrapSelectionProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
-
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
@@ -151,16 +145,7 @@ namespace Avalonia.Controls
             get;
             protected set;
         }
-
-        /// <summary>
-        /// Gets or sets a value which indicates whether to wrap around when the first
-        /// or last item is reached.
-        /// </summary>
-        public bool WrapSelection
-        {
-            get { return GetValue(WrapSelectionProperty); }
-            set { SetValue(WrapSelectionProperty, value); }
-        }
+        private protected bool WrapFocus { get; set; }
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -340,7 +325,7 @@ namespace Avalonia.Controls
                 {
                     if (current.VisualParent == container && current is IInputElement inputElement)
                     {
-                        IInputElement next = GetNextControl(container, direction.Value, inputElement, WrapSelection);
+                        IInputElement next = GetNextControl(container, direction.Value, inputElement, WrapFocus);
 
                         if (next != null)
                         {
