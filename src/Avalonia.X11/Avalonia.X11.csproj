@@ -9,6 +9,7 @@
         <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
         <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
         <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
+        <Compile Include="..\Shared\RawEventGrouping.cs" />
     </ItemGroup>
 
 </Project>

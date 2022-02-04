@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Presenters
     {
         public static void ItemsChanged(
             ItemsPresenterBase owner,
-            IEnumerable items,
+            IEnumerable? items,
             NotifyCollectionChangedEventArgs e)
         {
             var generator = owner.ItemContainerGenerator;
@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Presenters
 
             void Add()
             {
-                if (e.NewStartingIndex + e.NewItems.Count < items.Count())
+                if (e.NewStartingIndex + e.NewItems!.Count < items!.Count())
                 {
                     generator.InsertSpace(e.NewStartingIndex, e.NewItems.Count);
                 }
@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Presenters
 
             void Remove()
             {
-                RemoveContainers(panel, generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count));
+                RemoveContainers(panel, generator.RemoveRange(e.OldStartingIndex, e.OldItems!.Count));
             }
 
             switch (e.Action)
@@ -48,8 +48,8 @@ namespace Avalonia.Controls.Presenters
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    RemoveContainers(panel, generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count));
-                    var containers = AddContainers(owner, e.NewStartingIndex, e.NewItems);
+                    RemoveContainers(panel, generator.Dematerialize(e.OldStartingIndex, e.OldItems!.Count));
+                    var containers = AddContainers(owner, e.NewStartingIndex, e.NewItems!);
 
                     var i = e.NewStartingIndex;
 
@@ -92,7 +92,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (i.ContainerControl != null)
                 {
-                    if (i.Index < panel.Children.Count)
+                    if (i.Index < panel!.Children.Count)
                     {
                         // TODO: This will insert at the wrong place when there are null items.
                         panel.Children.Insert(i.Index, i.ContainerControl);

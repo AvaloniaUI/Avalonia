@@ -18,8 +18,8 @@ namespace Avalonia.Controls.Remote
         }
 
         private readonly IAvaloniaRemoteTransportConnection _connection;
-        private FrameMessage _lastFrame;
-        private WriteableBitmap _bitmap;
+        private FrameMessage? _lastFrame;
+        private WriteableBitmap? _bitmap;
         public RemoteWidget(IAvaloniaRemoteTransportConnection connection)
         {
             Mode = SizingMode.Local;

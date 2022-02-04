@@ -108,6 +108,8 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        public new IVirtualizingPanel VirtualizingPanel => base.VirtualizingPanel!;
+
         /// <inheritdoc/>
         public override Size MeasureOverride(Size availableSize)
         {
@@ -151,7 +153,7 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            Owner.Panel.Measure(availableSize);
+            Owner.Panel!.Measure(availableSize);
             return Owner.Panel.DesiredSize;
         }
 
@@ -163,7 +165,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
+        public override void ItemsChanged(IEnumerable? items, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsChanged(items, e);
 
@@ -224,7 +226,7 @@ namespace Avalonia.Controls.Presenters
             InvalidateScroll();
         }
 
-        public override IControl GetControlInDirection(NavigationDirection direction, IControl from)
+        public override IControl? GetControlInDirection(NavigationDirection direction, IControl from)
         {
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
@@ -336,7 +338,7 @@ namespace Avalonia.Controls.Presenters
                         }
                     }
 
-                    var materialized = generator.Materialize(index, Items.ElementAt(index));
+                    var materialized = generator.Materialize(index, Items.ElementAt(index)!);
 
                     if (step == 1)
                     {
@@ -387,7 +389,7 @@ namespace Avalonia.Controls.Presenters
 
             foreach (var container in containers)
             {
-                var item = Items.ElementAt(itemIndex);
+                var item = Items!.ElementAt(itemIndex)!;
 
                 if (!object.Equals(container.Item, item))
                 {
@@ -432,7 +434,7 @@ namespace Avalonia.Controls.Presenters
                 var oldItemIndex = FirstIndex + first + i;
                 var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
 
-                var item = Items.ElementAt(newItemIndex);
+                var item = Items!.ElementAt(newItemIndex)!;
 
                 if (!generator.TryRecycle(oldItemIndex, newItemIndex, item))
                 {
@@ -511,7 +513,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         /// <param name="index">The item index.</param>
         /// <returns>The container that was brought into view.</returns>
-        private IControl ScrollIntoViewCore(int index)
+        private IControl? ScrollIntoViewCore(int index)
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;

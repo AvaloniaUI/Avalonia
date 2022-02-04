@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

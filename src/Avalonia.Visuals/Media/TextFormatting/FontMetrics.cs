@@ -5,11 +5,13 @@
     /// </summary>
     public readonly struct FontMetrics
     {
-        public FontMetrics(Typeface typeface, double fontSize)
+        public FontMetrics(Typeface typeface, double fontRenderingEmSize)
         {
             var glyphTypeface = typeface.GlyphTypeface;
 
-            var scale = fontSize / glyphTypeface.DesignEmHeight;
+            var scale = fontRenderingEmSize / glyphTypeface.DesignEmHeight;
+
+            FontRenderingEmSize = fontRenderingEmSize;
 
             Ascent = glyphTypeface.Ascent * scale;
 
@@ -27,6 +29,11 @@
 
             StrikethroughPosition = glyphTypeface.StrikethroughPosition * scale;
         }
+
+        /// <summary>
+        /// Em size of font used to format and display text
+        /// </summary>
+        public double FontRenderingEmSize { get; }
 
         /// <summary>
         /// Gets the recommended distance above the baseline.

@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         private static ConditionalWeakTable<IDataTemplate, RecyclePool> s_pools = new ConditionalWeakTable<IDataTemplate, RecyclePool>();
         private readonly Dictionary<string, List<ElementInfo>> _elements = new Dictionary<string, List<ElementInfo>>();
 
-        public static RecyclePool GetPoolInstance(IDataTemplate dataTemplate)
+        public static RecyclePool? GetPoolInstance(IDataTemplate dataTemplate)
         {
             s_pools.TryGetValue(dataTemplate, out var result);
             return result;
@@ -30,7 +30,7 @@ namespace Avalonia.Controls
 
         public static void SetPoolInstance(IDataTemplate dataTemplate, RecyclePool value) => s_pools.Add(dataTemplate, value);
 
-        public void PutElement(IControl element, string key, IControl owner)
+        public void PutElement(IControl element, string key, IControl? owner)
         {
             var ownerAsPanel = EnsureOwnerIsPanelOrNull(owner);
             var elementInfo = new ElementInfo(element, ownerAsPanel);
@@ -44,7 +44,7 @@ namespace Avalonia.Controls
             pool.Add(elementInfo);
         }
 
-        public IControl TryGetElement(string key, IControl owner)
+        public IControl? TryGetElement(string key, IControl? owner)
         {
             if (_elements.TryGetValue(key, out var elements))
             {
@@ -54,10 +54,10 @@ namespace Avalonia.Controls
                     // the enter/leave cost during recycling.
                     // TODO: prioritize elements with the same owner to those without an owner.
                     var elementInfo = elements.FirstOrDefault(x => x.Owner == owner) ?? elements.LastOrDefault();
-                    elements.Remove(elementInfo);
+                    elements.Remove(elementInfo!);
 
                     var ownerAsPanel = EnsureOwnerIsPanelOrNull(owner);
-                    if (elementInfo.Owner != null && elementInfo.Owner != ownerAsPanel)
+                    if (elementInfo!.Owner != null && elementInfo.Owner != ownerAsPanel)
                     {
                         // Element is still under its parent. remove it from its parent.
                         var panel = elementInfo.Owner;
@@ -83,7 +83,7 @@ namespace Avalonia.Controls
         internal string GetReuseKey(IControl element) => element.GetValue(ReuseKeyProperty);
         internal void SetReuseKey(IControl element, string value) => element.SetValue(ReuseKeyProperty, value);
 
-        private IPanel EnsureOwnerIsPanelOrNull(IControl owner)
+        private IPanel? EnsureOwnerIsPanelOrNull(IControl? owner)
         {
             if (owner is IPanel panel)
             {
@@ -99,14 +99,14 @@ namespace Avalonia.Controls
 
         private class ElementInfo
         {
-            public ElementInfo(IControl element, IPanel owner)
+            public ElementInfo(IControl element, IPanel? owner)
             {
                 Element = element;
                 Owner = owner;
             }
 
             public IControl Element { get; }
-            public IPanel Owner { get;}
+            public IPanel? Owner { get;}
         }
     }
 }
