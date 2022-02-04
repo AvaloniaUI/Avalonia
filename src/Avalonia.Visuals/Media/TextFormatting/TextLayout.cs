@@ -406,7 +406,7 @@ namespace Avalonia.Media.TextFormatting
                 return new TextHitTestResult();
             }
 
-            characterHit = currentLine.GetNextCaretCharacterHit(new CharacterHit(currentLine.TextRange.End));
+            characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
             return GetHitTestResult(currentLine, characterHit, point);
         }
