@@ -67,6 +67,16 @@ namespace Avalonia.Win32
 
                     frm.SetFileTypeIndex(0);
 
+                    if (dialog is SaveFileDialog saveFileDialog)
+                    {
+                        var overwritePrompt = saveFileDialog.OverwritePrompt ?? true;
+
+                        if (!overwritePrompt)
+                        {
+                            frm.SetOptions(frm.Options &~ FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT);
+                        }
+                    }
+
                     if (dialog.Directory != null)
                     {
                         var riid = UnmanagedMethods.ShellIds.IShellItem;
