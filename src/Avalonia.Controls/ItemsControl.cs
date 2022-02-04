@@ -317,7 +317,7 @@ namespace Avalonia.Controls
                 {
                     if (current.VisualParent == container && current is IInputElement inputElement)
                     {
-                        IInputElement next = GetNextControl(container, direction.Value, inputElement, WrapFocus);
+                        var next = GetNextControl(container, direction.Value, inputElement, WrapFocus);
 
                         if (next != null)
                         {
