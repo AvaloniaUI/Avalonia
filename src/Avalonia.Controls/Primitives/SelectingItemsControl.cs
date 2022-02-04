@@ -114,6 +114,12 @@ namespace Avalonia.Controls.Primitives
                 "SelectionChanged",
                 RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="WrapSelection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WrapSelectionProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+
         private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;
         private DispatcherTimer? _textSearchTimer;
@@ -319,6 +325,16 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(IsTextSearchEnabledProperty); }
             set { SetValue(IsTextSearchEnabledProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value which indicates whether to wrap around when the first
+        /// or last item is reached.
+        /// </summary>
+        public bool WrapSelection
+        {
+            get { return GetValue(WrapSelectionProperty); }
+            set { SetValue(WrapSelectionProperty, value); }
         }
 
         /// <summary>
@@ -579,6 +595,10 @@ namespace Avalonia.Controls.Primitives
             {
                 var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
                 _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
+            }
+            else if (change.Property == WrapSelectionProperty)
+            {
+                WrapFocus = WrapSelection;
             }
         }
 
