@@ -219,7 +219,7 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
-            //This part of code is needed just to accuire initial focus,subsequent focus navigation will be done by ItemsControl.
+            // This part of code is needed just to acquire initial focus, subsequent focus navigation will be done by ItemsControl.
             else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
                       (e.Key == Key.Up || e.Key == Key.Down) && IsFocused == true)
             {

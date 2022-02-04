@@ -145,6 +145,7 @@ namespace Avalonia.Controls
             get;
             protected set;
         }
+
         private protected bool WrapFocus { get; set; }
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
