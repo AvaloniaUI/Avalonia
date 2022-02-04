@@ -5,7 +5,7 @@
 
 ## 📖 About 
 
-Avalonia is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of Operating Systems such as Windows, Linux, MacOs. Avalonia is mature and production ready. We also have in beta release support for iOS, Andriod and in early stages support for browser via WASM.
+Avalonia is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of Operating Systems such as Windows, Linux, MacOs. Avalonia is mature and production ready. We also have in beta release support for iOS, Android and in early stages support for browser via WASM.
 
 ![image](https://user-images.githubusercontent.com/4672627/152126443-932966cf-57e7-4e77-9be6-62463a66b9f8.png)
 
