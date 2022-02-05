@@ -40,6 +40,16 @@ namespace Avalonia.Win32
                     {
                         options |= FILEOPENDIALOGOPTIONS.FOS_ALLOWMULTISELECT;
                     }
+
+                    if (dialog is SaveFileDialog saveFileDialog)
+                    {
+                        var overwritePrompt = saveFileDialog.ShowOverwritePrompt ?? true;
+
+                        if (!overwritePrompt)
+                        {
+                            options &= ~FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT;
+                        }
+                    }
                     frm.SetOptions(options);
 
                     var defaultExtension = (dialog as SaveFileDialog)?.DefaultExtension ?? "";
@@ -66,16 +76,6 @@ namespace Avalonia.Win32
                     }
 
                     frm.SetFileTypeIndex(0);
-
-                    if (dialog is SaveFileDialog saveFileDialog)
-                    {
-                        var overwritePrompt = saveFileDialog.ShowOverwritePrompt ?? true;
-
-                        if (!overwritePrompt)
-                        {
-                            frm.SetOptions(frm.Options &~ FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT);
-                        }
-                    }
 
                     if (dialog.Directory != null)
                     {
