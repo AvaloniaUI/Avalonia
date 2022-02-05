@@ -63,7 +63,7 @@ namespace Avalonia.X11.NativeDialogs
         public static IDisposable ConnectSignal<T>(IntPtr obj, string name, T handler)
         {
             var handle = GCHandle.Alloc(handler);
-            var ptr = Marshal.GetFunctionPointerForDelegate((Delegate)(object)handler);
+            var ptr = Marshal.GetFunctionPointerForDelegate<T>(handler);
             using (var utf = new Utf8Buffer(name))
             {
                 var id = g_signal_connect_object(obj, utf, ptr, IntPtr.Zero, 0);
