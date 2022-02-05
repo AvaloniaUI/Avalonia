@@ -36,26 +36,31 @@ namespace ControlCatalog.Pages
         private async void CopyTextDataObject(object sender, RoutedEventArgs args)
         {
             var dataObject = new DataObject();
-            dataObject.Set(DataFormats.Text, ClipboardContent.Text);
+            dataObject.Set(DataFormats.Text, ClipboardContent.Text ?? string.Empty);
             await Application.Current.Clipboard.SetDataObjectAsync(dataObject);
         }
 
         private async void PasteTextDataObject(object sender, RoutedEventArgs args)
         {
-            ClipboardContent.Text = (string)await Application.Current.Clipboard.GetDataAsync(DataFormats.Text);
+            ClipboardContent.Text = await Application.Current.Clipboard.GetDataAsync(DataFormats.Text) as string ?? string.Empty;
         }
 
         private async void CopyFilesDataObject(object sender, RoutedEventArgs args)
         {
+            var files = ClipboardContent.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            if (files.Length == 0)
+            {
+                return;
+            }
             var dataObject = new DataObject();
-            dataObject.Set(DataFormats.FileNames, ClipboardContent.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+            dataObject.Set(DataFormats.FileNames, files);
             await Application.Current.Clipboard.SetDataObjectAsync(dataObject);
         }
 
         private async void PasteFilesDataObject(object sender, RoutedEventArgs args)
         {
-            var fiels = (IEnumerable<string>)await Application.Current.Clipboard.GetDataAsync(DataFormats.FileNames);
-            ClipboardContent.Text = string.Join(Environment.NewLine, fiels);
+            var fiels = await Application.Current.Clipboard.GetDataAsync(DataFormats.FileNames) as IEnumerable<string>;
+            ClipboardContent.Text = fiels != null ? string.Join(Environment.NewLine, fiels) : string.Empty;
         }
 
         private async void GetFormats(object sender, RoutedEventArgs args)

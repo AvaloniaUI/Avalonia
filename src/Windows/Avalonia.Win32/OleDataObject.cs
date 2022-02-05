@@ -11,9 +11,11 @@ using Avalonia.Input;
 using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
 
+using IDataObject = Avalonia.Input.IDataObject;
+
 namespace Avalonia.Win32
 {
-    internal class OleDataObject : IDisposableDataObject
+    internal class OleDataObject : IDataObject, IDisposable
     {
         private readonly Win32Com.IDataObject _wrapped;
 

@@ -16,31 +16,7 @@ using IDataObject = Avalonia.Input.IDataObject;
 
 namespace Avalonia.Win32
 {
-    public interface IDisposableDataObject : IDataObject, IDisposable { }
-
-    internal static class DataObjectEx
-    {
-        public static unsafe IDisposableDataObject GetAvaloniaObjectFromCOM(this Win32Com.IDataObject pDataObj)
-        {
-            if (pDataObj is null)
-            {
-                throw new ArgumentNullException(nameof(pDataObj));
-            }
-            if (pDataObj is IDisposableDataObject disposableDataObject)
-            {
-                return disposableDataObject;
-            }
-
-            var dataObject = MicroComRuntime.TryUnwrapManagedObject(pDataObj) as DataObject;
-            if (dataObject is not null)
-            {
-                return dataObject;
-            }
-            return new OleDataObject(pDataObj);
-        }
-    }
-
-    internal class DataObject : CallbackBase, IDisposableDataObject, Win32Com.IDataObject
+    internal sealed class DataObject : CallbackBase, IDataObject, Win32Com.IDataObject
     {
         // Compatibility with WinForms + WPF...
         internal static readonly byte[] SerializedObjectGUID = new Guid("FD9EA796-3B13-4370-A679-56106BB288FB").ToByteArray();
@@ -124,10 +100,14 @@ namespace Avalonia.Win32
         private const int GMEM_MOVEABLE = 0x0002;
 
 
-        IDataObject _wrapped;
+        private IDataObject _wrapped;
 
         public DataObject(IDataObject wrapped)
         {
+            if (wrapped == null)
+            {
+                throw new ArgumentNullException(nameof(wrapped));
+            }
             if (_wrapped is DataObject || _wrapped is OleDataObject)
             {
                 throw new InvalidOperationException();
@@ -403,7 +383,12 @@ namespace Avalonia.Win32
 
         protected override void Destroyed()
         {
-            base.Destroyed();
+            ReleaseWrapped();
+        }
+
+        public void ReleaseWrapped()
+        {
+            _wrapped = null;
         }
         #endregion
     }

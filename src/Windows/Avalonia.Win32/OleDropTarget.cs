@@ -1,4 +1,6 @@
-﻿using Avalonia.Input;
+﻿using System;
+
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.MicroCom;
 using Avalonia.Platform;
@@ -13,7 +15,7 @@ namespace Avalonia.Win32
         private readonly ITopLevelImpl _tl;
         private readonly IDragDropDevice _dragDevice;
         
-        private IDisposableDataObject _currentDrag = null;
+        private IDataObject _currentDrag = null;
 
         public OleDropTarget(ITopLevelImpl tl, IInputRoot target)
         {
@@ -74,12 +76,7 @@ namespace Avalonia.Win32
                 *pdwEffect= (int)DropEffect.None;
             }
 
-            var newDrag = pDataObj.GetAvaloniaObjectFromCOM();
-            if (_currentDrag != newDrag)
-            {
-                _currentDrag?.Dispose();
-                _currentDrag = newDrag;
-            }
+            SetDataObject(pDataObj);
 
             var args = new RawDragEvent(
                 _dragDevice,
@@ -131,8 +128,7 @@ namespace Avalonia.Win32
             }
             finally
             {
-                _currentDrag?.Dispose();
-                _currentDrag = null;
+                ReleaseDataObject();
             }
         }
 
@@ -146,12 +142,7 @@ namespace Avalonia.Win32
                     *pdwEffect = (int)DropEffect.None;
                 }
 
-                var newDrag = pDataObj.GetAvaloniaObjectFromCOM();
-                if (_currentDrag != newDrag)
-                {
-                    _currentDrag?.Dispose();
-                    _currentDrag = newDrag;
-                }
+                SetDataObject(pDataObj);
 
                 var args = new RawDragEvent(
                     _dragDevice, 
@@ -167,7 +158,26 @@ namespace Avalonia.Win32
             }
             finally
             {
-                _currentDrag?.Dispose();
+                ReleaseDataObject();
+            }
+        }
+
+        private void SetDataObject(Win32Com.IDataObject pDataObj)
+        {
+            var newDrag = GetAvaloniaObjectFromCOM(pDataObj);
+            if (_currentDrag != newDrag)
+            {
+                ReleaseDataObject();
+                _currentDrag = newDrag;
+            }
+        }
+
+        private void ReleaseDataObject()
+        {
+            // OleDataObject keeps COM reference, so it should be disposed.
+            if (_currentDrag is OleDataObject oleDragSource)
+            {
+                oleDragSource?.Dispose();
                 _currentDrag = null;
             }
         }
@@ -180,7 +190,26 @@ namespace Avalonia.Win32
 
         protected override void Destroyed()
         {
-            _currentDrag?.Dispose();
+            ReleaseDataObject();
+        }
+
+        public static unsafe IDataObject GetAvaloniaObjectFromCOM(Win32Com.IDataObject pDataObj)
+        {
+            if (pDataObj is null)
+            {
+                throw new ArgumentNullException(nameof(pDataObj));
+            }
+            if (pDataObj is IDataObject disposableDataObject)
+            {
+                return disposableDataObject;
+            }
+
+            var dataObject = MicroComRuntime.TryUnwrapManagedObject(pDataObj) as DataObject;
+            if (dataObject is not null)
+            {
+                return dataObject;
+            }
+            return new OleDataObject(pDataObj);
         }
     }
 }
