@@ -16,14 +16,21 @@ namespace Avalonia.MicroCom
         public static IntPtr Vtable { get; } = new MicroComVtblBase().CreateVTable();
         public MicroComVtblBase()
         {
-            AddMethod((QueryInterfaceDelegate)QueryInterface);
-            AddMethod((AddRefDelegate)AddRef);
-            AddMethod((AddRefDelegate)Release);
+            AddMethod<QueryInterfaceDelegate>(QueryInterface);
+            AddMethod<AddRefDelegate>(AddRef);
+            AddMethod<AddRefDelegate>(Release);
         }
 
         protected void AddMethod(void* f)
         {
             _methods.Add(new IntPtr(f));
+        }
+
+        protected void AddMethod<TDelegate>(TDelegate d)
+            where TDelegate : notnull
+        {
+            GCHandle.Alloc(d);
+            _methods.Add(Marshal.GetFunctionPointerForDelegate(d));
         }
 
         protected void AddMethod(Delegate d)
