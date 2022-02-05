@@ -32,14 +32,15 @@ namespace Avalonia.Dialogs
                     dialog.Close();
                 };
 
-                model.ShowOverwritePrompt += async (filename) =>
+                model.OverwritePrompt += async (filename) =>
                 {
                     Window overwritePromptDialog = new Window()
                     {
                         Title = "Confirm Save As",
                         SizeToContent = SizeToContent.WidthAndHeight,
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        Padding = new Thickness(10)
+                        Padding = new Thickness(10),
+                        MinWidth = 270
                     };
 
                     string name = Path.GetFileName(filename);

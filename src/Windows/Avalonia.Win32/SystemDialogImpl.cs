@@ -69,7 +69,7 @@ namespace Avalonia.Win32
 
                     if (dialog is SaveFileDialog saveFileDialog)
                     {
-                        var overwritePrompt = saveFileDialog.OverwritePrompt ?? true;
+                        var overwritePrompt = saveFileDialog.ShowOverwritePrompt ?? true;
 
                         if (!overwritePrompt)
                         {

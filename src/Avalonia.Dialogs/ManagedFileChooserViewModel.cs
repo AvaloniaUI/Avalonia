@@ -17,7 +17,7 @@ namespace Avalonia.Dialogs
         private readonly ManagedFileDialogOptions _options;
         public event Action CancelRequested;
         public event Action<string[]> CompleteRequested;
-        public event Action<string> ShowOverwritePrompt;
+        public event Action<string> OverwritePrompt;
 
         public AvaloniaList<ManagedFileChooserItemViewModel> QuickLinks { get; } =
             new AvaloniaList<ManagedFileChooserItemViewModel>();
@@ -169,7 +169,7 @@ namespace Avalonia.Dialogs
             {
                 _savingFile = true;
                 _defaultExtension = sfd.DefaultExtension;
-                _overwritePrompt = (bool)sfd.OverwritePrompt;
+                _overwritePrompt = sfd.ShowOverwritePrompt ?? true;
                 FileName = sfd.InitialFileName;
             }
 
@@ -367,7 +367,7 @@ namespace Avalonia.Dialogs
 
                     if (_overwritePrompt && File.Exists(fullName))
                     {
-                        ShowOverwritePrompt?.Invoke(fullName);
+                        OverwritePrompt?.Invoke(fullName);
                     }
                     else
                     {

@@ -150,7 +150,7 @@ namespace Avalonia.X11.NativeDialogs
                     (dialog as OpenFileDialog)?.AllowMultiple ?? false,
                     Path.Combine(string.IsNullOrEmpty(dialog.Directory) ? "" : dialog.Directory,
                         string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), dialog.Filters,
-                    (dialog as SaveFileDialog)?.DefaultExtension, (dialog as SaveFileDialog)?.OverwritePrompt ?? false));
+                    (dialog as SaveFileDialog)?.DefaultExtension, (dialog as SaveFileDialog)?.ShowOverwritePrompt ?? false));
         }
 
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
