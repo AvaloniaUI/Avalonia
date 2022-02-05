@@ -83,6 +83,9 @@
                   <SolidColorBrush x:Key="ButtonBackground">DarkRed</SolidColorBrush>
                   <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Red</SolidColorBrush>
                   <SolidColorBrush x:Key="ButtonBackgroundPressed">OrangeRed</SolidColorBrush>
+                  <SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
+                  <SolidColorBrush x:Key="ButtonForegroundPointerOver">Black</SolidColorBrush>
+                  <SolidColorBrush x:Key="ButtonForegroundPressed">Black</SolidColorBrush>
                 </Style.Resources>
               </Style>
             </Button.Styles>
@@ -164,6 +167,26 @@
         <SplitButton IsEnabled="False"
                      Flyout="{StaticResource SharedMenuFlyout}">
           <TextBlock Text="Disabled" />
+        </SplitButton>
+        <SplitButton Flyout="{StaticResource SharedMenuFlyout}"
+                     Content="Re-themed">
+          <SplitButton.Styles>
+            <Style>
+              <Style.Resources>
+                <x:Double x:Key="SplitButtonSeparatorWidth">1.5</x:Double>
+                <Thickness x:Key="SplitButtonBorderThemeThickness">2</Thickness>
+                <SolidColorBrush x:Key="SplitButtonBorderBrush">Red</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonBorderBrushPointerOver">Red</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonBorderBrushPressed">Red</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonBackground">DarkRed</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonBackgroundPointerOver">Red</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonBackgroundPressed">OrangeRed</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonForeground">White</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonForegroundPointerOver">Black</SolidColorBrush>
+                <SolidColorBrush x:Key="SplitButtonForegroundPressed">Black</SolidColorBrush>
+              </Style.Resources>
+            </Style>
+          </SplitButton.Styles>
         </SplitButton>
       </StackPanel>
     </Border>
