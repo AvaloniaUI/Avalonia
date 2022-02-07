@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -42,11 +42,11 @@ namespace Avalonia.Controls
             UpdatePseudoClasses(ButtonSpinnerLocation);
         }
 
-        private Button _decreaseButton;
+        private Button? _decreaseButton;
         /// <summary>
         /// Gets or sets the DecreaseButton template part.
         /// </summary>
-        private Button DecreaseButton
+        private Button? DecreaseButton
         {
             get { return _decreaseButton; }
             set
@@ -63,11 +63,11 @@ namespace Avalonia.Controls
             }
         }
 
-        private Button _increaseButton;
+        private Button? _increaseButton;
         /// <summary>
         /// Gets or sets the IncreaseButton template part.
         /// </summary>
-        private Button IncreaseButton
+        private Button? IncreaseButton
         {
             get
             {
@@ -196,13 +196,14 @@ namespace Avalonia.Controls
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnPointerWheelChanged(e);
-            if (!e.Handled && AllowSpin)
+
+            if (AllowSpin && IsKeyboardFocusWithin)
             {
                 if (e.Delta.Y != 0)
                 {
                     var spinnerEventArgs = new SpinEventArgs(SpinEvent, (e.Delta.Y < 0) ? SpinDirection.Decrease : SpinDirection.Increase, true);
                     OnSpin(spinnerEventArgs);
-                    e.Handled = spinnerEventArgs.Handled;
+                    e.Handled = true;
                 }
             }
         }
@@ -240,8 +241,8 @@ namespace Avalonia.Controls
         {
             if (e.Sender is ButtonSpinner spinner)
             {
-                var oldValue = (bool)e.OldValue;
-                var newValue = (bool)e.NewValue;
+                var oldValue = (bool)e.OldValue!;
+                var newValue = (bool)e.NewValue!;
                 spinner.OnAllowSpinChanged(oldValue, newValue);
             }
         }
@@ -267,7 +268,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnButtonClick(object sender, RoutedEventArgs e)
+        private void OnButtonClick(object? sender, RoutedEventArgs e)
         {
             if (AllowSpin)
             {

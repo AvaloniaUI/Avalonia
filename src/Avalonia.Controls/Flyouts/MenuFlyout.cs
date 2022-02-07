@@ -4,8 +4,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public class MenuFlyout : FlyoutBase
@@ -18,7 +16,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Items"/> property
         /// </summary>
-        public static readonly DirectProperty<MenuFlyout, IEnumerable> ItemsProperty =
+        public static readonly DirectProperty<MenuFlyout, IEnumerable?> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<MenuFlyout>(x => x.Items,
                 (x, v) => x.Items = v);
 
@@ -35,7 +33,7 @@ namespace Avalonia.Controls
         /// Gets or sets the items of the MenuFlyout
         /// </summary>
         [Content]
-        public IEnumerable Items
+        public IEnumerable? Items
         {
             get => _items;
             set => SetAndRaise(ItemsProperty, ref _items, value);
@@ -51,7 +49,7 @@ namespace Avalonia.Controls
         }
 
         private Classes? _classes;
-        private IEnumerable _items;
+        private IEnumerable? _items;
         private IDataTemplate? _itemTemplate;
 
         protected override Control CreatePresenter()

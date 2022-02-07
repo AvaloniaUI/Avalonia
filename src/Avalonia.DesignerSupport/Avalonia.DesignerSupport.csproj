@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <!-- WARNING! The designer support version number needs to be frozen 
          To allow projects that implement designer functionality to still
          work with newer versions of Avalonia. This version number only
@@ -13,7 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Remote\HtmlTransport\webapp\build\**\*.gz" />
-    <EmbeddedResource Condition="'$(Configuration)' == 'Debug'" Remove="Remote\HtmlTransport\webapp\build\**\*.map.gz"/>
+    <EmbeddedResource Condition="'$(Configuration)' == 'Debug'" Remove="Remote\HtmlTransport\webapp\build\**\*.map.gz" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />

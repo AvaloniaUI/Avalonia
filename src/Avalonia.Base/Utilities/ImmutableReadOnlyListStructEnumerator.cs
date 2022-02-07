@@ -3,25 +3,22 @@ using System.Collections.Generic;
 
 namespace Avalonia.Utilities
 {
-    public struct ImmutableReadOnlyListStructEnumerator<T> : IEnumerator, IEnumerator<T>
+    public struct ImmutableReadOnlyListStructEnumerator<T> : IEnumerator<T>
     {
         private readonly IReadOnlyList<T> _readOnlyList;
         private int _pos;
+        private T? _current;
 
         public ImmutableReadOnlyListStructEnumerator(IReadOnlyList<T> readOnlyList)
         {
             _readOnlyList = readOnlyList;
             _pos = -1;
-            Current = default;
+            _current = default;
         }
 
-        public T Current
-        {
-            get;
-            private set;
-        }
+        public T Current => _current!;
 
-        object IEnumerator.Current => Current;
+        object? IEnumerator.Current => Current;
 
         public void Dispose() { }
 
@@ -32,7 +29,7 @@ namespace Avalonia.Utilities
                 return false;
             }
 
-            Current = _readOnlyList[++_pos];
+            _current = _readOnlyList[++_pos];
 
             return true;
 
@@ -42,7 +39,7 @@ namespace Avalonia.Utilities
         {
             _pos = -1;
 
-            Current = default;
+            _current = default;
         }
     }
 }

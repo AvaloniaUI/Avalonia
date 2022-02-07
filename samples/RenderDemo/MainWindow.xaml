@@ -1,68 +1,70 @@
-<Window xmlns="https://github.com/avaloniaui"
+<Window x:Class="RenderDemo.MainWindow"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="RenderDemo.MainWindow"
-        Title="AvaloniaUI Rendering Test"
+        xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
         xmlns:pages="clr-namespace:RenderDemo.Pages"
+        Title="AvaloniaUI Rendering Test"
         Width="{Binding Width, Mode=TwoWay}"
         Height="{Binding Height, Mode=TwoWay}">
-  <DockPanel>
-    <Menu DockPanel.Dock="Top">
-      <MenuItem Header="Rendering">
-        <MenuItem Header="Draw Dirty Rects" Command="{Binding ToggleDrawDirtyRects}">
-          <MenuItem.Icon>
-            <CheckBox BorderThickness="0"
-                      IsHitTestVisible="False"
-                      IsChecked="{Binding DrawDirtyRects}"/>
-          </MenuItem.Icon>
+  <controls:HamburgerMenu ExpandedModeThresholdWidth="760">
+    <FlyoutBase.AttachedFlyout>
+      <MenuFlyout>
+        <MenuItem Header="Rendering">
+          <MenuItem Command="{Binding ToggleDrawDirtyRects}" Header="Draw Dirty Rects">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding DrawDirtyRects}"
+                        IsHitTestVisible="False" />
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Command="{Binding ToggleDrawFps}" Header="Draw FPS">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding DrawFps}"
+                        IsHitTestVisible="False" />
+            </MenuItem.Icon>
+          </MenuItem>
         </MenuItem>
-        <MenuItem Header="Draw FPS"
-                  Command="{Binding ToggleDrawFps}">
-          <MenuItem.Icon>
-            <CheckBox BorderThickness="0"
-                      IsHitTestVisible="False"
-                      IsChecked="{Binding DrawFps}"/>
-          </MenuItem.Icon>
+        <MenuItem Header="Tests">
+          <MenuItem Command="{Binding ResizeWindow}" Header="Resize window" />
         </MenuItem>
-      </MenuItem>
-      <MenuItem Header="Tests">
-        <MenuItem Header="Resize window"
-                  Command="{Binding ResizeWindow}"/>
-      </MenuItem>
-    </Menu>
-    <TabControl Classes="sidebar">
-      <TabItem Header="Animations">
-        <pages:AnimationsPage/>
-      </TabItem>
-      <TabItem Header="Transitions">
-        <pages:TransitionsPage/>
-      </TabItem>
-      <TabItem Header="Custom Animator">
-        <pages:CustomAnimatorPage/>
-      </TabItem>
-      <TabItem Header="Clipping">
-        <pages:ClippingPage/>
-      </TabItem>
-      <TabItem Header="Drawing">
-        <pages:DrawingPage/>
-      </TabItem>
-      <TabItem Header="SkCanvas">
-        <pages:CustomSkiaPage/>
-      </TabItem>
-      <TabItem Header="RenderTargetBitmap">
-        <pages:RenderTargetBitmapPage/>
-      </TabItem>
-      <TabItem Header="WriteableBitmap">
-        <pages:WriteableBitmapPage/>
-      </TabItem>
-      <TabItem Header="GlyphRun">
-        <pages:GlyphRunPage/>
-      </TabItem>
-      <TabItem Header="LineBounds">
-        <pages:LineBoundsPage />
-      </TabItem>
-      <TabItem Header="Path Measurement">
-        <pages:PathMeasurementPage />
-      </TabItem>
-    </TabControl>
-  </DockPanel>
+      </MenuFlyout>
+    </FlyoutBase.AttachedFlyout>
+    <TabItem Header="Animations">
+      <pages:AnimationsPage />
+    </TabItem>
+    <TabItem Header="Transitions">
+      <pages:TransitionsPage />
+    </TabItem>
+    <TabItem Header="Custom Animator">
+      <pages:CustomAnimatorPage />
+    </TabItem>
+    <TabItem Header="Clipping">
+      <pages:ClippingPage />
+    </TabItem>
+    <TabItem Header="Drawing">
+      <pages:DrawingPage />
+    </TabItem>
+    <TabItem Header="SkCanvas">
+      <pages:CustomSkiaPage />
+    </TabItem>
+    <TabItem Header="RenderTargetBitmap">
+      <pages:RenderTargetBitmapPage />
+    </TabItem>
+    <TabItem Header="WriteableBitmap">
+      <pages:WriteableBitmapPage />
+    </TabItem>
+    <TabItem Header="GlyphRun">
+      <pages:GlyphRunPage />
+    </TabItem>
+    <TabItem Header="FormattedText">
+      <pages:FormattedTextPage />
+    </TabItem>
+    <TabItem Header="LineBounds">
+      <pages:LineBoundsPage />
+    </TabItem>
+    <TabItem Header="Path Measurement">
+      <pages:PathMeasurementPage />
+    </TabItem>
+  </controls:HamburgerMenu>
 </Window>

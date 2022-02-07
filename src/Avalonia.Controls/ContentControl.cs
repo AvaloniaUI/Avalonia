@@ -17,14 +17,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> ContentProperty =
-            AvaloniaProperty.Register<ContentControl, object>(nameof(Content));
+        public static readonly StyledProperty<object?> ContentProperty =
+            AvaloniaProperty.Register<ContentControl, object?>(nameof(Content));
 
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
-            AvaloniaProperty.Register<ContentControl, IDataTemplate>(nameof(ContentTemplate));
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
+            AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(ContentTemplate));
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         /// </summary>
         [Content]
         [DependsOn(nameof(ContentTemplate))]
-        public object Content
+        public object? Content
         {
             get { return GetValue(ContentProperty); }
             set { SetValue(ContentProperty, value); }
@@ -57,7 +57,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the data template used to display the content of the control.
         /// </summary>
-        public IDataTemplate ContentTemplate
+        public IDataTemplate? ContentTemplate
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
@@ -66,7 +66,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
-        public IContentPresenter Presenter
+        public IContentPresenter? Presenter
         {
             get;
             private set;

@@ -16,17 +16,17 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var text = "\n\r\n".AsMemory();
 
-                var glyphRun = TextShaper.Current.ShapeText(
+                var shapedBuffer = TextShaper.Current.ShapeText(
                     text,
-                    Typeface.Default,
+                    Typeface.Default.GlyphTypeface,
                     12,
-                    CultureInfo.CurrentCulture);
+                    CultureInfo.CurrentCulture, 0);
                 
-                Assert.Equal(glyphRun.Characters.Length, text.Length);
-                Assert.Equal(glyphRun.GlyphClusters.Length, text.Length);
-                Assert.Equal(0, glyphRun.GlyphClusters[0]);
-                Assert.Equal(1, glyphRun.GlyphClusters[1]);
-                Assert.Equal(1, glyphRun.GlyphClusters[2]);
+                Assert.Equal(shapedBuffer.Text.Length, text.Length);
+                Assert.Equal(shapedBuffer.GlyphClusters.Count, text.Length);
+                Assert.Equal(0, shapedBuffer.GlyphClusters[0]);
+                Assert.Equal(1, shapedBuffer.GlyphClusters[1]);
+                Assert.Equal(1, shapedBuffer.GlyphClusters[2]);
             }
         }
         

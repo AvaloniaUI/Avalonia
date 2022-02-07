@@ -19,13 +19,15 @@ namespace Avalonia.Utilities
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>
+        [Obsolete("Use WeakEvent")]
         public static void Subscribe<TTarget, TEventArgs>(TTarget target, string eventName, IWeakSubscriber<TEventArgs> subscriber)
             where TEventArgs : EventArgs
         {
-            var dic = SubscriptionTypeStorage<TEventArgs>.Subscribers.GetOrCreateValue(target);
-            Subscription<TEventArgs> sub;
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            if (!dic.TryGetValue(eventName, out sub))
+            var dic = SubscriptionTypeStorage<TEventArgs>.Subscribers.GetOrCreateValue(target);
+
+            if (!dic.TryGetValue(eventName, out var sub))
             {
                 dic[eventName] = sub = new Subscription<TEventArgs>(dic, typeof(TTarget), target, eventName);
             }
@@ -43,13 +45,9 @@ namespace Avalonia.Utilities
         public static void Unsubscribe<T>(object target, string eventName, IWeakSubscriber<T> subscriber)
             where T : EventArgs
         {
-            SubscriptionDic<T> dic;
-
-            if (SubscriptionTypeStorage<T>.Subscribers.TryGetValue(target, out dic))
+            if (SubscriptionTypeStorage<T>.Subscribers.TryGetValue(target, out var dic))
             {
-                Subscription<T> sub;
-
-                if (dic.TryGetValue(eventName, out sub))
+                if (dic.TryGetValue(eventName, out var sub))
                 {
                     sub.Remove(subscriber);
                 }
@@ -79,7 +77,7 @@ namespace Avalonia.Utilities
             private readonly string _eventName;
             private readonly Delegate _delegate;
 
-            private WeakReference<IWeakSubscriber<T>>[] _data = new WeakReference<IWeakSubscriber<T>>[16];
+            private WeakReference<IWeakSubscriber<T>>?[] _data = new WeakReference<IWeakSubscriber<T>>?[16];
             private int _count = 0;
 
             public Subscription(SubscriptionDic<T> sdic, Type targetType, object target, string eventName)
@@ -87,11 +85,14 @@ namespace Avalonia.Utilities
                 _sdic = sdic;
                 _target = target;
                 _eventName = eventName;
-                Dictionary<string, EventInfo> evDic;
-                if (!Accessors.TryGetValue(targetType, out evDic))
+                if (!Accessors.TryGetValue(targetType, out var evDic))
                     Accessors[targetType] = evDic = new Dictionary<string, EventInfo>();
 
-                if (!evDic.TryGetValue(eventName, out _info))
+                if (evDic.TryGetValue(eventName, out var info))
+                {
+                    _info = info;
+                }
+                else
                 {
                     var ev = targetType.GetRuntimeEvents().FirstOrDefault(x => x.Name == eventName);
 
@@ -105,13 +106,13 @@ namespace Avalonia.Utilities
                 }
 
                 var del = new Action<object, T>(OnEvent);
-                _delegate = del.GetMethodInfo().CreateDelegate(_info.EventHandlerType, del.Target);
-                _info.AddMethod.Invoke(target, new[] { _delegate });
+                _delegate = del.GetMethodInfo().CreateDelegate(_info.EventHandlerType!, del.Target);
+                _info.AddMethod!.Invoke(target, new[] { _delegate });
             }
 
             void Destroy()
             {
-                _info.RemoveMethod.Invoke(_target, new[] { _delegate });
+                _info.RemoveMethod!.Invoke(_target, new[] { _delegate });
                 _sdic.Remove(_eventName);
             }
 
@@ -120,11 +121,11 @@ namespace Avalonia.Utilities
                 if (_count == _data.Length)
                 {
                     //Extend capacity
-                    var ndata = new WeakReference<IWeakSubscriber<T>>[_data.Length*2];
+                    var ndata = new WeakReference<IWeakSubscriber<T>>?[_data.Length*2];
                     Array.Copy(_data, ndata, _data.Length);
                     _data = ndata;
                 }
-                _data[_count] = s;
+                _data[_count] = s!;
                 _count++;
             }
 
@@ -135,7 +136,7 @@ namespace Avalonia.Utilities
                 for (int c = 0; c < _count; ++c)
                 {
                     var reference = _data[c];
-                    IWeakSubscriber<T> instance;
+                    IWeakSubscriber<T>? instance;
 
                     if (reference != null && reference.TryGetTarget(out instance) && instance == s)
                     {
@@ -179,9 +180,8 @@ namespace Avalonia.Utilities
                 for(var c=0; c<_count; c++)
                 {
                     var r = _data[c];
-                    IWeakSubscriber<T> sub;
-                    if (r.TryGetTarget(out sub))
-                        sub.OnEvent(sender, eventArgs);
+                    if (r?.TryGetTarget(out var sub) == true)
+                        sub!.OnEvent(sender, eventArgs);
                     else
                         needCompact = true;
                 }

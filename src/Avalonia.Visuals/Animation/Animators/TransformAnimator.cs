@@ -11,12 +11,17 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class TransformAnimator : Animator<double>
     {
-        DoubleAnimator _doubleAnimator;
+        DoubleAnimator? _doubleAnimator;
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> obsMatch, Action onComplete)
+        public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> obsMatch, Action? onComplete)
         {
             var ctrl = (Visual)control;
+
+            if (Property is null)
+            {
+                throw new InvalidOperationException("Animator has no property specified.");
+            }
 
             // Check if the Target Property is Transform derived.
             if (typeof(Transform).IsAssignableFrom(Property.OwnerType))

@@ -54,11 +54,11 @@ namespace Avalonia.Media.Imaging
         /// <returns>The platform-specific implementation.</returns>
         private static IRenderTargetBitmapImpl CreateImpl(PixelSize size, Vector dpi)
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             return factory.CreateRenderTargetBitmap(size, dpi);
         }
 
         /// <inheritdoc/>
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer vbr) => PlatformImpl.Item.CreateDrawingContext(vbr);
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? vbr) => PlatformImpl.Item.CreateDrawingContext(vbr);
     }
 }

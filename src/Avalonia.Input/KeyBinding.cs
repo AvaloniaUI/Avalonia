@@ -35,9 +35,11 @@ namespace Avalonia.Input
         {
             if (Gesture?.Matches(args) == true)
             {
-                args.Handled = true;
-                if (Command?.CanExecute(CommandParameter) == true)
+                if (Command?.CanExecute(CommandParameter) == true) 
+                {
+                    args.Handled = true;
                     Command.Execute(CommandParameter);
+                }
             }
         }
     }

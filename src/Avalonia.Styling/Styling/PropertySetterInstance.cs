@@ -16,14 +16,14 @@ namespace Avalonia.Styling
         private readonly IStyleable _target;
         private readonly StyledPropertyBase<T>? _styledProperty;
         private readonly DirectPropertyBase<T>? _directProperty;
-        private readonly T? _value;
+        private readonly T _value;
         private IDisposable? _subscription;
         private bool _isActive;
 
         public PropertySetterInstance(
             IStyleable target,
             StyledPropertyBase<T> property,
-            T? value)
+            T value)
         {
             _target = target;
             _styledProperty = property;

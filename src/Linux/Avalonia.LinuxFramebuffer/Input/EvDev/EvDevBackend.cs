@@ -13,15 +13,16 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
         private readonly EvDevDeviceDescription[] _deviceDescriptions;
         private readonly List<EvDevDeviceHandler> _handlers = new List<EvDevDeviceHandler>();
         private int _epoll;
-        private Queue<RawInputEventArgs> _inputQueue = new Queue<RawInputEventArgs>();
         private bool _isQueueHandlerTriggered;
         private object _lock = new object();
         private Action<RawInputEventArgs> _onInput;
         private IInputRoot _inputRoot;
+        private RawEventGroupingThreadingHelper _inputQueue;
 
         public EvDevBackend(EvDevDeviceDescription[] devices)
         {
             _deviceDescriptions = devices;
+            _inputQueue = new RawEventGroupingThreadingHelper(e => _onInput?.Invoke(e));
         }
         
         unsafe void InputThread()
@@ -49,42 +50,9 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
 
         private void OnRawEvent(RawInputEventArgs obj)
         {
-            lock (_lock)
-            {
-                _inputQueue.Enqueue(obj);
-                TriggerQueueHandler();
-            }
-                
+            _inputQueue.OnEvent(obj);
         }
         
-        void TriggerQueueHandler()
-        {
-            if (_isQueueHandlerTriggered)
-                return;
-            _isQueueHandlerTriggered = true;
-            Dispatcher.UIThread.Post(InputQueueHandler, DispatcherPriority.Input);
-
-        }
-        
-        void InputQueueHandler()
-        {
-            RawInputEventArgs ev;
-            lock (_lock)
-            {
-                _isQueueHandlerTriggered = false;
-                if(_inputQueue.Count == 0)
-                    return;
-                ev = _inputQueue.Dequeue();
-            }
-
-            _onInput?.Invoke(ev);
-
-            lock (_lock)
-            {
-                if (_inputQueue.Count > 0)
-                    TriggerQueueHandler();
-            }
-        }
         
         public void Initialize(IScreenInfoProvider info, Action<RawInputEventArgs> onInput)
         {

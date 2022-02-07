@@ -29,7 +29,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// A <see cref="TextLineBreak"/> value that represents the line break.
         /// </returns>
-        public abstract TextLineBreak TextLineBreak { get; }
+        public abstract TextLineBreak? TextLineBreak { get; }
 
         /// <summary>
         /// Gets the distance from the top to the baseline of the current TextLine object.
@@ -191,27 +191,45 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets the text line offset x.
         /// </summary>
-        /// <param name="lineWidth">The line width.</param>
+        /// <param name="width">The line width.</param>
+        /// <param name="widthIncludingTrailingWhitespace">The paragraph width including whitespace.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
         /// <param name="textAlignment">The text alignment.</param>
+        /// <param name="flowDirection">The flow direction of the line.</param>
         /// <returns>The paragraph offset.</returns>
-        internal static double GetParagraphOffsetX(double lineWidth, double paragraphWidth, TextAlignment textAlignment)
+        internal static double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace,
+            double paragraphWidth, TextAlignment textAlignment, FlowDirection flowDirection)
         {
             if (double.IsPositiveInfinity(paragraphWidth))
             {
                 return 0;
             }
 
+            if (flowDirection == FlowDirection.LeftToRight)
+            {
+                switch (textAlignment)
+                {
+                    case TextAlignment.Center:
+                        return (paragraphWidth - width) / 2;
+
+                    case TextAlignment.Right:
+                        return paragraphWidth - widthIncludingTrailingWhitespace;
+
+                    default:
+                        return 0;
+                }
+            }
+
             switch (textAlignment)
             {
                 case TextAlignment.Center:
-                    return (paragraphWidth - lineWidth) / 2;
+                    return (paragraphWidth - width) / 2;
 
                 case TextAlignment.Right:
-                    return paragraphWidth - lineWidth;
+                    return 0;
 
                 default:
-                    return 0.0f;
+                    return paragraphWidth - widthIncludingTrailingWhitespace;
             }
         }
     }

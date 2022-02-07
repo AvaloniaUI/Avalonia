@@ -17,15 +17,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         private TouchDevice _touch = new TouchDevice();
         private MouseDevice _mouse = new MouseDevice();
         private Point _mousePosition;
-        
-        private readonly Queue<RawInputEventArgs> _inputQueue = new Queue<RawInputEventArgs>();
+
+        private readonly RawEventGroupingThreadingHelper _inputQueue;
         private Action<RawInputEventArgs> _onInput;
         private Dictionary<int, Point> _pointers = new Dictionary<int, Point>();
 
         public LibInputBackend()
         {
             var ctx = libinput_path_create_context();
-            
+            _inputQueue = new(e => _onInput?.Invoke(e));
             new Thread(()=>InputThread(ctx)).Start();
         }
 
@@ -66,30 +66,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
         }
 
-        private void ScheduleInput(RawInputEventArgs ev)
-        {
-            lock (_inputQueue)
-            {
-                _inputQueue.Enqueue(ev);
-                if (_inputQueue.Count == 1)
-                {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        while (true)
-                        {
-                            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-                            RawInputEventArgs dequeuedEvent = null;
-                            lock(_inputQueue)
-                                if (_inputQueue.Count != 0)
-                                    dequeuedEvent = _inputQueue.Dequeue();
-                            if (dequeuedEvent == null)
-                                return;
-                            _onInput?.Invoke(dequeuedEvent);
-                        }
-                    }, DispatcherPriority.Input);
-                }
-            }
-        }
+        private void ScheduleInput(RawInputEventArgs ev) => _inputQueue.OnEvent(ev);
 
         private void HandleTouch(IntPtr ev, LibInputEventType type)
         {

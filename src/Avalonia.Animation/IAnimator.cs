@@ -11,11 +11,11 @@ namespace Avalonia.Animation
         /// <summary>
         /// The target property.
         /// </summary>
-        AvaloniaProperty Property {get; set;}
+        AvaloniaProperty? Property {get; set;}
 
         /// <summary>
         /// Applies the current KeyFrame group to the specified control.
         /// </summary>
-        IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete);
+        IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete);
     }
 }

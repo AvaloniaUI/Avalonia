@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -67,6 +68,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
             sub.Dispose();
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 

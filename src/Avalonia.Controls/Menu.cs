@@ -5,8 +5,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

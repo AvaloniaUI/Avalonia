@@ -13,19 +13,18 @@ namespace Avalonia.Win32
         {
             AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToLazy<IPlatformOpenGlInterface>(() =>
             {
-                var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>();
-                if (opts?.UseWgl == true)
+                var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions();
+                if (opts.UseWgl)
                 {
                     var wgl = WglPlatformOpenGlInterface.TryCreate();
                     return wgl;
                 }
 
-                if (opts?.AllowEglInitialization ?? Win32Platform.WindowsVersion > PlatformConstants.Windows7)
+                if (opts.AllowEglInitialization ?? Win32Platform.WindowsVersion > PlatformConstants.Windows7)
                 {
                     var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
 
-                    if (egl != null &&
-                        opts?.UseWindowsUIComposition == true)
+                    if (egl != null && opts.UseWindowsUIComposition)
                     {
                         WinUICompositorConnection.TryCreateAndRegister(egl, opts.CompositionBackdropCornerRadius);
                     }

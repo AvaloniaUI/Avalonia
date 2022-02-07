@@ -78,7 +78,7 @@ namespace Avalonia.Media
             return  a.Equals(b);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Typeface typeface && Equals(typeface);
         }

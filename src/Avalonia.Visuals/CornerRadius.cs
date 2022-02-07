@@ -91,7 +91,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this corner radius; False otherwise.</returns>
-        public override bool Equals(object obj) => obj is CornerRadius other && Equals(other);
+        public override bool Equals(object? obj) => obj is CornerRadius other && Equals(other);
 
         public override int GetHashCode()
         {

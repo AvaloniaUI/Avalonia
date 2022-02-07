@@ -6,9 +6,9 @@ namespace Avalonia.Utilities
     {
         public interface IHelperImpl
         {
-            IDisposable Use();
+            IDisposable? Use();
         }
 
-        public static IDisposable Use() => AvaloniaLocator.Current.GetService<IHelperImpl>()?.Use();
+        public static IDisposable? Use() => AvaloniaLocator.Current.GetService<IHelperImpl>()?.Use();
     }
 }

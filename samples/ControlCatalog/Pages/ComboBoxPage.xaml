@@ -1,78 +1,95 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ComboBoxPage"
-             xmlns:sys="using:System"
-             xmlns:col="using:System.Collections">
-  <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">ComboBox</TextBlock>
-    <TextBlock Classes="h2">A drop-down list.</TextBlock>
+<UserControl
+    x:Class="ControlCatalog.Pages.ComboBoxPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:col="using:System.Collections"
+    xmlns:sys="using:System">
+    <StackPanel Orientation="Vertical" Spacing="4">
+        <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
-    <WrapPanel HorizontalAlignment="Center" Margin="0 16 0 0"
-               MaxWidth="750">
-      <WrapPanel.Styles>
-        <Style Selector="ComboBox">
-          <Setter Property="Width" Value="250" />
-          <Setter Property="Margin" Value="10" />
-        </Style>
-      </WrapPanel.Styles>
-      <ComboBox PlaceholderText="Pick an Item">
-        <ComboBoxItem>Inline Items</ComboBoxItem>
-        <ComboBoxItem>Inline Item 2</ComboBoxItem>
-        <ComboBoxItem>Inline Item 3</ComboBoxItem>
-        <ComboBoxItem>Inline Item 4</ComboBoxItem>
-      </ComboBox>
+        <StackPanel
+            Margin="0,16,0,0"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+            <WrapPanel
+                MaxWidth="660"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center">
+                <WrapPanel.Styles>
+                    <Style Selector="ComboBox">
+                        <Setter Property="Width" Value="250" />
+                        <Setter Property="Margin" Value="10" />
+                    </Style>
+                </WrapPanel.Styles>
 
-      <ComboBox>
-        <ComboBox.Items>
-          <col:ArrayList>
-            <x:Null />
-            <sys:String>Hello</sys:String>
-            <sys:String>World</sys:String>
-          </col:ArrayList>
-        </ComboBox.Items>
-        <ComboBox.ItemTemplate>
-          <DataTemplate>
-            <Panel>
-              <TextBlock Text="{Binding}" />
-              <TextBlock Text="Null object" IsVisible="{Binding Converter={x:Static ObjectConverters.IsNull}}" />
-            </Panel>
-          </DataTemplate>
-        </ComboBox.ItemTemplate>
-      </ComboBox>
+                <ComboBox PlaceholderText="Pick an Item" WrapSelection="{Binding WrapSelection}">
+                    <ComboBoxItem>Inline Items</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 2</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 3</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 4</ComboBoxItem>
+                </ComboBox>
 
-      <ComboBox SelectedIndex="0">
-        <ComboBoxItem>
-          <Panel>
-            <Rectangle Fill="{DynamicResource SystemAccentColor}"/>
-            <TextBlock Margin="8">Control Items</TextBlock>
-          </Panel>
-        </ComboBoxItem>
-        <ComboBoxItem>
-          <Ellipse Width="50" Height="50" Fill="Yellow"/>
-        </ComboBoxItem>
-        <ComboBoxItem>
-          <TextBox Text="TextBox"/>
-        </ComboBoxItem>
-      </ComboBox>
+                <ComboBox WrapSelection="{Binding WrapSelection}">
+                    <ComboBox.Items>
+                        <col:ArrayList>
+                            <x:Null />
+                            <sys:String>Hello</sys:String>
+                            <sys:String>World</sys:String>
+                        </col:ArrayList>
+                    </ComboBox.Items>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Panel>
+                                <TextBlock Text="{Binding}" />
+                                <TextBlock IsVisible="{Binding Converter={x:Static ObjectConverters.IsNull}}" Text="Null object" />
+                            </Panel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
-       <ComboBox x:Name="fontComboBox"  SelectedIndex="0">
-         <ComboBox.ItemTemplate>
-           <DataTemplate>
-             <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
-           </DataTemplate>
-         </ComboBox.ItemTemplate>
-       </ComboBox>
-      
-      <ComboBox PlaceholderText="Pick an Item">
-        <ComboBoxItem>Inline Items</ComboBoxItem>
-        <ComboBoxItem>Inline Item 2</ComboBoxItem>
-        <ComboBoxItem>Inline Item 3</ComboBoxItem>
-        <ComboBoxItem>Inline Item 4</ComboBoxItem>
-        <DataValidationErrors.Error>
-          <sys:Exception /> 
-        </DataValidationErrors.Error>
-      </ComboBox>
-    </WrapPanel>
+                <ComboBox SelectedIndex="0" WrapSelection="{Binding WrapSelection}">
+                    <ComboBoxItem>
+                        <Panel>
+                            <Rectangle Fill="{DynamicResource SystemAccentColor}" />
+                            <TextBlock Margin="8">Control Items</TextBlock>
+                        </Panel>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <Ellipse
+                            Width="50"
+                            Height="50"
+                            Fill="Yellow" />
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <TextBox Text="TextBox" />
+                    </ComboBoxItem>
+                </ComboBox>
 
-  </StackPanel>
+                <ComboBox
+                    x:Name="fontComboBox"
+                    SelectedIndex="0"
+                    WrapSelection="{Binding WrapSelection}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock FontFamily="{Binding}" Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <ComboBox PlaceholderText="Pick an Item" WrapSelection="{Binding WrapSelection}">
+                    <ComboBoxItem>Inline Items</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 2</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 3</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 4</ComboBoxItem>
+                    <DataValidationErrors.Error>
+                        <sys:Exception />
+                    </DataValidationErrors.Error>
+                </ComboBox>
+            </WrapPanel>
+
+            <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
+
+        </StackPanel>
+    </StackPanel>
 </UserControl>

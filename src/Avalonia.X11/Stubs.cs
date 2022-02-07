@@ -1,10 +1,4 @@
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
-using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Platform;
 
 namespace Avalonia.X11
@@ -13,5 +7,11 @@ namespace Avalonia.X11
     {
         public Size DoubleClickSize { get; } = new Size(2, 2);
         public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
+
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
+        public Size TouchDoubleClickSize => new Size(16, 16);
+
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
     }
 }

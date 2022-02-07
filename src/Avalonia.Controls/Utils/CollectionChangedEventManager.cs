@@ -6,8 +6,6 @@ using System.Runtime.CompilerServices;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Controls.Utils
 {
     internal interface ICollectionChangedListener
@@ -83,7 +81,7 @@ namespace Avalonia.Controls.Utils
                 "Collection listener not registered for this collection/listener combination.");
         }
 
-        private class Entry : IWeakSubscriber<NotifyCollectionChangedEventArgs>, IDisposable
+        private class Entry : IWeakEventSubscriber<NotifyCollectionChangedEventArgs>, IDisposable
         {
             private INotifyCollectionChanged _collection;
 
@@ -91,23 +89,18 @@ namespace Avalonia.Controls.Utils
             {
                 _collection = collection;
                 Listeners = new List<WeakReference<ICollectionChangedListener>>();
-                WeakSubscriptionManager.Subscribe(
-                    _collection,
-                    nameof(INotifyCollectionChanged.CollectionChanged),
-                    this);
+                WeakEvents.CollectionChanged.Subscribe(_collection, this);
             }
 
             public List<WeakReference<ICollectionChangedListener>> Listeners { get; }
 
             public void Dispose()
             {
-                WeakSubscriptionManager.Unsubscribe(
-                    _collection,
-                    nameof(INotifyCollectionChanged.CollectionChanged),
-                    this);
+                WeakEvents.CollectionChanged.Unsubscribe(_collection, this);
             }
 
-            void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+            void IWeakEventSubscriber<NotifyCollectionChangedEventArgs>.
+                OnEvent(object? notifyCollectionChanged, WeakEvent ev, NotifyCollectionChangedEventArgs e)
             {
                 static void Notify(
                     INotifyCollectionChanged incc,

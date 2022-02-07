@@ -11,12 +11,12 @@ namespace Avalonia.Threading
     /// </summary>
     internal class JobRunner
     {
-        private IPlatformThreadingInterface _platform;
+        private IPlatformThreadingInterface? _platform;
 
-        private readonly Queue<IJob>[] _queues = Enumerable.Range(0, (int) DispatcherPriority.MaxValue + 1)
+        private readonly Queue<IJob>[] _queues = Enumerable.Range(0, (int)DispatcherPriority.MaxValue + 1)
             .Select(_ => new Queue<IJob>()).ToArray();
 
-        public JobRunner(IPlatformThreadingInterface platform)
+        public JobRunner(IPlatformThreadingInterface? platform)
         {
             _platform = platform;
         }
@@ -48,7 +48,7 @@ namespace Avalonia.Threading
         {
             var job = new Job(action, priority, false);
             AddJob(job);
-            return job.Task;
+            return job.Task!;
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Avalonia.Threading
         /// <returns>A task that can be used to track the method's execution.</returns>
         public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority)
         {
-            var job = new Job<TResult>(function, priority);
+            var job = new JobWithResult<TResult>(function, priority);
             AddJob(job);
             return job.Task;
         }
@@ -76,6 +76,17 @@ namespace Avalonia.Threading
         }
 
         /// <summary>
+        /// Post action that will be invoked on main thread
+        /// </summary>
+        /// <param name="action">The method to call.</param>
+        /// <param name="parameter">The parameter of method to call.</param>
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        internal void Post<T>(Action<T> action, T parameter, DispatcherPriority priority)
+        {
+            AddJob(new Job<T>(action, parameter, priority, true));
+        }
+
+        /// <summary>
         /// Allows unit tests to change the platform threading interface.
         /// </summary>
         internal void UpdateServices()
@@ -86,7 +97,7 @@ namespace Avalonia.Threading
         private void AddJob(IJob job)
         {
             bool needWake;
-            var queue = _queues[(int) job.Priority];
+            var queue = _queues[(int)job.Priority];
             lock (queue)
             {
                 needWake = queue.Count == 0;
@@ -96,9 +107,9 @@ namespace Avalonia.Threading
                 _platform?.Signal(job.Priority);
         }
 
-        private IJob GetNextJob(DispatcherPriority minimumPriority)
+        private IJob? GetNextJob(DispatcherPriority minimumPriority)
         {
-            for (int c = (int) DispatcherPriority.MaxValue; c >= (int) minimumPriority; c--)
+            for (int c = (int)DispatcherPriority.MaxValue; c >= (int)minimumPriority; c--)
             {
                 var q = _queues[c];
                 lock (q)
@@ -109,14 +120,29 @@ namespace Avalonia.Threading
             }
             return null;
         }
-        
+
+        public bool HasJobsWithPriority(DispatcherPriority minimumPriority)
+        {
+            for (int c = (int)minimumPriority; c < (int)DispatcherPriority.MaxValue; c++)
+            {
+                var q = _queues[c];
+                lock (q)
+                {
+                    if (q.Count > 0)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         private interface IJob
         {
             /// <summary>
             /// Gets the job priority.
             /// </summary>
             DispatcherPriority Priority { get; }
-            
+
             /// <summary>
             /// Runs the job.
             /// </summary>
@@ -135,7 +161,7 @@ namespace Avalonia.Threading
             /// <summary>
             /// The task completion source.
             /// </summary>
-            private readonly TaskCompletionSource<object> _taskCompletionSource;
+            private readonly TaskCompletionSource<object?>? _taskCompletionSource;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Job"/> class.
@@ -147,7 +173,7 @@ namespace Avalonia.Threading
             {
                 _action = action;
                 Priority = priority;
-                _taskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object>();
+                _taskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<object?>();
             }
 
             /// <inheritdoc/>
@@ -156,7 +182,7 @@ namespace Avalonia.Threading
             /// <summary>
             /// The task.
             /// </summary>
-            public Task Task => _taskCompletionSource?.Task;
+            public Task? Task => _taskCompletionSource?.Task;
             
             /// <inheritdoc/>
             void IJob.Run()
@@ -177,11 +203,61 @@ namespace Avalonia.Threading
                 }
             }
         }
-        
+
         /// <summary>
-        /// A job to run.
+        /// A typed job to run.
         /// </summary>
-        private sealed class Job<TResult> : IJob
+        /// <typeparam name="T">Type of job parameter</typeparam>
+        private sealed class Job<T> : IJob
+        {
+            private readonly Action<T> _action;
+            private readonly T _parameter;
+            private readonly TaskCompletionSource<bool>? _taskCompletionSource;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Job"/> class.
+            /// </summary>
+            /// <param name="action">The method to call.</param>
+            /// <param name="parameter">The parameter of method to call.</param>
+            /// <param name="priority">The job priority.</param>
+            /// <param name="throwOnUiThread">Do not wrap exception in TaskCompletionSource</param>
+
+            public Job(Action<T> action, T parameter, DispatcherPriority priority, bool throwOnUiThread)
+            {
+                _action = action;
+                _parameter = parameter;
+                Priority = priority;
+                _taskCompletionSource = throwOnUiThread ? null : new TaskCompletionSource<bool>();
+            }
+
+            /// <inheritdoc/>
+            public DispatcherPriority Priority { get; }
+
+            /// <inheritdoc/>
+            void IJob.Run()
+            {
+                if (_taskCompletionSource == null)
+                {
+                    _action(_parameter);
+                    return;
+                }
+                try
+                {
+                    _action(_parameter);
+                    _taskCompletionSource.SetResult(default);
+                }
+                catch (Exception e)
+                {
+                    _taskCompletionSource.SetException(e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A job to run thath return value.
+        /// </summary>
+        /// <typeparam name="TResult">Type of job result</typeparam>
+        private sealed class JobWithResult<TResult> : IJob
         {
             private readonly Func<TResult> _function;
             private readonly TaskCompletionSource<TResult> _taskCompletionSource;
@@ -191,7 +267,7 @@ namespace Avalonia.Threading
             /// </summary>
             /// <param name="function">The method to call.</param>
             /// <param name="priority">The job priority.</param>
-            public Job(Func<TResult> function, DispatcherPriority priority)
+            public JobWithResult(Func<TResult> function, DispatcherPriority priority)
             {
                 _function = function;
                 Priority = priority;
@@ -200,7 +276,7 @@ namespace Avalonia.Threading
 
             /// <inheritdoc/>
             public DispatcherPriority Priority { get; }
-            
+
             /// <summary>
             /// The task.
             /// </summary>

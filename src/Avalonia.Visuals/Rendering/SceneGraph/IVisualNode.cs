@@ -19,7 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the parent scene graph node.
         /// </summary>
-        IVisualNode Parent { get; }
+        IVisualNode? Parent { get; }
 
         /// <summary>
         /// Gets the transform for the node from global to control coordinates.
@@ -54,7 +54,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the node's clip geometry, if any.
         /// </summary>
-        IGeometryImpl GeometryClip { get; set; }
+        IGeometryImpl? GeometryClip { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether one of the node's ancestors has a geometry clip.

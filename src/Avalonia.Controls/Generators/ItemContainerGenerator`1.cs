@@ -19,13 +19,10 @@ namespace Avalonia.Controls.Generators
         public ItemContainerGenerator(
             IControl owner, 
             AvaloniaProperty contentProperty,
-            AvaloniaProperty contentTemplateProperty)
+            AvaloniaProperty? contentTemplateProperty)
             : base(owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
-            Contract.Requires<ArgumentNullException>(contentProperty != null);
-
-            ContentProperty = contentProperty;
+            ContentProperty = contentProperty ?? throw new ArgumentNullException(nameof(contentProperty));
             ContentTemplateProperty = contentTemplateProperty;
         }
 
@@ -40,10 +37,10 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the container's ContentTemplate property.
         /// </summary>
-        protected AvaloniaProperty ContentTemplateProperty { get; }
+        protected AvaloniaProperty? ContentTemplateProperty { get; }
 
         /// <inheritdoc/>
-        protected override IControl CreateContainer(object item)
+        protected override IControl? CreateContainer(object item)
         {
             var container = item as T;
 
