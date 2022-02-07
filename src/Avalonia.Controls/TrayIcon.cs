@@ -8,8 +8,6 @@ using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public sealed class TrayIcons : AvaloniaList<TrayIcon>
@@ -65,7 +63,9 @@ namespace Avalonia.Controls
                 }
             });
 
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
+
+            if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
             {
                 lifetime.Exit += Lifetime_Exit;
             }
@@ -108,7 +108,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
-        public static readonly StyledProperty<WindowIcon> IconProperty =
+        public static readonly StyledProperty<WindowIcon?> IconProperty =
             Window.IconProperty.AddOwner<TrayIcon>();
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Avalonia.Controls
         /// Gets or sets the parameter to pass to the <see cref="Command"/> property of a
         /// <see cref="TrayIcon"/>.
         /// </summary>
-        public object CommandParameter
+        public object? CommandParameter
         {
             get { return GetValue(CommandParameterProperty); }
             set { SetValue(CommandParameterProperty, value); }
@@ -158,7 +158,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the icon of the TrayIcon.
         /// </summary>
-        public WindowIcon Icon
+        public WindowIcon? Icon
         {
             get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
@@ -184,16 +184,18 @@ namespace Avalonia.Controls
 
         public INativeMenuExporter? NativeMenuExporter => _impl?.MenuExporter;
 
-        private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
+        private static void Lifetime_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         {
-            var trayIcons = GetIcons(Application.Current);
+            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
+            var trayIcons = GetIcons(app);
 
             RemoveIcons(trayIcons);
         }
 
-        private static void Icons_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private static void Icons_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            RemoveIcons(e.OldItems.Cast<TrayIcon>());
+            if (e.OldItems is not null)
+                RemoveIcons(e.OldItems.Cast<TrayIcon>());
         }
 
         private static void RemoveIcons(IEnumerable<TrayIcon> icons)
@@ -210,7 +212,7 @@ namespace Avalonia.Controls
 
             if (change.Property == IconProperty)
             {
-                _impl?.SetIcon(Icon.PlatformImpl);
+                _impl?.SetIcon(Icon?.PlatformImpl);
             }
             else if (change.Property == IsVisibleProperty)
             {

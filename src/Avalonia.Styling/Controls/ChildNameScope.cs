@@ -15,20 +15,20 @@ namespace Avalonia.Controls
         
         public void Register(string name, object element) => _inner.Register(name, element);
 
-        public SynchronousCompletionAsyncResult<object> FindAsync(string name)
+        public SynchronousCompletionAsyncResult<object?> FindAsync(string name)
         {
             var found = Find(name);
             if (found != null)
-                return new SynchronousCompletionAsyncResult<object>(found);
+                return new SynchronousCompletionAsyncResult<object?>(found);
             // Not found and both current and parent scope are in completed state
             if(IsCompleted)
-                return new SynchronousCompletionAsyncResult<object>(null);
+                return new SynchronousCompletionAsyncResult<object?>(null);
             return DoFindAsync(name);
         }
 
-        public SynchronousCompletionAsyncResult<object> DoFindAsync(string name)
+        public SynchronousCompletionAsyncResult<object?> DoFindAsync(string name)
         {
-            var src = new SynchronousCompletionAsyncResultSource<object>();
+            var src = new SynchronousCompletionAsyncResultSource<object?>();
 
             void ParentSearch()
             {
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
             return src.AsyncResult;
         }
 
-        public object Find(string name)
+        public object? Find(string name)
         {
             var found = _inner.Find(name);
             if (found != null)

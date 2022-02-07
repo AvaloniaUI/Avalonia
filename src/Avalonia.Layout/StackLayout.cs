@@ -78,10 +78,10 @@ namespace Avalonia.Layout
         internal Rect GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            ILayoutable firstRealized,
+            ILayoutable? firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            ILayoutable lastRealized,
+            ILayoutable? lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -89,7 +89,7 @@ namespace Avalonia.Layout
 
             // Constants
             int itemsCount = context.ItemCount;
-            var stackState = (StackLayoutState)context.LayoutState;
+            var stackState = (StackLayoutState)context.LayoutState!;
             double averageElementSize = GetAverageElementSize(availableSize, context, stackState) + Spacing;
 
             _orientation.SetMinorSize(ref extent, stackState.MaxArrangeBounds);
@@ -131,7 +131,7 @@ namespace Avalonia.Layout
         {
             if (context is VirtualizingLayoutContext virtualContext)
             {
-                var stackState = (StackLayoutState)virtualContext.LayoutState;
+                var stackState = (StackLayoutState)virtualContext.LayoutState!;
                 var provisionalArrangeSizeWinRt = provisionalArrangeSize;
                 stackState.OnElementMeasured(
                     index,
@@ -177,7 +177,7 @@ namespace Avalonia.Layout
             if (targetIndex >= 0 && targetIndex < itemsCount)
             {
                 index = targetIndex;
-                var state = (StackLayoutState)context.LayoutState;
+                var state = (StackLayoutState)context.LayoutState!;
                 double averageElementSize = GetAverageElementSize(availableSize, context, state) + Spacing;
                 offset = index * averageElementSize + _orientation.MajorStart(state.FlowAlgorithm.LastExtent);
             }
@@ -188,10 +188,10 @@ namespace Avalonia.Layout
         Rect IFlowLayoutAlgorithmDelegates.Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            ILayoutable firstRealized,
+            ILayoutable? firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            ILayoutable lastRealized,
+            ILayoutable? lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -234,7 +234,7 @@ namespace Avalonia.Layout
             if (itemsCount > 0)
             {
                 var realizationRect = context.RealizationRect;
-                var state = (StackLayoutState)context.LayoutState;
+                var state = (StackLayoutState)context.LayoutState!;
                 var lastExtent = state.FlowAlgorithm.LastExtent;
 
                 double averageElementSize = GetAverageElementSize(availableSize, context, state) + Spacing;
@@ -279,13 +279,13 @@ namespace Avalonia.Layout
 
         protected internal override void UninitializeForContextCore(VirtualizingLayoutContext context)
         {
-            var stackState = (StackLayoutState)context.LayoutState;
+            var stackState = (StackLayoutState)context.LayoutState!;
             stackState.UninitializeForContext(context);
         }
 
         protected internal override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
-            ((StackLayoutState)context.LayoutState).OnMeasureStart();
+            ((StackLayoutState)context.LayoutState!).OnMeasureStart();
 
             var desiredSize = GetFlowAlgorithm(context).Measure(
                 availableSize,
@@ -313,7 +313,7 @@ namespace Avalonia.Layout
             return new Size(value.Width, value.Height);
         }
 
-        protected internal override void OnItemsChangedCore(VirtualizingLayoutContext context, object source, NotifyCollectionChangedEventArgs args)
+        protected internal override void OnItemsChangedCore(VirtualizingLayoutContext context, object? source, NotifyCollectionChangedEventArgs args)
         {
             GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
             // Always invalidate layout to keep the view accurate.
@@ -358,6 +358,6 @@ namespace Avalonia.Layout
 
         private void InvalidateLayout() => InvalidateMeasure();
 
-        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((StackLayoutState)context.LayoutState).FlowAlgorithm;
+        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((StackLayoutState)context.LayoutState!).FlowAlgorithm;
     }
 }

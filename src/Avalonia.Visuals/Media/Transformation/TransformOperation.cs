@@ -92,8 +92,8 @@ namespace Avalonia.Media.Transformation
             }
 
             // ReSharper disable PossibleInvalidOperationException
-            TransformOperation fromValue = fromIdentity ? Identity : from.Value;
-            TransformOperation toValue = toIdentity ? Identity : to.Value;
+            TransformOperation fromValue = fromIdentity ? Identity : from!.Value;
+            TransformOperation toValue = toIdentity ? Identity : to!.Value;
             // ReSharper restore PossibleInvalidOperationException
 
             var interpolationType = toIdentity ? fromValue.Type : toValue.Type;

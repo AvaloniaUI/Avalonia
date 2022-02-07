@@ -5,11 +5,9 @@ namespace Avalonia.Media
 {
     public sealed class GlyphTypeface : IDisposable
     {
-        public const int InvisibleGlyph = 3;
-
         public GlyphTypeface(Typeface typeface) 
-            : this(FontManager.Current?.PlatformImpl.CreateGlyphTypeface(typeface))
-        { 
+            : this(FontManager.Current.PlatformImpl.CreateGlyphTypeface(typeface)) 
+        {
         }
 
         public GlyphTypeface(IGlyphTypefaceImpl platformImpl)

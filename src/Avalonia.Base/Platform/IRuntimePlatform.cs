@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 
 namespace Avalonia.Platform
 {
@@ -23,6 +22,7 @@ namespace Avalonia.Platform
         public OperatingSystemType OperatingSystem { get; set; }
         public bool IsDesktop { get; set; }
         public bool IsMobile { get; set; }
+        public bool IsBrowser { get; set; }
         public bool IsCoreClr { get; set; }
         public bool IsMono { get; set; }
         public bool IsDotNetFramework { get; set; }
@@ -36,6 +36,7 @@ namespace Avalonia.Platform
         Linux,
         OSX,
         Android,
-        iOS
+        iOS,
+        Browser
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 
 namespace Avalonia.Platform
@@ -10,13 +11,14 @@ namespace Avalonia.Platform
     public interface ITextShaperImpl
     {
         /// <summary>
-        /// Shapes the specified region within the text and returns a resulting glyph run.
+        /// Shapes the specified region within the text and returns a shaped buffer.
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="typeface">The typeface.</param>
         /// <param name="fontRenderingEmSize">The font rendering em size.</param>
         /// <param name="culture">The culture.</param>
+        /// <param name="bidiLevel">The bidi level.</param>
         /// <returns>A shaped glyph run.</returns>
-        GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture);
+        ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize, CultureInfo? culture, sbyte bidiLevel);
     }
 }

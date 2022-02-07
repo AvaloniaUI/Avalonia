@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Remote;
 using Avalonia.Input;
@@ -34,6 +35,7 @@ namespace Avalonia.Win32
                             case WindowActivate.WA_CLICKACTIVE:
                                 {
                                     Activated?.Invoke();
+                                    UpdateInputMethod(GetKeyboardLayout(0));
                                     break;
                                 }
 
@@ -149,8 +151,8 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_CHAR:
                     {
-                        // Ignore control chars
-                        if (ToInt32(wParam) >= 32)
+                        // Ignore control chars and chars that were handled in WM_KEYDOWN.
+                        if (ToInt32(wParam) >= 32 && !_ignoreWmChar)
                         {
                             e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _owner,
                                 new string((char)ToInt32(wParam), 1));
@@ -193,7 +195,6 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                     {
-                        shouldTakeFocus = ShouldTakeFocusOnClick;
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
@@ -473,6 +474,35 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KILLFOCUS:
                     LostFocus?.Invoke();
                     break;
+
+                case WindowsMessage.WM_INPUTLANGCHANGE:
+                    {
+                        UpdateInputMethod(lParam);
+                        // call DefWindowProc to pass to all children
+                        break;
+                    }
+                case WindowsMessage.WM_IME_SETCONTEXT:
+                    {
+                        // TODO if we implement preedit, disable the composition window:
+                        // lParam = new IntPtr((int)(((uint)lParam.ToInt64()) & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        UpdateInputMethod(GetKeyboardLayout(0));
+                        break;
+                    }
+                case WindowsMessage.WM_IME_CHAR:
+                case WindowsMessage.WM_IME_COMPOSITION:
+                case WindowsMessage.WM_IME_COMPOSITIONFULL:
+                case WindowsMessage.WM_IME_CONTROL:
+                case WindowsMessage.WM_IME_KEYDOWN:
+                case WindowsMessage.WM_IME_KEYUP:
+                case WindowsMessage.WM_IME_NOTIFY:
+                case WindowsMessage.WM_IME_SELECT:
+                    break;
+                case WindowsMessage.WM_IME_STARTCOMPOSITION:
+                    Imm32InputMethod.Current.IsComposing = true;
+                    break;
+                case WindowsMessage.WM_IME_ENDCOMPOSITION:
+                    Imm32InputMethod.Current.IsComposing = false;
+                    break;
             }
 
 #if USE_MANAGED_DRAG
@@ -489,6 +519,15 @@ namespace Avalonia.Win32
             {
                 Input(e);
 
+                if ((WindowsMessage)msg == WindowsMessage.WM_KEYDOWN)
+                {
+                    // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
+                    // be ignored. This should be safe to do as WM_CHAR should only be produced in
+                    // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
+                    // is handled.
+                    _ignoreWmChar = e.Handled;
+                }
+
                 if (e.Handled)
                 {
                     return IntPtr.Zero;
@@ -499,6 +538,20 @@ namespace Avalonia.Win32
             {
                 return DefWindowProc(hWnd, msg, wParam, lParam);
             }
+        }
+
+        private void UpdateInputMethod(IntPtr hkl)
+        {
+            // note: for non-ime language, also create it so that emoji panel tracks cursor
+            var langid = LGID(hkl);
+            if (langid == _langid && Imm32InputMethod.Current.HWND == Hwnd)
+            {
+                return;
+            } 
+            _langid = langid;
+
+            Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
+            
         }
 
         private static int ToInt32(IntPtr ptr)

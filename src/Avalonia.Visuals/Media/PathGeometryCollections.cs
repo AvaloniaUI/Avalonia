@@ -20,7 +20,7 @@ namespace Avalonia.Media
                 parser.Parse(pathData);
             }
 
-            return pathGeometry.Figures;
+            return pathGeometry.Figures!;
         }
     }
 

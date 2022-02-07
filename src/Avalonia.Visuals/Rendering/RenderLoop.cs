@@ -19,7 +19,7 @@ namespace Avalonia.Rendering
         private readonly IDispatcher _dispatcher;
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
-        private IRenderTimer _timer;
+        private IRenderTimer? _timer;
         private int _inTick;
         private int _inUpdate;
 
@@ -49,19 +49,15 @@ namespace Avalonia.Rendering
         {
             get
             {
-                if (_timer == null)
-                {
-                    _timer = AvaloniaLocator.Current.GetService<IRenderTimer>();
-                }
-
-                return _timer;
+                return _timer ??= AvaloniaLocator.Current.GetService<IRenderTimer>() ??
+                    throw new InvalidOperationException("Cannot locate IRenderTimer.");
             }
         }
 
         /// <inheritdoc/>
         public void Add(IRenderLoopTask i)
         {
-            Contract.Requires<ArgumentNullException>(i != null);
+            _ = i ?? throw new ArgumentNullException(nameof(i));
             Dispatcher.UIThread.VerifyAccess();
 
             lock (_items)
@@ -78,7 +74,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Remove(IRenderLoopTask i)
         {
-            Contract.Requires<ArgumentNullException>(i != null);
+            _ = i ?? throw new ArgumentNullException(nameof(i));
             Dispatcher.UIThread.VerifyAccess();
             lock (_items)
             {

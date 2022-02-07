@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ExpanderPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">Expander</TextBlock>
     <TextBlock Classes="h2">Expands to show nested content</TextBlock>
 
     <StackPanel Orientation="Vertical"

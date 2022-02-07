@@ -37,7 +37,7 @@ namespace Avalonia.Styling.Activators
             _provider.ChildIndexChanged -= ChildIndexChanged;
         }
 
-        private void ChildIndexChanged(object sender, ChildIndexChangedEventArgs e)
+        private void ChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
         {
             // Run matching again if:
             // 1. Selector is reversed, so other item insertion/deletion might affect total count without changing subscribed item index.

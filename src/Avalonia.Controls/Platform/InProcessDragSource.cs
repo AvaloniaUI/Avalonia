@@ -20,17 +20,17 @@ namespace Avalonia.Platform
         private readonly Subject<DragDropEffects> _result = new Subject<DragDropEffects>();
 
         private DragDropEffects _allowedEffects;
-        private IDataObject _draggedData;
-        private IInputRoot _lastRoot;
+        private IDataObject? _draggedData;
+        private IInputRoot? _lastRoot;
         private Point _lastPosition;
         private StandardCursorType _lastCursorType;
-        private object _originalCursor;
+        private object? _originalCursor;
         private RawInputModifiers? _initialInputModifiers;
 
         public InProcessDragSource()
         {
-            _inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
-            _dragDrop = AvaloniaLocator.Current.GetService<IDragDropDevice>();
+            _inputManager = AvaloniaLocator.Current.GetRequiredService<IInputManager>();
+            _dragDrop = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
         }
 
         public async Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
@@ -60,9 +60,9 @@ namespace Avalonia.Platform
         {
             _lastPosition = pt;
 
-            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects, modifiers);
+            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData!, _allowedEffects, modifiers);
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
-            tl.PlatformImpl?.Input(rawEvent);
+            tl?.PlatformImpl?.Input?.Invoke(rawEvent);
 
             var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
             UpdateCursor(root, effect);
@@ -91,7 +91,7 @@ namespace Avalonia.Platform
             return StandardCursorType.No;
         }
         
-        private void UpdateCursor(IInputRoot root, DragDropEffects effect)
+        private void UpdateCursor(IInputRoot? root, DragDropEffects effect)
         {
             if (_lastRoot != root)
             {

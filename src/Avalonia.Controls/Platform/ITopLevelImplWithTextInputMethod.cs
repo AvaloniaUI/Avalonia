@@ -6,6 +6,6 @@ namespace Avalonia.Controls.Platform
 {
     public interface ITopLevelImplWithTextInputMethod : ITopLevelImpl
     {
-        public ITextInputMethodImpl TextInputMethod { get; }
+        public ITextInputMethodImpl? TextInputMethod { get; }
     }
 }

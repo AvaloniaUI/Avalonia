@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Presenters
             Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
 
         private int _selectedIndex = -1;
-        private Task _currentTransition;
+        private Task? _currentTransition;
         private int _queuedTransitionIndex = -1;
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Avalonia.Controls.Presenters
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         if (e.OldStartingIndex > SelectedIndex ||
-                            e.OldStartingIndex + e.OldItems.Count - 1 < SelectedIndex)
+                            e.OldStartingIndex + e.OldItems!.Count - 1 < SelectedIndex)
                         {
                             return;
                         }
@@ -171,12 +171,12 @@ namespace Avalonia.Controls.Presenters
             if (fromIndex != toIndex)
             {
                 var generator = ItemContainerGenerator;
-                IControl from = null;
-                IControl to = null;
+                IControl? from = null;
+                IControl? to = null;
 
                 if (fromIndex != -1)
                 {
-                    from = ItemContainerGenerator.ContainerFromIndex(fromIndex);
+                    from = generator.ContainerFromIndex(fromIndex);
                 }
 
                 if (toIndex != -1)
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (PageTransition != null && (from != null || to != null))
                 {
-                    await PageTransition.Start((Visual)from, (Visual)to, fromIndex < toIndex, default);
+                    await PageTransition.Start((Visual?)from, (Visual?)to, fromIndex < toIndex, default);
                 }
                 else if (to != null)
                 {
@@ -197,7 +197,7 @@ namespace Avalonia.Controls.Presenters
                 {
                     if (IsVirtualized)
                     {
-                        Panel.Children.Remove(from);
+                        Panel!.Children.Remove(from);
                         generator.Dematerialize(fromIndex, 1);
                     }
                     else
@@ -208,15 +208,15 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private IControl GetOrCreateContainer(int index)
+        private IControl? GetOrCreateContainer(int index)
         {
             var container = ItemContainerGenerator.ContainerFromIndex(index);
 
             if (container == null && IsVirtualized)
             {
-                var item = Items.Cast<object>().ElementAt(index);
+                var item = Items!.Cast<object>().ElementAt(index);
                 var materialized = ItemContainerGenerator.Materialize(index, item);
-                Panel.Children.Add(materialized.ContainerControl);
+                Panel!.Children.Add(materialized.ContainerControl);
                 container = materialized.ContainerControl;
             }
 
@@ -245,8 +245,8 @@ namespace Avalonia.Controls.Presenters
             {
                 if (_currentTransition == null)
                 {
-                    int fromIndex = (int)e.OldValue;
-                    int toIndex = (int)e.NewValue;
+                    int fromIndex = (int)e.OldValue!;
+                    int toIndex = (int)e.NewValue!;
 
                     for (;;)
                     {
@@ -268,7 +268,7 @@ namespace Avalonia.Controls.Presenters
                 }
                 else
                 {
-                    _queuedTransitionIndex = (int)e.NewValue;
+                    _queuedTransitionIndex = (int)e.NewValue!;
                 }
             }
         }

@@ -14,11 +14,11 @@ namespace Avalonia.Controls
     /// </summary>
     public class LayoutTransformControl : Decorator
     {
-        public static readonly StyledProperty<ITransform> LayoutTransformProperty =
-            AvaloniaProperty.Register<LayoutTransformControl, ITransform>(nameof(LayoutTransform));
+        public static readonly StyledProperty<ITransform?> LayoutTransformProperty =
+            AvaloniaProperty.Register<LayoutTransformControl, ITransform?>(nameof(LayoutTransform));
 
         public static readonly StyledProperty<bool> UseRenderTransformProperty =
-            AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(LayoutTransform));
+            AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(UseRenderTransform));
 
         static LayoutTransformControl()
         {
@@ -37,7 +37,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a graphics transformation that should apply to this element when layout is performed.
         /// </summary>
-        public ITransform LayoutTransform
+        public ITransform? LayoutTransform
         {
             get { return GetValue(LayoutTransformProperty); }
             set { SetValue(LayoutTransformProperty, value); }
@@ -52,7 +52,7 @@ namespace Avalonia.Controls
             set { SetValue(UseRenderTransformProperty, value); }
         }
 
-        public IControl TransformRoot => Child;
+        public IControl? TransformRoot => Child;
 
         /// <summary>
         /// Provides the behavior for the "Arrange" pass of layout.
@@ -146,7 +146,7 @@ namespace Avalonia.Controls
             return transformedDesiredSize;
         }
 
-        IDisposable _renderTransformChangedEvent;
+        IDisposable? _renderTransformChangedEvent;
 
         private void OnUseRenderTransformPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -158,7 +158,7 @@ namespace Avalonia.Controls
             //       workaround.
 
             var target = e.Sender as LayoutTransformControl;
-            var shouldUseRenderTransform = (bool)e.NewValue;
+            var shouldUseRenderTransform = (bool)e.NewValue!;
             if (target != null)
             {
                 if (shouldUseRenderTransform)
@@ -217,7 +217,7 @@ namespace Avalonia.Controls
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation;
-        private IDisposable _transformChangedEvent = null;
+        private IDisposable? _transformChangedEvent = null;
 
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.

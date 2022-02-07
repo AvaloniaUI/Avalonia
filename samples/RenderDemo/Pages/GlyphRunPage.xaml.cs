@@ -13,6 +13,7 @@ namespace RenderDemo.Pages
         private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
+        private char[] _characters = new char[1];
         private float _fontSize = 20;
         private int _direction = 10;
 
@@ -38,7 +39,7 @@ namespace RenderDemo.Pages
 
         private void UpdateGlyphRun()
         {
-            var c = (uint)_rand.Next(65, 90);
+            var c = (char)_rand.Next(65, 90);
 
             if (_fontSize + _direction > 200)
             {
@@ -54,6 +55,8 @@ namespace RenderDemo.Pages
 
             _glyphIndices[0] = _glyphTypeface.GetGlyph(c);
 
+            _characters[0] = c;
+
             var scale = (double)_fontSize / _glyphTypeface.DesignEmHeight;
 
             var drawingGroup = new DrawingGroup();
@@ -61,7 +64,7 @@ namespace RenderDemo.Pages
             var glyphRunDrawing = new GlyphRunDrawing
             {
                 Foreground = Brushes.Black,
-                GlyphRun = new GlyphRun(_glyphTypeface, _fontSize, _glyphIndices),
+                GlyphRun = new GlyphRun(_glyphTypeface, _fontSize, _characters, _glyphIndices)
             };
 
             drawingGroup.Children.Add(glyphRunDrawing);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Dialogs;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
@@ -15,6 +16,11 @@ namespace ControlCatalog.Pages
         public DialogsPage()
         {
             this.InitializeComponent();
+
+            var results = this.FindControl<ItemsPresenter>("PickerLastResults");
+            var resultsVisible = this.FindControl<TextBlock>("PickerLastResultsVisible");
+
+            string lastSelectedDirectory = null;
 
             List<FileDialogFilter> GetFilters()
             {
@@ -34,44 +40,67 @@ namespace ControlCatalog.Pages
                 };
             }
 
-            this.FindControl<Button>("OpenFile").Click += delegate
+            this.FindControl<Button>("OpenFile").Click += async delegate
             {
-                new OpenFileDialog()
+                var result = await new OpenFileDialog()
                 {
                     Title = "Open file",
                     Filters = GetFilters(),
+                    Directory = lastSelectedDirectory,
                     // Almost guaranteed to exist
                     InitialFileName = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName
                 }.ShowAsync(GetWindow());
+                results.Items = result;
+                resultsVisible.IsVisible = result?.Any() == true;
             };
-            this.FindControl<Button>("SaveFile").Click += delegate
+            this.FindControl<Button>("OpenMultipleFiles").Click += async delegate
             {
-                new SaveFileDialog()
+                var result = await new OpenFileDialog()
+                {
+                    Title = "Open multiple files",
+                    Filters = GetFilters(),
+                    Directory = lastSelectedDirectory,
+                    AllowMultiple = true
+                }.ShowAsync(GetWindow());
+                results.Items = result;
+                resultsVisible.IsVisible = result?.Any() == true;
+            };
+            this.FindControl<Button>("SaveFile").Click += async delegate
+            {
+                var result = await new SaveFileDialog()
                 {
                     Title = "Save file",
                     Filters = GetFilters(),
+                    Directory = lastSelectedDirectory,
                     InitialFileName = "test.txt"
                 }.ShowAsync(GetWindow());
+                results.Items = new[] { result };
+                resultsVisible.IsVisible = result != null;
             };
-            this.FindControl<Button>("SelectFolder").Click += delegate
+            this.FindControl<Button>("SelectFolder").Click += async delegate
             {
-                new OpenFolderDialog()
+                var result = await new OpenFolderDialog()
                 {
                     Title = "Select folder",
+                    Directory = lastSelectedDirectory,
                 }.ShowAsync(GetWindow());
+                lastSelectedDirectory = result;
+                results.Items = new [] { result };
+                resultsVisible.IsVisible = result != null;
             };
             this.FindControl<Button>("OpenBoth").Click += async delegate
             {
-                var res = await new OpenFileDialog()
+                var result = await new OpenFileDialog()
                 {
                     Title = "Select both",
+                    Directory = lastSelectedDirectory,
                     AllowMultiple = true
                 }.ShowManagedAsync(GetWindow(), new ManagedFileDialogOptions
                 {
                     AllowDirectorySelection = true
                 });
-                if (res != null)
-                    Console.WriteLine("Selected: \n" + string.Join("\n", res));
+                results.Items = result;
+                resultsVisible.IsVisible = result?.Any() == true;
             };
             this.FindControl<Button>("DecoratedWindow").Click += delegate
             {

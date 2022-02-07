@@ -5,9 +5,9 @@ namespace Avalonia.Controls.Presenters
 {
     public interface IItemsPresenter : IPresenter
     {
-        IEnumerable Items { get; set; }
+        IEnumerable? Items { get; set; }
 
-        IPanel Panel { get; }
+        IPanel? Panel { get; }
 
         void ItemsChanged(NotifyCollectionChangedEventArgs e);
 

@@ -253,10 +253,14 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-            DotMemoryUnit(
-                $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
-                timeout: 120_000);
+            void DoMemoryTest()
+            {
+                var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
+                DotMemoryUnit(
+                    $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
+                    timeout: 120_000);
+            }
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, waitInSeconds: 3);
         });
 
     Target ZipFiles => _ => _

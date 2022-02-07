@@ -100,7 +100,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc cref="Start(Visual, Visual, CancellationToken)" />
-        public async Task Start(Visual from, Visual to, CancellationToken cancellationToken)
+        public async Task Start(Visual? from, Visual? to, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -112,7 +112,7 @@ namespace Avalonia.Animation
             {
                 if (to != null)
                 {
-                    disposables.Add(to.SetValue(Visual.OpacityProperty, 0, Data.BindingPriority.Animation));
+                    disposables.Add(to.SetValue(Visual.OpacityProperty, 0, Data.BindingPriority.Animation)!);
                 }
 
                 if (from != null)
@@ -151,7 +151,7 @@ namespace Avalonia.Animation
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>
-        Task IPageTransition.Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken)
+        Task IPageTransition.Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
             return Start(from, to, cancellationToken);
         }

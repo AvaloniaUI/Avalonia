@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Utilities;
-
-#nullable enable
 
 namespace Avalonia.Data
 {
@@ -83,14 +80,14 @@ namespace Avalonia.Data
     /// </remarks>
     public readonly struct BindingValue<T>
     {
-        [AllowNull] private readonly T _value;
+        private readonly T _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingValue{T}"/> struct with a type of
         /// <see cref="BindingValueType.Value"/>
         /// </summary>
         /// <param name="value">The value.</param>
-        public BindingValue([AllowNull] T value)
+        public BindingValue(T value)
         {
             ValidateValue(value);
             _value = value;
@@ -98,9 +95,9 @@ namespace Avalonia.Data
             Error = null;
         }
 
-        private BindingValue(BindingValueType type, [AllowNull] T value, Exception? error)
+        private BindingValue(BindingValueType type, T? value, Exception? error)
         {
-            _value = value;
+            _value = value!;
             Type = type;
             Error = error;
         }
@@ -127,7 +124,7 @@ namespace Avalonia.Data
         /// <exception cref="InvalidOperationException">
         /// <see cref="HasValue"/> is false.
         /// </exception>
-        public T Value => HasValue ? _value : throw new InvalidOperationException("BindingValue has no value.");
+        public T Value => HasValue ? _value! : throw new InvalidOperationException("BindingValue has no value.");
 
         /// <summary>
         /// Gets the binding or data validation error.
@@ -157,13 +154,13 @@ namespace Avalonia.Data
                 BindingValueType.DoNothing => BindingOperations.DoNothing,
                 BindingValueType.Value => _value,
                 BindingValueType.BindingError =>
-                    new BindingNotification(Error, BindingErrorType.Error),
+                    new BindingNotification(Error!, BindingErrorType.Error),
                 BindingValueType.BindingErrorWithFallback =>
-                    new BindingNotification(Error, BindingErrorType.Error, Value),
+                    new BindingNotification(Error!, BindingErrorType.Error, Value),
                 BindingValueType.DataValidationError =>
-                    new BindingNotification(Error, BindingErrorType.DataValidationError),
+                    new BindingNotification(Error!, BindingErrorType.DataValidationError),
                 BindingValueType.DataValidationErrorWithFallback =>
-                    new BindingNotification(Error, BindingErrorType.DataValidationError, Value),
+                    new BindingNotification(Error!, BindingErrorType.DataValidationError, Value),
                 _ => throw new NotSupportedException("Invalid BindingValueType."),
             };
         }
@@ -177,7 +174,7 @@ namespace Avalonia.Data
         /// The binding type is <see cref="BindingValueType.UnsetValue"/> or
         /// <see cref="BindingValueType.DoNothing"/>.
         /// </exception>
-        public BindingValue<T> WithValue([AllowNull] T value)
+        public BindingValue<T> WithValue(T value)
         {
             if (Type == BindingValueType.DoNothing)
             {
@@ -192,15 +189,14 @@ namespace Avalonia.Data
         /// Gets the value of the binding value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
-        [return: MaybeNull]
-        public T GetValueOrDefault() => HasValue ? _value : default;
+        public T? GetValueOrDefault() => HasValue ? _value : default;
 
         /// <summary>
         /// Gets the value of the binding value if present, otherwise a default value.
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
-        public T GetValueOrDefault(T defaultValue) => HasValue ? _value : defaultValue;
+        public T? GetValueOrDefault(T defaultValue) => HasValue ? _value : defaultValue;
 
         /// <summary>
         /// Gets the value if present, otherwise the default value.
@@ -209,8 +205,7 @@ namespace Avalonia.Data
         /// The value if present and of the correct type, `default(TResult)` if the value is
         /// not present or of an incorrect type.
         /// </returns>
-        [return: MaybeNull]
-        public TResult GetValueOrDefault<TResult>()
+        public TResult? GetValueOrDefault<TResult>()
         {
             return HasValue ?
                 _value is TResult result ? result : default
@@ -226,8 +221,7 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        [return: MaybeNull]
-        public TResult GetValueOrDefault<TResult>([AllowNull] TResult defaultValue)
+        public TResult? GetValueOrDefault<TResult>(TResult defaultValue)
         {
             return HasValue ?
                 _value is TResult result ? result : default
@@ -247,7 +241,7 @@ namespace Avalonia.Data
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => new BindingValue<T>((T)value)
+                _ => new BindingValue<T>((T)value!)
             };
         }
 
@@ -255,7 +249,7 @@ namespace Avalonia.Data
         /// Creates a binding value from an instance of the underlying value type.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static implicit operator BindingValue<T>([AllowNull] T value) => new BindingValue<T>(value);
+        public static implicit operator BindingValue<T>(T value) => new BindingValue<T>(value);
 
         /// <summary>
         /// Creates a binding value from an <see cref="Optional{T}"/>.
@@ -360,7 +354,7 @@ namespace Avalonia.Data
         }
 
         [Conditional("DEBUG")]
-        private static void ValidateValue([AllowNull] T value)
+        private static void ValidateValue(T value)
         {
             if (value is UnsetValueType)
             {
@@ -387,21 +381,21 @@ namespace Avalonia.Data
         /// <typeparam name="T">The target type.</typeparam>
         /// <param name="value">The binding value.</param>
         /// <returns>The cast value.</returns>
-        public static BindingValue<T> Cast<T>(this BindingValue<object> value)
+        public static BindingValue<T> Cast<T>(this BindingValue<object?> value)
         {
             return value.Type switch
             {
                 BindingValueType.DoNothing => BindingValue<T>.DoNothing,
                 BindingValueType.UnsetValue => BindingValue<T>.Unset,
-                BindingValueType.Value => new BindingValue<T>((T)value.Value),
+                BindingValueType.Value => new BindingValue<T>((T)value.Value!),
                 BindingValueType.BindingError => BindingValue<T>.BindingError(value.Error!),
                 BindingValueType.BindingErrorWithFallback => BindingValue<T>.BindingError(
                         value.Error!,
-                        (T)value.Value),
+                        (T)value.Value!),
                 BindingValueType.DataValidationError => BindingValue<T>.DataValidationError(value.Error!),
                 BindingValueType.DataValidationErrorWithFallback => BindingValue<T>.DataValidationError(
                         value.Error!,
-                        (T)value.Value),
+                        (T)value.Value!),
                 _ => throw new NotSupportedException("Invalid BindingValue type."),
             };
         }
@@ -416,21 +410,21 @@ namespace Avalonia.Data
         /// <remarks>
         /// Note that this method uses reflection and as such may be slow.
         /// </remarks>
-        public static BindingValue<T> Convert<T>(this BindingValue<object> value)
+        public static BindingValue<T> Convert<T>(this BindingValue<object?> value)
         {
             return value.Type switch
             {
                 BindingValueType.DoNothing => BindingValue<T>.DoNothing,
                 BindingValueType.UnsetValue => BindingValue<T>.Unset,
-                BindingValueType.Value => new BindingValue<T>(TypeUtilities.ConvertImplicit<T>(value.Value)),
+                BindingValueType.Value => new BindingValue<T>(TypeUtilities.ConvertImplicit<T>(value.Value!)),
                 BindingValueType.BindingError => BindingValue<T>.BindingError(value.Error!),
                 BindingValueType.BindingErrorWithFallback => BindingValue<T>.BindingError(
                         value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value)),
+                        TypeUtilities.ConvertImplicit<T>(value.Value!)),
                 BindingValueType.DataValidationError => BindingValue<T>.DataValidationError(value.Error!),
                 BindingValueType.DataValidationErrorWithFallback => BindingValue<T>.DataValidationError(
                         value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value)),
+                        TypeUtilities.ConvertImplicit<T>(value.Value!)),
                 _ => throw new NotSupportedException("Invalid BindingValue type."),
             };
         }

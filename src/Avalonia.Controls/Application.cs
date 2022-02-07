@@ -13,7 +13,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
-#nullable enable
 
 namespace Avalonia
 {
@@ -38,8 +37,8 @@ namespace Avalonia
         /// </summary>
         private DataTemplates? _dataTemplates;
 
-        private readonly Lazy<IClipboard> _clipboard =
-            new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
+        private readonly Lazy<IClipboard?> _clipboard =
+            new Lazy<IClipboard?>(() => (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
         private Styles? _styles;
         private IResourceDictionary? _resources;
@@ -85,7 +84,7 @@ namespace Avalonia
         /// <value>
         /// The current instance of the <see cref="Application"/> class.
         /// </value>
-        public static Application Current
+        public static Application? Current
         {
             get { return AvaloniaLocator.Current.GetService<Application>(); }
         }
@@ -104,7 +103,7 @@ namespace Avalonia
         /// <value>
         /// The application's focus manager.
         /// </value>
-        public IFocusManager FocusManager
+        public IFocusManager? FocusManager
         {
             get;
             private set;
@@ -116,7 +115,7 @@ namespace Avalonia
         /// <value>
         /// The application's input manager.
         /// </value>
-        public InputManager InputManager
+        public InputManager? InputManager
         {
             get;
             private set;
@@ -125,7 +124,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the application clipboard.
         /// </summary>
-        public IClipboard Clipboard => _clipboard.Value;
+        public IClipboard? Clipboard => _clipboard.Value;
 
         /// <summary>
         /// Gets the application's global resource dictionary.
@@ -175,15 +174,15 @@ namespace Avalonia
         /// - <see cref="ISingleViewApplicationLifetime"/>
         /// - <see cref="IControlledApplicationLifetime"/> 
         /// </summary>
-        public IApplicationLifetime ApplicationLifetime { get; set; }
+        public IApplicationLifetime? ApplicationLifetime { get; set; }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
             remove => _stylesAdded -= value;
         }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesRemoved
         {
             add => _stylesRemoved += value;
             remove => _stylesRemoved -= value;

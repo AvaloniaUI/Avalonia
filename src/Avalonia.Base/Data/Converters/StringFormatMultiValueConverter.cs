@@ -17,18 +17,16 @@ namespace Avalonia.Data.Converters
         /// <param name="inner">
         /// An optional inner converter to be called before the format takes place.
         /// </param>
-        public StringFormatMultiValueConverter(string format, IMultiValueConverter inner)
+        public StringFormatMultiValueConverter(string format, IMultiValueConverter? inner)
         {
-            Contract.Requires<ArgumentNullException>(format != null);
-
-            Format = format;
+            Format = format ?? throw new ArgumentNullException(nameof(format));
             Inner = inner;
         }
 
         /// <summary>
         /// Gets an inner value converter which will be called before the string format takes place.
         /// </summary>
-        public IMultiValueConverter Inner { get; }
+        public IMultiValueConverter? Inner { get; }
 
         /// <summary>
         /// Gets the format string.
@@ -36,7 +34,7 @@ namespace Avalonia.Data.Converters
         public string Format { get; }
 
         /// <inheritdoc/>
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             return Inner == null
                        ? string.Format(culture, Format, values.ToArray())

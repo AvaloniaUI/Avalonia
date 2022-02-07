@@ -20,7 +20,7 @@ namespace Avalonia.Controls
         public void Add(IControl element)
         {
             var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
-            var key = virtInfo.UniqueId;
+            var key = virtInfo.UniqueId!;
 
             if (_elementMap.ContainsKey(key))
             {
@@ -30,10 +30,10 @@ namespace Avalonia.Controls
             _elementMap.Add(key, element);
         }
 
-        public IControl Remove(int index)
+        public IControl? Remove(int index)
         {
             // Check if there is already a element in the mapping and if so, use it.
-            string key = _owner.ItemsSourceView.KeyFromIndex(index);
+            string key = _owner.ItemsSourceView!.KeyFromIndex(index);
 
             if (_elementMap.TryGetValue(key, out var element))
             {

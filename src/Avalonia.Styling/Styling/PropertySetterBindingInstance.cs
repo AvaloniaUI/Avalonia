@@ -19,7 +19,7 @@ namespace Avalonia.Styling
         private readonly IStyleable _target;
         private readonly StyledPropertyBase<T>? _styledProperty;
         private readonly DirectPropertyBase<T>? _directProperty;
-        private readonly InstancedBinding _binding;
+        private readonly InstancedBinding? _binding;
         private readonly Inner _inner;
         private BindingValue<T> _value;
         private IDisposable? _subscription;
@@ -36,7 +36,7 @@ namespace Avalonia.Styling
             _styledProperty = property;
             _binding = binding.Initiate(_target, property);
 
-            if (_binding.Mode == BindingMode.OneTime)
+            if (_binding?.Mode == BindingMode.OneTime)
             {
                 // For the moment, we don't support OneTime bindings in setters, because I'm not
                 // sure what the semantics should be in the case of activation/deactivation.
@@ -59,6 +59,9 @@ namespace Avalonia.Styling
 
         public void Start(bool hasActivator)
         {
+            if (_binding is null)
+                return;
+
             _isActive = !hasActivator;
 
             if (_styledProperty is object)
@@ -90,9 +93,12 @@ namespace Avalonia.Styling
 
         public void Activate()
         {
+            if (_binding is null)
+                return;
+
             if (!_isActive)
             {
-                _innerSubscription ??= _binding.Observable.Subscribe(_inner);
+                _innerSubscription ??= _binding.Observable!.Subscribe(_inner);
                 _isActive = true;
                 PublishNext();
             }
@@ -140,7 +146,7 @@ namespace Avalonia.Styling
 
         void IObserver<BindingValue<T>>.OnNext(BindingValue<T> value)
         {
-            if (value.HasValue && _isActive)
+            if (value.HasValue && _isActive && _binding?.Subject is not null)
             {
                 _binding.Subject.OnNext(value.Value);
             }
@@ -148,11 +154,11 @@ namespace Avalonia.Styling
 
         protected override void Subscribed()
         {
-            if (_isActive)
+            if (_isActive && _binding?.Observable is not null)
             {
                 if (_innerSubscription is null)
                 {
-                    _innerSubscription ??= _binding.Observable.Subscribe(_inner);
+                    _innerSubscription ??= _binding.Observable!.Subscribe(_inner);
                 }
                 else
                 {

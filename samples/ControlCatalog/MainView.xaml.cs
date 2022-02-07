@@ -3,10 +3,11 @@ using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.XamlIl;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Themes.Fluent;
+using ControlCatalog.Models;
 using ControlCatalog.Pages;
 
 namespace ControlCatalog
@@ -16,9 +17,12 @@ namespace ControlCatalog
         public MainView()
         {
             AvaloniaXamlLoader.Load(this);
+
+            var sideBar = this.FindControl<TabControl>("Sidebar");
+
             if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
             {
-                IList tabItems = ((IList)this.FindControl<TabControl>("Sidebar").Items);
+                IList tabItems = ((IList)sideBar.Items);
                 tabItems.Add(new TabItem()
                 {
                     Header = "Dialogs",
@@ -35,28 +39,66 @@ namespace ControlCatalog
             var themes = this.Find<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
-                switch (themes.SelectedIndex)
+                if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    case 0:
-                        Application.Current.Styles[0] = App.FluentLight;
-                        break;
-                    case 1:
-                        Application.Current.Styles[0] = App.FluentDark;
-                        break;
-                    case 2:
+                    var themeStyle = Application.Current.Styles[0];
+                    if (theme == CatalogTheme.FluentLight)
+                    {
+                        if (App.Fluent.Mode != FluentThemeMode.Light)
+                        {
+                            App.Fluent.Mode = FluentThemeMode.Light;
+                        }
+                        Application.Current.Styles[0] = App.Fluent;
+                        Application.Current.Styles[1] = App.DataGridFluent;
+                    }
+                    else if (theme == CatalogTheme.FluentDark)
+                    {
+
+                        if (App.Fluent.Mode != FluentThemeMode.Dark)
+                        {
+                            App.Fluent.Mode = FluentThemeMode.Dark;
+                        }
+                        Application.Current.Styles[0] = App.Fluent;
+                        Application.Current.Styles[1] = App.DataGridFluent;
+                    }
+                    else if (theme == CatalogTheme.DefaultLight)
+                    {
+                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Light;
                         Application.Current.Styles[0] = App.DefaultLight;
-                        break;
-                    case 3:
+                        Application.Current.Styles[1] = App.DataGridDefault;
+                    }
+                    else if (theme == CatalogTheme.DefaultDark)
+                    {
+                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Dark;
                         Application.Current.Styles[0] = App.DefaultDark;
-                        break;
+                        Application.Current.Styles[1] = App.DataGridDefault;
+                    }
                 }
-            };            
+            };
 
             var decorations = this.Find<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {
-                if (VisualRoot is Window window)
-                    window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
+                if (VisualRoot is Window window
+                    && decorations.SelectedItem is SystemDecorations systemDecorations)
+                {
+                    window.SystemDecorations = systemDecorations;
+                }
+            };
+
+            var transparencyLevels = this.Find<ComboBox>("TransparencyLevels");
+            IDisposable backgroundSetter = null, paneBackgroundSetter = null;
+            transparencyLevels.SelectionChanged += (sender, e) =>
+            {
+                backgroundSetter?.Dispose();
+                paneBackgroundSetter?.Dispose();
+                if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected
+                    && selected != WindowTransparencyLevel.None)
+                {
+                    var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.5);
+                    backgroundSetter = sideBar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                    paneBackgroundSetter = sideBar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                }
             };
         }
 

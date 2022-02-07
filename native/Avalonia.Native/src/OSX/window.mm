@@ -43,6 +43,7 @@ public:
         StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
         Window = [[AvnWindow alloc] initWithParent:this];
+        [Window setContentView: StandardContainer];
         
         lastPositionSet.X = 100;
         lastPositionSet.Y = 100;
@@ -124,8 +125,6 @@ public:
             SetPosition(lastPositionSet);
             UpdateStyle();
             
-            [Window setContentView: StandardContainer];
-            
             [Window setTitle:_lastTitle];
             
             if(ShouldTakeFocusOnShow() && activate)
@@ -175,7 +174,7 @@ public:
         {
             if(Window != nullptr)
             {
-                [Window makeKeyWindow];
+                [Window makeKeyAndOrderFront:nil];
                 [NSApp activateIgnoringOtherApps:YES];
             }
         }
@@ -206,7 +205,11 @@ public:
                 auto window = Window;
                 Window = nullptr;
                 
-                [window close];
+                try{
+                    // Seems to throw sometimes on application exit.
+                    [window close];
+                }
+                catch(NSException*){}
             }
             
             return S_OK;
@@ -324,8 +327,8 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
-                [StandardContainer setFrameSize:NSSize{x,y}];
-                [Window setContentSize:NSSize{x, y}];
+                [Window setContentSize:NSSize{x,y}];
+                [Window invalidateShadow];
             }
             @finally
             {
@@ -724,6 +727,7 @@ private:
             if (cparent->WindowState() == Minimized)
                 cparent->SetWindowState(Normal);
             
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
             UpdateStyle();
@@ -1489,7 +1493,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     NSRect rect = NSZeroRect;
     rect.size = newSize;
     
-    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag;
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag;
     _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
     [self addTrackingArea:_area];
     
@@ -1623,6 +1627,19 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             return;
         }
     }
+    else if (type == Magnify)
+    {
+        delta.X = delta.Y = [event magnification];
+    }
+    else if (type == Rotate)
+    {
+        delta.X = delta.Y = [event rotation];
+    }
+    else if (type == Swipe)
+    {
+        delta.X = [event deltaX];
+        delta.Y = [event deltaY];
+    }
     
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
@@ -1747,6 +1764,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     [self mouseEvent:event withType:Wheel];
     [super scrollWheel:event];
+}
+
+- (void)magnifyWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Magnify];
+    [super magnifyWithEvent:event];
+}
+
+- (void)rotateWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Rotate];
+    [super rotateWithEvent:event];
+}
+
+- (void)swipeWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Swipe];
+    [super swipeWithEvent:event];
 }
 
 - (void)mouseEntered:(NSEvent *)event

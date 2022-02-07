@@ -15,6 +15,8 @@ namespace Avalonia.Media
     {
         private readonly IStreamGeometryContextImpl _impl;
 
+        private Point _currentPoint;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryContext"/> class.
         /// </summary>
@@ -47,6 +49,24 @@ namespace Avalonia.Media
         public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
         {
             _impl.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
+            _currentPoint = point;
+        }
+
+
+        /// <summary>
+        /// Draws an arc to the specified point using polylines, quadratic or cubic Bezier curves
+        /// Significantly more precise when drawing elliptic arcs with extreme width:height ratios.        
+        /// </summary>         
+        /// <param name="point">The destination point.</param>
+        /// <param name="size">The radii of an oval whose perimeter is used to draw the angle.</param>
+        /// <param name="rotationAngle">The rotation angle of the oval that specifies the curve.</param>
+        /// <param name="isLargeArc">true to draw the arc greater than 180 degrees; otherwise, false.</param>
+        /// <param name="sweepDirection">
+        /// A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
+        /// </param>
+        public void PreciseArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+        {
+            PreciseEllipticArcHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
         }
 
         /// <summary>
@@ -57,6 +77,7 @@ namespace Avalonia.Media
         public void BeginFigure(Point startPoint, bool isFilled)
         {
             _impl.BeginFigure(startPoint, isFilled);
+            _currentPoint = startPoint;
         }
 
         /// <summary>
@@ -68,6 +89,7 @@ namespace Avalonia.Media
         public void CubicBezierTo(Point point1, Point point2, Point point3)
         {
             _impl.CubicBezierTo(point1, point2, point3);
+            _currentPoint = point3;
         }
 
         /// <summary>
@@ -78,6 +100,7 @@ namespace Avalonia.Media
         public void QuadraticBezierTo(Point control, Point endPoint)
         {
             _impl.QuadraticBezierTo(control, endPoint);
+            _currentPoint = endPoint;
         }
 
         /// <summary>
@@ -87,6 +110,7 @@ namespace Avalonia.Media
         public void LineTo(Point point)
         {
             _impl.LineTo(point);
+            _currentPoint = point;
         }
 
         /// <summary>

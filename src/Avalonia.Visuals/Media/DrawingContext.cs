@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
@@ -21,9 +20,9 @@ namespace Avalonia.Media
         private static ThreadSafeObjectPool<Stack<TransformContainer>> TransformStackPool { get; } =
             ThreadSafeObjectPool<Stack<TransformContainer>>.Default;
 
-        private Stack<PushedState> _states = StateStackPool.Get();
+        private Stack<PushedState>? _states = StateStackPool.Get();
 
-        private Stack<TransformContainer> _transformContainers = TransformStackPool.Get();
+        private Stack<TransformContainer>? _transformContainers = TransformStackPool.Get();
 
         readonly struct TransformContainer
         {
@@ -81,7 +80,7 @@ namespace Avalonia.Media
         /// <param name="rect">The rect in the output to draw to.</param>
         public void DrawImage(IImage source, Rect rect)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            _ = source ?? throw new ArgumentNullException(nameof(source));
 
             DrawImage(source, new Rect(source.Size), rect);
         }
@@ -95,7 +94,7 @@ namespace Avalonia.Media
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public void DrawImage(IImage source, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            _ = source ?? throw new ArgumentNullException(nameof(source));
 
             source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
         }
@@ -120,9 +119,10 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, IPen pen, Geometry geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry)
         {
-            DrawGeometry(brush, pen, geometry.PlatformImpl);
+            if (geometry.PlatformImpl is not null)
+                DrawGeometry(brush, pen, geometry.PlatformImpl);
         }
 
         /// <summary>
@@ -131,9 +131,9 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
-            Contract.Requires<ArgumentNullException>(geometry != null);
+            _ = geometry ?? throw new ArgumentNullException(nameof(geometry));
 
             if (brush != null || PenIsVisible(pen))
             {
@@ -158,7 +158,7 @@ namespace Avalonia.Media
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0,
+        public void DrawRectangle(IBrush? brush, IPen? pen, Rect rect, double radiusX = 0, double radiusY = 0,
             BoxShadows boxShadows = default)
         {
             if (brush == null && !PenIsVisible(pen))
@@ -191,6 +191,33 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Draws an ellipse with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the ellipse, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the ellipse, or <c>null</c> for no stroke.</param>
+        /// <param name="center">The location of the center of the ellipse.</param>
+        /// <param name="radiusX">The horizontal radius of the ellipse.</param>
+        /// <param name="radiusY">The vertical radius of the ellipse.</param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        public void DrawEllipse(IBrush? brush, IPen? pen, Point center, double radiusX, double radiusY)
+        {
+            if (brush == null && !PenIsVisible(pen))
+            {
+                return;
+            }
+
+            var originX = center.X - radiusX;
+            var originY = center.Y - radiusY;
+            var width = radiusX * 2;
+            var height = radiusY * 2;
+
+            PlatformImpl.DrawEllipse(brush, pen, new Rect(originX, originY, width, height));
+        }
+
+        /// <summary>
         /// Draws a custom drawing operation
         /// </summary>
         /// <param name="custom">custom operation</param>
@@ -199,17 +226,13 @@ namespace Avalonia.Media
         /// <summary>
         /// Draws text.
         /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(FormattedText text, Point origin)
         {
-            Contract.Requires<ArgumentNullException>(text != null);
-
-            if (foreground != null)
-            {
-                PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
-            }
+            _ = text ?? throw new ArgumentNullException(nameof(text));
+         
+           text.Draw(this, origin);            
         }
 
         /// <summary>
@@ -219,7 +242,7 @@ namespace Avalonia.Media
         /// <param name="glyphRun">The glyph run.</param>
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            Contract.Requires<ArgumentNullException>(glyphRun != null);
+            _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
 
             if (foreground != null)
             {
@@ -253,11 +276,14 @@ namespace Avalonia.Media
                 Clip,
                 MatrixContainer,
                 GeometryClip,
-                OpacityMask
+                OpacityMask,
             }
 
             public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
             {
+                if (context._states is null)
+                    throw new ObjectDisposedException(nameof(DrawingContext));
+
                 _context = context;
                 _type = type;
                 _matrix = matrix;
@@ -269,6 +295,8 @@ namespace Avalonia.Media
             {
                 if (_type == PushedStateType.None)
                     return;
+                if (_context._states is null || _context._transformContainers is null)
+                    throw new ObjectDisposedException(nameof(DrawingContext));
                 if (_context._currentLevel != _level)
                     throw new InvalidOperationException("Wrong Push/Pop state order");
                 _context._currentLevel--;
@@ -317,7 +345,14 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the clip geometry.</returns>
         public PushedState PushGeometryClip(Geometry clip)
         {
-            Contract.Requires<ArgumentNullException>(clip != null);
+            _ = clip ?? throw new ArgumentNullException(nameof(clip));
+
+            // HACK: This check was added when nullable annotations pointed out that we're potentially
+            // pushing a null value for the clip here. Ideally we'd return an empty PushedState here but
+            // I don't want to make that change as part of adding nullable annotations.
+            if (clip.PlatformImpl is null)
+                throw new InvalidOperationException("Cannot push empty geometry clip.");
+
             PlatformImpl.PushGeometryClip(clip.PlatformImpl);
             return new PushedState(this, PushedState.PushedStateType.GeometryClip);
         }
@@ -381,6 +416,8 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the transformation.</returns>
         public PushedState PushTransformContainer()
         {
+            if (_transformContainers is null)
+                throw new ObjectDisposedException(nameof(DrawingContext));
             _transformContainers.Push(new TransformContainer(CurrentTransform, _currentContainerTransform));
             _currentContainerTransform = CurrentTransform * _currentContainerTransform;
             _currentTransform = Matrix.Identity;
@@ -392,6 +429,8 @@ namespace Avalonia.Media
         /// </summary>
         public void Dispose()
         {
+            if (_states is null || _transformContainers is null)
+                throw new ObjectDisposedException(nameof(DrawingContext));
             while (_states.Count != 0)
                 _states.Peek().Dispose();
             StateStackPool.Return(_states);
@@ -404,7 +443,7 @@ namespace Avalonia.Media
                 PlatformImpl.Dispose();
         }
 
-        private static bool PenIsVisible(IPen pen)
+        private static bool PenIsVisible(IPen? pen)
         {
             return pen?.Brush != null && pen.Thickness > 0;
         }
