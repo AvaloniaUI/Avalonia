@@ -194,6 +194,7 @@ namespace Avalonia.Media.TextFormatting
             
             var currentY = 0d;
             var currentPosition = 0;
+            var currentRect = Rect.Empty;
 
             foreach (var textLine in TextLines)
             {
@@ -209,7 +210,10 @@ namespace Avalonia.Media.TextFormatting
                 //The whole line is covered.
                 if (currentPosition >= start && start + length > currentPosition + textLine.TextRange.Length)
                 {
-                    result.Add(new Rect(textLine.Start, currentY, textLine.WidthIncludingTrailingWhitespace, textLine.Height));
+                    currentRect = new Rect(textLine.Start, currentY, textLine.WidthIncludingTrailingWhitespace,
+                        textLine.Height);
+                    
+                    result.Add(currentRect);
                     
                     currentY += textLine.Height;
                     currentPosition += textLine.TextRange.Length;
@@ -317,15 +321,16 @@ namespace Avalonia.Media.TextFormatting
 
                     var width = endX - startX;
 
-                    if (result.Count > 0 && MathUtilities.AreClose(result[result.Count - 1].Right, startX))
+                    if (result.Count > 0 && MathUtilities.AreClose(currentRect.Top, currentY) &&
+                        MathUtilities.AreClose(currentRect.Right, startX))
                     {
-                        var rect = result[result.Count - 1];
-
-                        result[result.Count - 1] = rect.WithWidth(rect.Width + width);
+                        result[result.Count - 1] = currentRect.WithWidth(currentRect.Width + width);
                     }
                     else
                     {
-                        result.Add(new Rect(startX, currentY, width, textLine.Height));
+                        currentRect = new Rect(startX, currentY, width, textLine.Height);
+                        
+                        result.Add(currentRect);
                     }
                     
                     if (currentRun.ShapedBuffer.IsLeftToRight)
@@ -433,7 +438,7 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.End + (trailingEdge ? 1 : 0))
+                if (charIndex >= textLine.TextRange.Start && charIndex <= textLine.TextRange.End + (trailingEdge ? 1 : 0))
                 {
                     return index;
                 }

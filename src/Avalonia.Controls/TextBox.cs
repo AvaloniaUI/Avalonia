@@ -540,6 +540,8 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
+
+            _imClient.SetPresenter(_presenter, this);
             
             if (IsFocused)
             {
@@ -550,8 +552,6 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            
-            _imClient.SetPresenter(_presenter, this);
             
             if (IsFocused)
             {
@@ -612,6 +612,8 @@ namespace Avalonia.Controls
             }
 
             UpdateCommandStates();
+            
+            _imClient.SetPresenter(_presenter, this);
 
             _presenter?.ShowCaret();
         }
@@ -630,6 +632,8 @@ namespace Avalonia.Controls
             UpdateCommandStates();
 
             _presenter?.HideCaret();
+            
+            _imClient.SetPresenter(null, null);
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
@@ -1278,7 +1282,7 @@ namespace Avalonia.Controls
             {
                 caretIndex = 0;
             }
-            else if (_presenter.TextLayout is not null)
+            else
             {
                 var lines = _presenter.TextLayout.TextLines;
                 var pos = 0;
@@ -1313,7 +1317,7 @@ namespace Avalonia.Controls
             {
                 caretIndex = text.Length;
             }
-            else if (_presenter.TextLayout is not null)
+            else
             {
                 var lines = _presenter.TextLayout.TextLines;
                 var pos = 0;
