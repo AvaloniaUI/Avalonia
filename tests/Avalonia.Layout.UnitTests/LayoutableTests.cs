@@ -320,6 +320,71 @@ namespace Avalonia.Layout.UnitTests
                 Times.Once);
         }
 
+        [Fact]
+        public void Making_Control_Invisible_Should_Invalidate_Parent_Measure()
+        {
+            Border child;
+            var target = new StackPanel
+            {
+                Children =
+                {
+                    (child = new Border
+                    {
+                        Width = 100,
+                    }),
+                }
+            };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+
+            child.IsVisible = false;
+
+            Assert.False(target.IsMeasureValid);
+            Assert.False(target.IsArrangeValid);
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Measuring_Invisible_Control_Should_Not_Invalidate_Parent_Measure()
+        {
+            Border child;
+            var target = new StackPanel
+            {
+                Children =
+                {
+                    (child = new Border
+                    {
+                        Width = 100,
+                    }),
+                }
+            };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.Equal(new Size(100, 0), child.DesiredSize);
+
+            child.IsVisible = false;
+            Assert.Equal(default, child.DesiredSize);
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+            child.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.Equal(default, child.DesiredSize);
+        }
+
         private class TestLayoutable : Layoutable
         {
             public Size ArrangeSize { get; private set; }
