@@ -5,7 +5,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.Themes.Default;
 using Avalonia.Rendering;
@@ -183,14 +183,6 @@ namespace Avalonia.UnitTests
         private static IPlatformRenderInterface CreateRenderInterfaceMock()
         {
             return Mock.Of<IPlatformRenderInterface>(x =>
-                x.CreateFormattedText(
-                    It.IsAny<string>(),
-                    It.IsAny<Typeface>(),
-                    It.IsAny<double>(),
-                    It.IsAny<TextAlignment>(),
-                    It.IsAny<TextWrapping>(),
-                    It.IsAny<Size>(),
-                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }

@@ -25,7 +25,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the <see cref="Owner"/> of the resource provider changes.
         /// </summary>
-        event EventHandler OwnerChanged;
+        event EventHandler? OwnerChanged;
 
         /// <summary>
         /// Adds an owner to the resource provider.

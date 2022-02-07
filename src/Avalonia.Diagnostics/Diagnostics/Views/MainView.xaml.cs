@@ -19,9 +19,9 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
             AddHandler(KeyDownEvent, PreviewKeyDown, RoutingStrategies.Tunnel);
-            _console = this.FindControl<ConsoleView>("console");
-            _consoleSplitter = this.FindControl<GridSplitter>("consoleSplitter");
-            _rootGrid = this.FindControl<Grid>("rootGrid");
+            _console = this.GetControl<ConsoleView>("console");
+            _consoleSplitter = this.GetControl<GridSplitter>("consoleSplitter");
+            _rootGrid = this.GetControl<Grid>("rootGrid");
             _consoleRow = Grid.GetRow(_console);
         }
 

@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> DelayProperty =
             AvaloniaProperty.Register<Button, int>(nameof(Delay), 300);
 
-        private DispatcherTimer _repeatTimer;
+        private DispatcherTimer? _repeatTimer;
 
         /// <summary>
         /// Gets or sets the amount of time, in milliseconds, of repeating clicks.
@@ -55,10 +55,10 @@ namespace Avalonia.Controls
             _repeatTimer.Start();
         }
 
-        private void RepeatTimerOnTick(object sender, EventArgs e)
+        private void RepeatTimerOnTick(object? sender, EventArgs e)
         {
             var interval = TimeSpan.FromMilliseconds(Interval);
-            if (_repeatTimer.Interval != interval)
+            if (_repeatTimer!.Interval != interval)
             {
                 _repeatTimer.Interval = interval;
             }

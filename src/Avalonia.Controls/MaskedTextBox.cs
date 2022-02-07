@@ -8,8 +8,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public class MaskedTextBox : TextBox, IStyleable
@@ -241,7 +239,7 @@ namespace Avalonia.Controls
             switch (e.Key)
             {
                 case Key.Delete:
-                    if (CaretIndex < Text.Length)
+                    if (CaretIndex < Text?.Length)
                     {
                         if (MaskProvider.RemoveAt(CaretIndex))
                         {
@@ -286,7 +284,7 @@ namespace Avalonia.Controls
         {
             void UpdateMaskProvider()
             {
-                MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
+                MaskProvider = new MaskedTextProvider(Mask!, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
                 if (Text != null)
                 {
                     MaskProvider.Set(Text);
@@ -383,11 +381,11 @@ namespace Avalonia.Controls
                     }
                 }
 
-                if (CaretIndex < Text.Length)
+                if (CaretIndex < Text?.Length)
                 {
                     CaretIndex = GetNextCharacterPosition(CaretIndex);
 
-                    if (MaskProvider.InsertAt(e.Text, CaretIndex))
+                    if (MaskProvider.InsertAt(e.Text!, CaretIndex))
                     {
                         CaretIndex++;
                     }

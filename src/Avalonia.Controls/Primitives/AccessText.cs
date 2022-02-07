@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -19,7 +20,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// The access key handler for the current window.
         /// </summary>
-        private IAccessKeyHandler _accessKeys;
+        private IAccessKeyHandler? _accessKeys;
 
         /// <summary>
         /// Initializes static members of the <see cref="AccessText"/> class.
@@ -67,7 +68,7 @@ namespace Avalonia.Controls.Primitives
 
             if (underscore != -1 && ShowAccessKey)
             {
-                var rect = TextLayout.HitTestTextPosition(underscore);
+                var rect = TextLayout!.HitTestTextPosition(underscore);
                 var offset = new Vector(0, -1.5);
                 context.DrawLine(
                     new Pen(Foreground, 1),
@@ -77,7 +78,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override TextLayout CreateTextLayout(Size constraint, string text)
+        protected override TextLayout? CreateTextLayout(Size constraint, string? text)
         {
             return base.CreateTextLayout(constraint, StripAccessKey(text));
         }
@@ -111,8 +112,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="text">The text.</param>
         /// <returns>The text with the first underscore stripped.</returns>
-        private string StripAccessKey(string text)
+        [return: NotNullIfNotNull("text")]
+        private string? StripAccessKey(string? text)
         {
+            if (text is null)
+            {
+                return null;
+            }
+
             var position = text.IndexOf('_');
 
             if (position == -1)
@@ -129,7 +136,7 @@ namespace Avalonia.Controls.Primitives
         /// Called when the <see cref="TextBlock.Text"/> property changes.
         /// </summary>
         /// <param name="text">The new text.</param>
-        private void TextChanged(string text)
+        private void TextChanged(string? text)
         {
             var key = (char)0;
 
