@@ -61,8 +61,7 @@ namespace Avalonia.Media
         {
             if (_children?.Count > 0)
             {
-                var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() ??
-                    throw new InvalidOperationException("Unable to locate IPlatformRenderInterface.");
+                var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
                 return factory.CreateGeometryGroup(FillRule, _children);
             }
 

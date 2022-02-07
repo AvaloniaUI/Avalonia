@@ -95,6 +95,7 @@ namespace Avalonia.Win32.OpenGl
                 WGL_DOUBLE_BUFFER_ARB, 1,
                 WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
                 WGL_COLOR_BITS_ARB, 32,
+                WGL_ALPHA_BITS_ARB, 8,
                 WGL_DEPTH_BITS_ARB, 0,
                 WGL_STENCIL_BITS_ARB, 0,
                 0, // End

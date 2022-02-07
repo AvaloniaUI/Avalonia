@@ -2,8 +2,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>

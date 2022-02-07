@@ -8,11 +8,13 @@
     <LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>..\..\build\avalonia.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>false</SignAssembly>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.UnitTests\Assets\*.ttf" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.PlatformSupport\Avalonia.PlatformSupport.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
@@ -25,8 +27,8 @@
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
-  <Import Project="..\..\src\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\HarfBuzzSharp.props" />
 </Project>

@@ -403,8 +403,8 @@ namespace Avalonia.Controls.Primitives
 
         private void ThumbChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldThumb = (Thumb)e.OldValue;
-            var newThumb = (Thumb)e.NewValue;
+            var oldThumb = (Thumb?)e.OldValue;
+            var newThumb = (Thumb?)e.NewValue;
 
             if (oldThumb != null)
             {
@@ -424,8 +424,8 @@ namespace Avalonia.Controls.Primitives
 
         private void ButtonChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldButton = (Button)e.OldValue;
-            var newButton = (Button)e.NewValue;
+            var oldButton = (Button?)e.OldValue;
+            var newButton = (Button?)e.NewValue;
 
             if (oldButton != null)
             {
@@ -440,7 +440,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void ThumbDragged(object sender, VectorEventArgs e)
+        private void ThumbDragged(object? sender, VectorEventArgs e)
         {
             if (IsThumbDragHandled)
                 return;

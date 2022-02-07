@@ -20,7 +20,7 @@ namespace Avalonia.Media
             foreach (var field in typeof(KnownColor).GetRuntimeFields())
             {
                 if (field.FieldType != typeof(KnownColor)) continue;
-                var knownColor = (KnownColor)field.GetValue(null);
+                var knownColor = (KnownColor)field.GetValue(null)!;
                 if (knownColor == KnownColor.None) continue;
 
                 knownColorNames.Add(field.Name, knownColor);
@@ -41,7 +41,7 @@ namespace Avalonia.Media
         }
 
 #if !BUILDTASK
-        public static ISolidColorBrush GetKnownBrush(string s)
+        public static ISolidColorBrush? GetKnownBrush(string s)
         {
             var color = GetKnownColor(s);
             return color != KnownColor.None ? color.ToBrush() : null;
@@ -58,7 +58,7 @@ namespace Avalonia.Media
             return KnownColor.None;
         }
 
-        public static string GetKnownColorName(uint rgb)
+        public static string? GetKnownColorName(uint rgb)
         {
             return _knownColors.TryGetValue(rgb, out var name) ? name : null;
         }

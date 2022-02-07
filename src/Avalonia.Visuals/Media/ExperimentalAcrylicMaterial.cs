@@ -78,7 +78,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, Color>(nameof(FallbackColor));
 
         /// <inheritdoc/>
-        public event EventHandler Invalidated;
+        public event EventHandler? Invalidated;
 
         /// <summary>
         /// Gets or Sets the BackgroundSource <seealso cref="AcrylicBackgroundSource"/>.
@@ -299,14 +299,14 @@ namespace Avalonia.Media
 
             var lightness = (max + min) / 2.0;
 
-            lightness = 1 - ((1 - lightness) * luminosityOpacity.Value);
+            lightness = 1 - ((1 - lightness) * (luminosityOpacity ?? 1));
 
             lightness = 0.13 + (lightness * 0.74);
 
             var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
 
             var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
-            return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + (luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+            return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ((luminosityOpacity ?? 1) * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
         }
 
         /// <summary>

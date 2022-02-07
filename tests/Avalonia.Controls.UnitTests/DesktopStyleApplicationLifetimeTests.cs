@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -57,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var windowA = new Window();
 
@@ -91,7 +89,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var mainWindow = new Window();
 
@@ -119,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var hasExit = false;
 
-                lifetime.Exit += (s, e) => hasExit = true;
+                lifetime.Exit += (_, _) => hasExit = true;
 
                 var windowA = new Window();
 
@@ -226,7 +224,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
 
-                lifetime.ShutdownRequested += (s, e) =>
+                lifetime.ShutdownRequested += (_, e) =>
                 {
                     e.Cancel = true;
                     ++raised;
@@ -236,6 +234,172 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(1, raised);
                 Assert.Equal(new[] { window }, lifetime.Windows);
+            }
+        }
+        
+        [Fact]
+        public void MainWindow_Closed_Shutdown_Should_Be_Cancellable()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+                var hasExit = false;
+
+                lifetime.Exit += (_, _) => hasExit = true;
+
+                var mainWindow = new Window();
+
+                mainWindow.Show();
+
+                lifetime.MainWindow = mainWindow;
+
+                var window = new Window();
+
+                window.Show();
+
+                var raised = 0;
+                
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    e.Cancel = true;
+                    ++raised;
+                };
+
+                mainWindow.Close();
+                
+                Assert.Equal(1, raised);
+                Assert.False(hasExit);
+            }
+        }
+        
+        [Fact]
+        public void LastWindow_Closed_Shutdown_Should_Be_Cancellable()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                lifetime.ShutdownMode = ShutdownMode.OnLastWindowClose;
+
+                var hasExit = false;
+
+                lifetime.Exit += (_, _) => hasExit = true;
+
+                var windowA = new Window();
+
+                windowA.Show();
+
+                var windowB = new Window();
+
+                windowB.Show();
+                
+                var raised = 0;
+                
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    e.Cancel = true;
+                    ++raised;
+                };
+
+                windowA.Close();
+
+                Assert.False(hasExit);
+
+                windowB.Close();
+
+                Assert.Equal(1, raised);
+                Assert.False(hasExit);
+            }
+        }
+        
+        [Fact]
+        public void TryShutdown_Cancellable_By_Preventing_Window_Close()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var hasExit = false;
+
+                lifetime.Exit += (_, _) => hasExit = true;
+
+                var windowA = new Window();
+
+                windowA.Show();
+
+                var windowB = new Window();
+
+                windowB.Show();
+                
+                var raised = 0;
+
+                windowA.Closing += (_, e) =>
+                {
+                    e.Cancel = true;
+                    ++raised;
+                };
+
+                lifetime.TryShutdown();
+
+                Assert.Equal(1, raised);
+                Assert.False(hasExit);
+            }
+        }
+        
+        [Fact]
+        public void Shutdown_NotCancellable_By_Preventing_Window_Close()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var hasExit = false;
+
+                lifetime.Exit += (_, _) => hasExit = true;
+
+                var windowA = new Window();
+
+                windowA.Show();
+
+                var windowB = new Window();
+
+                windowB.Show();
+                
+                var raised = 0;
+
+                windowA.Closing += (_, e) =>
+                {
+                    e.Cancel = true;
+                    ++raised;
+                };
+
+                lifetime.Shutdown();
+
+                Assert.Equal(1, raised);
+                Assert.True(hasExit);
+            }
+        }
+        
+        [Fact]
+        public void Shutdown_Doesnt_Raise_Shutdown_Requested()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            {
+                var hasExit = false;
+
+                lifetime.Exit += (_, _) => hasExit = true;
+                
+                var raised = 0;
+
+                lifetime.ShutdownRequested += (_, _) =>
+                {
+                    ++raised;
+                };
+
+                lifetime.Shutdown();
+
+                Assert.Equal(0, raised);
+                Assert.True(hasExit);
             }
         }
     }

@@ -258,7 +258,7 @@ namespace Avalonia.Layout
             Size availableSize,
             VirtualizingLayoutContext context)
         {
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             return new Size(gridState.EffectiveItemWidth, gridState.EffectiveItemHeight);
         }
 
@@ -268,7 +268,7 @@ namespace Avalonia.Layout
             Size desiredSize,
             VirtualizingLayoutContext context)
         {
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             return new Size(gridState.EffectiveItemWidth, gridState.EffectiveItemHeight);
         }
 
@@ -285,7 +285,7 @@ namespace Avalonia.Layout
             var realizationRect = context.RealizationRect;
             if (itemsCount > 0 && _orientation.MajorSize(realizationRect) > 0)
             {
-                var gridState = (UniformGridLayoutState)context.LayoutState;
+                var gridState = (UniformGridLayoutState)context.LayoutState!;
                 var lastExtent = gridState.FlowAlgorithm.LastExtent;
                 var itemsPerLine = Math.Min( // note use of unsigned ints
                     Math.Max(1u, (uint)(_orientation.Minor(availableSize) / GetMinorSizeWithSpacing(context))),
@@ -324,7 +324,7 @@ namespace Avalonia.Layout
                     Math.Max(1u, _maximumRowsOrColumns));
                 int indexOfFirstInLine = (targetIndex / itemsPerLine) * itemsPerLine;
                 index = indexOfFirstInLine;
-                var state = context.LayoutState as UniformGridLayoutState;
+                var state = (UniformGridLayoutState)context.LayoutState!;
                 offset = _orientation.MajorStart(GetLayoutRectForDataIndex(availableSize, indexOfFirstInLine, state.FlowAlgorithm.LastExtent, context));
             }
 
@@ -338,10 +338,10 @@ namespace Avalonia.Layout
         Rect IFlowLayoutAlgorithmDelegates.Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            ILayoutable firstRealized,
+            ILayoutable? firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            ILayoutable lastRealized,
+            ILayoutable? lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -421,7 +421,7 @@ namespace Avalonia.Layout
 
         protected internal override void UninitializeForContextCore(VirtualizingLayoutContext context)
         {
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             gridState.UninitializeForContext(context);
         }
 
@@ -429,7 +429,7 @@ namespace Avalonia.Layout
         {
             // Set the width and height on the grid state. If the user already set them then use the preset. 
             // If not, we have to measure the first element and get back a size which we're going to be using for the rest of the items.
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             gridState.EnsureElementSize(availableSize, context, _minItemWidth, _minItemHeight, _itemsStretch, Orientation, MinRowSpacing, MinColumnSpacing, _maximumRowsOrColumns);
 
             var desiredSize = GetFlowAlgorithm(context).Measure(
@@ -461,13 +461,13 @@ namespace Avalonia.Layout
             return new Size(value.Width, value.Height);
         }
 
-        protected internal override void OnItemsChangedCore(VirtualizingLayoutContext context, object source, NotifyCollectionChangedEventArgs args)
+        protected internal override void OnItemsChangedCore(VirtualizingLayoutContext context, object? source, NotifyCollectionChangedEventArgs args)
         {
             GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
             // Always invalidate layout to keep the view accurate.
             InvalidateLayout();
 
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             gridState.ClearElementOnDataSourceChange(context, args);
         }
 
@@ -517,7 +517,7 @@ namespace Avalonia.Layout
         private double GetMinorSizeWithSpacing(VirtualizingLayoutContext context)
         {
             var minItemSpacing = MinItemSpacing;
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             return _orientation.ScrollOrientation == ScrollOrientation.Vertical?
                 gridState.EffectiveItemWidth + minItemSpacing :
                 gridState.EffectiveItemHeight + minItemSpacing;
@@ -526,7 +526,7 @@ namespace Avalonia.Layout
         private double GetMajorSizeWithSpacing(VirtualizingLayoutContext context)
         {
             var lineSpacing = LineSpacing;
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             return _orientation.ScrollOrientation == ScrollOrientation.Vertical ?
                 gridState.EffectiveItemHeight + lineSpacing :
                 gridState.EffectiveItemWidth + lineSpacing;
@@ -544,7 +544,7 @@ namespace Avalonia.Layout
             int rowIndex = (int)(index / itemsPerLine);
             int indexInRow = index - (rowIndex * itemsPerLine);
 
-            var gridState = (UniformGridLayoutState)context.LayoutState;
+            var gridState = (UniformGridLayoutState)context.LayoutState!;
             Rect bounds = _orientation.MinorMajorRect(
                 indexInRow * GetMinorSizeWithSpacing(context) + _orientation.MinorStart(lastExtent),
                 rowIndex * GetMajorSizeWithSpacing(context) + _orientation.MajorStart(lastExtent),
@@ -556,6 +556,6 @@ namespace Avalonia.Layout
 
         private void InvalidateLayout() => InvalidateMeasure();
 
-        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((UniformGridLayoutState)context.LayoutState).FlowAlgorithm;
+        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((UniformGridLayoutState)context.LayoutState!).FlowAlgorithm;
     }
 }

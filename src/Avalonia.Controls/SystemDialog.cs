@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -55,6 +53,11 @@ namespace Avalonia.Controls
         public string? DefaultExtension { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to display a warning if the user specifies the name of a file that already exists.
+        /// </summary>
+        public bool? ShowOverwritePrompt { get; set; }
+
+        /// <summary>
         /// Shows the save file dialog.
         /// </summary>
         /// <param name="parent">The parent window.</param>
@@ -66,8 +69,7 @@ namespace Avalonia.Controls
         {
             if(parent == null)
                 throw new ArgumentNullException(nameof(parent));
-            var service = AvaloniaLocator.Current.GetService<ISystemDialogImpl>() ??
-                throw new InvalidOperationException("Unable to locate ISystemDialogImpl.");
+            var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
             return (await service.ShowFileDialogAsync(this, parent) ??
              Array.Empty<string>()).FirstOrDefault();
         }
@@ -95,8 +97,7 @@ namespace Avalonia.Controls
         {
             if(parent == null)
                 throw new ArgumentNullException(nameof(parent));
-            var service = AvaloniaLocator.Current.GetService<ISystemDialogImpl>() ??
-                throw new InvalidOperationException("Unable to locate ISystemDialogImpl.");
+            var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
             return service.ShowFileDialogAsync(this, parent);
         }
     }
@@ -125,8 +126,7 @@ namespace Avalonia.Controls
         {
             if(parent == null)
                 throw new ArgumentNullException(nameof(parent));
-            var service = AvaloniaLocator.Current.GetService<ISystemDialogImpl>() ??
-                throw new InvalidOperationException("Unable to locate ISystemDialogImpl.");
+            var service = AvaloniaLocator.Current.GetRequiredService<ISystemDialogImpl>();
             return service.ShowFolderDialogAsync(this, parent);
         }
     }

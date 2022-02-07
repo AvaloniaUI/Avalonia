@@ -10,7 +10,7 @@ using Avalonia.Input.Platform;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 using Avalonia.Skia;
 
 namespace Avalonia
@@ -33,8 +33,16 @@ namespace Avalonia.Android
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public static AndroidPlatformOptions Options { get; private set; }
-        public Size DoubleClickSize => new Size(4, 4);
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(200);
+
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
+        public Size TouchDoubleClickSize => new Size(4, 4);
+
+        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
+        public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(200);
+
+        public Size DoubleClickSize => TouchDoubleClickSize;
+
+        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500);
 
         public static void Initialize(Type appType, AndroidPlatformOptions options)
         {
@@ -43,15 +51,15 @@ namespace Avalonia.Android
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
+                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
+                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IAssetLoader>().ToConstant(new AssetLoader(appType.Assembly));
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
             SkiaPlatform.Initialize();
 

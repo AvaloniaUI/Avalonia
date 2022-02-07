@@ -270,9 +270,36 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             return entries;
         }
+        
+        public static List<DataEntry> CreateBiDiPairedBracketTypeEnum()
+        {
+            var entries = new List<DataEntry> { new DataEntry("None", "n", string.Empty) };
 
-        public static void CreatePropertyValueAliasHelper(List<DataEntry> scriptEntries, IEnumerable<DataEntry> generalCategoryEntries,
-            IEnumerable<DataEntry> biDiClassEntries, IEnumerable<DataEntry> lineBreakClassEntries)
+            ParseDataEntries("# Bidi_Paired_Bracket_Type (bpt)", entries);
+
+            using (var stream = File.Create("Generated\\BiDiPairedBracketType.cs"))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
+                writer.WriteLine("{");
+                writer.WriteLine("    public enum BiDiPairedBracketType");
+                writer.WriteLine("    {");
+
+                foreach (var entry in entries)
+                {
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
+                }
+
+                writer.WriteLine("    }");
+                writer.WriteLine("}");
+            }
+
+            return entries;
+        }
+
+        public static void CreatePropertyValueAliasHelper(UnicodeDataEntries unicodeDataEntries, 
+            BiDiDataEntries biDiDataEntries)
         {
             using (var stream = File.Create("Generated\\PropertyValueAliasHelper.cs"))
             using (var writer = new StreamWriter(stream))
@@ -285,15 +312,17 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("    internal static class PropertyValueAliasHelper");
                 writer.WriteLine("    {");
 
-                WritePropertyValueAliasGetTag(writer, scriptEntries, "Script", "Zzzz");
+                WritePropertyValueAliasGetTag(writer, unicodeDataEntries.Scripts, "Script", "Zzzz");
 
-                WritePropertyValueAlias(writer, scriptEntries, "Script", "Unknown");
+                WritePropertyValueAlias(writer, unicodeDataEntries.Scripts, "Script", "Unknown");
 
-                WritePropertyValueAlias(writer, generalCategoryEntries, "GeneralCategory", "Other");
+                WritePropertyValueAlias(writer, unicodeDataEntries.GeneralCategories, "GeneralCategory", "Other");
+                
+                WritePropertyValueAlias(writer, unicodeDataEntries.LineBreakClasses, "LineBreakClass", "Unknown");
 
-                WritePropertyValueAlias(writer, biDiClassEntries, "BiDiClass", "LeftToRight");
-
-                WritePropertyValueAlias(writer, lineBreakClassEntries, "LineBreakClass", "Unknown");
+                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BiDiPairedBracketType", "None");
+                
+                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BiDiClass", "LeftToRight");
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");

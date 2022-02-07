@@ -3,10 +3,9 @@ const path = require('path');
 const LiveReloadPlugin = require('webpack-livereload-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const prod = process.env.NODE_ENV == 'production';
 
 class Printer {
@@ -17,6 +16,9 @@ class Printer {
 }
 
 const config = {
+    stats: {
+        errorDetails: true
+    },
     entry: {
             bundle: './src/index.tsx'
         },
@@ -42,7 +44,7 @@ const config = {
                     {
                         test: /\.(ts|tsx)$/,
                         exclude: /node_modules/,
-                        use: 'awesome-typescript-loader'
+                        use: 'ts-loader'
                     },
                     {
                         test: /\.css$/,
@@ -93,7 +95,9 @@ const config = {
     plugins:
         [
         new Printer(),
-        new CleanWebpackPlugin([path.resolve(__dirname, 'build')], { verbose: false }),
+        new CleanWebpackPlugin({
+            cleanAfterEveryBuildPatterns: ['dist']
+        }),
         new MiniCssExtractPlugin({
             filename: "[name].[chunkhash]h" +
             ".css",
@@ -104,11 +108,6 @@ const config = {
             template: path.resolve(__dirname, './src/index.html'),
             filename: 'index.html' //relative to root of the application
         }),
-        new CopyWebpackPlugin([
-            // relative path from src
-            //{ from: './src/favicon.ico' },
-            //{ from: './src/assets' }
-        ]),
         new CompressionPlugin({
             test: /(\?.*)?$/i
         })

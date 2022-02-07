@@ -9,7 +9,7 @@ namespace Avalonia
             return Rect.Equals(other.Rect) && RadiiTopLeft.Equals(other.RadiiTopLeft) && RadiiTopRight.Equals(other.RadiiTopRight) && RadiiBottomLeft.Equals(other.RadiiBottomLeft) && RadiiBottomRight.Equals(other.RadiiBottomRight);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is RoundedRect other && Equals(other);
         }

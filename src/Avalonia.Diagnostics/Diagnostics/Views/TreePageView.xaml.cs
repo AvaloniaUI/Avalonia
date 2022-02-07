@@ -20,8 +20,8 @@ namespace Avalonia.Diagnostics.Views
         public TreePageView()
         {
             InitializeComponent();
-            _tree = this.FindControl<TreeView>("tree");
-            _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
+            _tree = this.GetControl<TreeView>("tree");
+            _tree.ItemContainerGenerator.Index!.Materialized += TreeViewItemMaterialized;
 
             _adorner = new Panel
             {
@@ -47,7 +47,12 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var visual = (Visual)node.Visual;
+            var visual = node.Visual as Visual;
+
+            if (visual is null)
+            {
+                return;
+            }
 
             _currentLayer = AdornerLayer.GetAdornerLayer(visual);
 

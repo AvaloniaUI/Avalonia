@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the resources change on the element or an ancestor of the element.
         /// </summary>
-        event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
         /// <summary>
         /// Notifies the resource host that one or more of its hosted resources has changed.

@@ -64,6 +64,8 @@ namespace Avalonia.Skia
 
         public SKTypeface Typeface { get; }
 
+        public int ReplacementCodepoint { get; }
+        
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public short DesignEmHeight { get; }
 

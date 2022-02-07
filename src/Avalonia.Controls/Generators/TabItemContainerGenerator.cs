@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Generators
 
         protected override IControl CreateContainer(object item)
         {
-            var tabItem = (TabItem)base.CreateContainer(item);
+            var tabItem = (TabItem)base.CreateContainer(item)!;
 
             tabItem.Bind(TabItem.TabStripPlacementProperty, new OwnerBinding<Dock>(
                 tabItem,
@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Generators
 
             if (tabItem.HeaderTemplate == null)
             {
-                tabItem.Bind(TabItem.HeaderTemplateProperty, new OwnerBinding<IDataTemplate>(
+                tabItem.Bind(TabItem.HeaderTemplateProperty, new OwnerBinding<IDataTemplate?>(
                     tabItem,
                     TabControl.ItemTemplateProperty));
             }
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Generators
 
             if (!(tabItem.Content is IControl))
             {
-                tabItem.Bind(TabItem.ContentTemplateProperty, new OwnerBinding<IDataTemplate>(
+                tabItem.Bind(TabItem.ContentTemplateProperty, new OwnerBinding<IDataTemplate?>(
                     tabItem,
                     TabControl.ContentTemplateProperty));
             }
@@ -62,8 +62,8 @@ namespace Avalonia.Controls.Generators
         {
             private readonly TabItem _item;
             private readonly StyledProperty<T> _ownerProperty;
-            private IDisposable _ownerSubscription;
-            private IDisposable _propertySubscription;
+            private IDisposable? _ownerSubscription;
+            private IDisposable? _propertySubscription;
 
             public OwnerBinding(TabItem item, StyledProperty<T> ownerProperty)
             {
@@ -82,7 +82,7 @@ namespace Avalonia.Controls.Generators
                 _ownerSubscription = null;
             }
 
-            private void OwnerChanged(ILogical c)
+            private void OwnerChanged(ILogical? c)
             {
                 _propertySubscription?.Dispose();
                 _propertySubscription = null;

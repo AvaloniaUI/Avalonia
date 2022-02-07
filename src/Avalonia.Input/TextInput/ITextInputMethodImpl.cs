@@ -10,6 +10,6 @@ namespace Avalonia.Input.TextInput
     
     public interface ITextInputMethodRoot : IInputRoot
     {
-        ITextInputMethodImpl InputMethod { get; }
+        ITextInputMethodImpl? InputMethod { get; }
     }
 }

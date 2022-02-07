@@ -12,8 +12,8 @@ namespace Avalonia.Controls.Utils
     {
         private bool _useComplexRendering;
         private bool? _backendSupportsIndividualCorners;
-        private StreamGeometry _backgroundGeometryCache;
-        private StreamGeometry _borderGeometryCache;
+        private StreamGeometry? _backgroundGeometryCache;
+        private StreamGeometry? _borderGeometryCache;
         private Size _size;
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Utils
 
         void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
         {
-            _backendSupportsIndividualCorners ??= AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
+            _backendSupportsIndividualCorners ??= AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>()
                 .SupportsIndividualRoundRects;
             _size = finalSize;
             _borderThickness = borderThickness;
@@ -41,8 +41,8 @@ namespace Avalonia.Controls.Utils
 
                 var boundRect = new Rect(finalSize);
                 var innerRect = boundRect.Deflate(borderThickness);
-                BorderGeometryKeypoints backgroundKeypoints = null;
-                StreamGeometry backgroundGeometry = null;
+                BorderGeometryKeypoints? backgroundKeypoints = null;
+                StreamGeometry? backgroundGeometry = null;
 
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Utils
 
                         if (backgroundGeometry != null)
                         {
-                            CreateGeometry(ctx, innerRect, backgroundKeypoints);
+                            CreateGeometry(ctx, innerRect, backgroundKeypoints!);
                         }
                     }
 
@@ -88,9 +88,9 @@ namespace Avalonia.Controls.Utils
 
         public void Render(DrawingContext context,
             Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-            IBrush background, IBrush borderBrush, BoxShadows boxShadows, double borderDashOffset = 0,
+            IBrush? background, IBrush? borderBrush, BoxShadows boxShadows, double borderDashOffset = 0,
             PenLineCap borderLineCap = PenLineCap.Flat, PenLineJoin borderLineJoin = PenLineJoin.Miter,
-            AvaloniaList<double> borderDashArray = null)
+            AvaloniaList<double>? borderDashArray = null)
         {
             if (_size != finalSize
                 || _borderThickness != borderThickness
@@ -101,9 +101,9 @@ namespace Avalonia.Controls.Utils
                 borderDashArray);
         }
 
-        void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadows boxShadows,
+        void RenderCore(DrawingContext context, IBrush? background, IBrush? borderBrush, BoxShadows boxShadows,
             double borderDashOffset, PenLineCap borderLineCap, PenLineJoin borderLineJoin,
-            AvaloniaList<double> borderDashArray)
+            AvaloniaList<double>? borderDashArray)
         {
             if (_useComplexRendering)
             {
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Utils
             else
             {
                 var borderThickness = _borderThickness.Top;
-                IPen pen = null;
+                IPen? pen = null;
 
 
                 ImmutableDashStyle? dashStyle = null;

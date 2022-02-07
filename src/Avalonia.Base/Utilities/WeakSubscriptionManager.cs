@@ -19,6 +19,7 @@ namespace Avalonia.Utilities
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>
+        [Obsolete("Use WeakEvent")]
         public static void Subscribe<TTarget, TEventArgs>(TTarget target, string eventName, IWeakSubscriber<TEventArgs> subscriber)
             where TEventArgs : EventArgs
         {
@@ -180,7 +181,7 @@ namespace Avalonia.Utilities
                 {
                     var r = _data[c];
                     if (r?.TryGetTarget(out var sub) == true)
-                        sub.OnEvent(sender, eventArgs);
+                        sub!.OnEvent(sender, eventArgs);
                     else
                         needCompact = true;
                 }
