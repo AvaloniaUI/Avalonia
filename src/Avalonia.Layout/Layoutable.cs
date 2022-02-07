@@ -141,7 +141,6 @@ namespace Avalonia.Layout
         static Layoutable()
         {
             AffectsMeasure<Layoutable>(
-                IsVisibleProperty,
                 WidthProperty,
                 HeightProperty,
                 MinWidthProperty,
@@ -779,6 +778,17 @@ namespace Avalonia.Layout
         /// </summary>
         protected virtual void OnMeasureInvalidated()
         {
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsVisibleProperty)
+            {
+                DesiredSize = default;
+                this.GetVisualParent<ILayoutable>()?.ChildDesiredSizeChanged(this);
+            }
         }
 
         /// <inheritdoc/>
