@@ -410,38 +410,40 @@ namespace Avalonia.Controls.Presenters
 
         internal void CaretChanged()
         {
-            if (this.GetVisualParent() != null)
+            if (this.GetVisualParent() == null)
             {
-                if (_caretTimer.IsEnabled)
-                {
-                    _caretBlink = true;
-                    _caretTimer.Stop();
-                    _caretTimer.Start();
-                    InvalidateVisual();
-                }
-                else
-                {
-                    _caretTimer.Start();
-                    InvalidateVisual();
-                    _caretTimer.Stop();
-                }
+                return;
+            }
 
-                if (IsMeasureValid)
-                {
-                    this.BringIntoView(_caretBounds);
-                }
-                else
-                {
-                    // The measure is currently invalid so there's no point trying to bring the 
-                    // current char into view until a measure has been carried out as the scroll
-                    // viewer extents may not be up-to-date.
-                    Dispatcher.UIThread.Post(
-                        () =>
-                        {
-                            this.BringIntoView(_caretBounds);
-                        },
-                        DispatcherPriority.Render);
-                }
+            if (_caretTimer.IsEnabled)
+            {
+                _caretBlink = true;
+                _caretTimer.Stop();
+                _caretTimer.Start();
+                InvalidateVisual();
+            }
+            else
+            {
+                _caretTimer.Start();
+                InvalidateVisual();
+                _caretTimer.Stop();
+            }
+
+            if (IsMeasureValid)
+            {
+                this.BringIntoView(_caretBounds);
+            }
+            else
+            {
+                // The measure is currently invalid so there's no point trying to bring the 
+                // current char into view until a measure has been carried out as the scroll
+                // viewer extents may not be up-to-date.
+                Dispatcher.UIThread.Post(
+                    () =>
+                    {
+                        this.BringIntoView(_caretBounds);
+                    },
+                    DispatcherPriority.Render);
             }
         }
 
@@ -527,6 +529,7 @@ namespace Avalonia.Controls.Presenters
         private void CaretTimerTick(object? sender, EventArgs e)
         {
             _caretBlink = !_caretBlink;
+            
             InvalidateVisual();
         }
 
@@ -554,6 +557,8 @@ namespace Avalonia.Controls.Presenters
             }
 
             _navigationPosition = _caretBounds.Position;
+
+            CaretChanged();
         } 
         
         public void MoveCaretToPoint(Point point)
@@ -563,6 +568,8 @@ namespace Avalonia.Controls.Presenters
             UpdateCaret(hit.CharacterHit);
 
             _navigationPosition = _caretBounds.Position;
+
+            CaretChanged();
         }
 
         public void MoveCaretVertical(LogicalDirection direction = LogicalDirection.Forward)
@@ -604,6 +611,8 @@ namespace Avalonia.Controls.Presenters
             MoveCaretToPoint(new Point(currentX, currentY));
             
             _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
+
+            CaretChanged();
         }
 
         public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
@@ -691,6 +700,8 @@ namespace Avalonia.Controls.Presenters
             UpdateCaret(characterHit);
 
             _navigationPosition = _caretBounds.Position;
+
+            CaretChanged();
         }
 
         private void UpdateCaret(CharacterHit characterHit)
@@ -720,9 +731,7 @@ namespace Avalonia.Controls.Presenters
 
                 CaretBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
-            
-            CaretChanged();
-            
+
             SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
         }
 
