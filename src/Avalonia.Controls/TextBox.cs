@@ -939,6 +939,10 @@ namespace Avalonia.Controls
                         {
                             SelectionEnd = _presenter.CaretIndex;
                         }
+                        else
+                        {
+                            SelectionStart = SelectionEnd = _presenter.CaretIndex;
+                        }
                         
                         break;
                     }
@@ -956,6 +960,10 @@ namespace Avalonia.Controls
                         if (selection)
                         {
                             SelectionEnd = _presenter.CaretIndex;
+                        }
+                        else
+                        {
+                            SelectionStart = SelectionEnd = _presenter.CaretIndex;
                         }
                         
                         break;
