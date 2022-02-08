@@ -21,6 +21,10 @@
     <converters:MarginMultiplierConverter x:Key="PrimaryButtonBorderMultiplier" Left="True" Top="True" Bottom="True" Indent="1" />
     <converters:MarginMultiplierConverter x:Key="SecondaryButtonBorderMultiplier" Right="True" Top="True" Bottom="True" Indent="1" />
     <converters:MarginMultiplierConverter x:Key="SeparatorBorderMultiplier" Top="True" Bottom="True" Indent="1" />
+    <converters:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="TopLeft, TopRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="BottomLeft, BottomRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
 
     <SolidColorBrush x:Key="SplitButtonBackground" Color="{DynamicResource ThemeControlMidColor}" />
     <SolidColorBrush x:Key="SplitButtonBackgroundPointerOver" Color="{DynamicResource ThemeControlMidColor}" />
