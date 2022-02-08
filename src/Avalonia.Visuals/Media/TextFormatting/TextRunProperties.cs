@@ -41,6 +41,21 @@ namespace Avalonia.Media.TextFormatting
         /// Run text culture.
         /// </summary>
         public abstract CultureInfo? CultureInfo { get; }
+        
+        /// <summary>
+        /// Brush used to fill text shadow.
+        /// </summary>
+        public abstract IBrush? TextShadowBrush { get; }
+        
+        /// <summary>
+        /// X axis offset for the text shadow
+        /// </summary>
+        public abstract int TextShadowXOffset { get; }
+        
+        /// <summary>
+        /// Y axis offset for the text shadow
+        /// </summary>
+        public abstract int TextShadowYOffset { get; }
 
         /// <summary>
         /// Run vertical box alignment
@@ -59,7 +74,10 @@ namespace Avalonia.Media.TextFormatting
                    && Equals(TextDecorations, other.TextDecorations) &&
                    Equals(ForegroundBrush, other.ForegroundBrush) &&
                    Equals(BackgroundBrush, other.BackgroundBrush) &&
-                   Equals(CultureInfo, other.CultureInfo);
+                   Equals(CultureInfo, other.CultureInfo) &&
+                   Equals(TextShadowBrush, other.TextShadowBrush) &&
+                   TextShadowXOffset.Equals(other.TextShadowXOffset) &&
+                   TextShadowYOffset.Equals(other.TextShadowYOffset);
         }
 
         public override bool Equals(object? obj)
@@ -77,6 +95,9 @@ namespace Avalonia.Media.TextFormatting
                 hashCode = (hashCode * 397) ^ (ForegroundBrush != null ? ForegroundBrush.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (BackgroundBrush != null ? BackgroundBrush.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (CultureInfo != null ? CultureInfo.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (TextShadowBrush != null ? TextShadowBrush.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ TextShadowXOffset.GetHashCode();
+                hashCode = (hashCode * 397) ^ TextShadowYOffset.GetHashCode();
                 return hashCode;
             }
         }

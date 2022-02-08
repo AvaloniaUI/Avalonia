@@ -12,7 +12,8 @@ namespace Avalonia.Media.TextFormatting
         public GenericTextRunProperties(Typeface typeface, double fontRenderingEmSize = DefaultFontRenderingEmSize,
             TextDecorationCollection? textDecorations = null, IBrush? foregroundBrush = null,
             IBrush? backgroundBrush = null, BaselineAlignment baselineAlignment = BaselineAlignment.Baseline,
-            CultureInfo? cultureInfo = null)
+            CultureInfo? cultureInfo = null, IBrush? textShadowBrush = null, int textShadowXOffset = 0,
+            int textShadowYOffset = 0)
         {
             Typeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
@@ -21,6 +22,9 @@ namespace Avalonia.Media.TextFormatting
             BackgroundBrush = backgroundBrush;
             BaselineAlignment = baselineAlignment;
             CultureInfo = cultureInfo;
+            TextShadowBrush = textShadowBrush;
+            TextShadowXOffset = textShadowXOffset;
+            TextShadowYOffset = textShadowYOffset;
         }
 
         /// <inheritdoc />
@@ -39,9 +43,18 @@ namespace Avalonia.Media.TextFormatting
         public override IBrush? BackgroundBrush { get; }
 
         /// <inheritdoc />
+        public override int TextShadowYOffset { get; }
+
+        /// <inheritdoc />
         public override BaselineAlignment BaselineAlignment { get; }
 
         /// <inheritdoc />
         public override CultureInfo? CultureInfo { get; }
+
+        /// <inheritdoc />
+        public override IBrush? TextShadowBrush { get; }
+        
+        /// <inheritdoc />
+        public override int TextShadowXOffset { get; }
     }
 }

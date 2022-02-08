@@ -64,7 +64,13 @@ CannotAddAbstractMembers : Member 'public System.Boolean Avalonia.Media.TextForm
 CannotAddAbstractMembers : Member 'public Avalonia.Media.FlowDirection Avalonia.Media.TextFormatting.TextParagraphProperties.FlowDirection.get()' is abstract in the implementation but is missing in the contract.
 CannotAddAbstractMembers : Member 'public System.Double Avalonia.Media.TextFormatting.TextParagraphProperties.Indent.get()' is abstract in the implementation but is missing in the contract.
 CannotAddAbstractMembers : Member 'public Avalonia.Media.BaselineAlignment Avalonia.Media.TextFormatting.TextRunProperties.BaselineAlignment' is abstract in the implementation but is missing in the contract.
+CannotAddAbstractMembers : Member 'public Avalonia.Media.IBrush Avalonia.Media.TextFormatting.TextRunProperties.TextShadowBrush' is abstract in the implementation but is missing in the contract.
+CannotAddAbstractMembers : Member 'public System.Int32 Avalonia.Media.TextFormatting.TextRunProperties.TextShadowXOffset' is abstract in the implementation but is missing in the contract.
+CannotAddAbstractMembers : Member 'public System.Int32 Avalonia.Media.TextFormatting.TextRunProperties.TextShadowYOffset' is abstract in the implementation but is missing in the contract.
 CannotAddAbstractMembers : Member 'public Avalonia.Media.BaselineAlignment Avalonia.Media.TextFormatting.TextRunProperties.BaselineAlignment.get()' is abstract in the implementation but is missing in the contract.
+CannotAddAbstractMembers : Member 'public Avalonia.Media.IBrush Avalonia.Media.TextFormatting.TextRunProperties.TextShadowBrush.get()' is abstract in the implementation but is missing in the contract.
+CannotAddAbstractMembers : Member 'public System.Int32 Avalonia.Media.TextFormatting.TextRunProperties.TextShadowXOffset.get()' is abstract in the implementation but is missing in the contract.
+CannotAddAbstractMembers : Member 'public System.Int32 Avalonia.Media.TextFormatting.TextRunProperties.TextShadowYOffset.get()' is abstract in the implementation but is missing in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.DrawEllipse(Avalonia.Media.IBrush, Avalonia.Media.IPen, Avalonia.Rect)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PopBitmapBlendMode()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PushBitmapBlendMode(Avalonia.Visuals.Media.Imaging.BitmapBlendingMode)' is present in the implementation but not in the contract.
@@ -86,4 +92,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avaloni
 InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avalonia.Platform.IPlatformSettings.TouchDoubleClickSize.get()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime.get()' is present in the implementation but not in the contract.
-Total Issues: 87
+Total Issues: 93
