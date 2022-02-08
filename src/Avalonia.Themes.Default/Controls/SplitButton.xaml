@@ -22,31 +22,31 @@
     <converters:MarginMultiplierConverter x:Key="SecondaryButtonBorderMultiplier" Right="True" Top="True" Bottom="True" Indent="1" />
     <converters:MarginMultiplierConverter x:Key="SeparatorBorderMultiplier" Top="True" Bottom="True" Indent="1" />
 
-    <StaticResource x:Key="SplitButtonBackground" ResourceKey="ThemeControlMidBrush" />
-    <StaticResource x:Key="SplitButtonBackgroundPointerOver" ResourceKey="ThemeControlMidBrush" />
-    <StaticResource x:Key="SplitButtonBackgroundPressed" ResourceKey="ThemeControlHighBrush" />
+    <SolidColorBrush x:Key="SplitButtonBackground" Color="{DynamicResource ThemeControlMidColor}" />
+    <SolidColorBrush x:Key="SplitButtonBackgroundPointerOver" Color="{DynamicResource ThemeControlMidColor}" />
+    <SolidColorBrush x:Key="SplitButtonBackgroundPressed" Color="{DynamicResource ThemeBorderHighColor}" />
     <SolidColorBrush x:Key="SplitButtonBackgroundDisabled" Color="{DynamicResource ThemeControlMidColor}" Opacity="{DynamicResource ThemeDisabledOpacity}" />
-    <StaticResource x:Key="SplitButtonBackgroundChecked" ResourceKey="ThemeControlHighBrush" />
-    <StaticResource x:Key="SplitButtonBackgroundCheckedPointerOver" ResourceKey="ThemeControlHighBrush" />
-    <StaticResource x:Key="SplitButtonBackgroundCheckedPressed" ResourceKey="ThemeControlHighBrush" />
+    <SolidColorBrush x:Key="SplitButtonBackgroundChecked" Color="{DynamicResource ThemeBorderHighColor}" />
+    <SolidColorBrush x:Key="SplitButtonBackgroundCheckedPointerOver" Color="{DynamicResource ThemeBorderHighColor}" />
+    <SolidColorBrush x:Key="SplitButtonBackgroundCheckedPressed" Color="{DynamicResource ThemeBorderHighColor}" />
     <SolidColorBrush x:Key="SplitButtonBackgroundCheckedDisabled" Color="{DynamicResource ThemeControlHighColor}" Opacity="{DynamicResource ThemeDisabledOpacity}" />
-    
-    <StaticResource x:Key="SplitButtonForeground" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="SplitButtonForegroundPointerOver" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="SplitButtonForegroundPressed" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="SplitButtonForegroundDisabled" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="SplitButtonForegroundChecked" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="SplitButtonForegroundCheckedPointerOver" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="SplitButtonForegroundCheckedPressed" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="ThemeForegroundBrush" />
 
-    <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ThemeBorderLowBrush" />
-    <StaticResource x:Key="SplitButtonBorderBrushPointerOver" ResourceKey="ThemeBorderMidBrush" />
-    <StaticResource x:Key="SplitButtonBorderBrushPressed" ResourceKey="ThemeBorderLowBrush" />
-    <StaticResource x:Key="SplitButtonBorderBrushDisabled" ResourceKey="ThemeBorderLowBrush" />
-    <StaticResource x:Key="SplitButtonBorderBrushChecked" ResourceKey="ThemeBorderMidBrush" />
-    <StaticResource x:Key="SplitButtonBorderBrushCheckedPointerOver" ResourceKey="ThemeBorderMidBrush" />
-    <StaticResource x:Key="SplitButtonBorderBrushCheckedPressed" ResourceKey="ThemeControlHighBrush" />
+    <SolidColorBrush x:Key="SplitButtonForeground" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="SplitButtonForegroundPointerOver" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="SplitButtonForegroundPressed" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="SplitButtonForegroundDisabled" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="SplitButtonForegroundChecked" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="SplitButtonForegroundCheckedPointerOver" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="SplitButtonForegroundCheckedPressed" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="SplitButtonForegroundCheckedDisabled" Color="{DynamicResource ThemeForegroundColor}" />
+
+    <SolidColorBrush x:Key="SplitButtonBorderBrush" Color="{DynamicResource ThemeBorderLowColor}" />
+    <SolidColorBrush x:Key="SplitButtonBorderBrushPointerOver" Color="{DynamicResource ThemeBorderMidColor}" />
+    <SolidColorBrush x:Key="SplitButtonBorderBrushPressed" Color="{DynamicResource ThemeBorderLowColor}" />
+    <SolidColorBrush x:Key="SplitButtonBorderBrushDisabled" Color="{DynamicResource ThemeBorderLowColor}" />
+    <SolidColorBrush x:Key="SplitButtonBorderBrushChecked" Color="{DynamicResource ThemeBorderMidColor}" />
+    <SolidColorBrush x:Key="SplitButtonBorderBrushCheckedPointerOver" Color="{DynamicResource ThemeBorderMidColor}" />
+    <SolidColorBrush x:Key="SplitButtonBorderBrushCheckedPressed" Color="{DynamicResource ThemeControlHighColor}" />
     <SolidColorBrush x:Key="SplitButtonBorderBrushCheckedDisabled" Color="{DynamicResource ThemeControlMidColor}" Opacity="{DynamicResource ThemeDisabledOpacity}" />
   </Styles.Resources>
 
