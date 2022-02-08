@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
@@ -18,7 +16,7 @@ namespace Avalonia.Controls.Presenters
         public static readonly DirectProperty<TextPresenter, int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<TextPresenter>(
                 o => o.CaretIndex,
-                (o, v) => o.CaretIndex = v, defaultBindingMode: BindingMode.TwoWay);
+                (o, v) => o.CaretIndex = v);
 
         public static readonly StyledProperty<bool> RevealPasswordProperty =
             AvaloniaProperty.Register<TextPresenter, bool>(nameof(RevealPassword));
