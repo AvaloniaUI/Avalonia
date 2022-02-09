@@ -112,7 +112,7 @@ interface IShellItemArray : IUnknown
 interface IModalWindow : IUnknown
 {
     [local]
-    HRESULT Show(
+    int Show(
         [in, unique] HWND hwndOwner);
 }
 
