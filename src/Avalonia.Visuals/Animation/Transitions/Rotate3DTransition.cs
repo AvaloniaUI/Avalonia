@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Styling;
 
@@ -41,7 +39,7 @@ public class Rotate3DTransition: PageSlide
             return;
         }
 
-        var tasks = new List<Task>();
+        var tasks = new Task[2];
         var parent = GetVisualParent(from, to);
         var (rotateProperty, center) = Orientation switch
         {
@@ -53,12 +51,13 @@ public class Rotate3DTransition: PageSlide
         var depthSetter = new Setter {Property = Rotate3DTransform.DepthProperty, Value = Depth ?? center};
         var centerZSetter = new Setter {Property = Rotate3DTransform.CenterZProperty, Value = -center / 2};
 
-        KeyFrame CreateKeyFrame(double cue, double rotation, int zIndex) => 
+        KeyFrame CreateKeyFrame(double cue, double rotation, int zIndex, bool isVisible = true) => 
             new() {
                 Setters =
                 {
                     new Setter { Property = rotateProperty, Value = rotation },
                     new Setter { Property = Visual.ZIndexProperty, Value = zIndex },
+                    new Setter { Property = Visual.IsVisibleProperty, Value = isVisible },
                     centerZSetter,
                     depthSetter
                 },
@@ -71,15 +70,16 @@ public class Rotate3DTransition: PageSlide
             {
                 Easing = SlideOutEasing,
                 Duration = Duration,
+                FillMode = FillMode.Forward,
                 Children =
                 {
                     CreateKeyFrame(0d, 0d, 2),
                     CreateKeyFrame(0.5d, 45d * (forward ? -1 : 1), 1),
-                    CreateKeyFrame(1d, 90d * (forward ? -1 : 1), 1)
+                    CreateKeyFrame(1d, 90d * (forward ? -1 : 1), 1, isVisible: false)
                 }
             };
 
-            tasks.Add(animation.RunAsync(from, null, cancellationToken));
+            tasks[0] = animation.RunAsync(from, null, cancellationToken);
         }
 
         if (to != null)
@@ -89,6 +89,7 @@ public class Rotate3DTransition: PageSlide
             {
                 Easing = SlideInEasing,
                 Duration = Duration,
+                FillMode = FillMode.Forward,
                 Children =
                 {
                     CreateKeyFrame(0d, 90d * (forward ? 1 : -1), 1),
@@ -97,22 +98,22 @@ public class Rotate3DTransition: PageSlide
                 }
             };
 
-            tasks.Add(animation.RunAsync(to, null, cancellationToken));
+            tasks[1] = animation.RunAsync(to, null, cancellationToken);
         }
 
         await Task.WhenAll(tasks);
 
         if (!cancellationToken.IsCancellationRequested)
         {
+            if (to != null)
+            {
+                to.ZIndex = 2;
+            }
+            
             if (from != null)
             {
                 from.IsVisible = false;
                 from.ZIndex = 1;
-            }
-
-            if (to != null)
-            {
-                to.ZIndex = 2;
             }
         }
     }
