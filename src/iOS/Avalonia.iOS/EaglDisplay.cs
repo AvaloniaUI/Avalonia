@@ -2,7 +2,6 @@ using System;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
 using OpenGLES;
-using OpenTK.Graphics.ES30;
 
 namespace Avalonia.iOS
 {
