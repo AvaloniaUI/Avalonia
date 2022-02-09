@@ -69,6 +69,16 @@ namespace Avalonia.Media.TextFormatting
                     drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
                 }
 
+                if (Properties.TextShadowBrush != null &&
+                    (Properties.TextShadowXOffset > 0 || Properties.TextShadowYOffset > 0))
+                {
+                    using (drawingContext.PushPreTransform(Matrix.CreateTranslation(Properties.TextShadowXOffset, 
+                               Properties.TextShadowYOffset)))
+                    {
+                        drawingContext.DrawGlyphRun(Properties.TextShadowBrush, GlyphRun);
+                    }
+                }
+
                 drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
 
                 if (Properties.TextDecorations == null)

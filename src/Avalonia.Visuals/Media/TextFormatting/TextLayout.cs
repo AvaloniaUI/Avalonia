@@ -34,6 +34,9 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="lineHeight">The height of each line of text.</param>
         /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
+        /// <param name="textShadowBrush">The shadow brush.</param>
+        /// <param name="textShadowXOffset">The X axis offset of the shadow.</param>
+        /// <param name="textShadowYOffset">The Y axis offset of the shadow.</param>
         public TextLayout(
             string text,
             Typeface typeface,
@@ -47,7 +50,10 @@ namespace Avalonia.Media.TextFormatting
             double maxHeight = double.PositiveInfinity,
             double lineHeight = double.NaN,
             int maxLines = 0,
-            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null,
+            IBrush? textShadowBrush = null,
+            int textShadowXOffset = 0,
+            int textShadowYOffset = 0)
         {
             _text = string.IsNullOrEmpty(text) ?
                 new ReadOnlySlice<char>() :
@@ -55,7 +61,7 @@ namespace Avalonia.Media.TextFormatting
 
             _paragraphProperties =
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
-                    textDecorations, lineHeight);
+                    textDecorations, lineHeight, textShadowBrush, textShadowXOffset, textShadowYOffset);
 
             _textTrimming = textTrimming;
 
@@ -287,12 +293,17 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textWrapping">The text wrapping.</param>
         /// <param name="textDecorations">The text decorations.</param>
         /// <param name="lineHeight">The height of each line of text.</param>
+        /// <param name="textShadowBrush">The shadow brush.</param>
+        /// <param name="textShadowXOffset">The X axis offset of the shadow.</param>
+        /// <param name="textShadowYOffset">The Y axis offset of the shadow.</param>
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
             IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping,
-            TextDecorationCollection? textDecorations, double lineHeight)
+            TextDecorationCollection? textDecorations, double lineHeight, IBrush? textShadowBrush, 
+            int textShadowXOffset, int textShadowYOffset)
         {
-            var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
+            var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground,
+                textShadowBrush: textShadowBrush, textShadowXOffset: textShadowXOffset, textShadowYOffset: textShadowYOffset);
 
             return new GenericTextParagraphProperties(FlowDirection.LeftToRight, textAlignment, true, false,
                 textRunStyle, textWrapping, lineHeight, 0);

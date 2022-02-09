@@ -117,6 +117,14 @@
           <TextBlock Text="👪 👨‍👩‍👧 👨‍👩‍👧‍👦" />
         </StackPanel>
       </Border>
+      <Border>
+        <StackPanel Spacing="8">
+          <TextBlock Text="Text with red shadow" TextShadowBrush="Red" TextShadowXOffset="2" TextShadowYOffset="2"/>
+          <TextBlock Text="Text with blue shadow" TextShadowBrush="Blue" TextShadowXOffset="2" TextShadowYOffset="2"/>
+          <TextBlock Text="Text with yellow shadow" TextShadowBrush="Yellow" TextShadowXOffset="2" TextShadowYOffset="2"/>
+          <TextBlock Text="Text with green shadow" TextShadowBrush="Green" TextShadowXOffset="2" TextShadowYOffset="2"/>
+        </StackPanel>
+      </Border>
     </WrapPanel>
   </StackPanel>
 </UserControl>

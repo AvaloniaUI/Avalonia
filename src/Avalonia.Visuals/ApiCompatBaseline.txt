@@ -25,6 +25,7 @@ CannotMakeMemberNonVirtual : Member 'public Avalonia.Media.TextWrapping Avalonia
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.GenericTextRunProperties..ctor(Avalonia.Media.Typeface, System.Double, Avalonia.Media.TextDecorationCollection, Avalonia.Media.IBrush, Avalonia.Media.IBrush, System.Globalization.CultureInfo)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.ShapedTextCharacters.Draw(Avalonia.Media.DrawingContext)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.TextEndOfLine..ctor()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.TextLayout..ctor(System.String, Avalonia.Media.Typeface, System.Double, Avalonia.Media.IBrush, Avalonia.Media.TextAlignment, Avalonia.Media.TextWrapping, Avalonia.Media.TextTrimming, Avalonia.Media.TextDecorationCollection, System.Double, System.Double, System.Double, System.Int32, System.Collections.Generic.IReadOnlyList<Avalonia.Utilities.ValueSpan<Avalonia.Media.TextFormatting.TextRunProperties>>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.TextLayout.Draw(Avalonia.Media.DrawingContext)' does not exist in the implementation but it does exist in the contract.
 CannotAddAbstractMembers : Member 'public System.Double Avalonia.Media.TextFormatting.TextLine.Baseline' is abstract in the implementation but is missing in the contract.
 CannotAddAbstractMembers : Member 'public System.Double Avalonia.Media.TextFormatting.TextLine.Extent' is abstract in the implementation but is missing in the contract.
@@ -92,4 +93,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avaloni
 InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avalonia.Platform.IPlatformSettings.TouchDoubleClickSize.get()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.TimeSpan Avalonia.Platform.IPlatformSettings.TouchDoubleClickTime.get()' is present in the implementation but not in the contract.
-Total Issues: 93
+Total Issues: 94

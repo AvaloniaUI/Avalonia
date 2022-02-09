@@ -71,7 +71,10 @@ namespace Avalonia.Media.TextFormatting
             {
                 return new ShapeableTextCharacters(text.Take(count),
                     new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                        defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+                        defaultProperties.TextDecorations, defaultProperties.ForegroundBrush,
+                        textShadowBrush: defaultProperties.TextShadowBrush, 
+                        textShadowXOffset: defaultProperties.TextShadowXOffset,
+                        textShadowYOffset: defaultProperties.TextShadowYOffset));
 
             }
 
@@ -87,7 +90,10 @@ namespace Avalonia.Media.TextFormatting
                 //Fallback found
                 return new ShapeableTextCharacters(text.Take(count),
                     new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush,
+                    textShadowBrush: defaultProperties.TextShadowBrush, 
+                    textShadowXOffset: defaultProperties.TextShadowXOffset,
+                    textShadowYOffset: defaultProperties.TextShadowYOffset));
             }
 
             // no fallback found
@@ -111,7 +117,10 @@ namespace Avalonia.Media.TextFormatting
 
             return new ShapeableTextCharacters(text.Take(count),
                 new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush,
+                    textShadowBrush: defaultProperties.TextShadowBrush, 
+                    textShadowXOffset: defaultProperties.TextShadowXOffset,
+                    textShadowYOffset: defaultProperties.TextShadowYOffset));
         }
 
         /// <summary>

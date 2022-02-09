@@ -72,6 +72,31 @@ namespace Avalonia.Controls
                 inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="TextShadowBrush"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<IBrush> TextShadowBrushProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, IBrush>(
+                nameof(TextShadowBrush),
+                null,
+                inherits: true);
+
+        /// <summary>
+        /// Defines the <see cref="TextShadowXOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> TextShadowXOffsetProperty =
+            AvaloniaProperty.Register<TextBlock, int>(
+                nameof(TextShadowXOffset),
+                validate: IsValidMaxLines);
+
+        /// <summary>
+        /// Defines the <see cref="TextShadowYOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> TextShadowYOffsetProperty =
+            AvaloniaProperty.Register<TextBlock, int>(
+                nameof(TextShadowYOffset),
+                validate: IsValidMaxLines);
+
+        /// <summary>
         /// Defines the <see cref="LineHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LineHeightProperty =
@@ -238,6 +263,33 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a brush used to paint the text shadow.
+        /// </summary>
+        public IBrush TextShadowBrush
+        {
+            get { return GetValue(TextShadowBrushProperty); }
+            set { SetValue(TextShadowBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the X axis offset the text shadow.
+        /// </summary>
+        public int TextShadowXOffset
+        {
+            get { return GetValue(TextShadowXOffsetProperty); }
+            set { SetValue(TextShadowXOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Y axis offset the text shadow.
+        /// </summary>
+        public int TextShadowYOffset
+        {
+            get { return GetValue(TextShadowYOffsetProperty); }
+            set { SetValue(TextShadowYOffsetProperty, value); }
         }
 
         /// <summary>
@@ -463,7 +515,10 @@ namespace Avalonia.Controls
                 constraint.Width,
                 constraint.Height,
                 maxLines: MaxLines,
-                lineHeight: LineHeight);
+                lineHeight: LineHeight,
+                textShadowBrush: TextShadowBrush,
+                textShadowXOffset: TextShadowXOffset,
+                textShadowYOffset: TextShadowYOffset);
         }
 
         /// <summary>
