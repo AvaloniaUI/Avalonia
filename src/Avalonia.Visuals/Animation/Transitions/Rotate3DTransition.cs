@@ -39,7 +39,7 @@ public class Rotate3DTransition: PageSlide
             return;
         }
 
-        var tasks = new Task[2];
+        var tasks = new Task[from != null && to != null ? 2 : 1];
         var parent = GetVisualParent(from, to);
         var (rotateProperty, center) = Orientation switch
         {
