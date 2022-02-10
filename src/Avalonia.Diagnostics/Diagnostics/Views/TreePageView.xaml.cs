@@ -20,8 +20,8 @@ namespace Avalonia.Diagnostics.Views
         public TreePageView()
         {
             InitializeComponent();
-            _tree = this.FindControl<TreeView>("tree");
-            _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
+            _tree = this.GetControl<TreeView>("tree");
+            _tree.ItemContainerGenerator.Index!.Materialized += TreeViewItemMaterialized;
 
             _adorner = new Panel
             {

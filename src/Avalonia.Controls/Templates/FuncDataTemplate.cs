@@ -7,13 +7,13 @@ namespace Avalonia.Controls.Templates
     /// <summary>
     /// Builds a control for a piece of data.
     /// </summary>
-    public class FuncDataTemplate : FuncTemplate<object, IControl>, IRecyclingDataTemplate
+    public class FuncDataTemplate : FuncTemplate<object?, IControl?>, IRecyclingDataTemplate
     {
         /// <summary>
         /// The default data template used in the case where no matching data template is found.
         /// </summary>
         public static readonly FuncDataTemplate Default =
-            new FuncDataTemplate<object>(
+            new FuncDataTemplate<object?>(
                 (data, s) =>
                 {
                     if (data != null)
@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Templates
         /// <summary>
         /// The implementation of the <see cref="Match"/> method.
         /// </summary>
-        private readonly Func<object, bool> _match;
+        private readonly Func<object?, bool> _match;
         private readonly bool _supportsRecycling;
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Type type,
-            Func<object, INameScope, IControl> build,
+            Func<object?, INameScope, IControl?> build,
             bool supportsRecycling = false)
             : this(o => IsInstance(o, type), build, supportsRecycling)
         {
@@ -86,14 +86,12 @@ namespace Avalonia.Controls.Templates
         /// </param>
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
-            Func<object, bool> match,
-            Func<object, INameScope, IControl> build,
+            Func<object?, bool> match,
+            Func<object?, INameScope, IControl?> build,
             bool supportsRecycling = false)
             : base(build)
         {
-            Contract.Requires<ArgumentNullException>(match != null);
-
-            _match = match;
+            _match = match ?? throw new ArgumentNullException(nameof(match));
             _supportsRecycling = supportsRecycling;
         }
 
@@ -104,7 +102,7 @@ namespace Avalonia.Controls.Templates
         /// <returns>
         /// True if the data template can build a control for the data, otherwise false.
         /// </returns>
-        public bool Match(object data)
+        public bool Match(object? data)
         {
             return _match(data);
         }
@@ -116,13 +114,13 @@ namespace Avalonia.Controls.Templates
         /// <param name="existing">An optional control to recycle.</param>
         /// <returns>
         /// The <paramref name="existing"/> control if supplied and applicable to
-        /// <paramref name="data"/>, otherwise a new control.
+        /// <paramref name="data"/>, otherwise a new control or null.
         /// </returns>
         /// <remarks>
         /// The caller should ensure that any control passed to <paramref name="existing"/>
         /// originated from the same data template.
         /// </remarks>
-        public IControl Build(object data, IControl existing)
+        public IControl? Build(object? data, IControl? existing)
         {
             return _supportsRecycling && existing is object ? existing : Build(data);
         }
@@ -135,7 +133,7 @@ namespace Avalonia.Controls.Templates
         /// <returns>
         /// True if <paramref name="o"/> is of type <paramref name="t"/>, otherwise false.
         /// </returns>
-        private static bool IsInstance(object o, Type t)
+        private static bool IsInstance(object? o, Type t)
         {
             return t.IsInstanceOfType(o);
         }

@@ -1,8 +1,6 @@
 ﻿using Avalonia.Controls.Primitives;
 using Avalonia.Metadata;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public class Flyout : FlyoutBase

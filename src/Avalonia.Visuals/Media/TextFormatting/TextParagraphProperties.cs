@@ -7,7 +7,7 @@
     {
         /// <summary>
         /// This property specifies whether the primary text advance 
-        /// direction shall be left-to-right, right-to-left, or top-to-bottom.
+        /// direction shall be left-to-right, right-to-left.
         /// </summary>
         public abstract FlowDirection FlowDirection { get; }
 
