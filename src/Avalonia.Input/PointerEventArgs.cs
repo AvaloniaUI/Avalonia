@@ -11,7 +11,7 @@ namespace Avalonia.Input
         private readonly IVisual? _rootVisual;
         private readonly Point _rootVisualPosition;
         private readonly PointerPointProperties _properties;
-        private readonly IReadOnlyList<Point>? _previousPoints;
+        private readonly IReadOnlyList<RawPointerPoint>? _previousPoints;
 
         public PointerEventArgs(RoutedEvent routedEvent,
             IInteractive? source,
@@ -38,7 +38,7 @@ namespace Avalonia.Input
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
-            IReadOnlyList<Point>? previousPoints)
+            IReadOnlyList<RawPointerPoint>? previousPoints)
             : this(routedEvent, source, pointer, rootVisual, rootVisualPosition, timestamp, properties, modifiers)
         {
             _previousPoints = previousPoints;
@@ -127,7 +127,7 @@ namespace Avalonia.Input
             for (var c = 0; c < _previousPoints.Count; c++)
             {
                 var pt = _previousPoints[c];
-                points[c] = new PointerPoint(Pointer, GetPosition(pt, relativeTo), _properties);
+                points[c] = new PointerPoint(Pointer, GetPosition(pt.Position, relativeTo), _properties);
             }
 
             points[points.Length - 1] = GetCurrentPoint(relativeTo);

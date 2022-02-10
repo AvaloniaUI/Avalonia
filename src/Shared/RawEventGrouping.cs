@@ -112,8 +112,8 @@ internal class RawEventGrouper : IDisposable
 
     private static void MergeEvents(RawPointerEventArgs last, RawPointerEventArgs current)
     {
-        last.IntermediatePoints ??= new PooledList<Point>();
-        ((PooledList<Point>)last.IntermediatePoints).Add(last.Position);
+        last.IntermediatePoints ??= new PooledList<RawPointerPoint>();
+        ((PooledList<RawPointerPoint>)last.IntermediatePoints).Add(new RawPointerPoint { Position = last.Position });
         last.Position = current.Position;
         last.Timestamp = current.Timestamp;
         last.InputModifiers = current.InputModifiers;
