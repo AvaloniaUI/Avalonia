@@ -98,7 +98,7 @@ public class Rotate3DTransition: PageSlide
                 }
             };
 
-            tasks[1] = animation.RunAsync(to, null, cancellationToken);
+            tasks[from != null ? 1 : 0] = animation.RunAsync(to, null, cancellationToken);
         }
 
         await Task.WhenAll(tasks);
