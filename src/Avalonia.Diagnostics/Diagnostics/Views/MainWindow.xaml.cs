@@ -147,6 +147,7 @@ namespace Avalonia.Diagnostics.Views
                 ProcessProperty(control, ContextMenuProperty);
                 ProcessProperty(control, FlyoutBase.AttachedFlyoutProperty);
                 ProcessProperty(control, ToolTipDiagnostics.ToolTipProperty);
+                ProcessProperty(control, Button.FlyoutProperty);
             }
 
             return popupRoots;
