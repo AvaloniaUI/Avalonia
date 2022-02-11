@@ -119,7 +119,7 @@ namespace Avalonia.Input.Raw
         /// Points that were traversed by a pointer since the previous relevant event,
         /// only valid for Move and TouchUpdate
         /// </summary>
-        public IReadOnlyList<RawPointerPoint>? IntermediatePoints { get; set; }
+        public Lazy<IReadOnlyList<RawPointerPoint>?>? IntermediatePoints { get; set; }
     }
 
     public struct RawPointerPoint
