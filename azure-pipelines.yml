@@ -1,6 +1,3 @@
-variables:
-    MSBuildEnableWorkloadResolver: 'false'
-
 jobs:
 
 - job: GetPRNumber
@@ -32,6 +29,8 @@ jobs:
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
+  variables:
+    MSBuildEnableWorkloadResolver: 'false'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.414'
@@ -61,6 +60,7 @@ jobs:
 - job: macOS
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
+    MSBuildEnableWorkloadResolver: 'false'
   pool:
     vmImage: 'macOS-10.15'
   steps:
@@ -147,10 +147,10 @@ jobs:
       version: 6.0.100
 
   - task: CmdLine@2
-    displayName: 'Install Androi Workload'
+    displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install --no-cache --disable-parallel ios android --skip-manifest-update --source "https://pkgs.dev.azure.com/xamarin/public/_packaging/maui-main/nuget/v3/index.json" --source "https://pkgs.dev.azure.com/azure-public/vside/_packaging/xamarin-impl/nuget/v3/index.json" --source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" --source "https://api.nuget.org/v3/index.json"
+       dotnet workload install android
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
