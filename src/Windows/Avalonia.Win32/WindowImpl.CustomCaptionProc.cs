@@ -23,7 +23,7 @@ namespace Avalonia.Win32
             AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
 
             var borderThickness = new RECT();
-            if (GetStyle().HasAllFlags(WindowStyles.WS_THICKFRAME))
+            if (GetStyle().HasAllFlags(WindowStyles.WS_CAPTION))
             {
                 AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle()), false, 0);
                 borderThickness.left *= -1;
