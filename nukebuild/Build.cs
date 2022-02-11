@@ -100,7 +100,7 @@ partial class Build : NukeBuild
             // This is required for VS2019 image on Azure Pipelines
             .When(Parameters.IsRunningOnWindows &&
                   Parameters.IsRunningOnAzure, _ => _
-                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
+                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
             .SetProcessToolPath(MsBuildExe.Value)
