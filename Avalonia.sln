@@ -107,7 +107,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{A0CC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RenderDemo", "samples\RenderDemo\RenderDemo.csproj", "{F1FDC5B0-4654-416F-AE69-E3E9BBD87801}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Android", "samples\ControlCatalog.Android\ControlCatalog.Android.csproj", "{29132311-1848-4FD6-AE0C-4FF841151BD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Android", "samples\ControlCatalog.Android\ControlCatalog.Android.csproj", "{29132311-1848-4FD6-AE0C-4FF841151BD3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Skia", "src\Skia\Avalonia.Skia\Avalonia.Skia.csproj", "{7D2D3083-71DD-4CC9-8907-39A0D86FB322}"
 EndProject
