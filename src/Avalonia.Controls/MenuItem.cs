@@ -308,12 +308,12 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem?)ItemContainerGenerator!.ContainerFromIndex(index) :
+                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = value is not null ? ItemContainerGenerator!.IndexFromContainer(value) : -1;
+                SelectedIndex = value is not null ? ItemContainerGenerator.IndexFromContainer(value) : -1;
             }
         }
 
@@ -322,7 +322,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                return ItemContainerGenerator!.Containers
+                return ItemContainerGenerator.Containers
                     .Select(x => x.ContainerControl)
                     .OfType<IMenuItem>();
             }

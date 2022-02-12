@@ -84,7 +84,8 @@ namespace Avalonia.Diagnostics.ViewModels
                             c.GetObservable(Control.ContextMenuProperty),
                             c.GetObservable(FlyoutBase.AttachedFlyoutProperty),
                             c.GetObservable(ToolTipDiagnostics.ToolTipProperty),
-                            (ContextFlyout, ContextMenu, AttachedFlyout, ToolTip) =>
+                            c.GetObservable(Button.FlyoutProperty),
+                            (ContextFlyout, ContextMenu, AttachedFlyout, ToolTip, ButtonFlyout) =>
                             {
                                 if (ContextMenu != null)
                                     //Note: ContextMenus are special since all the items are added as visual children.
@@ -99,6 +100,9 @@ namespace Avalonia.Diagnostics.ViewModels
 
                                 if (ToolTip != null)
                                     return GetPopupHostObservable(ToolTip, "ToolTip");
+
+                                if (ButtonFlyout != null)
+                                    return GetPopupHostObservable(ButtonFlyout, "Flyout");
 
                                 return Observable.Return<PopupRoot?>(null);
                             })

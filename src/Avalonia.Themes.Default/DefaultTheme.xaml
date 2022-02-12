@@ -57,6 +57,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/NotificationCard.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/NativeMenuBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToggleSwitch.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/SplitButton.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/SplitView.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/DatePicker.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TimePicker.xaml"/>
