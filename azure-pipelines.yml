@@ -29,8 +29,6 @@ jobs:
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
-  variables:
-    MSBuildEnableWorkloadResolver: 'false'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.414'
@@ -60,7 +58,6 @@ jobs:
 - job: macOS
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
-    MSBuildEnableWorkloadResolver: 'false'
   pool:
     vmImage: 'macOS-10.15'
   steps:
