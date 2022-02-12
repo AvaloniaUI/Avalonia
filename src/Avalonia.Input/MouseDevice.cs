@@ -273,7 +273,7 @@ namespace Avalonia.Input
         }
 
         private bool MouseMove(IMouseDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties properties,
-            KeyModifiers inputModifiers, IReadOnlyList<Point>? intermediatePoints)
+            KeyModifiers inputModifiers, Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
