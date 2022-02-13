@@ -531,11 +531,28 @@ namespace Avalonia.Controls.Primitives
 
                 _textSearchTerm += e.Text;
 
-                bool match(ItemContainerInfo info) =>
-                    info.ContainerControl is IContentControl control &&
-                    control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                bool Match(ItemContainerInfo info)
+                {
+                    foreach (var child in info.ContainerControl.GetVisualDescendants().OfType<Control>())
+                    {
+                        if (!child.IsSet(TextSearch.TextProperty))
+                        {
+                            continue;
+                        }
 
-                var info = ItemContainerGenerator?.Containers.FirstOrDefault(match);
+                        var searchText = child.GetValue(TextSearch.TextProperty);
+
+                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return info.ContainerControl is IContentControl control &&
+                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                }
+                
+                var info = ItemContainerGenerator?.Containers.FirstOrDefault(Match);
 
                 if (info != null)
                 {
