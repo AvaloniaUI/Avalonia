@@ -533,7 +533,7 @@ namespace Avalonia.Controls.Primitives
 
                 bool Match(ItemContainerInfo info)
                 {
-                    foreach (var child in info.ContainerControl.GetVisualDescendants().OfType<Control>())
+                    foreach (var child in info.ContainerControl.GetSelfAndVisualDescendants().OfType<Control>())
                     {
                         if (!child.IsSet(TextSearch.TextProperty))
                         {
