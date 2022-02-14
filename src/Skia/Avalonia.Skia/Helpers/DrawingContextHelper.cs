@@ -33,35 +33,33 @@ namespace Avalonia.Skia.Helpers
         /// Unsupported - Wraps a GPU Backed SkiaSurface in an Avalonia DrawingContext.
         /// </summary>
         [Obsolete]
-        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, GRContext grContext, Vector dpi, IVisualBrushRenderer visualBrushRenderer = null)
+        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, GRContext grContext, Vector dpi, params IDisposable[] disposables)
         {
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 GrContext = grContext,
                 Surface = surface,
                 Dpi = dpi,
-                VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = false,
             };
 
-            return new DrawingContextImpl(createInfo);
+            return new DrawingContextImpl(createInfo, disposables);
         }
         
         /// <summary>
         /// Unsupported - Wraps a non-GPU Backed SkiaSurface in an Avalonia DrawingContext.
         /// </summary>
         [Obsolete]
-        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, Vector dpi, IVisualBrushRenderer visualBrushRenderer = null)
+        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, Vector dpi, params IDisposable[] disposables)
         {
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = surface,
                 Dpi = dpi,
-                VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = false,
             };
 
-            return new DrawingContextImpl(createInfo);
+            return new DrawingContextImpl(createInfo, disposables);
         }
         
         [Obsolete]
