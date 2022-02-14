@@ -1,10 +1,11 @@
-﻿using Avalonia.Platform;
+﻿using System;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Helpers
 {
-    public class DrawingContextHelper
+    public static class DrawingContextHelper
     {
         /// <summary>
         /// Wrap Skia canvas in drawing context so we can use Avalonia api to render to external skia canvas
@@ -26,6 +27,55 @@ namespace Avalonia.Skia.Helpers
             };
 
             return new DrawingContextImpl(createInfo);
+        }
+        
+        /// <summary>
+        /// Unsupported - Wraps a GPU Backed SkiaSurface in an Avalonia DrawingContext.
+        /// </summary>
+        [Obsolete]
+        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, GRContext grContext, Vector dpi, IVisualBrushRenderer visualBrushRenderer = null)
+        {
+            var createInfo = new DrawingContextImpl.CreateInfo
+            {
+                GrContext = grContext,
+                Surface = surface,
+                Dpi = dpi,
+                VisualBrushRenderer = visualBrushRenderer,
+                DisableTextLcdRendering = false,
+            };
+
+            return new DrawingContextImpl(createInfo);
+        }
+        
+        /// <summary>
+        /// Unsupported - Wraps a non-GPU Backed SkiaSurface in an Avalonia DrawingContext.
+        /// </summary>
+        [Obsolete]
+        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, Vector dpi, IVisualBrushRenderer visualBrushRenderer = null)
+        {
+            var createInfo = new DrawingContextImpl.CreateInfo
+            {
+                Surface = surface,
+                Dpi = dpi,
+                VisualBrushRenderer = visualBrushRenderer,
+                DisableTextLcdRendering = false,
+            };
+
+            return new DrawingContextImpl(createInfo);
+        }
+        
+        [Obsolete]
+        public static void DrawSurfaceTo(this ISkiaDrawingContextImpl source, ISkiaDrawingContextImpl destination,
+            Size size, SKImageFilter imageFilter = null)
+        {
+            using (var blurSnapPaint = new SKPaint
+                   {
+                       ImageFilter = imageFilter,
+                       IsAntialias = true
+                   })
+            {
+                destination.SkCanvas.DrawSurface(source.SkSurface, new SKPoint(0, 0), blurSnapPaint);
+            }
         }
     }
 }
