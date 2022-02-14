@@ -65,17 +65,9 @@ namespace Avalonia.Skia.Helpers
         }
         
         [Obsolete]
-        public static void DrawSurfaceTo(this ISkiaDrawingContextImpl source, ISkiaDrawingContextImpl destination,
-            Size size, SKImageFilter imageFilter = null)
+        public static void DrawTo(this ISkiaDrawingContextImpl source, ISkiaDrawingContextImpl destination, SKPaint paint = null)
         {
-            using (var blurSnapPaint = new SKPaint
-                   {
-                       ImageFilter = imageFilter,
-                       IsAntialias = true
-                   })
-            {
-                destination.SkCanvas.DrawSurface(source.SkSurface, new SKPoint(0, 0), blurSnapPaint);
-            }
+            destination.SkCanvas.DrawSurface(source.SkSurface, new SKPoint(0, 0), paint);
         }
     }
 }
