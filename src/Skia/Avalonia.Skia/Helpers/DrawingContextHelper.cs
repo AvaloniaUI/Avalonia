@@ -61,6 +61,33 @@ namespace Avalonia.Skia.Helpers
 
             return new DrawingContextImpl(createInfo, disposables);
         }
+
+        [Obsolete]
+        public static ISkiaDrawingContextImpl CreateDrawingContext(Size size, Vector dpi, GRContext grContext = null)
+        {
+            if (grContext is null)
+            {
+                var surface = SKSurface.Create(
+                    new SKImageInfo(
+                        (int)Math.Ceiling(size.Width),
+                        (int)Math.Ceiling(size.Height),
+                        SKImageInfo.PlatformColorType,
+                        SKAlphaType.Premul));
+
+                return WrapSkiaSurface(surface, dpi, surface);
+            }
+            else
+            {
+                var surface = SKSurface.Create(grContext, false,
+                    new SKImageInfo(
+                        (int)Math.Ceiling(size.Width),
+                        (int)Math.Ceiling(size.Height),
+                        SKImageInfo.PlatformColorType,
+                        SKAlphaType.Premul));
+
+                return WrapSkiaSurface(surface, grContext, dpi, surface);
+            }
+        }
         
         [Obsolete]
         public static void DrawTo(this ISkiaDrawingContextImpl source, ISkiaDrawingContextImpl destination, SKPaint paint = null)
