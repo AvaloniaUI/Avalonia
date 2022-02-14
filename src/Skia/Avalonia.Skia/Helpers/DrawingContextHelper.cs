@@ -33,7 +33,7 @@ namespace Avalonia.Skia.Helpers
         /// Unsupported - Wraps a GPU Backed SkiaSurface in an Avalonia DrawingContext.
         /// </summary>
         [Obsolete]
-        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, GRContext grContext, Vector dpi, params IDisposable[] disposables)
+        public static ISkiaDrawingContextImpl WrapSkiaSurface(this SKSurface surface, GRContext grContext, Vector dpi, params IDisposable[] disposables)
         {
             var createInfo = new DrawingContextImpl.CreateInfo
             {
@@ -50,7 +50,7 @@ namespace Avalonia.Skia.Helpers
         /// Unsupported - Wraps a non-GPU Backed SkiaSurface in an Avalonia DrawingContext.
         /// </summary>
         [Obsolete]
-        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, Vector dpi, params IDisposable[] disposables)
+        public static ISkiaDrawingContextImpl WrapSkiaSurface(this SKSurface surface, Vector dpi, params IDisposable[] disposables)
         {
             var createInfo = new DrawingContextImpl.CreateInfo
             {
