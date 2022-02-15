@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Avalonia.Animation;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls;
 
@@ -18,7 +19,7 @@ public class TransitioningContentControl : ContentControl
     /// </summary>
     public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
         AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(nameof(PageTransition),
-            new CrossFade(TimeSpan.FromSeconds(0.5)));
+            new CrossFade(TimeSpan.FromSeconds(0.125)));
 
 
     /// <summary>
@@ -46,13 +47,20 @@ public class TransitioningContentControl : ContentControl
         private set => SetAndRaise(DisplayedContentProperty, ref _displayedContent, value);
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
+    }
+
     protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
     {
         base.OnPropertyChanged(change);
 
         if (change.Property == ContentProperty)
         {
-            UpdateContentWithTransition(Content);
+            Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
         }
     }
 
@@ -62,6 +70,11 @@ public class TransitioningContentControl : ContentControl
     /// <param name="content">New content to set.</param>
     private async void UpdateContentWithTransition(object? content)
     {
+        if (VisualRoot is null)
+        {
+            return;
+        }
+        
         _lastTransitionCts?.Cancel();
         _lastTransitionCts = new CancellationTokenSource();
 
