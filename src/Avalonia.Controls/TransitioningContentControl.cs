@@ -55,6 +55,13 @@ public class TransitioningContentControl : ContentControl
         Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
     }
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        
+        _lastTransitionCts?.Cancel();
+    }
+
     protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
     {
         base.OnPropertyChanged(change);
