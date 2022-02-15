@@ -38,6 +38,7 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.TabItem.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TextBox.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ToggleButton.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.TransitioningContentControl.xaml?assembly=Avalonia.Themes.Default" />
   <StyleInclude Source="resm:Avalonia.Themes.Default.Expander.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TitleBar.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TreeView.xaml?assembly=Avalonia.Themes.Default"/>
