@@ -52,7 +52,7 @@ public class TransitioningContentControl : ContentControl
 
         if (change.Property == ContentProperty)
         {
-            UpdateContentWithTransition(change.NewValue.GetValueOrDefault());
+            UpdateContentWithTransition(Content);
         }
     }
 
