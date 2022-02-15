@@ -21,8 +21,7 @@ public class TransitioningContentControl : ContentControl
     public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
         AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(nameof(PageTransition),
             new CrossFade(TimeSpan.FromSeconds(0.125)));
-
-
+    
     /// <summary>
     /// Defines the <see cref="CurrentContent"/> property.
     /// </summary>
