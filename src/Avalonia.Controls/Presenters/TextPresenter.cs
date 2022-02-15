@@ -615,11 +615,11 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
+        public CharacterHit GetNextCharacterHit(LogicalDirection direction = LogicalDirection.Forward)
         {
             if (Text is null)
             {
-                return;
+                return default;
             }
             
             if (FlowDirection == FlowDirection.RightToLeft)
@@ -636,7 +636,7 @@ namespace Avalonia.Controls.Presenters
 
             if (lineIndex < 0)
             {
-                return;
+                return default;
             }
 
             if (direction == LogicalDirection.Forward)
@@ -696,6 +696,13 @@ namespace Avalonia.Controls.Presenters
                     break;
                 }
             }
+
+            return characterHit;
+        }
+        
+        public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
+        {
+            var characterHit = GetNextCharacterHit(direction);
 
             UpdateCaret(characterHit);
 

@@ -138,10 +138,12 @@ namespace Avalonia.Media.TextFormatting
                 Reverse();
             }
 
+#if DEBUG
             if(length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
+#endif
 
             if(length == ShapedBuffer.Length)
             {
