@@ -4,6 +4,10 @@ using Avalonia.Animation;
 
 namespace Avalonia.Controls;
 
+/// <summary>
+/// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
+/// Uses <see cref="PageTransition"/> to move between the old and new content values. 
+/// </summary>
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _lastTransitionCts;
