@@ -40,7 +40,7 @@ public class TransitioningContentControl : ContentControl
     }
 
     /// <summary>
-    /// Gets or sets the content displayed whenever there is no page currently routed.
+    /// Gets the content currently displayed on the screen.
     /// </summary>
     public object? DisplayedContent
     {
