@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Threading;
 using Avalonia.Animation;
+using Avalonia.Controls.Templates;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls;
 
 /// <summary>
-/// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
+/// Displays <see cref="ContentControl.Content"/> according to a <see cref="FuncDataTemplate"/>.
 /// Uses <see cref="PageTransition"/> to move between the old and new content values. 
 /// </summary>
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _lastTransitionCts;
     private object? _displayedContent;
-    
+
     /// <summary>
     /// Defines the <see cref="PageTransition"/> property.
     /// </summary>
@@ -28,7 +29,7 @@ public class TransitioningContentControl : ContentControl
     public static readonly DirectProperty<TransitioningContentControl, object?> DisplayedContentProperty =
         AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(nameof(DisplayedContent),
             o => o.DisplayedContent);
-    
+
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
     /// </summary>
@@ -74,7 +75,7 @@ public class TransitioningContentControl : ContentControl
         {
             return;
         }
-        
+
         _lastTransitionCts?.Cancel();
         _lastTransitionCts = new CancellationTokenSource();
 
@@ -82,7 +83,7 @@ public class TransitioningContentControl : ContentControl
             await PageTransition.Start(this, null, true, _lastTransitionCts.Token);
 
         DisplayedContent = content;
-        
+
         if (PageTransition != null)
             await PageTransition.Start(null, this, true, _lastTransitionCts.Token);
     }
