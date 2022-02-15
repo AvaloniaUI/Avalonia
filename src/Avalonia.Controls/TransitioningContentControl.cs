@@ -7,6 +7,7 @@ namespace Avalonia.Controls;
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _lastTransitionCts;
+    private object? _displayedContent;
     
     /// <summary>
     /// Defines the <see cref="PageTransition"/> property.
@@ -14,13 +15,14 @@ public class TransitioningContentControl : ContentControl
     public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
         AvaloniaProperty.Register<TransitioningContentControl, IPageTransition?>(nameof(PageTransition),
             new CrossFade(TimeSpan.FromSeconds(0.5)));
-    
-    
+
+
     /// <summary>
     /// Defines the <see cref="DisplayedContent"/> property.
     /// </summary>
-    public static readonly StyledProperty<object?> DisplayedContentProperty =
-        AvaloniaProperty.Register<TransitioningContentControl, object?>(nameof(DisplayedContent));
+    public static readonly DirectProperty<TransitioningContentControl, object?> DisplayedContentProperty =
+        AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(nameof(DisplayedContent),
+            o => o.DisplayedContent);
     
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
@@ -30,14 +32,14 @@ public class TransitioningContentControl : ContentControl
         get => GetValue(PageTransitionProperty);
         set => SetValue(PageTransitionProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets the content displayed whenever there is no page currently routed.
     /// </summary>
     public object? DisplayedContent
     {
-        get => GetValue(DisplayedContentProperty);
-        set => SetValue(DisplayedContentProperty, value);
+        get => _displayedContent;
+        private set => SetAndRaise(DisplayedContentProperty, ref _displayedContent, value);
     }
 
     protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
