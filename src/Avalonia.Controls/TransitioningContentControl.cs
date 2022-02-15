@@ -13,7 +13,7 @@ namespace Avalonia.Controls;
 public class TransitioningContentControl : ContentControl
 {
     private CancellationTokenSource? _lastTransitionCts;
-    private object? _displayedContent;
+    private object? _currentContent;
 
     /// <summary>
     /// Defines the <see cref="PageTransition"/> property.
@@ -24,11 +24,11 @@ public class TransitioningContentControl : ContentControl
 
 
     /// <summary>
-    /// Defines the <see cref="DisplayedContent"/> property.
+    /// Defines the <see cref="CurrentContent"/> property.
     /// </summary>
-    public static readonly DirectProperty<TransitioningContentControl, object?> DisplayedContentProperty =
-        AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(nameof(DisplayedContent),
-            o => o.DisplayedContent);
+    internal static readonly DirectProperty<TransitioningContentControl, object?> CurrentContentProperty =
+        AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(nameof(CurrentContent),
+            o => o.CurrentContent);
 
     /// <summary>
     /// Gets or sets the animation played when content appears and disappears.
@@ -42,10 +42,10 @@ public class TransitioningContentControl : ContentControl
     /// <summary>
     /// Gets the content currently displayed on the screen.
     /// </summary>
-    public object? DisplayedContent
+    internal object? CurrentContent
     {
-        get => _displayedContent;
-        private set => SetAndRaise(DisplayedContentProperty, ref _displayedContent, value);
+        get => _currentContent;
+        private set => SetAndRaise(CurrentContentProperty, ref _currentContent, value);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -89,7 +89,7 @@ public class TransitioningContentControl : ContentControl
         if (PageTransition != null)
             await PageTransition.Start(this, null, true, _lastTransitionCts.Token);
 
-        DisplayedContent = content;
+        CurrentContent = content;
 
         if (PageTransition != null)
             await PageTransition.Start(null, this, true, _lastTransitionCts.Token);
