@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IControl? GetControlInDirection(NavigationDirection direction, IControl from);
+        IControl? GetControlInDirection(NavigationDirection direction, IControl? from);
 
         /// <summary>
         /// Raises the <see cref="ScrollInvalidated"/> event.

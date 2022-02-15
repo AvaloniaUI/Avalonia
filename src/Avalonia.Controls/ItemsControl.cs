@@ -143,6 +143,8 @@ namespace Avalonia.Controls
             protected set;
         }
 
+        private protected bool WrapFocus { get; set; }
+
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
@@ -315,7 +317,7 @@ namespace Avalonia.Controls
                 {
                     if (current.VisualParent == container && current is IInputElement inputElement)
                     {
-                        var next = GetNextControl(container, direction.Value, inputElement, false);
+                        var next = GetNextControl(container, direction.Value, inputElement, WrapFocus);
 
                         if (next != null)
                         {

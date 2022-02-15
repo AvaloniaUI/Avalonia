@@ -53,7 +53,7 @@ internal class RawEventGrouper : IDisposable
 
             _eventCallback?.Invoke(ev);
 
-            if (ev is RawPointerEventArgs { IntermediatePoints: PooledList<Point> list }) 
+            if (ev is RawPointerEventArgs { IntermediatePoints.Value: PooledList<RawPointerPoint> list }) 
                 list.Dispose();
 
             if (Dispatcher.UIThread.HasJobsWithPriority(DispatcherPriority.Input + 1))
@@ -110,10 +110,14 @@ internal class RawEventGrouper : IDisposable
         AddToQueue(args);
     }
 
+    private static IReadOnlyList<RawPointerPoint> GetPooledList() => new PooledList<RawPointerPoint>();
+    private static readonly Func<IReadOnlyList<RawPointerPoint>> s_getPooledListDelegate = GetPooledList;
+
     private static void MergeEvents(RawPointerEventArgs last, RawPointerEventArgs current)
     {
-        last.IntermediatePoints ??= new PooledList<Point>();
-        ((PooledList<Point>)last.IntermediatePoints).Add(last.Position);
+        
+        last.IntermediatePoints ??= new Lazy<IReadOnlyList<RawPointerPoint>?>(s_getPooledListDelegate);
+        ((PooledList<RawPointerPoint>)last.IntermediatePoints.Value!).Add(new RawPointerPoint { Position = last.Position });
         last.Position = current.Position;
         last.Timestamp = current.Timestamp;
         last.InputModifiers = current.InputModifiers;

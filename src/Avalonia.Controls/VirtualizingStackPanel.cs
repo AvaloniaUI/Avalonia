@@ -36,7 +36,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                var bounds = Orientation == Orientation.Horizontal ? 
+                var bounds = Orientation == Orientation.Horizontal ?
                     _availableSpace.Width : _availableSpace.Height;
                 return Math.Max(0, _takenSpace - bounds);
             }
@@ -129,9 +129,6 @@ namespace Avalonia.Controls
 
         protected override IInputElement? GetControlInDirection(NavigationDirection direction, IControl? from)
         {
-            if (from == null)
-                return null;
-
             var logicalScrollable = Parent as ILogicalScrollable;
 
             if (logicalScrollable?.IsLogicalScrollEnabled == true)
@@ -145,7 +142,7 @@ namespace Avalonia.Controls
         }
 
         internal override void ArrangeChild(
-            IControl child, 
+            IControl child,
             Rect rect,
             Size panelSize,
             Orientation orientation)

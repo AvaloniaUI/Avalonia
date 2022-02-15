@@ -613,5 +613,54 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(DataValidationErrors.GetHasErrors(target));
             Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }
+
+        private void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
+        {
+            listBox.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                KeyModifiers = inputModifiers,
+                Key = key
+            });
+        }
+
+        [Fact]
+        public void WrapSelection_Should_Wrap()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = items,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
+                    WrapSelection = true
+                };
+
+                Prepare(target);
+
+                var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
+
+                var first = lbItems.First();
+                var last = lbItems.Last();
+
+                first.Focus();
+
+                RaisePressedEvent(target, first, MouseButton.Left);
+                Assert.Equal(true, first.IsSelected);
+
+                RaiseKeyEvent(target, Key.Up);
+                Assert.Equal(true, last.IsSelected);
+
+                RaiseKeyEvent(target, Key.Down);
+                Assert.Equal(true, first.IsSelected);
+
+                target.WrapSelection = false;
+                RaiseKeyEvent(target, Key.Up);
+
+                Assert.Equal(true, first.IsSelected);
+            }
+        }
     }
 }

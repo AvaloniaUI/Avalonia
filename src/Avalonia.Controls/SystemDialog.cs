@@ -53,6 +53,11 @@ namespace Avalonia.Controls
         public string? DefaultExtension { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to display a warning if the user specifies the name of a file that already exists.
+        /// </summary>
+        public bool? ShowOverwritePrompt { get; set; }
+
+        /// <summary>
         /// Shows the save file dialog.
         /// </summary>
         /// <param name="parent">The parent window.</param>

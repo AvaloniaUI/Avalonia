@@ -492,13 +492,6 @@ namespace Avalonia.Controls
             return measuredSize.Inflate(padding);
         }
 
-        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToLogicalTree(e);
-
-            InvalidateTextLayout();
-        }
-
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
 
         private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;

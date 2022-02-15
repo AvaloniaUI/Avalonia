@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Avalonia.Web.Blazor</PackageId>
     <LangVersion>preview</LangVersion>
+    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
   </PropertyGroup>
   

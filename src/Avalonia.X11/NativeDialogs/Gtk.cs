@@ -63,7 +63,7 @@ namespace Avalonia.X11.NativeDialogs
         public static IDisposable ConnectSignal<T>(IntPtr obj, string name, T handler)
         {
             var handle = GCHandle.Alloc(handler);
-            var ptr = Marshal.GetFunctionPointerForDelegate((Delegate)(object)handler);
+            var ptr = Marshal.GetFunctionPointerForDelegate<T>(handler);
             using (var utf = new Utf8Buffer(name))
             {
                 var id = g_signal_connect_object(obj, utf, ptr, IntPtr.Zero, 0);
@@ -179,6 +179,9 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GtkName)]
         public static extern void gtk_file_chooser_set_select_multiple(IntPtr chooser, bool allow);
+        
+        [DllImport(GtkName)]
+        public static extern void gtk_file_chooser_set_do_overwrite_confirmation(IntPtr chooser, bool do_overwrite_confirmation);
 
         [DllImport(GtkName)]
         public static extern void
