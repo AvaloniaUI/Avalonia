@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -324,6 +325,13 @@ namespace Avalonia.Input
 
             var hit = HitTest(root, p);
             var source = GetSource(hit);
+
+            // KeyModifiers.Shift should scroll in horizontal direction. This does not work on every platform. 
+            // If Shift-Key is pressed and X is close to 0 we swap the Vector.
+            if (inputModifiers == KeyModifiers.Shift && MathUtilities.IsZero(delta.X))
+            {
+                delta = new Vector(delta.Y, delta.X);
+            }
 
             if (source is not null)
             {
