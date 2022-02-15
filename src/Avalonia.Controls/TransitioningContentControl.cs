@@ -25,7 +25,7 @@ public class TransitioningContentControl : ContentControl
     /// <summary>
     /// Defines the <see cref="CurrentContent"/> property.
     /// </summary>
-    internal static readonly DirectProperty<TransitioningContentControl, object?> CurrentContentProperty =
+    public static readonly DirectProperty<TransitioningContentControl, object?> CurrentContentProperty =
         AvaloniaProperty.RegisterDirect<TransitioningContentControl, object?>(nameof(CurrentContent),
             o => o.CurrentContent);
 
@@ -41,7 +41,7 @@ public class TransitioningContentControl : ContentControl
     /// <summary>
     /// Gets the content currently displayed on the screen.
     /// </summary>
-    internal object? CurrentContent
+    public object? CurrentContent
     {
         get => _currentContent;
         private set => SetAndRaise(CurrentContentProperty, ref _currentContent, value);
