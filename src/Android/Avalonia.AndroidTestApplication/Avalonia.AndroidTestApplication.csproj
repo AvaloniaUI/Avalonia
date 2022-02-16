@@ -9,6 +9,7 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)'=='Release' and '$(TF_BUILD)' == ''">
@@ -21,6 +22,13 @@
   <ItemGroup>
     <None Remove="Assets\AboutAssets.txt" />
   </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <BundleAssemblies>True</BundleAssemblies>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <BundleAssemblies>True</BundleAssemblies>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />

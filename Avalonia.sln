@@ -95,7 +95,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog", "samples\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Desktop", "samples\ControlCatalog.Desktop\ControlCatalog.Desktop.csproj", "{2B888490-D14A-4BCA-AB4B-48676FA93C9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DesignerSupport.Tests", "tests\Avalonia.DesignerSupport.Tests\Avalonia.DesignerSupport.Tests.csproj", "{52F55355-D120-42AC-8116-8410A7D602FA}"
 EndProject
@@ -1105,7 +1105,7 @@ Global
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.AppStore|iPhone.Build.0 = AppStore|iPhone
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.AppStore|iPhoneSimulator.ActiveCfg = AppStore|iPhoneSimulator
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.AppStore|iPhoneSimulator.Build.0 = AppStore|iPhoneSimulator
-		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|Any CPU.ActiveCfg = Debug|iPhone
+		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|iPhone.ActiveCfg = Debug|iPhone
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|iPhone.Build.0 = Debug|iPhone
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator

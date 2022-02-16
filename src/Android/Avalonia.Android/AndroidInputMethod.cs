@@ -25,7 +25,7 @@ namespace Avalonia.Android
 
             _host.Focusable = true;
             _host.FocusableInTouchMode = true;
-            _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListner(_host));
+            _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListener(_host));
         }
 
         public void Reset()
@@ -83,6 +83,8 @@ namespace Avalonia.Android
 
                 if (options.Multiline)
                     outAttrs.InputType |= global::Android.Text.InputTypes.TextFlagMultiLine;
+
+                outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
             });
 
             //_inputElement.PointerReleased += RestoreSoftKeyboard;
