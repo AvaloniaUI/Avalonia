@@ -118,13 +118,23 @@ namespace Avalonia.Data
                 converter = new StringFormatValueConverter(StringFormat!, converter);
             }
 
+            var converterParameter = ConverterParameter;
+
+            if (ConverterParameter is BindingBase converterParameterBinding)
+            {
+                converterParameter = converterParameterBinding.Initiate(
+                    target, 
+                    null, 
+                    anchor);
+            }
+
             var subject = new BindingExpression(
                 observer,
                 targetType,
                 fallback,
                 TargetNullValue,
                 converter ?? DefaultValueConverter.Instance,
-                ConverterParameter,
+                converterParameter,
                 Priority);
 
             return new InstancedBinding(subject, Mode, Priority);

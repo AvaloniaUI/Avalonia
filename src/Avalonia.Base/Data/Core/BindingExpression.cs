@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data.Converters;
 using Avalonia.Logging;
@@ -20,8 +19,10 @@ namespace Avalonia.Data.Core
         private readonly object? _fallbackValue;
         private readonly object? _targetNullValue;
         private readonly BindingPriority _priority;
-        InnerListener? _innerListener;
-        WeakReference<object>? _value;
+        private readonly IDisposable? _converterParameterSubscription;
+        private WeakReference<object?>? _converterParameter; 
+        private InnerListener? _innerListener;
+        private WeakReference<object>? _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -84,11 +85,36 @@ namespace Avalonia.Data.Core
 
             _inner = inner;
             _targetType = targetType;
-            Converter = converter;
-            ConverterParameter = converterParameter;
             _fallbackValue = fallbackValue;
             _targetNullValue = targetNullValue;
             _priority = priority;
+
+            Converter = converter;
+
+            if (converterParameter is InstancedBinding binding)
+            {
+                if (binding.Mode == BindingMode.TwoWay)
+                {
+                    throw new InvalidOperationException("Two way binding to converter parameter is not supported");
+                }
+
+                _converterParameterSubscription = binding.Observable?.Subscribe(cp =>
+                {
+                    _converterParameter = new WeakReference<object?>(cp);
+
+                    if (_value != null &&
+                        _value.TryGetTarget(out var currentValue))
+                    {
+                        //Force update binding to use new converter parameter
+                        _innerListener?.OnNext(currentValue);
+                    }
+
+                });
+            }
+            else
+            {
+                _converterParameter = new WeakReference<object?>(converterParameter);
+            }
         }
 
         /// <summary>
@@ -99,7 +125,19 @@ namespace Avalonia.Data.Core
         /// <summary>
         /// Gets a parameter to pass to <see cref="Converter"/>.
         /// </summary>
-        public object? ConverterParameter { get; }
+        public object? ConverterParameter
+        {
+            get
+            {
+                if (_converterParameter != null && 
+                    _converterParameter.TryGetTarget(out var cp))
+                {
+                    return cp;
+                }
+
+                return null;
+            }
+        }
 
         /// <inheritdoc/>
         string? IDescription.Description => _inner.Expression;
@@ -182,8 +220,17 @@ namespace Avalonia.Data.Core
             }
         }
 
-        protected override void Initialize() => _innerListener = new InnerListener(this);
-        protected override void Deinitialize() => _innerListener?.Dispose();
+        protected override void Initialize()
+        {
+            _innerListener = new InnerListener(this);
+        }
+
+        protected override void Deinitialize()
+        {
+            _innerListener?.Dispose();
+
+            _converterParameterSubscription?.Dispose();
+        }
 
         protected override void Subscribed(IObserver<object> observer, bool first)
         {

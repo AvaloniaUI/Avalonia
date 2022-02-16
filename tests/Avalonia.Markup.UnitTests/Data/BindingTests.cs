@@ -372,6 +372,34 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
         }
 
+
+        [Fact]
+        public void Should_Pass_ConverterParameter_Binding_To_Supplied_Converter()
+        {
+            var target = new TextBlock();
+            var converter = new Mock<IValueConverter>();
+
+            var source = new Source { Foo = "foo" };
+
+            var binding = new Binding
+            {
+                Converter = converter.Object,
+                ConverterParameter = new Binding(nameof(source.Foo))
+                {
+                    Source = source
+                },
+                Path = "Bar",
+            };
+
+            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+
+            Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
+
+            source.Foo = "foo2";
+
+            Assert.Same("foo2", ((BindingExpression)result).ConverterParameter);
+        }
+
         [Fact]
         public void Should_Return_FallbackValue_When_Path_Not_Resolved()
         {
