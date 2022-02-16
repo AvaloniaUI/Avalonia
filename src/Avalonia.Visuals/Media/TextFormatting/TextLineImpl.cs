@@ -120,7 +120,7 @@ namespace Avalonia.Media.TextFormatting
             }
             
             var availableWidth = collapsingProperties.Width - shapedSymbol.GlyphRun.Size.Width;
-            
+
             while (runIndex < _textRuns.Count)
             {
                 var currentRun = _textRuns[runIndex];
