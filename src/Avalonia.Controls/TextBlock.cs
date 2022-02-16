@@ -404,9 +404,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
-            context.FillRectangle(Brushes.Magenta, TextLayout.Bounds);
-            
+
             var padding = Padding;
             var top = padding.Top;
             var textHeight = TextLayout.Bounds.Height;
