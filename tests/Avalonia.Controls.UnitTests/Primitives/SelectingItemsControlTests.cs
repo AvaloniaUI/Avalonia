@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -13,7 +15,9 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Data;
+using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -1893,6 +1897,54 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(1, tabStripRaised);
             Assert.Equal(1, carouselRaised);
+        }
+
+        [Fact]
+        public void Setting_IsTextSearchEnabled_Enables_Or_Disables_Text_Search()
+        {
+            var pti = Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true);
+
+            Mock.Get(pti)
+                .Setup(v => v.StartTimer(It.IsAny<DispatcherPriority>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()))
+                .Returns(Disposable.Empty);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(threadingInterface: pti)))
+            {
+                var items = new[]
+                {
+                    new Item { [TextSearch.TextProperty] = "Foo" }, 
+                    new Item { [TextSearch.TextProperty] = "Bar" }
+                };
+
+                var target = new SelectingItemsControl
+                {
+                    Items = items, 
+                    Template = Template(), 
+                    IsTextSearchEnabled = false
+                };
+
+                Prepare(target);
+
+                target.RaiseEvent(new TextInputEventArgs
+                {
+                    RoutedEvent = InputElement.TextInputEvent,
+                    Device = KeyboardDevice.Instance, 
+                    Text = "Foo"
+                });
+
+                Assert.Null(target.SelectedItem);
+
+                target.IsTextSearchEnabled = true;
+
+                target.RaiseEvent(new TextInputEventArgs
+                {
+                    RoutedEvent = InputElement.TextInputEvent, 
+                    Device = KeyboardDevice.Instance, 
+                    Text = "Foo"
+                });
+
+                Assert.Equal(items[0], target.SelectedItem);
+            }
         }
 
         private static void Prepare(SelectingItemsControl target)
