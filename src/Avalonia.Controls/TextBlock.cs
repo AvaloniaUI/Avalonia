@@ -405,20 +405,22 @@ namespace Avalonia.Controls
                 return;
             }
             
+            context.FillRectangle(Brushes.Magenta, TextLayout.Bounds);
+            
             var padding = Padding;
             var top = padding.Top;
-            var textSize = TextLayout.Size;
+            var textHeight = TextLayout.Bounds.Height;
 
-            if (Bounds.Height < textSize.Height)
+            if (Bounds.Height < textHeight)
             {
                 switch (VerticalAlignment)
                 {
                     case VerticalAlignment.Center:
-                        top += (Bounds.Height - textSize.Height) / 2;
+                        top += (Bounds.Height - textHeight) / 2;
                         break;
 
                     case VerticalAlignment.Bottom:
-                        top += (Bounds.Height - textSize.Height);
+                        top += (Bounds.Height - textHeight);
                         break;
                 }
             }
@@ -473,18 +475,13 @@ namespace Avalonia.Controls
             
             _textLayout = null;
 
-            var measuredSize = TextLayout!.Size;
+            var measuredSize = TextLayout?.Bounds.Size ?? Size.Empty;
 
             return measuredSize.Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
-            {
-                return finalSize;
-            }
-            
             _constraint = finalSize;
                 
             _textLayout = null;

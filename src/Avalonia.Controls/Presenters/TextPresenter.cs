@@ -310,7 +310,7 @@ namespace Avalonia.Controls.Presenters
             var top = 0d;
             var left = 0.0;
 
-            var (_, textHeight) = TextLayout.Size;
+            var textHeight = TextLayout.Bounds.Height;
 
             if (Bounds.Height < textHeight)
             {
@@ -502,16 +502,11 @@ namespace Avalonia.Controls.Presenters
             
             _textLayout = null;
 
-            return TextLayout!.Size;
+            return TextLayout?.Bounds.Size ?? Size.Empty;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
-            {
-                return finalSize;
-            }
-            
             _constraint = finalSize;
                 
             _textLayout = null;

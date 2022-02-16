@@ -106,12 +106,12 @@ namespace Avalonia.Media.TextFormatting
         public IReadOnlyList<TextLine> TextLines { get; private set; }
 
         /// <summary>
-        /// Gets the size of the layout.
+        /// Gets the bounds of the layout.
         /// </summary>
         /// <value>
         /// The bounds.
         /// </value>
-        public Size Size { get; private set; }
+        public Rect Bounds { get; private set; }
 
         /// <summary>
         /// Draws the text layout.
@@ -153,7 +153,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var lineX = lastLine.Width;
 
-                var lineY = Size.Height - lastLine.Height;
+                var lineY = Bounds.Bottom - lastLine.Height;
 
                 return new Rect(lineX, lineY, 0, lastLine.Height);
             }
@@ -463,7 +463,7 @@ namespace Avalonia.Media.TextFormatting
             var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
             var isTrailing = lastTrailingIndex == textPosition && characterHit.TrailingLength > 0 ||
-                             y > Size.Height;
+                             y > Bounds.Bottom;
 
             if (textPosition == textLine.TextRange.Start + textLine.TextRange.Length)
             {
@@ -505,15 +505,21 @@ namespace Avalonia.Media.TextFormatting
         /// Updates the current bounds.
         /// </summary>
         /// <param name="textLine">The text line.</param>
+        /// <param name="left">The current left.</param>
         /// <param name="width">The current width.</param>
         /// <param name="height">The current height.</param>
-        private static void UpdateBounds(TextLine textLine, ref double width, ref double height)
+        private static void UpdateBounds(TextLine textLine,ref double left,  ref double width, ref double height)
         {
-            var lineWidth = textLine.Start + textLine.WidthIncludingTrailingWhitespace;
+            var lineWidth = textLine.WidthIncludingTrailingWhitespace;
 
             if (width < lineWidth)
             {
                 width = lineWidth;
+            }
+
+            if (left > textLine.Start)
+            {
+                left = textLine.Start;
             }
 
             height += textLine.Height;
@@ -548,14 +554,14 @@ namespace Avalonia.Media.TextFormatting
             {
                 var textLine = CreateEmptyTextLine(0);
 
-                Size = new Size(0, textLine.Height);
+                Bounds = new Rect(0,0,0, textLine.Height);
 
                 return new List<TextLine> { textLine };
             }
 
             var textLines = new List<TextLine>();
 
-            double width = 0.0, height = 0.0;
+            double left = double.PositiveInfinity, width = 0.0, height = 0.0;
 
             var currentPosition = 0;
 
@@ -597,7 +603,7 @@ namespace Avalonia.Media.TextFormatting
 
                 textLines.Add(textLine);
 
-                UpdateBounds(textLine, ref width, ref height);
+                UpdateBounds(textLine,ref left, ref width, ref height);
 
                 previousLine = textLine;
 
@@ -610,10 +616,10 @@ namespace Avalonia.Media.TextFormatting
 
                 textLines.Add(emptyTextLine);
 
-                UpdateBounds(emptyTextLine, ref width, ref height);
+                UpdateBounds(emptyTextLine,ref left, ref width, ref height);
             }
 
-            Size = new Size(width, height);
+            Bounds = new Rect(left, 0, width, height);
 
             return textLines;
         }
