@@ -498,25 +498,25 @@ namespace Avalonia.Controls.Presenters
         
         protected override Size MeasureOverride(Size availableSize)
         {
+            _constraint = availableSize;
+            
             _textLayout = null;
 
-            _constraint = availableSize;
-
-            return TextLayout.Size;
+            return TextLayout!.Size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (!double.IsInfinity(_constraint.Width))
+            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
             {
-                return base.ArrangeOverride(finalSize);
+                return finalSize;
             }
             
             _constraint = finalSize;
-            
+                
             _textLayout = null;
 
-            return base.ArrangeOverride(finalSize); 
+            return finalSize;
         }
 
         private int CoerceCaretIndex(int value)

@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 using Avalonia.Layout;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -464,32 +465,31 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size for the control.</param>
-        /// <returns>The desired size.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (string.IsNullOrEmpty(Text))
-            {
-                return new Size();
-            }
-
             var padding = Padding;
+            
+            _constraint = availableSize.Deflate(padding);
+            
+            _textLayout = null;
 
-            availableSize = availableSize.Deflate(padding);
-
-            if (_constraint != availableSize)
-            {
-                _constraint = availableSize;
-
-                InvalidateTextLayout();
-            }
-
-            var measuredSize = TextLayout?.Size ?? Size.Empty;
+            var measuredSize = TextLayout!.Size;
 
             return measuredSize.Inflate(padding);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
+            {
+                return finalSize;
+            }
+            
+            _constraint = finalSize;
+                
+            _textLayout = null;
+
+            return finalSize;
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;

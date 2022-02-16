@@ -509,7 +509,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="height">The current height.</param>
         private static void UpdateBounds(TextLine textLine, ref double width, ref double height)
         {
-            var lineWidth = textLine.WidthIncludingTrailingWhitespace + textLine.Start * 2;
+            var lineWidth = textLine.Start + textLine.WidthIncludingTrailingWhitespace;
 
             if (width < lineWidth)
             {
