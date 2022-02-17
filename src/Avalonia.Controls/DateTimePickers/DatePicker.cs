@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -409,6 +410,11 @@ namespace Avalonia.Controls
             _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
             _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             _popup.IsOpen = true;
+
+            // Overlay popup hosts won't get measured until the next layout pass, but we need the
+            // template to be applied to `_presenter` now. Detect this case and force a layout pass.
+            if (!_presenter.IsMeasureValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 
