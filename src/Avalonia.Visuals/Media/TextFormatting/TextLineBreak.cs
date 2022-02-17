@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -7,6 +9,13 @@ namespace Avalonia.Media.TextFormatting
         public TextLineBreak(TextEndOfLine? textEndOfLine = null, FlowDirection flowDirection = FlowDirection.LeftToRight, 
             IReadOnlyList<ShapedTextCharacters>? remainingCharacters = null)
         {
+            #if DEBUG
+            if (remainingCharacters != null && remainingCharacters.Any(x => x == null))
+            {
+                Debugger.Break();
+            }
+            #endif
+            
             TextEndOfLine = textEndOfLine;
             FlowDirection = flowDirection;
             RemainingCharacters = remainingCharacters;

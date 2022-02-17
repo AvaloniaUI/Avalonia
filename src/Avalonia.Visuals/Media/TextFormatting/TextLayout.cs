@@ -575,23 +575,27 @@ namespace Avalonia.Media.TextFormatting
                 var textLine = TextFormatter.Current.FormatLine(textSource, currentPosition, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-                currentPosition += textLine.TextRange.Length;
-
-                if (textLines.Count > 0)
+#if DEBUG
+                if (textLine.TextRange.Length == 0)
                 {
-                    if (textLines.Count == MaxLines || !double.IsPositiveInfinity(MaxHeight) &&
-                        height + textLine.Height > MaxHeight)
+                    throw new InvalidOperationException($"{nameof(textLine)} should not be empty.");
+                }
+#endif
+
+                currentPosition += textLine.TextRange.Length;
+                
+                //Fulfill max height constraint
+                if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight) && height + textLine.Height > MaxHeight)
+                {
+                    if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                     {
-                        if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
-                        {
-                            var collapsedLine =
-                                previousLine.Collapse(GetCollapsingProperties(MaxWidth));
+                        var collapsedLine =
+                            previousLine.Collapse(GetCollapsingProperties(MaxWidth));
 
-                            textLines[textLines.Count - 1] = collapsedLine;
-                        }
-
-                        break;
+                        textLines[textLines.Count - 1] = collapsedLine;
                     }
+
+                    break;
                 }
 
                 var hasOverflowed = textLine.HasOverflowed;
@@ -607,6 +611,12 @@ namespace Avalonia.Media.TextFormatting
 
                 previousLine = textLine;
 
+                //Fulfill max lines constraint
+                if (MaxLines > 0 && textLines.Count >= MaxLines)
+                {
+                    break;
+                }
+                
                 if (currentPosition != _text.Length || textLine.NewLineLength <= 0)
                 {
                     continue;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -144,12 +145,7 @@ namespace Avalonia.Media.TextFormatting
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
 #endif
-
-            if(length == ShapedBuffer.Length)
-            {
-                return new SplitResult<ShapedTextCharacters>(this, null);
-            }
-
+            
             var splitBuffer = ShapedBuffer.Split(length);
 
             var first = new ShapedTextCharacters(splitBuffer.First, Properties);
@@ -158,6 +154,8 @@ namespace Avalonia.Media.TextFormatting
 
             if (first.Text.Length != length)
             {
+                Debugger.Break();
+                
                 throw new InvalidOperationException("Split length mismatch.");
             }
             
