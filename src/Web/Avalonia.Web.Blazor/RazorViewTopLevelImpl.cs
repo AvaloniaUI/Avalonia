@@ -21,6 +21,7 @@ namespace Avalonia.Web.Blazor
         private readonly Stopwatch _sw = Stopwatch.StartNew();
         private readonly ITextInputMethodImpl _textInputMethod;
         private readonly TouchDevice _touchDevice;
+        private string _currentCursor = CssCursor.Default;
 
         public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
         {
@@ -42,6 +43,16 @@ namespace Avalonia.Web.Blazor
         public void SetClientSize(SKSize size, double dpi)
         {
             var newSize = new Size(size.Width, size.Height);
+
+            if (Math.Abs(RenderScaling - dpi) > 0.0001)
+            {
+                if (_currentSurface is { })
+                {
+                    _currentSurface.Scaling = dpi;
+                }
+                
+                ScalingChanged?.Invoke(dpi);
+            }
 
             if (newSize != _clientSize)
             {
@@ -124,10 +135,14 @@ namespace Avalonia.Web.Blazor
 
         public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
-            // nop
-
+            var val = (cursor as CssCursor)?.Value ?? CssCursor.Default;
+            if (_currentCursor != val)
+            {
+                SetCssCursor?.Invoke(val);
+                _currentCursor = val;
+            }
         }
 
         public IPopupImpl? CreatePopup()
@@ -146,6 +161,7 @@ namespace Avalonia.Web.Blazor
 
         public IEnumerable<object> Surfaces => new object[] { _currentSurface! };
 
+        public Action<string>? SetCssCursor { get; set; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, PlatformResizeReason>? Resized { get; set; }

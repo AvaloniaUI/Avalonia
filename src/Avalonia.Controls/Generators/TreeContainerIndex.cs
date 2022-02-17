@@ -21,12 +21,12 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Signaled whenever new containers are materialized.
         /// </summary>
-        public event EventHandler<ItemContainerEventArgs> Materialized;
+        public event EventHandler<ItemContainerEventArgs>? Materialized;
 
         /// <summary>
         /// Event raised whenever containers are dematerialized.
         /// </summary>
-        public event EventHandler<ItemContainerEventArgs> Dematerialized;
+        public event EventHandler<ItemContainerEventArgs>? Dematerialized;
 
         /// <summary>
         /// Gets the currently materialized containers.
@@ -92,7 +92,7 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>The container, or null of not found.</returns>
-        public IControl ContainerFromItem(object item)
+        public IControl? ContainerFromItem(object item)
         {
             if (item != null)
             {
@@ -108,7 +108,7 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="container">The container.</param>
         /// <returns>The item, or null of not found.</returns>
-        public object ItemFromContainer(IControl container)
+        public object? ItemFromContainer(IControl? container)
         {
             if (container != null)
             {

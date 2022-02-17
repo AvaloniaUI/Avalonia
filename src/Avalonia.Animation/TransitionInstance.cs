@@ -10,11 +10,11 @@ namespace Avalonia.Animation
     /// </summary>
     internal class TransitionInstance : SingleSubscriberObservableBase<double>, IObserver<TimeSpan>
     {
-        private IDisposable _timerSubscription;
+        private IDisposable? _timerSubscription;
         private TimeSpan _delay;
         private TimeSpan _duration;
         private readonly IClock _baseClock;
-        private TransitionClock _clock;
+        private TransitionClock? _clock;
 
         public TransitionInstance(IClock clock, TimeSpan delay, TimeSpan duration)
         {
@@ -67,7 +67,7 @@ namespace Avalonia.Animation
         protected override void Unsubscribed()
         {
             _timerSubscription?.Dispose();
-            _clock.PlayState = PlayState.Stop;
+            _clock!.PlayState = PlayState.Stop;
         }
 
         protected override void Subscribed()

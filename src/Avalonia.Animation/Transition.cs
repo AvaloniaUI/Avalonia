@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation.Easings;
 
 namespace Avalonia.Animation
@@ -8,7 +9,7 @@ namespace Avalonia.Animation
     /// </summary>
     public abstract class Transition<T> : AvaloniaObject, ITransition
     {
-        private AvaloniaProperty _prop;
+        private AvaloniaProperty? _prop;
 
         /// <summary>
         /// Gets or sets the duration of the transition.
@@ -26,7 +27,8 @@ namespace Avalonia.Animation
         public Easing Easing { get; set; } = new LinearEasing();
 
         /// <inheritdocs/>
-        public AvaloniaProperty Property
+        [DisallowNull]
+        public AvaloniaProperty? Property
         {
             get
             {
@@ -42,15 +44,24 @@ namespace Avalonia.Animation
             }
         }
 
+        AvaloniaProperty ITransition.Property
+        {
+            get => Property ?? throw new InvalidOperationException("Transition has no property specified.");
+            set => Property = value;
+        }
+
         /// <summary>
         /// Apply interpolation to the property.
         /// </summary>
         public abstract IObservable<T> DoTransition(IObservable<double> progress, T oldValue, T newValue);
 
         /// <inheritdocs/>
-        public virtual IDisposable Apply(Animatable control, IClock clock, object oldValue, object newValue)
+        public virtual IDisposable Apply(Animatable control, IClock clock, object? oldValue, object? newValue)
         {
-            var transition = DoTransition(new TransitionInstance(clock, Delay, Duration), (T)oldValue, (T)newValue);
+            if (Property is null)
+                throw new InvalidOperationException("Transition has no property specified.");
+
+            var transition = DoTransition(new TransitionInstance(clock, Delay, Duration), (T)oldValue!, (T)newValue!);
             return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
         }
     }

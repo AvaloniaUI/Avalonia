@@ -304,7 +304,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void Render(bool forceComposite)
+        internal void Render(bool forceComposite)
         {
             using (var l = _lock.TryLock())
             {
@@ -588,7 +588,10 @@ namespace Avalonia.Rendering
 
             if (DrawFps)
             {
-                RenderFps(context, clientRect, scene.Layers.Count);
+                using (var c = new DrawingContext(context, false))
+                {
+                    RenderFps(c, clientRect, scene.Layers.Count);
+                }
             }
         }
 

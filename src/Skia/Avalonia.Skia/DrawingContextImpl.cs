@@ -441,25 +441,13 @@ namespace Avalonia.Skia
                 }
             }
         }
-
-        /// <inheritdoc />
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-        {
-            using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds.Size))
-            {
-                var textImpl = (FormattedTextImpl) text;
-                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
-            }
-        }
-
+       
         /// <inheritdoc />
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
             using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
-
-                ConfigureTextRendering(paintWrapper);
 
                 Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
@@ -482,7 +470,7 @@ namespace Avalonia.Skia
         public void PushClip(RoundedRect clip)
         {
             Canvas.Save();
-            Canvas.ClipRoundRect(clip.ToSKRoundRect());
+            Canvas.ClipRoundRect(clip.ToSKRoundRect(), antialias:true);
         }
 
         /// <inheritdoc />
@@ -604,15 +592,6 @@ namespace Avalonia.Skia
 
                 Canvas.SetMatrix(transform.ToSKMatrix());
             }
-        }
-
-        internal void ConfigureTextRendering(PaintWrapper wrapper)
-        {
-            var paint = wrapper.Paint;
-
-            paint.IsEmbeddedBitmapText = true;
-            paint.SubpixelText = true;
-            paint.LcdRenderText = _canTextUseLcdRendering;
         }
 
         /// <summary>

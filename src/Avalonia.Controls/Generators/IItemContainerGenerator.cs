@@ -17,27 +17,27 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
-        IDataTemplate ItemTemplate { get; set; }
+        IDataTemplate? ItemTemplate { get; set; }
 
         /// <summary>
         /// Gets the ContainerType, or null if its an untyped ContainerGenerator.
         /// </summary>
-        Type ContainerType { get; }
+        Type? ContainerType { get; }
 
         /// <summary>
         /// Signaled whenever new containers are materialized.
         /// </summary>
-        event EventHandler<ItemContainerEventArgs> Materialized;
+        event EventHandler<ItemContainerEventArgs>? Materialized;
 
         /// <summary>
         /// Event raised whenever containers are dematerialized.
         /// </summary>
-        event EventHandler<ItemContainerEventArgs> Dematerialized;
+        event EventHandler<ItemContainerEventArgs>? Dematerialized;
 
         /// <summary>
         /// Event raised whenever containers are recycled.
         /// </summary>
-        event EventHandler<ItemContainerEventArgs> Recycled;
+        event EventHandler<ItemContainerEventArgs>? Recycled;
 
         /// <summary>
         /// Creates a container control for an item.
@@ -90,13 +90,13 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The container, or null if no container created.</returns>
-        IControl ContainerFromIndex(int index);
+        IControl? ContainerFromIndex(int index);
 
         /// <summary>
         /// Gets the index of the specified container control.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <returns>The index of the container, or -1 if not found.</returns>
-        int IndexFromContainer(IControl container);
+        int IndexFromContainer(IControl? container);
     }
 }

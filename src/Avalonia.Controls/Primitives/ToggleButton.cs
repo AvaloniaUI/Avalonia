@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is checked.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Checked
+        public event EventHandler<RoutedEventArgs>? Checked
         {
             add => AddHandler(CheckedEvent, value);
             remove => RemoveHandler(CheckedEvent, value);
@@ -70,7 +70,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is unchecked.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Unchecked
+        public event EventHandler<RoutedEventArgs>? Unchecked
         {
             add => AddHandler(UncheckedEvent, value);
             remove => RemoveHandler(UncheckedEvent, value);
@@ -79,7 +79,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is neither checked nor unchecked.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Indeterminate
+        public event EventHandler<RoutedEventArgs>? Indeterminate
         {
             add => AddHandler(IndeterminateEvent, value);
             remove => RemoveHandler(IndeterminateEvent, value);

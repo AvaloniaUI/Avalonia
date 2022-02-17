@@ -1,8 +1,6 @@
 using System;
 using Avalonia.Platform;
 
-#nullable enable
-
 namespace Avalonia.Controls.Platform
 {
     public interface INativeMenuExporter
@@ -24,6 +22,6 @@ namespace Avalonia.Controls.Platform
     
     public interface ITopLevelImplWithNativeMenuExporter : ITopLevelImpl
     {
-        ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+        ITopLevelNativeMenuExporter? NativeMenuExporter { get; }
     }
 }

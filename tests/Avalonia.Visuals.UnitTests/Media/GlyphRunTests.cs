@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using System.Linq;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
@@ -14,14 +15,15 @@ namespace Avalonia.Visuals.UnitTests.Media
                 .Bind<IPlatformRenderInterface>().ToSingleton<MockPlatformRenderInterface>();
         }
 
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 3, 30)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 1, 0, 10)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 2, 0, 20)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 2, 1, 30)]
+        [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0)]
+        [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 3, 30)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 1, 0, 10)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 2, 0, 20)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 2, 1, 30)]
         [Theory]
-        public void Should_Get_Distance_From_CharacterHit(double[] advances, ushort[] clusters, int start, int trailingLength, double expectedDistance)
+        public void Should_Get_Distance_From_CharacterHit(double[] advances, int[] clusters, int start, int trailingLength, double expectedDistance)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var characterHit = new CharacterHit(start, trailingLength);
@@ -32,14 +34,15 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 25.0, 0, 3, true)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 20.0, 1, 1, true)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 26.0, 2, 1, true)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 35.0, 2, 1, false)]
+        [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 26.0, 0, 3, true)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 20.0, 1, 1, true)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 26.0, 2, 1, true)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 35.0, 2, 1, false)]
         [Theory]
-        public void Should_Get_CharacterHit_FromDistance(double[] advances, ushort[] clusters, double distance, int start,
+        public void Should_Get_CharacterHit_FromDistance(double[] advances, int[] clusters, double distance, int start,
             int trailingLengthExpected, bool isInsideExpected)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var textBounds = glyphRun.GetCharacterHitFromDistance(distance, out var isInside);
@@ -52,17 +55,18 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 10, 11, 12 }, 0, -1, 10, 1, 10)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 10, 11, 12 }, 0, 15, 12, 1, 10)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0, 3, 30.0)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 0, 1, 1, 1, 10.0)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 0, 1, 1, 3 }, 0, 2, 1, 2, 20.0)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 0, 1, 1, 3 }, 0, 1, 1, 2, 20.0)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 3, 1, 1, 0 }, 1, 1, 1, 2, 20.0)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 10, 11, 12 }, 0, -1, 10, 1, 10)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 10, 11, 12 }, 0, 15, 12, 1, 10)]
+        [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0, 3, 30.0)]
+        [InlineData(new double[] { 10, 10, 10 }, new int[] { 0, 1, 2 }, 0, 1, 1, 1, 10.0)]
+        [InlineData(new double[] { 10, 20, 0, 10 }, new int[] { 0, 1, 1, 3 }, 0, 2, 1, 2, 20.0)]
+        [InlineData(new double[] { 10, 20, 0, 10 }, new int[] { 0, 1, 1, 3 }, 0, 1, 1, 2, 20.0)]
+        [InlineData(new double[] { 10, 0, 20, 10 }, new int[] { 3, 1, 1, 0 }, 1, 1, 1, 2, 20.0)]
         [Theory]
-        public void Should_Find_Nearest_CharacterHit(double[] advances, ushort[] clusters, int bidiLevel,
+        public void Should_Find_Nearest_CharacterHit(double[] advances, int[] clusters, int bidiLevel,
             int index, int expectedIndex, int expectedLength, double expectedWidth)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
                 var textBounds = glyphRun.FindNearestCharacterHit(index, out var width);
@@ -75,21 +79,22 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0, 3, 0)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0, 3, 1)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 0, 0, 0, 3 }, 3, 0, 3, 1, 0)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 3, 0, 0, 0 }, 3, 0, 3, 1, 1)]
-        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 0, 1, 1, 1, 4 }, 4, 0, 4, 1, 0)]
-        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 4, 1, 1, 1, 0 }, 4, 0, 4, 1, 1)]
+        [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0, 3, 0)]
+        [InlineData(new double[] { 0, 0, 30 }, new int[] { 0, 0, 0 }, 0, 0, 0, 3, 1)]
+        [InlineData(new double[] { 30, 0, 0, 10 }, new int[] { 0, 0, 0, 3 }, 3, 0, 3, 1, 0)]
+        [InlineData(new double[] { 10, 0, 0, 30 }, new int[] { 3, 0, 0, 0 }, 3, 0, 3, 1, 1)]
+        [InlineData(new double[] { 10, 30, 0, 0, 10 }, new int[] { 0, 1, 1, 1, 4 }, 1, 0, 4, 0, 0)]
+        [InlineData(new double[] { 10, 0, 0, 30, 10 }, new int[] { 4, 1, 1, 1, 0 }, 1, 0, 4, 0, 1)]
         [Theory]
-        public void Should_Get_Next_CharacterHit(double[] advances, ushort[] clusters,
-            int currentIndex, int currentLength,
+        public void Should_Get_Next_CharacterHit(double[] advances,int[] clusters,
+            int firstCharacterIndex, int trailingLength,
             int nextIndex, int nextLength,
             int bidiLevel)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
-                var characterHit = glyphRun.GetNextCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
+                var characterHit = glyphRun.GetNextCaretCharacterHit(new CharacterHit(firstCharacterIndex, trailingLength));
 
                 Assert.Equal(nextIndex, characterHit.FirstCharacterIndex);
 
@@ -97,18 +102,19 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0, 0, 0)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0, 0, 1)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 0, 0, 0, 3 }, 3, 1, 3, 0, 0)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 3, 0, 0, 0 }, 3, 1, 3, 0, 1)]
-        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 0, 1, 1, 1, 4 }, 4, 1, 4, 0, 0)]
-        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 4, 1, 1, 1, 0 }, 4, 1, 4, 0, 1)]
+        [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0, 0, 0, 0, 0)]
+        [InlineData(new double[] { 0, 0, 30 }, new int[] { 0, 0, 0 }, 0, 0, 0, 0, 1)]
+        [InlineData(new double[] { 30, 0, 0, 10 }, new int[] { 0, 0, 0, 3 }, 3, 1, 3, 0, 0)]
+        [InlineData(new double[] { 0, 0, 30, 10 }, new int[] { 3, 0, 0, 0 }, 3, 1, 3, 0, 1)]
+        [InlineData(new double[] { 10, 30, 0, 0, 10 }, new int[] { 0, 1, 1, 1, 4 }, 4, 1, 4, 0, 0)]
+        [InlineData(new double[] { 10, 0, 0, 30, 10 }, new int[] { 4, 1, 1, 1, 0 }, 4, 1, 4, 0, 1)]
         [Theory]
-        public void Should_Get_Previous_CharacterHit(double[] advances, ushort[] clusters,
+        public void Should_Get_Previous_CharacterHit(double[] advances, int[] clusters,
             int currentIndex, int currentLength,
             int previousIndex, int previousLength,
             int bidiLevel)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
                 var characterHit = glyphRun.GetPreviousCaretCharacterHit(new CharacterHit(currentIndex, currentLength));
@@ -119,15 +125,16 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 1)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 0, 0, 0, 3 }, 0)]
-        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 3, 0, 0, 0 }, 1)]
-        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 0, 1, 1, 1, 4 }, 0)]
-        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 4, 1, 1, 1, 0 }, 1)]
+        [InlineData(new double[] { 30, 0, 0 }, new int[] { 0, 0, 0 }, 0)]
+        [InlineData(new double[] { 0, 0, 30 }, new int[] { 0, 0, 0 }, 1)]
+        [InlineData(new double[] { 10, 10, 10, 10 }, new int[] { 0, 0, 0, 3 }, 0)]
+        [InlineData(new double[] { 10, 10, 10, 10 }, new int[] { 3, 0, 0, 0 }, 1)]
+        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new int[] { 0, 1, 1, 1, 4 }, 0)]
+        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new int[] { 4, 1, 1, 1, 0 }, 1)]
         [Theory]
-        public void Should_Find_Glyph_Index(double[] advances, ushort[] clusters, int bidiLevel)
+        public void Should_Find_Glyph_Index(double[] advances, int[] clusters, int bidiLevel)
         {
+            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
             {
                 if (glyphRun.IsLeftToRight)
@@ -169,17 +176,17 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        private static GlyphRun CreateGlyphRun(double[] glyphAdvances, ushort[] glyphClusters, int bidiLevel = 0)
+        private static GlyphRun CreateGlyphRun(double[] glyphAdvances, int[] glyphClusters, int bidiLevel = 0)
         {
             var count = glyphAdvances.Length;
             var glyphIndices = new ushort[count];
 
-            var start = bidiLevel == 0 ? glyphClusters[0] : glyphClusters[glyphClusters.Length - 1];
+            var start = bidiLevel == 0 ? glyphClusters[0] : glyphClusters[^1];
 
-            var characters = new ReadOnlySlice<char>(new char[count], start, count);
+            var characters = new ReadOnlySlice<char>(Enumerable.Repeat('a', count).ToArray(), start, count);
 
-            return new GlyphRun(new GlyphTypeface(new MockGlyphTypeface()), 10, glyphIndices, glyphAdvances,
-                glyphClusters: glyphClusters, characters: characters, biDiLevel: bidiLevel);
+            return new GlyphRun(new GlyphTypeface(new MockGlyphTypeface()), 10, characters, glyphIndices, glyphAdvances,
+                glyphClusters: glyphClusters, biDiLevel: bidiLevel);
         }
     }
 }

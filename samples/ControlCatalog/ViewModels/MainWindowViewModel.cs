@@ -5,6 +5,7 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
 using System;
+using System.ComponentModel.DataAnnotations;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -164,5 +165,17 @@ namespace ControlCatalog.ViewModels
         public MiniCommand ExitCommand { get; }
 
         public MiniCommand ToggleMenuItemCheckedCommand { get; }
+
+        private DateTime? _validatedDateExample;
+
+        /// <summary>
+        ///    A required DateTime which should demonstrate validation for the DateTimePicker
+        /// </summary>
+        [Required]
+        public DateTime? ValidatedDateExample
+        {
+            get => _validatedDateExample;
+            set => this.RaiseAndSetIfChanged(ref _validatedDateExample, value);
+        }
     }
 }

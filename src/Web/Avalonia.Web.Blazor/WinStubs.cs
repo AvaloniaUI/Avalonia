@@ -23,27 +23,6 @@ namespace Avalonia.Web.Blazor
         public Task<object> GetDataAsync(string format) => Task.FromResult<object>(new ());
     }
 
-    internal class CursorStub : ICursorImpl
-    {
-        public void Dispose()
-        {
-
-        }
-    }
-
-    internal class CursorFactoryStub : ICursorFactory
-    {
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
-        {
-            return new CursorStub();
-        }
-
-        ICursorImpl ICursorFactory.GetCursor(StandardCursorType cursorType)
-        {
-            return new CursorStub();
-        }
-    }
-
     internal class IconLoaderStub : IPlatformIconLoader
     {
         private class IconStub : IWindowIconImpl
