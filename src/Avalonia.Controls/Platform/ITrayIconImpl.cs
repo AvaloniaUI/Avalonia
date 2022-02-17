@@ -1,8 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Platform;
 
-#nullable enable
-
 namespace Avalonia.Platform
 {
     public interface ITrayIconImpl : IDisposable

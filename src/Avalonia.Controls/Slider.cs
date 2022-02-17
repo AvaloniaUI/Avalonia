@@ -81,14 +81,14 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private bool _isDragging = false;
-        private Track _track;
-        private Button _decreaseButton;
-        private Button _increaseButton;
-        private IDisposable _decreaseButtonPressDispose;
-        private IDisposable _decreaseButtonReleaseDispose;
-        private IDisposable _increaseButtonSubscription;
-        private IDisposable _increaseButtonReleaseDispose;
-        private IDisposable _pointerMovedDispose;
+        private Track? _track;
+        private Button? _decreaseButton;
+        private Button? _increaseButton;
+        private IDisposable? _decreaseButtonPressDispose;
+        private IDisposable? _decreaseButtonReleaseDispose;
+        private IDisposable? _increaseButtonSubscription;
+        private IDisposable? _increaseButtonReleaseDispose;
+        private IDisposable? _pointerMovedDispose;
 
         private const double Tolerance = 0.0001;
 
@@ -309,7 +309,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackMoved(object sender, PointerEventArgs e)
+        private void TrackMoved(object? sender, PointerEventArgs e)
         {
             if (_isDragging)
             {
@@ -317,12 +317,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackReleased(object sender, PointerReleasedEventArgs e)
+        private void TrackReleased(object? sender, PointerReleasedEventArgs e)
         {
             _isDragging = false;
         }
 
-        private void TrackPressed(object sender, PointerPressedEventArgs e)
+        private void TrackPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -333,6 +333,9 @@ namespace Avalonia.Controls
 
         private void MoveToPoint(PointerPoint posOnTrack)
         {
+            if (_track is null)
+                return;
+
             var orient = Orientation == Orientation.Horizontal;
             var thumbLength = (orient 
                 ? _track.Thumb.Bounds.Width 

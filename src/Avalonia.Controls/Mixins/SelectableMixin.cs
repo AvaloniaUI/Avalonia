@@ -40,7 +40,7 @@ namespace Avalonia.Controls.Mixins
         public static void Attach<TControl>(AvaloniaProperty<bool> isSelected)
             where TControl : class, IControl
         {
-            Contract.Requires<ArgumentNullException>(isSelected != null);
+            _ = isSelected ?? throw new ArgumentNullException(nameof(isSelected));
 
             isSelected.Changed.Subscribe(x =>
             {

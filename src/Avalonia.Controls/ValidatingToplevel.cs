@@ -59,31 +59,31 @@ internal class ValidatingToplevelImpl : ITopLevelImpl, ITopLevelImplWithNativeCo
     public double RenderScaling => Inner.RenderScaling;
     public IEnumerable<object> Surfaces => Inner.Surfaces;
 
-    public Action<RawInputEventArgs> Input
+    public Action<RawInputEventArgs>? Input
     {
         get => Inner.Input;
         set => Inner.Input = value;
     }
 
-    public Action<Rect> Paint
+    public Action<Rect>? Paint
     {
         get => Inner.Paint;
         set => Inner.Paint = value;
     }
 
-    public Action<Size, PlatformResizeReason> Resized
+    public Action<Size, PlatformResizeReason>? Resized
     {
         get => Inner.Resized;
         set => Inner.Resized = value;
     }
 
-    public Action<double> ScalingChanged
+    public Action<double>? ScalingChanged
     {
         get => Inner.ScalingChanged;
         set => Inner.ScalingChanged = value;
     }
 
-    public Action<WindowTransparencyLevel> TransparencyLevelChanged
+    public Action<WindowTransparencyLevel>? TransparencyLevelChanged
     {
         get => Inner.TransparencyLevelChanged;
         set => Inner.TransparencyLevelChanged = value;
@@ -99,15 +99,15 @@ internal class ValidatingToplevelImpl : ITopLevelImpl, ITopLevelImplWithNativeCo
 
     public PixelPoint PointToScreen(Point point) => Inner.PointToScreen(point);
 
-    public void SetCursor(ICursorImpl cursor) => Inner.SetCursor(cursor);
+    public void SetCursor(ICursorImpl? cursor) => Inner.SetCursor(cursor);
 
-    public Action Closed
+    public Action? Closed
     {
         get => Inner.Closed;
         set => Inner.Closed = value;
     }
 
-    public Action LostFocus
+    public Action? LostFocus
     {
         get => Inner.LostFocus;
         set => Inner.LostFocus = value;
@@ -115,7 +115,7 @@ internal class ValidatingToplevelImpl : ITopLevelImpl, ITopLevelImplWithNativeCo
 
     // Exception: for some reason we are notifying platform mouse device from TopLevel.cs
     public IMouseDevice MouseDevice => _impl.MouseDevice;
-    public IPopupImpl CreatePopup() => Inner.CreatePopup();
+    public IPopupImpl? CreatePopup() => Inner.CreatePopup();
 
     public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
         Inner.SetTransparencyLevelHint(transparencyLevel);
@@ -123,12 +123,12 @@ internal class ValidatingToplevelImpl : ITopLevelImpl, ITopLevelImplWithNativeCo
 
     public WindowTransparencyLevel TransparencyLevel => Inner.TransparencyLevel;
     public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => Inner.AcrylicCompensationLevels;
-    public INativeControlHostImpl NativeControlHost => (Inner as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
+    public INativeControlHostImpl? NativeControlHost => (Inner as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
 
-    public ITopLevelNativeMenuExporter NativeMenuExporter =>
+    public ITopLevelNativeMenuExporter? NativeMenuExporter =>
         (Inner as ITopLevelImplWithNativeMenuExporter)?.NativeMenuExporter;
 
-    public ITextInputMethodImpl TextInputMethod => (Inner as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
+    public ITextInputMethodImpl? TextInputMethod => (Inner as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
 }
 
 internal class ValidatingWindowBaseImpl : ValidatingToplevelImpl, IWindowBaseImpl
@@ -167,7 +167,7 @@ internal class ValidatingWindowBaseImpl : ValidatingToplevelImpl, IWindowBaseImp
     public double DesktopScaling => Inner.DesktopScaling;
     public PixelPoint Position => Inner.Position;
 
-    public Action<PixelPoint> PositionChanged
+    public Action<PixelPoint>? PositionChanged
     {
         get => Inner.PositionChanged;
         set => Inner.PositionChanged = value;
@@ -175,13 +175,13 @@ internal class ValidatingWindowBaseImpl : ValidatingToplevelImpl, IWindowBaseImp
 
     public void Activate() => Inner.Activate();
 
-    public Action Deactivated
+    public Action? Deactivated
     {
         get => Inner.Deactivated;
         set => Inner.Deactivated = value;
     }
 
-    public Action Activated
+    public Action? Activated
     {
         get => Inner.Activated;
         set => Inner.Activated = value;
@@ -241,7 +241,7 @@ internal class ValidatingWindowImpl : ValidatingWindowBaseImpl, IWindowImpl
         set => Inner.WindowStateChanged = value;
     }
 
-    public void SetTitle(string title) => Inner.SetTitle(title);
+    public void SetTitle(string? title) => Inner.SetTitle(title);
 
     public void SetParent(IWindowImpl parent)
     {
@@ -266,7 +266,7 @@ internal class ValidatingWindowImpl : ValidatingWindowBaseImpl, IWindowImpl
 
     public void SetSystemDecorations(SystemDecorations enabled) => Inner.SetSystemDecorations(enabled);
 
-    public void SetIcon(IWindowIconImpl icon) => Inner.SetIcon(icon);
+    public void SetIcon(IWindowIconImpl? icon) => Inner.SetIcon(icon);
 
     public void ShowTaskbarIcon(bool value) => Inner.ShowTaskbarIcon(value);
 

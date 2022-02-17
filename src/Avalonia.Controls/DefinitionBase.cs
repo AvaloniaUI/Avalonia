@@ -39,7 +39,7 @@ namespace Avalonia.Controls
                 string sharedSizeGroupId = SharedSizeGroup;
                 if (sharedSizeGroupId != null)
                 {
-                    SharedSizeScope privateSharedSizeScope = PrivateSharedSizeScope;
+                    SharedSizeScope? privateSharedSizeScope = PrivateSharedSizeScope;
                     if (privateSharedSizeScope != null)
                     {
                         _sharedState = privateSharedSizeScope.EnsureSharedState(sharedSizeGroupId);
@@ -104,7 +104,7 @@ namespace Avalonia.Controls
         /// </remarks>
         internal static void OnIsSharedSizeScopePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if ((bool)e.NewValue!)
             {
                 SharedSizeScope sharedStatesCollection = new SharedSizeScope();
                 d.SetValue(PrivateSharedSizeScopeProperty, sharedStatesCollection);
@@ -131,8 +131,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                GridUnitType oldUnitType = ((GridLength)e.OldValue).GridUnitType;
-                GridUnitType newUnitType = ((GridLength)e.NewValue).GridUnitType;
+                GridUnitType oldUnitType = ((GridLength)e.OldValue!).GridUnitType;
+                GridUnitType newUnitType = ((GridLength)e.NewValue!).GridUnitType;
 
                 if (oldUnitType != newUnitType)
                 {
@@ -300,7 +300,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal abstract double UserMaxSizeValueCache { get; }
 
-        internal Grid Parent { get; set; }
+        internal Grid? Parent { get; set; }
 
         /// <summary>
         /// SetFlags is used to set or unset one or multiple
@@ -326,7 +326,7 @@ namespace Avalonia.Controls
 
             if (definition.Parent != null)
             {
-                string sharedSizeGroupId = (string)e.NewValue;
+                string sharedSizeGroupId = (string)e.NewValue!;
 
                 if (definition._sharedState != null)
                 {
@@ -338,7 +338,7 @@ namespace Avalonia.Controls
 
                 if ((definition._sharedState == null) && (sharedSizeGroupId != null))
                 {
-                    SharedSizeScope privateSharedSizeScope = definition.PrivateSharedSizeScope;
+                    SharedSizeScope? privateSharedSizeScope = definition.PrivateSharedSizeScope;
                     if (privateSharedSizeScope != null)
                     {
                         //  if definition is not registered and both: shared size group id AND private shared scope 
@@ -402,7 +402,7 @@ namespace Avalonia.Controls
 
             if (definition.Parent != null)
             {
-                SharedSizeScope privateSharedSizeScope = (SharedSizeScope)e.NewValue;
+                SharedSizeScope privateSharedSizeScope = (SharedSizeScope)e.NewValue!;
 
                 if (definition._sharedState != null)
                 {
@@ -429,9 +429,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Private getter of shared state collection dynamic property.
         /// </summary>
-        private SharedSizeScope PrivateSharedSizeScope
+        private SharedSizeScope? PrivateSharedSizeScope
         {
-            get { return (SharedSizeScope)GetValue(PrivateSharedSizeScopeProperty); }
+            get { return (SharedSizeScope?)GetValue(PrivateSharedSizeScopeProperty); }
         }
 
         /// <summary>
@@ -462,7 +462,7 @@ namespace Avalonia.Controls
         private double _sizeCache;                      //  cache used for various purposes (sorting, caching, etc) during calculations
         private double _offset;                         //  offset of the DefinitionBase from left / top corner (assuming LTR case)
 
-        private SharedSizeState _sharedState;           //  reference to shared state object this instance is registered with
+        private SharedSizeState? _sharedState;           //  reference to shared state object this instance is registered with
 
         [System.Flags]
         private enum Flags : byte
@@ -488,7 +488,7 @@ namespace Avalonia.Controls
                 //  check that sharedSizeGroup is not default
                 Debug.Assert(sharedSizeGroup != null);
 
-                SharedSizeState sharedState = _registry[sharedSizeGroup] as SharedSizeState;
+                SharedSizeState? sharedState = _registry[sharedSizeGroup] as SharedSizeState;
                 if (sharedState == null)
                 {
                     sharedState = new SharedSizeState(this, sharedSizeGroup);
@@ -567,7 +567,7 @@ namespace Avalonia.Controls
                 {
                     for (int i = 0, count = _registry.Count; i < count; ++i)
                     {
-                        Grid parentGrid = (Grid)(_registry[i].Parent);
+                        Grid parentGrid = (Grid)(_registry[i].Parent!);
                         parentGrid.Invalidate();
                     }
                     _broadcastInvalidation = false;
@@ -645,7 +645,7 @@ namespace Avalonia.Controls
             /// OnLayoutUpdated handler. Validates that all participating definitions
             /// have updated min size value. Forces another layout update cycle if needed.
             /// </summary>
-            private void OnLayoutUpdated(object sender, EventArgs e)
+            private void OnLayoutUpdated(object? sender, EventArgs e)
             {
                 double sharedMinSize = 0;
 
@@ -707,14 +707,14 @@ namespace Avalonia.Controls
 
                     if(!measureIsValid)
                     {
-                        definitionBase.Parent.InvalidateMeasure();
+                        definitionBase.Parent!.InvalidateMeasure();
                     }
                     else if (!MathUtilities.AreClose(sharedMinSize, definitionBase.SizeCache))
                     {
                         //  if measure is valid then also need to check arrange.
                         //  Note: definitionBase.SizeCache is volatile but at this point 
                         //  it contains up-to-date final size
-                        definitionBase.Parent.InvalidateArrange();
+                        definitionBase.Parent!.InvalidateArrange();
                     }
 
                     // now we can restore the invariant, and clear the layout flag
@@ -724,7 +724,7 @@ namespace Avalonia.Controls
 
                 _minSize = sharedMinSize;
 
-                _layoutUpdatedHost.LayoutUpdated -= _layoutUpdated;
+                _layoutUpdatedHost!.LayoutUpdated -= _layoutUpdated;
                 _layoutUpdatedHost = null;
 
                 _broadcastInvalidation = true;
@@ -743,7 +743,7 @@ namespace Avalonia.Controls
             private readonly EventHandler _layoutUpdated;
 
             //  Control for which layout updated event handler is registered
-            private Control _layoutUpdatedHost;
+            private Control? _layoutUpdatedHost;
 
             //  "true" when broadcasting of invalidation is needed
             private bool _broadcastInvalidation;
@@ -762,8 +762,8 @@ namespace Avalonia.Controls
         /// Private shared size scope property holds a collection of shared state objects for the a given shared size scope.
         /// <see cref="OnIsSharedSizeScopePropertyChanged"/>
         /// </summary>
-        internal static readonly AttachedProperty<SharedSizeScope> PrivateSharedSizeScopeProperty =
-            AvaloniaProperty.RegisterAttached<DefinitionBase, Control, SharedSizeScope>(
+        internal static readonly AttachedProperty<SharedSizeScope?> PrivateSharedSizeScopeProperty =
+            AvaloniaProperty.RegisterAttached<DefinitionBase, Control, SharedSizeScope?>(
                 "PrivateSharedSizeScope",
                 defaultValue: null,
                 inherits: true);

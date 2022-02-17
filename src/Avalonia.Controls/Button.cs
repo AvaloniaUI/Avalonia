@@ -42,21 +42,21 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<Button, ICommand> CommandProperty =
-            AvaloniaProperty.RegisterDirect<Button, ICommand>(nameof(Command),
+        public static readonly DirectProperty<Button, ICommand?> CommandProperty =
+            AvaloniaProperty.RegisterDirect<Button, ICommand?>(nameof(Command),
                 button => button.Command, (button, command) => button.Command = command, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
         /// </summary>
-        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
+        public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<Button>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> CommandParameterProperty =
-            AvaloniaProperty.Register<Button, object>(nameof(CommandParameter));
+        public static readonly StyledProperty<object?> CommandParameterProperty =
+            AvaloniaProperty.Register<Button, object?>(nameof(CommandParameter));
 
         /// <summary>
         /// Defines the <see cref="IsDefault"/> property.
@@ -85,12 +85,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Flyout"/> property
         /// </summary>
-        public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
-            AvaloniaProperty.Register<Button, FlyoutBase>(nameof(Flyout));
+        public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
+            AvaloniaProperty.Register<Button, FlyoutBase?>(nameof(Flyout));
 
-        private ICommand _command;
+        private ICommand? _command;
         private bool _commandCanExecute = true;
-        private KeyGesture _hotkey;
+        private KeyGesture? _hotkey;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -112,7 +112,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the user clicks the button.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Click
+        public event EventHandler<RoutedEventArgs>? Click
         {
             add => AddHandler(ClickEvent, value);
             remove => RemoveHandler(ClickEvent, value);
@@ -130,7 +130,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets an <see cref="ICommand"/> to be invoked when the button is clicked.
         /// </summary>
-        public ICommand Command
+        public ICommand? Command
         {
             get => _command;
             set => SetAndRaise(CommandProperty, ref _command, value);
@@ -139,7 +139,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets an <see cref="KeyGesture"/> associated with this control
         /// </summary>
-        public KeyGesture HotKey
+        public KeyGesture? HotKey
         {
             get => GetValue(HotKeyProperty);
             set => SetValue(HotKeyProperty, value);
@@ -148,7 +148,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a parameter to be passed to the <see cref="Command"/>.
         /// </summary>
-        public object CommandParameter
+        public object? CommandParameter
         {
             get => GetValue(CommandParameterProperty);
             set => SetValue(CommandParameterProperty, value);
@@ -186,7 +186,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the Flyout that should be shown with this button.
         /// </summary>
-        public FlyoutBase Flyout
+        public FlyoutBase? Flyout
         {
             get => GetValue(FlyoutProperty);
             set => SetValue(FlyoutProperty, value);
@@ -477,7 +477,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void CanExecuteChanged(object sender, EventArgs e)
+        private void CanExecuteChanged(object? sender, EventArgs e)
         {
             var canExecute = Command == null || Command.CanExecute(CommandParameter);
 
@@ -529,7 +529,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void RootDefaultKeyDown(object sender, KeyEventArgs e)
+        private void RootDefaultKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
@@ -542,7 +542,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void RootCancelKeyDown(object sender, KeyEventArgs e)
+        private void RootCancelKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape && IsVisible && IsEnabled)
             {

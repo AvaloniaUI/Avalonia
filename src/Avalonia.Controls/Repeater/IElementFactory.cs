@@ -12,13 +12,13 @@ namespace Avalonia.Controls
         /// Gets or sets the data item for which an appropriate element tree should be realized
         /// when calling <see cref="IElementFactory.GetElement"/>.
         /// </summary>
-        public object Data { get; set; }
+        public object? Data { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IControl"/> that is expected to be the parent of the
         /// realized element from <see cref="IElementFactory.GetElement"/>.
         /// </summary>
-        public IControl Parent { get; set; }
+        public IControl? Parent { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the item that should be realized.
@@ -36,13 +36,13 @@ namespace Avalonia.Controls
         /// Gets or sets the <see cref="IControl"/> to recycle when calling 
         /// <see cref="IElementFactory.RecycleElement"/>.
         /// </summary>
-        public IControl Element { get; set; }
+        public IControl? Element { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IControl"/> that is expected to be the parent of the
         /// realized element from <see cref="IElementFactory.GetElement"/>.
         /// </summary>
-        public IControl Parent { get; set; }
+        public IControl? Parent { get; set; }
     }
 
     /// <summary>

@@ -17,14 +17,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
-            AvaloniaProperty.Register<Border, IBrush>(nameof(Background));
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
+            AvaloniaProperty.Register<Border, IBrush?>(nameof(Background));
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BorderBrushProperty =
-            AvaloniaProperty.Register<Border, IBrush>(nameof(BorderBrush));
+        public static readonly StyledProperty<IBrush?> BorderBrushProperty =
+            AvaloniaProperty.Register<Border, IBrush?>(nameof(BorderBrush));
 
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
@@ -91,7 +91,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a brush with which to paint the background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -100,7 +100,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a brush with which to paint the border.
         /// </summary>
-        public IBrush BorderBrush
+        public IBrush? BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }

@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace Avalonia.Platform
 {
     public interface IWindowingPlatform

@@ -3,8 +3,6 @@ using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 
-#nullable enable
-
 namespace Avalonia.Controls.Shapes
 {
     /// <summary>
