@@ -254,16 +254,23 @@ namespace Avalonia.Controls
 
         private void OnFlyoutButtonClicked(object? sender, Interactivity.RoutedEventArgs e)
         {
-            _presenter!.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
+            if (_presenter == null)
+                throw new InvalidOperationException("No DatePickerPresenter found.");
+            if (_popup == null)
+                throw new InvalidOperationException("No Popup found.");
 
-            _popup!.IsOpen = true;
+            _presenter.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
+
+            _popup.PlacementMode = PlacementMode.AnchorAndGravity;
+            _popup.PlacementAnchor = Primitives.PopupPositioning.PopupAnchor.Bottom;
+            _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
+            _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
+            _popup.IsOpen = true;
 
             var deltaY = _presenter.GetOffsetForPopup();
 
             // The extra 5 px I think is related to default popup placement behavior
-            _popup.Host!.ConfigurePosition(_popup.PlacementTarget!, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
-                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
-                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
+            _popup.VerticalOffset = deltaY + 5;
         }
 
         private void OnDismissPicker(object? sender, EventArgs e)
