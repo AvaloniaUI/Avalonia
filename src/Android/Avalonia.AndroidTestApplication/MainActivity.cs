@@ -14,6 +14,8 @@ namespace Avalonia.AndroidTestApplication
     [Activity(Label = "Main",
         MainLauncher = true,
         Icon = "@drawable/icon",
+         Theme = "@style/Theme.AppCompat.NoActionBar",
+         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize,
         LaunchMode = LaunchMode.SingleInstance/*,
         ScreenOrientation = ScreenOrientation.Landscape*/)]
     public class MainBaseActivity : AvaloniaActivity
