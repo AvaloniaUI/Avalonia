@@ -503,8 +503,8 @@ namespace Avalonia.Controls.Presenters
             _textLayout = null;
             
             InvalidateArrange();
-
-            return TextLayout?.Bounds.Size ?? Size.Empty;
+            
+            return new Size(Math.Ceiling(TextLayout.Bounds.Width), Math.Ceiling(TextLayout.Bounds.Height));
         }
 
         protected override Size ArrangeOverride(Size finalSize)

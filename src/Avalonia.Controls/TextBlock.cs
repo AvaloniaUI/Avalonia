@@ -1,3 +1,4 @@
+using System;
 using System.Reactive.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -473,7 +474,12 @@ namespace Avalonia.Controls
             
             _textLayout = null;
 
-            var measuredSize = TextLayout?.Bounds.Size ?? Size.Empty;
+            var measuredSize = Size.Empty;
+
+            if (TextLayout != null)
+            {
+                return new Size(Math.Ceiling(TextLayout.Bounds.Width), Math.Ceiling(TextLayout.Bounds.Height));
+            }
 
             InvalidateArrange();
             
