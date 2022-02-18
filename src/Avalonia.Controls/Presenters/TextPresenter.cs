@@ -501,6 +501,8 @@ namespace Avalonia.Controls.Presenters
             _constraint = availableSize;
             
             _textLayout = null;
+            
+            InvalidateArrange();
 
             return TextLayout?.Bounds.Size ?? Size.Empty;
         }

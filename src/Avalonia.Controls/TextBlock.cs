@@ -475,6 +475,8 @@ namespace Avalonia.Controls
 
             var measuredSize = TextLayout?.Bounds.Size ?? Size.Empty;
 
+            InvalidateArrange();
+            
             return measuredSize.Inflate(padding);
         }
 
