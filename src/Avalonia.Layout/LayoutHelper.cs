@@ -123,7 +123,7 @@ namespace Avalonia.Layout
         /// </remarks>
         public static Size RoundLayoutSize(Size size, double dpiScaleX, double dpiScaleY)
         {
-            return new Size(RoundLayoutValue(size.Width, dpiScaleX), RoundLayoutValue(size.Height, dpiScaleY));
+            return new Size(RoundLayoutValueUp(size.Width, dpiScaleX), RoundLayoutValueUp(size.Height, dpiScaleY));
         }
 
         /// <summary>
@@ -145,7 +145,43 @@ namespace Avalonia.Layout
             // If DPI == 1, don't use DPI-aware rounding.
             if (!MathUtilities.IsOne(dpiScale))
             {
-                newValue = Math.Round(value * dpiScale) / dpiScale;
+                newValue = Math.Ceiling(value * dpiScale) / dpiScale;
+
+                // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue),
+                // use the original value.
+                if (double.IsNaN(newValue) ||
+                    double.IsInfinity(newValue) ||
+                    MathUtilities.AreClose(newValue, double.MaxValue))
+                {
+                    newValue = value;
+                }
+            }
+            else
+            {
+                newValue = Math.Ceiling(value);
+            }
+
+            return newValue;
+        }
+
+        /// <summary>
+        /// Calculates the value to be used for layout rounding at high DPI.
+        /// </summary>
+        /// <param name="value">Input value to be rounded.</param>
+        /// <param name="dpiScale">Ratio of screen's DPI to layout DPI</param>
+        /// <returns>Adjusted value that will produce layout rounding on screen at high dpi.</returns>
+        /// <remarks>
+        /// This is a layout helper method. It is similar to <see cref="RoundLayoutValue(double, double)"/>
+        /// except that it always rounds the layout value up.
+        /// </remarks>
+        public static double RoundLayoutValueUp(double value, double dpiScale)
+        {
+            double newValue;
+
+            // If DPI == 1, don't use DPI-aware rounding.
+            if (!MathUtilities.IsOne(dpiScale))
+            {
+                newValue = Math.Ceiling(value * dpiScale) / dpiScale;
 
                 // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue),
                 // use the original value.
@@ -163,7 +199,6 @@ namespace Avalonia.Layout
 
             return newValue;
         }
-
 
         /// <summary>
         /// Calculates the min and max height for a control. Ported from WPF.
