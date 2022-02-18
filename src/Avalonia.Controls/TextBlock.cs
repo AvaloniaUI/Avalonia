@@ -471,28 +471,19 @@ namespace Avalonia.Controls
             var padding = Padding;
             
             _constraint = availableSize.Deflate(padding);
-            
             _textLayout = null;
-
-            var measuredSize = Size.Empty;
-
-            if (TextLayout != null)
-            {
-                measuredSize = new Size(Math.Ceiling(TextLayout.Bounds.Width), Math.Ceiling(TextLayout.Bounds.Height));
-            }
-
-            InvalidateArrange();
-            
-            return measuredSize.Inflate(padding);
+            return (TextLayout?.Bounds.Size ?? default).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            _constraint = finalSize;
-                
-            _textLayout = null;
+            if (_constraint != finalSize)
+            {
+                _constraint = finalSize;
+                _textLayout = null;
+            }
 
-            return finalSize;
+            return TextLayout?.Bounds.Size ?? default;
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
