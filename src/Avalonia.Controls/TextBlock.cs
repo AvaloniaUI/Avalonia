@@ -478,7 +478,7 @@ namespace Avalonia.Controls
 
             if (TextLayout != null)
             {
-                return new Size(Math.Ceiling(TextLayout.Bounds.Width), Math.Ceiling(TextLayout.Bounds.Height));
+                measuredSize = new Size(Math.Ceiling(TextLayout.Bounds.Width), Math.Ceiling(TextLayout.Bounds.Height));
             }
 
             InvalidateArrange();
