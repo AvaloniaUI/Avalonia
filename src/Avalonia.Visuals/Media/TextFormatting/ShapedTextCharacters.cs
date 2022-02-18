@@ -154,8 +154,6 @@ namespace Avalonia.Media.TextFormatting
 
             if (first.Text.Length != length)
             {
-                Debugger.Break();
-                
                 throw new InvalidOperationException("Split length mismatch.");
             }
             
