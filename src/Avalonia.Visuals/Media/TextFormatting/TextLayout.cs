@@ -629,7 +629,7 @@ namespace Avalonia.Media.TextFormatting
                 UpdateBounds(emptyTextLine,ref left, ref width, ref height);
             }
 
-            Bounds = new Rect(left, 0, width, height);
+            Bounds = new Rect(Math.Ceiling(left), 0, Math.Ceiling(width), Math.Ceiling(height));
 
             return textLines;
         }
