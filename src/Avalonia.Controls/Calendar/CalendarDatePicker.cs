@@ -185,7 +185,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
                 o => o.SelectedDate,
-                (o, v) => o.SelectedDate = v);
+                (o, v) => o.SelectedDate = v,
+                enableDataValidation: true, 
+                defaultBindingMode:BindingMode.TwoWay);
 
         public static readonly StyledProperty<CalendarDatePickerFormat> SelectedDateFormatProperty =
             AvaloniaProperty.Register<CalendarDatePicker, CalendarDatePickerFormat>(
