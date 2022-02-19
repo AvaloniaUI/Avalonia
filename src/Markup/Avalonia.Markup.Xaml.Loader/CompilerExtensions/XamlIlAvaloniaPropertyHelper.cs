@@ -257,24 +257,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public override void Emit(IXamlILEmitter emitter)
             {
-                var method = Types.AvaloniaObject
-                    .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
-                                     && m.Parameters.Count == 3
-                                     && m.Parameters[0].Name == "StyledPropertyBase`1"
-                                     && m.Parameters[2].Equals(Types.BindingPriority));
+                /*
+                  Current stack:
+                   - object
+                   - binding priority
+                   - value
+                */
 
-                if (method == null)
-                    throw new XamlTypeSystemException(
-                        $"Unable to find AvaloniaObject.SetValue<T>(StyledPropertyBase<T>, T, BindingPriority).");
+                var method = Types.AvaloniaObjectSetStyledPropertyValue
+                    .MakeGenericMethod(new[] { Parameters[1] });
 
-                method = method.MakeGenericMethod(new[] { Parameters[1] });
-
-                using (var bloc = emitter.LocalsPool.GetLocal(Parameters[1]))
+                using (var valueLocal = emitter.LocalsPool.GetLocal(Parameters[1]))
+                using (var priorityLocal = emitter.LocalsPool.GetLocal(Types.Int))
                     emitter
-                        .Stloc(bloc.Local)
+                        .Stloc(valueLocal.Local)
+                        .Stloc(priorityLocal.Local)
                         .Ldsfld(AvaloniaProperty)
-                        .Ldloc(bloc.Local)
-                        .Ldc_I4(0)
+                        .Ldloc(valueLocal.Local)
+                        .Ldloc(priorityLocal.Local)
                         .EmitCall(method, true);
             }
         }

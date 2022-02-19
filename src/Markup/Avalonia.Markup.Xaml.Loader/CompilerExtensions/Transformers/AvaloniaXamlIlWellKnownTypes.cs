@@ -16,6 +16,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType AvaloniaProperty { get; }
         public IXamlType AvaloniaPropertyT { get; }
         public IXamlType StyledPropertyT { get; }
+        public IXamlMethod AvaloniaObjectSetStyledPropertyValue { get; }
         public IXamlType AvaloniaAttachedPropertyT { get; }
         public IXamlType IBinding { get; }
         public IXamlMethod AvaloniaObjectBindMethod { get; }
@@ -98,6 +99,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             StyledPropertyT = cfg.TypeSystem.GetType("Avalonia.StyledProperty`1");
             AvaloniaAttachedPropertyT = cfg.TypeSystem.GetType("Avalonia.AttachedProperty`1");
             BindingPriority = cfg.TypeSystem.GetType("Avalonia.Data.BindingPriority");
+            AvaloniaObjectSetStyledPropertyValue = AvaloniaObject
+                .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
+                                 && m.Parameters.Count == 3
+                                 && m.Parameters[0].Name == "StyledPropertyBase`1"
+                                 && m.Parameters[2].Equals(BindingPriority));
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
             Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");

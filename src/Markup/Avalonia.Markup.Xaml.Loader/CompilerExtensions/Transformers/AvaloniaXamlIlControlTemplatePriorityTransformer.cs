@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Data;
 using XamlX.Ast;
 using XamlX.Transform;
 
@@ -19,9 +21,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 // If there are any setters which accept a binding priority, then add the Style
                 // binding priority as a value.
-                if (avaloniaProperty.Setters.Any(x => x.Parameters[0] == bindingPriorityType))
+                var setPriorityValueSetter =
+                    avaloniaProperty.Setters.FirstOrDefault(x => x.Parameters[0] == bindingPriorityType);
+                
+                if(setPriorityValueSetter != null 
+                   && prop.Values.Count == 1
+                   && setPriorityValueSetter.Parameters[1].IsAssignableFrom(prop.Values[0].Type.GetClrType()))
                 {
-                    prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, 1));
+                    prop.PossibleSetters = new List<IXamlPropertySetter> { setPriorityValueSetter };
+                    prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, (int)BindingPriority.Style));
                 }
             }
 
