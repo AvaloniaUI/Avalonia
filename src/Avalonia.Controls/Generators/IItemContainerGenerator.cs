@@ -97,6 +97,6 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="container">The container.</param>
         /// <returns>The index of the container, or -1 if not found.</returns>
-        int IndexFromContainer(IControl container);
+        int IndexFromContainer(IControl? container);
     }
 }
