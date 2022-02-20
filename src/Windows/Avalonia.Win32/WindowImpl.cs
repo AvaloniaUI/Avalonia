@@ -228,7 +228,7 @@ namespace Avalonia.Win32
                     return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
                 }
 
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf<RECT>());
                 return new Size(rect.Width, rect.Height) / RenderScaling;
             }
         }
@@ -265,7 +265,7 @@ namespace Avalonia.Win32
             {
                 if (IsWindowVisible(_hwnd))
                 {
-                    ShowWindow(value, true);
+                    ShowWindow(value, value != WindowState.Minimized); // If the window is minimized, it shouldn't be activated
                 }
 
                 _showWindowState = value;                
@@ -337,7 +337,7 @@ namespace Avalonia.Win32
         private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
         {
             var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf(accent);
+            var accentStructSize = Marshal.SizeOf<AccentPolicy>();
 
             if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
             {
@@ -392,7 +392,7 @@ namespace Avalonia.Win32
                 bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
                 var accent = new AccentPolicy();
-                var accentStructSize = Marshal.SizeOf(accent);
+                var accentStructSize = Marshal.SizeOf<AccentPolicy>();
 
                 if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
                 {
@@ -974,7 +974,7 @@ namespace Avalonia.Win32
             {
                 case WindowState.Minimized:
                     newWindowProperties.IsFullScreen = false;
-                    command = activate ? ShowWindowCommand.Minimize : ShowWindowCommand.ShowMinNoActive;
+                    command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
                     newWindowProperties.IsFullScreen = false;

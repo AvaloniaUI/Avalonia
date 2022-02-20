@@ -158,7 +158,7 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public int IndexFromContainer(IControl container)
+        public int IndexFromContainer(IControl? container)
         {
             foreach (var i in _containers)
             {

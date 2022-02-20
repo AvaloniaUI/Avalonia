@@ -560,7 +560,7 @@ namespace Avalonia.Controls.Primitives
 
         public bool BringIntoView(IControl target, Rect targetRect) { return false; }
 
-        public IControl? GetControlInDirection(NavigationDirection direction, IControl from) { return null; }
+        public IControl? GetControlInDirection(NavigationDirection direction, IControl? from) { return null; }
 
         public void RaiseScrollInvalidated(EventArgs e)
         {

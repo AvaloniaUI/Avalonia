@@ -79,7 +79,7 @@ namespace Avalonia.Controls
         /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
         /// </summary>
         public new ITreeItemContainerGenerator ItemContainerGenerator =>
-            (ITreeItemContainerGenerator)base.ItemContainerGenerator!;
+            (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically scroll to newly selected items.

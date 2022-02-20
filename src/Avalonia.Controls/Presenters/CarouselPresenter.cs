@@ -170,7 +170,7 @@ namespace Avalonia.Controls.Presenters
         {
             if (fromIndex != toIndex)
             {
-                var generator = ItemContainerGenerator!;
+                var generator = ItemContainerGenerator;
                 IControl? from = null;
                 IControl? to = null;
 

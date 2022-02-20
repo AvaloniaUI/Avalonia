@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -210,10 +211,10 @@ namespace Avalonia.Media.TextFormatting
                 switch (textAlignment)
                 {
                     case TextAlignment.Center:
-                        return (paragraphWidth - width) / 2;
+                        return Math.Max(0, (paragraphWidth - width) / 2);
 
                     case TextAlignment.Right:
-                        return paragraphWidth - widthIncludingTrailingWhitespace;
+                        return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
 
                     default:
                         return 0;
@@ -223,13 +224,13 @@ namespace Avalonia.Media.TextFormatting
             switch (textAlignment)
             {
                 case TextAlignment.Center:
-                    return (paragraphWidth - width) / 2;
+                    return Math.Max(0, (paragraphWidth - width) / 2);
 
                 case TextAlignment.Right:
                     return 0;
 
                 default:
-                    return paragraphWidth - widthIncludingTrailingWhitespace;
+                    return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
             }
         }
     }

@@ -862,7 +862,7 @@ namespace Avalonia.Win32.Interop
 
             public void Init()
             {
-                biSize = (uint)Marshal.SizeOf(this);
+                biSize = (uint)sizeof(BITMAPINFOHEADER);
             }
         }
 
@@ -1521,7 +1521,7 @@ namespace Avalonia.Win32.Interop
         internal static Version RtlGetVersion()
         {
             RTL_OSVERSIONINFOEX v = new RTL_OSVERSIONINFOEX();
-            v.dwOSVersionInfoSize = (uint)Marshal.SizeOf(v);
+            v.dwOSVersionInfoSize = (uint)Marshal.SizeOf<RTL_OSVERSIONINFOEX>();
             if (RtlGetVersion(ref v) == 0)
             {
                 return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber);
@@ -1914,7 +1914,7 @@ namespace Avalonia.Win32.Interop
                 get
                 {
                     WINDOWPLACEMENT result = new WINDOWPLACEMENT();
-                    result.Length = Marshal.SizeOf(result);
+                    result.Length = Marshal.SizeOf<WINDOWPLACEMENT>();
                     return result;
                 }
             }

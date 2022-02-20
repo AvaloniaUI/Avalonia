@@ -22,8 +22,8 @@
       <TabItem Header="Border">
         <pages:BorderPage />
       </TabItem>
-      <TabItem Header="Button">
-        <pages:ButtonPage />
+      <TabItem Header="Buttons">
+        <pages:ButtonsPage />
       </TabItem>
       <TabItem Header="ButtonSpinner">
         <pages:ButtonSpinnerPage />

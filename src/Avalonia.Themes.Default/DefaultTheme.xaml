@@ -38,6 +38,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TabItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TextBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToggleButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TransitioningContentControl.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Expander.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TitleBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TreeView.xaml"/>
@@ -57,6 +58,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/NotificationCard.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/NativeMenuBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToggleSwitch.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/SplitButton.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/SplitView.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/DatePicker.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TimePicker.xaml"/>

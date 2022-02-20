@@ -35,10 +35,10 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
         public TextLayout(
-            string text,
+            string? text,
             Typeface typeface,
             double fontSize,
-            IBrush foreground,
+            IBrush? foreground,
             TextAlignment textAlignment = TextAlignment.Left,
             TextWrapping textWrapping = TextWrapping.NoWrap,
             TextTrimming textTrimming = TextTrimming.None,
@@ -194,6 +194,7 @@ namespace Avalonia.Media.TextFormatting
             
             var currentY = 0d;
             var currentPosition = 0;
+            var currentRect = Rect.Empty;
 
             foreach (var textLine in TextLines)
             {
@@ -209,7 +210,10 @@ namespace Avalonia.Media.TextFormatting
                 //The whole line is covered.
                 if (currentPosition >= start && start + length > currentPosition + textLine.TextRange.Length)
                 {
-                    result.Add(new Rect(textLine.Start, currentY, textLine.WidthIncludingTrailingWhitespace, textLine.Height));
+                    currentRect = new Rect(textLine.Start, currentY, textLine.WidthIncludingTrailingWhitespace,
+                        textLine.Height);
+                    
+                    result.Add(currentRect);
                     
                     currentY += textLine.Height;
                     currentPosition += textLine.TextRange.Length;
@@ -317,13 +321,23 @@ namespace Avalonia.Media.TextFormatting
 
                     var width = endX - startX;
 
-                    result.Add(new Rect(startX, currentY, width, textLine.Height));
-
+                    if (result.Count > 0 && MathUtilities.AreClose(currentRect.Top, currentY) &&
+                        MathUtilities.AreClose(currentRect.Right, startX))
+                    {
+                        result[result.Count - 1] = currentRect.WithWidth(currentRect.Width + width);
+                    }
+                    else
+                    {
+                        currentRect = new Rect(startX, currentY, width, textLine.Height);
+                        
+                        result.Add(currentRect);
+                    }
+                    
                     if (currentRun.ShapedBuffer.IsLeftToRight)
                     {
                         if (nextRun != null)
                         {
-                            if (nextRun.Text.Start > currentRun.Text.Start)
+                            if (nextRun.Text.Start > currentRun.Text.Start && nextRun.Text.Start >= start + length)
                             {
                                 break;
                             }
@@ -397,7 +411,7 @@ namespace Avalonia.Media.TextFormatting
                 return new TextHitTestResult();
             }
 
-            characterHit = currentLine.GetNextCaretCharacterHit(new CharacterHit(currentLine.TextRange.End));
+            characterHit = currentLine.GetCharacterHitFromDistance(point.X);
 
             return GetHitTestResult(currentLine, characterHit, point);
         }
@@ -424,7 +438,7 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.End + (trailingEdge ? 1 : 0))
+                if (charIndex >= textLine.TextRange.Start && charIndex <= textLine.TextRange.End + (trailingEdge ? 1 : 0))
                 {
                     return index;
                 }
@@ -478,7 +492,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="lineHeight">The height of each line of text.</param>
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
-            IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping,
+            IBrush? foreground, TextAlignment textAlignment, TextWrapping textWrapping,
             TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight)
         {
             var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
