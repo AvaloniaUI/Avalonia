@@ -190,7 +190,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             if (!original.CustomAttributes.Any(ca => ca.Type.Equals(types.AssignBindingAttribute)))
                 Setters.Insert(0, new BindingSetter(types, original.DeclaringType, field));
 
-            if (field.FieldType.GenericTypeDefinition == types.StyledPropertyT)
+            // Styled and attached properties can be set with a BindingPriority when they're
+            // assigned in a ControlTemplate.
+            if (field.FieldType.GenericTypeDefinition == types.StyledPropertyT ||
+                field.FieldType.GenericTypeDefinition == types.AvaloniaAttachedPropertyT)
             {
                 var propertyType = field.FieldType.GenericArguments[0];
                 Setters.Insert(1, new SetValueWithPrioritySetter(types, original.DeclaringType, field, propertyType));

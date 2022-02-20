@@ -15,12 +15,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             var bindingPriorityType = context.GetAvaloniaTypes().BindingPriority;
 
+            // The node is a candidate for transformation if:
+            // - It's a property assignment to an Avalonia property
+            // - There's a ControlTemplate ancestor
+            // - There's just a direct call setter available
             if (node is XamlPropertyAssignmentNode prop &&
                 prop.Property is XamlIlAvaloniaProperty avaloniaProperty &&
-                context.ParentNodes().Any(IsControlTemplate))
+                context.ParentNodes().Any(IsControlTemplate) &&
+                prop.PossibleSetters.Count == 1 &&
+                prop.PossibleSetters[0] is XamlDirectCallPropertySetter)
             {
-                // If there are any setters which accept a binding priority, then add the Style
-                // binding priority as a value.
+                // Check if there are any setters on the property which accept a binding priority -
+                // this filters the candidates down to styled and attached properties. If so, then
+                // use this setter with BindingPriority.Style.
                 var setPriorityValueSetter =
                     avaloniaProperty.Setters.FirstOrDefault(x => x.Parameters[0] == bindingPriorityType);
                 
@@ -30,6 +37,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 {
                     prop.PossibleSetters = new List<IXamlPropertySetter> { setPriorityValueSetter };
                     prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, (int)BindingPriority.Style));
+                    return node;
                 }
             }
 

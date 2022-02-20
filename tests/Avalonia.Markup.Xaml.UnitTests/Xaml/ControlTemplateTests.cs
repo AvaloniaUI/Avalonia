@@ -12,7 +12,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     public class ControlTemplateTests : XamlTestBase
     {
         [Fact]
-        public void Inline_ControlTemplate_Values_Are_Set_With_Style_Priority()
+        public void Inline_ControlTemplate_Styled_Values_Are_Set_With_Style_Priority()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -43,7 +43,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_ControlTemplate_Values_Are_Set_With_Style_Priority()
+        public void Style_ControlTemplate_Styled_Values_Are_Set_With_Style_Priority()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -73,6 +73,68 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
                 Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+            }
+        }
+
+        [Fact]
+        public void ControlTemplate_Attached_Values_Are_Set_With_Style_Priority()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Button>
+        <Button.Template>
+            <ControlTemplate>
+                <ContentPresenter Name='PART_ContentPresenter'
+                                  DockPanel.Dock='Top'/>
+            </ControlTemplate>
+        </Button.Template>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = (Button)window.Content;
+
+                window.ApplyTemplate();
+                button.ApplyTemplate();
+
+                var presenter = (ContentPresenter)button.Presenter;
+                Assert.Equal(Dock.Top, DockPanel.GetDock(presenter));
+
+                var diagnostic = presenter.GetDiagnostic(DockPanel.DockProperty);
+                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+            }
+        }
+
+        [Fact]
+        public void ControlTemplate_TemplateBindings_Are_Set_With_TemplatedParent_Priority()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Button Content='Foo'>
+        <Button.Template>
+            <ControlTemplate>
+                <ContentPresenter Name='PART_ContentPresenter'
+                                  Content='{TemplateBinding Content}'/>
+            </ControlTemplate>
+        </Button.Template>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = (Button)window.Content;
+
+                window.ApplyTemplate();
+                button.ApplyTemplate();
+
+                var presenter = (ContentPresenter)button.Presenter;
+                Assert.Equal("Foo", presenter.Content);
+
+                var diagnostic = presenter.GetDiagnostic(ContentPresenter.ContentProperty);
+                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
             }
         }
 
