@@ -108,6 +108,74 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void ControlTemplate_StaticResources_Are_Set_With_Style_Priority()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <SolidColorBrush x:Key='red'>Red</SolidColorBrush>
+    </Window.Resources>
+    <Button Content='Foo'>
+        <Button.Template>
+            <ControlTemplate>
+                <ContentPresenter Name='PART_ContentPresenter'
+                                  Background='{StaticResource red}'/>
+            </ControlTemplate>
+        </Button.Template>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = (Button)window.Content;
+
+                window.ApplyTemplate();
+                button.ApplyTemplate();
+
+                var presenter = (ContentPresenter)button.Presenter;
+                Assert.Equal(Brushes.Red, presenter.Background);
+
+                var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
+                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+            }
+        }
+
+        [Fact]
+        public void ControlTemplate_DynamicResources_Are_Set_With_Style_Priority()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <SolidColorBrush x:Key='red'>Red</SolidColorBrush>
+    </Window.Resources>
+    <Button Content='Foo'>
+        <Button.Template>
+            <ControlTemplate>
+                <ContentPresenter Name='PART_ContentPresenter'
+                                  Background='{DynamicResource red}'/>
+            </ControlTemplate>
+        </Button.Template>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = (Button)window.Content;
+
+                window.ApplyTemplate();
+                button.ApplyTemplate();
+
+                var presenter = (ContentPresenter)button.Presenter;
+                Assert.Equal(Brushes.Red, presenter.Background);
+
+                var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
+                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+            }
+        }
+
+        [Fact]
         public void ControlTemplate_TemplateBindings_Are_Set_With_TemplatedParent_Priority()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
