@@ -9,7 +9,7 @@ using Avalonia.Input;
 
 namespace Avalonia.Android
 {
-    class SoftKeyboardListner : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
+    class SoftKeyboardListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
     {
         private const int DefaultKeyboardHeightDP = 100;
         private static readonly int EstimatedKeyboardDP = DefaultKeyboardHeightDP + (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop ? 48 : 0);
@@ -17,7 +17,7 @@ namespace Avalonia.Android
         private readonly View _host;
         private bool _wasKeyboard;
 
-        public SoftKeyboardListner(View view)
+        public SoftKeyboardListener(View view)
         {
             _host = view;
         }
