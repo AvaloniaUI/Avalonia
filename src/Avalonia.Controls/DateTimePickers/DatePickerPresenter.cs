@@ -537,8 +537,11 @@ namespace Avalonia.Controls
 
         internal double GetOffsetForPopup()
         {
+            if (_monthSelector is null)
+                return 0;
+
             var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
-            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_monthSelector!.ItemHeight / 2);
+            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_monthSelector.ItemHeight / 2);
         }
     }
 }
