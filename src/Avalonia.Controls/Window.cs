@@ -258,7 +258,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets a collection of child windows owned by this window.
         /// </summary>
-        public IReadOnlyList<Window> ChildWindows => _children.Select(x => x.child).ToList();
+        public IReadOnlyList<Window> OwnedWindows => _children.Select(x => x.child).ToList();
 
         /// <summary>
         /// Gets or sets a value indicating how the window will size itself to fit its content.
