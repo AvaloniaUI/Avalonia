@@ -185,9 +185,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             AvaloniaXamlIlWellKnownTypes types)
             :base(original, original.Name, original.DeclaringType, original.Getter, original.Setters)
         {
+            var assignBinding = original.CustomAttributes.Any(ca => ca.Type.Equals(types.AssignBindingAttribute));
+
             AvaloniaProperty = field;
             CustomAttributes = original.CustomAttributes;
-            if (!original.CustomAttributes.Any(ca => ca.Type.Equals(types.AssignBindingAttribute)))
+            if (!assignBinding)
                 Setters.Insert(0, new BindingSetter(types, original.DeclaringType, field));
 
             // Styled and attached properties can be set with a BindingPriority when they're
@@ -196,7 +198,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 field.FieldType.GenericTypeDefinition == types.AvaloniaAttachedPropertyT)
             {
                 var propertyType = field.FieldType.GenericArguments[0];
-                Setters.Insert(1, new SetValueWithPrioritySetter(types, original.DeclaringType, field, propertyType));
+                Setters.Insert(0, new SetValueWithPrioritySetter(types, original.DeclaringType, field, propertyType));
+                if (!assignBinding)
+                    Setters.Insert(1, new BindingWithPrioritySetter(types, original.DeclaringType, field));
             }
 
             Setters.Insert(0, new UnsetValueSetter(types, original.DeclaringType, field));
@@ -241,6 +245,30 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 using (var bloc = emitter.LocalsPool.GetLocal(Types.IBinding))
                     emitter
                         .Stloc(bloc.Local)
+                        .Ldsfld(AvaloniaProperty)
+                        .Ldloc(bloc.Local)
+                        // TODO: provide anchor?
+                        .Ldnull();
+                emitter.EmitCall(Types.AvaloniaObjectBindMethod, true);
+            }
+        }
+
+        class BindingWithPrioritySetter : AvaloniaPropertyCustomSetter
+        {
+            public BindingWithPrioritySetter(AvaloniaXamlIlWellKnownTypes types,
+                IXamlType declaringType,
+                IXamlField avaloniaProperty) : base(types, declaringType, avaloniaProperty)
+            {
+                Parameters = new[] { types.BindingPriority, types.IBinding };
+            }
+
+            public override void Emit(IXamlILEmitter emitter)
+            {
+                using (var bloc = emitter.LocalsPool.GetLocal(Types.IBinding))
+                using (var priorityLocal = emitter.LocalsPool.GetLocal(Types.Int))
+                    emitter
+                        .Stloc(bloc.Local)
+                        .Stloc(priorityLocal.Local)
                         .Ldsfld(AvaloniaProperty)
                         .Ldloc(bloc.Local)
                         // TODO: provide anchor?

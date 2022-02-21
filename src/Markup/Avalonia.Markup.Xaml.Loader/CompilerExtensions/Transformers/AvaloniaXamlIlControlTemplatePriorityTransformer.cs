@@ -18,26 +18,31 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             // The node is a candidate for transformation if:
             // - It's a property assignment to an Avalonia property
             // - There's a ControlTemplate ancestor
-            // - There's just a direct call setter available
+            // - The property has a single value
             if (node is XamlPropertyAssignmentNode prop &&
                 prop.Property is XamlIlAvaloniaProperty avaloniaProperty &&
                 context.ParentNodes().Any(IsControlTemplate) &&
-                prop.PossibleSetters.Count == 1 &&
-                prop.PossibleSetters[0] is XamlDirectCallPropertySetter)
+                prop.Values.Count == 1)
             {
-                // Check if there are any setters on the property which accept a binding priority -
-                // this filters the candidates down to styled and attached properties. If so, then
-                // use this setter with BindingPriority.Style.
-                var setPriorityValueSetter =
-                    avaloniaProperty.Setters.FirstOrDefault(x => x.Parameters[0] == bindingPriorityType);
-                
-                if(setPriorityValueSetter != null 
-                   && prop.Values.Count == 1
-                   && setPriorityValueSetter.Parameters[1].IsAssignableFrom(prop.Values[0].Type.GetClrType()))
+                var priorityValueSetters = new List<IXamlPropertySetter>();
+
+                // Iterate through the possible setters, trying to find a setter on the property 
+                // which has a BindingPriority parameter followed by the parameter of the existing
+                // setter.
+                foreach (var setter in prop.PossibleSetters)
                 {
-                    prop.PossibleSetters = new List<IXamlPropertySetter> { setPriorityValueSetter };
+                    var s = avaloniaProperty.Setters.FirstOrDefault(x => 
+                        x.Parameters[0] == bindingPriorityType &&
+                        x.Parameters[1] == setter.Parameters[0]);
+                    if (s != null)
+                        priorityValueSetters.Add(s);
+                }
+
+                // If any BindingPriority setters were found, use those.
+                if (priorityValueSetters.Count > 0)
+                {
+                    prop.PossibleSetters = priorityValueSetters;
                     prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, (int)BindingPriority.Style));
-                    return node;
                 }
             }
 
