@@ -151,7 +151,7 @@ namespace Avalonia.Native
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
 
-        protected unsafe class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
+        protected unsafe class WindowBaseEvents : NativeCallbackBase, IAvnWindowBaseEvents
         {
             private readonly WindowBaseImpl _parent;
 

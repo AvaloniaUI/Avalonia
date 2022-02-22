@@ -20,7 +20,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime{T}(T, string[], ShutdownMode)"/>
         /// method.
         /// </summary>
-        string[] Args { get; }
+        string[]? Args { get; }
         
         /// <summary>
         /// Gets or sets the <see cref="ShutdownMode"/>. This property indicates whether the application is shutdown explicitly or implicitly. 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <value>
         /// The main window.
         /// </value>
-        Window MainWindow { get; set; }
+        Window? MainWindow { get; set; }
         
         IReadOnlyList<Window> Windows { get; }
 
@@ -58,6 +58,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// will try to close each non-owned open window, invoking the <see cref="Window.Closing"/> event on each and allowing
         /// each window to cancel the shutdown of the application. Windows cannot however prevent OS shutdown.
         /// </remarks>
-        event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
     }
 }

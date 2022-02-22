@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Utils
         /// <summary>
         /// The SelectingItemsControl instance.
         /// </summary>
-        private SelectingItemsControl _selector;
+        private SelectingItemsControl? _selector;
 
         /// <summary>
         /// Gets or sets a value indicating whether the selection change event 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.Utils
         /// <value>The underlying
         /// <see cref="T:Avalonia.Controls.Primitives.SelectingItemsControl" />
         /// control.</value>
-        public SelectingItemsControl SelectorControl
+        public SelectingItemsControl? SelectorControl
         {
             get { return _selector; }
 
@@ -65,19 +65,19 @@ namespace Avalonia.Controls.Utils
         /// <see cref="P:Avalonia.Controls.Utils.SelectingItemsControlSelectionAdapter.SelectedItem" />
         /// property value changes.
         /// </summary>
-        public event EventHandler<SelectionChangedEventArgs> SelectionChanged;
+        public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
 
         /// <summary>
         /// Occurs when an item is selected and is committed to the underlying
         /// <see cref="T:Avalonia.Controls.Primitives.SelectingItemsControl" />
         /// control.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Commit;
+        public event EventHandler<RoutedEventArgs>? Commit;
 
         /// <summary>
         /// Occurs when a selection is canceled before it is committed.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Cancel;
+        public event EventHandler<RoutedEventArgs>? Cancel;
 
         /// <summary>
         /// Initializes a new instance of the
@@ -109,7 +109,7 @@ namespace Avalonia.Controls.Utils
         /// Gets or sets the selected item of the selection adapter.
         /// </summary>
         /// <value>The selected item of the underlying selection adapter.</value>
-        public object SelectedItem
+        public object? SelectedItem
         {
             get
             {
@@ -140,7 +140,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <value>The collection used to generate content for the selection
         /// adapter.</value>
-        public IEnumerable Items
+        public IEnumerable? Items
         {
             get
             {
@@ -163,7 +163,7 @@ namespace Avalonia.Controls.Utils
         {
             if (SelectorControl != null)
             {
-                ScrollViewer sv = SelectorControl.GetLogicalDescendants().OfType<ScrollViewer>().FirstOrDefault();
+                var sv = SelectorControl.GetLogicalDescendants().OfType<ScrollViewer>().FirstOrDefault();
                 if (sv != null)
                 {
                     sv.Offset = new Vector(0, 0);
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="sender">The source object.</param>
         /// <param name="e">The event data.</param>
-        private void OnSelectorPointerReleased(object sender, PointerReleasedEventArgs e)
+        private void OnSelectorPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             if (e.InitialPressMouseButton == MouseButton.Left)
             {
@@ -189,7 +189,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="sender">The source object.</param>
         /// <param name="e">The selection changed event data.</param>
-        private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (IgnoringSelectionChanged)
             {
@@ -293,7 +293,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="sender">The source object.</param>
         /// <param name="e">The event data.</param>
-        private void OnCommit(object sender, RoutedEventArgs e)
+        private void OnCommit(object? sender, RoutedEventArgs e)
         {
             Commit?.Invoke(sender, e);
 
@@ -315,7 +315,7 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <param name="sender">The source object.</param>
         /// <param name="e">The event data.</param>
-        private void OnCancel(object sender, RoutedEventArgs e)
+        private void OnCancel(object? sender, RoutedEventArgs e)
         {
             Cancel?.Invoke(sender, e);
 

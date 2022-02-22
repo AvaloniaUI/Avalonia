@@ -22,10 +22,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod AvaloniaObjectBindMethod { get; }
         public IXamlMethod AvaloniaObjectSetValueMethod { get; }
         public IXamlType IDisposable { get; }
+        public IXamlType ICommand { get; }
         public XamlTypeWellKnownTypes XamlIlTypes { get; }
         public XamlLanguageTypeMappings XamlIlMappings { get; }
         public IXamlType Transitions { get; }
         public IXamlType AssignBindingAttribute { get; }
+        public IXamlType DependsOnAttribute { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
         public IXamlType IStyledElement { get; }
@@ -87,6 +89,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IBrush { get; }
         public IXamlType ImmutableSolidColorBrush { get; }
         public IXamlConstructor ImmutableSolidColorBrushConstructorColor { get; }
+        public IXamlType TypeUtilities { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -106,8 +109,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                  && m.Parameters[2].Equals(BindingPriority));
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
+            ICommand = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");
             Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");
             AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
+            DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
@@ -195,6 +200,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IBrush = cfg.TypeSystem.GetType("Avalonia.Media.IBrush");
             ImmutableSolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.Immutable.ImmutableSolidColorBrush");
             ImmutableSolidColorBrushConstructorColor = ImmutableSolidColorBrush.GetConstructor(new List<IXamlType> { UInt });
+            TypeUtilities = cfg.TypeSystem.GetType("Avalonia.Utilities.TypeUtilities");
         }
     }
 

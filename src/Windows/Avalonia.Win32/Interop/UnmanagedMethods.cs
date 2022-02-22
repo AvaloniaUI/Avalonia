@@ -862,7 +862,7 @@ namespace Avalonia.Win32.Interop
 
             public void Init()
             {
-                biSize = (uint)Marshal.SizeOf(this);
+                biSize = (uint)sizeof(BITMAPINFOHEADER);
             }
         }
 
@@ -1277,10 +1277,10 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
 
         [DllImport("ole32.dll", PreserveSig = false)]
-        public static extern int OleGetClipboard(out IOleDataObject dataObject);
+        public static extern int OleGetClipboard(out IntPtr dataObject);
 
         [DllImport("ole32.dll", PreserveSig = true)]
-        public static extern int OleSetClipboard(IOleDataObject dataObject);
+        public static extern int OleSetClipboard(IntPtr dataObject);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
@@ -1424,7 +1424,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count); 
         
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IDropTarget target);
+        public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IntPtr target);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern HRESULT RevokeDragDrop(IntPtr hwnd);
@@ -1448,7 +1448,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
+        internal static extern void DoDragDrop(IntPtr dataObject, IntPtr dropSource, int allowedEffects, [Out] out int finalEffect);
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
@@ -1521,7 +1521,7 @@ namespace Avalonia.Win32.Interop
         internal static Version RtlGetVersion()
         {
             RTL_OSVERSIONINFOEX v = new RTL_OSVERSIONINFOEX();
-            v.dwOSVersionInfoSize = (uint)Marshal.SizeOf(v);
+            v.dwOSVersionInfoSize = (uint)Marshal.SizeOf<RTL_OSVERSIONINFOEX>();
             if (RtlGetVersion(ref v) == 0)
             {
                 return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber);
@@ -1914,7 +1914,7 @@ namespace Avalonia.Win32.Interop
                 get
                 {
                     WINDOWPLACEMENT result = new WINDOWPLACEMENT();
-                    result.Length = Marshal.SizeOf(result);
+                    result.Length = Marshal.SizeOf<WINDOWPLACEMENT>();
                     return result;
                 }
             }
@@ -2064,64 +2064,6 @@ namespace Avalonia.Win32.Interop
         }
     }
 
-    [Flags]
-    internal enum DropEffect : int
-    {
-        None = 0,
-        Copy = 1,
-        Move = 2,
-        Link = 4,
-        Scroll = -2147483648,
-    }
-
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("00000122-0000-0000-C000-000000000046")]
-    internal interface IDropTarget
-    {
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragEnter([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragOver([MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragLeave();
-        [PreserveSig]
-        UnmanagedMethods.HRESULT Drop([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-    }
-
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("00000121-0000-0000-C000-000000000046")]
-    internal interface IDropSource
-    {
-        [PreserveSig]
-        int QueryContinueDrag(int fEscapePressed, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState);
-        [PreserveSig]
-        int GiveFeedback([MarshalAs(UnmanagedType.U4)] [In] int dwEffect);
-    }
-
-
-    [ComImport]
-    [Guid("0000010E-0000-0000-C000-000000000046")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IOleDataObject
-    {
-        void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
-        void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);
-        [PreserveSig]
-        int QueryGetData([In] ref FORMATETC format);
-        [PreserveSig]
-        int GetCanonicalFormatEtc([In] ref FORMATETC formatIn, out FORMATETC formatOut);
-        void SetData([In] ref FORMATETC formatIn, [In] ref STGMEDIUM medium, [MarshalAs(UnmanagedType.Bool)] bool release);
-        IEnumFORMATETC EnumFormatEtc(DATADIR direction);
-        [PreserveSig]
-        int DAdvise([In] ref FORMATETC pFormatetc, ADVF advf, IAdviseSink adviseSink, out int connection);
-        void DUnadvise(int connection);
-        [PreserveSig]
-        int EnumDAdvise(out IEnumSTATDATA enumAdvise);
-    }
-
-
     [StructLayoutAttribute(LayoutKind.Sequential)]
     internal struct _DROPFILES
     {
@@ -2130,6 +2072,24 @@ namespace Avalonia.Win32.Interop
         public Int32 Y;
         public bool fNC;
         public bool fWide;
+    }
+
+    [StructLayoutAttribute(LayoutKind.Sequential)]
+    internal struct STGMEDIUM
+    {
+        public TYMED tymed;
+        public IntPtr unionmember;
+        public IntPtr pUnkForRelease;
+    }
+
+    [StructLayoutAttribute(LayoutKind.Sequential)]
+    internal struct FORMATETC
+    {
+        public ushort cfFormat;
+        public IntPtr ptd;
+        public DVASPECT dwAspect;
+        public int lindex;
+        public TYMED tymed;
     }
 
     [Flags]

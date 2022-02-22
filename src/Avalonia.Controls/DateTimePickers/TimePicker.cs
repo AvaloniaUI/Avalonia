@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Layout;
 using System;
 using System.Globalization;
 
@@ -49,18 +50,18 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay);
 
         // Template Items
-        private TimePickerPresenter _presenter;
-        private Button _flyoutButton;
-        private Border _firstPickerHost;
-        private Border _secondPickerHost;
-        private Border _thirdPickerHost;
-        private TextBlock _hourText;
-        private TextBlock _minuteText;
-        private TextBlock _periodText;
-        private Rectangle _firstSplitter;
-        private Rectangle _secondSplitter;
-        private Grid _contentGrid;
-        private Popup _popup;
+        private TimePickerPresenter? _presenter;
+        private Button? _flyoutButton;
+        private Border? _firstPickerHost;
+        private Border? _secondPickerHost;
+        private Border? _thirdPickerHost;
+        private TextBlock? _hourText;
+        private TextBlock? _minuteText;
+        private TextBlock? _periodText;
+        private Rectangle? _firstSplitter;
+        private Rectangle? _secondSplitter;
+        private Grid? _contentGrid;
+        private Popup? _popup;
 
         private TimeSpan? _selectedTime;
         private int _minuteIncrement = 1;
@@ -142,7 +143,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the <see cref="SelectedTime"/> property changes
         /// </summary>
-        public event EventHandler<TimePickerSelectedValueChangedEventArgs> SelectedTimeChanged;
+        public event EventHandler<TimePickerSelectedValueChangedEventArgs>? SelectedTimeChanged;
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -200,15 +201,15 @@ namespace Avalonia.Controls
             var columnsD = use24HourClock ? "*, Auto, *" : "*, Auto, *, Auto, *";
             _contentGrid.ColumnDefinitions = new ColumnDefinitions(columnsD);
 
-            _thirdPickerHost.IsVisible = !use24HourClock;
-            _secondSplitter.IsVisible = !use24HourClock;
+            _thirdPickerHost!.IsVisible = !use24HourClock;
+            _secondSplitter!.IsVisible = !use24HourClock;
 
-            Grid.SetColumn(_firstPickerHost, 0);
-            Grid.SetColumn(_secondPickerHost, 2);
+            Grid.SetColumn(_firstPickerHost!, 0);
+            Grid.SetColumn(_secondPickerHost!, 2);
 
             Grid.SetColumn(_thirdPickerHost, use24HourClock ? 0 : 4);
 
-            Grid.SetColumn(_firstSplitter, 1);
+            Grid.SetColumn(_firstSplitter!, 1);
             Grid.SetColumn(_secondSplitter, use24HourClock ? 0 : 3);
         }
 
@@ -220,7 +221,7 @@ namespace Avalonia.Controls
             var time = SelectedTime;
             if (time.HasValue)
             {
-                var newTime = SelectedTime.Value;
+                var newTime = SelectedTime!.Value;
 
                 if (ClockIdentifier == "12HourClock")
                 {
@@ -252,30 +253,42 @@ namespace Avalonia.Controls
             SelectedTimeChanged?.Invoke(this, new TimePickerSelectedValueChangedEventArgs(oldTime, newTime));
         }
 
-        private void OnFlyoutButtonClicked(object sender, Interactivity.RoutedEventArgs e)
+        private void OnFlyoutButtonClicked(object? sender, Interactivity.RoutedEventArgs e)
         {
+            if (_presenter == null)
+                throw new InvalidOperationException("No DatePickerPresenter found.");
+            if (_popup == null)
+                throw new InvalidOperationException("No Popup found.");
+
             _presenter.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
 
+            _popup.PlacementMode = PlacementMode.AnchorAndGravity;
+            _popup.PlacementAnchor = Primitives.PopupPositioning.PopupAnchor.Bottom;
+            _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
+            _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             _popup.IsOpen = true;
+
+            // Overlay popup hosts won't get measured until the next layout pass, but we need the
+            // template to be applied to `_presenter` now. Detect this case and force a layout pass.
+            if (!_presenter.IsMeasureValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 
             // The extra 5 px I think is related to default popup placement behavior
-            _popup.Host.ConfigurePosition(_popup.PlacementTarget, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
-                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
-                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
+            _popup.VerticalOffset = deltaY + 5;
         }
 
-        private void OnDismissPicker(object sender, EventArgs e)
+        private void OnDismissPicker(object? sender, EventArgs e)
         {
-            _popup.Close();
+            _popup!.Close();
             Focus();
         }
 
-        private void OnConfirmed(object sender, EventArgs e)
+        private void OnConfirmed(object? sender, EventArgs e)
         {
-            _popup.Close();
-            SelectedTime = _presenter.Time;
+            _popup!.Close();
+            SelectedTime = _presenter!.Time;
         }
     }
 }

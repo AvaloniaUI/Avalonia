@@ -1,6 +1,3 @@
-variables:
-    MSBuildEnableWorkloadResolver: 'false'
-
 jobs:
 
 - job: GetPRNumber
@@ -145,6 +142,12 @@ jobs:
     displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
       version: 6.0.100
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install android
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

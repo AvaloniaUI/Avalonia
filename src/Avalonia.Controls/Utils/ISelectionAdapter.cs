@@ -21,14 +21,14 @@ namespace Avalonia.Controls.Utils
         /// Gets or sets the selected item.
         /// </summary>
         /// <value>The currently selected item.</value>
-        object SelectedItem { get; set; }
+        object? SelectedItem { get; set; }
 
         /// <summary>
         /// Occurs when the
         /// <see cref="P:Avalonia.Controls.Utils.ISelectionAdapter.SelectedItem" />
         /// property value changes.
         /// </summary>
-        event EventHandler<SelectionChangedEventArgs> SelectionChanged;
+        event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
         
         /// <summary>
         /// Gets or sets a collection that is used to generate content for the
@@ -36,18 +36,18 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         /// <value>The collection that is used to generate content for the
         /// selection adapter.</value>
-        IEnumerable Items { get; set; }
+        IEnumerable? Items { get; set; }
 
         /// <summary>
         /// Occurs when a selected item is not cancelled and is committed as the
         /// selected item.
         /// </summary>
-        event EventHandler<RoutedEventArgs> Commit;
+        event EventHandler<RoutedEventArgs>? Commit;
 
         /// <summary>
         /// Occurs when a selection has been canceled.
         /// </summary>
-        event EventHandler<RoutedEventArgs> Cancel;
+        event EventHandler<RoutedEventArgs>? Cancel;
 
         /// <summary>
         /// Provides handling for the
