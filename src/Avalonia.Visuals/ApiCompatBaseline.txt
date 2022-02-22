@@ -114,6 +114,7 @@ CannotAddAbstractMembers : Member 'public Avalonia.Media.BaselineAlignment Avalo
 MembersMustExist : Member 'public Avalonia.Media.GlyphRun Avalonia.Media.TextFormatting.TextShaper.ShapeText(Avalonia.Utilities.ReadOnlySlice<System.Char>, Avalonia.Media.Typeface, System.Double, System.Globalization.CultureInfo)' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Media.TextFormatting.Unicode.BiDiClass' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.Media.TextFormatting.Unicode.BiDiClass Avalonia.Media.TextFormatting.Unicode.Codepoint.BiDiClass.get()' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Platform.ExportRenderingSubsystemAttribute' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.DrawEllipse(Avalonia.Media.IBrush, Avalonia.Media.IPen, Avalonia.Rect)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.DrawText(Avalonia.Media.IBrush, Avalonia.Point, Avalonia.Platform.IFormattedTextImpl)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Platform.IDrawingContextImpl.DrawText(Avalonia.Media.IBrush, Avalonia.Point, Avalonia.Platform.IFormattedTextImpl)' does not exist in the implementation but it does exist in the contract.
@@ -145,4 +146,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Media.GlyphR
 MembersMustExist : Member 'public Avalonia.Media.GlyphRun Avalonia.Platform.ITextShaperImpl.ShapeText(Avalonia.Utilities.ReadOnlySlice<System.Char>, Avalonia.Media.Typeface, System.Double, System.Globalization.CultureInfo)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'protected void Avalonia.Rendering.RendererBase.RenderFps(Avalonia.Platform.IDrawingContextImpl, Avalonia.Rect, System.Nullable<System.Int32>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Utilities.ReadOnlySlice<T>..ctor(System.ReadOnlyMemory<T>, System.Int32, System.Int32)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 146
+Total Issues: 147
