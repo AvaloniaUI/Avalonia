@@ -27,7 +27,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public IBinding ProvideValue(IServiceProvider serviceProvider)
         {
             if (serviceProvider.IsInControlTemplate())
-                _priority = BindingPriority.Style;
+                _priority = BindingPriority.TemplatedParent;
 
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 

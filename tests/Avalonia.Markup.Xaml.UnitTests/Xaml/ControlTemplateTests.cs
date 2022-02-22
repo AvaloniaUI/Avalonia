@@ -38,7 +38,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
             }
         }
 
@@ -72,7 +72,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
             }
         }
 
@@ -103,7 +103,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Dock.Top, DockPanel.GetDock(presenter));
 
                 var diagnostic = presenter.GetDiagnostic(DockPanel.DockProperty);
-                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
             }
         }
 
@@ -137,7 +137,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
             }
         }
 
@@ -171,7 +171,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.Style, diagnostic.Priority);
+                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
             }
         }
 
