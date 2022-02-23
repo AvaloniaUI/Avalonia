@@ -112,7 +112,13 @@ namespace Avalonia.Media.TextFormatting
             var collapsedLength = 0;
 
             var shapedSymbol = TextFormatterImpl.CreateSymbol(collapsingProperties.Symbol, _paragraphProperties.FlowDirection);
-
+            
+            if (collapsingProperties.Width < shapedSymbol.GlyphRun.Size.Width)
+            {
+                return new TextLineImpl(new List<ShapedTextCharacters>(0), textRange, _paragraphWidth, _paragraphProperties,
+                    _flowDirection, TextLineBreak, true);
+            }
+            
             var availableWidth = collapsingProperties.Width - shapedSymbol.GlyphRun.Size.Width;
 
             while (runIndex < _textRuns.Count)
@@ -155,17 +161,18 @@ namespace Avalonia.Media.TextFormatting
 
                     collapsedLength += measuredLength;
 
-                    var splitResult = TextFormatterImpl.SplitShapedRuns(_textRuns, collapsedLength);
+                    var shapedTextCharacters = new List<ShapedTextCharacters>(_textRuns.Count);
+                    
+                    if (collapsedLength > 0)
+                    {
+                        var splitResult = TextFormatterImpl.SplitShapedRuns(_textRuns, collapsedLength);
+                    
+                        shapedTextCharacters.AddRange(splitResult.First);
 
-                    var shapedTextCharacters = new List<ShapedTextCharacters>(splitResult.First.Count + 1);
-
-                    shapedTextCharacters.AddRange(splitResult.First);
-
-                    SortRuns(shapedTextCharacters);
+                        SortRuns(shapedTextCharacters);
+                    }
 
                     shapedTextCharacters.Add(shapedSymbol);
-
-                    textRange = new TextRange(textRange.Start, collapsedLength);
 
                     var textLine = new TextLineImpl(shapedTextCharacters, textRange, _paragraphWidth, _paragraphProperties,
                         _flowDirection, TextLineBreak, true);

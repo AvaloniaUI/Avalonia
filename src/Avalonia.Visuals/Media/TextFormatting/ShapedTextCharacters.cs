@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -138,16 +139,13 @@ namespace Avalonia.Media.TextFormatting
                 Reverse();
             }
 
+#if DEBUG
             if(length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
-
-            if(length == ShapedBuffer.Length)
-            {
-                return new SplitResult<ShapedTextCharacters>(this, null);
-            }
-
+#endif
+            
             var splitBuffer = ShapedBuffer.Split(length);
 
             var first = new ShapedTextCharacters(splitBuffer.First, Properties);

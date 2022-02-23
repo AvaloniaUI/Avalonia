@@ -310,7 +310,7 @@ namespace Avalonia.Controls.Presenters
             var top = 0d;
             var left = 0.0;
 
-            var (_, textHeight) = TextLayout.Size;
+            var textHeight = TextLayout.Bounds.Height;
 
             if (Bounds.Height < textHeight)
             {
@@ -498,25 +498,31 @@ namespace Avalonia.Controls.Presenters
         
         protected override Size MeasureOverride(Size availableSize)
         {
-            _textLayout = null;
-
             _constraint = availableSize;
+            
+            _textLayout = null;
+            
+            InvalidateArrange();
+            
+            var scale = LayoutHelper.GetLayoutScale(this);
 
-            return TextLayout.Size;
+            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, scale);
+
+            return new Size(measuredSize.Width, measuredSize.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (!double.IsInfinity(_constraint.Width))
+            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
             {
-                return base.ArrangeOverride(finalSize);
+                return finalSize;
             }
             
             _constraint = finalSize;
-            
+                
             _textLayout = null;
 
-            return base.ArrangeOverride(finalSize); 
+            return finalSize;
         }
 
         private int CoerceCaretIndex(int value)
@@ -615,11 +621,11 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
+        public CharacterHit GetNextCharacterHit(LogicalDirection direction = LogicalDirection.Forward)
         {
             if (Text is null)
             {
-                return;
+                return default;
             }
             
             if (FlowDirection == FlowDirection.RightToLeft)
@@ -636,7 +642,7 @@ namespace Avalonia.Controls.Presenters
 
             if (lineIndex < 0)
             {
-                return;
+                return default;
             }
 
             if (direction == LogicalDirection.Forward)
@@ -696,6 +702,13 @@ namespace Avalonia.Controls.Presenters
                     break;
                 }
             }
+
+            return characterHit;
+        }
+        
+        public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
+        {
+            var characterHit = GetNextCharacterHit(direction);
 
             UpdateCaret(characterHit);
 

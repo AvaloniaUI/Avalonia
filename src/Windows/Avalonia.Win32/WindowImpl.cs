@@ -529,6 +529,7 @@ namespace Avalonia.Win32
             if (_dropTarget != null)
             {
                 OleContext.Current?.UnregisterDragDrop(Handle);
+                _dropTarget.Dispose();
                 _dropTarget = null;
             }
 

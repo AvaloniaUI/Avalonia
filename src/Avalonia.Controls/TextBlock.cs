@@ -1,9 +1,11 @@
+using System;
 using System.Reactive.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 using Avalonia.Layout;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -146,7 +148,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout? TextLayout
+        public TextLayout TextLayout
         {
             get
             {
@@ -399,25 +401,20 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            if (TextLayout is null)
-            {
-                return;
-            }
-            
             var padding = Padding;
             var top = padding.Top;
-            var textSize = TextLayout.Size;
+            var textHeight = TextLayout.Bounds.Height;
 
-            if (Bounds.Height < textSize.Height)
+            if (Bounds.Height < textHeight)
             {
                 switch (VerticalAlignment)
                 {
                     case VerticalAlignment.Center:
-                        top += (Bounds.Height - textSize.Height) / 2;
+                        top += (Bounds.Height - textHeight) / 2;
                         break;
 
                     case VerticalAlignment.Bottom:
-                        top += (Bounds.Height - textSize.Height);
+                        top += (Bounds.Height - textHeight);
                         break;
                 }
             }
@@ -431,13 +428,8 @@ namespace Avalonia.Controls
         /// <param name="constraint">The constraint of the text.</param>
         /// <param name="text">The text to format.</param>
         /// <returns>A <see cref="TextLayout"/> object.</returns>
-        protected virtual TextLayout? CreateTextLayout(Size constraint, string? text)
+        protected virtual TextLayout CreateTextLayout(Size constraint, string? text)
         {
-            if (constraint == Size.Empty)
-            {
-                return null;
-            }
-
             return new TextLayout(
                 text ?? string.Empty,
                 new Typeface(FontFamily, FontStyle, FontWeight),
@@ -464,32 +456,35 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size for the control.</param>
-        /// <returns>The desired size.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (string.IsNullOrEmpty(Text))
-            {
-                return new Size();
-            }
-
             var padding = Padding;
+            
+            _constraint = availableSize.Deflate(padding);
+            
+            _textLayout = null;
 
-            availableSize = availableSize.Deflate(padding);
+            InvalidateArrange();
+            
+            var scale = LayoutHelper.GetLayoutScale(this);
 
-            if (_constraint != availableSize)
+            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, scale);
+
+            return new Size(measuredSize.Width, measuredSize.Height).Inflate(padding);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
             {
-                _constraint = availableSize;
-
-                InvalidateTextLayout();
+                return finalSize;
             }
+            
+            _constraint = finalSize;
+            
+            _textLayout = null;
 
-            var measuredSize = TextLayout?.Size ?? Size.Empty;
-
-            return measuredSize.Inflate(padding);
+            return finalSize;
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
