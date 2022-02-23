@@ -105,17 +105,12 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The split result.</returns>
         internal SplitResult<ShapedBuffer> Split(int length)
         {
-            var glyphCount = FindGlyphIndex(Text.Start + length);
-
             if (Text.Length == length)
             {
                 return new SplitResult<ShapedBuffer>(this, null);
             }
 
-            if (Text.Length == glyphCount)
-            {
-                return new SplitResult<ShapedBuffer>(this, null);
-            }
+            var glyphCount = FindGlyphIndex(Text.Start + length);
 
             var first = new ShapedBuffer(Text.Take(length), GlyphInfos.Take(glyphCount), GlyphTypeface, FontRenderingEmSize, BidiLevel);
 

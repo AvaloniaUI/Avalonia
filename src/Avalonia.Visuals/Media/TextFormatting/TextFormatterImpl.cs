@@ -369,7 +369,9 @@ namespace Avalonia.Media.TextFormatting
 
                     if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
                     {
-                        return lastCluster - textRange.Start;
+                        var measuredLength = lastCluster - textRange.Start;
+
+                        return measuredLength == 0 ? 1 : measuredLength;
                     }
 
                     lastCluster = glyphInfo.GlyphCluster;
@@ -394,7 +396,7 @@ namespace Avalonia.Media.TextFormatting
             double paragraphWidth, TextParagraphProperties paragraphProperties, FlowDirection flowDirection,
             TextLineBreak? currentLineBreak)
         {
-            var measuredLength = MeasureLength(textRuns, textRange, paragraphWidth);        
+            var measuredLength = MeasureLength(textRuns, textRange, paragraphWidth);
 
             var currentLength = 0;
 
@@ -504,11 +506,6 @@ namespace Avalonia.Media.TextFormatting
                 measuredLength = currentPosition;
 
                 break;
-            }
-
-            if (measuredLength == 0)
-            {
-                measuredLength = 1;
             }
 
             var splitResult = SplitShapedRuns(textRuns, measuredLength);
