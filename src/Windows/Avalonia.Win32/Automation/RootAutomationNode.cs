@@ -22,8 +22,8 @@ namespace Avalonia.Win32.Automation
 
         public override IRawElementProviderFragmentRoot? FragmentRoot => this;
         public new IRootProvider Peer { get; }
-        public IWindowImpl? WindowImpl => Peer.PlatformImpl as IWindowImpl;
-        
+        public IWindowBaseImpl? WindowImpl => Peer.PlatformImpl as IWindowBaseImpl;
+
         public IRawElementProviderFragment? ElementProviderFromPoint(double x, double y)
         {
             if (WindowImpl is null)
