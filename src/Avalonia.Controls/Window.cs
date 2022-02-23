@@ -256,6 +256,11 @@ namespace Avalonia.Controls
         public new IWindowImpl? PlatformImpl => (IWindowImpl?)base.PlatformImpl;
 
         /// <summary>
+        /// Gets a collection of child windows owned by this window.
+        /// </summary>
+        public IReadOnlyList<Window> OwnedWindows => _children.Select(x => x.child).ToList();
+
+        /// <summary>
         /// Gets or sets a value indicating how the window will size itself to fit its content.
         /// </summary>
         /// <remarks>
