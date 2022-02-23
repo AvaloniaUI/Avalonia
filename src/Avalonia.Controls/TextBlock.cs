@@ -68,6 +68,15 @@ namespace Avalonia.Controls
                 defaultValue: FontWeight.Normal);
 
         /// <summary>
+        /// Defines the <see cref="FontStretch"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FontStretch> FontStretchProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, FontStretch>(
+                nameof(FontStretch),
+                inherits: true,
+                defaultValue: FontStretch.Normal);
+        
+        /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly AttachedProperty<IBrush?> ForegroundProperty =
@@ -248,6 +257,15 @@ namespace Avalonia.Controls
             get { return GetValue(FontWeightProperty); }
             set { SetValue(FontWeightProperty, value); }
         }
+        
+        /// <summary>
+        /// Gets or sets the font stretch.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get { return GetValue(FontStretchProperty); }
+            set { SetValue(FontStretchProperty, value); }
+        }
 
         /// <summary>
         /// Gets or sets a brush used to paint the text.
@@ -326,7 +344,7 @@ namespace Avalonia.Controls
         /// Gets the value of the attached <see cref="FontSizeProperty"/> on a control.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <returns>The font family.</returns>
+        /// <returns>The font size.</returns>
         public static double GetFontSize(Control control)
         {
             return control.GetValue(FontSizeProperty);
@@ -336,7 +354,7 @@ namespace Avalonia.Controls
         /// Gets the value of the attached <see cref="FontStyleProperty"/> on a control.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <returns>The font family.</returns>
+        /// <returns>The font style.</returns>
         public static FontStyle GetFontStyle(Control control)
         {
             return control.GetValue(FontStyleProperty);
@@ -346,10 +364,20 @@ namespace Avalonia.Controls
         /// Gets the value of the attached <see cref="FontWeightProperty"/> on a control.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <returns>The font family.</returns>
+        /// <returns>The font weight.</returns>
         public static FontWeight GetFontWeight(Control control)
         {
             return control.GetValue(FontWeightProperty);
+        }
+        
+        /// <summary>
+        /// Gets the value of the attached <see cref="FontStretchProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The font stretch.</returns>
+        public static FontStretch GetFontStretch(Control control)
+        {
+            return control.GetValue(FontStretchProperty);
         }
 
         /// <summary>
@@ -367,7 +395,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
-        /// <returns>The font family.</returns>
         public static void SetFontFamily(Control control, FontFamily value)
         {
             control.SetValue(FontFamilyProperty, value);
@@ -378,7 +405,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
-        /// <returns>The font family.</returns>
         public static void SetFontSize(Control control, double value)
         {
             control.SetValue(FontSizeProperty, value);
@@ -389,7 +415,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
-        /// <returns>The font family.</returns>
         public static void SetFontStyle(Control control, FontStyle value)
         {
             control.SetValue(FontStyleProperty, value);
@@ -400,10 +425,19 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
-        /// <returns>The font family.</returns>
         public static void SetFontWeight(Control control, FontWeight value)
         {
             control.SetValue(FontWeightProperty, value);
+        }
+        
+        /// <summary>
+        /// Sets the value of the attached <see cref="FontStretchProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFontStretch(Control control, FontStretch value)
+        {
+            control.SetValue(FontStretchProperty, value);
         }
 
         /// <summary>
@@ -411,7 +445,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
-        /// <returns>The font family.</returns>
         public static void SetForeground(Control control, IBrush? value)
         {
             control.SetValue(ForegroundProperty, value);
@@ -478,7 +511,7 @@ namespace Avalonia.Controls
 
             return new TextLayout(
                 text ?? string.Empty,
-                new Typeface(FontFamily, FontStyle, FontWeight),
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
                 FontSize,
                 Foreground ?? Brushes.Transparent,
                 TextAlignment,

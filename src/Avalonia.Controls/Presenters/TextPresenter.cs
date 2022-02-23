@@ -153,6 +153,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the font stretch.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get => TextBlock.GetFontStretch(this);
+            set => TextBlock.SetFontStretch(this, value);
+        }
+
+        /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
         public IBrush? Foreground
