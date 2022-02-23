@@ -14,3 +14,4 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Templates")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Notifications")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Chrome")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Documents")]

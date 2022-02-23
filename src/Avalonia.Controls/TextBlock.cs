@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Text;
+using Avalonia.Controls.Documents;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -100,6 +103,14 @@ namespace Avalonia.Controls
                 (o, v) => o.Text = v);
 
         /// <summary>
+        /// Defines the <see cref="Inlines"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TextBlock, InlineCollection> InlinesProperty =
+            AvaloniaProperty.RegisterDirect<TextBlock, InlineCollection>(
+                nameof(Inlines),
+                o => o.Inlines);
+
+        /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
@@ -123,7 +134,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
             AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
 
-        private string? _text;
         private TextLayout? _textLayout;
         private Size _constraint;
 
@@ -142,7 +152,9 @@ namespace Avalonia.Controls
         /// </summary>
         public TextBlock()
         {
-            _text = string.Empty;
+            Inlines = new InlineCollection(this);
+
+            Inlines.Invalidated += InlinesChanged;
         }
 
         /// <summary>
@@ -177,12 +189,29 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
-        [Content]
         public string? Text
         {
-            get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            get => Inlines.Text;
+            set
+            {
+                var old = Text;
+
+                if (value == old)
+                {
+                    return;
+                }
+
+                Inlines.Text = value;
+
+                RaisePropertyChanged(TextProperty, old, value);
+            }
         }
+
+        /// <summary>
+        /// Gets or sets the inlines.
+        /// </summary>
+        [Content]
+        public InlineCollection Inlines { get; }
 
         /// <summary>
         /// Gets or sets the font family.
@@ -430,6 +459,23 @@ namespace Avalonia.Controls
         /// <returns>A <see cref="TextLayout"/> object.</returns>
         protected virtual TextLayout CreateTextLayout(Size constraint, string? text)
         {
+            List<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+
+            if (Inlines.HasComplexContent)
+            {
+                textStyleOverrides = new List<ValueSpan<TextRunProperties>>(Inlines.Count);
+
+                var textPosition = 0;
+                var stringBuilder = new StringBuilder();
+
+                foreach (var inline in Inlines)
+                {
+                    textPosition += inline.BuildRun(stringBuilder, textStyleOverrides, textPosition);
+                }
+
+                text = stringBuilder.ToString();
+            }
+
             return new TextLayout(
                 text ?? string.Empty,
                 new Typeface(FontFamily, FontStyle, FontWeight),
@@ -443,7 +489,8 @@ namespace Avalonia.Controls
                 constraint.Width,
                 constraint.Height,
                 maxLines: MaxLines,
-                lineHeight: LineHeight);
+                lineHeight: LineHeight,
+                textStyleOverrides: textStyleOverrides);
         }
 
         /// <summary>
@@ -458,6 +505,11 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (!Inlines.HasComplexContent && string.IsNullOrEmpty(Text))
+            {
+                return new Size();
+            }
+
             var padding = Padding;
             
             _constraint = availableSize.Deflate(padding);
@@ -519,6 +571,11 @@ namespace Avalonia.Controls
                     break;
                 }
             }
+        }
+
+ 		private void InlinesChanged(object? sender, EventArgs e)
+        {
+            InvalidateTextLayout();
         }
     }
 }

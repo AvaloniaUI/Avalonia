@@ -79,14 +79,12 @@ namespace Avalonia.Media.TextFormatting
                     if(TryGetShapeableLength(text, previousTypeface.Value, out var fallbackCount, out _))
                     {
                         return new ShapeableTextCharacters(text.Take(fallbackCount),
-                            new GenericTextRunProperties(previousTypeface.Value, defaultProperties.FontRenderingEmSize,
-                                defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                            defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                     }
                 }
 
-                return new ShapeableTextCharacters(text.Take(count),
-                    new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                        defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                    biDiLevel);
             }
             
             if (previousTypeface is not null)
@@ -94,8 +92,7 @@ namespace Avalonia.Media.TextFormatting
                 if(TryGetShapeableLength(text, previousTypeface.Value, out count, out _))
                 {
                     return new ShapeableTextCharacters(text.Take(count),
-                        new GenericTextRunProperties(previousTypeface.Value, defaultProperties.FontRenderingEmSize,
-                            defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                        defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                 }
             }
 
@@ -123,9 +120,8 @@ namespace Avalonia.Media.TextFormatting
             if (matchFound && TryGetShapeableLength(text, currentTypeface, out count, out _))
             {
                 //Fallback found
-                return new ShapeableTextCharacters(text.Take(count),
-                    new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                    biDiLevel);
             }
 
             // no fallback found
@@ -147,9 +143,7 @@ namespace Avalonia.Media.TextFormatting
                 count += grapheme.Text.Length;
             }
 
-            return new ShapeableTextCharacters(text.Take(count),
-                new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+            return new ShapeableTextCharacters(text.Take(count), defaultProperties, biDiLevel);
         }
 
         /// <summary>
