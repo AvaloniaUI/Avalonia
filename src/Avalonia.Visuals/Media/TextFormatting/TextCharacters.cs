@@ -118,7 +118,8 @@ namespace Avalonia.Media.TextFormatting
             //ToDo: Fix FontFamily fallback
             var matchFound =
                 FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
-                    defaultTypeface.FontFamily, defaultProperties.CultureInfo, out currentTypeface);
+                    defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
+                    out currentTypeface);
 
             if (matchFound && TryGetShapeableLength(text, currentTypeface, out count, out _))
             {
