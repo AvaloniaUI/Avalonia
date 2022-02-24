@@ -147,7 +147,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android
+       dotnet workload install android ios
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

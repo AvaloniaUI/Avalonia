@@ -1,11 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <ProvisioningType>manual</ProvisioningType>
     <TargetFramework>net6.0-ios</TargetFramework>
-    <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <!-- temporal workaround for our GL interface backend -->
+    <UseInterpreter>True</UseInterpreter>
+    <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
+<!--    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>-->
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <!-- temporarily work around https://github.com/mono/SkiaSharp/issues/1879 -->
+  <Target Name="_HarfBuzzSharpExpandNativeReferencesFixes" BeforeTargets="_ExpandNativeReferences">
+  </Target>
 </Project>
