@@ -1,8 +1,6 @@
 ﻿using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class ItemsControlAutomationPeer : ControlAutomationPeer, IScrollProvider

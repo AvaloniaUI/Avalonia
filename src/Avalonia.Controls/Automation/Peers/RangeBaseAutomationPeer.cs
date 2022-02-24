@@ -1,8 +1,6 @@
 using Avalonia.Automation.Provider;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public abstract class RangeBaseAutomationPeer : ControlAutomationPeer, IRangeValueProvider
@@ -23,7 +21,7 @@ namespace Avalonia.Automation.Peers
         
         public void SetValue(double value) => Owner.Value = value;
 
-        protected virtual void OwnerPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        protected virtual void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == RangeBase.MinimumProperty)
                 RaisePropertyChangedEvent(RangeValuePatternIdentifiers.MinimumProperty, e.OldValue, e.NewValue);

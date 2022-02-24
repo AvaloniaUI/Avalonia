@@ -6,8 +6,6 @@ using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class WindowBaseAutomationPeer : ControlAutomationPeer, IRootProvider
@@ -20,7 +18,7 @@ namespace Avalonia.Automation.Peers
         }
 
         public new WindowBase Owner => (WindowBase)base.Owner;
-        public ITopLevelImpl PlatformImpl => Owner.PlatformImpl;
+        public ITopLevelImpl? PlatformImpl => Owner.PlatformImpl;
 
         public event EventHandler? FocusChanged;
 
@@ -39,13 +37,17 @@ namespace Avalonia.Automation.Peers
 
         protected void StartTrackingFocus()
         {
-            KeyboardDevice.Instance.PropertyChanged += KeyboardDevicePropertyChanged;
-            OnFocusChanged(KeyboardDevice.Instance.FocusedElement);
+            if (KeyboardDevice.Instance is not null)
+            {
+                KeyboardDevice.Instance.PropertyChanged += KeyboardDevicePropertyChanged;
+                OnFocusChanged(KeyboardDevice.Instance.FocusedElement);
+            }
         }
 
         protected void StopTrackingFocus()
         {
-            KeyboardDevice.Instance.PropertyChanged -= KeyboardDevicePropertyChanged;
+            if (KeyboardDevice.Instance is not null)
+                KeyboardDevice.Instance.PropertyChanged -= KeyboardDevicePropertyChanged;
         }
 
         private void OnFocusChanged(IInputElement? focus)
@@ -63,11 +65,11 @@ namespace Avalonia.Automation.Peers
             }
         }
 
-        private void KeyboardDevicePropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void KeyboardDevicePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(KeyboardDevice.FocusedElement))
             {
-                OnFocusChanged(KeyboardDevice.Instance.FocusedElement);
+                OnFocusChanged(KeyboardDevice.Instance!.FocusedElement);
             }
         }
     }

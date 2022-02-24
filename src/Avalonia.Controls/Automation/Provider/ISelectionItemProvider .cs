@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Automation.Provider
+﻿namespace Avalonia.Automation.Provider
 {
     /// <summary>
     /// Exposes methods and properties to support access by a UI Automation client to individual,

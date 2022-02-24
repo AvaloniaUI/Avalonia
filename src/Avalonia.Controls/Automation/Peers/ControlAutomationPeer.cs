@@ -4,8 +4,6 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     /// <summary>
@@ -174,9 +172,9 @@ namespace Avalonia.Automation.Peers
             visualChildren.CollectionChanged += VisualChildrenChanged;
         }
 
-        private void VisualChildrenChanged(object sender, EventArgs e) => InvalidateChildren();
+        private void VisualChildrenChanged(object? sender, EventArgs e) => InvalidateChildren();
 
-        private void OwnerPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Visual.IsVisibleProperty)
             {

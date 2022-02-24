@@ -4,8 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class ListItemAutomationPeer : ContentControlAutomationPeer,

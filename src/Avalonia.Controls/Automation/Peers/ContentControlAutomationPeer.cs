@@ -1,7 +1,5 @@
 ﻿using Avalonia.Controls;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class ContentControlAutomationPeer : ControlAutomationPeer
