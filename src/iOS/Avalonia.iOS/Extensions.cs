@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Media;
 using CoreGraphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Avalonia.iOS
