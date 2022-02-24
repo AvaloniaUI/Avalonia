@@ -161,8 +161,8 @@ namespace Avalonia.Native
         {
             return _inputRoot is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
         }
-        
-        protected unsafe class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
+
+        protected unsafe class WindowBaseEvents : NativeCallbackBase, IAvnWindowBaseEvents
         {
             private readonly WindowBaseImpl _parent;
 

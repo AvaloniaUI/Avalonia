@@ -1,16 +1,16 @@
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -61,7 +61,13 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
             RoutedEvent.Register<Control, ContextRequestedEventArgs>(nameof(ContextRequested),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-
+        
+        /// <summary>
+        /// Defines the <see cref="FlowDirection"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
+            AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
+        
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -110,11 +116,20 @@ namespace Avalonia.Controls
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
         }
+        
+        /// <summary>
+        /// Gets or sets the text flow direction.
+        /// </summary>
+        public FlowDirection FlowDirection
+        {
+            get => GetValue(FlowDirectionProperty);
+            set => SetValue(FlowDirectionProperty, value);
+        }
 
         /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>
-        public event EventHandler<ContextRequestedEventArgs> ContextRequested
+        public event EventHandler<ContextRequestedEventArgs>? ContextRequested
         {
             add => AddHandler(ContextRequestedEvent, value);
             remove => RemoveHandler(ContextRequestedEvent, value);

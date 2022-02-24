@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
-        public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver dependencyResolver)
+        public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver? dependencyResolver)
             : base(ValidatingPopupImpl.Wrap(impl), dependencyResolver)
         {
             _parent = parent;
@@ -53,8 +53,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        [CanBeNull]
-        public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;               
+        public new IPopupImpl? PlatformImpl => (IPopupImpl?)base.PlatformImpl;               
 
         /// <summary>
         /// Gets the parent control in the event route.
@@ -62,20 +61,24 @@ namespace Avalonia.Controls.Primitives
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        IInteractive IInteractive.InteractiveParent => Parent;
+        IInteractive? IInteractive.InteractiveParent => Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.
         /// </summary>
-        IVisual IHostedVisualTreeRoot.Host => Parent;
+        IVisual? IHostedVisualTreeRoot.Host => Parent;
 
         /// <summary>
         /// Gets the styling parent of the popup root.
         /// </summary>
-        IStyleHost IStyleHost.StylingParent => Parent;
+        IStyleHost? IStyleHost.StylingParent => Parent;
 
         /// <inheritdoc/>
-        public void Dispose() => PlatformImpl?.Dispose();
+        public void Dispose()
+        {
+            PlatformImpl?.Dispose();
+            HandleClosed();
+        }
 
         private void UpdatePosition()
         {
@@ -95,7 +98,7 @@ namespace Avalonia.Controls.Primitives
                 UpdatePosition();
         }
 
-        public void SetChild(IControl control) => Content = control;
+        public void SetChild(IControl? control) => Content = control;
 
         IVisual IPopupHost.HostedVisualTreeRoot => this;
         

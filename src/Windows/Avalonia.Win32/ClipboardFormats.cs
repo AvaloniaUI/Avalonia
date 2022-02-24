@@ -14,11 +14,11 @@ namespace Avalonia.Win32
 
         class ClipboardFormat
         {
-            public short Format { get; private set; }
+            public ushort Format { get; private set; }
             public string Name { get; private set; }
-            public short[] Synthesized { get; private set; }
+            public ushort[] Synthesized { get; private set; }
 
-            public ClipboardFormat(string name, short format, params short[] synthesized)
+            public ClipboardFormat(string name, ushort format, params ushort[] synthesized)
             {
                 Format = format;
                 Name = name;
@@ -28,12 +28,12 @@ namespace Avalonia.Win32
 
         private static readonly List<ClipboardFormat> FormatList = new List<ClipboardFormat>()
         {
-            new ClipboardFormat(DataFormats.Text, (short)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, (short)UnmanagedMethods.ClipboardFormat.CF_TEXT),
-            new ClipboardFormat(DataFormats.FileNames, (short)UnmanagedMethods.ClipboardFormat.CF_HDROP),
+            new ClipboardFormat(DataFormats.Text, (ushort)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, (ushort)UnmanagedMethods.ClipboardFormat.CF_TEXT),
+            new ClipboardFormat(DataFormats.FileNames, (ushort)UnmanagedMethods.ClipboardFormat.CF_HDROP),
         };
 
 
-        private static string QueryFormatName(short format)
+        private static string QueryFormatName(ushort format)
         {
             StringBuilder sb = new StringBuilder(MAX_FORMAT_NAME_LENGTH);
             if (UnmanagedMethods.GetClipboardFormatName(format, sb, sb.Capacity) > 0)
@@ -41,7 +41,7 @@ namespace Avalonia.Win32
             return null;
         }
 
-        public static string GetFormat(short format)
+        public static string GetFormat(ushort format)
         {
             lock (FormatList)
             {
@@ -58,7 +58,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public static short GetFormat(string format)
+        public static ushort GetFormat(string format)
         {
             lock (FormatList)
             {
@@ -68,7 +68,7 @@ namespace Avalonia.Win32
                     int id = UnmanagedMethods.RegisterClipboardFormat(format);
                     if (id == 0)
                         throw new Win32Exception();
-                    pd = new ClipboardFormat(format, (short)id);
+                    pd = new ClipboardFormat(format, (ushort)id);
                     FormatList.Add(pd);
                 }
                 return pd.Format;

@@ -13,7 +13,7 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    internal class AvnAutomationPeer : CallbackBase, IAvnAutomationPeer
+    internal class AvnAutomationPeer : NativeCallbackBase, IAvnAutomationPeer
     {
         private static readonly ConditionalWeakTable<AutomationPeer, AvnAutomationPeer> s_wrappers = new();
         private readonly AutomationPeer _inner;
@@ -145,7 +145,7 @@ namespace Avalonia.Native
         }
     }
 
-    internal class AvnAutomationPeerArray : CallbackBase, IAvnAutomationPeerArray
+    internal class AvnAutomationPeerArray : NativeCallbackBase, IAvnAutomationPeerArray
     {
         private readonly AvnAutomationPeer[] _items;
         

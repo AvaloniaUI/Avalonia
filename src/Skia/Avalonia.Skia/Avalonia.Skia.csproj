@@ -16,6 +16,5 @@
   </ItemGroup>
   
   <Import Project="..\..\..\build\SkiaSharp.props" />
-  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />  
+  <Import Project="..\..\..\build\HarfBuzzSharp.props" />  
 </Project>

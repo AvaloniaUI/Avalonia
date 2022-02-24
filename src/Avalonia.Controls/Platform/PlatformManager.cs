@@ -2,8 +2,6 @@ using System;
 using System.Reactive.Disposables;
 using Avalonia.Platform;
 
-#nullable enable
-
 namespace Avalonia.Controls.Platform
 {
     public static partial class PlatformManager

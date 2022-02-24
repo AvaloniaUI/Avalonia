@@ -21,22 +21,22 @@ namespace Avalonia.Controls.Remote.Server
     public class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
-        private LockedFramebuffer _framebuffer;
+        private LockedFramebuffer? _framebuffer;
         private object _lock = new object();
         private long _lastSentFrame = -1;
         private long _lastReceivedFrame = -1;
         private long _nextFrameNumber = 1;
-        private ClientViewportAllocatedMessage _pendingAllocation;
+        private ClientViewportAllocatedMessage? _pendingAllocation;
         private bool _invalidated;
         private Vector _dpi = new Vector(96, 96);
-        private ProtocolPixelFormat[] _supportedFormats;
+        private ProtocolPixelFormat[]? _supportedFormats;
 
         public RemoteServerTopLevelImpl(IAvaloniaRemoteTransportConnection transport)
         {
             _transport = transport;
             _transport.OnMessage += OnMessage;
 
-            KeyboardDevice = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+            KeyboardDevice = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
         }
 
         private static RawPointerEventType GetAvaloniaEventType (Avalonia.Remote.Protocol.Input.MouseButton button, bool pressed)
@@ -155,7 +155,7 @@ namespace Avalonia.Controls.Remote.Server
                                 ClientViewportAllocatedMessage allocation;
                                 lock (_lock)
                                 {
-                                    allocation = _pendingAllocation;
+                                    allocation = _pendingAllocation!;
                                     _pendingAllocation = null;
                                 }
                                 _dpi = new Vector(allocation.DpiX, allocation.DpiY);
@@ -173,7 +173,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawPointerEventArgs(
                             MouseDevice, 
                             0, 
-                            InputRoot, 
+                            InputRoot!, 
                             RawPointerEventType.Move, 
                             new Point(pointer.X, pointer.Y), 
                             GetAvaloniaInputModifiers(pointer.Modifiers)));
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawPointerEventArgs(
                             MouseDevice,
                             0,
-                            InputRoot,
+                            InputRoot!,
                             GetAvaloniaEventType(pressed.Button, true),
                             new Point(pressed.X, pressed.Y),
                             GetAvaloniaInputModifiers(pressed.Modifiers)));
@@ -199,7 +199,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawPointerEventArgs(
                             MouseDevice,
                             0,
-                            InputRoot,
+                            InputRoot!,
                             GetAvaloniaEventType(released.Button, false),
                             new Point(released.X, released.Y),
                             GetAvaloniaInputModifiers(released.Modifiers)));
@@ -212,7 +212,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawMouseWheelEventArgs(
                             MouseDevice,
                             0,
-                            InputRoot,
+                            InputRoot!,
                             new Point(scroll.X, scroll.Y),
                             new Vector(scroll.DeltaX, scroll.DeltaY),
                             GetAvaloniaInputModifiers(scroll.Modifiers)));
@@ -227,7 +227,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawKeyEventArgs(
                             KeyboardDevice,
                             0,
-                            InputRoot,
+                            InputRoot!,
                             key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                             (Key)key.Key,
                             GetAvaloniaRawInputModifiers(key.Modifiers)));
@@ -242,7 +242,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawTextInputEventArgs(
                             KeyboardDevice,
                             0,
-                            InputRoot,
+                            InputRoot!,
                             text.Text));
                     }, DispatcherPriority.Input);
                 }
@@ -257,7 +257,7 @@ namespace Avalonia.Controls.Remote.Server
 
         protected virtual Size Measure(Size constraint)
         {
-            var l = (ILayoutable) InputRoot;
+            var l = (ILayoutable) InputRoot!;
             l.Measure(constraint);
             return l.DesiredSize;
         }
@@ -294,7 +294,7 @@ namespace Avalonia.Controls.Remote.Server
             return new FrameMessage
             {
                 Data = data,
-                Format = (ProtocolPixelFormat) format,
+                Format = fmt,
                 Width = width,
                 Height = height,
                 Stride = width * bpp,

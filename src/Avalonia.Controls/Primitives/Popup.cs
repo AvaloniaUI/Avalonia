@@ -15,8 +15,6 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -420,7 +418,7 @@ namespace Avalonia.Controls.Primitives
                 (x, handler) => x.TemplateApplied += handler,
                 (x, handler) => x.TemplateApplied -= handler).DisposeWith(handlerCleanup);
 
-            if (topLevel is Window window)
+            if (topLevel is Window window && window.PlatformImpl != null)
             {
                 SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
                     (x, handler) => x.Deactivated += handler,
@@ -577,7 +575,7 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
         {
-            if(host is PopupRoot pr)
+            if(host is PopupRoot pr && pr.PlatformImpl is not null)
             {
                 pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
             }
@@ -692,7 +690,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void PointerPressedDismissOverlay(object sender, PointerPressedEventArgs e)
+        private void PointerPressedDismissOverlay(object? sender, PointerPressedEventArgs e)
         {
             if (IsLightDismissEnabled && e.Source is IVisual v && !IsChildOrThis(v))
             {
@@ -722,7 +720,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void RootTemplateApplied(object sender, TemplateAppliedEventArgs e)
+        private void RootTemplateApplied(object? sender, TemplateAppliedEventArgs e)
         {
             if (_openState is null)
             {
@@ -749,7 +747,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
+        private void SetTemplatedParentAndApplyChildTemplates(IControl? control)
         {
             if (control != null)
             {
@@ -810,7 +808,7 @@ namespace Avalonia.Controls.Primitives
 
         public bool IsPointerOverPopup => ((IInputElement?)_openState?.PopupHost)?.IsPointerOver ?? false;
 
-        private void WindowDeactivated(object sender, EventArgs e)
+        private void WindowDeactivated(object? sender, EventArgs e)
         {
             if (IsLightDismissEnabled)
             {
@@ -818,7 +816,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void ParentClosed(object sender, EventArgs e)
+        private void ParentClosed(object? sender, EventArgs e)
         {
             if (IsLightDismissEnabled)
             {
@@ -834,9 +832,9 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowPositionChanged(PixelPoint pp) => HandlePositionChange();
 
-        private void PlacementTargetLayoutUpdated(object src, EventArgs e) => HandlePositionChange();
+        private void PlacementTargetLayoutUpdated(object? src, EventArgs e) => HandlePositionChange();
 
-        private void ParentPopupPositionChanged(object src, PixelPointEventArgs e) => HandlePositionChange();
+        private void ParentPopupPositionChanged(object? src, PixelPointEventArgs e) => HandlePositionChange();
 
         private IgnoreIsOpenScope BeginIgnoringIsOpen()
         {

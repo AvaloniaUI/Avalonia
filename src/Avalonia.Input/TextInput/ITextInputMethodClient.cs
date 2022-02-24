@@ -12,7 +12,7 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Should be fired when cursor rectangle is changed inside the TextViewVisual
         /// </summary>
-        event EventHandler CursorRectangleChanged;
+        event EventHandler? CursorRectangleChanged;
         /// <summary>
         /// The visual that's showing the text
         /// </summary>
@@ -20,7 +20,7 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Should be fired when text-hosting visual is changed
         /// </summary>
-        event EventHandler TextViewVisualChanged;
+        event EventHandler? TextViewVisualChanged;
         /// <summary>
         /// Indicates if TextViewVisual is capable of displaying non-committed input on the cursor position
         /// </summary>
@@ -40,15 +40,15 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Should be fired when surrounding text changed
         /// </summary>
-        event EventHandler SurroundingTextChanged;
+        event EventHandler? SurroundingTextChanged;
         /// <summary>
         /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the beginning of the text entry
         /// </summary>
-        string TextBeforeCursor { get; }
+        string? TextBeforeCursor { get; }
         /// <summary>
         /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the end of the text entry
         /// </summary>
-        string TextAfterCursor { get; }
+        string? TextAfterCursor { get; }
     }
 
     public struct TextInputMethodSurroundingText

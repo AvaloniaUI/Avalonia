@@ -31,8 +31,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Owner"/> property.
         /// </summary>
-        public static readonly DirectProperty<WindowBase, WindowBase> OwnerProperty =
-            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase>(
+        public static readonly DirectProperty<WindowBase, WindowBase?> OwnerProperty =
+            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(
                 nameof(Owner),
                 o => o.Owner,
                 (o, v) => o.Owner = v);
@@ -43,7 +43,7 @@ namespace Avalonia.Controls
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private bool _ignoreVisibilityChange;
-        private WindowBase _owner;
+        private WindowBase? _owner;
 
         static WindowBase()
         {
@@ -51,14 +51,14 @@ namespace Avalonia.Controls
             IsVisibleProperty.Changed.AddClassHandler<WindowBase>((x,e) => x.IsVisibleChanged(e));
 
             
-            TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue));
+            TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue!));
         }
 
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
         }
 
-        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver dependencyResolver) : base(ValidatingWindowBaseImpl.Wrap(impl), dependencyResolver)
+        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(ValidatingWindowBaseImpl.Wrap(impl), dependencyResolver)
         {
             Screens = new Screens(PlatformImpl?.Screen);
             var wrapped = PlatformImpl!;
@@ -70,20 +70,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired when the window is activated.
         /// </summary>
-        public event EventHandler Activated;
+        public event EventHandler? Activated;
 
         /// <summary>
         /// Fired when the window is deactivated.
         /// </summary>
-        public event EventHandler Deactivated;
+        public event EventHandler? Deactivated;
 
         /// <summary>
         /// Fired when the window position is changed.
         /// </summary>
-        public event EventHandler<PixelPointEventArgs> PositionChanged;
+        public event EventHandler<PixelPointEventArgs>? PositionChanged;
 
-        [CanBeNull]
-        public new IWindowBaseImpl PlatformImpl => (IWindowBaseImpl) base.PlatformImpl;
+        public new IWindowBaseImpl? PlatformImpl => (IWindowBaseImpl?) base.PlatformImpl;
 
         /// <summary>
         /// Gets a value that indicates whether the window is active.
@@ -102,7 +101,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the owner of the window.
         /// </summary>
-        public WindowBase Owner
+        public WindowBase? Owner
         {
             get { return _owner; }
             protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
@@ -220,7 +219,7 @@ namespace Avalonia.Controls
         protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
             ClientSize = clientSize;
-            FrameSize = PlatformImpl.FrameSize;
+            FrameSize = PlatformImpl?.FrameSize;
             LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
@@ -309,7 +308,7 @@ namespace Avalonia.Controls
         {
             if (!_ignoreVisibilityChange)
             {
-                if ((bool)e.NewValue)
+                if ((bool)e.NewValue!)
                 {
                     Show();
                 }

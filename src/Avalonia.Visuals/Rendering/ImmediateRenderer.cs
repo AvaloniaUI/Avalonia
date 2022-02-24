@@ -78,7 +78,7 @@ namespace Avalonia.Rendering
 
                     if (DrawFps)
                     {
-                        RenderFps(context.PlatformImpl, _root.Bounds, null);
+                        RenderFps(context, _root.Bounds, null);
                     }
                 }
             }

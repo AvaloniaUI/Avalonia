@@ -7,11 +7,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Utils;
-
-#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -196,7 +193,7 @@ namespace Avalonia.Controls
             _collectionChanged?.Invoke(this, args);
         }
 
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             OnItemsSourceChanged(e);
         }
@@ -239,8 +236,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        [return: MaybeNull]
-        public new T GetAt(int index) => (T)Inner[index];
+        public new T GetAt(int index) => (T)Inner[index]!;
 
         public IEnumerator<T> GetEnumerator() => Inner.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();

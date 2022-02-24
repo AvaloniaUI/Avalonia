@@ -60,11 +60,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A689DEF5-D50F-4975-8B72-124C9EB54066}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		src\Shared\ModuleInitializer.cs = src\Shared\ModuleInitializer.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.ReactiveUI", "src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj", "{6417B24E-49C2-4985-8DB2-3AB9D898EC91}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "PlatformSupport", "src\Shared\PlatformSupport\PlatformSupport.shproj", "{E4D9629C-F168-4224-3F51-A5E482FFBC42}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup", "src\Markup\Avalonia.Markup\Avalonia.Markup.csproj", "{6417E941-21BC-467B-A771-0DE389353CE6}"
 EndProject
@@ -72,15 +71,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup.UnitTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BindingDemo", "samples\BindingDemo\BindingDemo.csproj", "{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderHelpers", "src\Shared\RenderHelpers\RenderHelpers.shproj", "{3C4C0CB4-0C0F-4450-A37B-148C84FF905F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Skia", "Skia", "{3743B0F2-CC41-4F14-A8C8-267F579BF91E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Android", "Android", "{7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Android", "src\Android\Avalonia.Android\Avalonia.Android.csproj", "{7B92AF71-6287-4693-9DCB-BD5B6E927E23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.AndroidTestApplication", "src\Android\Avalonia.AndroidTestApplication\Avalonia.AndroidTestApplication.csproj", "{FF69B927-C545-49AE-8E16-3D14D621AA12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.AndroidTestApplication", "src\Android\Avalonia.AndroidTestApplication\Avalonia.AndroidTestApplication.csproj", "{FF69B927-C545-49AE-8E16-3D14D621AA12}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iOS", "iOS", "{0CB0B92E-6CFF-4240-80A5-CCAFE75D91E1}"
 EndProject
@@ -98,7 +95,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog", "samples\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Desktop", "samples\ControlCatalog.Desktop\ControlCatalog.Desktop.csproj", "{2B888490-D14A-4BCA-AB4B-48676FA93C9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DesignerSupport.Tests", "tests\Avalonia.DesignerSupport.Tests\Avalonia.DesignerSupport.Tests.csproj", "{52F55355-D120-42AC-8116-8410A7D602FA}"
 EndProject
@@ -110,7 +107,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{A0CC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RenderDemo", "samples\RenderDemo\RenderDemo.csproj", "{F1FDC5B0-4654-416F-AE69-E3E9BBD87801}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Android", "samples\ControlCatalog.Android\ControlCatalog.Android.csproj", "{29132311-1848-4FD6-AE0C-4FF841151BD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Android", "samples\ControlCatalog.Android\ControlCatalog.Android.csproj", "{29132311-1848-4FD6-AE0C-4FF841151BD3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Skia", "src\Skia\Avalonia.Skia\Avalonia.Skia.csproj", "{7D2D3083-71DD-4CC9-8907-39A0D86FB322}"
 EndProject
@@ -118,7 +115,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.NetCore", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1-27F5-4255-9AFC-04ABFD11683A}"
 	ProjectSection(SolutionItems) = preProject
-		build\AndroidWorkarounds.props = build\AndroidWorkarounds.props
 		build\ApiDiff.props = build\ApiDiff.props
 		build\Base.props = build\Base.props
 		build\Binding.props = build\Binding.props
@@ -181,8 +177,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.OpenGL", "src\Aval
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Native", "src\Avalonia.Native\Avalonia.Native.csproj", "{12A91A62-C064-42CA-9A8C-A1272F354388}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DesktopRuntime", "src\Avalonia.DesktopRuntime\Avalonia.DesktopRuntime.csproj", "{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{E870DCD7-F46A-498D-83FC-D0FD13E0A11C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia", "packages\Avalonia\Avalonia.csproj", "{D49233F8-F29C-47DD-9975-C4C9E4502720}"
@@ -239,15 +233,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsInteropTest", "sampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlSamples", "samples\SampleControls\ControlSamples.csproj", "{A0D0A6A4-5C72-4ADA-9B27-621C7D94F270}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.PlatformSupport", "src\Avalonia.PlatformSupport\Avalonia.PlatformSupport.csproj", "{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 5
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 5
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{7d2d3083-71dd-4cc9-8907-39a0d86fb322}*SharedItemsImports = 5
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{88060192-33d5-4932-b0f9-8bd2763e857d}*SharedItemsImports = 5
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Ad-Hoc|Any CPU = Ad-Hoc|Any CPU
 		Ad-Hoc|iPhone = Ad-Hoc|iPhone
@@ -1119,7 +1107,7 @@ Global
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.AppStore|iPhone.Build.0 = AppStore|iPhone
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.AppStore|iPhoneSimulator.ActiveCfg = AppStore|iPhoneSimulator
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.AppStore|iPhoneSimulator.Build.0 = AppStore|iPhoneSimulator
-		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|Any CPU.ActiveCfg = Debug|iPhone
+		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|iPhone.ActiveCfg = Debug|iPhone
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|iPhone.Build.0 = Debug|iPhone
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
@@ -1573,30 +1561,6 @@ Global
 		{12A91A62-C064-42CA-9A8C-A1272F354388}.Release|iPhone.Build.0 = Release|Any CPU
 		{12A91A62-C064-42CA-9A8C-A1272F354388}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{12A91A62-C064-42CA-9A8C-A1272F354388}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Ad-Hoc|Any CPU.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Ad-Hoc|Any CPU.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.AppStore|Any CPU.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.AppStore|iPhone.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.AppStore|iPhone.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.AppStore|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.AppStore|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Release|Any CPU.Build.0 = Release|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Release|iPhone.Build.0 = Release|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{878FEFE0-CD14-41CB-90B0-DBCB163E8F15}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 		{D49233F8-F29C-47DD-9975-C4C9E4502720}.Ad-Hoc|Any CPU.ActiveCfg = Debug|Any CPU
 		{D49233F8-F29C-47DD-9975-C4C9E4502720}.Ad-Hoc|Any CPU.Build.0 = Debug|Any CPU
 		{D49233F8-F29C-47DD-9975-C4C9E4502720}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
@@ -2221,6 +2185,30 @@ Global
 		{A0D0A6A4-5C72-4ADA-9B27-621C7D94F270}.Release|iPhone.Build.0 = Release|Any CPU
 		{A0D0A6A4-5C72-4ADA-9B27-621C7D94F270}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{A0D0A6A4-5C72-4ADA-9B27-621C7D94F270}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Ad-Hoc|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Ad-Hoc|Any CPU.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.AppStore|iPhone.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.AppStore|iPhone.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.AppStore|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.AppStore|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Release|iPhone.Build.0 = Release|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2239,11 +2227,9 @@ Global
 		{EFB11458-9CDF-41C0-BE4F-44AF45A4CAB8} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{99135EAB-653D-47E4-A378-C96E1278CA44} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{3E53A01A-B331-47F3-B828-4A5717E77A24} = {8B6A8209-894F-4BA1-B880-965FD453982C}
-		{E4D9629C-F168-4224-3F51-A5E482FFBC42} = {A689DEF5-D50F-4975-8B72-124C9EB54066}
 		{6417E941-21BC-467B-A771-0DE389353CE6} = {8B6A8209-894F-4BA1-B880-965FD453982C}
 		{8EF392D5-1416-45AA-9956-7CBBC3229E8A} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162} = {9B9E3891-2366-4253-A952-D08BCEB71098}
-		{3C4C0CB4-0C0F-4450-A37B-148C84FF905F} = {A689DEF5-D50F-4975-8B72-124C9EB54066}
 		{7B92AF71-6287-4693-9DCB-BD5B6E927E23} = {7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}
 		{FF69B927-C545-49AE-8E16-3D14D621AA12} = {7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}
 		{4488AD85-1495-4809-9AA4-DDFE0A48527E} = {0CB0B92E-6CFF-4240-80A5-CCAFE75D91E1}

@@ -119,7 +119,7 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, IPen pen, Geometry geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry)
         {
             if (geometry.PlatformImpl is not null)
                 DrawGeometry(brush, pen, geometry.PlatformImpl);
@@ -131,7 +131,7 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
             _ = geometry ?? throw new ArgumentNullException(nameof(geometry));
 
@@ -226,17 +226,13 @@ namespace Avalonia.Media
         /// <summary>
         /// Draws text.
         /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(FormattedText text, Point origin)
         {
             _ = text ?? throw new ArgumentNullException(nameof(text));
-
-            if (foreground != null)
-            {
-                PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
-            }
+         
+           text.Draw(this, origin);            
         }
 
         /// <summary>
