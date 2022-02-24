@@ -1,6 +1,6 @@
 {
     "sdk": {
-        "version": "6.0.100"
+        "version": "6.0.200"
     },
     "msbuild-sdks": {
         "Microsoft.Build.Traversal": "1.0.43",
