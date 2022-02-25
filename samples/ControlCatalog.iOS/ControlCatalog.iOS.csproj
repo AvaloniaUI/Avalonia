@@ -1,5 +1,4 @@
-﻿<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ProvisioningType>manual</ProvisioningType>
@@ -14,9 +13,4 @@
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <!-- temporarily work around https://github.com/mono/SkiaSharp/issues/1879 -->
-  <Target Name="_HarfBuzzSharpExpandNativeReferencesFixes" BeforeTargets="_ExpandNativeReferences">
-  </Target>
 </Project>
