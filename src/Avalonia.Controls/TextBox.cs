@@ -1237,6 +1237,7 @@ namespace Avalonia.Controls
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
         {
             var text = Text ?? string.Empty;
+            var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
             if (!wholeWord)
@@ -1246,15 +1247,30 @@ namespace Avalonia.Controls
                     return;
                 }
                 
-                _presenter.MoveCaretHorizontal(direction > 0 ? LogicalDirection.Forward : LogicalDirection.Backward);
-
                 if (isSelecting)
                 {
+                    _presenter.MoveCaretHorizontal(direction > 0 ?
+                        LogicalDirection.Forward :
+                        LogicalDirection.Backward);
+                    
                     SelectionEnd = _presenter.CaretIndex;
                 }
                 else
                 {
-                    SelectionStart = SelectionEnd = _presenter.CaretIndex;
+                    if (selectionStart != selectionEnd)
+                    {
+                        _presenter.MoveCaretToTextPosition(direction > 0 ?
+                            Math.Max(selectionStart, selectionEnd) :
+                            Math.Min(selectionStart, selectionEnd));
+                    }
+                    else
+                    {
+                        _presenter.MoveCaretHorizontal(direction > 0 ?
+                            LogicalDirection.Forward :
+                            LogicalDirection.Backward);
+                    }
+
+                    CaretIndex = _presenter.CaretIndex;
                 }
             }
             else
@@ -1345,46 +1361,52 @@ namespace Avalonia.Controls
 
         private bool DeleteSelection(bool raiseTextChanged = true)
         {
-            if (!IsReadOnly)
-            {
-                var selectionStart = SelectionStart;
-                var selectionEnd = SelectionEnd;
+            if (IsReadOnly) return true;
+            
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
 
-                if (selectionStart != selectionEnd)
-                {
-                    var start = Math.Min(selectionStart, selectionEnd);
-                    var end = Math.Max(selectionStart, selectionEnd);
-                    var text = Text!;
-                    SetTextInternal(text.Substring(0, start) + text.Substring(end), raiseTextChanged);
-                    CaretIndex= start;
-                    ClearSelection();
-                    return true;
-                }
-                else
-                {
-                    CaretIndex = SelectionStart;
-                    return false;
-                }
-            }
-            else
+            if (selectionStart != selectionEnd)
             {
+                var start = Math.Min(selectionStart, selectionEnd);
+                var end = Math.Max(selectionStart, selectionEnd);
+                var text = Text!;
+
+                SetTextInternal(text.Substring(0, start) + text.Substring(end), raiseTextChanged);
+                    
+                _presenter?.MoveCaretToTextPosition(start);
+                    
+                CaretIndex= start;
+                    
+                ClearSelection();
+                    
                 return true;
             }
+                
+            CaretIndex = SelectionStart;
+            
+            return false;
         }
 
         private string GetSelection()
         {
             var text = Text;
+            
             if (string.IsNullOrEmpty(text))
+            {
                 return "";
+            }
+               
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
             var end = Math.Max(selectionStart, selectionEnd);
+            
             if (start == end || (Text?.Length ?? 0) < end)
             {
                 return "";
             }
+            
             return text.Substring(start, end - start);
         }
 
