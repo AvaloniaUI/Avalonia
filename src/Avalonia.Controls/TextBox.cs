@@ -1322,12 +1322,15 @@ namespace Avalonia.Controls
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
                 var textLine = textLines[lineIndex];
                 
-                if (caretIndex == textLine.TextRange.Start + textLine.TextRange.Length && lineIndex + 1 < textLines.Count)
+                if (caretIndex == textLine.TextRange.Start + textLine.TextRange.Length  - textLine.NewLineLength &&
+                    lineIndex + 1 < textLines.Count)
                 {
                     textLine = textLines[++lineIndex];
                 }
 
-                _presenter.MoveCaretToTextPosition(textLine.TextRange.Start + textLine.TextRange.Length, true);
+                var textPosition = textLine.TextRange.Start + textLine.TextRange.Length - textLine.NewLineLength;
+
+                _presenter.MoveCaretToTextPosition(textPosition, true);
             }
         }
 
