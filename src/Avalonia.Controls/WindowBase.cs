@@ -57,13 +57,12 @@ namespace Avalonia.Controls
         {
         }
 
-        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(ValidatingWindowBaseImpl.Wrap(impl), dependencyResolver)
+        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
             Screens = new Screens(PlatformImpl?.Screen);
-            var wrapped = PlatformImpl!;
-            wrapped.Activated = HandleActivated;
-            wrapped.Deactivated = HandleDeactivated;
-            wrapped.PositionChanged = HandlePositionChanged;
+            impl.Activated = HandleActivated;
+            impl.Deactivated = HandleDeactivated;
+            impl.PositionChanged = HandlePositionChanged;
         }
 
         /// <summary>
