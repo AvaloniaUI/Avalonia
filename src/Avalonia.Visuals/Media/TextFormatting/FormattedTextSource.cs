@@ -69,7 +69,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var textRange = new TextRange(propertiesOverride.Start, propertiesOverride.Length);
 
-                if (textRange.Start + textRange.Length < text.Start)
+                if (textRange.Start + textRange.Length <= text.Start)
                 {
                     continue;
                 }
