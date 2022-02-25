@@ -256,6 +256,8 @@ namespace Avalonia.Controls
                 UndoRedoState state;
                 if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
                     _undoRedoHelper.UpdateLastState();
+
+                SelectionStart = SelectionEnd = value;
             }
         }
 
@@ -300,14 +302,15 @@ namespace Avalonia.Controls
             {
                 value = CoerceCaretIndex(value);
                 var changed = SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+                
                 if (changed)
                 {
                     UpdateCommandStates();
                 }
-                
-                if (value == SelectionEnd)
+
+                if (SelectionEnd == value && CaretIndex != value)
                 {
-                    CaretIndex = SelectionStart;
+                    CaretIndex = value;
                 }
             }
         }
@@ -328,8 +331,8 @@ namespace Avalonia.Controls
                 {
                     UpdateCommandStates();
                 }
-
-                if (value == SelectionStart)
+                
+                if (SelectionStart == value && CaretIndex != value)
                 {
                     CaretIndex = value;
                 }
@@ -352,8 +355,6 @@ namespace Avalonia.Controls
                 {
                     var caretIndex = CaretIndex;
                     
-                    SelectionStart = CoerceCaretIndex(SelectionStart, value);
-                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value);
                     CaretIndex = CoerceCaretIndex(caretIndex, value);
 
                     if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
@@ -457,7 +458,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void ClearSelection()
         {
-            SelectionStart = SelectionEnd = CaretIndex;
+            CaretIndex = SelectionStart;
         }
 
         /// <summary>
@@ -855,6 +856,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
+                CaretIndex = _presenter.CaretIndex;
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocument))
             {
@@ -862,6 +864,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
+                CaretIndex = _presenter.CaretIndex;
             }
             else if (Match(keymap.MoveCursorToTheStartOfLine))
             {
@@ -869,7 +872,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-
+                CaretIndex = _presenter.CaretIndex;
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
@@ -877,6 +880,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
+                CaretIndex = _presenter.CaretIndex;
             }
             else if (Match(keymap.MoveCursorToTheStartOfDocumentWithSelection))
             {
@@ -949,7 +953,7 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            SelectionStart = SelectionEnd = _presenter.CaretIndex;
+                            CaretIndex = _presenter.CaretIndex;
                         }
                         
                         break;
@@ -971,7 +975,7 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            SelectionStart = SelectionEnd = _presenter.CaretIndex;
+                            CaretIndex = _presenter.CaretIndex;
                         }
                         
                         break;
@@ -995,6 +999,8 @@ namespace Avalonia.Controls
 
                             SetTextInternal(text.Substring(0, length) +
                                             text.Substring(caretIndex));
+
+                            CaretIndex = _presenter.CaretIndex;
                         }
                         
                         SnapshotUndoRedo();
@@ -1069,8 +1075,6 @@ namespace Avalonia.Controls
             {
                 e.Handled = true;
             }
-
-            CaretIndex = _presenter.CaretIndex;
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -1233,7 +1237,7 @@ namespace Avalonia.Controls
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
         {
             var text = Text ?? string.Empty;
-            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
 
             if (!wholeWord)
             {
@@ -1259,14 +1263,19 @@ namespace Avalonia.Controls
                 
                 if (direction > 0)
                 {
-                    offset = StringUtils.NextWord(text, selectionStart) - selectionStart;
+                    offset = StringUtils.NextWord(text, selectionEnd) - selectionEnd;
                 }
                 else
                 {
-                    offset = StringUtils.PreviousWord(text, selectionStart) - selectionStart;
+                    offset = StringUtils.PreviousWord(text, selectionEnd) - selectionEnd;
                 }
                 
-                SelectionEnd = CaretIndex + offset;
+                SelectionEnd += offset;
+
+                if (!isSelecting)
+                {
+                    CaretIndex = SelectionEnd;
+                }
             }
         }
 
@@ -1310,8 +1319,13 @@ namespace Avalonia.Controls
             else
             {
                 var textLines = _presenter.TextLayout.TextLines;
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
                 var textLine = textLines[lineIndex];
+                
+                if (caretIndex == textLine.TextRange.Start + textLine.TextRange.Length && lineIndex + 1 < textLines.Count)
+                {
+                    textLine = textLines[++lineIndex];
+                }
 
                 _presenter.MoveCaretToTextPosition(textLine.TextRange.Start + textLine.TextRange.Length, true);
             }
@@ -1324,7 +1338,6 @@ namespace Avalonia.Controls
         {
             SelectionStart = 0;
             SelectionEnd = Text?.Length ?? 0;
-            CaretIndex = SelectionEnd;
         }
 
         private bool DeleteSelection(bool raiseTextChanged = true)
@@ -1340,12 +1353,13 @@ namespace Avalonia.Controls
                     var end = Math.Max(selectionStart, selectionEnd);
                     var text = Text!;
                     SetTextInternal(text.Substring(0, start) + text.Substring(end), raiseTextChanged);
-                    CaretIndex = start;
+                    CaretIndex= start;
                     ClearSelection();
                     return true;
                 }
                 else
                 {
+                    CaretIndex = SelectionStart;
                     return false;
                 }
             }
@@ -1393,9 +1407,11 @@ namespace Avalonia.Controls
 
         private void SetSelectionForControlBackspace()
         {
-            SelectionStart = CaretIndex;
+            var selectionStart = CaretIndex;
             
             MoveHorizontal(-1, true, false);
+
+            SelectionStart = selectionStart;
         }
 
         private void SetSelectionForControlDelete()
@@ -1407,7 +1423,7 @@ namespace Avalonia.Controls
             
             SelectionStart = CaretIndex;
             
-            MoveHorizontal(1, true, false);
+            MoveHorizontal(1, true, true);
 
             if (SelectionEnd < _text.Length && _text[SelectionEnd] == ' ')
             {

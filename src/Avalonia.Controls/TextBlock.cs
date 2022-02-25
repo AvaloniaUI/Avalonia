@@ -550,10 +550,8 @@ namespace Avalonia.Controls
             _textLayout = null;
 
             InvalidateArrange();
-            
-            var scale = LayoutHelper.GetLayoutScale(this);
 
-            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, scale);
+            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, 1);
 
             return new Size(measuredSize.Width, measuredSize.Height).Inflate(padding);
         }
