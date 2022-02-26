@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Media;
 using CoreGraphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Avalonia.iOS
@@ -13,7 +12,7 @@ namespace Avalonia.iOS
 
         public static Point ToAvalonia(this CGPoint point) => new Point(point.X, point.Y);
 
-        static nfloat ColorComponent(byte c) => ((float) c) / 255;
+        static float ColorComponent(byte c) => (float) c / 255;
 
         public static UIColor ToUiColor(this Color color) => new UIColor(
             ColorComponent(color.R),

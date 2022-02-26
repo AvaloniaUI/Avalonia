@@ -1,7 +1,6 @@
 using System;
 using Avalonia.OpenGL;
 using CoreAnimation;
-using ObjCRuntime;
 using OpenGLES;
 
 namespace Avalonia.iOS
@@ -103,7 +102,7 @@ namespace Avalonia.iOS
         private readonly GlInterface _gl;
         private readonly CAEAGLLayer _layer;
         private LayerFbo _fbo;
-        private nfloat _oldLayerWidth, _oldLayerHeight, _oldLayerScale;
+        private double _oldLayerWidth, _oldLayerHeight, _oldLayerScale;
         
         public SizeSynchronizedLayerFbo(EAGLContext context, GlInterface gl, CAEAGLLayer layer)
         {
