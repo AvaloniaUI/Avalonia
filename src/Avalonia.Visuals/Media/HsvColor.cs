@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -33,9 +34,9 @@ namespace Avalonia.Media
             double value)
         {
             A = 1.0;
-            H = Math.Clamp((double.IsNaN(hue) ? 0 : hue), 0, 360);
-            S = Math.Clamp((double.IsNaN(saturation) ? 0 : saturation), 0, 1);
-            V = Math.Clamp((double.IsNaN(value) ? 0 : value), 0, 1);
+            H = MathUtilities.Clamp((double.IsNaN(hue) ? 0 : hue), 0, 360);
+            S = MathUtilities.Clamp((double.IsNaN(saturation) ? 0 : saturation), 0, 1);
+            V = MathUtilities.Clamp((double.IsNaN(value) ? 0 : value), 0, 1);
         }
 
         /// <summary>
@@ -51,10 +52,10 @@ namespace Avalonia.Media
             double value,
             double alpha)
         {
-            A = Math.Clamp((double.IsNaN(alpha) ? 1 : alpha), 0, 1); // Default to no transparency
-            H = Math.Clamp((double.IsNaN(hue) ? 0 : hue), 0, 360);
-            S = Math.Clamp((double.IsNaN(saturation) ? 0 : saturation), 0, 1);
-            V = Math.Clamp((double.IsNaN(value) ? 0 : value), 0, 1);
+            A = MathUtilities.Clamp((double.IsNaN(alpha) ? 1 : alpha), 0, 1); // Default to no transparency
+            H = MathUtilities.Clamp((double.IsNaN(hue) ? 0 : hue), 0, 360);
+            S = MathUtilities.Clamp((double.IsNaN(saturation) ? 0 : saturation), 0, 1);
+            V = MathUtilities.Clamp((double.IsNaN(value) ? 0 : value), 0, 1);
         }
 
         /// <summary>
