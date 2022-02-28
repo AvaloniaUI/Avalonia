@@ -11,7 +11,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Defines a color using the hue/saturation/value (HSV) model.
     /// </summary>
-    public struct HsvColor : IEquatable<HsvColor>
+    public readonly struct HsvColor : IEquatable<HsvColor>
     {
         /// <summary>
         /// Represents a null <see cref="HsvColor"/> with zero set for all channels.
