@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Color conversion portions of this source file are adapted from the WinUI project. 
+// (https://github.com/microsoft/microsoft-ui-xaml) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
+
+using System;
 
 namespace Avalonia.Media
 {
