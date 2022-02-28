@@ -143,7 +143,16 @@ namespace Avalonia.Media
         /// <returns>The hashcode for this object.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(A, H, S, V);
+            // Same algorithm as Color
+            // This is used instead of HashCode.Combine() due to .NET Standard 2.0 requirements
+            unchecked
+            {
+                int hashCode = A.GetHashCode();
+                hashCode = (hashCode * 397) ^ H.GetHashCode();
+                hashCode = (hashCode * 397) ^ S.GetHashCode();
+                hashCode = (hashCode * 397) ^ V.GetHashCode();
+                return hashCode;
+            }
         }
 
         /// <summary>
