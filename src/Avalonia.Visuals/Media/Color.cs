@@ -290,7 +290,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the HSV color model equivalent of this RGB color.
+        /// Returns the HSV color model equivalent of this RGB color.
         /// </summary>
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
