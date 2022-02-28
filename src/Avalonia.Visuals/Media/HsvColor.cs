@@ -248,8 +248,8 @@ namespace Avalonia.Media
             //
             // From these facts, you can see that we can retrieve the chroma by simply multiplying the saturation and the value,
             // and we can retrieve the minimum of the RGB channels by subtracting the chroma from the value.
-            double chroma = saturation * value;
-            double min = value - chroma;
+            var chroma = saturation * value;
+            var min = value - chroma;
 
             // If the chroma is zero, then we have a greyscale color.  In that case, the maximum and the minimum RGB channels
             // have the same value (and, indeed, all of the RGB channels are the same), so we can just immediately return
