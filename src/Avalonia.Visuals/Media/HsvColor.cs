@@ -390,7 +390,7 @@ namespace Avalonia.Media
             // then the chroma is maximized - this is a pure yellow, no gray of any kind.
             // On the other hand, if we have RGB = (128, 128, 128), then the chroma being zero
             // implies that this color is pure greyscale, with no actual hue to be found.
-            double chroma = max - min;
+            var chroma = max - min;
 
             // If the chrome is zero, then hue is technically undefined - a greyscale color
             // has no hue.  For the sake of convenience, we'll just set hue to zero, since
