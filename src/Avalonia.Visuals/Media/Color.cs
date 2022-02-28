@@ -289,6 +289,15 @@ namespace Avalonia.Media
             return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
         }
 
+        /// <summary>
+        /// Gets the HSV color model equivalent of this RGB color.
+        /// </summary>
+        /// <returns>The HSV equivalent color.</returns>
+        public HsvColor ToHsv()
+        {
+            return new HsvColor(this);
+        }
+
         /// <inheritdoc/>
         public bool Equals(Color other)
         {
