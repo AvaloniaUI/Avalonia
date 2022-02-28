@@ -1249,6 +1249,8 @@ namespace Avalonia.Controls
                 
                 if (isSelecting)
                 {
+                    _presenter.MoveCaretToTextPosition(selectionEnd);
+                    
                     _presenter.MoveCaretHorizontal(direction > 0 ?
                         LogicalDirection.Forward :
                         LogicalDirection.Backward);
