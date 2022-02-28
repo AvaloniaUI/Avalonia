@@ -8,7 +8,7 @@ using Avalonia.Interactivity;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A control scrolls its content if the content is bigger than the space available.
+    /// A control which scrolls its content if the content is bigger than the space available.
     /// </summary>
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
