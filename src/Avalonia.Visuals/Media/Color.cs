@@ -295,7 +295,9 @@ namespace Avalonia.Media
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
         {
-            return new HsvColor(this);
+            // Use the by-channel conversion method directly for performance
+            // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
+            return HsvColor.FromRgb(R, G, B, A);
         }
 
         /// <inheritdoc/>

@@ -164,7 +164,8 @@ namespace Avalonia.Media
         /// <returns>The RGB equivalent color.</returns>
         public Color ToRgb()
         {
-            return HsvColor.ToRgb(this);
+            // Use the by-channel conversion method directly for performance
+            return HsvColor.ToRgb(H, S, V, A);
         }
 
         ////////////////////////////////////////////////////////////////////////
