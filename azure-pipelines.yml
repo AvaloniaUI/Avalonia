@@ -147,7 +147,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install --no-cache --disable-parallel ios --skip-manifest-update --source "https://pkgs.dev.azure.com/xamarin/public/_packaging/maui-main/nuget/v3/index.json" --source "https://pkgs.dev.azure.com/azure-public/vside/_packaging/xamarin-impl/nuget/v3/index.json" --source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" --source "https://api.nuget.org/v3/index.json"
+       dotnet workload install --no-cache --disable-parallel ios --skip-manifest-update --source "https://api.nuget.org/v3/index.json"
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
