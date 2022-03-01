@@ -100,8 +100,6 @@ namespace Avalonia.X11
                 else
                     GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
             }
-
-            
         }
 
         public IntPtr DeferredDisplay { get; set; }

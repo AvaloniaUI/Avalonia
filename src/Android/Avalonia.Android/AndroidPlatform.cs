@@ -18,10 +18,8 @@ namespace Avalonia
     {
         public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
-
             return builder
-                .UseWindowingSubsystem(() => AndroidPlatform.Initialize(options), "Android")
+                .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
                 .UseSkia();
         }
     }
@@ -44,9 +42,9 @@ namespace Avalonia.Android
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500);
 
-        public static void Initialize(AndroidPlatformOptions options)
+        public static void Initialize()
         {
-            Options = options;
+            Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
@@ -63,7 +61,7 @@ namespace Avalonia.Android
 
             SkiaPlatform.Initialize();
 
-            if (options.UseGpu)
+            if (Options.UseGpu)
             {
                 EglPlatformOpenGlInterface.TryInitialize();
             }

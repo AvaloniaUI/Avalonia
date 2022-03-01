@@ -37,7 +37,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 GetAvaloniaPointFromEvent);
+
             _gl = GlPlatformSurface.TryCreate(this);
+            
             _framebuffer = new FramebufferManager(this);
 
             RenderScaling = (int)_view.Scaling;
@@ -74,7 +76,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal InvalidationAwareSurfaceView InternalView => _view;
 
         public IPlatformHandle Handle => _view;
-
+        
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>

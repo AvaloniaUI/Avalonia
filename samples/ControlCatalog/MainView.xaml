@@ -106,6 +106,9 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
+      <TabItem Header="Vulkan">
+        <pages:VulkanPage />
+      </TabItem>
       <TabItem Header="Pointers (Touch)">
         <pages:PointersPage />
       </TabItem>

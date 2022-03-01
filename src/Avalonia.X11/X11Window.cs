@@ -170,9 +170,8 @@ namespace Avalonia.X11
             if (glx != null)
                 surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,
                     new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
-
+            
             surfaces.Add(Handle);
-
             Surfaces = surfaces.ToArray();
             UpdateMotifHints();
             UpdateSizeHints(null);

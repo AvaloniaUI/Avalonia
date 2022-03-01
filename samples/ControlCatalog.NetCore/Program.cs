@@ -10,7 +10,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Dialogs;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.Vulkan;
+using Avalonia.Vulkan.Skia;
 
 namespace ControlCatalog.NetCore
 {
@@ -111,12 +114,24 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    UseGpu = false
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true
+                    EnableMultitouch = true,
+                    UseWgl = false,
+                    AllowEglInitialization = false
+                })
+                .With(new VulkanOptions()
+                {
+                    UseDebug = true,
+                    PreferDiscreteGpu = true
                 })
                 .UseSkia()
+                .With(new SkiaOptions()
+                {
+                    CustomGpuFactory = () => VulkanSkiaGpu.CreateGpu()
+                })
                 .UseManagedSystemDialogs()
                 .AfterSetup(builder =>
                 {

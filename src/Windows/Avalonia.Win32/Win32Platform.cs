@@ -71,7 +71,7 @@ namespace Avalonia
         public bool OverlayPopups { get; set; }
 
         /// <summary>
-        /// Avalonia would try to use native Widows OpenGL when set to true. The default value is false.
+        /// Avalonia would try to use native Windows OpenGL when set to true. The default value is false.
         /// </summary>
         public bool UseWgl { get; set; }
 
