@@ -245,12 +245,15 @@ namespace Avalonia.Media
                 hue += 360.0;
             }
 
-            // We similarly clamp saturation and value between 0 and 1.
+            // We similarly clamp saturation, value and alpha between 0 and 1.
             saturation = saturation < 0.0 ? 0.0 : saturation;
             saturation = saturation > 1.0 ? 1.0 : saturation;
 
             value = value < 0.0 ? 0.0 : value;
             value = value > 1.0 ? 1.0 : value;
+
+            alpha = alpha < 0.0 ? 0.0 : alpha;
+            alpha = alpha > 1.0 ? 1.0 : alpha;
 
             // The first thing that we need to do is to determine the chroma (see above for its definition).
             // Remember from above that:
