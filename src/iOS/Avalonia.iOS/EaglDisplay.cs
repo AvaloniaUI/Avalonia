@@ -1,4 +1,3 @@
-using System;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
 using OpenGLES;
@@ -8,7 +7,7 @@ namespace Avalonia.iOS
     class EaglFeature : IPlatformOpenGlInterface
     {
         public IGlContext PrimaryContext => Context;
-        public IGlContext CreateSharedContext() => throw new NotSupportedException();
+        public IGlContext CreateSharedContext() => throw new System.NotSupportedException();
         public bool CanShareContexts => false;
         public bool CanCreateContexts => false;
         public IGlContext CreateContext() => throw new System.NotSupportedException();
@@ -23,7 +22,7 @@ namespace Avalonia.iOS
         {
             const string path = "/System/Library/Frameworks/OpenGLES.framework/OpenGLES";
             var libGl = ObjCRuntime.Dlfcn.dlopen(path, 1);
-            if (libGl == IntPtr.Zero)
+            if (libGl == System.IntPtr.Zero)
                 throw new OpenGlException("Unable to load " + path);
             GlInterface = new GlInterface(Version, proc => ObjCRuntime.Dlfcn.dlsym(libGl, proc));
             Context = new EAGLContext(EAGLRenderingAPI.OpenGLES3);
@@ -35,7 +34,7 @@ namespace Avalonia.iOS
             Context = null;
         }
 
-        class ResetContext : IDisposable
+        class ResetContext : System.IDisposable
         {
             private EAGLContext _old;
             private bool _disposed;
@@ -55,7 +54,7 @@ namespace Avalonia.iOS
             }
         }
         
-        public IDisposable MakeCurrent()
+        public System.IDisposable MakeCurrent()
         {
             var old = EAGLContext.CurrentContext;
             if (!EAGLContext.SetCurrentContext(Context))
@@ -63,7 +62,7 @@ namespace Avalonia.iOS
             return new ResetContext(old);
         }
 
-        public IDisposable EnsureCurrent()
+        public System.IDisposable EnsureCurrent()
         {
             if(EAGLContext.CurrentContext == Context)
                 return Disposable.Empty;

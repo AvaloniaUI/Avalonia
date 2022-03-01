@@ -1,5 +1,3 @@
-
-using System;
 using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
@@ -19,10 +17,10 @@ namespace Avalonia.iOS
         class RenderSession : IGlPlatformSurfaceRenderingSession
         {
             private readonly GlContext _ctx;
-            private readonly IDisposable _restoreContext;
+            private readonly System.IDisposable _restoreContext;
             private readonly SizeSynchronizedLayerFbo _fbo;
 
-            public RenderSession(GlContext ctx, IDisposable restoreContext, SizeSynchronizedLayerFbo fbo)
+            public RenderSession(GlContext ctx, System.IDisposable restoreContext, SizeSynchronizedLayerFbo fbo)
             {
                 _ctx = ctx;
                 _restoreContext = restoreContext;
@@ -75,7 +73,7 @@ namespace Avalonia.iOS
         static void CheckThread()
         {
             if (Platform.Timer.TimerThread != Thread.CurrentThread)
-                throw new InvalidOperationException("Invalid thread, go away");
+                throw new System.InvalidOperationException("Invalid thread, go away");
         }
         
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
@@ -86,7 +84,7 @@ namespace Avalonia.iOS
             {
                 var fbo = new SizeSynchronizedLayerFbo(ctx.Context, ctx.GlInterface, _layer);
                 if (!fbo.Sync())
-                    throw new InvalidOperationException("Unable to create render target");
+                    throw new System.InvalidOperationException("Unable to create render target");
                 return new RenderTarget(ctx, fbo);
             }
         }

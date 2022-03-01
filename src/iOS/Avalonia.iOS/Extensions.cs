@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Media;
 using CoreGraphics;
 using UIKit;

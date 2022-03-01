@@ -1,7 +1,11 @@
-using System;
 using Avalonia.OpenGL;
 using CoreAnimation;
 using OpenGLES;
+
+// We can't import System because System has a type called nint on iOS and Mac Catalyst.
+// As such, throughout this file System is fully qualified.
+// See https://github.com/xamarin/xamarin-macios/issues/10508
+// And https://github.com/dotnet/Silk.NET/blob/main/src/Windowing/Silk.NET.Windowing.Sdl/SdlView.cs
 
 namespace Avalonia.iOS
 {
@@ -92,11 +96,11 @@ namespace Avalonia.iOS
             _gl.DeleteRenderbuffers(1, _depthBuffer);
             _gl.DeleteRenderbuffers(1, _renderbuffer);
             if (_context != EAGLContext.CurrentContext)
-                throw new InvalidOperationException("Associated EAGLContext is not current");
+                throw new System.InvalidOperationException("Associated EAGLContext is not current");
         }
     }
 
-    class SizeSynchronizedLayerFbo : IDisposable
+    class SizeSynchronizedLayerFbo : System.IDisposable
     {
         private readonly EAGLContext _context;
         private readonly GlInterface _gl;
@@ -130,7 +134,7 @@ namespace Avalonia.iOS
         public void Dispose()
         {
             if (_context != EAGLContext.CurrentContext)
-                throw new InvalidOperationException("Associated EAGLContext is not current");
+                throw new System.InvalidOperationException("Associated EAGLContext is not current");
             _fbo?.Dispose();
             _fbo = null;
         }
@@ -138,7 +142,7 @@ namespace Avalonia.iOS
         public void Bind()
         {
             if(!Sync())
-                throw new InvalidOperationException("Unable to create a render target");
+                throw new System.InvalidOperationException("Unable to create a render target");
             _fbo.Bind();
         }
 

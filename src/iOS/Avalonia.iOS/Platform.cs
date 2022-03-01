@@ -1,5 +1,3 @@
-using System;
-
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -32,11 +30,11 @@ namespace Avalonia.iOS
             public Size TouchDoubleClickSize => new Size(10, 10);
 
             /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-            public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(500);
+            public System.TimeSpan TouchDoubleClickTime => System.TimeSpan.FromMilliseconds(500);
 
             public Size DoubleClickSize => new Size(4, 4);
 
-            public TimeSpan DoubleClickTime => TouchDoubleClickTime;
+            public System.TimeSpan DoubleClickTime => TouchDoubleClickTime;
         }
 
         public static void Register()

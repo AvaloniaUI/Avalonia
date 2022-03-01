@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -13,14 +12,14 @@ namespace Avalonia.iOS
         public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
         public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
         
-        public event Action<DispatcherPriority?> Signaled;
+        public event System.Action<DispatcherPriority?> Signaled;
         public void RunLoop(CancellationToken cancellationToken)
         {
             //Mobile platforms are using external main loop
-            throw new NotSupportedException(); 
+            throw new System.NotSupportedException(); 
         }
         
-        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
+        public System.IDisposable StartTimer(DispatcherPriority priority, System.TimeSpan interval, System.Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, _ => tick());
 
         public void Signal(DispatcherPriority prio)
