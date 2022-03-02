@@ -69,7 +69,7 @@ namespace Avalonia.Skia
                 return shapedBuffer;
             }
         }
-        
+
         private static void MergeBreakPair(Buffer buffer)
         {
             var length = buffer.Length;
