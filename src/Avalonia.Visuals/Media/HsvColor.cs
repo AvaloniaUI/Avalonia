@@ -55,6 +55,41 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
+        /// <remarks>
+        /// This constructor exists only for internal use where performance is critical.
+        /// Whether or not the channel values are in the correct ranges must be known.
+        /// </remarks>
+        /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
+        /// <param name="hue">The Hue channel value in the range from 0..360.</param>
+        /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
+        /// <param name="value">The Value channel value in the range from 0..1.</param>
+        /// <param name="clampValues">Whether to clamp channel values to their required ranges.</param>
+        internal HsvColor(
+            double alpha,
+            double hue,
+            double saturation,
+            double value,
+            bool clampValues)
+        {
+            if (clampValues)
+            {
+                A = MathUtilities.Clamp(alpha,      0.0, 1.0);
+                H = MathUtilities.Clamp(hue,        0.0, 360.0);
+                S = MathUtilities.Clamp(saturation, 0.0, 1.0);
+                V = MathUtilities.Clamp(value,      0.0, 1.0);
+            }
+            else
+            {
+                A = alpha;
+                H = hue;
+                S = saturation;
+                V = value;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HsvColor"/> struct.
+        /// </summary>
         /// <param name="color">The RGB color to convert to HSV.</param>
         public HsvColor(Color color)
         {
@@ -441,7 +476,7 @@ namespace Avalonia.Media
                 saturation = chroma / value;
             }
 
-            return new HsvColor(a, hue, saturation, value);
+            return new HsvColor(a, hue, saturation, value, false);
         }
 
         /// <summary>
