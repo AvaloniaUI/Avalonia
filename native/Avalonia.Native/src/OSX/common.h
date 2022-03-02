@@ -35,6 +35,7 @@ extern NSMenuItem* GetAppMenuItem ();
 extern void InitializeAvnApp(IAvnApplicationEvents* events);
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
+extern NSRect ToNSRect (AvnRect r);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
 extern CGFloat PrimaryDisplayHeight();

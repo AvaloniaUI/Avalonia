@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation.Peers;
 
 namespace Avalonia.Platform
 {
