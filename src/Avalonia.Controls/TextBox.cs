@@ -354,8 +354,12 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     var caretIndex = CaretIndex;
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
                     
                     CaretIndex = CoerceCaretIndex(caretIndex, value);
+                    SelectionStart = CoerceCaretIndex(selectionStart, value);
+                    SelectionEnd = CoerceCaretIndex(selectionEnd, value);
 
                     if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
                     {
