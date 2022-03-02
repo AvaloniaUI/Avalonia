@@ -118,10 +118,10 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public bool Equals(HsvColor other)
         {
-            if (object.Equals(other.A, A) == false) { return false; }
-            if (object.Equals(other.H, H) == false) { return false; }
-            if (object.Equals(other.S, S) == false) { return false; }
-            if (object.Equals(other.V, V) == false) { return false; }
+            if (other.A != A) { return false; }
+            if (other.H != H) { return false; }
+            if (other.S != S) { return false; }
+            if (other.V != V) { return false; }
 
             return true;
         }
