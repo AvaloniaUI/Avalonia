@@ -76,7 +76,7 @@ namespace Avalonia.Controls
         /// Gets or sets the transform applied to the container visual that
         /// hosts the child of the Viewbox
         /// </summary>
-        protected ITransform? InternalTransform
+        protected internal ITransform? InternalTransform
         {
             get => _containerVisual.RenderTransform;
             set => _containerVisual.RenderTransform = value;
