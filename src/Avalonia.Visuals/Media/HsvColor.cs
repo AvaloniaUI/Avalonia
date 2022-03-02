@@ -153,7 +153,7 @@ namespace Avalonia.Media
         /// <returns>A new <see cref="HsvColor"/> built from the individual color channel values.</returns>
         public static HsvColor FromAhsv(double a, double h, double s, double v)
         {
-            return new HsvColor(h, s, v, a);
+            return new HsvColor(a, h, s, v);
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Avalonia.Media
         /// <returns>A new <see cref="HsvColor"/> built from the individual color channel values.</returns>
         public static HsvColor FromHsv(double h, double s, double v)
         {
-            return new HsvColor(h, s, v, 1.0);
+            return new HsvColor(1.0, h, s, v);
         }
 
         /// <summary>
@@ -441,7 +441,7 @@ namespace Avalonia.Media
                 saturation = chroma / value;
             }
 
-            return new HsvColor(hue, saturation, value, a);
+            return new HsvColor(a, hue, saturation, value);
         }
 
         /// <summary>
