@@ -14,11 +14,6 @@ namespace Avalonia.Media
 #endif
     readonly struct Color : IEquatable<Color>
     {
-        /// <summary>
-        /// Represents a null <see cref="Color"/> with zero set for all channels.
-        /// </summary>
-        public static readonly Color Empty = new Color();
-
         static Color()
         {
 #if !BUILDTASK
@@ -45,18 +40,6 @@ namespace Avalonia.Media
         /// Gets the Blue component of the color.
         /// </summary>
         public byte B { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this <see cref="Color"/> is uninitialized and
-        /// considered null.
-        /// </summary>
-        public bool IsEmpty
-        {
-            get => A == 0 &&
-                   R == 0 &&
-                   G == 0 &&
-                   B == 0;
-        }
 
         public Color(byte a, byte r, byte g, byte b)
         {

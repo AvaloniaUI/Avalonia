@@ -16,11 +16,6 @@ namespace Avalonia.Media
 #endif
     readonly struct HsvColor : IEquatable<HsvColor>
     {
-        /// <summary>
-        /// Represents a null <see cref="HsvColor"/> with zero set for all channels.
-        /// </summary>
-        public static readonly HsvColor Empty = new HsvColor();
-
         ////////////////////////////////////////////////////////////////////////
         // Constructors
         ////////////////////////////////////////////////////////////////////////
@@ -98,18 +93,6 @@ namespace Avalonia.Media
         /// Gets the Value channel value in the range from 0..1.
         /// </summary>
         public double V { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this <see cref="HsvColor"/> is uninitialized and
-        /// considered null.
-        /// </summary>
-        public bool IsEmpty
-        {
-            get => A == 0 &&
-                   H == 0 &&
-                   S == 0 &&
-                   V == 0;
-        }
 
         ////////////////////////////////////////////////////////////////////////
         // Methods
