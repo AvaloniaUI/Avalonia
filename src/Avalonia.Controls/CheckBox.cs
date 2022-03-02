@@ -1,3 +1,5 @@
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls
@@ -7,5 +9,9 @@ namespace Avalonia.Controls
     /// </summary>
     public class CheckBox : ToggleButton
     {
+        static CheckBox()
+        {
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<CheckBox>(AutomationControlType.CheckBox);
+        }
     }
 }
