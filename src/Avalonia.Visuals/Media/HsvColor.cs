@@ -36,15 +36,15 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
+        /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
         /// <param name="hue">The Hue channel value in the range from 0..360.</param>
         /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
         /// <param name="value">The Value channel value in the range from 0..1.</param>
-        /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
         public HsvColor(
+            double alpha,
             double hue,
             double saturation,
-            double value,
-            double alpha)
+            double value)
         {
             A = MathUtilities.Clamp((double.IsNaN(alpha) ? 1 : alpha), 0, 1); // Default to no transparency
             H = MathUtilities.Clamp((double.IsNaN(hue) ? 0 : hue), 0, 360);
