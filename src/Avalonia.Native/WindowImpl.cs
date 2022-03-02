@@ -85,7 +85,10 @@ namespace Avalonia.Native
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title) => _native.SetTitle(title);
+        public void SetTitle(string title)
+        {
+            _native.SetTitle(title ?? "");
+        }
 
         public WindowState WindowState
         {
