@@ -16,6 +16,7 @@ using Avalonia.Utilities;
 using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Automation.Peers;
 
 namespace Avalonia.Controls
 {
@@ -1187,6 +1188,11 @@ namespace Avalonia.Controls
             }
             
             e.Pointer.Capture(null);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TextBoxAutomationPeer(this);
         }
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
