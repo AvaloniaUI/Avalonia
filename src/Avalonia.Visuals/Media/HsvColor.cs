@@ -16,10 +16,6 @@ namespace Avalonia.Media
 #endif
     readonly struct HsvColor : IEquatable<HsvColor>
     {
-        ////////////////////////////////////////////////////////////////////////
-        // Constructors
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
@@ -70,10 +66,6 @@ namespace Avalonia.Media
             V = hsv.V;
         }
 
-        ////////////////////////////////////////////////////////////////////////
-        // Properties
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Gets the Alpha (transparency) channel value in the range from 0..1.
         /// </summary>
@@ -93,10 +85,6 @@ namespace Avalonia.Media
         /// Gets the Value channel value in the range from 0..1.
         /// </summary>
         public double V { get; }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
         public bool Equals(HsvColor other)
@@ -150,10 +138,6 @@ namespace Avalonia.Media
             // Use the by-channel conversion method directly for performance
             return HsvColor.ToRgb(H, S, V, A);
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Static Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Creates a new <see cref="HsvColor"/> from individual color channel values.
@@ -459,10 +443,6 @@ namespace Avalonia.Media
 
             return new HsvColor(hue, saturation, value, a);
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Operators
-        ////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Indicates whether the values of two specified <see cref="HsvColor"/> objects are equal.
