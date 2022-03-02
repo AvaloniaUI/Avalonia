@@ -27,10 +27,10 @@ namespace Avalonia.Media
             double saturation,
             double value)
         {
-            A = 1.0;
-            H = MathUtilities.Clamp((double.IsNaN(hue) ? 0 : hue), 0, 360);
-            S = MathUtilities.Clamp((double.IsNaN(saturation) ? 0 : saturation), 0, 1);
-            V = MathUtilities.Clamp((double.IsNaN(value) ? 0 : value), 0, 1);
+            A = 1.0; // Default to no transparency
+            H = MathUtilities.Clamp(hue,        0.0, 360.0);
+            S = MathUtilities.Clamp(saturation, 0.0, 1.0);
+            V = MathUtilities.Clamp(value,      0.0, 1.0);
         }
 
         /// <summary>
@@ -46,10 +46,10 @@ namespace Avalonia.Media
             double saturation,
             double value)
         {
-            A = MathUtilities.Clamp((double.IsNaN(alpha) ? 1 : alpha), 0, 1); // Default to no transparency
-            H = MathUtilities.Clamp((double.IsNaN(hue) ? 0 : hue), 0, 360);
-            S = MathUtilities.Clamp((double.IsNaN(saturation) ? 0 : saturation), 0, 1);
-            V = MathUtilities.Clamp((double.IsNaN(value) ? 0 : value), 0, 1);
+            A = MathUtilities.Clamp(alpha,      0.0, 1.0);
+            H = MathUtilities.Clamp(hue,        0.0, 360.0);
+            S = MathUtilities.Clamp(saturation, 0.0, 1.0);
+            V = MathUtilities.Clamp(value,      0.0, 1.0);
         }
 
         /// <summary>
