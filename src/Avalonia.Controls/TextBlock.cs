@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Text;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
-using Avalonia.LogicalTree;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -568,6 +567,11 @@ namespace Avalonia.Controls
             _textLayout = null;
 
             return finalSize;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TextBlockAutomationPeer(this);
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
