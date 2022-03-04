@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:TransitioningContentControlPageViewModel"
+             x:CompileBindings="True"
+             x:Class="ControlCatalog.Pages.TransitioningContentControlPage">
+
+    <UserControl.DataContext>
+        <vm:TransitioningContentControlPageViewModel />
+    </UserControl.DataContext>
+    <DockPanel LastChildFill="True">
+
+        <TextBlock DockPanel.Dock="Top" Classes="h2">The TransitioningContentControl control allows you to show a page transition whenever the Content changes.</TextBlock>
+
+        <Border DockPanel.Dock="Bottom" Background="{DynamicResource ThemeControlLowBrush}">
+            <StackPanel Margin="5" Spacing="5">
+                <TextBlock>Select a transition</TextBlock>
+               <ComboBox Items="{Binding PageTransitions}" SelectedItem="{Binding SelectedTransition}" /> 
+            </StackPanel>
+        </Border>
+        
+        <Button DockPanel.Dock="Left" Command="{Binding PrevImage}" Content="&lt;" />
+        <Button DockPanel.Dock="Right" Command="{Binding NextImage}" Content=">" />
+<TransitioningContentControl Content="{Binding SelectedImage}" PageTransition="{Binding SelectedTransition.Transition}" >
+    <TransitioningContentControl.ContentTemplate>
+        <DataTemplate DataType="Bitmap">
+            <Image Source="{Binding}"  />
+        </DataTemplate>
+    </TransitioningContentControl.ContentTemplate>
+</TransitioningContentControl>
+</DockPanel>
+</UserControl>
