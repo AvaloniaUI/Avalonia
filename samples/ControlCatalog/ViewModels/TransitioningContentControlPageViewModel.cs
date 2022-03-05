@@ -30,11 +30,13 @@ namespace ControlCatalog.ViewModels
             }
 
             SelectedImage = Images[0];
-            SelectedTransition = PageTransitions[0];
+            SelectedTransition = PageTransitions[1];
         }
 
         public List<PageTransition> PageTransitions { get; } = new List<PageTransition>()
         {
+            new PageTransition("None", null),
+            new PageTransition("CrossFade", new CrossFade(TimeSpan.FromMilliseconds(500))),
             new PageTransition("Slide horizontally", new PageSlide(TimeSpan.FromMilliseconds(500), PageSlide.SlideAxis.Horizontal)),
             new PageTransition("Slide vertically", new PageSlide(TimeSpan.FromMilliseconds(500), PageSlide.SlideAxis.Vertical))
         };
@@ -65,6 +67,38 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _SelectedTransition, value); }
         }
 
+
+
+        private bool _ClipToBounds;
+
+        /// <summary>
+        /// Gets or sets if the content should be clipped to bounds
+        /// </summary>
+        public bool ClipToBounds
+        {
+            get { return _ClipToBounds; }
+            set { this.RaiseAndSetIfChanged(ref _ClipToBounds, value); }
+        }
+
+
+        private int _Duration = 500;
+
+        /// <summary>
+        /// Gets or Sets the duration
+        /// </summary>
+        public int Duration 
+        {
+            get { return _Duration; }
+            set 
+            { 
+                this.RaiseAndSetIfChanged(ref _Duration , value);
+
+                PageTransitions[1].Transition = new CrossFade(TimeSpan.FromMilliseconds(value));
+                PageTransitions[2].Transition = new PageSlide(TimeSpan.FromMilliseconds(value), PageSlide.SlideAxis.Horizontal);
+                PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(value), PageSlide.SlideAxis.Vertical);
+            }
+        }
+
         public void NextImage()
         {
             var index = Images.IndexOf(SelectedImage) + 1;
@@ -90,7 +124,7 @@ namespace ControlCatalog.ViewModels
         }
     }
 
-    public class PageTransition
+    public class PageTransition : ViewModelBase
     {
         public PageTransition(string displayTitle, IPageTransition transition)
         {
@@ -99,7 +133,18 @@ namespace ControlCatalog.ViewModels
         }
 
         public string DisplayTitle { get; }
-        public IPageTransition Transition { get; }
+
+
+        private IPageTransition _Transition;
+
+        /// <summary>
+        /// Gets or sets the transition
+        /// </summary>
+        public IPageTransition Transition
+        {
+            get { return _Transition; }
+            set { this.RaiseAndSetIfChanged(ref _Transition, value); }
+        }
 
         public override string ToString()
         {
