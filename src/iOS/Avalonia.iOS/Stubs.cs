@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Avalonia.Input;
 using Avalonia.Platform;
@@ -17,9 +18,9 @@ namespace Avalonia.iOS
 
     class WindowingPlatformStub : IWindowingPlatform
     {
-        public IWindowImpl CreateWindow() => throw new System.NotSupportedException();
+        public IWindowImpl CreateWindow() => throw new NotSupportedException();
 
-        public IWindowImpl CreateEmbeddableWindow() => throw new System.NotSupportedException();
+        public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
         public ITrayIconImpl CreateTrayIcon() => null;
     }

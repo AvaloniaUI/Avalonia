@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -24,10 +25,10 @@ namespace Avalonia.iOS
             return Task.FromResult(0);
         }
 
-        public Task SetDataObjectAsync(IDataObject data) => throw new System.PlatformNotSupportedException();
+        public Task SetDataObjectAsync(IDataObject data) => throw new PlatformNotSupportedException();
 
-        public Task<string[]> GetFormatsAsync() => throw new System.PlatformNotSupportedException();
+        public Task<string[]> GetFormatsAsync() => throw new PlatformNotSupportedException();
 
-        public Task<object> GetDataAsync(string format) => throw new System.PlatformNotSupportedException();
+        public Task<object> GetDataAsync(string format) => throw new PlatformNotSupportedException();
     }
 }

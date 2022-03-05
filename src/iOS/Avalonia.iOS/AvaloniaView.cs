@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
@@ -93,14 +94,14 @@ namespace Avalonia.iOS
             public Size? FrameSize => null;
             public double RenderScaling => _view.ContentScaleFactor;
             public IEnumerable<object> Surfaces { get; set; }
-            public System.Action<RawInputEventArgs> Input { get; set; }
-            public System.Action<Rect> Paint { get; set; }
-            public System.Action<Size, PlatformResizeReason> Resized { get; set; }
-            public System.Action<double> ScalingChanged { get; set; }
-            public System.Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
-            public System.Action Closed { get; set; }
+            public Action<RawInputEventArgs> Input { get; set; }
+            public Action<Rect> Paint { get; set; }
+            public Action<Size, PlatformResizeReason> Resized { get; set; }
+            public Action<double> ScalingChanged { get; set; }
+            public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+            public Action Closed { get; set; }
 
-            public System.Action LostFocus { get; set; }
+            public Action LostFocus { get; set; }
 
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();

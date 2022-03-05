@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Avalonia.iOS
 {
     class DisplayLinkTimer : IRenderTimer
     {
-        public event System.Action<System.TimeSpan> Tick;
+        public event Action<TimeSpan> Tick;
         private Stopwatch _st = Stopwatch.StartNew();
 
         public DisplayLinkTimer()
