@@ -86,10 +86,13 @@ namespace Avalonia.OpenGL
         public GlViewport Viewport { get; }
         
         [GlEntryPoint("glFlush")]
-        public Action Flush { get; }
+        public UnmanagedAction Flush { get; }
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate void UnmanagedAction();
         
         [GlEntryPoint("glFinish")]
-        public Action Finish { get; }
+        public UnmanagedAction Finish { get; }
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate IntPtr GlGetString(int v);
