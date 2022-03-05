@@ -1,9 +1,24 @@
 using System;
+
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+
+namespace Avalonia
+{
+    public static class IOSApplicationExtensions
+    {
+        public static T UseiOS<T>(this T builder) where T : AppBuilderBase<T>, new()
+        {
+            return builder
+                .UseWindowingSubsystem(iOS.Platform.Register, "iOS")
+                .UseSkia();
+        }
+    }
+}
 
 namespace Avalonia.iOS
 {
