@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -492,6 +493,11 @@ namespace Avalonia.Controls
                 _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new MenuItemAutomationPeer(this);
         }
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)

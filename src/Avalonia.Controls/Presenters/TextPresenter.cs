@@ -394,10 +394,14 @@ namespace Avalonia.Controls.Presenters
             var x = Math.Floor(_caretBounds.X) + 0.5;
             var y = Math.Floor(_caretBounds.Y) + 0.5;
             var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
+            
+            var caretIndex = _lastCharacterHit.FirstCharacterIndex + _lastCharacterHit.TrailingLength;
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, _lastCharacterHit.TrailingLength > 0);
+            var textLine = TextLayout.TextLines[lineIndex];
 
-            if (x >= Bounds.Width)
+            if (_caretBounds.X > 0 && _caretBounds.X >= textLine.WidthIncludingTrailingWhitespace)
             {
-                x = Math.Floor(_caretBounds.X - 1) + 0.5;
+                x -= 1;
             }
             
             return (new Point(x, y), new Point(x, b));
@@ -468,8 +472,8 @@ namespace Avalonia.Controls.Presenters
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
-            var selectionStart = SelectionStart;
-            var selectionEnd = SelectionEnd;
+            var selectionStart = CoerceCaretIndex(SelectionStart);
+            var selectionEnd = CoerceCaretIndex(SelectionEnd);
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
@@ -512,11 +516,9 @@ namespace Avalonia.Controls.Presenters
             _textLayout = null;
             
             InvalidateArrange();
+
+            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, 1);
             
-            var scale = LayoutHelper.GetLayoutScale(this);
-
-            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, scale);
-
             return new Size(measuredSize.Width, measuredSize.Height);
         }
 
