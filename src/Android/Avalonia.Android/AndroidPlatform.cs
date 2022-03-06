@@ -19,7 +19,7 @@ namespace Avalonia
     public static class AndroidApplicationExtensions
     {
 
-        public static T UseAndroid<T>(this T builder, AvaloniaView view) where T : AppBuilderBase<T>, new()
+        public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
