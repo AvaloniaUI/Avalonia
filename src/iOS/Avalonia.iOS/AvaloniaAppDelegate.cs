@@ -6,6 +6,17 @@ namespace Avalonia.iOS
     public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate
         where TApp : Application, new()
     {
+        class SingleViewLifetime : ISingleViewApplicationLifetime
+        {
+            public AvaloniaView View;
+
+            public Control MainView
+            {
+                get => View.Content;
+                set => View.Content = value;
+            }
+        }
+
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseiOS();
         
         [Export("window")]
