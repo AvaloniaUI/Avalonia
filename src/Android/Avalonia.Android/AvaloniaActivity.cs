@@ -1,15 +1,30 @@
-using Android.App;
 using Android.OS;
-using Android.Views;
-using Android.Content.PM;
 using AndroidX.AppCompat.App;
 using Android.Content.Res;
 using AndroidX.Lifecycle;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls;
 
 namespace Avalonia.Android
 {
     public abstract class AvaloniaActivity : AppCompatActivity
     {
+        class SingleViewLifetime : ISingleViewApplicationLifetime
+        {
+            public SingleViewLifetime(AvaloniaView view)
+            {
+                View = view;
+            }
+
+            public AvaloniaView View;
+
+            public Control MainView
+            {
+                get => (Control)View.Content;
+                set => View.Content = value;
+            }
+        }
+
         internal AvaloniaView View;
         internal AvaloniaViewModel _viewModel;
         protected override void OnCreate(Bundle savedInstanceState)
@@ -23,6 +38,8 @@ namespace Avalonia.Android
             {
                 View.Content = _viewModel.Content;
             }
+
+            AvaloniaLocator.CurrentMutable.Bind<ISingleViewApplicationLifetime>().ToConstant(new SingleViewLifetime(View));
 
             base.OnCreate(savedInstanceState);
         }

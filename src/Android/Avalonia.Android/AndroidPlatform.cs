@@ -18,24 +18,17 @@ namespace Avalonia
 {
     public static class AndroidApplicationExtensions
     {
-        class SingleViewLifetime : ISingleViewApplicationLifetime
-        {
-            public AvaloniaView View;
 
-            public Control MainView
-            {
-                get => (Control)View.Content;
-                set => View.Content = value;
-            }
-        }
-
-        public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static T UseAndroid<T>(this T builder, AvaloniaView view) where T : AppBuilderBase<T>, new()
         {
             var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
+
+            var lifetime = AvaloniaLocator.Current.GetService<ISingleViewApplicationLifetime>();
+
             return builder
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(options), "Android")
                 .UseSkia()
-                .SetupWithLifetime(new SingleViewLifetime());
+                .SetupWithLifetime(lifetime);
         }
     }
 }
