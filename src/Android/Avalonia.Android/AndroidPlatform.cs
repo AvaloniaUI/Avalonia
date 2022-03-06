@@ -13,6 +13,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia;
+using static Avalonia.Android.AvaloniaActivity;
 
 namespace Avalonia
 {
@@ -23,6 +24,8 @@ namespace Avalonia
         {
             var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
+            AvaloniaLocator.CurrentMutable.Bind<ISingleViewApplicationLifetime>().ToConstant(new SingleViewLifetime());
+            
             var lifetime = AvaloniaLocator.Current.GetService<ISingleViewApplicationLifetime>();
 
             return builder

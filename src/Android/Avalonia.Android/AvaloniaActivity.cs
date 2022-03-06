@@ -9,13 +9,8 @@ namespace Avalonia.Android
 {
     public abstract class AvaloniaActivity : AppCompatActivity
     {
-        class SingleViewLifetime : ISingleViewApplicationLifetime
+        internal class SingleViewLifetime : ISingleViewApplicationLifetime
         {
-            public SingleViewLifetime(AvaloniaView view)
-            {
-                View = view;
-            }
-
             public AvaloniaView View;
 
             public Control MainView
@@ -34,13 +29,13 @@ namespace Avalonia.Android
 
             _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
 
+            var lifetime = AvaloniaLocator.Current.GetService<ISingleViewApplicationLifetime>() as SingleViewLifetime;
+            lifetime.View = View;
+
             if (_viewModel.Content != null)
             {
                 View.Content = _viewModel.Content;
             }
-
-            AvaloniaLocator.CurrentMutable.Bind<ISingleViewApplicationLifetime>().ToConstant(new SingleViewLifetime(View));
-
             base.OnCreate(savedInstanceState);
         }
         public object Content
