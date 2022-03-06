@@ -22,8 +22,7 @@ namespace ControlCatalog.Android
             if (Avalonia.Application.Current == null)
             {
                 AppBuilder.Configure<App>()
-                    .UseAndroid()
-                    .SetupWithoutStarting();
+                    .UseAndroid();
             }
 
             StartActivity(new Intent(Application.Context, typeof(MainActivity)));

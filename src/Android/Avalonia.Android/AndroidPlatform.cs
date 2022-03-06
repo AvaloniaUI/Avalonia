@@ -4,6 +4,7 @@ using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -14,6 +15,17 @@ using Avalonia.Skia;
 
 namespace Avalonia
 {
+    public class SingleViewLifetime : ISingleViewApplicationLifetime
+    {
+        public AvaloniaView View;
+
+        public Control MainView
+        {
+            get => (Control)View.Content;
+            set => View.Content = value;
+        }
+    }
+
     public static class AndroidApplicationExtensions
     {
         public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
@@ -21,7 +33,8 @@ namespace Avalonia
             var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
             return builder
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(options), "Android")
-                .UseSkia();
+                .UseSkia()
+                .SetupWithLifetime(new SingleViewLifetime());
         }
     }
 }

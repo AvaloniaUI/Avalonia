@@ -1,5 +1,3 @@
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Foundation;
 using UIKit;
 
@@ -18,7 +16,9 @@ namespace Avalonia.iOS
         {
             var builder = AppBuilder.Configure<TApp>();
             CustomizeAppBuilder(builder);
-            var lifetime = new Lifetime();
+
+            var lifetime = new SingleViewLifetime();
+
             builder.AfterSetup(_ =>
             {
                 Window = new UIWindow();
@@ -34,16 +34,6 @@ namespace Avalonia.iOS
             
             Window.Hidden = false;
             return true;
-        }
-
-        class Lifetime : ISingleViewApplicationLifetime
-        {
-            public AvaloniaView View;
-            public Control MainView
-            {
-                get => View.Content;
-                set => View.Content = value;
-            }
         }
     }
 }
