@@ -1,4 +1,7 @@
 using Foundation;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+
 using UIKit;
 
 namespace Avalonia.iOS
