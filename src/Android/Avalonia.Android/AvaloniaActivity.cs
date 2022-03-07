@@ -7,11 +7,11 @@ using Avalonia.Controls;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaActivity : AppCompatActivity
+    public abstract class AvaloniaActivity<TApp> : AppCompatActivity where TApp : Application, new()
     {
         internal class SingleViewLifetime : ISingleViewApplicationLifetime
         {
-            public AvaloniaView View;
+            public AvaloniaView View { get; internal set; }
 
             public Control MainView
             {
@@ -22,20 +22,33 @@ namespace Avalonia.Android
 
         internal AvaloniaView View;
         internal AvaloniaViewModel _viewModel;
+
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            View = new AvaloniaView(this);
-            SetContentView(View);
+            var builder = AppBuilder.Configure<TApp>();
+            
+            CustomizeAppBuilder(builder);
 
-            _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
+            var lifetime = new SingleViewLifetime();
 
-            var lifetime = AvaloniaLocator.Current.GetService<ISingleViewApplicationLifetime>() as SingleViewLifetime;
-            lifetime.View = View;
-
-            if (_viewModel.Content != null)
+            builder.AfterSetup(x =>
             {
-                View.Content = _viewModel.Content;
-            }
+                View = new AvaloniaView(this);
+                SetContentView(View);
+
+                _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
+                lifetime.View = View;
+
+                if (_viewModel.Content != null)
+                {
+                    View.Content = _viewModel.Content;
+                }
+            });
+
+            builder.SetupWithLifetime(lifetime);
+
             base.OnCreate(savedInstanceState);
         }
         public object Content

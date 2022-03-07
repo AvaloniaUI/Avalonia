@@ -4,8 +4,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -13,18 +11,14 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia;
-using static Avalonia.Android.AvaloniaActivity;
 
 namespace Avalonia
 {
     public static class AndroidApplicationExtensions
     {
-
         public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
-
-            AvaloniaLocator.CurrentMutable.Bind<ISingleViewApplicationLifetime>().ToConstant(new SingleViewLifetime());
             
             var lifetime = AvaloniaLocator.Current.GetService<ISingleViewApplicationLifetime>();
 
