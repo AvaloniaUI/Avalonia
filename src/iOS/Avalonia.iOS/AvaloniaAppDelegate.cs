@@ -8,7 +8,7 @@ namespace Avalonia.iOS
     public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate
         where TApp : Application, new()
     {
-        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseiOS();
         
         [Export("window")]
         public UIWindow Window { get; set; }

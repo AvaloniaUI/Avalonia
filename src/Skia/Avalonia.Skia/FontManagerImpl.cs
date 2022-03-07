@@ -132,7 +132,10 @@ namespace Avalonia.Skia
                     break;
                 }
 
-                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle);
+                // MatchTypeface can return "null" if matched typeface wasn't found for the style
+                // Fallback to the default typeface and styles instead.
+                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
+                    ?? SKTypeface.Default;
             }
             else
             {
