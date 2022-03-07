@@ -1,9 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using Application = Android.App.Application;
-
-using Avalonia;
 
 namespace ControlCatalog.Android
 {
@@ -18,13 +15,6 @@ namespace ControlCatalog.Android
         protected override void OnResume()
         {
             base.OnResume();
-
-            if (Avalonia.Application.Current == null)
-            {
-                AppBuilder.Configure<App>()
-                    .UseAndroid()
-                    .SetupWithoutStarting();
-            }
 
             StartActivity(new Intent(Application.Context, typeof(MainActivity)));
         }
