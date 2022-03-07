@@ -636,7 +636,7 @@ namespace Avalonia.Win32
             if (_windowProperties.IsResizable)
             {
 #if USE_MANAGED_DRAG
-            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
+                _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
                 _mouseDevice.Capture(null);
                 DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
