@@ -648,13 +648,16 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
+            if (_windowProperties.IsResizable)
+            {
 #if USE_MANAGED_DRAG
-            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
+                _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
-            _mouseDevice.Capture(null);
-            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+                _mouseDevice.Capture(null);
+                DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
+                    new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
 #endif
+            }
         }
 
         public void SetTitle(string title)
