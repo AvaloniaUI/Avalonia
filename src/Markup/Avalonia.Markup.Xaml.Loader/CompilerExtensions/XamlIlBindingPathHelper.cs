@@ -72,10 +72,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         private static XamlIlBindingPathNode TransformForTargetTyping(XamlIlBindingPathNode transformed, AstTransformationContext context)
         {
-            if (context.ParentNodes().OfType<XamlPropertyAssignmentNode>().FirstOrDefault().Property.Getter.ReturnType == context.GetAvaloniaTypes().ICommand
-                && transformed.Elements[transformed.Elements.Count - 1] is XamlIlClrMethodPathElementNode method)
+            var parentNode = context.ParentNodes().OfType<XamlPropertyAssignmentNode>().FirstOrDefault();
+
+            if (parentNode == null)
             {
-                IXamlMethod executeMethod = method.Method;
+                return transformed;
+            }
+
+            var lastElement =
+                transformed.Elements[transformed.Elements.Count - 1];
+            
+            if (parentNode.Property?.Getter?.ReturnType == context.GetAvaloniaTypes().ICommand && lastElement is XamlIlClrMethodPathElementNode methodPathElement)
+            {
+                IXamlMethod executeMethod = methodPathElement.Method;
                 IXamlMethod canExecuteMethod = executeMethod.DeclaringType.FindMethod(new FindMethodMethodSignature($"Can{executeMethod.Name}", context.Configuration.WellKnownTypes.Boolean, context.Configuration.WellKnownTypes.Object));
                 List<string> dependsOnProperties = new();
                 if (canExecuteMethod is not null)

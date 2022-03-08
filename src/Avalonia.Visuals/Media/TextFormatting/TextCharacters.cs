@@ -176,6 +176,12 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
 
+                //Stop at the first missing glyph
+                if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                {
+                    break;
+                }
+                
                 if (currentScript != script)
                 {
                     if (script is Script.Unknown || currentScript != Script.Common &&
@@ -190,12 +196,6 @@ namespace Avalonia.Media.TextFormatting
                             break;
                         }
                     }
-                }
-
-                //Stop at the first missing glyph
-                if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
-                {
-                    break;
                 }
 
                 length += currentGrapheme.Text.Length;
