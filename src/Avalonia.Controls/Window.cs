@@ -879,7 +879,7 @@ namespace Avalonia.Controls
 
             if (startupLocation == WindowStartupLocation.CenterScreen)
             {
-                Screen screen = null;
+                Screen? screen = null;
 
                 if (owner is not null)
                 {
