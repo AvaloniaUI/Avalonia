@@ -20,23 +20,23 @@ namespace Avalonia.Controls.Primitives
         /// Sets the control to display in the popup.
         /// </summary>
         /// <param name="control"></param>
-        void SetChild(IControl control);
+        void SetChild(IControl? control);
 
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
-        IContentPresenter Presenter { get; }
+        IContentPresenter? Presenter { get; }
 
         /// <summary>
         /// Gets the root of the visual tree in the case where the popup is presented using a
         /// separate visual tree.
         /// </summary>
-        IVisual HostedVisualTreeRoot { get; }
+        IVisual? HostedVisualTreeRoot { get; }
 
         /// <summary>
         /// Raised when the control's template is applied.
         /// </summary>
-        event EventHandler<TemplateAppliedEventArgs> TemplateApplied;
+        event EventHandler<TemplateAppliedEventArgs>? TemplateApplied;
 
         /// <summary>
         /// Configures the position of the popup according to a target control and a set of

@@ -146,6 +146,7 @@ namespace Avalonia.Collections
         {
             if (_inner.TryGetValue(key, out var value))
             {
+                _inner.Remove(key);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
 

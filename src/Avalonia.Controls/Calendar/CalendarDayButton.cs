@@ -40,7 +40,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the Calendar associated with this button.
         /// </summary>
-        internal Calendar Owner { get; set; }
+        internal Calendar? Owner { get; set; }
         internal int Index { get; set; }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Avalonia.Controls.Primitives
         /// stylus touches the tablet PC) while the mouse pointer is over a
         /// UIElement.
         /// </summary>
-        public event EventHandler<PointerPressedEventArgs> CalendarDayButtonMouseDown;
+        public event EventHandler<PointerPressedEventArgs>? CalendarDayButtonMouseDown;
 
         /// <summary>
         /// Occurs when the left mouse button is released (or the tip of the
@@ -185,7 +185,7 @@ namespace Avalonia.Controls.Primitives
         /// stylus) is over a UIElement (or while a UIElement holds mouse
         /// capture).
         /// </summary>
-        public event EventHandler<PointerReleasedEventArgs> CalendarDayButtonMouseUp;
+        public event EventHandler<PointerReleasedEventArgs>? CalendarDayButtonMouseUp;
 
         /// <summary>
         /// Provides class handling for the MouseLeftButtonDown event that

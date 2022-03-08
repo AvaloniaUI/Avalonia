@@ -58,7 +58,7 @@ namespace Avalonia.Controls.Primitives
         private Vector _offset;
         private bool _hasInit;
         private bool _suppressUpdateOffset;
-        private ListBoxItem _pressedItem;
+        private ListBoxItem? _pressedItem;
 
         public DateTimePickerPanel()
         {
@@ -271,9 +271,9 @@ namespace Avalonia.Controls.Primitives
 
         public Size Viewport => new Size(0, ItemHeight);
 
-        public event EventHandler ScrollInvalidated;
+        public event EventHandler? ScrollInvalidated;
 
-        public event EventHandler SelectionChanged;
+        public event EventHandler? SelectionChanged;
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -523,40 +523,44 @@ namespace Avalonia.Controls.Primitives
             return newValue;
         }
 
-        private void OnItemPointerDown(object sender, PointerPressedEventArgs e)
+        private void OnItemPointerDown(object? sender, PointerPressedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed &&
+                e.Source is IVisual source)
             {
-                _pressedItem = GetItemFromSource((IVisual)e.Source);
+                _pressedItem = GetItemFromSource(source);
                 e.Handled = true;
             }
         }
 
-        private void OnItemPointerUp(object sender, PointerReleasedEventArgs e)
+        private void OnItemPointerUp(object? sender, PointerReleasedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased &&
-                _pressedItem != null)
+                _pressedItem != null &&
+                e.Source is IVisual source &&
+                GetItemFromSource(source) is ListBoxItem item &&
+                item.Tag is int tag)
             {
-                SelectedValue = (int)GetItemFromSource((IVisual)e.Source).Tag;
+                SelectedValue = tag;
                 _pressedItem = null;
                 e.Handled = true;
             }
         }
 
         //Helper to get ListBoxItem from pointerevent source
-        private ListBoxItem GetItemFromSource(IVisual src)
+        private ListBoxItem? GetItemFromSource(IVisual src)
         {
             var item = src;
             while (item != null && !(item is ListBoxItem))
             {
                 item = item.VisualParent;
             }
-            return (ListBoxItem)item;
+            return (ListBoxItem?)item;
         }
 
         public bool BringIntoView(IControl target, Rect targetRect) { return false; }
 
-        public IControl GetControlInDirection(NavigationDirection direction, IControl from) { return null; }
+        public IControl? GetControlInDirection(NavigationDirection direction, IControl? from) { return null; }
 
         public void RaiseScrollInvalidated(EventArgs e)
         {

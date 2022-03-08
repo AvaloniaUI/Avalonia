@@ -17,9 +17,9 @@ namespace Avalonia.Diagnostics.Views
         public ConsoleView()
         {
             this.InitializeComponent();
-            _historyList = this.FindControl<ListBox>("historyList");
+            _historyList = this.GetControl<ListBox>("historyList");
             ((ILogical)_historyList).LogicalChildren.CollectionChanged += HistoryChanged;
-            _input = this.FindControl<TextBox>("input");
+            _input = this.GetControl<TextBox>("input");
             _input.KeyDown += InputKeyDown;
         }
 
@@ -54,12 +54,12 @@ namespace Avalonia.Diagnostics.Views
                     break;
                 case Key.Up:
                     vm.HistoryUp();
-                    _input.CaretIndex = _input.Text.Length;
+                    _input.CaretIndex = _input.Text?.Length ?? 0;
                     e.Handled = true;
                     break;
                 case Key.Down:
                     vm.HistoryDown();
-                    _input.CaretIndex = _input.Text.Length;
+                    _input.CaretIndex = _input.Text?.Length ?? 0;
                     e.Handled = true;
                     break;
             }

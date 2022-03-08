@@ -11,7 +11,7 @@
     <Setter Property="MinWidth" Value="40"/>
     <Setter Property="MinHeight" Value="40"/>
     <Setter Property="Margin" Value="1"/>
-    <Setter Property="Padding" Value="0,0,0,4"/>
+    <Setter Property="Padding" Value="0,0,0,0"/>
     <!--These are actually set on the CalendarView in WinUI-->
     <Setter Property="Foreground" Value="{DynamicResource CalendarViewCalendarItemForeground}"/>
     <Setter Property="Background" Value="{DynamicResource CalendarViewCalendarItemRevealBackground}"/>

@@ -1,0 +1,99 @@
+﻿<Project Sdk="Xamarin.Legacy.Sdk">
+    <PropertyGroup>
+        <TargetFramework>xamarin.ios10</TargetFramework>
+        <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+        <ProjectGuid>{3AF75F00-B497-4517-9491-922173DE216E}</ProjectGuid>
+        <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>ControlCatalog.iOS.Legacy</RootNamespace>
+        <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+        <AssemblyName>ControlCatalog.iOS.Legacy</AssemblyName>
+        <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
+        <ProvisioningType>manual</ProvisioningType>
+        <MtouchInterpreter>-all</MtouchInterpreter>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
+        <DefineConstants>DEBUG</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <ConsolePause>false</ConsolePause>
+        <MtouchArch>x86_64</MtouchArch>
+        <MtouchLink>None</MtouchLink>
+        <MtouchDebug>true</MtouchDebug>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
+        <DebugType>none</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <MtouchLink>None</MtouchLink>
+        <MtouchArch>x86_64</MtouchArch>
+        <ConsolePause>false</ConsolePause>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\iPhone\Debug</OutputPath>
+        <DefineConstants>DEBUG</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <ConsolePause>false</ConsolePause>
+        <MtouchArch>ARM64</MtouchArch>
+        <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+        <MtouchDebug>true</MtouchDebug>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+        <DebugType>none</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\iPhone\Release</OutputPath>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+        <MtouchArch>ARM64</MtouchArch>
+        <ConsolePause>false</ConsolePause>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="Info.plist" />
+        <Content Include="Entitlements.plist" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="System" />
+        <Reference Include="System.Xml" />
+        <Reference Include="System.Core" />
+        <Reference Include="Xamarin.iOS" />
+    </ItemGroup>
+    <ItemGroup>
+        <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
+            <Visible>false</Visible>
+        </ImageAsset>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Resources\" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
+        <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
+        <Name>Avalonia.Controls</Name>
+      </ProjectReference>
+      <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj">
+        <Project>{4488ad85-1495-4809-9aa4-ddfe0a48527e}</Project>
+        <Name>Avalonia.iOS</Name>
+      </ProjectReference>
+      <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj">
+        <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
+        <Name>ControlCatalog</Name>
+      </ProjectReference>
+    </ItemGroup>
+<!--  <Import Project="..\..\build\LegacyProject.targets" />-->
+<!--  <Import Project="..\..\build\SkiaSharp.props" />-->
+<!--  <Import Project="..\..\build\HarfBuzzSharp.props" />-->
+</Project>

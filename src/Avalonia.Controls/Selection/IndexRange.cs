@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     internal readonly struct IndexRange : IEquatable<IndexRange>

@@ -111,7 +111,7 @@ namespace ControlCatalog.Pages
         private void ScrollTo(int index)
         {
             System.Diagnostics.Debug.WriteLine("Scroll to " + index);
-            var layoutManager = ((Window)this.GetVisualRoot()).LayoutManager;
+            var layoutManager = ((TopLevel)VisualRoot).LayoutManager;
             var element = _repeater.GetOrCreateElement(index);
             layoutManager.ExecuteLayoutPass();
             element.BringIntoView();

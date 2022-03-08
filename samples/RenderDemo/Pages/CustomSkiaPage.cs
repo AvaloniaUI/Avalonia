@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -41,7 +42,10 @@ namespace RenderDemo.Pages
             {
                 var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
                 if (canvas == null)
-                    context.DrawText(Brushes.Black, new Point(), _noSkia.PlatformImpl);
+                    using (var c = new DrawingContext(context, false))
+                    {
+                        c.DrawText(_noSkia, new Point());
+                    }
                 else
                 {
                     canvas.Save();
@@ -108,10 +112,9 @@ namespace RenderDemo.Pages
         
         public override void Render(DrawingContext context)
         {
-            var noSkia = new FormattedText()
-            {
-                Text = "Current rendering API is not Skia"
-            };
+            var noSkia = new FormattedText("Current rendering API is not Skia", CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, Typeface.Default, 12, Brushes.Black);
+
             context.Custom(new CustomDrawOp(new Rect(0, 0, Bounds.Width, Bounds.Height), noSkia));
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
         }

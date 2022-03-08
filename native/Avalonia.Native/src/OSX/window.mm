@@ -5,14 +5,22 @@
 #include "menu.h"
 #include <OpenGL/gl.h>
 #include "rendertarget.h"
+#include "AvnString.h"
+#include "automation.h"
 
-class WindowBaseImpl : public virtual ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
+class WindowBaseImpl : public virtual ComObject,
+    public virtual IAvnWindowBase,
+    public INSWindowHolder
 {
 private:
     NSCursor* cursor;
 
 public:
     FORWARD_IUNKNOWN()
+    BEGIN_INTERFACE_MAP()
+    INTERFACE_MAP_ENTRY(IAvnWindowBase, IID_IAvnWindowBase)
+    END_INTERFACE_MAP()
+
     virtual ~WindowBaseImpl()
     {
         View = NULL;
@@ -115,7 +123,12 @@ public:
     {
         return Window;
     }
-    
+
+    virtual AvnView* GetNSView() override
+    {
+        return View;
+    }
+
     virtual HRESULT Show(bool activate, bool isDialog) override
     {
         START_COM_CALL;
@@ -1396,6 +1409,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     AvnPixelSize _lastPixelSize;
     NSObject<IRenderTarget>* _renderTarget;
     AvnPlatformResizeReason _resizeReason;
+    AvnAccessibilityElement* _accessibilityChild;
 }
 
 - (void)onClosed
@@ -1627,6 +1641,19 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             return;
         }
     }
+    else if (type == Magnify)
+    {
+        delta.X = delta.Y = [event magnification];
+    }
+    else if (type == Rotate)
+    {
+        delta.X = delta.Y = [event rotation];
+    }
+    else if (type == Swipe)
+    {
+        delta.X = [event deltaX];
+        delta.Y = [event deltaY];
+    }
     
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
@@ -1751,6 +1778,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     [self mouseEvent:event withType:Wheel];
     [super scrollWheel:event];
+}
+
+- (void)magnifyWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Magnify];
+    [super magnifyWithEvent:event];
+}
+
+- (void)rotateWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Rotate];
+    [super rotateWithEvent:event];
+}
+
+- (void)swipeWithEvent:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Swipe];
+    [super swipeWithEvent:event];
 }
 
 - (void)mouseEntered:(NSEvent *)event
@@ -2019,6 +2064,37 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _resizeReason = reason;
 }
 
+- (AvnAccessibilityElement *) accessibilityChild
+{
+    if (_accessibilityChild == nil)
+    {
+        auto peer = _parent->BaseEvents->GetAutomationPeer();
+        
+        if (peer == nil)
+            return nil;
+
+        _accessibilityChild = [AvnAccessibilityElement acquire:peer];
+    }
+    
+    return _accessibilityChild;
+}
+
+- (NSArray *)accessibilityChildren
+{
+    auto child = [self accessibilityChild];
+    return NSAccessibilityUnignoredChildrenForOnlyChild(child);
+}
+
+- (id)accessibilityHitTest:(NSPoint)point
+{
+    return [[self accessibilityChild] accessibilityHitTest:point];
+}
+
+- (id)accessibilityFocusedUIElement
+{
+    return [[self accessibilityChild] accessibilityFocusedUIElement];
+}
+
 @end
 
 
@@ -2031,6 +2107,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _isExtended;
     AvnMenu* _menu;
     double _lastScaling;
+    IAvnAutomationPeer* _automationPeer;
+    NSMutableArray* _automationChildren;
 }
 
 -(void) setIsExtended:(bool)value;
@@ -2434,6 +2512,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         }
     }
 }
+
 @end
 
 class PopupImpl : public virtual WindowBaseImpl, public IAvnPopup

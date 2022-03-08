@@ -20,12 +20,11 @@ namespace Avalonia.Input
         /// </summary>
         object? CommandParameter { get; }
 
-
         /// <summary>
-        /// Bor the behavior CanExecuteChanged
+        /// Called for the CanExecuteChanged event when changes are detected.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
         void CanExecuteChanged(object sender, System.EventArgs e);
 
         /// <summary>

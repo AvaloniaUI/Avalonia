@@ -3,6 +3,7 @@ using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Rendering;
 using Avalonia.Web.Blazor.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -25,8 +26,8 @@ namespace Avalonia.Web.Blazor
         private InputHelperInterop _canvasHelper = null!;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
-        private double _dpi;
-        private SKSize _canvasSize;
+        private double _dpi = 1;
+        private SKSize _canvasSize = new (100, 100);
 
         private GRContext? _context;
         private GRGlInterface? _glInterface;
@@ -223,7 +224,7 @@ namespace Avalonia.Web.Blazor
 
         private void OnKeyDown(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Key, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, GetModifiers(e));
         }
 
         private void OnKeyUp(KeyboardEventArgs e)
@@ -248,58 +249,59 @@ namespace Avalonia.Web.Blazor
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-        protected override void OnAfterRender(bool firstRender)
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
+                _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
+                _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
+
+                _inputHelper.Hide();
+                _canvasHelper.SetCursor("default");
+                _topLevelImpl.SetCssCursor = x =>
+                {
+                    _inputHelper.SetCursor(x); //macOS
+                    _canvasHelper.SetCursor(x); //windows
+                };
+
+                Console.WriteLine("starting html canvas setup");
+                _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
+
+                Console.WriteLine("Interop created");
+                _jsGlInfo = _interop.InitGL();
+
+                Console.WriteLine("jsglinfo created - init gl");
+
+                // create the SkiaSharp context
+                if (_context == null)
+                {
+                    Console.WriteLine("create glcontext");
+                    _glInterface = GRGlInterface.Create();
+                    _context = GRContext.CreateGl(_glInterface);
+
+                    var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
+                    // bump the default resource cache limit
+                    _context.SetResourceCacheLimit(options?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
+                    Console.WriteLine("glcontext created and resource limit set");
+                }
+
+                _topLevelImpl.SetSurface(_context, _jsGlInfo, ColorType,
+                    new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi);
+                
+                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+
+                _initialised = true;
+
                 Threading.Dispatcher.UIThread.Post(async () =>
                 {
-                    _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
-                    _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
-
-                    _inputHelper.Hide();
-                    _canvasHelper.SetCursor("default");
-                    _topLevelImpl.SetCssCursor = x =>
-                    {
-                        _inputHelper.SetCursor(x);//macOS
-                        _canvasHelper.SetCursor(x);//windows
-                    };
-
-                    Console.WriteLine("starting html canvas setup");
-                    _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
-
-                    Console.WriteLine("Interop created");
-                    _jsGlInfo = _interop.InitGL();
-
-                    Console.WriteLine("jsglinfo created - init gl");
-
+                    _interop.RequestAnimationFrame(true);
+                    
                     _sizeWatcher = await SizeWatcherInterop.ImportAsync(Js, _htmlCanvas, OnSizeChanged);
                     _dpiWatcher = await DpiWatcherInterop.ImportAsync(Js, OnDpiChanged);
-
-                    Console.WriteLine("watchers created.");
-
-                    // create the SkiaSharp context
-                    if (_context == null)
-                    {
-                        Console.WriteLine("create glcontext");
-                        _glInterface = GRGlInterface.Create();
-                        _context = GRContext.CreateGl(_glInterface);
-
-                        var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
-                        // bump the default resource cache limit
-                        _context.SetResourceCacheLimit(options?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
-                        Console.WriteLine("glcontext created and resource limit set");
-                    }
-
-                    _topLevelImpl.SetSurface(_context, _jsGlInfo, ColorType,
-                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi);
-
-                    _initialised = true;
-
+                    
                     _topLevel.Prepare();
 
                     _topLevel.Renderer.Start();
-                    Invalidate();
                 });
             }
         }
@@ -322,33 +324,47 @@ namespace Avalonia.Web.Blazor
             _interop.Dispose();
         }
 
+        private void ForceBlit()
+        {
+            // Note: this is technically a hack, but it's a kinda unique use case when
+            // we want to blit the previous frame
+            // renderer doesn't have much control over the render target
+            // we render on the UI thread
+            // We also don't want to have it as a meaningful public API.
+            // Therefore we have InternalsVisibleTo hack here.
+
+            if (_topLevel.Renderer is DeferredRenderer dr)
+            {
+                dr.Render(true);
+            }
+        }
+
         private void OnDpiChanged(double newDpi)
         {
-            _dpi = newDpi;
+            if (Math.Abs(_dpi - newDpi) > 0.0001)
+            {
+                _dpi = newDpi;
 
-            _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
-            Invalidate();
+                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+
+                ForceBlit();
+            }
         }
 
         private void OnSizeChanged(SKSize newSize)
         {
-            _canvasSize = newSize;
-
-            _topLevelImpl.SetClientSize(_canvasSize, _dpi);
-
-            Invalidate();
-        }
-
-        public void Invalidate()
-        {
-            if (!_initialised || _canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0 || _jsGlInfo == null)
+            if (_canvasSize != newSize)
             {
-                Console.WriteLine("invalidate ignored");
-                return;
-            }
+                _canvasSize = newSize;
 
-            _interop.RequestAnimationFrame(true, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+
+                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+
+                ForceBlit();
+            }
         }
 
         public void SetActive(bool active)

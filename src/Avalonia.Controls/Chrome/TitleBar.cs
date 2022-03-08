@@ -3,8 +3,6 @@ using System.Reactive.Disposables;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Controls.Chrome
 {
     /// <summary>
@@ -36,7 +34,7 @@ namespace Avalonia.Controls.Chrome
                     }
                 }
 
-                IsVisible = window.PlatformImpl.NeedsManagedDecorations;
+                IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
             }
         }
 

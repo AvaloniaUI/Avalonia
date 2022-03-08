@@ -89,7 +89,9 @@ namespace Avalonia.OpenGL.Controls
                     gl.BindTexture(GL_TEXTURE_2D, 0);
                     gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
                     gl.DeleteFramebuffers(1, new[] { _fb });
+                    _fb = 0;
                     gl.DeleteRenderbuffers(1, new[] { _depthBuffer });
+                    _depthBuffer = 0;
                     _attachment?.Dispose();
                     _attachment = null;
                     _bitmap?.Dispose();

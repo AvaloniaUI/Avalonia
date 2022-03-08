@@ -16,7 +16,7 @@ namespace Avalonia.Controls
         /// Note that this property may remain null if the panel is added to a control that does
         /// not act as a virtualizing controller.
         /// </remarks>
-        IVirtualizingController Controller { get; set; }
+        IVirtualizingController? Controller { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the panel is full.

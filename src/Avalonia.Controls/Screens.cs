@@ -10,30 +10,30 @@ namespace Avalonia.Controls
 {
     public class Screens
     {
-        private readonly IScreenImpl _impl;
+        private readonly IScreenImpl _iScreenImpl;
 
-        public int ScreenCount => _impl.ScreenCount;
-        public IReadOnlyList<Screen> All => _impl?.AllScreens ?? Array.Empty<Screen>();
+        public int ScreenCount => _iScreenImpl?.ScreenCount ?? 0;
+        public IReadOnlyList<Screen> All => _iScreenImpl?.AllScreens ?? Array.Empty<Screen>();
         public Screen? Primary => All.FirstOrDefault(x => x.Primary);
 
-        public Screens(IScreenImpl impl)
+        public Screens(IScreenImpl iScreenImpl)
         {
-            _impl = impl;
+            _iScreenImpl = iScreenImpl;
         }
 
         public Screen? ScreenFromBounds(PixelRect bounds)
         {
-            return _impl.ScreenFromRect(bounds);
+            return _iScreenImpl.ScreenFromRect(bounds);
         }
         
         public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
-            return _impl.ScreenFromWindow(window);
+            return _iScreenImpl.ScreenFromWindow(window);
         }
 
         public Screen? ScreenFromPoint(PixelPoint point)
-        {
-            return _impl.ScreenFromPoint(point);
+        {      
+            return _iScreenImpl.ScreenFromPoint(point);
         }
 
         public Screen? ScreenFromVisual(IVisual visual)

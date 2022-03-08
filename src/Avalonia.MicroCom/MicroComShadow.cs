@@ -23,6 +23,12 @@ namespace Avalonia.MicroCom
         {
             if (MicroComRuntime.TryGetTypeForGuid(*guid, out var type))
                 return QueryInterface(type, ppv);
+            else if (*guid == MicroComRuntime.ManagedObjectInterfaceGuid)
+            {
+                ccw->RefCount++;
+                *ppv = ccw;
+                return 0;
+            }
             else
                 return unchecked((int)0x80004002u);
         }

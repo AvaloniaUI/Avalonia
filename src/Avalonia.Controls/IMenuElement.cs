@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Input;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

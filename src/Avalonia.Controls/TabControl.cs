@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -9,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -38,20 +40,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
             ContentControl.ContentTemplateProperty.AddOwner<TabControl>();
 
         /// <summary>
         /// The selected content property
         /// </summary>
-        public static readonly StyledProperty<object> SelectedContentProperty =
-            AvaloniaProperty.Register<TabControl, object>(nameof(SelectedContent));
+        public static readonly StyledProperty<object?> SelectedContentProperty =
+            AvaloniaProperty.Register<TabControl, object?>(nameof(SelectedContent));
 
         /// <summary>
         /// The selected content template property
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> SelectedContentTemplateProperty =
-            AvaloniaProperty.Register<TabControl, IDataTemplate>(nameof(SelectedContentTemplate));
+        public static readonly StyledProperty<IDataTemplate?> SelectedContentTemplateProperty =
+            AvaloniaProperty.Register<TabControl, IDataTemplate?>(nameof(SelectedContentTemplate));
 
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
@@ -68,6 +70,7 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
         }
 
         /// <summary>
@@ -100,7 +103,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the default data template used to display the content of the selected tab.
         /// </summary>
-        public IDataTemplate ContentTemplate
+        public IDataTemplate? ContentTemplate
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
@@ -112,7 +115,7 @@ namespace Avalonia.Controls
         /// <value>
         /// The content of the selected tab.
         /// </value>
-        public object SelectedContent
+        public object? SelectedContent
         {
             get { return GetValue(SelectedContentProperty); }
             internal set { SetValue(SelectedContentProperty, value); }
@@ -124,15 +127,15 @@ namespace Avalonia.Controls
         /// <value>
         /// The content template of the selected tab.
         /// </value>
-        public IDataTemplate SelectedContentTemplate
+        public IDataTemplate? SelectedContentTemplate
         {
             get { return GetValue(SelectedContentTemplateProperty); }
             internal set { SetValue(SelectedContentTemplateProperty, value); }
         }
 
-        internal ItemsPresenter ItemsPresenterPart { get; private set; }
+        internal ItemsPresenter? ItemsPresenterPart { get; private set; }
 
-        internal IContentPresenter ContentPart { get; private set; }
+        internal IContentPresenter? ContentPart { get; private set; }
 
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;

@@ -10,6 +10,7 @@ namespace Avalonia.ReactiveUI
     /// <summary>
     /// A ContentControl that animates the transition when its content is changed.
     /// </summary>
+    [Obsolete("Use TransitioningContentControl in Avalonia.Controls namespace")]
     public class TransitioningContentControl : ContentControl, IStyleable
     {
         /// <summary>

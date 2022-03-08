@@ -4,11 +4,10 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Controls.Platform
 {
@@ -68,8 +67,8 @@ namespace Avalonia.Controls.Platform
                 window.Deactivated += WindowDeactivated;
             }
 
-            if (_root is TopLevel tl)
-                tl.PlatformImpl.LostFocus += TopLevelLostPlatformFocus;
+            if (_root is TopLevel tl && tl.PlatformImpl is ITopLevelImpl pimpl)
+                pimpl.LostFocus += TopLevelLostPlatformFocus;
 
             _inputManagerSubscription = InputManager?.Process.Subscribe(RawInput);
         }
@@ -101,7 +100,7 @@ namespace Avalonia.Controls.Platform
                 root.Deactivated -= WindowDeactivated;
             }
             
-            if (_root is TopLevel tl)
+            if (_root is TopLevel tl && tl.PlatformImpl != null)
                 tl.PlatformImpl.LostFocus -= TopLevelLostPlatformFocus;
 
             _inputManagerSubscription?.Dispose();
@@ -118,7 +117,7 @@ namespace Avalonia.Controls.Platform
 
         protected static TimeSpan MenuShowDelay { get; } = TimeSpan.FromMilliseconds(400);
 
-        protected internal virtual void GotFocus(object sender, GotFocusEventArgs e)
+        protected internal virtual void GotFocus(object? sender, GotFocusEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 
@@ -128,7 +127,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void LostFocus(object sender, RoutedEventArgs e)
+        protected internal virtual void LostFocus(object? sender, RoutedEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 
@@ -138,7 +137,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void KeyDown(object sender, KeyEventArgs e)
+        protected internal virtual void KeyDown(object? sender, KeyEventArgs e)
         {
             KeyDown(GetMenuItem(e.Source as IControl), e);
         }
@@ -267,7 +266,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void AccessKeyPressed(object sender, RoutedEventArgs e)
+        protected internal virtual void AccessKeyPressed(object? sender, RoutedEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 
@@ -288,7 +287,7 @@ namespace Avalonia.Controls.Platform
             e.Handled = true;
         }
 
-        protected internal virtual void PointerEnter(object sender, PointerEventArgs e)
+        protected internal virtual void PointerEnter(object? sender, PointerEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 
@@ -333,7 +332,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void PointerLeave(object sender, PointerEventArgs e)
+        protected internal virtual void PointerLeave(object? sender, PointerEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 
@@ -368,12 +367,12 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void PointerPressed(object sender, PointerPressedEventArgs e)
+        protected internal virtual void PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
-            var visual = (IVisual)sender;
 
-            if (e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed && item?.HasSubMenu == true)
+            if (sender is IVisual visual &&
+                e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed && item?.HasSubMenu == true)
             {
                 if (item.IsSubMenuOpen)
                 {
@@ -399,7 +398,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void PointerReleased(object sender, PointerReleasedEventArgs e)
+        protected internal virtual void PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 
@@ -410,7 +409,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void MenuOpened(object sender, RoutedEventArgs e)
+        protected internal virtual void MenuOpened(object? sender, RoutedEventArgs e)
         {
             if (e.Source == Menu)
             {
@@ -428,20 +427,18 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void RootPointerPressed(object sender, PointerPressedEventArgs e)
+        protected internal virtual void RootPointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (Menu?.IsOpen == true)
             {
-                var control = e.Source as ILogical;
-
-                if (!Menu.IsLogicalAncestorOf(control))
+                if (e.Source is ILogical control && !Menu.IsLogicalAncestorOf(control))
                 {
                     Menu.Close();
                 }
             }
         }
 
-        protected internal virtual void WindowDeactivated(object sender, EventArgs e)
+        protected internal virtual void WindowDeactivated(object? sender, EventArgs e)
         {
             Menu?.Close();
         }
