@@ -52,5 +52,22 @@ namespace Avalonia.Controls
             var br = visual.PointToScreen(visual.Bounds.BottomRight);
             return ScreenFromBounds(new PixelRect(tl, br));
         }
+
+        public Screen? ScreenFromWindow(Window window)
+        {
+            Screen? screen = null;
+            
+            if (window.PlatformImpl != null)
+            {
+                 screen = _iScreenImpl?.ScreenFromWindow(window.PlatformImpl) ?? null;
+
+                 if (screen is { })
+                 {
+                     return screen;
+                 }
+            }
+
+            return ScreenFromPoint(window.Position);
+        }
     }
 }

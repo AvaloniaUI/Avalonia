@@ -21,5 +21,7 @@ namespace Avalonia.Win32
         {
             return (obj is WinScreen screen) ? this._hMonitor == screen._hMonitor : base.Equals(obj);
         }
+
+        internal IntPtr Handle => _hMonitor;
     }
 }

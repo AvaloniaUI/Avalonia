@@ -879,8 +879,17 @@ namespace Avalonia.Controls
 
             if (startupLocation == WindowStartupLocation.CenterScreen)
             {
-                var screen = Screens.ScreenFromPoint(owner?.Position ?? Position);
-
+                Screen? screen = null;
+                
+                if (Owner is Window ownerWin)
+                {
+                    screen = Screens.ScreenFromWindow(ownerWin);
+                }
+                else
+                {
+                    screen = Screens.ScreenFromPoint(Position);
+                }
+                
                 if (screen != null)
                 {
                     Position = screen.WorkingArea.CenterRect(rect).Position;

@@ -200,5 +200,10 @@ namespace Avalonia.Headless
             new Screen(1, new PixelRect(0, 0, 1920, 1280),
                 new PixelRect(0, 0, 1920, 1280), true),
         };
+        
+        public Screen ScreenFromWindow(IWindowImpl windowImpl)
+        {
+            return null;
+        }
     }
 }

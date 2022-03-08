@@ -17,6 +17,11 @@ namespace Avalonia.X11
         {
             _impl = impl;
         }
+        
+        public Screen ScreenFromWindow(IWindowImpl windowImpl)
+        {
+            return null;
+        }
 
         static unsafe X11Screen[] UpdateWorkArea(X11Info info, X11Screen[] screens)
         {

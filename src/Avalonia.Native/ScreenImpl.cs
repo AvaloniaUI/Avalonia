@@ -42,6 +42,11 @@ namespace Avalonia.Native
                 return Array.Empty<Screen>();
             }
         }
+        
+        public Screen ScreenFromWindow(IWindowImpl windowImpl)
+        {
+            return null;
+        }
 
         public void Dispose ()
         {

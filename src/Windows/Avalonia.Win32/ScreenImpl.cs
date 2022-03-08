@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -69,6 +70,14 @@ namespace Avalonia.Win32
         public void InvalidateScreensCache()
         {
             _allScreens = null;
+        }
+
+        public Screen? ScreenFromWindow(IWindowImpl windowImpl)
+        {
+            var hmonitor = MonitorFromWindow(windowImpl.Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
+
+            return AllScreens.Select(x => x as WinScreen).Where(x => x is { })
+                .FirstOrDefault(x => x.Handle == hmonitor);
         }
     }
 }

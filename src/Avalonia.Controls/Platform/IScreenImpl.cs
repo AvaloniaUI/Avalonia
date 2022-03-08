@@ -7,5 +7,7 @@ namespace Avalonia.Platform
         int ScreenCount { get; }
 
         IReadOnlyList<Screen> AllScreens { get; }
+
+        Screen? ScreenFromWindow(IWindowImpl windowImpl);
     }
 }
