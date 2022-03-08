@@ -107,12 +107,10 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public bool Equals(HsvColor other)
         {
-            if (other.A != A) { return false; }
-            if (other.H != H) { return false; }
-            if (other.S != S) { return false; }
-            if (other.V != V) { return false; }
-
-            return true;
+            return other.A == A &&
+                   other.H == H &&
+                   other.S == S &&
+                   other.V == V;
         }
 
         /// <inheritdoc/>
