@@ -3,8 +3,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ControlCatalog.ViewModels"
+             xmlns:converter="clr-namespace:ControlCatalog.Converter"
+             xmlns:system="using:System"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             Height="{Binding $parent[ScrollViewer].Bounds.Height}"
              x:DataType="vm:TransitioningContentControlPageViewModel"
              x:CompileBindings="True"
              x:Class="ControlCatalog.Pages.TransitioningContentControlPage">
@@ -35,7 +36,14 @@
             </Setter>
         </Style>
     </UserControl.Styles>
-    <DockPanel LastChildFill="True">
+  
+  <UserControl.Resources>
+    <converter:MathSubtractConverter x:Key="MathSubtractConverter" />
+    <system:Double x:Key="TopMargin">8</system:Double>
+  </UserControl.Resources>
+  
+    <DockPanel LastChildFill="True" 
+               Height="{Binding Path=Bounds.Height, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}, Converter={StaticResource MathSubtractConverter},ConverterParameter={StaticResource TopMargin}}">
 
         <TextBlock DockPanel.Dock="Top" Classes="h2">The TransitioningContentControl control allows you to show a page transition whenever the Content changes.</TextBlock>
 
