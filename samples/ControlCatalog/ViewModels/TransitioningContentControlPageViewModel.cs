@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Styling;
+using Avalonia.VisualTree;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -29,17 +34,13 @@ namespace ControlCatalog.ViewModels
                 Images.Add(new Bitmap(assetLoader.Open(new Uri(path))));
             }
 
-            SelectedImage = Images[0];
+            SetupTransitions();
+
             SelectedTransition = PageTransitions[1];
+            SelectedImage = Images[0];
         }
 
-        public List<PageTransition> PageTransitions { get; } = new List<PageTransition>()
-        {
-            new PageTransition("None", null),
-            new PageTransition("CrossFade", new CrossFade(TimeSpan.FromMilliseconds(500))),
-            new PageTransition("Slide horizontally", new PageSlide(TimeSpan.FromMilliseconds(500), PageSlide.SlideAxis.Horizontal)),
-            new PageTransition("Slide vertically", new PageSlide(TimeSpan.FromMilliseconds(500), PageSlide.SlideAxis.Vertical))
-        };
+        public List<PageTransition> PageTransitions { get; } = new List<PageTransition>();
 
         public List<Bitmap> Images { get; } = new List<Bitmap>();
 
@@ -92,11 +93,36 @@ namespace ControlCatalog.ViewModels
             set 
             { 
                 this.RaiseAndSetIfChanged(ref _Duration , value);
-
-                PageTransitions[1].Transition = new CrossFade(TimeSpan.FromMilliseconds(value));
-                PageTransitions[2].Transition = new PageSlide(TimeSpan.FromMilliseconds(value), PageSlide.SlideAxis.Horizontal);
-                PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(value), PageSlide.SlideAxis.Vertical);
+                SetupTransitions();
             }
+        }
+
+        private void SetupTransitions()
+        {
+            if (PageTransitions.Count == 0)
+            {
+                PageTransitions.AddRange(new[] 
+                {
+                    new PageTransition("None"),
+                    new PageTransition("CrossFade"),
+                    new PageTransition("Slide horizontally"),
+                    new PageTransition("Slide vertically"),
+                    new PageTransition("Composite"),
+                    new PageTransition("Custom")
+                });
+            }
+
+            PageTransitions[1].Transition = new CrossFade(TimeSpan.FromMilliseconds(Duration));
+            PageTransitions[2].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlide.SlideAxis.Horizontal);
+            PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlide.SlideAxis.Vertical);
+
+            var compositeTransition = new CompositePageTransition();
+            compositeTransition.PageTransitions.Add(PageTransitions[1].Transition);
+            compositeTransition.PageTransitions.Add(PageTransitions[2].Transition);
+            compositeTransition.PageTransitions.Add(PageTransitions[3].Transition);
+            PageTransitions[4].Transition = compositeTransition;
+
+            PageTransitions[5].Transition = new CustomTransition(TimeSpan.FromMilliseconds(Duration));
         }
 
         public void NextImage()
@@ -126,10 +152,9 @@ namespace ControlCatalog.ViewModels
 
     public class PageTransition : ViewModelBase
     {
-        public PageTransition(string displayTitle, IPageTransition transition)
+        public PageTransition(string displayTitle)
         {
             DisplayTitle = displayTitle;
-            Transition = transition;
         }
 
         public string DisplayTitle { get; }
@@ -151,5 +176,134 @@ namespace ControlCatalog.ViewModels
             return DisplayTitle;
         }
 
+    }
+
+    public class CustomTransition : IPageTransition
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomTransition"/> class.
+        /// </summary>
+        public CustomTransition()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomTransition"/> class.
+        /// </summary>
+        /// <param name="duration">The duration of the animation.</param>
+        public CustomTransition(TimeSpan duration)
+        {
+            Duration = duration;
+        }
+
+        /// <summary>
+        /// Gets the duration of the animation.
+        /// </summary>
+        public TimeSpan Duration { get; set; }
+
+        public async Task Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var tasks = new List<Task>();
+            var parent = GetVisualParent(from, to);
+            var scaleProperty = ScaleTransform.ScaleYProperty;
+
+            if (from != null)
+            {
+                var animation = new Animation
+                {
+                    FillMode = FillMode.Forward,
+                    Children =
+                    {
+                        new KeyFrame
+                        {
+                            Setters = { new Setter { Property = scaleProperty, Value = 1d } },
+                            Cue = new Cue(0d)
+                        },
+                        new KeyFrame
+                        {
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = scaleProperty,
+                                    Value = 0d
+                                }
+                            },
+                            Cue = new Cue(1d)
+                        }
+                    },
+                    Duration = Duration
+                };
+                tasks.Add(animation.RunAsync(from, null, cancellationToken));
+            }
+
+            if (to != null)
+            {
+                to.IsVisible = true;
+                var animation = new Animation
+                {
+                    FillMode = FillMode.Forward,
+                    Children =
+                    {
+                        new KeyFrame
+                        {
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = scaleProperty,
+                                    Value = 0d
+                                }
+                            },
+                            Cue = new Cue(0d)
+                        },
+                        new KeyFrame
+                        {
+                            Setters = { new Setter { Property = scaleProperty, Value = 1d } },
+                            Cue = new Cue(1d)
+                        }
+                    },
+                    Duration = Duration
+                };
+                tasks.Add(animation.RunAsync(to, null, cancellationToken));
+            }
+
+            await Task.WhenAll(tasks);
+
+            if (from != null && !cancellationToken.IsCancellationRequested)
+            {
+                from.IsVisible = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the common visual parent of the two control.
+        /// </summary>
+        /// <param name="from">The from control.</param>
+        /// <param name="to">The to control.</param>
+        /// <returns>The common parent.</returns>
+        /// <exception cref="ArgumentException">
+        /// The two controls do not share a common parent.
+        /// </exception>
+        /// <remarks>
+        /// Any one of the parameters may be null, but not both.
+        /// </remarks>
+        private static IVisual GetVisualParent(IVisual? from, IVisual? to)
+        {
+            var p1 = (from ?? to)!.VisualParent;
+            var p2 = (to ?? from)!.VisualParent;
+
+            if (p1 != null && p2 != null && p1 != p2)
+            {
+                throw new ArgumentException("Controls for PageSlide must have same parent.");
+            }
+
+            return p1 ?? throw new InvalidOperationException("Cannot determine visual parent.");
+        }
     }
 }
