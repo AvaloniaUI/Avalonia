@@ -11,7 +11,7 @@ namespace Avalonia.Platform
         {
             foreach (Screen screen in screens)
             {
-                if (screen.Bounds.Contains(point))
+                if (screen.Bounds.ContainsExclusive(point))
                 {
                     return screen;
                 }
