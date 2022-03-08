@@ -19,23 +19,6 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
-        /// <param name="hue">The Hue channel value in the range from 0..360.</param>
-        /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="value">The Value channel value in the range from 0..1.</param>
-        public HsvColor(
-            double hue,
-            double saturation,
-            double value)
-        {
-            A = 1.0; // Default to no transparency
-            H = MathUtilities.Clamp(hue,        0.0, 360.0);
-            S = MathUtilities.Clamp(saturation, 0.0, 1.0);
-            V = MathUtilities.Clamp(value,      0.0, 1.0);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HsvColor"/> struct.
-        /// </summary>
         /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
         /// <param name="hue">The Hue channel value in the range from 0..360.</param>
         /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
@@ -189,22 +172,6 @@ namespace Avalonia.Media
         public static HsvColor FromAhsv(double a, double h, double s, double v)
         {
             return new HsvColor(a, h, s, v);
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="HsvColor"/> from individual color channel values.
-        /// </summary>
-        /// <remarks>
-        /// This exists for symmetry with the <see cref="Color"/> struct; however, the
-        /// appropriate constructor should commonly be used instead.
-        /// </remarks>
-        /// <param name="h">The Hue channel value in the range from 0..360.</param>
-        /// <param name="s">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="v">The Value channel value in the range from 0..1.</param>
-        /// <returns>A new <see cref="HsvColor"/> built from the individual color channel values.</returns>
-        public static HsvColor FromHsv(double h, double s, double v)
-        {
-            return new HsvColor(1.0, h, s, v);
         }
 
         /// <summary>
