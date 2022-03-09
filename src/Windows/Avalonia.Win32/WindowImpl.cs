@@ -379,13 +379,24 @@ namespace Avalonia.Win32
         {
             if (_isUsingComposition)
             {
-                _blurHost?.SetBlur(transparencyLevel switch
+                var effect = transparencyLevel switch
                 {
                     WindowTransparencyLevel.Mica => BlurEffect.Mica,
                     WindowTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
                     WindowTransparencyLevel.Blur => BlurEffect.Acrylic,
                     _ => BlurEffect.None
-                });
+                };
+
+                if (Win32Platform.WindowsVersion >= WinUICompositorConnection.MinHostBackdropVersion)
+                {
+                    unsafe
+                    {
+                        int pvUseBackdropBrush = effect == BlurEffect.Acrylic ? 1 : 0;
+                        DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
+                    }
+                }
+
+                _blurHost?.SetBlur(effect);
 
                 return transparencyLevel;
             }
