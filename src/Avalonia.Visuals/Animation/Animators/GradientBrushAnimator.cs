@@ -16,8 +16,6 @@ namespace Avalonia.Animation.Animators
     {
         private static readonly RelativePointAnimator s_relativePointAnimator = new RelativePointAnimator();
         private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
-        private static readonly TransformAnimator s_transformAnimator = new TransformAnimator();
-        private static readonly MatrixAnimator _matrixAnimator = new MatrixAnimator();
 
         public override IGradientBrush? Interpolate(double progress, IGradientBrush? oldValue, IGradientBrush? newValue)
         {
@@ -32,7 +30,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableRadialGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform is { } && newValue.Transform is { } ? InterpolateTransform(progress, oldValue.Transform, newValue.Transform) : null,
+                        oldValue.Transform is { } ? new ImmutableTransform(oldValue.Transform.Value) : null,
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldRadial.Center, newRadial.Center),
                         s_relativePointAnimator.Interpolate(progress, oldRadial.GradientOrigin, newRadial.GradientOrigin),
@@ -42,7 +40,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableConicGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform is { } && newValue.Transform is { } ? InterpolateTransform(progress, oldValue.Transform, newValue.Transform) : null,
+                        oldValue.Transform is { } ? new ImmutableTransform(oldValue.Transform.Value) : null,
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldConic.Center, newConic.Center),
                         s_doubleAnimator.Interpolate(progress, oldConic.Angle, newConic.Angle));
@@ -51,7 +49,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableLinearGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform is { } && newValue.Transform is { } ? InterpolateTransform(progress, oldValue.Transform, newValue.Transform) : null,
+                        oldValue.Transform is { } ? new ImmutableTransform(oldValue.Transform.Value) : null,
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldLinear.StartPoint, newLinear.StartPoint),
                         s_relativePointAnimator.Interpolate(progress, oldLinear.EndPoint, newLinear.EndPoint));
@@ -89,11 +87,6 @@ namespace Avalonia.Animation.Animators
             }
             
             return stops;
-        }
-
-        private ImmutableTransform InterpolateTransform(double progress, ITransform oldValue, ITransform newValue)
-        {
-            return new ImmutableTransform(_matrixAnimator.Interpolate(progress, oldValue.Value, newValue.Value));
         }
 
         internal static IGradientBrush ConvertSolidColorBrushToGradient(IGradientBrush gradientBrush, ISolidColorBrush solidColorBrush)

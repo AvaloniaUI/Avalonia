@@ -15,13 +15,6 @@ namespace Avalonia
 #endif
     readonly struct Matrix : IEquatable<Matrix>
     {
-        static Matrix()
-        {
-#if !BUILDTASK
-            Animation.Animation.RegisterAnimator<MatrixAnimator>(prop => typeof(Matrix).IsAssignableFrom(prop.PropertyType));
-#endif
-        }
-
         private readonly double _m11;
         private readonly double _m12;
         private readonly double _m21;
