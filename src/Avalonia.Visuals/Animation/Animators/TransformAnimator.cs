@@ -2,7 +2,6 @@
 using System.Reactive.Disposables;
 using Avalonia.Logging;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Media.Transformation;
 
 namespace Avalonia.Animation.Animators
@@ -12,7 +11,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class TransformAnimator : Animator<double>
     {
-        private DoubleAnimator _doubleAnimator;
+        DoubleAnimator _doubleAnimator;
 
         /// <inheritdoc/>
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> obsMatch, Action onComplete)
