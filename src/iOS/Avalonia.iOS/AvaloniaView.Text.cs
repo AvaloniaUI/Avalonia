@@ -86,11 +86,15 @@ public partial class AvaloniaView : ITextInputMethodImpl
         
         switch (options.ContentType)
         {
-            case TextInputContentType.Email:
-                KeyboardType = UIKeyboardType.EmailAddress;
+            case TextInputContentType.Normal:
+                KeyboardType = UIKeyboardType.Default;
                 break;
-
-            case TextInputContentType.Number:
+            
+            case TextInputContentType.Alpha:
+                KeyboardType = UIKeyboardType.AsciiCapable;
+                break;
+            
+            case TextInputContentType.Digits:
                 KeyboardType = UIKeyboardType.PhonePad;
                 break;
             
@@ -98,21 +102,34 @@ public partial class AvaloniaView : ITextInputMethodImpl
                 KeyboardType = UIKeyboardType.NumberPad;
                 IsSecureEntry = true;
                 break;
-
-            case TextInputContentType.Password:
-                IsSecureEntry = true;
-                break;
-
-            case TextInputContentType.Digits:
+            
+            case TextInputContentType.Number:
                 KeyboardType = UIKeyboardType.PhonePad;
+                break;
+            
+            case TextInputContentType.Email:
+                KeyboardType = UIKeyboardType.EmailAddress;
                 break;
 
             case TextInputContentType.Url:
                 KeyboardType = UIKeyboardType.Url;
                 break;
             
-            case TextInputContentType.Normal:
+            case TextInputContentType.Name:
+                KeyboardType = UIKeyboardType.NamePhonePad;
+                break;
+            
+            case TextInputContentType.Password:
                 KeyboardType = UIKeyboardType.Default;
+                IsSecureEntry = true;
+                break;
+            
+            case TextInputContentType.Social:
+                KeyboardType = UIKeyboardType.Twitter;
+                break;
+                
+            case TextInputContentType.Search:
+                KeyboardType = UIKeyboardType.WebSearch;
                 break;
         }
 
