@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Input.Raw
 {
@@ -21,7 +22,10 @@ namespace Avalonia.Input.Raw
         TouchBegin,
         TouchUpdate,
         TouchEnd,
-        TouchCancel
+        TouchCancel,
+        Magnify,
+        Rotate,
+        Swipe
     }
 
     /// <summary>
@@ -29,6 +33,8 @@ namespace Avalonia.Input.Raw
     /// </summary>
     public class RawPointerEventArgs : RawInputEventArgs
     {
+        private RawPointerPoint _point;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="RawPointerEventArgs"/> class.
         /// </summary>
@@ -54,11 +60,50 @@ namespace Avalonia.Input.Raw
             Type = type;
             InputModifiers = inputModifiers;
         }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RawPointerEventArgs"/> class.
+        /// </summary>
+        /// <param name="device">The associated device.</param>
+        /// <param name="timestamp">The event timestamp.</param>
+        /// <param name="root">The root from which the event originates.</param>
+        /// <param name="type">The type of the event.</param>
+        /// <param name="point">The point properties and position, in client DIPs.</param>
+        /// <param name="inputModifiers">The input modifiers.</param>
+        public RawPointerEventArgs(
+            IInputDevice device,
+            ulong timestamp,
+            IInputRoot root,
+            RawPointerEventType type,
+            RawPointerPoint point, 
+            RawInputModifiers inputModifiers)
+            : base(device, timestamp, root)
+        {
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+
+            Point = point;
+            Type = type;
+            InputModifiers = inputModifiers;
+        }
+
+        /// <summary>
+        /// Gets the pointer properties and position, in client DIPs.
+        /// </summary>
+        public RawPointerPoint Point
+        {
+            get => _point;
+            set => _point = value;
+        }
 
         /// <summary>
         /// Gets the mouse position, in client DIPs.
         /// </summary>
-        public Point Position { get; set; }
+        public Point Position
+        {
+            get => _point.Position;
+            set => _point.Position = value;
+        }
 
         /// <summary>
         /// Gets the type of the event.
@@ -68,6 +113,25 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the input modifiers.
         /// </summary>
-        public RawInputModifiers InputModifiers { get; private set; }
+        public RawInputModifiers InputModifiers { get; set; }
+        
+        /// <summary>
+        /// Points that were traversed by a pointer since the previous relevant event,
+        /// only valid for Move and TouchUpdate
+        /// </summary>
+        public Lazy<IReadOnlyList<RawPointerPoint>?>? IntermediatePoints { get; set; }
+    }
+
+    public struct RawPointerPoint
+    {
+        /// <summary>
+        /// Pointer position, in client DIPs.
+        /// </summary>
+        public Point Position { get; set; }
+        
+        public RawPointerPoint()
+        {
+            Position = default;
+        }
     }
 }

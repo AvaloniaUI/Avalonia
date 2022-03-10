@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -159,7 +161,7 @@ namespace Avalonia.Input
                 case RawPointerEventType.XButton1Down:
                 case RawPointerEventType.XButton2Down:
                     if (ButtonCount(props) > 1)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
+                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints);
                     else
                         e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position,
                             props, keyModifiers);
@@ -170,15 +172,24 @@ namespace Avalonia.Input
                 case RawPointerEventType.XButton1Up:
                 case RawPointerEventType.XButton2Up:
                     if (ButtonCount(props) != 0)
-                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
+                        e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints);
                     else
                         e.Handled = MouseUp(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     break;
                 case RawPointerEventType.Move:
-                    e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
+                    e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints);
                     break;
                 case RawPointerEventType.Wheel:
                     e.Handled = MouseWheel(mouse, e.Timestamp, e.Root, e.Position, props, ((RawMouseWheelEventArgs)e).Delta, keyModifiers);
+                    break;
+                case RawPointerEventType.Magnify:
+                    e.Handled = GestureMagnify(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers);
+                    break;
+                case RawPointerEventType.Rotate:
+                    e.Handled = GestureRotate(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers);
+                    break;
+                case RawPointerEventType.Swipe:
+                    e.Handled = GestureSwipe(mouse, e.Timestamp, e.Root, e.Position, props, ((RawPointerGestureEventArgs)e).Delta, keyModifiers);
                     break;
             }
         }
@@ -263,7 +274,7 @@ namespace Avalonia.Input
         }
 
         private bool MouseMove(IMouseDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties properties,
-            KeyModifiers inputModifiers)
+            KeyModifiers inputModifiers, Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
@@ -283,7 +294,7 @@ namespace Avalonia.Input
             if (source is object)
             {
                 var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, root,
-                    p, timestamp, properties, inputModifiers);
+                    p, timestamp, properties, inputModifiers, intermediatePoints);
 
                 source.RaiseEvent(e);
                 return e.Handled;
@@ -324,9 +335,79 @@ namespace Avalonia.Input
             var hit = HitTest(root, p);
             var source = GetSource(hit);
 
+            // KeyModifiers.Shift should scroll in horizontal direction. This does not work on every platform. 
+            // If Shift-Key is pressed and X is close to 0 we swap the Vector.
+            if (inputModifiers == KeyModifiers.Shift && MathUtilities.IsZero(delta.X))
+            {
+                delta = new Vector(delta.Y, delta.X);
+            }
+
             if (source is not null)
             {
                 var e = new PointerWheelEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
+
+                source?.RaiseEvent(e);
+                return e.Handled;
+            }
+
+            return false;
+        }
+        
+        private bool GestureMagnify(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
+            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers)
+        {
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
+
+            var hit = HitTest(root, p);
+
+            if (hit != null)
+            {
+                var source = GetSource(hit);
+                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureMagnifyEvent, source,
+                    _pointer, root, p, timestamp, props, inputModifiers, delta);
+
+                source?.RaiseEvent(e);
+                return e.Handled;
+            }
+
+            return false;
+        }
+        
+        private bool GestureRotate(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
+            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers)
+        {
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
+
+            var hit = HitTest(root, p);
+
+            if (hit != null)
+            {
+                var source = GetSource(hit);
+                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureRotateEvent, source,
+                    _pointer, root, p, timestamp, props, inputModifiers, delta);
+
+                source?.RaiseEvent(e);
+                return e.Handled;
+            }
+
+            return false;
+        }
+        
+        private bool GestureSwipe(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
+            PointerPointProperties props, Vector delta, KeyModifiers inputModifiers)
+        {
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
+
+            var hit = HitTest(root, p);
+
+            if (hit != null)
+            {
+                var source = GetSource(hit);
+                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureSwipeEvent, source, 
+                    _pointer, root, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
                 return e.Handled;

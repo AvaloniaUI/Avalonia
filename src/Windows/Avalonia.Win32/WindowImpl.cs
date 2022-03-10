@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -13,6 +14,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
@@ -90,6 +92,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private uint _langid;
+        private bool _ignoreWmChar;
 
         public WindowImpl()
         {
@@ -227,7 +230,7 @@ namespace Avalonia.Win32
                     return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
                 }
 
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf<RECT>());
                 return new Size(rect.Width, rect.Height) / RenderScaling;
             }
         }
@@ -264,7 +267,7 @@ namespace Avalonia.Win32
             {
                 if (IsWindowVisible(_hwnd))
                 {
-                    ShowWindow(value, true);
+                    ShowWindow(value, value != WindowState.Minimized); // If the window is minimized, it shouldn't be activated
                 }
 
                 _showWindowState = value;                
@@ -336,7 +339,7 @@ namespace Avalonia.Win32
         private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
         {
             var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf(accent);
+            var accentStructSize = Marshal.SizeOf<AccentPolicy>();
 
             if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
             {
@@ -391,7 +394,7 @@ namespace Avalonia.Win32
                 bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
                 var accent = new AccentPolicy();
-                var accentStructSize = Marshal.SizeOf(accent);
+                var accentStructSize = Marshal.SizeOf<AccentPolicy>();
 
                 if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
                 {
@@ -528,6 +531,7 @@ namespace Avalonia.Win32
             if (_dropTarget != null)
             {
                 OleContext.Current?.UnregisterDragDrop(Handle);
+                _dropTarget.Dispose();
                 _dropTarget = null;
             }
 
@@ -629,13 +633,16 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
+            if (_windowProperties.IsResizable)
+            {
 #if USE_MANAGED_DRAG
-            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
+                _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
-            _mouseDevice.Capture(null);
-            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+                _mouseDevice.Capture(null);
+                DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
+                    new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
 #endif
+            }
         }
 
         public void SetTitle(string title)
@@ -762,7 +769,7 @@ namespace Avalonia.Win32
                 throw new Win32Exception();
             }
 
-            Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+            Handle = new WindowImplPlatformHandle(this);
 
             _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
 
@@ -972,7 +979,7 @@ namespace Avalonia.Win32
             {
                 case WindowState.Minimized:
                     newWindowProperties.IsFullScreen = false;
-                    command = activate ? ShowWindowCommand.Minimize : ShowWindowCommand.ShowMinNoActive;
+                    command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
                     newWindowProperties.IsFullScreen = false;
@@ -1358,5 +1365,13 @@ namespace Avalonia.Win32
         }
 
         public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
+
+        private class WindowImplPlatformHandle : IPlatformHandle
+        {
+            private readonly WindowImpl _owner;
+            public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;
+            public IntPtr Handle => _owner.Hwnd;
+            public string HandleDescriptor => PlatformConstants.WindowHandleType;
+        }
     }
 }

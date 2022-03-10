@@ -12,7 +12,7 @@
         }
 
         /// <inheritdoc/>
-        protected override IControl CreateContainer(object item)
+        protected override IControl? CreateContainer(object item)
         {
             var separator = item as Separator;
             return separator != null ? separator : base.CreateContainer(item);

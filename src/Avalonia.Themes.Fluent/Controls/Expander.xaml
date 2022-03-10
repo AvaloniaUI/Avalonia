@@ -1,8 +1,16 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Orientation="Vertical" Spacing="20" Width="350">
         <Expander ExpandDirection="Up" Header="Expand Up" CornerRadius="25">
+          <Expander.Header>
+            <Grid ColumnDefinitions="*, Auto">
+              <TextBlock Grid.Column="0" Text="Expand" />
+              <TextBlock Grid.Column="1" Text="Up" />
+            </Grid>
+          </Expander.Header>
           <StackPanel>
             <TextBlock>Expanded content</TextBlock>
           </StackPanel>
@@ -69,13 +77,13 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Content="{TemplateBinding Header}"
                         ContentTemplate="{TemplateBinding HeaderTemplate}"
-                        IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                        IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
                         IsEnabled="{TemplateBinding IsEnabled}" />
           <Border x:Name="ExpanderContent"
                   Padding="{DynamicResource ExpanderContentPadding}"
                   Background="{DynamicResource ExpanderDropDownBackground}"
                   BorderBrush="{DynamicResource ExpanderDropDownBorderBrush}"
-                  IsVisible="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                  IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}">
             <ContentPresenter x:Name="PART_ContentPresenter"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -88,7 +96,7 @@
   </Style>
 
   <Style Selector="Expander /template/ ToggleButton#ExpanderHeader">
-    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border x:Name="ToggleButtonBackground">

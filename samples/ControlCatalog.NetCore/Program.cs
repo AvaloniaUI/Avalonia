@@ -118,6 +118,13 @@ namespace ControlCatalog.NetCore
                 })
                 .UseSkia()
                 .UseManagedSystemDialogs()
+                .AfterSetup(builder =>
+                {
+                    builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+                    {
+                        StartupScreenIndex = 1,
+                    });
+                })
                 .LogToTrace();
 
         static void SilenceConsole()

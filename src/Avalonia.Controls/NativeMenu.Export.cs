@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         class NativeMenuInfo
         {
             public bool ChangingIsExported { get; set; }
-            public ITopLevelNativeMenuExporter Exporter { get; }
+            public ITopLevelNativeMenuExporter? Exporter { get; }
 
             public NativeMenuInfo(TopLevel target)
             {

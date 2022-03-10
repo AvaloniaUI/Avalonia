@@ -83,13 +83,6 @@ namespace Avalonia.Platform
         /// </remarks>
         void DrawEllipse(IBrush? brush, IPen? pen, Rect rect);
 
-        /// <summary>
-        /// Draws text.
-        /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
-        /// <param name="origin">The upper-left corner of the text.</param>
-        /// <param name="text">The text.</param>
-        void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text);
 
         /// <summary>
         /// Draws a glyph run.

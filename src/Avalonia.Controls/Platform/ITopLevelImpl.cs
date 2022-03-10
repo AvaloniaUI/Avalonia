@@ -82,27 +82,27 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets a method called when the toplevel receives input.
         /// </summary>
-        Action<RawInputEventArgs> Input { get; set; }
+        Action<RawInputEventArgs>? Input { get; set; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel requires painting.
         /// </summary>
-        Action<Rect> Paint { get; set; }
+        Action<Rect>? Paint { get; set; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel is resized.
         /// </summary>
-        Action<Size, PlatformResizeReason> Resized { get; set; }
+        Action<Size, PlatformResizeReason>? Resized { get; set; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel's scaling changes.
         /// </summary>
-        Action<double> ScalingChanged { get; set; }
+        Action<double>? ScalingChanged { get; set; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel's TransparencyLevel changes.
         /// </summary>
-        Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         /// <summary>
         /// Creates a new renderer for the toplevel.
@@ -138,17 +138,17 @@ namespace Avalonia.Platform
         /// Sets the cursor associated with the toplevel.
         /// </summary>
         /// <param name="cursor">The cursor. Use null for default cursor</param>
-        void SetCursor(ICursorImpl cursor);
+        void SetCursor(ICursorImpl? cursor);
 
         /// <summary>
         /// Gets or sets a method called when the underlying implementation is destroyed.
         /// </summary>
-        Action Closed { get; set; }
+        Action? Closed { get; set; }
         
         /// <summary>
         /// Gets or sets a method called when the input focus is lost.
         /// </summary>
-        Action LostFocus { get; set; }
+        Action? LostFocus { get; set; }
 
         /// <summary>
         /// Gets a mouse device associated with toplevel
@@ -156,7 +156,7 @@ namespace Avalonia.Platform
         [CanBeNull]
         IMouseDevice MouseDevice { get; }
 
-        IPopupImpl CreatePopup();
+        IPopupImpl? CreatePopup();
 
         /// <summary>
         /// Sets the <see cref="WindowTransparencyLevel"/> hint of the TopLevel.

@@ -5,7 +5,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.Themes.Default;
 using Avalonia.Rendering;
@@ -53,11 +53,21 @@ namespace Avalonia.UnitTests
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
-            inputManager: new InputManager());
+            inputManager: new InputManager(),
+            assetLoader: new AssetLoader(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new MockFontManagerImpl(),
+            textShaperImpl: new MockTextShaperImpl());
 
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());
 
+        public static readonly TestServices TextServices = new TestServices(
+            assetLoader: new AssetLoader(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new HarfBuzzFontManagerImpl(),
+            textShaperImpl: new HarfBuzzTextShaperImpl());
+        
         public TestServices(
             IAssetLoader assetLoader = null,
             IFocusManager focusManager = null,
@@ -168,7 +178,7 @@ namespace Avalonia.UnitTests
             };
 
             var baseLight = (IStyle)AvaloniaXamlLoader.Load(
-                new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
+                new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"));
             result.Add(baseLight);
 
             return result;
@@ -177,14 +187,6 @@ namespace Avalonia.UnitTests
         private static IPlatformRenderInterface CreateRenderInterfaceMock()
         {
             return Mock.Of<IPlatformRenderInterface>(x =>
-                x.CreateFormattedText(
-                    It.IsAny<string>(),
-                    It.IsAny<Typeface>(),
-                    It.IsAny<double>(),
-                    It.IsAny<TextAlignment>(),
-                    It.IsAny<TextWrapping>(),
-                    It.IsAny<Size>(),
-                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }

@@ -2,65 +2,67 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Avalonia.Themes.Default.DefaultTheme">
   <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ToolTip.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.DataValidationErrors.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToolTip.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/DataValidationErrors.xaml"/>
 
-  <StyleInclude Source="resm:Avalonia.Themes.Default.FocusAdorner.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Button.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Carousel.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.CheckBox.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.CaptionButtons.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ComboBox.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ComboBoxItem.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ContentControl.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Label.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.GridSplitter.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ItemsControl.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ListBox.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ListBoxItem.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Menu.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ContextMenu.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.MenuItem.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.OverlayPopupHost.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.PathIcon.xaml?assembly=Avalonia.Themes.Default" />
-  <StyleInclude Source="resm:Avalonia.Themes.Default.PopupRoot.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ProgressBar.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.RadioButton.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.RepeatButton.xaml?assembly=Avalonia.Themes.Default" />
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Separator.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Slider.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ScrollBar.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ScrollViewer.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TabStrip.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TabStripItem.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/FocusAdorner.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Button.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Carousel.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CheckBox.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CaptionButtons.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ComboBox.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ComboBoxItem.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ContentControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Label.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/GridSplitter.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ItemsControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ListBox.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ListBoxItem.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Menu.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ContextMenu.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/MenuItem.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/OverlayPopupHost.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/PathIcon.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/PopupRoot.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ProgressBar.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/RadioButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/RepeatButton.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Separator.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Slider.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ScrollBar.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ScrollViewer.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TabStrip.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TabStripItem.xaml"/>
   <!-- TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel-->
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TabControl.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TabItem.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TextBox.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ToggleButton.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Expander.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TitleBar.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TreeView.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TreeViewItem.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.UserControl.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Window.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.EmbeddableControlRoot.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.CalendarButton.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.CalendarDayButton.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.CalendarItem.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.Calendar.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.CalendarDatePicker.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ButtonSpinner.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.NumericUpDown.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.AutoCompleteBox.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.WindowNotificationManager.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.NotificationCard.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.NativeMenuBar.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ToggleSwitch.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.SplitView.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.DatePicker.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.TimePicker.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.FlyoutPresenter.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.MenuFlyoutPresenter.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ManagedFileChooser.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TabControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TabItem.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TextBox.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToggleButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TransitioningContentControl.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Expander.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TitleBar.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TreeView.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TreeViewItem.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/UserControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Window.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/EmbeddableControlRoot.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CalendarButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CalendarDayButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CalendarItem.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Calendar.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CalendarDatePicker.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ButtonSpinner.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/NumericUpDown.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/AutoCompleteBox.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/WindowNotificationManager.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/NotificationCard.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/NativeMenuBar.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToggleSwitch.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/SplitButton.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/SplitView.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/DatePicker.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TimePicker.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/FlyoutPresenter.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/MenuFlyoutPresenter.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ManagedFileChooser.xaml"/>
 </Styles>

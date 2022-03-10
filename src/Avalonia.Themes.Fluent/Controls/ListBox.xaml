@@ -16,6 +16,7 @@
     <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />        
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />        
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />    
     <Setter Property="Template">
       <ControlTemplate>
@@ -28,6 +29,7 @@
           <ScrollViewer Name="PART_ScrollViewer"
                         HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                         VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                        IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                         AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Items="{TemplateBinding Items}"

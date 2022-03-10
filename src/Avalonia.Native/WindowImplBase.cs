@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
@@ -46,6 +47,7 @@ namespace Avalonia.Native
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
+        protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
@@ -61,8 +63,10 @@ namespace Avalonia.Native
         private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
 
-        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface glFeature)
+        internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+            AvaloniaNativePlatformOpenGlInterface glFeature)
         {
+            _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
             _deferredRendering = opts.UseDeferredRendering;
 
@@ -89,6 +93,8 @@ namespace Avalonia.Native
 
             Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);
         }
+
+        public IAvnWindowBase Native => _native;
 
         public Size ClientSize 
         {
@@ -151,7 +157,12 @@ namespace Avalonia.Native
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
 
-        protected unsafe class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
+        public AutomationPeer GetAutomationPeer()
+        {
+            return _inputRoot is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
+        }
+
+        protected unsafe class WindowBaseEvents : NativeCallbackBase, IAvnWindowBaseEvents
         {
             private readonly WindowBaseImpl _parent;
 
@@ -216,7 +227,6 @@ namespace Avalonia.Native
                 return _parent.RawTextInputEvent(timeStamp, text).AsComBool();
             }
 
-
             void IAvnWindowBaseEvents.ScalingChanged(double scaling)
             {
                 _parent._savedScaling = scaling;
@@ -256,8 +266,13 @@ namespace Avalonia.Native
                     return (AvnDragDropEffects)args.Effects;
                 }
             }
-        }
 
+            IAvnAutomationPeer IAvnWindowBaseEvents.AutomationPeer
+            {
+                get => AvnAutomationPeer.Wrap(_parent.GetAutomationPeer());
+            }
+        }
+       
         public void Activate()
         {
             _native?.Activate();
@@ -306,11 +321,28 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot,
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    break;
+                
+                case AvnRawMouseEventType.Magnify:
+                    Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Magnify, 
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    break;
+                    
+                case AvnRawMouseEventType.Rotate:
+                    Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Rotate, 
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    break;
+                
+                case AvnRawMouseEventType.Swipe:
+                    Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Swipe,
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
                     break;
 
                 default:
-                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type,
+                        point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
                     
                     if(!ChromeHitTest(e))
                     {

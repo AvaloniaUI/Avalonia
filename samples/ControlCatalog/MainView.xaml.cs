@@ -63,11 +63,13 @@ namespace ControlCatalog
                     }
                     else if (theme == CatalogTheme.DefaultLight)
                     {
+                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Light;
                         Application.Current.Styles[0] = App.DefaultLight;
                         Application.Current.Styles[1] = App.DataGridDefault;
                     }
                     else if (theme == CatalogTheme.DefaultDark)
                     {
+                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Dark;
                         Application.Current.Styles[0] = App.DefaultDark;
                         Application.Current.Styles[1] = App.DataGridDefault;
                     }

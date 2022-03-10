@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot _owner;
+        private IInputRoot? _owner;
 
         /// <summary>
         /// Gets or sets the window's main menu.
@@ -27,7 +27,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This property is ignored as a menu item cannot have a main menu.
         /// </remarks>
-        public IMainMenu MainMenu { get; set; }
+        public IMainMenu? MainMenu { get; set; }
 
         /// <summary>
         /// Sets the owner of the access key handler.
@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
+            _ = owner ?? throw new ArgumentNullException(nameof(owner));
 
             if (_owner != null)
             {
@@ -84,7 +84,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnTextInput(object sender, TextInputEventArgs e)
+        protected virtual void OnTextInput(object? sender, TextInputEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.Text))
             {

@@ -35,7 +35,7 @@ namespace Avalonia.Layout
         /// </remarks>
         public void OnItemsChanged(
             VirtualizingLayoutContext context,
-            object source,
+            object? source,
             NotifyCollectionChangedEventArgs args) => OnItemsChangedCore(context, source, args);
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Avalonia.Layout
         /// <param name="args">Data about the collection change.</param>
         protected internal virtual void OnItemsChangedCore(
             VirtualizingLayoutContext context,
-            object source,
+            object? source,
             NotifyCollectionChangedEventArgs args) => InvalidateMeasure();
     }
 }

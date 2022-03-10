@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;

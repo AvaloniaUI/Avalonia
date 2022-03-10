@@ -20,13 +20,13 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BorderBrushProperty =
+        public static readonly StyledProperty<IBrush?> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -50,21 +50,21 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly DirectProperty<ContentPresenter, IControl> ChildProperty =
-            AvaloniaProperty.RegisterDirect<ContentPresenter, IControl>(
+        public static readonly DirectProperty<ContentPresenter, IControl?> ChildProperty =
+            AvaloniaProperty.RegisterDirect<ContentPresenter, IControl?>(
                 nameof(Child),
                 o => o.Child);
 
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> ContentProperty =
+        public static readonly StyledProperty<object?> ContentProperty =
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
             ContentControl.ContentTemplateProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -93,9 +93,9 @@ namespace Avalonia.Controls.Presenters
                 nameof(RecognizesAccessKey),
                 cp => cp.RecognizesAccessKey, (cp, value) => cp.RecognizesAccessKey = value);
 
-        private IControl _child;
+        private IControl? _child;
         private bool _createdChild;
-        private IRecyclingDataTemplate _recyclingDataTemplate;
+        private IRecyclingDataTemplate? _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
         private bool _recognizesAccessKey;
 
@@ -120,7 +120,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush with which to paint the background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -129,7 +129,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush with which to paint the border.
         /// </summary>
-        public IBrush BorderBrush
+        public IBrush? BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }
@@ -165,7 +165,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets the control displayed by the presenter.
         /// </summary>
-        public IControl Child
+        public IControl? Child
         {
             get { return _child; }
             private set { SetAndRaise(ChildProperty, ref _child, value); }
@@ -175,7 +175,7 @@ namespace Avalonia.Controls.Presenters
         /// Gets or sets the content to be displayed by the presenter.
         /// </summary>
         [DependsOn(nameof(ContentTemplate))]
-        public object Content
+        public object? Content
         {
             get { return GetValue(ContentProperty); }
             set { SetValue(ContentProperty, value); }
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the data template used to display the content of the control.
         /// </summary>
-        public IDataTemplate ContentTemplate
+        public IDataTemplate? ContentTemplate
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
@@ -229,7 +229,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets the host content control.
         /// </summary>
-        internal IContentPresenterHost Host { get; private set; }
+        internal IContentPresenterHost? Host { get; private set; }
 
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
@@ -321,7 +321,7 @@ namespace Avalonia.Controls.Presenters
         /// Creates the child control.
         /// </summary>
         /// <returns>The child control or null.</returns>
-        protected virtual IControl CreateChild()
+        protected virtual IControl? CreateChild()
         {
             var content = Content;
             var oldChild = Child;
