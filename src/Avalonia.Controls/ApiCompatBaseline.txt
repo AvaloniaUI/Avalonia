@@ -30,6 +30,7 @@ MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDownV
 MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDownValueChangedEventArgs.OldValue.get()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.StyledProperty<System.Boolean> Avalonia.StyledProperty<System.Boolean> Avalonia.Controls.ScrollViewer.AllowAutoHideProperty' does not exist in the implementation but it does exist in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.TopLevel' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.Viewbox' does not inherit from base type 'Avalonia.Controls.Decorator' in the implementation but it does in the contract.
 MembersMustExist : Member 'public Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.Controls.Viewbox.StretchProperty' does not exist in the implementation but it does exist in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.Window' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.WindowBase' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
@@ -68,4 +69,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.ITrayIconImpl Avalonia.Platform.IWindowingPlatform.CreateTrayIcon()' is present in the implementation but not in the contract.
-Total Issues: 69
+Total Issues: 70

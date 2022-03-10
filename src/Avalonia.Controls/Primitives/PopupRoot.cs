@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -44,7 +45,7 @@ namespace Avalonia.Controls.Primitives
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
         public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver? dependencyResolver)
-            : base(ValidatingPopupImpl.Wrap(impl), dependencyResolver)
+            : base(impl, dependencyResolver)
         {
             _parent = parent;
         }
@@ -167,6 +168,11 @@ namespace Avalonia.Controls.Primitives
             _positionerParameters.Size = size;
             UpdatePosition();
             return ClientSize;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new PopupRootAutomationPeer(this);
         }
     }
 }

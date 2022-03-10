@@ -1,3 +1,5 @@
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -33,6 +35,7 @@ namespace Avalonia.Controls
         {
             AffectsRender<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
             AffectsMeasure<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Image>(AutomationControlType.Image);
         }
 
         /// <summary>

@@ -607,7 +607,7 @@ namespace Avalonia.Media.TextFormatting
 
                 textLines.Add(textLine);
 
-                UpdateBounds(textLine,ref left, ref width, ref height);
+                UpdateBounds(textLine, ref left, ref width, ref height);
 
                 previousLine = textLine;
 

@@ -553,7 +553,7 @@ namespace Avalonia.Media.TextFormatting
                         out _);
 
                 var isAtEnd = foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength ==
-                              TextRange.Length;
+                              TextRange.Start + TextRange.Length;
 
                 if (isAtEnd && !run.GlyphRun.IsLeftToRight)
                 {

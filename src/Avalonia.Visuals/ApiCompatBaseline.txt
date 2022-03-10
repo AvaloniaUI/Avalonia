@@ -6,6 +6,7 @@ MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation
 InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean, System.Threading.CancellationToken)' is present in the implementation but not in the contract.
 MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.PageSlide.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.DrawingContext.DrawText(Avalonia.Media.IBrush, Avalonia.Point, Avalonia.Media.FormattedText)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Boolean Avalonia.Media.FontManager.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Typeface)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.FormattedText..ctor()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.FormattedText..ctor(Avalonia.Platform.IPlatformRenderInterface)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.FormattedText..ctor(System.String, Avalonia.Media.Typeface, System.Double, Avalonia.Media.TextAlignment, Avalonia.Media.TextWrapping, Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
@@ -49,6 +50,8 @@ MembersMustExist : Member 'public void Avalonia.Media.TextHitTestResult..ctor()'
 MembersMustExist : Member 'public void Avalonia.Media.TextHitTestResult.IsInside.set(System.Boolean)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextHitTestResult.IsTrailing.set(System.Boolean)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextHitTestResult.TextPosition.set(System.Int32)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Media.Typeface..ctor(Avalonia.Media.FontFamily, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Media.Typeface..ctor(System.String, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight)' does not exist in the implementation but it does exist in the contract.
 TypeCannotChangeClassification : Type 'Avalonia.Media.Immutable.ImmutableSolidColorBrush' is a 'class' in the implementation but is a 'struct' in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext)' does not exist in the implementation but it does exist in the contract.
 CannotAddAbstractMembers : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext, Avalonia.Point)' is abstract in the implementation but is missing in the contract.
@@ -121,6 +124,9 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 MembersMustExist : Member 'public void Avalonia.Platform.IDrawingContextImpl.DrawText(Avalonia.Media.IBrush, Avalonia.Point, Avalonia.Platform.IFormattedTextImpl)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PopBitmapBlendMode()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PushBitmapBlendMode(Avalonia.Visuals.Media.Imaging.BitmapBlendingMode)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IFontManagerImpl.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Typeface)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public System.Boolean Avalonia.Platform.IFontManagerImpl.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Typeface)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IFontManagerImpl.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontStretch, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Typeface)' is present in the implementation but not in the contract.
 TypesMustExist : Type 'Avalonia.Platform.IFormattedTextImpl' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Double Avalonia.Platform.IGeometryImpl.ContourLength' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Double Avalonia.Platform.IGeometryImpl.ContourLength.get()' is present in the implementation but not in the contract.
@@ -147,4 +153,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Media.GlyphR
 MembersMustExist : Member 'public Avalonia.Media.GlyphRun Avalonia.Platform.ITextShaperImpl.ShapeText(Avalonia.Utilities.ReadOnlySlice<System.Char>, Avalonia.Media.Typeface, System.Double, System.Globalization.CultureInfo)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'protected void Avalonia.Rendering.RendererBase.RenderFps(Avalonia.Platform.IDrawingContextImpl, Avalonia.Rect, System.Nullable<System.Int32>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Utilities.ReadOnlySlice<T>..ctor(System.ReadOnlyMemory<T>, System.Int32, System.Int32)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 147
+Total Issues: 153

@@ -134,8 +134,6 @@ namespace Avalonia.Controls
                     "Could not create window implementation: maybe no windowing subsystem was initialized?");
             }
 
-            impl = ValidatingToplevelImpl.Wrap(impl);
-            
             PlatformImpl = impl;
 
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            

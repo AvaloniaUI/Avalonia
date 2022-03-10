@@ -157,9 +157,10 @@ namespace Avalonia.Headless
             return new List<string> { "Arial" };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
+            FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
         {
-            typeface = new Typeface("Arial", fontStyle, fontWeight);
+            typeface = new Typeface("Arial", fontStyle, fontWeight, fontStretch);
             return true;
         }
     }
