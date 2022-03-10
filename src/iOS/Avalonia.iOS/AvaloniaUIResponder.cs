@@ -80,7 +80,7 @@ public partial class AvaloniaView : ITextInputMethodImpl
 
     }
 
-    void ITextInputMethodImpl.SetOptions(TextInputOptionsQueryEventArgs options)
+    void ITextInputMethodImpl.SetOptions(TextInputOptions options)
     {
         switch (options.ContentType)
         {

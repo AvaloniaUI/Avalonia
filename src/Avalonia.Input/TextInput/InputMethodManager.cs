@@ -40,10 +40,7 @@ namespace Avalonia.Input.TextInput
                     
                     if (_focusedElement is AvaloniaObject target)
                     {
-                        var options =
-                            new TextInputOptionsQueryEventArgs { ContentType = TextInputOptions.GetContentType(target) };
-                        
-                        _im?.SetOptions(options);
+                        _im?.SetOptions(TextInputOptions.FromAvaloniaObject(target));
                     }
 
                     _transformTracker.SetVisual(_client?.TextViewVisual);

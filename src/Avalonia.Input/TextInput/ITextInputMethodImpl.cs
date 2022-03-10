@@ -4,7 +4,7 @@ namespace Avalonia.Input.TextInput
     {
         void SetActive(ITextInputMethodClient? client);
         void SetCursorRect(Rect rect);
-        void SetOptions(TextInputOptionsQueryEventArgs options);
+        void SetOptions(TextInputOptions options);
         void Reset();
     }
     
