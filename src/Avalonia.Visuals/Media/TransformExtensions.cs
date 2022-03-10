@@ -16,9 +16,9 @@ namespace Avalonia.Media
         /// The result of calling <see cref="Transform.ToImmutable"/> if the transform is mutable,
         /// otherwise <paramref name="transform"/>.
         /// </returns>
-        public static ImmutableTransform ToImmutable(this ITransform? transform)
+        public static ImmutableTransform ToImmutable(this ITransform transform)
         {
-            Contract.Requires<ArgumentNullException>(transform != null);
+            _ = transform ?? throw new ArgumentNullException(nameof(transform));
 
             return (transform as Transform)?.ToImmutable() ?? new ImmutableTransform(transform.Value);
         }
