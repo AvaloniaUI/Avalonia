@@ -1,8 +1,5 @@
 using System;
 using System.Globalization;
-#if !BUILDTASK
-using Avalonia.Animation.Animators;
-#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
