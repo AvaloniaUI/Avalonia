@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -13,6 +14,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
@@ -631,13 +633,16 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
+            if (_windowProperties.IsResizable)
+            {
 #if USE_MANAGED_DRAG
-            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
+                _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
-            _mouseDevice.Capture(null);
-            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+                _mouseDevice.Capture(null);
+                DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
+                    new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
 #endif
+            }
         }
 
         public void SetTitle(string title)
@@ -764,7 +769,7 @@ namespace Avalonia.Win32
                 throw new Win32Exception();
             }
 
-            Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+            Handle = new WindowImplPlatformHandle(this);
 
             _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
 
@@ -1360,5 +1365,13 @@ namespace Avalonia.Win32
         }
 
         public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
+
+        private class WindowImplPlatformHandle : IPlatformHandle
+        {
+            private readonly WindowImpl _owner;
+            public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;
+            public IntPtr Handle => _owner.Hwnd;
+            public string HandleDescriptor => PlatformConstants.WindowHandleType;
+        }
     }
 }

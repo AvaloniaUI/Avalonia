@@ -1,28 +1,55 @@
-using Android.App;
 using Android.OS;
-using Android.Views;
-using Android.Content.PM;
 using AndroidX.AppCompat.App;
 using Android.Content.Res;
 using AndroidX.Lifecycle;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaActivity : AppCompatActivity
+    public abstract class AvaloniaActivity<TApp> : AppCompatActivity where TApp : Application, new()
     {
+        internal class SingleViewLifetime : ISingleViewApplicationLifetime
+        {
+            public AvaloniaView View { get; internal set; }
+
+            public Control MainView
+            {
+                get => (Control)View.Content;
+                set => View.Content = value;
+            }
+        }
+
         internal AvaloniaView View;
         internal AvaloniaViewModel _viewModel;
+
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            var builder = AppBuilder.Configure<TApp>();
+            
+            CustomizeAppBuilder(builder);
+
             View = new AvaloniaView(this);
             SetContentView(View);
 
-            _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
+            var lifetime = new SingleViewLifetime();
+            lifetime.View = View;
 
-            if (_viewModel.Content != null)
+            builder.AfterSetup(x =>
             {
-                View.Content = _viewModel.Content;
-            }
+                _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
+
+                if (_viewModel.Content != null)
+                {
+                    View.Content = _viewModel.Content;
+                }
+
+                View.Prepare();
+            });
+
+            builder.SetupWithLifetime(lifetime);
 
             base.OnCreate(savedInstanceState);
         }

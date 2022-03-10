@@ -13,7 +13,7 @@ namespace Avalonia.Utilities
     [DebuggerTypeProxy(typeof(ReadOnlySlice<>.ReadOnlySliceDebugView))]
     public readonly struct ReadOnlySlice<T> : IReadOnlyList<T> where T : struct
     {
-        private readonly int _offset;
+        private readonly int _bufferOffset;
         
         /// <summary>
         /// Gets an empty <see cref="ReadOnlySlice{T}"/>
@@ -24,7 +24,7 @@ namespace Avalonia.Utilities
 
         public ReadOnlySlice(ReadOnlyMemory<T> buffer) : this(buffer, 0, buffer.Length) { }
 
-        public ReadOnlySlice(ReadOnlyMemory<T> buffer, int start, int length, int offset = 0)
+        public ReadOnlySlice(ReadOnlyMemory<T> buffer, int start, int length, int bufferOffset = 0)
         {
 #if DEBUG
             if (start.CompareTo(0) < 0)
@@ -41,7 +41,7 @@ namespace Avalonia.Utilities
             _buffer = buffer;
             Start = start;
             Length = length;
-            _offset = offset;
+            _bufferOffset = bufferOffset;
         }
 
         /// <summary>
@@ -74,12 +74,17 @@ namespace Avalonia.Utilities
         public bool IsEmpty => Length == 0;
 
         /// <summary>
-        ///     The underlying span.
+        ///     Get the underlying span.
         /// </summary>
-        public ReadOnlySpan<T> Span => _buffer.Span.Slice(_offset, Length);
+        public ReadOnlySpan<T> Span => _buffer.Span.Slice(_bufferOffset, Length);
 
         /// <summary>
-        ///     The underlying buffer.
+        ///     Get the buffer offset.
+        /// </summary>
+        public int BufferOffset => _bufferOffset;
+        
+        /// <summary>
+        ///     Get the underlying buffer.
         /// </summary>
         public ReadOnlyMemory<T> Buffer => _buffer;
 
@@ -124,17 +129,17 @@ namespace Avalonia.Utilities
                 return Empty;
             }
 
-            if (start < 0 || _offset + start > _buffer.Length - 1)
+            if (start < 0 || _bufferOffset + start > _buffer.Length - 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(start));
             }
 
-            if (_offset + start + length > _buffer.Length)
+            if (_bufferOffset + start + length > _buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(_buffer, start, length, _offset);
+            return new ReadOnlySlice<T>(_buffer, start, length, _bufferOffset);
         }
 
         /// <summary>
@@ -154,7 +159,7 @@ namespace Avalonia.Utilities
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(_buffer, Start, length, _offset);
+            return new ReadOnlySlice<T>(_buffer, Start, length, _bufferOffset);
         }
 
         /// <summary>
@@ -174,7 +179,7 @@ namespace Avalonia.Utilities
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(_buffer, Start + length, Length - length, _offset + length);
+            return new ReadOnlySlice<T>(_buffer, Start + length, Length - length, _bufferOffset + length);
         }
 
         /// <summary>
