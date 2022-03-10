@@ -18,13 +18,19 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<Brush, double>(nameof(Opacity), 1.0);
 
+        /// <summary>
+        /// Defines the <see cref="Transform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ITransform?> TransformProperty =
+            AvaloniaProperty.Register<Brush, ITransform?>(nameof(Transform));
+
         /// <inheritdoc/>
         public event EventHandler? Invalidated;
 
         static Brush()
         {
             Animation.Animation.RegisterAnimator<BaseBrushAnimator>(prop => typeof(IBrush).IsAssignableFrom(prop.PropertyType));
-            AffectsRender<Brush>(OpacityProperty);
+            AffectsRender<Brush>(OpacityProperty, TransformProperty);
         }
 
         /// <summary>
@@ -34,6 +40,15 @@ namespace Avalonia.Media
         {
             get { return GetValue(OpacityProperty); }
             set { SetValue(OpacityProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the transform of the brush.
+        /// </summary>
+        public ITransform? Transform
+        {
+            get { return GetValue(TransformProperty); }
+            set { SetValue(TransformProperty, value); }
         }
 
         /// <summary>
