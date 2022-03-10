@@ -38,9 +38,9 @@ namespace Avalonia.Input.TextInput
 
                     _im?.Reset();
                     
-                    if (_focusedElement is AvaloniaObject target)
+                    if (_focusedElement is StyledElement target)
                     {
-                        _im?.SetOptions(TextInputOptions.FromAvaloniaObject(target));
+                        _im?.SetOptions(TextInputOptions.FromStyledElement(target));
                     }
 
                     _transformTracker.SetVisual(_client?.TextViewVisual);
