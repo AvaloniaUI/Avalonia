@@ -74,12 +74,12 @@ namespace Avalonia.Win32.Input
             }
         }
 
-        public void SetActive(bool active)
+        public void SetClient(ITextInputMethodClient client)
         {
-            _active = active;
+            _active = client is { };
             Dispatcher.UIThread.Post(() =>
             {
-                if (active)
+                if (_active)
                 {
                     if (DefaultImc != IntPtr.Zero)
                     {

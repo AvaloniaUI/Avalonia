@@ -97,7 +97,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             return _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state);
         }
 
-        public override void SetOptions(TextInputOptionsQueryEventArgs options)
+        public override void SetOptions(TextInputOptions options)
         {
             // No-op, because ibus 
         }
