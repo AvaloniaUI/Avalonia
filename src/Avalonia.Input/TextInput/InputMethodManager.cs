@@ -42,6 +42,10 @@ namespace Avalonia.Input.TextInput
                     {
                         _im?.SetOptions(TextInputOptions.FromStyledElement(target));
                     }
+                    else
+                    {
+                        _im?.SetOptions(TextInputOptions.Default);
+                    }
 
                     _transformTracker.SetVisual(_client?.TextViewVisual);
                     UpdateCursorRect();

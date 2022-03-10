@@ -16,6 +16,8 @@ public class TextInputOptions
 
         return result;
     }
+
+    public static readonly TextInputOptions Default = new();
     
     /// <summary>
     /// Defines the <see cref="ContentType"/> property.
