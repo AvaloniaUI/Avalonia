@@ -35,21 +35,25 @@ namespace Avalonia.Input.TextInput
                 {
                     _client.CursorRectangleChanged += OnCursorRectangleChanged;
                     _client.TextViewVisualChanged += OnTextViewVisualChanged;
-                    var optionsQuery = new TextInputOptionsQueryEventArgs
-                    {
-                        RoutedEvent = InputElement.TextInputOptionsQueryEvent
-                    };
-                    _focusedElement?.RaiseEvent(optionsQuery);
+
                     _im?.Reset();
-                    _im?.SetOptions(optionsQuery);
-                    _transformTracker?.SetVisual(_client?.TextViewVisual);
+                    
+                    if (_focusedElement is AvaloniaObject target)
+                    {
+                        var options =
+                            new TextInputOptionsQueryEventArgs { ContentType = TextInputOptions.GetContentType(target) };
+                        
+                        _im?.SetOptions(options);
+                    }
+
+                    _transformTracker.SetVisual(_client?.TextViewVisual);
                     UpdateCursorRect();
                     
-                    _im?.SetActive(true);
+                    _im?.SetActive(_client);
                 }
                 else
                 {
-                    _im?.SetActive(false);
+                    _im?.SetActive(null);
                     _transformTracker.SetVisual(null);
                 }
             }
@@ -91,12 +95,15 @@ namespace Avalonia.Input.TextInput
             _focusedElement = element;
 
             var inputMethod = (element?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
-            if (_im != inputMethod)
-                _im?.SetActive(false);
-
+            
             _im = inputMethod;
 
             TryFindAndApplyClient();
+
+            if (_im != inputMethod)
+            {
+                _im?.SetActive(Client);
+            }
         }
 
         private void TryFindAndApplyClient()

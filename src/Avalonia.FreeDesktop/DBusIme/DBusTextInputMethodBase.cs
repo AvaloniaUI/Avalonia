@@ -198,9 +198,9 @@ namespace Avalonia.FreeDesktop.DBusIme
             UpdateActive();
         }
         
-        void ITextInputMethodImpl.SetActive(bool active)
+        void ITextInputMethodImpl.SetActive(ITextInputMethodClient client)
         {
-            _controlActive = active;
+            _controlActive = client is { };
             UpdateActive();
         }
 

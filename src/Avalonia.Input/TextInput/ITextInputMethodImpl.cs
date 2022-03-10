@@ -2,7 +2,7 @@ namespace Avalonia.Input.TextInput
 {
     public interface ITextInputMethodImpl
     {
-        void SetActive(bool active);
+        void SetActive(ITextInputMethodClient? client);
         void SetCursorRect(Rect rect);
         void SetOptions(TextInputOptionsQueryEventArgs options);
         void Reset();

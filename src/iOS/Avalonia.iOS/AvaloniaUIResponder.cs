@@ -1,20 +1,41 @@
 using Foundation;
 using ObjCRuntime;
-using UIKit;
 using Avalonia.Input.TextInput;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using UIKit;
 
 namespace Avalonia.iOS;
 
+#nullable enable
+
+[Adopts("UITextInputTraits")]
 [Adopts("UIKeyInput")]
 public partial class AvaloniaView : ITextInputMethodImpl
 {
+    private ITextInputMethodClient? _currentClient;
+
     public override bool CanResignFirstResponder => true;
     public override bool CanBecomeFirstResponder => true;
-    public override bool CanBecomeFocused => true;
 
-    [Export("hasText")] public bool HasText => false;
+    [Export("hasText")]
+    public bool HasText
+    {
+        get
+        {
+            if (_currentClient is { } && _currentClient.SupportsSurroundingText &&
+                _currentClient.SurroundingText.Text.Length > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    [Export("keyboardType")] public UIKeyboardType KeyboardType { get; private set; } = UIKeyboardType.Default;
+
+    [Export("isSecureTextEntry")] public bool IsSecureEntry { get; private set; }
 
     [Export("insertText:")]
     public void InsertText(string text)
@@ -24,7 +45,6 @@ public partial class AvaloniaView : ITextInputMethodImpl
             _topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance,
                 0, InputRoot, text));
         }
-
     }
 
     [Export("deleteBackward")]
@@ -41,13 +61,13 @@ public partial class AvaloniaView : ITextInputMethodImpl
         }
     }
 
-    void ITextInputMethodImpl.SetActive(bool active)
+    void ITextInputMethodImpl.SetActive(ITextInputMethodClient? client)
     {
-        if (active)
+        _currentClient = client;
+
+        if (client is { })
         {
-            var isFr = IsFirstResponder;
-            var next = NextResponder;
-            var result = BecomeFirstResponder();
+            BecomeFirstResponder();
         }
         else
         {
@@ -57,16 +77,43 @@ public partial class AvaloniaView : ITextInputMethodImpl
 
     void ITextInputMethodImpl.SetCursorRect(Rect rect)
     {
-        
+
     }
 
     void ITextInputMethodImpl.SetOptions(TextInputOptionsQueryEventArgs options)
     {
-        
+        switch (options.ContentType)
+        {
+            case TextInputContentType.Email:
+                KeyboardType = UIKeyboardType.EmailAddress;
+                break;
+
+            case TextInputContentType.Number:
+                KeyboardType = UIKeyboardType.NumberPad;
+                break;
+
+            case TextInputContentType.Password:
+                IsSecureEntry = true;
+                break;
+
+            case TextInputContentType.Phone:
+                KeyboardType = UIKeyboardType.PhonePad;
+                break;
+
+            case TextInputContentType.Url:
+                KeyboardType = UIKeyboardType.Url;
+                break;
+            
+            case TextInputContentType.Normal:
+                KeyboardType = UIKeyboardType.Default;
+                break;
+        }
     }
 
     void ITextInputMethodImpl.Reset()
     {
-        
+        IsSecureEntry = false;
+        KeyboardType = UIKeyboardType.Default;
+        ResignFirstResponder();
     }
 }
