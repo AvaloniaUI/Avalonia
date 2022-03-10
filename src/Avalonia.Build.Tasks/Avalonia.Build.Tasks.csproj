@@ -83,6 +83,9 @@
       <Compile Include="../Avalonia.Visuals/Media/Color.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
+      <Compile Include="../Avalonia.Visuals/Media/HsvColor.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
       <Compile Include="../Avalonia.Visuals/Media/KnownColors.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
