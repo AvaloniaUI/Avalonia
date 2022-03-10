@@ -37,19 +37,6 @@ namespace Avalonia.Skia
                 _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
         }
 
-        /// <inheritdoc />
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new FormattedTextImpl(text, typeface, fontSize, textAlignment, wrapping, constraint, spans);
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
@@ -60,6 +47,16 @@ namespace Avalonia.Skia
         public IStreamGeometryImpl CreateStreamGeometry()
         {
             return new StreamGeometryImpl();
+        }
+
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            return new GeometryGroupImpl(fillRule, children);
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            return new CombinedGeometryImpl(combineMode, g1, g2);
         }
 
         /// <inheritdoc />
@@ -188,7 +185,7 @@ namespace Avalonia.Skia
         private static readonly SKFont s_font = new SKFont
         {
             Subpixel = true,
-            Edging = SKFontEdging.Antialias,
+            Edging = SKFontEdging.SubpixelAntialias,
             Hinting = SKFontHinting.Full,
             LinearMetrics = true
         };
@@ -198,7 +195,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
-            var count = glyphRun.GlyphIndices.Length;
+            var count = glyphRun.GlyphIndices.Count;
             var textBlobBuilder = s_textBlobBuilderThreadLocal.Value;
 
             var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
@@ -207,16 +204,25 @@ namespace Avalonia.Skia
 
             s_font.Size = (float)glyphRun.FontRenderingEmSize;
             s_font.Typeface = typeface;
+            s_font.Embolden = glyphTypeface.IsFakeBold;
+            s_font.SkewX = glyphTypeface.IsFakeItalic ? -0.2f : 0;
 
             SKTextBlob textBlob;
 
             var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
-            if (glyphRun.GlyphOffsets.IsEmpty)
+            if (glyphRun.GlyphOffsets == null)
             {
                 if (glyphTypeface.IsFixedPitch)
                 {
-                    textBlobBuilder.AddRun(glyphRun.GlyphIndices.Buffer.Span, s_font);
+                    var buffer = textBlobBuilder.AllocateRun(s_font, glyphRun.GlyphIndices.Count, 0, 0);
+
+                    var glyphs = buffer.GetGlyphSpan();
+
+                    for (int i = 0; i < glyphs.Length; i++)
+                    {
+                        glyphs[i] = glyphRun.GlyphIndices[i];
+                    }
 
                     textBlob = textBlobBuilder.Build();
                 }
@@ -232,7 +238,7 @@ namespace Avalonia.Skia
                     {
                         positions[i] = (float)width;
 
-                        if (glyphRun.GlyphAdvances.IsEmpty)
+                        if (glyphRun.GlyphAdvances == null)
                         {
                             width += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
                         }
@@ -242,7 +248,12 @@ namespace Avalonia.Skia
                         }
                     }
 
-                    buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
+                    var glyphs = buffer.GetGlyphSpan();
+
+                    for (int i = 0; i < glyphs.Length; i++)
+                    {
+                        glyphs[i] = glyphRun.GlyphIndices[i];
+                    }
 
                     textBlob = textBlobBuilder.Build();
                 }
@@ -261,7 +272,7 @@ namespace Avalonia.Skia
 
                     glyphPositions[i] = new SKPoint((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
 
-                    if (glyphRun.GlyphAdvances.IsEmpty)
+                    if (glyphRun.GlyphAdvances == null)
                     {
                         currentX += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
                     }
@@ -271,7 +282,12 @@ namespace Avalonia.Skia
                     }
                 }
 
-                buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
+                var glyphs = buffer.GetGlyphSpan();
+
+                for (int i = 0; i < glyphs.Length; i++)
+                {
+                    glyphs[i] = glyphRun.GlyphIndices[i];
+                }
 
                 textBlob = textBlobBuilder.Build();
             }

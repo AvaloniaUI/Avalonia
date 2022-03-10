@@ -41,6 +41,7 @@
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
     <Setter Property="ContextFlyout" Value="{StaticResource DefaultTextBoxContextFlyout}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -68,6 +69,7 @@
                              DockPanel.Dock="Top" />
                   <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                 VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                                IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                                 AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
                       <Panel>
                         <TextBlock Name="PART_Watermark"
@@ -166,7 +168,7 @@
     <Setter Property="InnerRightContent">
       <Template>
         <ToggleButton Classes="passwordBoxRevealButton"
-                      IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
+                      IsChecked="{CompiledBinding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
       </Template>
     </Setter>
   </Style>

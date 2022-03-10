@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Platform;
@@ -27,7 +28,7 @@ namespace Avalonia.Media
                     { 'Z', Command.Close },
                 };
 
-        private IGeometryContext _geometryContext;
+        private IGeometryContext? _geometryContext;
         private Point _currentPoint;
         private Point? _beginFigurePoint;
         private Point? _previousControlPoint;
@@ -98,6 +99,8 @@ namespace Avalonia.Media
         /// <param name="pathData">The path data.</param>
         public void Parse(string pathData)
         {
+            ThrowIfDisposed();
+
             var span = pathData.AsSpan();
             _currentPoint = new Point();
 
@@ -171,6 +174,8 @@ namespace Avalonia.Media
 
         private void CreateFigure()
         {
+            ThrowIfDisposed();
+
             if (_isOpen)
             {
                 _geometryContext.EndFigure(false);
@@ -185,6 +190,8 @@ namespace Avalonia.Media
 
         private void SetFillRule(ref ReadOnlySpan<char> span)
         {
+            ThrowIfDisposed();
+
             if (!ReadArgument(ref span, out var fillRule) || fillRule.Length != 1)
             {
                 throw new InvalidDataException("Invalid fill rule.");
@@ -209,6 +216,8 @@ namespace Avalonia.Media
 
         private void CloseFigure()
         {
+            ThrowIfDisposed();
+
             if (_isOpen)
             {
                 _geometryContext.EndFigure(true);
@@ -244,6 +253,8 @@ namespace Avalonia.Media
 
         private void AddLine(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             _currentPoint = relative
                                 ? ReadRelativePoint(ref span, _currentPoint)
                                 : ReadPoint(ref span);
@@ -258,6 +269,8 @@ namespace Avalonia.Media
 
         private void AddHorizontalLine(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             _currentPoint = relative
                                 ? new Point(_currentPoint.X + ReadDouble(ref span), _currentPoint.Y)
                                 : _currentPoint.WithX(ReadDouble(ref span));
@@ -272,6 +285,8 @@ namespace Avalonia.Media
 
         private void AddVerticalLine(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             _currentPoint = relative
                                 ? new Point(_currentPoint.X, _currentPoint.Y + ReadDouble(ref span))
                                 : _currentPoint.WithY(ReadDouble(ref span));
@@ -286,6 +301,8 @@ namespace Avalonia.Media
 
         private void AddCubicBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             var point1 = relative
                     ? ReadRelativePoint(ref span, _currentPoint)
                     : ReadPoint(ref span);
@@ -316,6 +333,8 @@ namespace Avalonia.Media
 
         private void AddQuadraticBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             var start = relative
                     ? ReadRelativePoint(ref span, _currentPoint)
                     : ReadPoint(ref span);
@@ -340,6 +359,8 @@ namespace Avalonia.Media
 
         private void AddSmoothCubicBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             var point2 = relative
                     ? ReadRelativePoint(ref span, _currentPoint)
                     : ReadPoint(ref span);
@@ -369,6 +390,8 @@ namespace Avalonia.Media
 
         private void AddSmoothQuadraticBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             var end = relative
                     ? ReadRelativePoint(ref span, _currentPoint)
                     : ReadPoint(ref span);
@@ -390,6 +413,8 @@ namespace Avalonia.Media
 
         private void AddArc(ref ReadOnlySpan<char> span, bool relative)
         {
+            ThrowIfDisposed();
+
             var size = ReadSize(ref span);
 
             span = ReadSeparator(span);
@@ -496,12 +521,18 @@ namespace Avalonia.Media
 
         private bool ReadBool(ref ReadOnlySpan<char> span)
         {
-            if (!ReadArgument(ref span, out var boolValue) || boolValue.Length != 1)
+            span = SkipWhitespace(span);
+            
+            if (span.IsEmpty)
             {
                 throw new InvalidDataException("Invalid bool rule.");
             }
             
-            switch (boolValue[0])
+            var c = span[0];
+            
+            span = span.Slice(1);
+            
+            switch (c)
             {
                 case '0':
                     return false;
@@ -563,6 +594,13 @@ namespace Avalonia.Media
             relative = char.IsLower(c);
             span = span.Slice(1);
             return true;
+        }
+
+        [MemberNotNull(nameof(_geometryContext))]
+        private void ThrowIfDisposed()
+        {
+            if (_isDisposed || _geometryContext is null)
+                throw new ObjectDisposedException(nameof(PathMarkupParser));
         }
     }
 }

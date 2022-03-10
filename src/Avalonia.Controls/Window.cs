@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -147,14 +148,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
-        public static readonly StyledProperty<string> TitleProperty =
-            AvaloniaProperty.Register<Window, string>(nameof(Title), "Window");
+        public static readonly StyledProperty<string?> TitleProperty =
+            AvaloniaProperty.Register<Window, string?>(nameof(Title), "Window");
 
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
-        public static readonly StyledProperty<WindowIcon> IconProperty =
-            AvaloniaProperty.Register<Window, WindowIcon>(nameof(Icon));
+        public static readonly StyledProperty<WindowIcon?> IconProperty =
+            AvaloniaProperty.Register<Window, WindowIcon?>(nameof(Icon));
 
         /// <summary>
         /// Defines the <see cref="WindowStartupLocation"/> property.
@@ -183,7 +184,7 @@ namespace Avalonia.Controls
 
 
         private readonly NameScope _nameScope = new NameScope();
-        private object _dialogResult;
+        private object? _dialogResult;
         private readonly Size _maxPlatformClientSize;
         private WindowStartupLocation _windowStartupLocation;
 
@@ -193,35 +194,35 @@ namespace Avalonia.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
-            TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
-            ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
+            TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string?)e.NewValue));
+            ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue!));
 
-            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue)?.PlatformImpl));
+            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon?)e.NewValue)?.PlatformImpl));
 
-            CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
+            CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue!));
 
             WindowStateProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue!; });
 
             ExtendClientAreaToDecorationsHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaToDecorationsHint((bool)e.NewValue); });
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaToDecorationsHint((bool)e.NewValue!); });
 
             ExtendClientAreaChromeHintsProperty.Changed.AddClassHandler<Window>(
                 (w, e) =>
                 {
                     if (w.PlatformImpl != null)
                     {
-                        w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue);
+                        w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue!);
                     }
                 });
 
             ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaTitleBarHeightHint((double)e.NewValue); });
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaTitleBarHeightHint((double)e.NewValue!); });
 
-            MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
-            MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
-            MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
-            MaxHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue)));
+            MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue!, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
+            MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue!), new Size(w.MaxWidth, w.MaxHeight)));
+            MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue!, w.MaxHeight)));
+            MaxHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue!)));
         }
 
         /// <summary>
@@ -252,8 +253,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        [CanBeNull]
-        public new IWindowImpl PlatformImpl => (IWindowImpl)base.PlatformImpl;
+        public new IWindowImpl? PlatformImpl => (IWindowImpl?)base.PlatformImpl;
+
+        /// <summary>
+        /// Gets a collection of child windows owned by this window.
+        /// </summary>
+        public IReadOnlyList<Window> OwnedWindows => _children.Select(x => x.child).ToList();
 
         /// <summary>
         /// Gets or sets a value indicating how the window will size itself to fit its content.
@@ -279,7 +284,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the title of the window.
         /// </summary>
-        public string Title
+        public string? Title
         {
             get { return GetValue(TitleProperty); }
             set { SetValue(TitleProperty, value); }
@@ -415,7 +420,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the icon of the window.
         /// </summary>
-        public WindowIcon Icon
+        public WindowIcon? Icon
         {
             get { return GetValue(IconProperty); }
             set { SetValue(IconProperty, value); }
@@ -459,7 +464,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;
+        public event EventHandler<CancelEventArgs>? Closing;
 
         /// <summary>
         /// Closes the window.
@@ -537,7 +542,7 @@ namespace Avalonia.Controls
             PlatformImpl?.Dispose();
         }
 
-        private bool ShouldCancelClose(CancelEventArgs args = null)
+        private bool ShouldCancelClose(CancelEventArgs? args = null)
         {
             if (args is null)
             {
@@ -581,8 +586,8 @@ namespace Avalonia.Controls
         protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
-            WindowDecorationMargin = PlatformImpl.ExtendedMargins;
-            OffScreenMargin = PlatformImpl.OffScreenMargin;
+            WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
+            OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
         }
 
         /// <summary>
@@ -643,7 +648,7 @@ namespace Avalonia.Controls
             ShowCore(parent);
         }
 
-        private void ShowCore(Window parent)
+        private void ShowCore(Window? parent)
         {
             if (PlatformImpl == null)
             {
@@ -687,9 +692,9 @@ namespace Avalonia.Controls
 
             LayoutManager.ExecuteInitialLayoutPass();
 
-            if (parent != null)
+            if (PlatformImpl != null && parent?.PlatformImpl is not null)
             {
-                PlatformImpl?.SetParent(parent.PlatformImpl);
+                PlatformImpl.SetParent(parent.PlatformImpl);
             }
 
             Owner = parent;
@@ -785,7 +790,7 @@ namespace Avalonia.Controls
                 .Subscribe(_ =>
                 {
                     owner.Activate();
-                    result.SetResult((TResult)(_dialogResult ?? default(TResult)));
+                    result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
                 });
 
             OnOpened(EventArgs.Empty);
@@ -805,7 +810,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            PlatformImpl.SetEnabled(isEnabled);
+            PlatformImpl?.SetEnabled(isEnabled);
         }
 
         private void AddChild(Window window, bool isDialog)
@@ -831,7 +836,7 @@ namespace Avalonia.Controls
 
         private void OnGotInputWhenDisabled()
         {
-            Window firstDialogChild = null;
+            Window? firstDialogChild = null;
 
             foreach (var (child, isDialog)  in _children)
             {
@@ -852,8 +857,19 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
+        private void SetWindowStartupLocation(IWindowBaseImpl? owner = null)
         {
+            var startupLocation = WindowStartupLocation;
+
+            if (startupLocation == WindowStartupLocation.CenterOwner &&
+                Owner is Window ownerWindow &&
+                ownerWindow.WindowState == WindowState.Minimized)
+            {
+                // If startup location is CenterOwner, but owner is minimized then fall back
+                // to CenterScreen. This behavior is consistent with WPF.
+                startupLocation = WindowStartupLocation.CenterScreen;
+            }
+
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
 
             // TODO: We really need non-client size here.
@@ -861,7 +877,7 @@ namespace Avalonia.Controls
                 PixelPoint.Origin,
                 PixelSize.FromSize(ClientSize, scaling));
 
-            if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+            if (startupLocation == WindowStartupLocation.CenterScreen)
             {
                 var screen = Screens.ScreenFromPoint(owner?.Position ?? Position);
 
@@ -870,7 +886,7 @@ namespace Avalonia.Controls
                     Position = screen.WorkingArea.CenterRect(rect).Position;
                 }
             }
-            else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
+            else if (startupLocation == WindowStartupLocation.CenterOwner)
             {
                 if (owner != null)
                 {
@@ -994,6 +1010,7 @@ namespace Avalonia.Controls
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
+            base.OnPropertyChanged(change);
             if (change.Property == SystemDecorationsProperty)
             {
                 var typedNewValue = change.NewValue.GetValueOrDefault<SystemDecorations>();
@@ -1010,6 +1027,11 @@ namespace Avalonia.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new WindowAutomationPeer(this);
         }
     }
 }

@@ -273,14 +273,23 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Check if two colors are equal.
+        /// Returns the HSV color model equivalent of this RGB color.
         /// </summary>
+        /// <returns>The HSV equivalent color.</returns>
+        public HsvColor ToHsv()
+        {
+            // Use the by-channel conversion method directly for performance
+            // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
+            return HsvColor.FromRgb(R, G, B, A);
+        }
+
+        /// <inheritdoc/>
         public bool Equals(Color other)
         {
             return A == other.A && R == other.R && G == other.G && B == other.B;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Color other && Equals(other);
         }

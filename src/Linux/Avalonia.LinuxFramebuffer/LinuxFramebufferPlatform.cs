@@ -37,16 +37,17 @@ namespace Avalonia.LinuxFramebuffer
             Threading = new InternalPlatformThreadingInterface();
             if (_fb is IGlOutputBackend gl)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(gl.PlatformOpenGlInterface);
+            
+            var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-
         }
 
        

@@ -1,7 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
-        xmlns:sys="clr-namespace:System;assembly=netstandard">
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        x:DataType="MenuItem"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20"
             Width="400"
@@ -75,8 +77,6 @@
               </Grid.ColumnDefinitions>
               <ContentPresenter Name="PART_IconPresenter"
                                 Content="{TemplateBinding Icon}"
-                                Width="16"
-                                Height="16"
                                 Margin="{DynamicResource MenuIconPresenterMargin}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -160,7 +160,7 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
-                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                   MinWidth="{ReflectionBinding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}">
@@ -199,6 +199,8 @@
   </Style>
 
   <Style Selector="MenuItem /template/ ContentPresenter#PART_IconPresenter">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
     <Setter Property="IsVisible" Value="False" />
   </Style>
   <Style Selector="MenuItem:icon /template/ ContentPresenter#PART_IconPresenter">

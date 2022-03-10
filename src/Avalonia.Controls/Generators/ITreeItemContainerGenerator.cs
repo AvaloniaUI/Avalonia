@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the container index for the tree.
         /// </summary>
-        TreeContainerIndex Index { get; }
+        TreeContainerIndex? Index { get; }
 
         /// <summary>
         /// Updates the index based on the parent <see cref="TreeView"/>.

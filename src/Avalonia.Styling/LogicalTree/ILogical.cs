@@ -12,12 +12,12 @@ namespace Avalonia.LogicalTree
         /// <summary>
         /// Raised when the control is attached to a rooted logical tree.
         /// </summary>
-        event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
+        event EventHandler<LogicalTreeAttachmentEventArgs>? AttachedToLogicalTree;
 
         /// <summary>
         /// Raised when the control is detached from a rooted logical tree.
         /// </summary>
-        event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
+        event EventHandler<LogicalTreeAttachmentEventArgs>? DetachedFromLogicalTree;
 
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
@@ -27,7 +27,7 @@ namespace Avalonia.LogicalTree
         /// <summary>
         /// Gets the logical parent.
         /// </summary>
-        ILogical LogicalParent { get; }
+        ILogical? LogicalParent { get; }
 
         /// <summary>
         /// Gets the logical children.

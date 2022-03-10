@@ -62,7 +62,7 @@ namespace Avalonia.Animation
         public Easing SlideOutEasing { get; set; } = new LinearEasing();
 
         /// <inheritdoc />
-        public async Task Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken)
+        public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -79,6 +79,7 @@ namespace Avalonia.Animation
                 var animation = new Animation
                 {
                     Easing = SlideOutEasing,
+                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame
@@ -109,6 +110,7 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
+                    FillMode = FillMode.Forward,
                     Easing = SlideInEasing,
                     Children =
                     {
@@ -155,17 +157,17 @@ namespace Avalonia.Animation
         /// <remarks>
         /// Any one of the parameters may be null, but not both.
         /// </remarks>
-        private static IVisual GetVisualParent(IVisual from, IVisual to)
+        private static IVisual GetVisualParent(IVisual? from, IVisual? to)
         {
-            var p1 = (from ?? to).VisualParent;
-            var p2 = (to ?? from).VisualParent;
+            var p1 = (from ?? to)!.VisualParent;
+            var p2 = (to ?? from)!.VisualParent;
 
             if (p1 != null && p2 != null && p1 != p2)
             {
                 throw new ArgumentException("Controls for PageSlide must have same parent.");
             }
 
-            return p1;
+            return p1 ?? throw new InvalidOperationException("Cannot determine visual parent.");
         }
     }
 }

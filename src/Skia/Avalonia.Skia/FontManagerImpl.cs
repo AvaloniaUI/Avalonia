@@ -29,27 +29,27 @@ namespace Avalonia.Skia
         [ThreadStatic] private static string[] t_languageTagBuffer;
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight,
+            FontWeight fontWeight, FontStretch fontStretch,
             FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
         {
             SKFontStyle skFontStyle;
 
             switch (fontWeight)
             {
-                case FontWeight.Normal when fontStyle == FontStyle.Normal:
+                case FontWeight.Normal when fontStyle == FontStyle.Normal && fontStretch == FontStretch.Normal:
                     skFontStyle = SKFontStyle.Normal;
                     break;
-                case FontWeight.Normal when fontStyle == FontStyle.Italic:
+                case FontWeight.Normal when fontStyle == FontStyle.Italic && fontStretch == FontStretch.Normal:
                     skFontStyle = SKFontStyle.Italic;
                     break;
-                case FontWeight.Bold when fontStyle == FontStyle.Normal:
+                case FontWeight.Bold when fontStyle == FontStyle.Normal && fontStretch == FontStretch.Normal:
                     skFontStyle = SKFontStyle.Bold;
                     break;
-                case FontWeight.Bold when fontStyle == FontStyle.Italic:
+                case FontWeight.Bold when fontStyle == FontStyle.Italic && fontStretch == FontStretch.Normal:
                     skFontStyle = SKFontStyle.BoldItalic;
                     break;
                 default:
-                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle);
+                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, (SKFontStyleWidth)fontStretch, (SKFontStyleSlant)fontStyle);
                     break;
             }
 
@@ -80,7 +80,7 @@ namespace Avalonia.Skia
                         continue;
                     }
 
-                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight, fontStretch);
 
                     return true;
                 }
@@ -91,7 +91,7 @@ namespace Avalonia.Skia
 
                 if (skTypeface != null)
                 {
-                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight, fontStretch);
 
                     return true;
                 }
@@ -109,10 +109,17 @@ namespace Avalonia.Skia
             if (typeface.FontFamily.Key == null)
             {
                 var defaultName = SKTypeface.Default.FamilyName;
-                var fontStyle = new SKFontStyle((SKFontStyleWeight)typeface.Weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
+
+                var fontStyle = new SKFontStyle((SKFontStyleWeight)typeface.Weight, (SKFontStyleWidth)typeface.Stretch,
+                    (SKFontStyleSlant)typeface.Style);
 
                 foreach (var familyName in typeface.FontFamily.FamilyNames)
                 {
+                    if(familyName == FontFamily.DefaultFontFamilyName)
+                    {
+                        continue;
+                    }
+
                     skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
                     if (skTypeface is null
@@ -125,7 +132,10 @@ namespace Avalonia.Skia
                     break;
                 }
 
-                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle);
+                // MatchTypeface can return "null" if matched typeface wasn't found for the style
+                // Fallback to the default typeface and styles instead.
+                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
+                    ?? SKTypeface.Default;
             }
             else
             {
@@ -140,7 +150,11 @@ namespace Avalonia.Skia
                     $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
             }
 
-            return new GlyphTypefaceImpl(skTypeface);
+            var isFakeBold = (int)typeface.Weight >= 600 && !skTypeface.IsBold;
+
+            var isFakeItalic = typeface.Style == FontStyle.Italic && !skTypeface.IsItalic;
+            
+            return new GlyphTypefaceImpl(skTypeface, isFakeBold, isFakeItalic);
         }
     }
 }

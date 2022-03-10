@@ -8,8 +8,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     public abstract class FlyoutBase : AvaloniaObject, IPopupHostProvider
@@ -22,7 +20,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
-        private static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
+        public static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
                x => x.IsOpen);
 
@@ -215,11 +213,6 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (CancelOpening())
-            {
-                return false;
-            }
-
             if (Popup.Parent != null && Popup.Parent != placementTarget)
             {
                 ((ISetLogicalParent)Popup).SetParent(null);
@@ -234,6 +227,11 @@ namespace Avalonia.Controls.Primitives
             if (Popup.Child == null)
             {
                 Popup.Child = CreatePresenter();
+            }
+
+            if (CancelOpening())
+            {
+                return false;
             }
 
             PositionPopup(showAtPointer);
@@ -267,7 +265,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
 
-        private void PlacementTarget_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private void PlacementTarget_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             _ = HideCore(false);
         }
@@ -335,7 +333,7 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnOpened()
         {
-            Opened?.Invoke(this, null);
+            Opened?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual void OnClosing(CancelEventArgs args)
@@ -345,7 +343,7 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnClosed()
         {
-            Closed?.Invoke(this, null);
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -368,14 +366,14 @@ namespace Avalonia.Controls.Primitives
             return popup;
         }
 
-        private void OnPopupOpened(object sender, EventArgs e)
+        private void OnPopupOpened(object? sender, EventArgs e)
         {
             IsOpen = true;
 
             _popupHostChangedHandler?.Invoke(Popup!.Host);
         }
 
-        private void OnPopupClosing(object sender, CancelEventArgs e)
+        private void OnPopupClosing(object? sender, CancelEventArgs e)
         {
             if (IsOpen)
             {
@@ -383,7 +381,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnPopupClosed(object sender, EventArgs e)
+        private void OnPopupClosed(object? sender, EventArgs e)
         {
             HideCore(false);
 
@@ -391,7 +389,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         // This method is handling both popup logical tree and target logical tree.
-        private void OnPlacementTargetOrPopupKeyUp(object sender, KeyEventArgs e)
+        private void OnPlacementTargetOrPopupKeyUp(object? sender, KeyEventArgs e)
         {
             if (!e.Handled
                 && IsOpen
@@ -399,7 +397,7 @@ namespace Avalonia.Controls.Primitives
             {
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
-                if (keymap.OpenContextMenu.Any(k => k.Matches(e)))
+                if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
                 {
                     e.Handled = HideCore();
                 }
@@ -530,10 +528,10 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private static void OnControlContextRequested(object sender, ContextRequestedEventArgs e)
+        private static void OnControlContextRequested(object? sender, ContextRequestedEventArgs e)
         {
-            var control = (Control)sender;
             if (!e.Handled
+                && sender is Control control
                 && control.ContextFlyout is FlyoutBase flyout)
             {
                 if (control.ContextMenu != null)
@@ -562,8 +560,12 @@ namespace Avalonia.Controls.Primitives
             return eventArgs.Cancel;
         }
 
-        internal static void SetPresenterClasses(IControl presenter, Classes classes)
+        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
         {
+            if(presenter is null)
+            {
+                return;
+            }
             //Remove any classes no longer in use, ignoring pseudo classes
             for (int i = presenter.Classes.Count - 1; i >= 0; i--)
             {

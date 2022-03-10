@@ -53,14 +53,14 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         public ITransform Transform { get; }
 
-        public bool Equals(ImmutableSolidColorBrush other)
+        public bool Equals(ImmutableSolidColorBrush? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return Color.Equals(other.Color) && Opacity.Equals(other.Opacity) && (Transform == null && other.Transform == null ? true : Transform.Equals(other.Transform));
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ImmutableSolidColorBrush other && Equals(other);
         }

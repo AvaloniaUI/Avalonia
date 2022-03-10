@@ -198,6 +198,42 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void OfType_AttachedProperty()
+        {
+            var result = SelectorGrammar.Parse("Button[(Grid.Column)=1]");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.AttachedPropertySyntax { 
+                        Xmlns = string.Empty,
+                        TypeName="Grid",
+                        Property = "Column",
+                        Value = "1" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_AttachedProperty_WithNamespace()
+        {
+            var result = SelectorGrammar.Parse("Button[(x|Grid.Column)=1]");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.AttachedPropertySyntax {
+                        Xmlns = "x",
+                        TypeName="Grid",
+                        Property = "Column",
+                        Value = "1" },
+                },
+                result);
+        }
+
+        [Fact]
         public void Not_OfType()
         {
             var result = SelectorGrammar.Parse(":not(Button)");
@@ -231,6 +267,165 @@ namespace Avalonia.Markup.UnitTests.Parsers
                         {
                             new SelectorGrammar.ClassSyntax { Class = "foo" },
                         },
+                    }
+                },
+                result);
+        }
+
+        [Theory]
+        [InlineData(":nth-child(xn+2)")]
+        [InlineData(":nth-child(2n+b)")]
+        [InlineData(":nth-child(2n+)")]
+        [InlineData(":nth-child(2na)")]
+        [InlineData(":nth-child(2x+1)")]
+        public void NthChild_Invalid_Inputs(string input)
+        {
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse(input));
+        }
+
+        [Theory]
+        [InlineData(":nth-child(+1)", 0, 1)]
+        [InlineData(":nth-child(1)", 0, 1)]
+        [InlineData(":nth-child(-1)", 0, -1)]
+        [InlineData(":nth-child(2n+1)", 2, 1)]
+        [InlineData(":nth-child(n)", 1, 0)]
+        [InlineData(":nth-child(+n)", 1, 0)]
+        [InlineData(":nth-child(-n)", -1, 0)]
+        [InlineData(":nth-child(-2n)", -2, 0)]
+        [InlineData(":nth-child(n+5)", 1, 5)]
+        [InlineData(":nth-child(n-5)", 1, -5)]
+        [InlineData(":nth-child( 2n + 1 )", 2, 1)]
+        [InlineData(":nth-child( 2n - 1 )", 2, -1)]
+        public void NthChild_Variations(string input, int step, int offset)
+        {
+            var result = SelectorGrammar.Parse(input);
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = step,
+                        Offset = offset
+                    }
+                },
+                result);
+        }
+
+        [Theory]
+        [InlineData(":nth-last-child(+1)", 0, 1)]
+        [InlineData(":nth-last-child(1)", 0, 1)]
+        [InlineData(":nth-last-child(-1)", 0, -1)]
+        [InlineData(":nth-last-child(2n+1)", 2, 1)]
+        [InlineData(":nth-last-child(n)", 1, 0)]
+        [InlineData(":nth-last-child(+n)", 1, 0)]
+        [InlineData(":nth-last-child(-n)", -1, 0)]
+        [InlineData(":nth-last-child(-2n)", -2, 0)]
+        [InlineData(":nth-last-child(n+5)", 1, 5)]
+        [InlineData(":nth-last-child(n-5)", 1, -5)]
+        [InlineData(":nth-last-child( 2n + 1 )", 2, 1)]
+        [InlineData(":nth-last-child( 2n - 1 )", 2, -1)]
+        public void NthLastChild_Variations(string input, int step, int offset)
+        {
+            var result = SelectorGrammar.Parse(input);
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NthLastChildSyntax()
+                    {
+                        Step = step,
+                        Offset = offset
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthChild()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(2n+1)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 1
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthChild_Without_Offset()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(2147483647n)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = int.MaxValue,
+                        Offset = 0
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthLastChild()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-last-child(2n+1)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthLastChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 1
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthChild_Odd()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(odd)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 1
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthChild_Even()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(even)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 0
                     }
                 },
                 result);

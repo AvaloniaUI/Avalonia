@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Interactivity;
@@ -61,7 +62,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is checked.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Checked
+        public event EventHandler<RoutedEventArgs>? Checked
         {
             add => AddHandler(CheckedEvent, value);
             remove => RemoveHandler(CheckedEvent, value);
@@ -70,7 +71,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is unchecked.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Unchecked
+        public event EventHandler<RoutedEventArgs>? Unchecked
         {
             add => AddHandler(UncheckedEvent, value);
             remove => RemoveHandler(UncheckedEvent, value);
@@ -79,7 +80,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when a <see cref="ToggleButton"/> is neither checked nor unchecked.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Indeterminate
+        public event EventHandler<RoutedEventArgs>? Indeterminate
         {
             add => AddHandler(IndeterminateEvent, value);
             remove => RemoveHandler(IndeterminateEvent, value);
@@ -167,6 +168,11 @@ namespace Avalonia.Controls.Primitives
         protected virtual void OnIndeterminate(RoutedEventArgs e)
         {
             RaiseEvent(e);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ToggleButtonAutomationPeer(this);
         }
 
         private void OnIsCheckedChanged(AvaloniaPropertyChangedEventArgs e)

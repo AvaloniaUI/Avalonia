@@ -133,7 +133,7 @@ namespace Avalonia.Media
             }
         }
 
-        private void DashesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void DashesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             Invalidated?.Invoke(this, e);
         }

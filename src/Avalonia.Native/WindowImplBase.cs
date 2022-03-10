@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
@@ -28,24 +29,25 @@ namespace Avalonia.Native
 
         public string HandleDescriptor => "NSWindow";
 
-        public IntPtr NSView => _native.ObtainNSViewHandle();
+        public IntPtr NSView => _native?.ObtainNSViewHandle() ?? IntPtr.Zero;
 
-        public IntPtr NSWindow => _native.ObtainNSWindowHandle();
+        public IntPtr NSWindow => _native?.ObtainNSWindowHandle() ?? IntPtr.Zero;
 
         public IntPtr GetNSViewRetained()
         {
-            return _native.ObtainNSViewHandleRetained();
+            return _native?.ObtainNSViewHandleRetained() ?? IntPtr.Zero;
         }
 
         public IntPtr GetNSWindowRetained()
         {
-            return _native.ObtainNSWindowHandleRetained();
+            return _native?.ObtainNSWindowHandleRetained() ?? IntPtr.Zero;
         }
     }
 
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
+        protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
@@ -61,8 +63,10 @@ namespace Avalonia.Native
         private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
 
-        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface glFeature)
+        internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+            AvaloniaNativePlatformOpenGlInterface glFeature)
         {
+            _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
             _deferredRendering = opts.UseDeferredRendering;
 
@@ -89,6 +93,8 @@ namespace Avalonia.Native
 
             Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);
         }
+
+        public IAvnWindowBase Native => _native;
 
         public Size ClientSize 
         {
@@ -151,7 +157,12 @@ namespace Avalonia.Native
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
 
-        protected unsafe class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
+        public AutomationPeer GetAutomationPeer()
+        {
+            return _inputRoot is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
+        }
+
+        protected unsafe class WindowBaseEvents : NativeCallbackBase, IAvnWindowBaseEvents
         {
             private readonly WindowBaseImpl _parent;
 
@@ -216,7 +227,6 @@ namespace Avalonia.Native
                 return _parent.RawTextInputEvent(timeStamp, text).AsComBool();
             }
 
-
             void IAvnWindowBaseEvents.ScalingChanged(double scaling)
             {
                 _parent._savedScaling = scaling;
@@ -256,11 +266,16 @@ namespace Avalonia.Native
                     return (AvnDragDropEffects)args.Effects;
                 }
             }
-        }
 
+            IAvnAutomationPeer IAvnWindowBaseEvents.AutomationPeer
+            {
+                get => AvnAutomationPeer.Wrap(_parent.GetAutomationPeer());
+            }
+        }
+       
         public void Activate()
         {
-            _native.Activate();
+            _native?.Activate();
         }
 
         public bool RawTextInputEvent(uint timeStamp, string text)
@@ -306,11 +321,28 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot,
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    break;
+                
+                case AvnRawMouseEventType.Magnify:
+                    Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Magnify, 
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    break;
+                    
+                case AvnRawMouseEventType.Rotate:
+                    Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Rotate, 
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    break;
+                
+                case AvnRawMouseEventType.Swipe:
+                    Input?.Invoke(new RawPointerGestureEventArgs(_mouse, timeStamp, _inputRoot, RawPointerEventType.Swipe,
+                        point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
                     break;
 
                 default:
-                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type,
+                        point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
                     
                     if(!ChromeHitTest(e))
                     {
@@ -322,7 +354,7 @@ namespace Avalonia.Native
 
         public void Resize(Size clientSize, PlatformResizeReason reason)
         {
-            _native.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
+            _native?.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -367,14 +399,14 @@ namespace Avalonia.Native
 
         public virtual void Show(bool activate, bool isDialog)
         {
-            _native.Show(activate.AsComBool(), isDialog.AsComBool());
+            _native?.Show(activate.AsComBool(), isDialog.AsComBool());
         }
 
 
         public PixelPoint Position
         {
-            get => _native.Position.ToAvaloniaPixelPoint();
-            set => _native.SetPosition(value.ToAvnPoint());
+            get => _native?.Position.ToAvaloniaPixelPoint() ?? default;
+            set => _native?.SetPosition(value.ToAvnPoint());
         }
 
         public Point PointToClient(PixelPoint point)
@@ -389,12 +421,12 @@ namespace Avalonia.Native
 
         public void Hide()
         {
-            _native.Hide();
+            _native?.Hide();
         }
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
-            _native.BeginMoveDrag();
+            _native?.BeginMoveDrag();
         }
 
         public Size MaxAutoSizeHint => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(1))
@@ -402,7 +434,7 @@ namespace Avalonia.Native
 
         public void SetTopmost(bool value)
         {
-            _native.SetTopMost(value.AsComBool());
+            _native?.SetTopMost(value.AsComBool());
         }
 
         public double RenderScaling => _native?.Scaling ?? 1;
@@ -438,7 +470,7 @@ namespace Avalonia.Native
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
-            _native.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
+            _native?.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -449,7 +481,7 @@ namespace Avalonia.Native
         internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,
             IAvnDndResultCallback callback, IntPtr sourceHandle)
         {
-            _native.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
+            _native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) 

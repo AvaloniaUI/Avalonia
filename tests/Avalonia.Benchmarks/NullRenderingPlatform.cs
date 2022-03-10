@@ -10,12 +10,6 @@ namespace Avalonia.Benchmarks
 {
     internal class NullRenderingPlatform : IPlatformRenderInterface
     {
-        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
-            TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new NullFormattedTextImpl();
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
             return new MockStreamGeometryImpl();
@@ -34,6 +28,16 @@ namespace Avalonia.Benchmarks
         public IStreamGeometryImpl CreateStreamGeometry()
         {
             return new MockStreamGeometryImpl();
+        }
+
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            throw new NotImplementedException();
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)

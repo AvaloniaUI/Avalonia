@@ -34,7 +34,8 @@
                                   Extent="{TemplateBinding Extent, Mode=TwoWay}"
                                   Margin="{TemplateBinding Padding}"
                                   Offset="{TemplateBinding Offset, Mode=TwoWay}"
-                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}">
+                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}"
+                                  IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
             <ScrollContentPresenter.GestureRecognizers>
               <ScrollGestureRecognizer
                 CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"

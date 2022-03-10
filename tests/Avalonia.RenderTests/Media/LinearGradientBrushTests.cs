@@ -81,10 +81,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
                 EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
                 GradientStops =
-                        {
-                            new GradientStop { Color = Colors.Red, Offset = 0 },
-                            new GradientStop { Color = Colors.Blue, Offset = 1 }
-                        }
+                {
+                    new GradientStop { Color = Colors.Red, Offset = 0 },
+                    new GradientStop { Color = Colors.Blue, Offset = 1 }
+                }
             };
 
             Decorator target = new Decorator
@@ -94,7 +94,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 Child = new DrawnControl(c =>
                 {
                     c.DrawRectangle(brush, null, new Rect(0, 0, 100, 100));
-                    c.DrawRectangle(brush, null, new Rect(100, 100, 100, 100));
+
+                    using (c.PushPreTransform(Matrix.CreateTranslation(100, 100)))
+                        c.DrawRectangle(brush, null, new Rect(0, 0, 100, 100));
                 }),
             };
 

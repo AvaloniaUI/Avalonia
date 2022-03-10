@@ -86,9 +86,9 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc />
-        protected internal override void OnItemsChangedCore(VirtualizingLayoutContext context, object source, NotifyCollectionChangedEventArgs args)
+        protected internal override void OnItemsChangedCore(VirtualizingLayoutContext context, object? source, NotifyCollectionChangedEventArgs args)
         {
-            var state = (WrapLayoutState)context.LayoutState;
+            var state = (WrapLayoutState)context.LayoutState!;
 
             switch (args.Action)
             {
@@ -126,7 +126,7 @@ namespace Avalonia.Layout
             var realizationBounds = new UvBounds(Orientation, context.RealizationRect);
             var position = UvMeasure.Zero;
 
-            var state = (WrapLayoutState)context.LayoutState;
+            var state = (WrapLayoutState)context.LayoutState!;
             if (state.Orientation != Orientation)
             {
                 state.SetOrientation(Orientation);
@@ -261,7 +261,7 @@ namespace Avalonia.Layout
                 var spacingMeasure = new UvMeasure(Orientation, HorizontalSpacing, VerticalSpacing);
                 var realizationBounds = new UvBounds(Orientation, context.RealizationRect);
 
-                var state = (WrapLayoutState)context.LayoutState;
+                var state = (WrapLayoutState)context.LayoutState!;
                 bool Arrange(WrapItem item, bool isLast = false)
                 {
                     if (item.Measure.HasValue == false)

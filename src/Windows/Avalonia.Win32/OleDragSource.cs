@@ -1,9 +1,12 @@
 ﻿using System.Linq;
+
+using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.Win32Com;
 
 namespace Avalonia.Win32
 {
-    class OleDragSource : IDropSource
+    internal class OleDragSource : CallbackBase, IDropSource
     {
         private const int DRAGDROP_S_USEDEFAULTCURSORS = 0x00040102;
         private const int DRAGDROP_S_DROP = 0x00040100;
@@ -30,7 +33,7 @@ namespace Avalonia.Win32
             return unchecked((int)UnmanagedMethods.HRESULT.S_OK);
         }
 
-        public int GiveFeedback(int dwEffect)
+        public int GiveFeedback(DropEffect dwEffect)
         {
             return DRAGDROP_S_USEDEFAULTCURSORS;
         }

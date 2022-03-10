@@ -39,6 +39,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     typeSystem.GetType("Avalonia.Metadata.ContentAttribute")
                 },
+                WhitespaceSignificantCollectionAttributes =
+                {
+                     typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
+                },
+                TrimSurroundingWhitespaceAttributes =
+                {
+                    typeSystem.GetType("Avalonia.Metadata.TrimSurroundingWhitespaceAttribute")
+                },
                 ProvideValueTarget = typeSystem.GetType("Avalonia.Markup.Xaml.IProvideValueTarget"),
                 RootObjectProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IRootObjectProvider"),
                 RootObjectProviderIntermediateRootPropertyName = "IntermediateRootObject",
@@ -49,8 +57,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 XmlNamespaceInfoProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider"),
                 DeferredContentPropertyAttributes = {typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute")},
+                DeferredContentExecutorCustomizationDefaultTypeParameter = typeSystem.GetType("Avalonia.Controls.IControl"),
+                DeferredContentExecutorCustomizationTypeParameterDeferredContentAttributePropertyNames = new List<string>
+                {
+                    "TemplateResultType"
+                },
                 DeferredContentExecutorCustomization =
-                    runtimeHelpers.FindMethod(m => m.Name == "DeferredTransformationFactoryV1"),
+                    runtimeHelpers.FindMethod(m => m.Name == "DeferredTransformationFactoryV2"),
                 UsableDuringInitializationAttributes =
                 {
                     typeSystem.GetType("Avalonia.Metadata.UsableDuringInitializationAttribute"),

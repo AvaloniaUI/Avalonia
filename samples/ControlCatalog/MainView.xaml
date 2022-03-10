@@ -1,107 +1,198 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-        xmlns:pages="clr-namespace:ControlCatalog.Pages"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="ControlCatalog.MainView">
+<UserControl x:Class="ControlCatalog.MainView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             xmlns:models="clr-namespace:ControlCatalog.Models">
   <Grid>
     <Grid.Styles>
-        <Style Selector="TextBlock.h2">
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="MaxWidth" Value="400"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
-        </Style>
-    </Grid.Styles>  
-    <TabControl Classes="sidebar" Name="Sidebar">
-      <TabItem Header="Acrylic"><pages:AcrylicPage/></TabItem>
-      <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
-      <TabItem Header="Border"><pages:BorderPage/></TabItem>
-      <TabItem Header="Button"><pages:ButtonPage/></TabItem>
-      <TabItem Header="ButtonSpinner"><pages:ButtonSpinnerPage/></TabItem>
-      <TabItem Header="Calendar"><pages:CalendarPage/></TabItem>
-      <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
-      <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
-      <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
-      <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
+      <Style Selector="TextBlock.h2">
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="MaxWidth" Value="400" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+      </Style>
+    </Grid.Styles>
+    <controls:HamburgerMenu Name="Sidebar">
+      <TabItem Header="Acrylic">
+        <pages:AcrylicPage />
+      </TabItem>
+      <TabItem Header="AutoCompleteBox">
+        <pages:AutoCompleteBoxPage />
+      </TabItem>
+      <TabItem Header="Border">
+        <pages:BorderPage />
+      </TabItem>
+      <TabItem Header="Buttons">
+        <pages:ButtonsPage />
+      </TabItem>
+      <TabItem Header="ButtonSpinner">
+        <pages:ButtonSpinnerPage />
+      </TabItem>
+      <TabItem Header="Calendar">
+        <pages:CalendarPage />
+      </TabItem>
+      <TabItem Header="Canvas">
+        <pages:CanvasPage />
+      </TabItem>
+      <TabItem Header="Carousel">
+        <pages:CarouselPage />
+      </TabItem>
+      <TabItem Header="CheckBox">
+        <pages:CheckBoxPage />
+      </TabItem>
+      <TabItem Header="Clipboard">
+        <pages:ClipboardPage />
+      </TabItem>
+      <TabItem Header="ComboBox">
+        <pages:ComboBoxPage />
+      </TabItem>
       <TabItem Header="ContextFlyout">
-        <pages:ContextFlyoutPage/>
+        <pages:ContextFlyoutPage />
       </TabItem>
-      <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
-      <TabItem Header="Cursor"
+      <TabItem Header="ContextMenu">
+        <pages:ContextMenuPage />
+      </TabItem>
+      <TabItem Header="Cursor" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CursorPage />
+      </TabItem>
+      <TabItem Header="DataGrid"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:CursorPage/>
-      </TabItem>
-      <TabItem Header="DataGrid" 
-               ScrollViewer.VerticalScrollBarVisibility="Disabled"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-          <pages:DataGridPage/>
+        <pages:DataGridPage />
       </TabItem>
       <TabItem Header="Date/Time Picker">
-        <pages:DateTimePickerPage/>
+        <pages:DateTimePickerPage />
       </TabItem>
       <TabItem Header="CalendarDatePicker">
-        <pages:CalendarDatePickerPage/></TabItem>
-      <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
-      <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
+        <pages:CalendarDatePickerPage />
+      </TabItem>
+      <TabItem Header="Drag+Drop">
+        <pages:DragAndDropPage />
+      </TabItem>
+      <TabItem Header="Expander">
+        <pages:ExpanderPage />
+      </TabItem>
       <TabItem Header="Flyouts">
         <pages:FlyoutsPage />
       </TabItem>
       <TabItem Header="Image"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-        <pages:ImagePage/>
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ImagePage />
       </TabItem>
       <TabItem Header="ItemsRepeater"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-        <pages:ItemsRepeaterPage/>
-      </TabItem>
-      <TabItem Header="Label"><pages:LabelsPage/></TabItem>
-      <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
-      <TabItem Header="ListBox"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:ListBoxPage/>
+        <pages:ItemsRepeaterPage />
       </TabItem>
-      <TabItem Header="Menu"><pages:MenuPage/></TabItem>
-      <TabItem Header="Notifications"><pages:NotificationsPage/></TabItem>
-	    <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
-      <TabItem Header="OpenGL"><pages:OpenGlPage/></TabItem>
-      <TabItem Header="Pointers (Touch)"><pages:PointersPage/></TabItem>
-      <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
-      <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
-      <TabItem Header="RelativePanel"><pages:RelativePanelPage/></TabItem>
-      <TabItem Header="ScrollViewer"><pages:ScrollViewerPage/></TabItem>
-      <TabItem Header="Slider"><pages:SliderPage/></TabItem>
-      <TabItem Header="SplitView"><pages:SplitViewPage/></TabItem>
-      <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
-      <TabItem Header="TabStrip"><pages:TabStripPage/></TabItem>
-      <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
-      <TabItem Header="TextBlock"><pages:TextBlockPage/></TabItem>
-      <TabItem Header="ToggleSwitch"><pages:ToggleSwitchPage/></TabItem>
-      <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
-      <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
-      <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
-      <TabItem Header="Window Customizations"><pages:WindowCustomizationsPage/></TabItem>
-      <TabControl.Tag>
-        <StackPanel Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
-          <ComboBox x:Name="Decorations" SelectedIndex="0">
-            <ComboBoxItem>No Decorations</ComboBoxItem>
-            <ComboBoxItem>Border Only</ComboBoxItem>
-            <ComboBoxItem>Full Decorations</ComboBoxItem>
-          </ComboBox>
-          <ComboBox x:Name="Themes" SelectedIndex="0">
-            <ComboBoxItem>Fluent - Light</ComboBoxItem>
-            <ComboBoxItem>Fluent - Dark</ComboBoxItem>
-            <ComboBoxItem>Simple - Light</ComboBoxItem>
-            <ComboBoxItem>Simple - Dark</ComboBoxItem>
-          </ComboBox>
-          <ComboBox x:Name="TransparencyLevels" SelectedIndex="{Binding TransparencyLevel}">
-            <ComboBoxItem>None</ComboBoxItem>
-            <ComboBoxItem>Transparent</ComboBoxItem>
-            <ComboBoxItem>Blur</ComboBoxItem>
-            <ComboBoxItem>AcrylicBlur</ComboBoxItem>
-          </ComboBox>
-          <ComboBox Items="{Binding WindowStates}" SelectedItem="{Binding WindowState}" />
-        </StackPanel>
-      </TabControl.Tag>
-    </TabControl>
+      <TabItem Header="Label">
+        <pages:LabelsPage />
+      </TabItem>
+      <TabItem Header="LayoutTransformControl">
+        <pages:LayoutTransformControlPage />
+      </TabItem>
+      <TabItem Header="ListBox" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ListBoxPage />
+      </TabItem>
+      <TabItem Header="Menu">
+        <pages:MenuPage />
+      </TabItem>
+      <TabItem Header="Notifications">
+        <pages:NotificationsPage />
+      </TabItem>
+      <TabItem Header="NumericUpDown">
+        <pages:NumericUpDownPage />
+      </TabItem>
+      <TabItem Header="OpenGL">
+        <pages:OpenGlPage />
+      </TabItem>
+      <TabItem Header="Pointers (Touch)">
+        <pages:PointersPage />
+      </TabItem>
+      <TabItem Header="ProgressBar">
+        <pages:ProgressBarPage />
+      </TabItem>
+      <TabItem Header="RadioButton">
+        <pages:RadioButtonPage />
+      </TabItem>
+      <TabItem Header="RelativePanel">
+        <pages:RelativePanelPage />
+      </TabItem>
+      <TabItem Header="ScrollViewer">
+        <pages:ScrollViewerPage />
+      </TabItem>
+      <TabItem Header="Slider">
+        <pages:SliderPage />
+      </TabItem>
+      <TabItem Header="SplitView">
+        <pages:SplitViewPage />
+      </TabItem>
+      <TabItem Header="TabControl">
+        <pages:TabControlPage />
+      </TabItem>
+      <TabItem Header="TabStrip">
+        <pages:TabStripPage />
+      </TabItem>
+      <TabItem Header="TextBox">
+        <pages:TextBoxPage />
+      </TabItem>
+      <TabItem Header="TextBlock">
+        <pages:TextBlockPage />
+      </TabItem>
+      <TabItem Header="ToggleSwitch">
+        <pages:ToggleSwitchPage />
+      </TabItem>
+      <TabItem Header="ToolTip">
+        <pages:ToolTipPage />
+      </TabItem>
+      <TabItem Header="TreeView">
+        <pages:TreeViewPage />
+      </TabItem>
+      <TabItem Header="Viewbox">
+        <pages:ViewboxPage />
+      </TabItem>
+      <TabItem Header="Window Customizations">
+        <pages:WindowCustomizationsPage />
+      </TabItem>
+      <FlyoutBase.AttachedFlyout>
+        <Flyout>
+          <StackPanel Width="152" Spacing="8">
+            <ComboBox x:Name="Decorations"
+                      HorizontalAlignment="Stretch"
+                      SelectedIndex="0">
+              <ComboBox.Items>
+                <SystemDecorations>None</SystemDecorations>
+                <SystemDecorations>BorderOnly</SystemDecorations>
+                <SystemDecorations>Full</SystemDecorations>
+              </ComboBox.Items>
+            </ComboBox>
+            <ComboBox x:Name="Themes"
+                      HorizontalAlignment="Stretch"
+                      SelectedIndex="0">
+              <ComboBox.Items>
+                <models:CatalogTheme>FluentLight</models:CatalogTheme>
+                <models:CatalogTheme>FluentDark</models:CatalogTheme>
+                <models:CatalogTheme>DefaultLight</models:CatalogTheme>
+                <models:CatalogTheme>DefaultDark</models:CatalogTheme>
+              </ComboBox.Items>
+            </ComboBox>
+            <ComboBox x:Name="TransparencyLevels"
+                      HorizontalAlignment="Stretch"
+                      SelectedIndex="{Binding TransparencyLevel}">
+              <ComboBox.Items>
+                <WindowTransparencyLevel>None</WindowTransparencyLevel>
+                <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
+                <WindowTransparencyLevel>Blur</WindowTransparencyLevel>
+                <WindowTransparencyLevel>AcrylicBlur</WindowTransparencyLevel>
+                <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
+              </ComboBox.Items>
+            </ComboBox>
+            <ComboBox HorizontalAlignment="Stretch"
+                      Items="{Binding WindowStates}"
+                      SelectedItem="{Binding WindowState}" />
+          </StackPanel>
+        </Flyout>
+      </FlyoutBase.AttachedFlyout>
+    </controls:HamburgerMenu>
   </Grid>
 </UserControl>

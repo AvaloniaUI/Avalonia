@@ -11,27 +11,6 @@ namespace Avalonia.Platform
     /// </summary>
     public interface IPlatformRenderInterface
     {
-        /// <summary>
-        /// Creates a formatted text implementation.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="typeface">The base typeface.</param>
-        /// <param name="fontSize">The font size.</param>
-        /// <param name="textAlignment">The text alignment.</param>
-        /// <param name="wrapping">The text wrapping mode.</param>
-        /// <param name="constraint">The text layout constraints.</param>
-        /// <param name="spans">The style spans.</param>
-        /// <returns>An <see cref="IFormattedTextImpl"/>.</returns>
-        IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans);
-
-        /// <summary>
         /// Creates an ellipse geometry implementation.
         /// </summary>
         /// <param name="rect">The bounds of the ellipse.</param>
@@ -58,6 +37,23 @@ namespace Avalonia.Platform
         /// </summary>
         /// <returns>An <see cref="IStreamGeometryImpl"/>.</returns>
         IStreamGeometryImpl CreateStreamGeometry();
+
+        /// <summary>
+        /// Creates a geometry group implementation.
+        /// </summary>
+        /// <param name="fillRule">The fill rule.</param>
+        /// <param name="children">The geometries to group.</param>
+        /// <returns>A combined geometry.</returns>
+        IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children);
+
+        /// <summary>
+        /// Creates a geometry group implementation.
+        /// </summary>
+        /// <param name="combineMode">The combine mode</param>
+        /// <param name="g1">The first geometry.</param>
+        /// <param name="g2">The second geometry.</param>
+        /// <returns>A combined geometry.</returns>
+        IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2);
 
         /// <summary>
         /// Creates a renderer.

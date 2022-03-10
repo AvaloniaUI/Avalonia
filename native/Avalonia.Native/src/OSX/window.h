@@ -12,6 +12,7 @@ class WindowBaseImpl;
 -(AvnPixelSize) getPixelSize;
 -(AvnPlatformResizeReason) getResizeReason;
 -(void) setResizeReason:(AvnPlatformResizeReason)reason;
++ (AvnPoint)toAvnPoint:(CGPoint)p;
 @end
 
 @interface AutoFitContentView : NSView
@@ -42,6 +43,7 @@ class WindowBaseImpl;
 struct INSWindowHolder
 {
     virtual AvnWindow* _Nonnull GetNSWindow () = 0;
+    virtual AvnView* _Nonnull GetNSView () = 0;
 };
 
 struct IWindowStateChanged

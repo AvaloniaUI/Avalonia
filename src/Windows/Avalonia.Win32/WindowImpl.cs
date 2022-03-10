@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
@@ -25,7 +28,8 @@ namespace Avalonia.Win32
     /// Window implementation for Win32 platform.
     /// </summary>
     public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithNativeControlHost
+        ITopLevelImplWithNativeControlHost,
+        ITopLevelImplWithTextInputMethod
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -82,11 +86,13 @@ namespace Avalonia.Win32
         private Size _minSize;
         private Size _maxSize;
         private POINT _maxTrackSize;
-        private WindowImpl _parent;        
+        private WindowImpl _parent;
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
         private bool _hiddenWindowIsParent;
+        private uint _langid;
+        private bool _ignoreWmChar;
 
         public WindowImpl()
         {
@@ -122,7 +128,7 @@ namespace Avalonia.Win32
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-            
+            UpdateInputMethod(GetKeyboardLayout(0));
             if (glPlatform != null)
             {
                 if (_isUsingComposition)
@@ -145,7 +151,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
 
-            _nativeControlHost = new Win32NativeControlHost(this);
+            _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
             s_instances.Add(this);
         }
 
@@ -168,7 +174,7 @@ namespace Avalonia.Win32
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
-        
+
         public Action LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
@@ -224,7 +230,7 @@ namespace Avalonia.Win32
                     return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
                 }
 
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf<RECT>());
                 return new Size(rect.Width, rect.Height) / RenderScaling;
             }
         }
@@ -241,7 +247,7 @@ namespace Avalonia.Win32
         {
             get
             {
-                if(_isFullScreenActive)
+                if (_isFullScreenActive)
                 {
                     return WindowState.FullScreen;
                 }
@@ -261,12 +267,10 @@ namespace Avalonia.Win32
             {
                 if (IsWindowVisible(_hwnd))
                 {
-                    ShowWindow(value, true);
+                    ShowWindow(value, value != WindowState.Minimized); // If the window is minimized, it shouldn't be activated
                 }
-                else
-                {
-                    _showWindowState = value;
-                }
+
+                _showWindowState = value;
             }
         }
 
@@ -274,7 +278,7 @@ namespace Avalonia.Win32
 
         protected IntPtr Hwnd => _hwnd;
 
-        public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
             TransparencyLevel = EnableBlur(transparencyLevel);
         }
@@ -314,12 +318,12 @@ namespace Avalonia.Win32
             }
 
             var blurInfo = new DWM_BLURBEHIND(false);
-            
+
             if (transparencyLevel == WindowTransparencyLevel.Blur)
             {
                 blurInfo = new DWM_BLURBEHIND(true);
             }
-            
+
             DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
 
             if (transparencyLevel == WindowTransparencyLevel.Transparent)
@@ -335,7 +339,7 @@ namespace Avalonia.Win32
         private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
         {
             var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf(accent);
+            var accentStructSize = Marshal.SizeOf<AccentPolicy>();
 
             if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
             {
@@ -375,7 +379,24 @@ namespace Avalonia.Win32
         {
             if (_isUsingComposition)
             {
-                _blurHost?.SetBlur(transparencyLevel >= WindowTransparencyLevel.Blur);
+                var effect = transparencyLevel switch
+                {
+                    WindowTransparencyLevel.Mica => BlurEffect.Mica,
+                    WindowTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
+                    WindowTransparencyLevel.Blur => BlurEffect.Acrylic,
+                    _ => BlurEffect.None
+                };
+
+                if (Win32Platform.WindowsVersion >= WinUICompositorConnection.MinHostBackdropVersion)
+                {
+                    unsafe
+                    {
+                        int pvUseBackdropBrush = effect == BlurEffect.Acrylic ? 1 : 0;
+                        DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
+                    }
+                }
+
+                _blurHost?.SetBlur(effect);
 
                 return transparencyLevel;
             }
@@ -384,7 +405,7 @@ namespace Avalonia.Win32
                 bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
                 var accent = new AccentPolicy();
-                var accentStructSize = Marshal.SizeOf(accent);
+                var accentStructSize = Marshal.SizeOf<AccentPolicy>();
 
                 if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
                 {
@@ -473,12 +494,12 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
-            return Win32Platform.UseDeferredRendering 
-                ?  _isUsingComposition 
+            return Win32Platform.UseDeferredRendering
+                ? _isUsingComposition
                     ? new DeferredRenderer(root, loop)
                     {
                         RenderOnlyOnRenderThread = true
-                    } 
+                    }
                     : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
                 : new ImmediateRenderer(root);
         }
@@ -509,7 +530,7 @@ namespace Avalonia.Win32
 
         public void Activate()
         {
-            SetActiveWindow(_hwnd);
+            SetForegroundWindow(_hwnd);
         }
 
         public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
@@ -521,6 +542,7 @@ namespace Avalonia.Win32
             if (_dropTarget != null)
             {
                 OleContext.Current?.UnregisterDragDrop(Handle);
+                _dropTarget.Dispose();
                 _dropTarget = null;
             }
 
@@ -532,7 +554,7 @@ namespace Avalonia.Win32
                 {
                     BeforeCloseCleanup(true);
                 }
-                
+
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
@@ -598,7 +620,7 @@ namespace Avalonia.Win32
         public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
-            
+
             var parentHwnd = _parent?._hwnd ?? IntPtr.Zero;
 
             if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
@@ -622,13 +644,16 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
+            if (_windowProperties.IsResizable)
+            {
 #if USE_MANAGED_DRAG
-            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
+                _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
-            _mouseDevice.Capture(null);
-            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+                _mouseDevice.Capture(null);
+                DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
+                    new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
 #endif
+            }
         }
 
         public void SetTitle(string title)
@@ -709,7 +734,7 @@ namespace Avalonia.Win32
                 _isUsingComposition ? (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0,
                 atom,
                 null,
-                (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int) WindowStyles.WS_CLIPCHILDREN,
+                (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int)WindowStyles.WS_CLIPCHILDREN,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
@@ -755,7 +780,7 @@ namespace Avalonia.Win32
                 throw new Win32Exception();
             }
 
-            Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+            Handle = new WindowImplPlatformHandle(this);
 
             _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
 
@@ -764,7 +789,7 @@ namespace Avalonia.Win32
                 RegisterTouchWindow(_hwnd, 0);
             }
 
-            if (ShCoreAvailable)
+            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
             {
                 var monitor = MonitorFromWindow(
                     _hwnd,
@@ -848,14 +873,14 @@ namespace Avalonia.Win32
             }
 
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
-            
+
             ExtendClientArea();
         }
 
         private MARGINS UpdateExtendMargins()
         {
             RECT borderThickness = new RECT();
-            RECT borderCaptionThickness = new RECT();            
+            RECT borderCaptionThickness = new RECT();
 
             AdjustWindowRectEx(ref borderCaptionThickness, (uint)(GetStyle()), false, 0);
             AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
@@ -878,7 +903,7 @@ namespace Avalonia.Win32
 
             if (_extendTitleBarHint != -1)
             {
-                borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
+                borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);
             }
 
             margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
@@ -903,7 +928,7 @@ namespace Avalonia.Win32
             {
                 return;
             }
-            
+
             if (DwmIsCompositionEnabled(out bool compositionEnabled) < 0 || !compositionEnabled)
             {
                 _isClientAreaExtended = false;
@@ -931,11 +956,11 @@ namespace Avalonia.Win32
 
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
-                
-                Resize(new Size(rcWindow.Width/ RenderScaling, rcWindow.Height / RenderScaling), PlatformResizeReason.Layout);
+
+                Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), PlatformResizeReason.Layout);
             }
 
-            if(!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
+            if (!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
                 !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome)))
             {
                 EnableCloseButton(_hwnd);
@@ -951,12 +976,12 @@ namespace Avalonia.Win32
         private void ShowWindow(WindowState state, bool activate)
         {
             _shown = true;
-            
+
             if (_isClientAreaExtended)
             {
                 ExtendClientArea();
             }
-            
+
             ShowWindowCommand? command;
 
             var newWindowProperties = _windowProperties;
@@ -965,7 +990,7 @@ namespace Avalonia.Win32
             {
                 case WindowState.Minimized:
                     newWindowProperties.IsFullScreen = false;
-                    command = activate ? ShowWindowCommand.Minimize : ShowWindowCommand.ShowMinNoActive;
+                    command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
                     newWindowProperties.IsFullScreen = false;
@@ -974,7 +999,7 @@ namespace Avalonia.Win32
 
                 case WindowState.Normal:
                     newWindowProperties.IsFullScreen = false;
-                    command = IsWindowVisible(_hwnd) ? ShowWindowCommand.Restore : 
+                    command = IsWindowVisible(_hwnd) ? ShowWindowCommand.Restore :
                         activate ? ShowWindowCommand.Normal : ShowWindowCommand.ShowNoActivate;
                     break;
 
@@ -1002,9 +1027,10 @@ namespace Avalonia.Win32
             if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
+                SetForegroundWindow(_hwnd);
             }
         }
-        
+
         private void BeforeCloseCleanup(bool isDisposing)
         {
             // Based on https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Window.cs#L4270-L4337
@@ -1022,7 +1048,7 @@ namespace Avalonia.Win32
                     // Our window closed callback will set enabled state to a correct value after child window gets destroyed.
                     _parent.SetEnabled(true);
                 }
-                
+
                 // We also need to activate our parent window since again OS might try to activate a window behind if it is not set.
                 if (wasActive)
                 {
@@ -1049,7 +1075,7 @@ namespace Avalonia.Win32
                     SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
-        }        
+        }
 
         private WindowStyles GetWindowStateStyles()
         {
@@ -1226,7 +1252,7 @@ namespace Avalonia.Win32
                         SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
-            }            
+            }
         }
 
         private const int MF_BYCOMMAND = 0x0;
@@ -1276,9 +1302,9 @@ namespace Avalonia.Win32
         public void SetExtendClientAreaToDecorationsHint(bool hint)
         {
             _isClientAreaExtended = hint;
-            
-            ExtendClientArea();            
-        }        
+
+            ExtendClientArea();
+        }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
@@ -1286,7 +1312,7 @@ namespace Avalonia.Win32
 
             ExtendClientArea();
         }
-        
+
         /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
@@ -1300,7 +1326,7 @@ namespace Avalonia.Win32
 
         /// <inheritdoc/>
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
-        
+
         /// <inheritdoc/>
         public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
 
@@ -1339,7 +1365,7 @@ namespace Avalonia.Win32
         {
             private readonly WindowImpl _owner;
             private readonly PlatformResizeReason _restore;
-            
+
             public ResizeReasonScope(WindowImpl owner, PlatformResizeReason restore)
             {
                 _owner = owner;
@@ -1347,6 +1373,16 @@ namespace Avalonia.Win32
             }
 
             public void Dispose() => _owner._resizeReason = _restore;
+        }
+
+        public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
+
+        private class WindowImplPlatformHandle : IPlatformHandle
+        {
+            private readonly WindowImpl _owner;
+            public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;
+            public IntPtr Handle => _owner.Hwnd;
+            public string HandleDescriptor => PlatformConstants.WindowHandleType;
         }
     }
 }

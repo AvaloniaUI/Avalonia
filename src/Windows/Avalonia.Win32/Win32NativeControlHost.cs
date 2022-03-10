@@ -9,10 +9,12 @@ namespace Avalonia.Win32
 {
     class Win32NativeControlHost : INativeControlHostImpl
     {
+        private readonly bool _useLayeredWindow;
         public WindowImpl Window { get; }
 
-        public Win32NativeControlHost(WindowImpl window)
+        public Win32NativeControlHost(WindowImpl window, bool useLayeredWindow)
         {
+            _useLayeredWindow = useLayeredWindow;
             Window = window;
         }
 
@@ -25,12 +27,12 @@ namespace Avalonia.Win32
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
             AssertCompatible(parent);
-            return new DumbWindow(parent.Handle);
+            return new DumbWindow(false, parent.Handle);
         }
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var holder = new DumbWindow(Window.Handle.Handle);
+            var holder = new DumbWindow(_useLayeredWindow, Window.Handle.Handle);
             Win32NativeControlAttachment attachment = null;
             try
             {
@@ -52,7 +54,7 @@ namespace Avalonia.Win32
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(IPlatformHandle handle)
         {
             AssertCompatible(handle);
-            return new Win32NativeControlAttachment(new DumbWindow(Window.Handle.Handle),
+            return new Win32NativeControlAttachment(new DumbWindow(_useLayeredWindow, Window.Handle.Handle),
                 handle) { AttachedTo = this };
         }
 
@@ -67,7 +69,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.WndProc _wndProcDelegate;
             private readonly string _className;
 
-            public DumbWindow(IntPtr? parent = null)
+            public DumbWindow(bool layered = false, IntPtr? parent = null)
             {
                 _wndProcDelegate = WndProc;
                 var wndClassEx = new UnmanagedMethods.WNDCLASSEX
@@ -80,7 +82,7 @@ namespace Avalonia.Win32
 
                 var atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
                 Handle = UnmanagedMethods.CreateWindowEx(
-                    0,
+                    layered ? (int)UnmanagedMethods.WindowStyles.WS_EX_LAYERED : 0,
                     atom,
                     null,
                     (int)UnmanagedMethods.WindowStyles.WS_CHILD,
@@ -92,6 +94,9 @@ namespace Avalonia.Win32
                     IntPtr.Zero,
                     IntPtr.Zero,
                     IntPtr.Zero);
+                if (layered)
+                    UnmanagedMethods.SetLayeredWindowAttributes(Handle, 0, 255,
+                        UnmanagedMethods.LayeredWindowFlags.LWA_ALPHA);
             }
 
 

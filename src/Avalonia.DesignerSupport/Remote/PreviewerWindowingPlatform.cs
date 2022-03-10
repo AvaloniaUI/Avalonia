@@ -16,7 +16,9 @@ namespace Avalonia.DesignerSupport.Remote
         private static DetachableTransportConnection s_lastWindowTransport;
         private static PreviewerWindowImpl s_lastWindow;
         public static List<object> PreFlightMessages = new List<object>();
-        
+
+        public ITrayIconImpl CreateTrayIcon() => null;
+
         public IWindowImpl CreateWindow() => new WindowStub();
 
         public IWindowImpl CreateEmbeddableWindow()
@@ -62,5 +64,9 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Size DoubleClickSize { get; } = new Size(2, 2);
         public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
+
+        public Size TouchDoubleClickSize => new Size(16, 16);
+
+        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
     }
 }

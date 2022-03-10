@@ -528,7 +528,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='resm:Avalonia.Themes.Default.ContextMenu.xaml?assembly=Avalonia.Themes.Default'/>
+    <StyleInclude Source='avares://Avalonia.Themes.Default/Controls/ContextMenu.xaml'/>
 </Styles>";
 
                 var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
@@ -933,6 +933,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(1000, slider.Maximum);
                 Assert.Equal(500, slider.Value);
             }
+        }
+
+        [Fact]
+        public void Should_Parse_Tip_With_Comment()
+        {
+            var xaml = @"
+                <TextBlock xmlns='https://github.com/avaloniaui' Text='TextBlock with tooltip'>
+                    <ToolTip.Tip>
+                        <!--Comment-->
+                        <ToolTip>
+                            Foo
+                        </ToolTip>
+                    </ToolTip.Tip>
+                </TextBlock>";
+
+            var textBlock = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(xaml);
+
+            var toolTip = ToolTip.GetTip(textBlock) as ToolTip;
+
+            Assert.NotNull(toolTip);
+
+            Assert.Equal("Foo", toolTip.Content);
         }
 
         private class SelectedItemsViewModel : INotifyPropertyChanged

@@ -164,7 +164,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
-            using (var paint = CreatePaint(_strokePaint, pen, new Rect(p1, p2).Normalize()))
+            using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
                 if (paint.Paint is object)
                 {
@@ -177,10 +177,10 @@ namespace Avalonia.Skia
         public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             var impl = (GeometryImpl) geometry;
-            var rect = geometry.Bounds;
+            var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, rect) : default(PaintWrapper))
-            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, rect) : default(PaintWrapper))
+            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
             {
                 if (fill.Paint != null)
                 {
@@ -354,7 +354,7 @@ namespace Avalonia.Skia
 
             if (brush != null)
             {
-                using (var paint = CreatePaint(_fillPaint, brush, rect.Rect))
+                using (var paint = CreatePaint(_fillPaint, brush, rect.Rect.Size))
                 {
                     if (isRounded)
                     {
@@ -397,7 +397,7 @@ namespace Avalonia.Skia
 
             if (pen?.Brush != null)
             {
-                using (var paint = CreatePaint(_strokePaint, pen, rect.Rect))
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Rect.Size))
                 {
                     if (paint.Paint is object)
                     {
@@ -415,23 +415,39 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
         {
-            using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds))
+            if (rect.Height <= 0 || rect.Width <= 0)
+                return;
+
+            var rc = rect.ToSKRect();
+
+            if (brush != null)
             {
-                var textImpl = (FormattedTextImpl) text;
-                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
+                using (var paint = CreatePaint(_fillPaint, brush, rect.Size))
+                {
+                    Canvas.DrawOval(rc, paint.Paint);
+                }
+            }
+
+            if (pen?.Brush != null)
+            {
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Size))
+                {
+                    if (paint.Paint is object)
+                    {
+                        Canvas.DrawOval(rc, paint.Paint);
+                    }
+                }
             }
         }
-
+       
         /// <inheritdoc />
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            using (var paintWrapper = CreatePaint(_fillPaint, foreground, new Rect(glyphRun.Size)))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
-
-                ConfigureTextRendering(paintWrapper);
 
                 Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
@@ -454,7 +470,7 @@ namespace Avalonia.Skia
         public void PushClip(RoundedRect clip)
         {
             Canvas.Save();
-            Canvas.ClipRoundRect(clip.ToSKRoundRect());
+            Canvas.ClipRoundRect(clip.ToSKRoundRect(), antialias:true);
         }
 
         /// <inheritdoc />
@@ -534,27 +550,16 @@ namespace Avalonia.Skia
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
             // TODO: This should be disposed
-            var paint = new SKPaint()
-            {
-                IsAntialias = true,
-                Style = SKPaintStyle.StrokeAndFill
-            };
+            var paint = new SKPaint();
 
             Canvas.SaveLayer(paint);
-            _maskStack.Push(CreatePaint(paint, mask, bounds, true));
+            _maskStack.Push(CreatePaint(paint, mask, bounds.Size, true));
         }
 
         /// <inheritdoc />
         public void PopOpacityMask()
         {
-            using (var paint = new SKPaint
-            {
-                IsAntialias = true,
-                Style = SKPaintStyle.StrokeAndFill,
-                BlendMode = SKBlendMode.DstIn,
-                Color = new SKColor(0, 0, 0, 255),
-                ColorFilter = SKColorFilter.CreateLumaColor()
-            })
+            using (var paint = new SKPaint { BlendMode = SKBlendMode.DstIn })
             {
                 Canvas.SaveLayer(paint);
                 using (var paintWrapper = _maskStack.Pop())
@@ -589,34 +594,24 @@ namespace Avalonia.Skia
             }
         }
 
-        internal void ConfigureTextRendering(PaintWrapper wrapper)
-        {
-            var paint = wrapper.Paint;
-
-            paint.IsEmbeddedBitmapText = true;
-            paint.SubpixelText = true;
-            paint.LcdRenderText = _canTextUseLcdRendering;
-        }
-
         /// <summary>
         /// Configure paint wrapper for using gradient brush.
         /// </summary>
         /// <param name="paintWrapper">Paint wrapper.</param>
-        /// <param name="targetRect">Target bound rect.</param>
+        /// <param name="targetSize">Target size.</param>
         /// <param name="gradientBrush">Gradient brush.</param>
-        private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Rect targetRect, IGradientBrush gradientBrush)
+        private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
         {
             var tileMode = gradientBrush.SpreadMethod.ToSKShaderTileMode();
             var stopColors = gradientBrush.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
             var stopOffsets = gradientBrush.GradientStops.Select(s => (float)s.Offset).ToArray();
-            var position = targetRect.Position.ToSKPoint();
 
             switch (gradientBrush)
             {
                 case ILinearGradientBrush linearGradient:
                 {
-                    var start = position + linearGradient.StartPoint.ToPixels(targetRect.Size).ToSKPoint();
-                    var end = position + linearGradient.EndPoint.ToPixels(targetRect.Size).ToSKPoint();
+                    var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
+                    var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
 
                     // would be nice to cache these shaders possibly?
                     if (linearGradient.Transform is null)
@@ -640,10 +635,10 @@ namespace Avalonia.Skia
                 }
                 case IRadialGradientBrush radialGradient:
                 {
-                    var center = position + radialGradient.Center.ToPixels(targetRect.Size).ToSKPoint();
-                    var radius = (float)(radialGradient.Radius * targetRect.Width);
+                    var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
+                    var radius = (float)(radialGradient.Radius * targetSize.Width);
 
-                    var origin = position + radialGradient.GradientOrigin.ToPixels(targetRect.Size).ToSKPoint();
+                    var origin = radialGradient.GradientOrigin.ToPixels(targetSize).ToSKPoint();
 
                     if (origin.Equals(center))
                     {
@@ -712,7 +707,7 @@ namespace Avalonia.Skia
                 }
                 case IConicGradientBrush conicGradient:
                 {
-                    var center = position + conicGradient.Center.ToPixels(targetRect.Size).ToSKPoint();
+                    var center = conicGradient.Center.ToPixels(targetSize).ToSKPoint();
 
                     // Skia's default is that angle 0 is from the right hand side of the center point
                     // but we are matching CSS where the vertical point above the center is 0.
@@ -924,10 +919,10 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="paint">The paint to wrap.</param>
         /// <param name="brush">Source brush.</param>
-        /// <param name="targetRect">Target rect.</param>
+        /// <param name="targetSize">Target size.</param>
         /// <param name="disposePaint">Optional dispose of the supplied paint.</param>
         /// <returns>Paint wrapper for given brush.</returns>
-        internal PaintWrapper CreatePaint(SKPaint paint, IBrush brush, Rect targetRect, bool disposePaint = false)
+        internal PaintWrapper CreatePaint(SKPaint paint, IBrush brush, Size targetSize, bool disposePaint = false)
         {
             var paintWrapper = new PaintWrapper(paint, disposePaint);
 
@@ -946,7 +941,7 @@ namespace Avalonia.Skia
 
             if (brush is IGradientBrush gradient)
             {
-                ConfigureGradientBrush(ref paintWrapper, targetRect, gradient);
+                ConfigureGradientBrush(ref paintWrapper, targetSize, gradient);
 
                 return paintWrapper;
             }
@@ -966,7 +961,7 @@ namespace Avalonia.Skia
 
             if (tileBrush != null && tileBrushImage != null)
             {
-                ConfigureTileBrush(ref paintWrapper, targetRect.Size, tileBrush, tileBrushImage);
+                ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage);
             }
             else
             {
@@ -981,10 +976,10 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="paint">The paint to wrap.</param>
         /// <param name="pen">Source pen.</param>
-        /// <param name="targetRect">Target rect.</param>
+        /// <param name="targetSize">Target size.</param>
         /// <param name="disposePaint">Optional dispose of the supplied paint.</param>
         /// <returns></returns>
-        private PaintWrapper CreatePaint(SKPaint paint, IPen pen, Rect targetRect, bool disposePaint = false)
+        private PaintWrapper CreatePaint(SKPaint paint, IPen pen, Size targetSize, bool disposePaint = false)
         {
             // In Skia 0 thickness means - use hairline rendering
             // and for us it means - there is nothing rendered.
@@ -993,7 +988,7 @@ namespace Avalonia.Skia
                 return default;
             }
 
-            var rv = CreatePaint(paint, pen.Brush, targetRect, disposePaint);
+            var rv = CreatePaint(paint, pen.Brush, targetSize, disposePaint);
 
             paint.IsStroke = true;
             paint.StrokeWidth = (float) pen.Thickness;

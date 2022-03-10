@@ -1,21 +1,52 @@
 jobs:
+
+- job: GetPRNumber
+  pool:
+    vmImage: 'windows-2022'
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
+  steps:
+    
+  - task: PowerShell@2
+    displayName: Get PR Number
+    inputs:
+      targetType: 'inline'
+      script: |
+        $prId = $env:System_PullRequest_PullRequestNumber
+        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
+
+        if (!([string]::IsNullOrWhiteSpace($prId)))
+        {
+          Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
+        }
+      
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'PRNumber'
+      publishLocation: 'Container'
+      
 - job: Linux
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-20.04'
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.414'
+    inputs:
+      version: 3.1.414
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.100'
+    inputs:
+      version: 6.0.200
+
   - task: CmdLine@2
-    displayName: 'Install Nuke'
+    displayName: 'Run Build'
     inputs:
       script: |
-         dotnet tool install --global Nuke.GlobalTool --version 0.24.0
-  - task: CmdLine@2
-    displayName: 'Run Nuke'
-    inputs:
-      script: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet --info
         printenv
-        nuke --target CiAzureLinux --configuration=Release
+        ./build.sh --target CiAzureLinux --configuration=Release
 
   - task: PublishTestResults@2
     inputs:
@@ -23,6 +54,7 @@ jobs:
       testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
     condition: not(canceled())
      
+
 - job: macOS
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
@@ -30,10 +62,15 @@ jobs:
     vmImage: 'macOS-10.15'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.401'
+    displayName: 'Use .NET Core SDK 3.1.414'
     inputs:
-      version: 3.1.401
+      version: 3.1.414
 
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.100'
+    inputs:
+      version: 6.0.200
+      
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
     inputs:
@@ -45,7 +82,10 @@ jobs:
     displayName: 'Generate avalonia-native'
     inputs:
       script: |
-        cd src/tools/MicroComGenerator; dotnet run -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
+        export COREHOST_TRACE=0
+        export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+        export DOTNET_CLI_TELEMETRY_OPTOUT=1
+        ./build.sh --target GenerateCppHeaders --configuration Release 
 
   - task: Xcode@5
     inputs:
@@ -58,13 +98,7 @@ jobs:
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
-    displayName: 'Install Nuke'
-    inputs:
-      script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.24.0
-
-  - task: CmdLine@2
-    displayName: 'Run Nuke'
+    displayName: 'Run Build'
     inputs:
       script: |
         export COREHOST_TRACE=0
@@ -72,10 +106,8 @@ jobs:
         export DOTNET_CLI_TELEMETRY_OPTOUT=1
         which dotnet
         dotnet --info
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet --info
         printenv
-        nuke --target CiAzureOSX --configuration Release --skip-previewer
+        ./build.sh --target CiAzureOSX --configuration Release --skip-previewer
 
   - task: PublishTestResults@2
     inputs:
@@ -97,14 +129,25 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-2022'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.401'
+    displayName: 'Use .NET Core SDK 3.1.414'
     inputs:
-      version: 3.1.401
+      version: 3.1.414
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.100'
+    inputs:
+      version: 6.0.200
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install --no-cache --disable-parallel android ios --skip-manifest-update --source "https://api.nuget.org/v3/index.json"
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

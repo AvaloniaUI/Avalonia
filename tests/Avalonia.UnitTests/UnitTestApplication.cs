@@ -10,6 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
+using Avalonia.PlatformSupport;
 
 namespace Avalonia.UnitTests
 {
@@ -27,6 +28,11 @@ namespace Avalonia.UnitTests
             _services = services ?? new TestServices();
             AvaloniaLocator.CurrentMutable.BindToSelf<Application>(this);
             RegisterServices();
+        }
+
+        static UnitTestApplication()
+        {
+            AssetLoader.RegisterResUriParsers();
         }
 
         public static new UnitTestApplication Current => (UnitTestApplication)Application.Current;

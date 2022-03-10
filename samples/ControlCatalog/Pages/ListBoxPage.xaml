@@ -2,15 +2,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ListBoxPage">
   <DockPanel>
+    <DockPanel.Styles>
+      <Style Selector="ListBox ListBoxItem:nth-child(5n+3)">
+        <Setter Property="Foreground" Value="Red" />
+        <Setter Property="FontWeight" Value="Bold" />
+      </Style>
+      <Style Selector="ListBox ListBoxItem:nth-last-child(5n+4)">
+        <Setter Property="Foreground" Value="Blue" />
+        <Setter Property="FontWeight" Value="Bold" />
+      </Style>
+    </DockPanel.Styles>
     <StackPanel DockPanel.Dock="Top" Margin="4">
-      <TextBlock Classes="h1">ListBox</TextBlock>
       <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
+      <TextBlock Classes="h2">Each 5th item is highlighted with nth-child(5n+3) and nth-last-child(5n+4) rules.</TextBlock>
     </StackPanel>
     <StackPanel DockPanel.Dock="Right" Margin="4">
       <CheckBox IsChecked="{Binding Multiple}">Multiple</CheckBox>
       <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
       <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
       <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
+      <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
       <Button Command="{Binding AddItemCommand}">Add</Button>
@@ -20,6 +31,7 @@
     <ListBox Items="{Binding Items}"
              Selection="{Binding Selection}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode^}"/>
+             SelectionMode="{Binding SelectionMode^}"
+             WrapSelection="{Binding WrapSelection}"/>
   </DockPanel>
 </UserControl>

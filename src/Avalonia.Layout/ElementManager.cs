@@ -13,10 +13,10 @@ namespace Avalonia.Layout
 {
     internal class ElementManager
     {
-        private readonly List<ILayoutable> _realizedElements = new List<ILayoutable>();
+        private readonly List<ILayoutable?> _realizedElements = new List<ILayoutable?>();
         private readonly List<Rect> _realizedElementLayoutBounds = new List<Rect>();
         private int _firstRealizedDataIndex;
-        private VirtualizingLayoutContext _context;
+        private VirtualizingLayoutContext? _context;
 
         private bool IsVirtualizingContext
         {
@@ -58,7 +58,7 @@ namespace Avalonia.Layout
                         // Make sure there is enough space for the bounds.
                         // Note: We could optimize when the count becomes smaller, but keeping
                         // it always up to date is the simplest option for now.
-                        _realizedElementLayoutBounds.Resize(count);
+                        _realizedElementLayoutBounds.Resize(count, default);
                     }
                 }
             }
@@ -66,34 +66,32 @@ namespace Avalonia.Layout
 
         public int GetRealizedElementCount()
         {
-            return IsVirtualizingContext ? _realizedElements.Count : _context.ItemCount;
+            return IsVirtualizingContext ? _realizedElements.Count : _context!.ItemCount;
         }
 
         public ILayoutable GetAt(int realizedIndex)
         {
-            ILayoutable element;
+            ILayoutable? element;
 
             if (IsVirtualizingContext)
             {
-                if (_realizedElements[realizedIndex] == null)
+                element = _realizedElements[realizedIndex];
+
+                if (element == null)
                 {
                     // Sentinel. Create the element now since we need it.
                     int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
                     Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "Creating element for sentinal with data index {Index}", dataIndex);
-                    element = _context.GetOrCreateElementAt(
+                    element = _context!.GetOrCreateElementAt(
                         dataIndex,
                         ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
                     _realizedElements[realizedIndex] = element;
-                }
-                else
-                {
-                    element = _realizedElements[realizedIndex];
                 }
             }
             else
             {
                 // realizedIndex and dataIndex are the same (everything is realized)
-                element = _context.GetOrCreateElementAt(
+                element = _context!.GetOrCreateElementAt(
                     realizedIndex,
                     ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
             }
@@ -112,7 +110,7 @@ namespace Avalonia.Layout
             _realizedElementLayoutBounds.Add(default);
         }
 
-        public void Insert(int realizedIndex, int dataIndex, ILayoutable element)
+        public void Insert(int realizedIndex, int dataIndex, ILayoutable? element)
         {
             if (realizedIndex == 0)
             {
@@ -136,7 +134,7 @@ namespace Avalonia.Layout
 
                 if (elementRef != null)
                 {
-                    _context.RecycleElement(elementRef);
+                    _context!.RecycleElement(elementRef);
                 }
             }
 
@@ -203,26 +201,26 @@ namespace Avalonia.Layout
             else
             {
                 // Non virtualized - everything is realized
-                return index >= 0 && index < _context.ItemCount;
+                return index >= 0 && index < _context!.ItemCount;
             }
         }
 
-        public bool IsIndexValidInData(int currentIndex) => (uint)currentIndex < _context.ItemCount;
+        public bool IsIndexValidInData(int currentIndex) => (uint)currentIndex < _context!.ItemCount;
 
-        public ILayoutable GetRealizedElement(int dataIndex)
+        public ILayoutable? GetRealizedElement(int dataIndex)
         {
             return IsVirtualizingContext ?
                 GetAt(GetRealizedRangeIndexFromDataIndex(dataIndex)) :
-                _context.GetOrCreateElementAt(
+                _context!.GetOrCreateElementAt(
                     dataIndex,
                     ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
         }
 
-        public void EnsureElementRealized(bool forward, int dataIndex, string layoutId)
+        public void EnsureElementRealized(bool forward, int dataIndex, string? layoutId)
         {
             if (IsDataIndexRealized(dataIndex) == false)
             {
-                var element = _context.GetOrCreateElementAt(
+                var element = _context!.GetOrCreateElementAt(
                     dataIndex,
                     ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
 
@@ -265,7 +263,7 @@ namespace Avalonia.Layout
             return intersects;
         }
 
-        public void DataSourceChanged(object source, NotifyCollectionChangedEventArgs args)
+        public void DataSourceChanged(object? source, NotifyCollectionChangedEventArgs args)
         {
             if (_realizedElements.Count > 0)
             {
@@ -273,14 +271,14 @@ namespace Avalonia.Layout
                 {
                     case NotifyCollectionChangedAction.Add:
                         {
-                            OnItemsAdded(args.NewStartingIndex, args.NewItems.Count);
+                            OnItemsAdded(args.NewStartingIndex, args.NewItems!.Count);
                         }
                         break;
 
                     case NotifyCollectionChangedAction.Replace:
                         {
-                            int oldSize = args.OldItems.Count;
-                            int newSize = args.NewItems.Count;
+                            int oldSize = args.OldItems!.Count;
+                            int newSize = args.NewItems!.Count;
                             int oldStartIndex = args.OldStartingIndex;
                             int newStartIndex = args.NewStartingIndex;
 
@@ -301,7 +299,7 @@ namespace Avalonia.Layout
 
                                     if (elementRef != null)
                                     {
-                                        _context.RecycleElement(elementRef);
+                                        _context!.RecycleElement(elementRef);
                                         _realizedElements[realizedIndex] = null;
                                     }
                                 }
@@ -314,12 +312,11 @@ namespace Avalonia.Layout
                         }
                         break;
 
+                    // Remove clear all realized elements just to align the begavior
+                    // with ViewManager which resets realized item indices to defaults.
+                    // Freeing only removed items causes wrong indices to be stored
+                    // in virtualized info of items under some circumstances.
                     case NotifyCollectionChangedAction.Remove:
-                        {
-                            OnItemsRemoved(args.OldStartingIndex, args.OldItems.Count);
-                        }
-                        break;
-
                     case NotifyCollectionChangedAction.Reset:
                         ClearRealizedRange();
                         break;

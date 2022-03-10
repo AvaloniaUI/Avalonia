@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -123,15 +123,15 @@ namespace Avalonia.Controls
         private const string ElementPopup = "PART_Popup";
         private const string ElementCalendar = "PART_Calendar";
 
-        private Calendar _calendar;
+        private Calendar? _calendar;
         private string _defaultText;
-        private Button _dropDownButton;
+        private Button? _dropDownButton;
         //private Canvas _outsideCanvas;
         //private Canvas _outsidePopupCanvas;
-        private Popup _popUp;
-        private TextBox _textBox;
-        private IDisposable _textBoxTextChangedSubscription;
-        private IDisposable _buttonPointerPressedSubscription;
+        private Popup? _popUp;
+        private TextBox? _textBox;
+        private IDisposable? _textBoxTextChangedSubscription;
+        private IDisposable? _buttonPointerPressedSubscription;
 
         private DateTime? _onOpenSelectedDate;
         private bool _settingSelectedDate;
@@ -141,7 +141,7 @@ namespace Avalonia.Controls
         private DateTime? _displayDateEnd;
         private bool _isDropDownOpen;
         private DateTime? _selectedDate;
-        private string _text;
+        private string? _text;
         private bool _suspendTextChangeHandler = false;
         private bool _isPopupClosing = false;
         private bool _ignoreButtonClick = false;
@@ -153,7 +153,7 @@ namespace Avalonia.Controls
         /// A collection of dates that cannot be selected. The default value is
         /// an empty collection.
         /// </value>
-        public CalendarBlackoutDatesCollection BlackoutDates { get; private set; }
+        public CalendarBlackoutDatesCollection? BlackoutDates { get; private set; }
 
         public static readonly DirectProperty<CalendarDatePicker, DateTime> DisplayDateProperty =
             AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime>(
@@ -185,7 +185,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
                 o => o.SelectedDate,
-                (o, v) => o.SelectedDate = v);
+                (o, v) => o.SelectedDate = v,
+                enableDataValidation: true, 
+                defaultBindingMode:BindingMode.TwoWay);
 
         public static readonly StyledProperty<CalendarDatePickerFormat> SelectedDateFormatProperty =
             AvaloniaProperty.Register<CalendarDatePicker, CalendarDatePickerFormat>(
@@ -199,12 +201,12 @@ namespace Avalonia.Controls
                 defaultValue: "d",
                 validate: IsValidDateFormatString);
 
-        public static readonly DirectProperty<CalendarDatePicker, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, string>(
+        public static readonly DirectProperty<CalendarDatePicker, string?> TextProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, string?>(
                 nameof(Text),
                 o => o.Text,
                 (o, v) => o.Text = v);
-        public static readonly StyledProperty<string> WatermarkProperty =
+        public static readonly StyledProperty<string?> WatermarkProperty =
             TextBox.WatermarkProperty.AddOwner<CalendarDatePicker>();
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             TextBox.UseFloatingWatermarkProperty.AddOwner<CalendarDatePicker>();
@@ -360,13 +362,13 @@ namespace Avalonia.Controls
         /// <exception cref="T:System.ArgumentOutOfRangeException">
         /// The text entered parses to a date that is not selectable.
         /// </exception>
-        public string Text
+        public string? Text
         {
             get { return _text; }
             set { SetAndRaise(TextProperty, ref _text, value); }
         }
 
-        public string Watermark
+        public string? Watermark
         {
             get { return GetValue(WatermarkProperty); }
             set { SetValue(WatermarkProperty, value); }
@@ -400,34 +402,31 @@ namespace Avalonia.Controls
         /// Occurs when the drop-down
         /// <see cref="T:Avalonia.Controls.Calendar" /> is closed.
         /// </summary>
-        public event EventHandler CalendarClosed;
+        public event EventHandler? CalendarClosed;
 
         /// <summary>
         /// Occurs when the drop-down
         /// <see cref="T:Avalonia.Controls.Calendar" /> is opened.
         /// </summary>
-        public event EventHandler CalendarOpened;
+        public event EventHandler? CalendarOpened;
 
         /// <summary>
         /// Occurs when <see cref="P:Avalonia.Controls.DatePicker.Text" />
         /// is assigned a value that cannot be interpreted as a date.
         /// </summary>
-        public event EventHandler<CalendarDatePickerDateValidationErrorEventArgs> DateValidationError;
+        public event EventHandler<CalendarDatePickerDateValidationErrorEventArgs>? DateValidationError;
 
         /// <summary>
         /// Occurs when the
         /// <see cref="P:Avalonia.Controls.CalendarDatePicker.SelectedDate" />
         /// property is changed.
         /// </summary>
-        public event EventHandler<SelectionChangedEventArgs> SelectedDateChanged;
+        public event EventHandler<SelectionChangedEventArgs>? SelectedDateChanged;
 
         static CalendarDatePicker()
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
 
-            DisplayDateProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateChanged(e));
-            DisplayDateStartProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateStartChanged(e));
-            DisplayDateEndProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateEndChanged(e));
             IsDropDownOpenProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnIsDropDownOpenChanged(e));
             SelectedDateProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateChanged(e));
             SelectedDateFormatProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateFormatChanged(e));
@@ -459,18 +458,12 @@ namespace Avalonia.Controls
             if (_calendar != null)
             {
                 _calendar.SelectionMode = CalendarSelectionMode.SingleDate;
-                _calendar.SelectedDate = SelectedDate;
-                SetCalendarDisplayDate(DisplayDate);
-                SetCalendarDisplayDateStart(DisplayDateStart);
-                SetCalendarDisplayDateEnd(DisplayDateEnd);
 
                 _calendar.DayButtonMouseUp += Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
                 _calendar.PointerReleased += Calendar_PointerReleased;
                 _calendar.KeyDown += Calendar_KeyDown;
-                //_calendar.SizeChanged += new SizeChangedEventHandler(Calendar_SizeChanged);
-                //_calendar.IsTabStop = true;
 
                 var currentBlackoutDays = BlackoutDates;
                 BlackoutDates = _calendar.BlackoutDates;
@@ -542,13 +535,11 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == SelectedDateProperty)
+            if (property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, change.NewValue.Error);
+                DataValidationErrors.SetError(this, value.Error);
             }
         }
 
@@ -587,68 +578,16 @@ namespace Avalonia.Controls
             SetSelectedDate();
         }
         
-        private void SetCalendarDisplayDate(DateTime value)
-        {
-            if (DateTimeHelper.CompareYearMonth(_calendar.DisplayDate, value) != 0)
-            {
-                _calendar.DisplayDate = DisplayDate;
-                if (DateTime.Compare(_calendar.DisplayDate, DisplayDate) != 0)
-                {
-                    DisplayDate = _calendar.DisplayDate;
-                }
-            }
-        }
-        private void OnDisplayDateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (_calendar != null)
-            {
-                var value = (DateTime)e.NewValue;
-                SetCalendarDisplayDate(value);
-            }
-        }
-        private void SetCalendarDisplayDateStart(DateTime? value)
-        {
-            _calendar.DisplayDateStart = value;
-            if (_calendar.DisplayDateStart.HasValue && DisplayDateStart.HasValue && DateTime.Compare(_calendar.DisplayDateStart.Value, DisplayDateStart.Value) != 0)
-            {
-                DisplayDateStart = _calendar.DisplayDateStart;
-            }
-        }
-        private void OnDisplayDateStartChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (_calendar != null)
-            {
-                var value = (DateTime?)e.NewValue;
-                SetCalendarDisplayDateStart(value);
-            }
-        }
-        private void SetCalendarDisplayDateEnd(DateTime? value)
-        {
-            _calendar.DisplayDateEnd = value;
-            if (_calendar.DisplayDateEnd.HasValue && DisplayDateEnd.HasValue && DateTime.Compare(_calendar.DisplayDateEnd.Value, DisplayDateEnd.Value) != 0)
-            {
-                DisplayDateEnd = _calendar.DisplayDateEnd;
-            }
-
-        }
-        private void OnDisplayDateEndChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (_calendar != null)
-            {
-                var value = (DateTime?)e.NewValue;
-                SetCalendarDisplayDateEnd(value);
-            }
-        }
         private void OnIsDropDownOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldValue = (bool)e.OldValue;
-            var value = (bool)e.NewValue;
+            var oldValue = (bool)e.OldValue!;
+            var value = (bool)e.NewValue!;
 
             if (_popUp != null && _popUp.Child != null)
             {
                 if (value != oldValue)
                 {
-                    if (_calendar.DisplayMode != CalendarMode.Month)
+                    if (_calendar!.DisplayMode != CalendarMode.Month)
                     {
                         _calendar.DisplayMode = CalendarMode.Month;
                     }
@@ -669,11 +608,6 @@ namespace Avalonia.Controls
         {
             var addedDate = (DateTime?)e.NewValue;
             var removedDate = (DateTime?)e.OldValue;
-
-            if (_calendar != null && addedDate != _calendar.SelectedDate)
-            {
-                _calendar.SelectedDate = addedDate;
-            }
 
             if (SelectedDate != null)
             {
@@ -727,7 +661,7 @@ namespace Avalonia.Controls
 
                     if (date != null)
                     {
-                        string s = DateTimeToString((DateTime)date);
+                        string? s = DateTimeToString((DateTime)date);
                         Text = s;
                     }
                 }
@@ -746,8 +680,8 @@ namespace Avalonia.Controls
         }
         private void OnTextChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldValue = (string)e.OldValue;
-            var value = (string)e.NewValue;
+            var oldValue = (string?)e.OldValue;
+            var value = (string?)e.NewValue;
 
             if (!_suspendTextChangeHandler)
             {
@@ -798,7 +732,7 @@ namespace Avalonia.Controls
         }
         private void OnDateSelected(DateTime? addedDate, DateTime? removedDate)
         {
-            EventHandler<SelectionChangedEventArgs> handler = this.SelectedDateChanged;
+            EventHandler<SelectionChangedEventArgs>? handler = this.SelectedDateChanged;
             if (null != handler)
             {
                 Collection<DateTime> addedItems = new Collection<DateTime>();
@@ -826,23 +760,23 @@ namespace Avalonia.Controls
             CalendarOpened?.Invoke(this, e);
         }
 
-        private void Calendar_DayButtonMouseUp(object sender, PointerReleasedEventArgs e)
+        private void Calendar_DayButtonMouseUp(object? sender, PointerReleasedEventArgs e)
         {
             Focus();
             IsDropDownOpen = false;
         }      
-        private void Calendar_DisplayDateChanged(object sender, CalendarDateChangedEventArgs e)
+        private void Calendar_DisplayDateChanged(object? sender, CalendarDateChangedEventArgs e)
         {
             if (e.AddedDate != this.DisplayDate)
             {
-                SetValue(DisplayDateProperty, (DateTime) e.AddedDate);
+                SetValue(DisplayDateProperty, (DateTime) e.AddedDate!);
             }
         }
-        private void Calendar_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
+        private void Calendar_SelectedDatesChanged(object? sender, SelectionChangedEventArgs e)
         {
             Debug.Assert(e.AddedItems.Count < 2, "There should be less than 2 AddedItems!");
 
-            if (e.AddedItems.Count > 0 && SelectedDate.HasValue && DateTime.Compare((DateTime)e.AddedItems[0], SelectedDate.Value) != 0)
+            if (e.AddedItems.Count > 0 && SelectedDate.HasValue && DateTime.Compare((DateTime)e.AddedItems[0]!, SelectedDate.Value) != 0)
             {
                 SelectedDate = (DateTime?)e.AddedItems[0];
             }
@@ -863,7 +797,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        private void Calendar_PointerReleased(object sender, PointerReleasedEventArgs e)
+        private void Calendar_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
              
             if (e.InitialPressMouseButton == MouseButton.Left)
@@ -871,10 +805,9 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
         }
-        private void Calendar_KeyDown(object sender, KeyEventArgs e)
+        private void Calendar_KeyDown(object? sender, KeyEventArgs e)
         {
-            Calendar c = sender as Calendar;
-            Contract.Requires<ArgumentNullException>(c != null);
+            Calendar? c = sender as Calendar ?? throw new ArgumentException("Sender must be Calendar.", nameof(sender));
 
             if (!e.Handled && (e.Key == Key.Enter || e.Key == Key.Space || e.Key == Key.Escape) && c.DisplayMode == CalendarMode.Month)
             {
@@ -887,11 +820,11 @@ namespace Avalonia.Controls
                 }
             }
         }
-        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        private void TextBox_GotFocus(object? sender, RoutedEventArgs e)
         {
             IsDropDownOpen = false;
         }
-        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        private void TextBox_KeyDown(object? sender, KeyEventArgs e)
         {
             if (!e.Handled)
             {
@@ -907,11 +840,11 @@ namespace Avalonia.Controls
                 _suspendTextChangeHandler = false;
             }
         }
-        private void DropDownButton_PointerPressed(object sender, PointerPressedEventArgs e)
+        private void DropDownButton_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             _ignoreButtonClick = _isPopupClosing;
         }
-        private void DropDownButton_Click(object sender, RoutedEventArgs e)
+        private void DropDownButton_Click(object? sender, RoutedEventArgs e)
         {
             if (!_ignoreButtonClick)
             {
@@ -922,7 +855,7 @@ namespace Avalonia.Controls
                 _ignoreButtonClick = false;
             }
         }
-        private void PopUp_Closed(object sender, EventArgs e)
+        private void PopUp_Closed(object? sender, EventArgs e)
         {
             IsDropDownOpen = false;
 
@@ -958,7 +891,7 @@ namespace Avalonia.Controls
         private void OpenPopUp()
         {
             _onOpenSelectedDate = SelectedDate;
-            _popUp.IsOpen = true;
+            _popUp!.IsOpen = true;
         }
 
         /// <summary>
@@ -981,7 +914,7 @@ namespace Avalonia.Controls
             {
                 newSelectedDate = DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
 
-                if (Calendar.IsValidDateSelection(this._calendar, newSelectedDate))
+                if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
                 {
                     return newSelectedDate;
                 }
@@ -1008,7 +941,7 @@ namespace Avalonia.Controls
             }
             return null;
         }
-        private string DateTimeToString(DateTime d)
+        private string? DateTimeToString(DateTime d)
         {
             DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
 
@@ -1049,7 +982,7 @@ namespace Avalonia.Controls
         {
             SetSelectedDate();
             IsDropDownOpen = true;
-            _calendar.Focus();
+            _calendar!.Focus();
         }
         private void SetSelectedDate()
         {
@@ -1068,7 +1001,7 @@ namespace Avalonia.Controls
                         // ex: SelectedDate = DateTime(1008,12,19) but when
                         // "12/19/08" is parsed it is interpreted as
                         // DateTime(2008,12,19)
-                        string selectedDate = DateTimeToString(SelectedDate.Value);
+                        string? selectedDate = DateTimeToString(SelectedDate.Value);
                         if (selectedDate == s)
                         {
                             return;
@@ -1120,7 +1053,7 @@ namespace Avalonia.Controls
                     // SelectedDate value:
                     if (SelectedDate != null)
                     {
-                        string newtext = this.DateTimeToString(SelectedDate.Value);
+                        string? newtext = this.DateTimeToString(SelectedDate.Value);
                         SetValue(TextProperty, newtext);
                         return SelectedDate;
                     }

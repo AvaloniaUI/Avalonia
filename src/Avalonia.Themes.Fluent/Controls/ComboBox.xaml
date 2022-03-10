@@ -150,7 +150,7 @@
     </Setter>
   </Style>
 
-  <!--  NormalState  -->
+  <!--  Normal State  -->
   <Style Selector="ComboBox /template/ TextBlock#PlaceholderTextBlock">
     <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
   </Style>

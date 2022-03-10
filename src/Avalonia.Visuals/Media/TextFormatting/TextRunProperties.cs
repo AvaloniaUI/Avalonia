@@ -25,29 +25,29 @@ namespace Avalonia.Media.TextFormatting
         ///<summary>
         /// Run TextDecorations. 
         ///</summary>
-        public abstract TextDecorationCollection TextDecorations { get; }
+        public abstract TextDecorationCollection? TextDecorations { get; }
 
         /// <summary>
         /// Brush used to fill text.
         /// </summary>
-        public abstract IBrush ForegroundBrush { get; }
+        public abstract IBrush? ForegroundBrush { get; }
 
         /// <summary>
         /// Brush used to paint background of run.
         /// </summary>
-        public abstract IBrush BackgroundBrush { get; }
+        public abstract IBrush? BackgroundBrush { get; }
 
         /// <summary>
         /// Run text culture.
         /// </summary>
-        public abstract CultureInfo CultureInfo { get; }
+        public abstract CultureInfo? CultureInfo { get; }
 
         /// <summary>
         /// Run vertical box alignment
         /// </summary>
         public abstract BaselineAlignment BaselineAlignment { get; }
 
-        public bool Equals(TextRunProperties other)
+        public bool Equals(TextRunProperties? other)
         {
             if (ReferenceEquals(null, other))
                 return false;
@@ -62,7 +62,7 @@ namespace Avalonia.Media.TextFormatting
                    Equals(CultureInfo, other.CultureInfo);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return ReferenceEquals(this, obj) || obj is TextRunProperties other && Equals(other);
         }
@@ -89,6 +89,12 @@ namespace Avalonia.Media.TextFormatting
         public static bool operator !=(TextRunProperties left, TextRunProperties right)
         {
             return !Equals(left, right);
+        }
+        
+        internal TextRunProperties WithTypeface(Typeface typeface)
+        {
+            return new GenericTextRunProperties(typeface, FontRenderingEmSize,
+                TextDecorations, ForegroundBrush, BackgroundBrush, BaselineAlignment);
         }
     }
 }

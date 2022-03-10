@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         class NativeMenuInfo
         {
             public bool ChangingIsExported { get; set; }
-            public ITopLevelNativeMenuExporter Exporter { get; }
+            public ITopLevelNativeMenuExporter? Exporter { get; }
 
             public NativeMenuInfo(TopLevel target)
             {
@@ -52,15 +52,10 @@ namespace Avalonia.Controls
         }
 
         public static readonly AttachedProperty<NativeMenu> MenuProperty
-            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu>("Menu"/*, validate:
-                (o, v) =>
-                {
-                    if(!(o is Application || o is TopLevel))
-                        throw new InvalidOperationException("NativeMenu.Menu property isn't valid on "+o.GetType());
-                    return v;
-                }*/);
+            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu>("Menu");
 
         public static void SetMenu(AvaloniaObject o, NativeMenu menu) => o.SetValue(MenuProperty, menu);
+
         public static NativeMenu GetMenu(AvaloniaObject o) => o.GetValue(MenuProperty);
         
         static NativeMenu()
@@ -78,6 +73,10 @@ namespace Avalonia.Controls
                 if (args.Sender is TopLevel tl)
                 {
                     GetInfo(tl).Exporter?.SetNativeMenu(args.NewValue.GetValueOrDefault());
+                }
+                else if(args.Sender is INativeMenuExporterProvider provider)
+                {
+                    provider.NativeMenuExporter?.SetNativeMenu(args.NewValue.GetValueOrDefault());
                 }
             });
         }

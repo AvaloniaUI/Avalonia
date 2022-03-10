@@ -1,24 +1,22 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="MSBuild.Sdk.Extras" />
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Xamarin.Legacy.Sdk" />
   <PropertyGroup>
-    <TargetFramework>xamarin.ios10</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>latest</LangVersion>
+    <TargetFrameworks>net6.0-ios</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MSBuildRuntimeType)' != 'Core'">$(TargetFrameworks);xamarin.ios10</TargetFrameworks>
+    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
+    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="Boilerplate\Shared.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Boilerplate\RuntimePlatform.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="OpenTK-1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
-  <Import Project="Sdk.targets" Sdk="MSBuild.Sdk.Extras" />
+  <Import Project="Sdk.targets" Sdk="Xamarin.Legacy.Sdk" />
+
+  <!-- Workaround for https://github.com/dotnet/msbuild/issues/4584 -->
+  <Target Name="_RemoveNativeReferencesManifest" AfterTargets="BuiltProjectOutputGroup">
+    <ItemGroup>
+      <_BuiltProjectOutputGroupOutputIntermediate Remove="$(OutDir)$(_DeploymentTargetApplicationManifestFileName)" />
+      <BuiltProjectOutputGroupOutput Remove="$(ProjectDir)$(OutDir)$(_DeploymentTargetApplicationManifestFileName)" />
+    </ItemGroup>
+  </Target>
 </Project>

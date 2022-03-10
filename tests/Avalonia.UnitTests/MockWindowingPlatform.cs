@@ -64,6 +64,9 @@ namespace Avalonia.UnitTests
                 windowImpl.Object.Activated?.Invoke();
             });
 
+            windowImpl.Setup(x => x.PointToScreen(It.IsAny<Point>()))
+                .Returns((Point p) => PixelPoint.FromPoint(p, 1D) + position);
+
             return windowImpl;
         }
 
@@ -86,7 +89,12 @@ namespace Avalonia.UnitTests
             popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             popupImpl.Setup(x => x.RenderScaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
-            
+
+            popupImpl.Setup(x => x.Dispose()).Callback(() =>
+            {
+                popupImpl.Object.Closed?.Invoke();
+            });
+
             SetupToplevel(popupImpl);
             
             return popupImpl;
@@ -124,6 +132,11 @@ namespace Avalonia.UnitTests
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
+        }
+
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            return null;
         }
 
         private static void SetupToplevel<T>(Mock<T> mock) where T : class, ITopLevelImpl

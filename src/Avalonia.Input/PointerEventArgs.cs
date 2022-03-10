@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -10,6 +11,7 @@ namespace Avalonia.Input
         private readonly IVisual? _rootVisual;
         private readonly Point _rootVisualPosition;
         private readonly PointerPointProperties _properties;
+        private Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
         public PointerEventArgs(RoutedEvent routedEvent,
             IInteractive? source,
@@ -28,6 +30,20 @@ namespace Avalonia.Input
             Timestamp = timestamp;
             KeyModifiers = modifiers;
         }
+        
+        public PointerEventArgs(RoutedEvent routedEvent,
+            IInteractive? source,
+            IPointer pointer,
+            IVisual? rootVisual, Point rootVisualPosition,
+            ulong timestamp,
+            PointerPointProperties properties,
+            KeyModifiers modifiers,
+            Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints)
+            : this(routedEvent, source, pointer, rootVisual, rootVisualPosition, timestamp, properties, modifiers)
+        {
+            _previousPoints = previousPoints;
+        }
+        
 
         class EmulatedDevice : IPointerDevice
         {
@@ -76,14 +92,16 @@ namespace Avalonia.Input
         
         public KeyModifiers KeyModifiers { get; }
 
-        public Point GetPosition(IVisual? relativeTo)
+        private Point GetPosition(Point pt, IVisual? relativeTo)
         {
             if (_rootVisual == null)
                 return default;
             if (relativeTo == null)
-                return _rootVisualPosition;
-            return _rootVisualPosition * _rootVisual.TransformToVisual(relativeTo) ?? default;
+                return pt;
+            return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
+        
+        public Point GetPosition(IVisual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
 
         [Obsolete("Use GetCurrentPoint")]
         public PointerPoint GetPointerPoint(IVisual? relativeTo) => GetCurrentPoint(relativeTo);
@@ -95,6 +113,27 @@ namespace Avalonia.Input
         /// <returns></returns>
         public PointerPoint GetCurrentPoint(IVisual? relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
+
+        /// <summary>
+        /// Returns the PointerPoint associated with the current event
+        /// </summary>
+        /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
+        /// <returns></returns>
+        public IReadOnlyList<PointerPoint> GetIntermediatePoints(IVisual? relativeTo)
+        {
+            var previousPoints = _previousPoints?.Value;            
+            if (previousPoints == null || previousPoints.Count == 0)
+                return new[] { GetCurrentPoint(relativeTo) };
+            var points = new PointerPoint[previousPoints.Count + 1];
+            for (var c = 0; c < previousPoints.Count; c++)
+            {
+                var pt = previousPoints[c];
+                points[c] = new PointerPoint(Pointer, GetPosition(pt.Position, relativeTo), _properties);
+            }
+
+            points[points.Length - 1] = GetCurrentPoint(relativeTo);
+            return points;
+        }
 
         /// <summary>
         /// Returns the current pointer point properties
@@ -114,7 +153,7 @@ namespace Avalonia.Input
 
     public class PointerPressedEventArgs : PointerEventArgs
     {
-        private readonly int _obsoleteClickCount;
+        private readonly int _clickCount;
 
         public PointerPressedEventArgs(
             IInteractive source,
@@ -123,15 +162,14 @@ namespace Avalonia.Input
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
-            int obsoleteClickCount = 1)
+            int clickCount = 1)
             : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
         {
-            _obsoleteClickCount = obsoleteClickCount;
+            _clickCount = clickCount;
         }
 
-        [Obsolete("Use DoubleTapped event or Gestures.DoubleRightTapped attached event")]
-        public int ClickCount => _obsoleteClickCount;
+        public int ClickCount => _clickCount;
 
         [Obsolete("Use PointerPressedEventArgs.GetCurrentPoint(this).Properties")]
         public MouseButton MouseButton => Properties.PointerUpdateKind.GetMouseButton();

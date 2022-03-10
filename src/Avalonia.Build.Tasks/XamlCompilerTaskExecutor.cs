@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Microsoft.Build.Framework;
 using Mono.Cecil;
-using Avalonia.Utilities;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using XamlX;
@@ -45,15 +42,22 @@ namespace Avalonia.Build.Tasks
             string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
             bool skipXamlCompilation)
         {
+            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, patchCom, skipXamlCompilation, debuggerLaunch:false);
+        }
+
+        internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
+            string projectDirectory,
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom, bool skipXamlCompilation, bool debuggerLaunch)
+        {
             var typeSystem = new CecilTypeSystem(references
                 .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
                 .Concat(new[] { input }), input);
-            
+
             var asm = typeSystem.TargetAssemblyDefinition;
 
             if (!skipXamlCompilation)
             {
-                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance);
+                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance, debuggerLaunch);
                 if (compileRes == null && !patchCom)
                     return new CompileResult(true);
                 if (compileRes == false)
@@ -62,7 +66,7 @@ namespace Avalonia.Build.Tasks
 
             if (patchCom)
                 ComInteropHelper.PatchAssembly(asm, typeSystem);
-            
+
             var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
             if (!string.IsNullOrWhiteSpace(strongNameKey))
                 writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
@@ -70,13 +74,43 @@ namespace Avalonia.Build.Tasks
             asm.Write(output, writerParameters);
 
             return new CompileResult(true, true);
-            
+
         }
-        
+
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
             string projectDirectory, bool verifyIl, 
-            MessageImportance logImportance)
+            MessageImportance logImportance
+            , bool debuggerLaunch = false)
         {
+            if (debuggerLaunch)
+            {
+                // According this https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debugger.launch?view=net-6.0#remarks
+                // documentation, on not windows platform Debugger.Launch() always return true without running a debugger.
+                if (System.Diagnostics.Debugger.Launch())
+                {
+                    // Set timeout at 1 minut.
+                    var time = new System.Diagnostics.Stopwatch();
+                    var timeout = TimeSpan.FromMinutes(1);
+                    time.Start();
+
+                    // wait for the debugger to be attacked or timeout.
+                    while (!System.Diagnostics.Debugger.IsAttached && time.Elapsed < timeout)
+                    {
+                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Wating attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
+                        System.Threading.Thread.Sleep(100);
+                    }
+
+                    time.Stop();                    
+                    if (time.Elapsed >= timeout)
+                    {
+                        engine.LogMessage("Wating attach debugger timeout.", MessageImportance.Normal);
+                    }
+                }
+                else
+                {
+                    engine.LogMessage("Debugging cancelled.", MessageImportance.Normal);
+                }
+            }
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
@@ -90,6 +124,9 @@ namespace Avalonia.Build.Tasks
             var indexerAccessorClosure = new TypeDefinition("CompiledAvaloniaXaml", "!IndexerAccessorFactoryClosure",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(indexerAccessorClosure);
+            var trampolineBuilder = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlTrampolines",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(trampolineBuilder);
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
@@ -99,6 +136,7 @@ namespace Avalonia.Build.Tasks
                 AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
+                new XamlIlTrampolineBuilder(typeSystem.CreateTypeBuilder(trampolineBuilder)),
                 new DeterministicIdGenerator());
 
 
@@ -221,6 +259,8 @@ namespace Avalonia.Build.Tasks
                                 true),
                             (closureName, closureBaseType) =>
                                 populateBuilder.DefineSubType(closureBaseType, closureName, false),
+                            (closureName, returnType, parameterTypes) =>
+                                populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
                             res.Uri, res
                         );
                         

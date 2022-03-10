@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
@@ -69,7 +70,105 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
             }
         }
+        
+        [Fact]
+        public void Should_Get_Next_Caret_CharacterHit_Bidi()
+        {
+            const string text = "אבג 1 ABC";
+            
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var clusters = new List<int>();
+
+                foreach (var textRun in textLine.TextRuns.OrderBy(x=> x.Text.Start))
+                {
+                    var shapedRun = (ShapedTextCharacters)textRun;
+
+                    clusters.AddRange(shapedRun.IsReversed ?
+                        shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
+                        shapedRun.ShapedBuffer.GlyphClusters);
+                }
+                
+                var nextCharacterHit = new CharacterHit(0, clusters[1] - clusters[0]);
+
+                foreach (var cluster in clusters)
+                {
+                    Assert.Equal(cluster, nextCharacterHit.FirstCharacterIndex);
+
+                    nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
+                }
+
+                var lastCharacterHit = nextCharacterHit;
+
+                nextCharacterHit = textLine.GetNextCaretCharacterHit(lastCharacterHit);
+
+                Assert.Equal(lastCharacterHit.FirstCharacterIndex, nextCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(lastCharacterHit.TrailingLength, nextCharacterHit.TrailingLength);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Previous_Caret_CharacterHit_Bidi()
+        {
+            const string text = "אבג 1 ABC";
+            
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var clusters = new List<int>();
+
+                foreach (var textRun in textLine.TextRuns.OrderBy(x=> x.Text.Start))
+                {
+                    var shapedRun = (ShapedTextCharacters)textRun;
+
+                    clusters.AddRange(shapedRun.IsReversed ?
+                        shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
+                        shapedRun.ShapedBuffer.GlyphClusters);
+                }
+
+                clusters.Reverse();
+                
+                var nextCharacterHit = new CharacterHit(text.Length - 1);
+
+                foreach (var cluster in clusters)
+                {
+                    var currentCaretIndex = nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength;
+                    
+                    Assert.Equal(cluster, currentCaretIndex);
+
+                    nextCharacterHit = textLine.GetPreviousCaretCharacterHit(nextCharacterHit);
+                }
+
+                var lastCharacterHit = nextCharacterHit;
+
+                nextCharacterHit = textLine.GetPreviousCaretCharacterHit(lastCharacterHit);
+
+                Assert.Equal(lastCharacterHit.FirstCharacterIndex, nextCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(lastCharacterHit.TrailingLength, nextCharacterHit.TrailingLength);
+            }
+        }
+        
         [InlineData("𐐷𐐷𐐷𐐷𐐷")]
         [InlineData("01234567🎉\n")]
         [InlineData("𐐷1234")]
@@ -88,7 +187,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var clusters = textLine.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.GlyphRun.GlyphClusters)
+                var clusters = textLine.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.ShapedBuffer.GlyphClusters)
                     .ToArray();
 
                 var nextCharacterHit = new CharacterHit(0);
@@ -145,7 +244,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var clusters = textLine.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.GlyphRun.GlyphClusters)
+                var clusters = textLine.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.ShapedBuffer.GlyphClusters)
                     .ToArray();
 
                 var previousCharacterHit = new CharacterHit(text.Length);
@@ -193,7 +292,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var textSource = new MultiBufferTextSource(defaultProperties);
+                var textSource = new SingleBufferTextSource(s_multiLineText, defaultProperties);
 
                 var formatter = new TextFormatterImpl();
 
@@ -209,13 +308,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var glyphRun = textRun.GlyphRun;
 
-                    for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
+                    for (var i = 0; i < glyphRun.GlyphClusters!.Count; i++)
                     {
                         var cluster = glyphRun.GlyphClusters[i];
 
-                        var glyph = glyphRun.GlyphIndices[i];
-
-                        var advance = glyphRun.GlyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
+                        var advance = glyphRun.GlyphAdvances[i];
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
@@ -225,19 +322,20 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     }
                 }
 
-                Assert.Equal(currentDistance,
-                    textLine.GetDistanceFromCharacterHit(new CharacterHit(MultiBufferTextSource.TextRange.Length)));
+                Assert.Equal(currentDistance,textLine.GetDistanceFromCharacterHit(new CharacterHit(s_multiLineText.Length)));
             }
         }
 
-        [Fact]
-        public void Should_Get_CharacterHit_From_Distance()
+        [InlineData("ABC012345")] //LeftToRight
+        [InlineData("זה כיף סתם לשמוע איך תנצח קרפד עץ טוב בגן")] //RightToLeft
+        [Theory]
+        public void Should_Get_CharacterHit_From_Distance(string text)
         {
             using (Start())
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var textSource = new MultiBufferTextSource(defaultProperties);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
 
                 var formatter = new TextFormatterImpl();
 
@@ -245,42 +343,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var currentDistance = 0.0;
+                var isRightToLeft = IsRightToLeft(textLine);
+                var rects = BuildRects(textLine);
+                var glyphClusters = BuildGlyphClusters(textLine);
 
-                CharacterHit characterHit;
-
-                foreach (var run in textLine.TextRuns)
+                for (var i = 0; i < rects.Count; i++)
                 {
-                    var textRun = (ShapedTextCharacters)run;
+                    var cluster = glyphClusters[i];
+                    var rect = rects[i];
 
-                    var glyphRun = textRun.GlyphRun;
+                    var characterHit = textLine.GetCharacterHitFromDistance(rect.Left);
 
-                    for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
-                    {
-                        var cluster = glyphRun.GlyphClusters[i];
-
-                        var glyph = glyphRun.GlyphIndices[i];
-
-                        var advance = glyphRun.GlyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
-
-                        characterHit = textLine.GetCharacterHitFromDistance(currentDistance);
-
-                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
-
-                        currentDistance += advance;
-                    }
+                    Assert.Equal(isRightToLeft ? cluster + 1 : cluster,
+                        characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
-
-                characterHit = textLine.GetCharacterHitFromDistance(textLine.Width);
-
-                Assert.Equal(MultiBufferTextSource.TextRange.End, characterHit.FirstCharacterIndex);
             }
         }
 
-        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
-        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingWord, "01234\u2026")]
+        [InlineData("01234 01234", 58, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
+        [InlineData("01234 01234", 58, TextCollapsingStyle.TrailingWord, "01234\u2026")]
+        [InlineData("01234", 9, TextCollapsingStyle.TrailingCharacter, "\u2026")]
+        [InlineData("01234", 2, TextCollapsingStyle.TrailingCharacter, "")]
         [Theory]
-        public void Should_Collapse_Line(string text, int numberOfCharacters, TextCollapsingStyle style, string expected)
+        public void Should_Collapse_Line(string text, double width, TextCollapsingStyle style, string expected)
         {
             using (Start())
             {
@@ -295,19 +380,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.False(textLine.HasCollapsed);
-
-                var glyphTypeface = Typeface.Default.GlyphTypeface;
-
-                var scale = defaultProperties.FontRenderingEmSize / glyphTypeface.DesignEmHeight;
-
-                var width = 1.0;
-
-                for (var i = 0; i < numberOfCharacters; i++)
-                {
-                    var glyph = glyphTypeface.GetGlyph(text[i]);
-
-                    width += glyphTypeface.GetGlyphAdvance(glyph) * scale;
-                }
 
                 TextCollapsingProperties collapsingProperties;
 
@@ -335,30 +407,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact(Skip = "Verify this")]
-        public void Should_Ignore_NewLine_Characters()
-        {
-            using (Start())
-            {
-                var defaultTextRunProperties =
-                    new GenericTextRunProperties(Typeface.Default);
-
-                const string text = "01234567🎉\n";
-
-                var source = new SingleBufferTextSource(text, defaultTextRunProperties);
-
-                var textParagraphProperties = new GenericTextParagraphProperties(defaultTextRunProperties);
-
-                var formatter = TextFormatter.Current;
-
-                var textLine = formatter.FormatLine(source, 0, double.PositiveInfinity, textParagraphProperties);
-
-                var nextCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(8, 2));
-
-                Assert.Equal(new CharacterHit(8, 2), nextCharacterHit);
-            }
-        }
-        
         [Fact]
         public void TextLineBreak_Should_Contain_TextEndOfLine()
         {
@@ -379,6 +427,86 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
             }
+        }
+
+        private static bool IsRightToLeft(TextLine textLine)
+        {
+            return textLine.TextRuns.Cast<ShapedTextCharacters>().Any(x => !x.ShapedBuffer.IsLeftToRight);
+        }
+
+        private static List<int> BuildGlyphClusters(TextLine textLine)
+        {
+            var glyphClusters = new List<int>();
+
+            var shapedTextRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+
+            var lastCluster = -1;
+            
+            foreach (var textRun in shapedTextRuns)
+            {
+                var shapedBuffer = textRun.ShapedBuffer;
+
+                var currentClusters = shapedBuffer.GlyphClusters.ToList();
+
+                foreach (var currentCluster in currentClusters) 
+                {
+                    if (lastCluster == currentCluster)
+                    {
+                        continue;
+                    }
+                    
+                    glyphClusters.Add(currentCluster);
+
+                    lastCluster = currentCluster;
+                }
+            }
+            
+            return glyphClusters;
+        }
+        
+        private static List<Rect> BuildRects(TextLine textLine)
+        {
+            var rects = new List<Rect>();
+            var height = textLine.Height;
+
+            var currentX = 0d;
+
+            var lastCluster = -1;
+
+            var shapedTextRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+
+            foreach (var textRun in shapedTextRuns)
+            {
+                var shapedBuffer = textRun.ShapedBuffer;
+            
+                for (var index = 0; index < shapedBuffer.GlyphAdvances.Count; index++)
+                {
+                    var currentCluster = shapedBuffer.GlyphClusters[index];
+                
+                    var advance = shapedBuffer.GlyphAdvances[index];
+
+                    if (lastCluster != currentCluster)
+                    {
+                        rects.Add(new Rect(currentX, 0, advance, height));
+                    }
+                    else
+                    {
+                        var rect = rects[index - 1];
+
+                        rects.Remove(rect);
+
+                        rect = rect.WithWidth(rect.Width + advance);
+                    
+                        rects.Add(rect);
+                    }
+                    
+                    currentX += advance;
+
+                    lastCluster = currentCluster;
+                }
+            }
+
+            return rects;
         }
 
         private static IDisposable Start()

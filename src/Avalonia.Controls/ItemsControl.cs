@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -21,7 +22,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener
+    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -32,8 +33,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly DirectProperty<ItemsControl, IEnumerable> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
+        public static readonly DirectProperty<ItemsControl, IEnumerable?> ItemsProperty =
+            AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
         /// Defines the <see cref="ItemCount"/> property.
@@ -50,12 +51,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
-            AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
+        public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
+            AvaloniaProperty.Register<ItemsControl, IDataTemplate?>(nameof(ItemTemplate));
 
-        private IEnumerable _items = new AvaloniaList<object>();
+        private IEnumerable? _items = new AvaloniaList<object>();
         private int _itemCount;
-        private IItemContainerGenerator _itemContainerGenerator;
+        private IItemContainerGenerator? _itemContainerGenerator;
+        private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -86,13 +88,10 @@ namespace Avalonia.Controls
                 {
                     _itemContainerGenerator = CreateItemContainerGenerator();
 
-                    if (_itemContainerGenerator != null)
-                    {
-                        _itemContainerGenerator.ItemTemplate = ItemTemplate;
-                        _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
-                        _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
-                        _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
-                    }
+                    _itemContainerGenerator.ItemTemplate = ItemTemplate;
+                    _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
+                    _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
+                    _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
                 }
 
                 return _itemContainerGenerator;
@@ -103,7 +102,7 @@ namespace Avalonia.Controls
         /// Gets or sets the items to display.
         /// </summary>
         [Content]
-        public IEnumerable Items
+        public IEnumerable? Items
         {
             get { return _items; }
             set { SetAndRaise(ItemsProperty, ref _items, value); }
@@ -130,7 +129,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
-        public IDataTemplate ItemTemplate
+        public IDataTemplate? ItemTemplate
         {
             get { return GetValue(ItemTemplateProperty); }
             set { SetValue(ItemTemplateProperty, value); }
@@ -139,17 +138,36 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the items presenter control.
         /// </summary>
-        public IItemsPresenter Presenter
+        public IItemsPresenter? Presenter
         {
             get;
             protected set;
         }
 
+        private protected bool WrapFocus { get; set; }
+
+        event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
+            if (Presenter is IChildIndexProvider oldInnerProvider)
+            {
+                oldInnerProvider.ChildIndexChanged -= PresenterChildIndexChanged;
+            }
+
             Presenter = presenter;
-            ItemContainerGenerator.Clear();
+            ItemContainerGenerator?.Clear();
+
+            if (Presenter is IChildIndexProvider innerProvider)
+            {
+                innerProvider.ChildIndexChanged += PresenterChildIndexChanged;
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+            }
         }
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
@@ -171,11 +189,11 @@ namespace Avalonia.Controls
         /// <param name="items">The collection.</param>
         /// <param name="index">The index.</param>
         /// <returns>The item at the given index or null if the index is out of bounds.</returns>
-        protected static object ElementAt(IEnumerable items, int index)
+        protected static object? ElementAt(IEnumerable? items, int index)
         {
             if (index != -1 && index < items.Count())
             {
-                return items.ElementAt(index) ?? null;
+                return items!.ElementAt(index) ?? null;
             }
             else
             {
@@ -189,7 +207,7 @@ namespace Avalonia.Controls
         /// <param name="items">The collection.</param>
         /// <param name="item">The item.</param>
         /// <returns>The index of the item or -1 if the item was not found.</returns>
-        protected static int IndexOf(IEnumerable items, object item)
+        protected static int IndexOf(IEnumerable? items, object item)
         {
             if (items != null && item != null)
             {
@@ -222,14 +240,8 @@ namespace Avalonia.Controls
         /// Creates the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
         /// <returns>
-        /// An <see cref="IItemContainerGenerator"/> or null.
+        /// An <see cref="IItemContainerGenerator"/>.
         /// </returns>
-        /// <remarks>
-        /// Certain controls such as <see cref="TabControl"/> don't actually create item 
-        /// containers; however they want it to be ItemsControls so that they have an Items 
-        /// property etc. In this case, a derived class can override this method to return null
-        /// in order to disable the creation of item containers.
-        /// </remarks>
         protected virtual IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
@@ -264,7 +276,7 @@ namespace Avalonia.Controls
             {
                 // If the item is its own container, then it will be removed from the logical tree
                 // when it is removed from the Items collection.
-                if (container?.ContainerControl != container?.Item)
+                if (container.ContainerControl != container.Item)
                 {
                     LogicalChildren.Remove(container.ContainerControl);
                 }
@@ -293,20 +305,20 @@ namespace Avalonia.Controls
                 var container = Presenter?.Panel as INavigableContainer;
 
                 if (container == null ||
-                    focus.Current == null ||
+                    focus?.Current == null ||
                     direction == null ||
                     direction.Value.IsTab())
                 {
                     return;
                 }
 
-                IVisual current = focus.Current;
+                IVisual? current = focus.Current;
 
                 while (current != null)
                 {
                     if (current.VisualParent == container && current is IInputElement inputElement)
                     {
-                        IInputElement next = GetNextControl(container, direction.Value, inputElement, false);
+                        var next = GetNextControl(container, direction.Value, inputElement, WrapFocus);
 
                         if (next != null)
                         {
@@ -322,6 +334,11 @@ namespace Avalonia.Controls
             }
 
             base.OnKeyDown(e);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ItemsControlAutomationPeer(this);
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
@@ -388,7 +405,7 @@ namespace Avalonia.Controls
         /// Given a collection of items, adds those that are controls to the logical children.
         /// </summary>
         /// <param name="items">The items.</param>
-        private void AddControlItemsToLogicalChildren(IEnumerable items)
+        private void AddControlItemsToLogicalChildren(IEnumerable? items)
         {
             var toAdd = new List<ILogical>();
 
@@ -412,7 +429,7 @@ namespace Avalonia.Controls
         /// Given a collection of items, removes those that are controls to from logical children.
         /// </summary>
         /// <param name="items">The items.</param>
-        private void RemoveControlItemsFromLogicalChildren(IEnumerable items)
+        private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
         {
             var toRemove = new List<ILogical>();
 
@@ -436,7 +453,7 @@ namespace Avalonia.Controls
         /// Subscribes to an <see cref="Items"/> collection.
         /// </summary>
         /// <param name="items">The items collection.</param>
-        private void SubscribeToItems(IEnumerable items)
+        private void SubscribeToItems(IEnumerable? items)
         {
             if (items is INotifyCollectionChanged incc)
             {
@@ -452,7 +469,7 @@ namespace Avalonia.Controls
         {
             if (_itemContainerGenerator != null)
             {
-                _itemContainerGenerator.ItemTemplate = (IDataTemplate)e.NewValue;
+                _itemContainerGenerator.ItemTemplate = (IDataTemplate?)e.NewValue;
                 // TODO: Rebuild the item containers.
             }
         }
@@ -479,13 +496,13 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":singleitem", itemCount == 1);
         }
 
-        protected static IInputElement GetNextControl(
+        protected static IInputElement? GetNextControl(
             INavigableContainer container,
             NavigationDirection direction,
-            IInputElement from,
+            IInputElement? from,
             bool wrap)
         {
-            IInputElement result;
+            IInputElement? result;
             var c = from;
 
             do
@@ -505,6 +522,29 @@ namespace Avalonia.Controls
             } while (c != null && c != from);
 
             return null;
+        }
+
+        private void PresenterChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
+        {
+            _childIndexChanged?.Invoke(this, e);
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return Presenter is IChildIndexProvider innerProvider
+                ? innerProvider.GetChildIndex(child) : -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            if (Presenter is IChildIndexProvider presenter
+                && presenter.TryGetTotalCount(out count))
+            {
+                return true;
+            }
+
+            count = ItemCount;
+            return true;
         }
     }
 }

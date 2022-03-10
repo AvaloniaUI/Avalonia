@@ -69,6 +69,7 @@ namespace Avalonia.Skia
                 gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
 
                 var size = glSession.Size;
+                var colorType = SKColorType.Rgba8888;
                 var scaling = glSession.Scaling;
                 if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
                 {
@@ -81,12 +82,16 @@ namespace Avalonia.Skia
                 {
                     _grContext.ResetContext();
 
-                    var renderTarget =
-                        new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
-                            new GRGlFramebufferInfo((uint)fb, SKColorType.Rgba8888.ToGlSizedFormat()));
+                    var samples = disp.SampleCount;
+                    var maxSamples = _grContext.GetMaxSurfaceSampleCount(colorType);
+                    if (samples > maxSamples)
+                        samples = maxSamples;
+
+                    var glInfo = new GRGlFramebufferInfo((uint)fb, colorType.ToGlSizedFormat());
+                    var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, samples, disp.StencilSize, glInfo);
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                        SKColorType.Rgba8888);
+                        colorType);
 
                     success = true;
 

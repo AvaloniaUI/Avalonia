@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Avalonia.Automation.Peers;
 using System.Linq;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Generators;
@@ -13,8 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
-
-#nullable enable
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -109,6 +109,8 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
             PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
+            AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
         }
 
         /// <summary>
@@ -329,16 +331,8 @@ namespace Avalonia.Controls
             {
                 _popup = new Popup
                 {
-                    HorizontalOffset = HorizontalOffset,
-                    VerticalOffset = VerticalOffset,
-                    PlacementAnchor = PlacementAnchor,
-                    PlacementConstraintAdjustment = PlacementConstraintAdjustment,
-                    PlacementGravity = PlacementGravity,
-                    PlacementMode = PlacementMode,
-                    PlacementRect = PlacementRect,
                     IsLightDismissEnabled = true,
                     OverlayDismissEventPassThrough = true,
-                    WindowManagerAddShadowHint = WindowManagerAddShadowHint,
                 };
 
                 _popup.Opened += PopupOpened;
@@ -358,6 +352,13 @@ namespace Avalonia.Controls
                 : PlacementMode;
 
             _popup.PlacementTarget = placementTarget;
+            _popup.HorizontalOffset = HorizontalOffset;
+            _popup.VerticalOffset = VerticalOffset;
+            _popup.PlacementAnchor = PlacementAnchor;
+            _popup.PlacementConstraintAdjustment = PlacementConstraintAdjustment;
+            _popup.PlacementGravity = PlacementGravity;
+            _popup.PlacementRect = PlacementRect;
+            _popup.WindowManagerAddShadowHint = WindowManagerAddShadowHint;
             _popup.Child = this;
             IsOpen = true;
             _popup.IsOpen = true;
@@ -369,7 +370,7 @@ namespace Avalonia.Controls
             });
         }
 
-        private void PopupOpened(object sender, EventArgs e)
+        private void PopupOpened(object? sender, EventArgs e)
         {
             _previousFocus = FocusManager.Instance?.Current;
             Focus();
@@ -377,12 +378,12 @@ namespace Avalonia.Controls
             _popupHostChangedHandler?.Invoke(_popup!.Host);
         }
 
-        private void PopupClosing(object sender, CancelEventArgs e)
+        private void PopupClosing(object? sender, CancelEventArgs e)
         {
             e.Cancel = CancelClosing();
         }
 
-        private void PopupClosed(object sender, EventArgs e)
+        private void PopupClosed(object? sender, EventArgs e)
         {
             foreach (var i in LogicalChildren)
             {
@@ -412,13 +413,13 @@ namespace Avalonia.Controls
             _popupHostChangedHandler?.Invoke(null);
         }
 
-        private void PopupKeyUp(object sender, KeyEventArgs e)
+        private void PopupKeyUp(object? sender, KeyEventArgs e)
         {
             if (IsOpen)
             {
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
-                if (keymap.OpenContextMenu.Any(k => k.Matches(e))
+                if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true
                     && !CancelClosing())
                 {
                     Close();
@@ -427,7 +428,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void ControlContextRequested(object sender, ContextRequestedEventArgs e)
+        private static void ControlContextRequested(object? sender, ContextRequestedEventArgs e)
         {
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu
@@ -440,7 +441,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void ControlDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private static void ControlDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu)

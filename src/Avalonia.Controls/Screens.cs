@@ -9,20 +9,20 @@ namespace Avalonia.Controls
 {
     public class Screens
     {
-        private readonly IScreenImpl _iScreenImpl;
+        private readonly IScreenImpl? _iScreenImpl;
 
-        public int ScreenCount => _iScreenImpl.ScreenCount;
+        public int ScreenCount => _iScreenImpl?.ScreenCount ?? 0;
         public IReadOnlyList<Screen> All => _iScreenImpl?.AllScreens ?? Array.Empty<Screen>();
-        public Screen Primary => All.FirstOrDefault(x => x.Primary);
+        public Screen? Primary => All.FirstOrDefault(x => x.Primary);
 
-        public Screens(IScreenImpl iScreenImpl)
+        public Screens(IScreenImpl? iScreenImpl)
         {
             _iScreenImpl = iScreenImpl;
         }
 
-        public Screen ScreenFromBounds(PixelRect bounds){
+        public Screen? ScreenFromBounds(PixelRect bounds){
         
-            Screen currMaxScreen = null;
+            Screen? currMaxScreen = null;
             double maxAreaSize = 0;
             foreach (Screen screen in All)
             {
@@ -41,12 +41,12 @@ namespace Avalonia.Controls
             return currMaxScreen;
         }
         
-        public Screen ScreenFromPoint(PixelPoint point)
+        public Screen? ScreenFromPoint(PixelPoint point)
         {
             return All.FirstOrDefault(x => x.Bounds.Contains(point));        
         }
 
-        public Screen ScreenFromVisual(IVisual visual)
+        public Screen? ScreenFromVisual(IVisual visual)
         {
             var tl = visual.PointToScreen(visual.Bounds.TopLeft);
             var br = visual.PointToScreen(visual.Bounds.BottomRight);

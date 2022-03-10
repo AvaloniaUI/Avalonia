@@ -12,6 +12,8 @@ namespace Avalonia.MicroCom
             new ConcurrentDictionary<Type, Func<IntPtr, bool, object>>();
         private static ConcurrentDictionary<Type, Guid> _guids = new ConcurrentDictionary<Type, Guid>();
         private static ConcurrentDictionary<Guid, Type> _guidsToTypes = new ConcurrentDictionary<Guid, Type>();
+
+        internal static readonly Guid ManagedObjectInterfaceGuid = Guid.Parse("cd7687c0-a9c2-4563-b08e-a399df50c633");
         
         static MicroComRuntime()
         {
@@ -36,7 +38,13 @@ namespace Avalonia.MicroCom
 
         public static T CreateProxyFor<T>(void* pObject, bool ownsHandle) => (T)CreateProxyFor(typeof(T), new IntPtr(pObject), ownsHandle);
         public static T CreateProxyFor<T>(IntPtr pObject, bool ownsHandle) => (T)CreateProxyFor(typeof(T), pObject, ownsHandle);
+
+        public static T CreateProxyOrNullFor<T>(void* pObject, bool ownsHandle) where T : class =>
+            pObject == null ? null : (T)CreateProxyFor(typeof(T), new IntPtr(pObject), ownsHandle);
         
+        public static T CreateProxyOrNullFor<T>(IntPtr pObject, bool ownsHandle) where T : class =>
+            pObject == IntPtr.Zero ? null : (T)CreateProxyFor(typeof(T), pObject, ownsHandle);
+
         public static object CreateProxyFor(Type type, IntPtr pObject, bool ownsHandle) => _factories[type](pObject, ownsHandle);
 
         public static IntPtr GetNativeIntPtr<T>(this T obj, bool owned = false) where T : IUnknown
@@ -74,6 +82,19 @@ namespace Avalonia.MicroCom
             var ptr = (Ccw*)ccw;
             var shadow = (MicroComShadow)GCHandle.FromIntPtr(ptr->GcShadowHandle).Target;
             return shadow.Target;
+        }
+
+        public static bool IsComWrapper(IUnknown obj) => obj is MicroComProxyBase;
+
+        public static object TryUnwrapManagedObject(IUnknown obj)
+        {
+            if (obj is not MicroComProxyBase proxy)
+                return null;
+            if (proxy.QueryInterface(ManagedObjectInterfaceGuid, out _) != 0)
+                return null;
+            // Successful QueryInterface always increments ref counter
+            proxy.Release();
+            return GetObjectFromCcw(proxy.NativePointer);
         }
 
         public static bool TryGetTypeForGuid(Guid guid, out Type t) => _guidsToTypes.TryGetValue(guid, out t);

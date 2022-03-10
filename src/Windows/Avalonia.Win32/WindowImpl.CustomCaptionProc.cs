@@ -23,16 +23,10 @@ namespace Avalonia.Win32
             AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
 
             var borderThickness = new RECT();
-            if (GetStyle().HasAllFlags(WindowStyles.WS_THICKFRAME))
-            {
-                AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle()), false, 0);
-                borderThickness.left *= -1;
-                borderThickness.top *= -1;
-            }
-            else if (GetStyle().HasAllFlags(WindowStyles.WS_BORDER))
-            {
-                borderThickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
-            }
+            
+            AdjustWindowRectEx(ref borderThickness, (uint)GetStyle(), false, 0);
+            borderThickness.left *= -1;
+            borderThickness.top *= -1;
 
             if (_extendTitleBarHint >= 0)
             {

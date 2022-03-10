@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -52,11 +53,14 @@ namespace Avalonia.X11
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
-            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
-            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
-                IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
+            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
+            if (DeferredDisplay == IntPtr.Zero)
+                throw new Exception("XOpenDisplay failed");
+                
+            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
+                IntPtr.Zero);
             XError.Init();
             
             Info = new X11Info(Display, DeferredDisplay, useXim);
@@ -64,6 +68,7 @@ namespace Avalonia.X11
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
@@ -76,7 +81,8 @@ namespace Avalonia.X11
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider());
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
+                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
             X11Screens = Avalonia.X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
@@ -100,6 +106,26 @@ namespace Avalonia.X11
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
+
+        private static uint[] X11IconConverter(IWindowIconImpl icon)
+        {
+            if (!(icon is X11IconData x11icon))
+                return Array.Empty<uint>();
+
+            return x11icon.Data.Select(x => x.ToUInt32()).ToArray();
+        }
+
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            var dbusTrayIcon = new DBusTrayIconImpl();
+
+            if (!dbusTrayIcon.IsActive) return new XEmbedTrayIconImpl();
+
+            dbusTrayIcon.IconConverterDelegate = X11IconConverter;
+
+            return dbusTrayIcon;
+        }
+        
         public IWindowImpl CreateWindow()
         {
             return new X11Window(this, null);
@@ -206,7 +232,19 @@ namespace Avalonia
         /// on their input devices by using sequences of characters or mouse operations that are natively available on their input devices.
         /// </remarks>
         public bool? EnableIme { get; set; }
-
+        
+        /// <summary>
+        /// Determines whether to enable support for the
+        /// X Session Management Protocol.
+        /// </summary>
+        /// <remarks>
+        /// X Session Management Protocol is a standard implemented on most
+        /// Linux systems that uses Xorg. This enables apps to control how they
+        /// can control and/or cancel the pending shutdown requested by the user.
+        /// </remarks>
+        public bool EnableSessionManagement { get; set; } = 
+            Environment.GetEnvironmentVariable("AVALONIA_X11_USE_SESSION_MANAGEMENT") != "0";
+        
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),

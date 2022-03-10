@@ -17,15 +17,15 @@ namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
-        private readonly IDisposable _keySubscription;
+        private readonly IDisposable? _keySubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
-        private TopLevel? _root;
+        private AvaloniaObject? _root;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _keySubscription = InputManager.Instance.Process
+            _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
                 .Where(x => x.Type == RawKeyEventType.KeyDown)
                 .Subscribe(RawKeyDown);
@@ -50,23 +50,23 @@ namespace Avalonia.Diagnostics.Views
             this.Opened += lh;
         }
 
-        public TopLevel? Root
+        public AvaloniaObject? Root
         {
             get => _root;
             set
             {
                 if (_root != value)
                 {
-                    if (_root != null)
+                    if (_root is ICloseable oldClosable)
                     {
-                        _root.Closed -= RootClosed;
+                        oldClosable.Closed -= RootClosed;
                     }
 
                     _root = value;
 
-                    if (_root != null)
+                    if (_root is  ICloseable newClosable)
                     {
-                        _root.Closed += RootClosed;
+                        newClosable.Closed += RootClosed;
                         DataContext = new MainViewModel(_root);
                     }
                     else
@@ -82,7 +82,7 @@ namespace Avalonia.Diagnostics.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _keySubscription.Dispose();
+            _keySubscription?.Dispose();
 
             foreach (var state in _frozenPopupStates)
             {
@@ -91,9 +91,9 @@ namespace Avalonia.Diagnostics.Views
 
             _frozenPopupStates.Clear();
 
-            if (_root != null)
+            if (_root is ICloseable cloneable)
             {
-                _root.Closed -= RootClosed;
+                cloneable.Closed -= RootClosed;
                 _root = null;
             }
 
@@ -123,7 +123,7 @@ namespace Avalonia.Diagnostics.Views
                 .FirstOrDefault();
         }
 
-        private static List<PopupRoot> GetPopupRoots(IVisual root)
+        private static List<PopupRoot> GetPopupRoots(TopLevel root)
         {
             var popupRoots = new List<PopupRoot>();
 
@@ -147,6 +147,7 @@ namespace Avalonia.Diagnostics.Views
                 ProcessProperty(control, ContextMenuProperty);
                 ProcessProperty(control, FlyoutBase.AttachedFlyoutProperty);
                 ProcessProperty(control, ToolTipDiagnostics.ToolTipProperty);
+                ProcessProperty(control, Button.FlyoutProperty);
             }
 
             return popupRoots;
@@ -160,13 +161,22 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
+            var root = Root as TopLevel
+                ?? vm.PointerOverRoot as TopLevel;
+            if (root is null)
+            {
+                return;
+            }
+
             switch (e.Modifiers)
             {
-                case RawInputModifiers.Control | RawInputModifiers.Shift:
+                case RawInputModifiers.Control when (e.Key == Key.LeftShift || e.Key == Key.RightShift):
+                case RawInputModifiers.Shift when (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl):
+                case RawInputModifiers.Shift | RawInputModifiers.Control:
                 {
                     IControl? control = null;
 
-                    foreach (var popupRoot in GetPopupRoots(Root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         control = GetHoveredControl(popupRoot);
 
@@ -176,7 +186,7 @@ namespace Avalonia.Diagnostics.Views
                         }
                     }
 
-                    control ??= GetHoveredControl(Root);
+                    control ??= GetHoveredControl(root);
 
                     if (control != null)
                     {
@@ -190,7 +200,7 @@ namespace Avalonia.Diagnostics.Views
                 {
                     vm.FreezePopups = !vm.FreezePopups;
 
-                    foreach (var popupRoot in GetPopupRoots(Root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         if (popupRoot.Parent is Popup popup)
                         {

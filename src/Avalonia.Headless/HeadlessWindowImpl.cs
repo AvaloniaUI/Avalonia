@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -199,7 +200,7 @@ namespace Avalonia.Headless
 
         public ILockedFramebuffer Lock()
         {
-            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling);
+            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, PixelFormat.Rgba8888, AlphaFormat.Premul);
             var fb = bmp.Lock();
             return new FramebufferProxy(fb, () =>
             {

@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Utils
 
         private readonly LinkedList<TState> _states = new LinkedList<TState>();
 
-        private LinkedListNode<TState> _currentNode;
+        private LinkedListNode<TState>? _currentNode;
 
         /// <summary>
         /// Maximum number of states this helper can store for undo/redo.
@@ -44,13 +44,13 @@ namespace Avalonia.Controls.Utils
 
         public bool IsLastState => _currentNode != null && _currentNode.Next == null;
 
-        public bool TryGetLastState(out TState _state)
+        public bool TryGetLastState(out TState? _state)
         {
             _state = default(TState);
             if (!IsLastState)
                 return false;
 
-            _state = _currentNode.Value;
+            _state = _currentNode!.Value;
             return true;
         }
 
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Utils
         public void Snapshot()
         {
             var current = _host.UndoRedoState;
-            if (_currentNode == null || !_currentNode.Value.Equals(current))
+            if (_currentNode == null || !_currentNode.Value!.Equals(current))
             {
                 if (_currentNode?.Next != null)
                     DiscardRedo();

@@ -30,7 +30,7 @@ namespace Avalonia.Logging
         /// <param name="messageTemplate">The message template.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log(
-            object source,
+            object? source,
             string messageTemplate)
         {
             _sink.Log(_level, _area, source, messageTemplate);
@@ -44,7 +44,7 @@ namespace Avalonia.Logging
         /// <param name="propertyValue0">Message property value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log<T0>(
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0)
         {
@@ -60,7 +60,7 @@ namespace Avalonia.Logging
         /// <param name="propertyValue1">Message property value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log<T0, T1>(
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0,
             T1 propertyValue1)
@@ -78,7 +78,7 @@ namespace Avalonia.Logging
         /// <param name="propertyValue2">Message property value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log<T0, T1, T2>(
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0,
             T1 propertyValue1,
@@ -98,7 +98,7 @@ namespace Avalonia.Logging
         /// <param name="propertyValue3">Message property value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log<T0, T1, T2, T3>(
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0,
             T1 propertyValue1,
@@ -120,7 +120,7 @@ namespace Avalonia.Logging
         /// <param name="propertyValue4">Message property value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log<T0, T1, T2, T3, T4>(
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0,
             T1 propertyValue1,
@@ -144,7 +144,7 @@ namespace Avalonia.Logging
         /// <param name="propertyValue5">Message property value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log<T0, T1, T2, T3, T4, T5>(
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0,
             T1 propertyValue1,

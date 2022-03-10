@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -8,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Utilities;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -81,14 +83,14 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private bool _isDragging = false;
-        private Track _track;
-        private Button _decreaseButton;
-        private Button _increaseButton;
-        private IDisposable _decreaseButtonPressDispose;
-        private IDisposable _decreaseButtonReleaseDispose;
-        private IDisposable _increaseButtonSubscription;
-        private IDisposable _increaseButtonReleaseDispose;
-        private IDisposable _pointerMovedDispose;
+        private Track? _track;
+        private Button? _decreaseButton;
+        private Button? _increaseButton;
+        private IDisposable? _decreaseButtonPressDispose;
+        private IDisposable? _decreaseButtonReleaseDispose;
+        private IDisposable? _increaseButtonSubscription;
+        private IDisposable? _increaseButtonReleaseDispose;
+        private IDisposable? _pointerMovedDispose;
 
         private const double Tolerance = 0.0001;
 
@@ -105,6 +107,7 @@ namespace Avalonia.Controls
                 RoutingStrategies.Bubble);
 
             ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Slider>(AutomationControlType.Slider);
         }
 
         /// <summary>
@@ -309,7 +312,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackMoved(object sender, PointerEventArgs e)
+        private void TrackMoved(object? sender, PointerEventArgs e)
         {
             if (_isDragging)
             {
@@ -317,12 +320,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackReleased(object sender, PointerReleasedEventArgs e)
+        private void TrackReleased(object? sender, PointerReleasedEventArgs e)
         {
             _isDragging = false;
         }
 
-        private void TrackPressed(object sender, PointerPressedEventArgs e)
+        private void TrackPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -331,16 +334,20 @@ namespace Avalonia.Controls
             }
         }
 
-        private void MoveToPoint(PointerPoint x)
+        private void MoveToPoint(PointerPoint posOnTrack)
         {
+            if (_track is null)
+                return;
+
             var orient = Orientation == Orientation.Horizontal;
-
-            var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
-            // Just add epsilon to avoid NaN in case 0/0
-            pointDen += double.Epsilon;
-
-            var pointNum = orient ? x.Position.X : x.Position.Y;
-            var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);
+            var thumbLength = (orient 
+                ? _track.Thumb.Bounds.Width 
+                : _track.Thumb.Bounds.Height) + double.Epsilon;
+            var trackLength = (orient 
+                ? _track.Bounds.Width 
+                : _track.Bounds.Height) - thumbLength;
+            var trackPos = orient ? posOnTrack.Position.X : posOnTrack.Position.Y;
+            var logicalPos = MathUtilities.Clamp((trackPos - thumbLength * 0.5) / trackLength, 0.0d, 1.0d);
             var invert = orient ? 
                 IsDirectionReversed ? 1 : 0 :
                 IsDirectionReversed ? 0 : 1;

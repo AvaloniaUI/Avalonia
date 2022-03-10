@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
@@ -23,13 +25,16 @@
         <Border x:Name="ProgressBarRoot" ClipToBounds="True" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">          
             <Panel>
               <Panel x:Name="DeterminateRoot">
-                <Border CornerRadius="{DynamicResource ControlCornerRadius}" x:Name="PART_Indicator" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
+                <Border CornerRadius="{TemplateBinding CornerRadius}" x:Name="PART_Indicator" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
               </Panel>
               <Panel x:Name="IndeterminateRoot">
-                <Border x:Name="IndeterminateProgressBarIndicator" CornerRadius="{DynamicResource ControlCornerRadius}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
-                <Border x:Name="IndeterminateProgressBarIndicator2" CornerRadius="{DynamicResource ControlCornerRadius}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
+                <Border x:Name="IndeterminateProgressBarIndicator" CornerRadius="{TemplateBinding CornerRadius}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
+                <Border x:Name="IndeterminateProgressBarIndicator2" CornerRadius="{TemplateBinding CornerRadius}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
               </Panel>
-            </Panel>          
+              <LayoutTransformControl x:Name="PART_LayoutTransformControl" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{TemplateBinding ShowProgressText}">
+                <TextBlock Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" Text="{ReflectionBinding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
+              </LayoutTransformControl>
+            </Panel>
         </Border>
       </ControlTemplate>
     </Setter>

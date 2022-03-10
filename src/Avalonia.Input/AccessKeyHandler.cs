@@ -133,7 +133,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnPreviewKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
@@ -143,7 +143,7 @@ namespace Avalonia.Input
                 {
                     // TODO: Use FocusScopes to store the current element and restore it when context menu is closed.
                     // Save currently focused input element.
-                    _restoreFocusElement = FocusManager.Instance.Current;                    
+                    _restoreFocusElement = FocusManager.Instance?.Current;                    
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
@@ -157,10 +157,9 @@ namespace Avalonia.Input
 
                     _restoreFocusElement?.Focus();
                     _restoreFocusElement = null;
+                    
+                    e.Handled = true;
                 }
-
-                // We always handle the Alt key.
-                e.Handled = true;
             }
             else if (_altIsDown)
             {
@@ -173,7 +172,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnKeyDown(object sender, KeyEventArgs e)
+        protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
@@ -189,7 +188,7 @@ namespace Avalonia.Input
                 // If the menu is open, only match controls in the menu's visual tree.
                 if (menuIsOpen)
                 {
-                    matches = matches.Where(x => MainMenu.IsVisualAncestorOf(x));
+                    matches = matches.Where(x => x is not null && MainMenu!.IsVisualAncestorOf(x));
                 }
 
                 var match = matches.FirstOrDefault();
@@ -208,7 +207,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPreviewKeyUp(object sender, KeyEventArgs e)
+        protected virtual void OnPreviewKeyUp(object? sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -235,7 +234,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPreviewPointerPressed(object sender, PointerEventArgs e)
+        protected virtual void OnPreviewPointerPressed(object? sender, PointerEventArgs e)
         {
             if (_showingAccessKeys)
             {
@@ -252,7 +251,7 @@ namespace Avalonia.Input
             _owner!.ShowAccessKeys = _showingAccessKeys = false;
         }
 
-        private void MainMenuClosed(object sender, EventArgs e)
+        private void MainMenuClosed(object? sender, EventArgs e)
         {
             _owner!.ShowAccessKeys = false;
         }

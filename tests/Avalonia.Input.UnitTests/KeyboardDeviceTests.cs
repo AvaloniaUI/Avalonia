@@ -2,7 +2,6 @@
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -126,9 +125,34 @@ namespace Avalonia.Input.UnitTests
         {
             private readonly Action _action;
             public DelegateCommand(Action action) => _action = action;
-            public event EventHandler CanExecuteChanged;
+            public event EventHandler CanExecuteChanged { add { } remove { } }
             public bool CanExecute(object parameter) => true;
             public void Execute(object parameter) => _action();
+        }
+
+        [Fact]
+        public void Control_Focus_Should_Be_Set_Before_FocusedElement_Raises_PropertyChanged()
+        {
+            var target = new KeyboardDevice();
+            var focused = new Mock<IInputElement>();
+            var root = Mock.Of<IInputRoot>();
+            var raised = 0;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(target.FocusedElement))
+                {
+                    focused.Verify(x => x.RaiseEvent(It.IsAny<GotFocusEventArgs>()));
+                    ++raised;
+                }
+            };
+
+            target.SetFocusedElement(
+                focused.Object,
+                NavigationMethod.Unspecified,
+                KeyModifiers.None);
+
+            Assert.Equal(1, raised);
         }
     }
 }

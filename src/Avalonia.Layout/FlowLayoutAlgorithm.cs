@@ -16,8 +16,8 @@ namespace Avalonia.Layout
         private Size _lastAvailableSize;
         private double _lastItemSpacing;
         private bool _collectionChangePending;
-        private VirtualizingLayoutContext _context;
-        private IFlowLayoutAlgorithmDelegates _algorithmCallbacks;
+        private VirtualizingLayoutContext? _context;
+        private IFlowLayoutAlgorithmDelegates? _algorithmCallbacks;
         private Rect _lastExtent;
         private int _firstRealizedDataIndexInsideRealizationWindow = -1;
         private int _lastRealizedDataIndexInsideRealizationWindow = -1;
@@ -46,7 +46,7 @@ namespace Avalonia.Layout
             }
         }
 
-        private Rect RealizationRect => IsVirtualizingContext ? _context.RealizationRect : new Rect(Size.Infinity);
+        private Rect RealizationRect => IsVirtualizingContext ? _context!.RealizationRect : new Rect(Size.Infinity);
 
         public void InitializeForContext(VirtualizingLayoutContext context, IFlowLayoutAlgorithmDelegates callbacks)
         {
@@ -76,7 +76,7 @@ namespace Avalonia.Layout
             int maxItemsPerLine,
             ScrollOrientation orientation,
             bool disableVirtualization,
-            string layoutId)
+            string? layoutId)
         {
             _orientation.ScrollOrientation = orientation;
 
@@ -87,7 +87,7 @@ namespace Avalonia.Layout
                 layoutId,
                 realizationRect);
 
-            var suggestedAnchorIndex = _context.RecommendedAnchorIndex;
+            var suggestedAnchorIndex = _context!.RecommendedAnchorIndex;
             if (_elementManager.IsIndexValidInData(suggestedAnchorIndex))
             {
                 var anchorRealized = _elementManager.IsDataIndexRealized(suggestedAnchorIndex);
@@ -124,7 +124,7 @@ namespace Avalonia.Layout
             VirtualizingLayoutContext context,
             bool isWrapping,
             LineAlignment lineAlignment,
-            string layoutId)
+            string? layoutId)
         {
             Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: ArrangeLayout", layoutId);
             ArrangeVirtualizingLayout(finalSize, lineAlignment, isWrapping, layoutId);
@@ -135,7 +135,7 @@ namespace Avalonia.Layout
         }
 
         public void OnItemsSourceChanged(
-            object source,
+            object? source,
             NotifyCollectionChangedEventArgs args,
             VirtualizingLayoutContext context)
         {
@@ -149,7 +149,7 @@ namespace Avalonia.Layout
             Size availableSize,
             VirtualizingLayoutContext context)
         {
-            var measureSize = _algorithmCallbacks.Algorithm_GetMeasureSize(index, availableSize, context);
+            var measureSize = _algorithmCallbacks!.Algorithm_GetMeasureSize(index, availableSize, context);
             element.Measure(measureSize);
             var provisionalArrangeSize = _algorithmCallbacks.Algorithm_GetProvisionalArrangeSize(index, measureSize, element.DesiredSize, context);
             _algorithmCallbacks.Algorithm_OnElementMeasured(element, index, availableSize, measureSize, element.DesiredSize, provisionalArrangeSize, context);
@@ -161,7 +161,7 @@ namespace Avalonia.Layout
             Size availableSize,
             bool isWrapping,
             double minItemSpacing,
-            string layoutId)
+            string? layoutId)
         {
             int anchorIndex = -1;
             var anchorPosition= new Point();
@@ -170,7 +170,7 @@ namespace Avalonia.Layout
             if (!IsVirtualizingContext)
             {
                 // Non virtualizing host, start generating from the element 0
-                anchorIndex = context.ItemCount > 0 ? 0 : -1;
+                anchorIndex = context!.ItemCount > 0 ? 0 : -1;
             }
             else
             {       
@@ -183,7 +183,7 @@ namespace Avalonia.Layout
                     _lastItemSpacing != minItemSpacing ||
                     _collectionChangePending);
 
-                var suggestedAnchorIndex = _context.RecommendedAnchorIndex;
+                var suggestedAnchorIndex = _context!.RecommendedAnchorIndex;
 
                 var isAnchorSuggestionValid = suggestedAnchorIndex >= 0 &&
                     _elementManager.IsDataIndexRealized(suggestedAnchorIndex);
@@ -191,10 +191,10 @@ namespace Avalonia.Layout
                 if (isAnchorSuggestionValid)
                 {
                     Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Using suggested anchor {Anchor}", layoutId, suggestedAnchorIndex);
-                    anchorIndex = _algorithmCallbacks.Algorithm_GetAnchorForTargetElement(
+                    anchorIndex = _algorithmCallbacks!.Algorithm_GetAnchorForTargetElement(
                         suggestedAnchorIndex,
                         availableSize,
-                        context).Index;
+                        context!).Index;
 
                     if (_elementManager.IsDataIndexRealized(anchorIndex))
                     {
@@ -235,7 +235,7 @@ namespace Avalonia.Layout
 
                     // The anchor is based on the realization window because a connected ItemsRepeater might intersect the realization window
                     // but not the visible window. In that situation, we still need to produce a valid anchor.
-                    var anchorInfo = _algorithmCallbacks.Algorithm_GetAnchorForRealizationRect(availableSize, context);
+                    var anchorInfo = _algorithmCallbacks!.Algorithm_GetAnchorForRealizationRect(availableSize, context!);
                     anchorIndex = anchorInfo.Index;
                     anchorPosition = _orientation.MinorMajorPoint(0, anchorInfo.Offset);
                 }
@@ -259,12 +259,12 @@ namespace Avalonia.Layout
                     Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId} Disconnected Window - throwing away all realized elements", layoutId);
                     _elementManager.ClearRealizedRange();
 
-                    var anchor = _context.GetOrCreateElementAt(anchorIndex, ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
+                    var anchor = _context!.GetOrCreateElementAt(anchorIndex, ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
                     _elementManager.Add(anchor, anchorIndex);
                 }
 
                 var anchorElement = _elementManager.GetRealizedElement(anchorIndex);
-                var desiredSize = MeasureElement(anchorElement, anchorIndex, availableSize, _context);
+                var desiredSize = MeasureElement(anchorElement!, anchorIndex, availableSize, _context!);
                 var layoutBounds = new Rect(anchorPosition.X, anchorPosition.Y, desiredSize.Width, desiredSize.Height);
                 _elementManager.SetLayoutBoundsForDataIndex(anchorIndex, layoutBounds);
 
@@ -296,7 +296,7 @@ namespace Avalonia.Layout
             double lineSpacing,
             int maxItemsPerLine,
             bool disableVirtualization,
-            string layoutId)
+            string? layoutId)
         {
             if (anchorIndex != -1)
             {
@@ -322,7 +322,7 @@ namespace Avalonia.Layout
                     // Ensure layout element.
                     _elementManager.EnsureElementRealized(direction == GenerateDirection.Forward, currentIndex, layoutId);
                     var currentElement = _elementManager.GetRealizedElement(currentIndex);
-                    var desiredSize = MeasureElement(currentElement, currentIndex, availableSize, _context);
+                    var desiredSize = MeasureElement(currentElement!, currentIndex, availableSize, _context!);
                     ++count;
 
                     // Lay it out.
@@ -333,7 +333,7 @@ namespace Avalonia.Layout
                     if (direction == GenerateDirection.Forward)
                     {
                         double remainingSpace = _orientation.Minor(availableSize) - (_orientation.MinorStart(previousElementBounds) + _orientation.MinorSize(previousElementBounds) + minItemSpacing + _orientation.Minor(desiredSize));
-                        if (countInLine >= maxItemsPerLine || _algorithmCallbacks.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
+                        if (countInLine >= maxItemsPerLine || _algorithmCallbacks!.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
                         {
                             // No more space in this row. wrap to next row.
                             _orientation.SetMinorStart(ref currentBounds, 0);
@@ -371,7 +371,7 @@ namespace Avalonia.Layout
                     {
                         // Backward 
                         double remainingSpace = _orientation.MinorStart(previousElementBounds) - (_orientation.Minor(desiredSize) + minItemSpacing);
-                        if (countInLine >= maxItemsPerLine || _algorithmCallbacks.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
+                        if (countInLine >= maxItemsPerLine || _algorithmCallbacks!.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
                         {
                             // Does not fit, wrap to the previous row
                             var availableSizeMinor = _orientation.Minor(availableSize);
@@ -432,13 +432,13 @@ namespace Avalonia.Layout
                 // account for that element in the indices inside the realization window.
                 if (direction == GenerateDirection.Forward)
                 {
-                    int dataCount = _context.ItemCount;
+                    int dataCount = _context!.ItemCount;
                     _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
                     _lastRealizedDataIndexInsideRealizationWindow = Math.Max(0, _lastRealizedDataIndexInsideRealizationWindow);
                 }
                 else
                 {
-                    int dataCount = _context.ItemCount;
+                    int dataCount = _context!.ItemCount;
                     _firstRealizedDataIndexInsideRealizationWindow = previousIndex == 0 ? 0 : previousIndex + 1;
                     _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
                 }
@@ -454,7 +454,7 @@ namespace Avalonia.Layout
         {
             _elementManager.ClearRealizedRange();
             // FlowLayout requires that the anchor is the first element in the row.
-            var internalAnchor = _algorithmCallbacks.Algorithm_GetAnchorForTargetElement(index, availableSize, context);
+            var internalAnchor = _algorithmCallbacks!.Algorithm_GetAnchorForTargetElement(index, availableSize, context);
 
             // No need to set the position of the anchor.
             // (0,0) is fine for now since the extent can
@@ -487,7 +487,7 @@ namespace Avalonia.Layout
             }
             else
             {
-                var realizationRect = _context.RealizationRect;
+                var realizationRect = _context!.RealizationRect;
                 var elementBounds = _elementManager.GetLayoutBoundsForDataIndex(index);
 
                 var elementMajorStart = _orientation.MajorStart(elementBounds);
@@ -510,11 +510,11 @@ namespace Avalonia.Layout
             return shouldContinue;
         }
 
-        private Rect EstimateExtent(Size availableSize, string layoutId)
+        private Rect EstimateExtent(Size availableSize, string? layoutId)
         {
-            ILayoutable firstRealizedElement = null;
+            ILayoutable? firstRealizedElement = null;
             Rect firstBounds = new Rect();
-            ILayoutable lastRealizedElement = null;
+            ILayoutable? lastRealizedElement = null;
             Rect lastBounds = new Rect();
             int firstDataIndex = -1;
             int lastDataIndex = -1;
@@ -531,9 +531,9 @@ namespace Avalonia.Layout
                 lastBounds = _elementManager.GetLayoutBoundsForRealizedIndex(last);
             }
 
-            Rect extent = _algorithmCallbacks.Algorithm_GetExtent(
+            Rect extent = _algorithmCallbacks!.Algorithm_GetExtent(
                 availableSize,
-                _context,
+                _context!,
                 firstRealizedElement,
                 firstDataIndex,
                 firstBounds,
@@ -563,7 +563,7 @@ namespace Avalonia.Layout
                         if (_orientation.MajorStart(currentBounds) != currentLineOffset)
                         {
                             // Staring a new line
-                            _algorithmCallbacks.Algorithm_OnLineArranged(currentDataIndex - countInLine, countInLine, currentLineSize, _context);
+                            _algorithmCallbacks!.Algorithm_OnLineArranged(currentDataIndex - countInLine, countInLine, currentLineSize, _context!);
                             countInLine = 0;
                             currentLineOffset = _orientation.MajorStart(currentBounds);
                             currentLineSize = 0;
@@ -575,7 +575,7 @@ namespace Avalonia.Layout
                     }
 
                     // Raise for the last line.
-                    _algorithmCallbacks.Algorithm_OnLineArranged(_lastRealizedDataIndexInsideRealizationWindow - countInLine + 1, countInLine, currentLineSize, _context);
+                    _algorithmCallbacks!.Algorithm_OnLineArranged(_lastRealizedDataIndexInsideRealizationWindow - countInLine + 1, countInLine, currentLineSize, _context!);
                 }
             }
         }
@@ -584,7 +584,7 @@ namespace Avalonia.Layout
             Size finalSize,
             LineAlignment lineAlignment,
             bool isWrapping,
-            string layoutId)
+            string? layoutId)
         {
             // Walk through the realized elements one line at a time and 
             // align them, Then call element.Arrange with the arranged bounds.
@@ -636,7 +636,7 @@ namespace Avalonia.Layout
             LineAlignment lineAlignment,
             bool isWrapping,
             Size finalSize,
-            string layoutId)
+            string? layoutId)
         {
             for (int rangeIndex = lineStartIndex; rangeIndex < lineStartIndex + countInLine; ++rangeIndex)
             {
@@ -723,11 +723,11 @@ namespace Avalonia.Layout
         {
             if (IsVirtualizingContext)
             {
-                _context.LayoutOrigin = new Point(_lastExtent.X, _lastExtent.Y);
+                _context!.LayoutOrigin = new Point(_lastExtent.X, _lastExtent.Y);
             }
         }
 
-        public ILayoutable GetElementIfRealized(int dataIndex)
+        public ILayoutable? GetElementIfRealized(int dataIndex)
         {
             if (_elementManager.IsDataIndexRealized(dataIndex))
             {

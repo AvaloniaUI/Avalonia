@@ -87,7 +87,7 @@ namespace Avalonia.Win32
 
         private Vector GetCurrentDpi()
         {
-            if (UnmanagedMethods.ShCoreAvailable)
+            if (UnmanagedMethods.ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
             {
                 var monitor =
                     UnmanagedMethods.MonitorFromWindow(_hwnd, UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
@@ -107,7 +107,8 @@ namespace Avalonia.Win32
 
         private static FramebufferData AllocateFramebufferData(int width, int height)
         {
-            var bitmapBlob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(width * height * _bytesPerPixel);
+            var service = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
+            var bitmapBlob = service.AllocBlob(width * height * _bytesPerPixel);
 
             return new FramebufferData(bitmapBlob, width, height);
         }

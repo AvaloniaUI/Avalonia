@@ -6,6 +6,7 @@ namespace Avalonia.Input
 {
     public static class Gestures
     {
+        private static bool s_isDoubleTapped = false;
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,
@@ -28,9 +29,21 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
+        
+        public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
+            RoutedEvent.Register<PointerDeltaEventArgs>(
+                "PointerMagnifyGesture", RoutingStrategies.Bubble, typeof(Gestures));
+        
+        public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureRotateEvent =
+            RoutedEvent.Register<PointerDeltaEventArgs>(
+                "PointerRotateGesture", RoutingStrategies.Bubble, typeof(Gestures));
+        
+        public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureSwipeEvent =
+            RoutedEvent.Register<PointerDeltaEventArgs>(
+                "PointerSwipeGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        private static WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);
+        private static readonly WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         static Gestures()
@@ -83,14 +96,20 @@ namespace Avalonia.Input
 
                 if (e.ClickCount <= 1)
                 {
-                    s_lastPress = new WeakReference<IInteractive>(ev.Source);
+                    s_isDoubleTapped = false;
+                    s_lastPress.SetTarget(ev.Source);
                 }
-                else if (s_lastPress != null && e.ClickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
+                        s_isDoubleTapped = true;
                         e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
+                }
+                else
+                {
+                    s_isDoubleTapped = false;
                 }
             }
         }
@@ -109,7 +128,9 @@ namespace Avalonia.Input
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
                         }
-                        else
+                        //s_isDoubleTapped needed here to prevent invoking Tapped event when DoubleTapped is called.
+                        //This behaviour matches UWP behaviour.
+                        else if (s_isDoubleTapped == false)
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(TappedEvent, e));
                         }

@@ -10,18 +10,6 @@ namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return Mock.Of<IFormattedTextImpl>();
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
             return Mock.Of<IGeometryImpl>();
@@ -50,6 +38,16 @@ namespace Avalonia.UnitTests
         public IStreamGeometryImpl CreateStreamGeometry()
         {
             return new MockStreamGeometryImpl();
+        }
+
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            return Mock.Of<IGeometryImpl>();
         }
 
         public IWriteableBitmapImpl CreateWriteableBitmap(

@@ -33,13 +33,13 @@ namespace Avalonia.Layout
                 MathUtilities.Clamp(constraints.Height, minmax.MinHeight, minmax.MaxHeight));
         }
 
-        public static Size MeasureChild(ILayoutable control, Size availableSize, Thickness padding,
+        public static Size MeasureChild(ILayoutable? control, Size availableSize, Thickness padding,
             Thickness borderThickness)
         {
             return MeasureChild(control, availableSize, padding + borderThickness);
         }
 
-        public static Size MeasureChild(ILayoutable control, Size availableSize, Thickness padding)
+        public static Size MeasureChild(ILayoutable? control, Size availableSize, Thickness padding)
         {
             if (control != null)
             {
@@ -50,12 +50,12 @@ namespace Avalonia.Layout
             return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
         }
 
-        public static Size ArrangeChild(ILayoutable child, Size availableSize, Thickness padding, Thickness borderThickness)
+        public static Size ArrangeChild(ILayoutable? child, Size availableSize, Thickness padding, Thickness borderThickness)
         {
             return ArrangeChild(child, availableSize, padding + borderThickness);
         }
 
-        public static Size ArrangeChild(ILayoutable child, Size availableSize, Thickness padding)
+        public static Size ArrangeChild(ILayoutable? child, Size availableSize, Thickness padding)
         {
             child?.Arrange(new Rect(availableSize).Deflate(padding));
 
@@ -101,7 +101,7 @@ namespace Avalonia.Layout
 
             if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
             {
-                throw new Exception($"Invalid LayoutScaling returned from {visualRoot.GetType()}");
+                throw new Exception($"Invalid LayoutScaling returned from {visualRoot!.GetType()}");
             }
 
             return result;

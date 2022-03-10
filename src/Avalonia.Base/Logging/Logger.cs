@@ -8,7 +8,7 @@ namespace Avalonia.Logging
         /// <summary>
         /// Gets or sets the application-defined sink that receives the messages.
         /// </summary>
-        public static ILogSink Sink { get; set; }
+        public static ILogSink? Sink { get; set; }
 
         /// <summary>
         /// Checks if given log level is enabled.
@@ -34,7 +34,7 @@ namespace Avalonia.Logging
                 return null;
             }
 
-            return new ParametrizedLogger(Sink, level, area);
+            return new ParametrizedLogger(Sink!, level, area);
         }
 
         /// <summary>

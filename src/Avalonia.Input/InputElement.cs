@@ -16,7 +16,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Implements input-related functionality for a control.
     /// </summary>
-    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":pointerover")]
+    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":focus-within", ":pointerover")]
     public class InputElement : Interactive, IInputElement
     {
         /// <summary>
@@ -196,7 +196,7 @@ namespace Avalonia.Input
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
-
+        
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isKeyboardFocusWithin;
@@ -233,7 +233,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        public event EventHandler<GotFocusEventArgs> GotFocus
+        public event EventHandler<GotFocusEventArgs>? GotFocus
         {
             add { AddHandler(GotFocusEvent, value); }
             remove { RemoveHandler(GotFocusEvent, value); }
@@ -242,7 +242,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> LostFocus
+        public event EventHandler<RoutedEventArgs>? LostFocus
         {
             add { AddHandler(LostFocusEvent, value); }
             remove { RemoveHandler(LostFocusEvent, value); }
@@ -251,7 +251,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a key is pressed while the control has focus.
         /// </summary>
-        public event EventHandler<KeyEventArgs> KeyDown
+        public event EventHandler<KeyEventArgs>? KeyDown
         {
             add { AddHandler(KeyDownEvent, value); }
             remove { RemoveHandler(KeyDownEvent, value); }
@@ -260,7 +260,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a key is released while the control has focus.
         /// </summary>
-        public event EventHandler<KeyEventArgs> KeyUp
+        public event EventHandler<KeyEventArgs>? KeyUp
         {
             add { AddHandler(KeyUpEvent, value); }
             remove { RemoveHandler(KeyUpEvent, value); }
@@ -269,7 +269,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a user typed some text while the control has focus.
         /// </summary>
-        public event EventHandler<TextInputEventArgs> TextInput
+        public event EventHandler<TextInputEventArgs>? TextInput
         {
             add { AddHandler(TextInputEvent, value); }
             remove { RemoveHandler(TextInputEvent, value); }
@@ -278,7 +278,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when an input element gains input focus and input method is looking for the corresponding client
         /// </summary>
-        public event EventHandler<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequested
+        public event EventHandler<TextInputMethodClientRequestedEventArgs>? TextInputMethodClientRequested
         {
             add { AddHandler(TextInputMethodClientRequestedEvent, value); }
             remove { RemoveHandler(TextInputMethodClientRequestedEvent, value); }
@@ -287,7 +287,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when an input element gains input focus and input method is asking for required content options
         /// </summary>
-        public event EventHandler<TextInputOptionsQueryEventArgs> TextInputOptionsQuery
+        public event EventHandler<TextInputOptionsQueryEventArgs>? TextInputOptionsQuery
         {
             add { AddHandler(TextInputOptionsQueryEvent, value); }
             remove { RemoveHandler(TextInputOptionsQueryEvent, value); }
@@ -296,7 +296,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer enters the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs> PointerEnter
+        public event EventHandler<PointerEventArgs>? PointerEnter
         {
             add { AddHandler(PointerEnterEvent, value); }
             remove { RemoveHandler(PointerEnterEvent, value); }
@@ -305,7 +305,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer leaves the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs> PointerLeave
+        public event EventHandler<PointerEventArgs>? PointerLeave
         {
             add { AddHandler(PointerLeaveEvent, value); }
             remove { RemoveHandler(PointerLeaveEvent, value); }
@@ -314,7 +314,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer moves over the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs> PointerMoved
+        public event EventHandler<PointerEventArgs>? PointerMoved
         {
             add { AddHandler(PointerMovedEvent, value); }
             remove { RemoveHandler(PointerMovedEvent, value); }
@@ -323,7 +323,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer is pressed over the control.
         /// </summary>
-        public event EventHandler<PointerPressedEventArgs> PointerPressed
+        public event EventHandler<PointerPressedEventArgs>? PointerPressed
         {
             add { AddHandler(PointerPressedEvent, value); }
             remove { RemoveHandler(PointerPressedEvent, value); }
@@ -332,7 +332,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer is released over the control.
         /// </summary>
-        public event EventHandler<PointerReleasedEventArgs> PointerReleased
+        public event EventHandler<PointerReleasedEventArgs>? PointerReleased
         {
             add { AddHandler(PointerReleasedEvent, value); }
             remove { RemoveHandler(PointerReleasedEvent, value); }
@@ -342,25 +342,25 @@ namespace Avalonia.Input
         /// Occurs when the control or its child control loses the pointer capture for any reason,
         /// event will not be triggered for a parent control if capture was transferred to another child of that parent control
         /// </summary>
-        public event EventHandler<PointerCaptureLostEventArgs> PointerCaptureLost
+        public event EventHandler<PointerCaptureLostEventArgs>? PointerCaptureLost
         {
             add => AddHandler(PointerCaptureLostEvent, value);
             remove => RemoveHandler(PointerCaptureLostEvent, value);
         }
         
         /// <summary>
-        /// Occurs when the mouse wheen is scrolled over the control.
+        /// Occurs when the mouse is scrolled over the control.
         /// </summary>
-        public event EventHandler<PointerWheelEventArgs> PointerWheelChanged
+        public event EventHandler<PointerWheelEventArgs>? PointerWheelChanged
         {
             add { AddHandler(PointerWheelChangedEvent, value); }
             remove { RemoveHandler(PointerWheelChangedEvent, value); }
         }
-
+        
         /// <summary>
         /// Occurs when a tap gesture occurs on the control.
         /// </summary>
-        public event EventHandler<TappedEventArgs> Tapped
+        public event EventHandler<TappedEventArgs>? Tapped
         {
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
@@ -369,7 +369,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a double-tap gesture occurs on the control.
         /// </summary>
-        public event EventHandler<TappedEventArgs> DoubleTapped
+        public event EventHandler<TappedEventArgs>? DoubleTapped
         {
             add { AddHandler(DoubleTappedEvent, value); }
             remove { RemoveHandler(DoubleTappedEvent, value); }
@@ -499,7 +499,7 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.Instance.Focus(null);
+                FocusManager.Instance?.Focus(null);
             }
         }
 
@@ -632,7 +632,7 @@ namespace Avalonia.Input
             }
             else if (change.Property == IsKeyboardFocusWithinProperty)
             {
-                PseudoClasses.Set(":focus-within", _isKeyboardFocusWithin);
+                PseudoClasses.Set(":focus-within", change.NewValue.GetValueOrDefault<bool>());
             }
         }
 
@@ -675,7 +675,7 @@ namespace Avalonia.Input
         /// <see cref="IsEffectivelyEnabled"/>.
         /// </summary>
         /// <param name="parent">The parent control.</param>
-        private void UpdateIsEffectivelyEnabled(InputElement parent)
+        private void UpdateIsEffectivelyEnabled(InputElement? parent)
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 

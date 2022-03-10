@@ -17,10 +17,7 @@ namespace ControlCatalog
         public MainWindow()
         {
             this.InitializeComponent();
-            this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
-            {
-                StartupScreenIndex = 1,
-            });
+
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
 
@@ -33,8 +30,7 @@ namespace ControlCatalog
             DataContext = new MainWindowViewModel(_notificationArea);
             _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
 
-            var mainMenu = this.FindControl<Menu>("MainMenu");
-            mainMenu.AttachedToVisualTree += MenuAttached;
+            ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.OSXThickTitleBar;
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
@@ -42,14 +38,6 @@ namespace ControlCatalog
         public static KeyGesture MenuQuitGesture => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
             new KeyGesture(Key.Q, KeyModifiers.Meta) :
             new KeyGesture(Key.F4, KeyModifiers.Alt);
-
-        public void MenuAttached(object sender, VisualTreeAttachmentEventArgs e)
-        {
-            if (NativeMenu.GetIsNativeMenuExported(this) && sender is Menu mainMenu)
-            {
-                mainMenu.IsVisible = false;
-            }
-        }
 
         public void OnOpenClicked(object sender, EventArgs args)
         {
@@ -63,21 +51,6 @@ namespace ControlCatalog
 
         private void InitializeComponent()
         {
-            // TODO: iOS does not support dynamically loading assemblies
-            // so we must refer to this resource DLL statically. For
-            // now I am doing that here. But we need a better solution!!
-            // Note, theme swiching probably will not work in runtime for iOS.
-            if (Application.Current.Styles.Contains(App.FluentDark)
-                || Application.Current.Styles.Contains(App.FluentLight))
-            {
-                var theme = new Avalonia.Themes.Fluent.Controls.FluentControls();
-                theme.TryGetResource("Button", out _);
-            }
-            else
-            {
-                var theme = new Avalonia.Themes.Default.DefaultTheme();
-                theme.TryGetResource("Button", out _);
-            }
             AvaloniaXamlLoader.Load(this);
         }
     }

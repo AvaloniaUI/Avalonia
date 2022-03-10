@@ -7,11 +7,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Utils;
-
-#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -32,8 +29,8 @@ namespace Avalonia.Controls
         /// </summary>
         public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object>());
 
-        private protected readonly IList _inner;
-        private INotifyCollectionChanged? _notifyCollectionChanged;
+        private IList? _inner;
+        private NotifyCollectionChangedEventHandler? _collectionChanged;
 
         /// <summary>
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
@@ -42,27 +39,22 @@ namespace Avalonia.Controls
         public ItemsSourceView(IEnumerable source)
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
-
-            if (source is IList list)
+            _inner = source switch
             {
-                _inner = list;
-            }
-            else if (source is IEnumerable<object> objectEnumerable)
-            {
-                _inner = new List<object>(objectEnumerable);
-            }
-            else
-            {
-                _inner = new List<object>(source.Cast<object>());
-            }
-
-            ListenToCollectionChanges();
+                ItemsSourceView _ => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
+                IList list => list,
+                INotifyCollectionChanged _ => throw new ArgumentException(
+                    "Collection implements INotifyCollectionChanged by not IList.",
+                    nameof(source)),
+                IEnumerable<object> iObj => new List<object>(iObj),
+                _ => new List<object>(source.Cast<object>())
+            };
         }
 
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count => _inner.Count;
+        public int Count => Inner.Count;
 
         /// <summary>
         /// Gets a value that indicates whether the items source can provide a unique key for each item.
@@ -71,6 +63,19 @@ namespace Avalonia.Controls
         /// TODO: Not yet implemented in Avalonia.
         /// </remarks>
         public bool HasKeyIndexMapping => false;
+
+        /// <summary>
+        /// Gets the inner collection.
+        /// </summary>
+        public IList Inner
+        {
+            get
+            {
+                if (_inner is null)
+                    ThrowDisposed();
+                return _inner!;
+            }
+        }
 
         /// <summary>
         /// Retrieves the item at the specified index.
@@ -82,15 +87,38 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when the collection has changed to indicate the reason for the change and which items changed.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
+        {
+            add
+            {
+                if (_collectionChanged is null && Inner is INotifyCollectionChanged incc)
+                {
+                    incc.CollectionChanged += OnCollectionChanged;
+                }
+
+                _collectionChanged += value;
+            }
+
+            remove
+            {
+                _collectionChanged -= value;
+
+                if (_collectionChanged is null && Inner is INotifyCollectionChanged incc)
+                {
+                    incc.CollectionChanged -= OnCollectionChanged;
+                }
+            }
+        }
 
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (_notifyCollectionChanged != null)
+            if (_inner is INotifyCollectionChanged incc)
             {
-                _notifyCollectionChanged.CollectionChanged -= OnCollectionChanged;
+                incc.CollectionChanged -= OnCollectionChanged;
             }
+
+            _inner = null;
         }
 
         /// <summary>
@@ -98,9 +126,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public object? GetAt(int index) => _inner[index];
+        public object? GetAt(int index) => Inner[index];
 
-        public int IndexOf(object? item) => _inner.IndexOf(item);
+        public int IndexOf(object? item) => Inner.IndexOf(item);
 
         public static ItemsSourceView GetOrCreate(IEnumerable? items)
         {
@@ -146,7 +174,7 @@ namespace Avalonia.Controls
 
         internal void AddListener(ICollectionChangedListener listener)
         {
-            if (_inner is INotifyCollectionChanged incc)
+            if (Inner is INotifyCollectionChanged incc)
             {
                 CollectionChangedEventManager.Instance.AddListener(incc, listener);
             }
@@ -154,7 +182,7 @@ namespace Avalonia.Controls
 
         internal void RemoveListener(ICollectionChangedListener listener)
         {
-            if (_inner is INotifyCollectionChanged incc)
+            if (Inner is INotifyCollectionChanged incc)
             {
                 CollectionChangedEventManager.Instance.RemoveListener(incc, listener);
             }
@@ -162,22 +190,15 @@ namespace Avalonia.Controls
 
         protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
-            CollectionChanged?.Invoke(this, args);
+            _collectionChanged?.Invoke(this, args);
         }
 
-        private void ListenToCollectionChanges()
-        {
-            if (_inner is INotifyCollectionChanged incc)
-            {
-                incc.CollectionChanged += OnCollectionChanged;
-                _notifyCollectionChanged = incc;
-            }
-        }
-
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             OnItemsSourceChanged(e);
         }
+
+        private void ThrowDisposed() => throw new ObjectDisposedException(nameof(ItemsSourceView));
     }
 
     public class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>
@@ -215,11 +236,10 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        [return: MaybeNull]
-        public new T GetAt(int index) => (T)_inner[index];
+        public new T GetAt(int index) => (T)Inner[index]!;
 
-        public IEnumerator<T> GetEnumerator() => _inner.Cast<T>().GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => Inner.Cast<T>().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
 
         public static new ItemsSourceView<T> GetOrCreate(IEnumerable? items)
         {
