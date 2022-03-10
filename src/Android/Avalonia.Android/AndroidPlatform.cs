@@ -1,9 +1,9 @@
 using System;
-
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Android;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -19,6 +19,7 @@ namespace Avalonia
         public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
+
             return builder
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(options), "Android")
                 .UseSkia();
