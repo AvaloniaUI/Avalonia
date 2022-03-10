@@ -2,6 +2,8 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 using Avalonia.Input.TextInput;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 
 namespace Avalonia.iOS;
 
@@ -17,12 +19,26 @@ public partial class AvaloniaView : ITextInputMethodImpl
     [Export("insertText:")]
     public void InsertText(string text)
     {
-        
+        if (KeyboardDevice.Instance is { })
+        {
+            _topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance,
+                0, InputRoot, text));
+        }
+
     }
 
     [Export("deleteBackward")]
     public void DeleteBackward()
     {
+        if (KeyboardDevice.Instance is { })
+        {
+            // TODO: pass this through IME infrastructure instead of emulating a backspace press
+            _topLevelImpl.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance,
+                0, InputRoot, RawKeyEventType.KeyDown, Key.Back, RawInputModifiers.None));
+
+            _topLevelImpl.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance,
+                0, InputRoot, RawKeyEventType.KeyUp, Key.Back, RawInputModifiers.None));
+        }
     }
 
     void ITextInputMethodImpl.SetActive(bool active)
