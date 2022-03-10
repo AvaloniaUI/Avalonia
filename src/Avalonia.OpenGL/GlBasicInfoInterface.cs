@@ -15,9 +15,12 @@ namespace Avalonia.OpenGL
         public GlBasicInfoInterface(Func<Utf8Buffer, IntPtr> nativeGetProcAddress) : base(nativeGetProcAddress, null)
         {
         }
-        
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void GlGetIntegerv(int name, out int rv);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate IntPtr GlGetString(int v);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate IntPtr GlGetStringi(int v, int v1);
     }
     

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -85,8 +86,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Flyout"/> property
         /// </summary>
-        public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
-            AvaloniaProperty.Register<Button, FlyoutBase>(nameof(Flyout));
+        public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
+            AvaloniaProperty.Register<Button, FlyoutBase?>(nameof(Flyout));
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
@@ -186,7 +187,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the Flyout that should be shown with this button.
         /// </summary>
-        public FlyoutBase Flyout
+        public FlyoutBase? Flyout
         {
             get => GetValue(FlyoutProperty);
             set => SetValue(FlyoutProperty, value);
@@ -237,7 +238,7 @@ namespace Avalonia.Controls
             {
                 HotKey = _hotkey;
             }
-            
+
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
@@ -455,6 +456,8 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new ButtonAutomationPeer(this);
+
         /// <inheritdoc/>
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
@@ -471,6 +474,8 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        internal void PerformClick() => OnClick();
 
         /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.

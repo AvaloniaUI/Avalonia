@@ -22,5 +22,41 @@ namespace Avalonia.Media.TextFormatting
         public override TextRunProperties Properties { get; }
         
         public sbyte BidiLevel { get; }
+
+        public bool CanShapeTogether(ShapeableTextCharacters shapeableTextCharacters)
+        {
+            if (!Text.Buffer.Equals(shapeableTextCharacters.Text.Buffer))
+            {
+                return false;
+            }
+
+            if (Text.Start + Text.Length != shapeableTextCharacters.Text.Start)
+            {
+                return false;
+            }
+
+            if (BidiLevel != shapeableTextCharacters.BidiLevel)
+            {
+                return false;
+            }
+
+            if (!MathUtilities.AreClose(Properties.FontRenderingEmSize,
+                    shapeableTextCharacters.Properties.FontRenderingEmSize))
+            {
+                return false;
+            }
+
+            if (Properties.Typeface != shapeableTextCharacters.Properties.Typeface)
+            {
+                return false;
+            }
+
+            if (Properties.BaselineAlignment != shapeableTextCharacters.Properties.BaselineAlignment)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

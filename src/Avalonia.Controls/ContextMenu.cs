@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Avalonia.Automation.Peers;
 using System.Linq;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Generators;
@@ -13,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -107,6 +109,8 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
             PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
+            AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
         }
 
         /// <summary>
