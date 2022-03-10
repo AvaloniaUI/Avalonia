@@ -96,11 +96,6 @@ namespace Avalonia.Input.TextInput
             _im = inputMethod;
 
             TryFindAndApplyClient();
-
-            if (_im != inputMethod)
-            {
-                _im?.SetActive(Client);
-            }
         }
 
         private void TryFindAndApplyClient()
