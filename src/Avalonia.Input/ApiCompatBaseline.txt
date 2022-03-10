@@ -19,6 +19,11 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Input.T
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Input.TextInput.ITextInputMethodImpl.SetOptions(Avalonia.Input.TextInput.TextInputOptions)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Input.TextInput.ITextInputMethodImpl.SetOptions(Avalonia.Input.TextInput.TextInputOptionsQueryEventArgs)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Input.TextInput.ITextInputMethodImpl.SetOptions(Avalonia.Input.TextInput.TextInputOptionsQueryEventArgs)' does not exist in the implementation but it does exist in the contract.
+EnumValuesMustMatch : Enum value 'Avalonia.Input.TextInput.TextInputContentType Avalonia.Input.TextInput.TextInputContentType.Email' is (System.Int32)5 in the implementation but (System.Int32)1 in the contract.
+EnumValuesMustMatch : Enum value 'Avalonia.Input.TextInput.TextInputContentType Avalonia.Input.TextInput.TextInputContentType.Number' is (System.Int32)4 in the implementation but (System.Int32)3 in the contract.
+EnumValuesMustMatch : Enum value 'Avalonia.Input.TextInput.TextInputContentType Avalonia.Input.TextInput.TextInputContentType.Password' is (System.Int32)8 in the implementation but (System.Int32)5 in the contract.
+MembersMustExist : Member 'public Avalonia.Input.TextInput.TextInputContentType Avalonia.Input.TextInput.TextInputContentType Avalonia.Input.TextInput.TextInputContentType.Phone' does not exist in the implementation but it does exist in the contract.
+EnumValuesMustMatch : Enum value 'Avalonia.Input.TextInput.TextInputContentType Avalonia.Input.TextInput.TextInputContentType.Url' is (System.Int32)6 in the implementation but (System.Int32)4 in the contract.
 TypesMustExist : Type 'Avalonia.Input.TextInput.TextInputOptionsQueryEventArgs' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Platform.IStandardCursorFactory' does not exist in the implementation but it does exist in the contract.
-Total Issues: 22
+Total Issues: 27

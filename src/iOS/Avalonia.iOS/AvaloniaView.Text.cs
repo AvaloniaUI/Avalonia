@@ -82,6 +82,8 @@ public partial class AvaloniaView : ITextInputMethodImpl
 
     void ITextInputMethodImpl.SetOptions(TextInputOptions options)
     {
+        IsSecureEntry = false;
+        
         switch (options.ContentType)
         {
             case TextInputContentType.Email:
@@ -89,14 +91,19 @@ public partial class AvaloniaView : ITextInputMethodImpl
                 break;
 
             case TextInputContentType.Number:
+                KeyboardType = UIKeyboardType.PhonePad;
+                break;
+            
+            case TextInputContentType.Pin:
                 KeyboardType = UIKeyboardType.NumberPad;
+                IsSecureEntry = true;
                 break;
 
             case TextInputContentType.Password:
                 IsSecureEntry = true;
                 break;
 
-            case TextInputContentType.Phone:
+            case TextInputContentType.Digits:
                 KeyboardType = UIKeyboardType.PhonePad;
                 break;
 
@@ -107,6 +114,11 @@ public partial class AvaloniaView : ITextInputMethodImpl
             case TextInputContentType.Normal:
                 KeyboardType = UIKeyboardType.Default;
                 break;
+        }
+
+        if (options.IsSensitive)
+        {
+            IsSecureEntry = true;
         }
     }
 
