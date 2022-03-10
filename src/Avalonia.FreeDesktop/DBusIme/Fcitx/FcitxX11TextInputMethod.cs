@@ -93,7 +93,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                 (uint)args.Timestamp).ConfigureAwait(false);
         }
         
-        public override void SetOptions(TextInputOptionsQueryEventArgs options) =>
+        public override void SetOptions(TextInputOptions options) =>
             Enqueue(async () =>
             {
                 if(_context == null)

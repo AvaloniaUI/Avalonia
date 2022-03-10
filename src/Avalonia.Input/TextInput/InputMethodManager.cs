@@ -46,11 +46,11 @@ namespace Avalonia.Input.TextInput
                     _transformTracker.SetVisual(_client?.TextViewVisual);
                     UpdateCursorRect();
                     
-                    _im?.SetActive(_client);
+                    _im?.SetClient(_client);
                 }
                 else
                 {
-                    _im?.SetActive(null);
+                    _im?.SetClient(null);
                     _transformTracker.SetVisual(null);
                 }
             }
@@ -92,6 +92,11 @@ namespace Avalonia.Input.TextInput
             _focusedElement = element;
 
             var inputMethod = (element?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+
+            if (_im != inputMethod)
+            {
+                _im?.SetClient(null);
+            }
             
             _im = inputMethod;
 

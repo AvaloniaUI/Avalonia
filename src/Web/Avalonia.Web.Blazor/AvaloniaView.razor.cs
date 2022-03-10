@@ -386,7 +386,7 @@ namespace Avalonia.Web.Blazor
         {
         }
 
-        public void SetOptions(TextInputOptionsQueryEventArgs options)
+        public void SetOptions(TextInputOptions options)
         {
         }
 

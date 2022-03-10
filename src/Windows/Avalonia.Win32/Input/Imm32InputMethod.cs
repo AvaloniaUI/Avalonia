@@ -216,7 +216,7 @@ namespace Avalonia.Win32.Input
             ImmSetCompositionFont(himc, ref logFont);
         }
         
-        public void SetOptions(TextInputOptionsQueryEventArgs options)
+        public void SetOptions(TextInputOptions options)
         {
             // we're skipping this. not usable on windows
         }
