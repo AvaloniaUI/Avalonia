@@ -1,0 +1,7 @@
+<Directives>
+  <Application>
+    <Assembly Name="ControlCatalog" Dynamic="Required All"></Assembly>
+    <Assembly Name="Avalonia.Themes.Default" Dynamic="Required All"></Assembly>
+    <Assembly Name="Avalonia.Themes.Fluent" Dynamic="Required All"></Assembly>
+  </Application>
+</Directives>

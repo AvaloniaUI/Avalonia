@@ -118,26 +118,22 @@ namespace Avalonia.Media
         /// <param name="codepoint">The codepoint to match against.</param>
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
+        /// <param name="fontStretch">The font stretch.</param>
         /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
         /// <param name="culture">The culture.</param>
         /// <param name="typeface">The matching <see cref="Typeface"/>.</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="FontManager"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight,
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+            FontStretch fontStretch,
             FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
         {
             if(_fontFallbacks != null)
             {
                 foreach (var fallback in _fontFallbacks)
                 {
-                    if(fallback is null)
-                    {
-                        continue;
-                    }
-
-                    typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight);
+                    typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
                     var glyphTypeface = typeface.GlyphTypeface;
 
@@ -147,7 +143,7 @@ namespace Avalonia.Media
                 }
             }
 
-            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontFamily, culture, out typeface);
+            return PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily, culture, out typeface);
         }
     }
 }

@@ -11,7 +11,7 @@
     <LangVersion>latest</LangVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>Icon.png</PackageIcon>
-    <PackageDescription>Avalonia is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows (.NET Framework, .NET Core), Linux (via Xorg), MacOS and with experimental support for Android and iOS.</PackageDescription>
+    <PackageDescription>Avalonia is a cross-platform UI framework for .NET providing a flexible styling system and supporting a wide range of Operating Systems such as Windows, Linux, macOS and with experimental support for Android, iOS and WebAssembly.</PackageDescription>
     <PackageTags>avalonia;avaloniaui;mvvm;rx;reactive extensions;android;ios;mac;forms;wpf;net;netstandard;net461;uwp;xamarin</PackageTags>
     <PackageReleaseNotes>https://github.com/AvaloniaUI/Avalonia/releases</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>

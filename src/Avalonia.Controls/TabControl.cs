@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -9,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -68,6 +70,7 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
         }
 
         /// <summary>

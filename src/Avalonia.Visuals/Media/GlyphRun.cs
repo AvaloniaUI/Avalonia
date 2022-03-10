@@ -391,8 +391,13 @@ namespace Avalonia.Media
             var nextCharacterHit =
                 FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
 
-            return nextCharacterHit == characterHit ?
-                characterHit :
+            if (characterHit == nextCharacterHit)
+            {
+                return characterHit;
+            }
+
+            return characterHit.TrailingLength > 0 ?
+                nextCharacterHit :
                 new CharacterHit(nextCharacterHit.FirstCharacterIndex);
         }
 

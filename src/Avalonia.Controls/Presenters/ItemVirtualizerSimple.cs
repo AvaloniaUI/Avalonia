@@ -226,7 +226,7 @@ namespace Avalonia.Controls.Presenters
             InvalidateScroll();
         }
 
-        public override IControl? GetControlInDirection(NavigationDirection direction, IControl from)
+        public override IControl? GetControlInDirection(NavigationDirection direction, IControl? from)
         {
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
