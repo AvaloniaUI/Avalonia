@@ -2,7 +2,7 @@ namespace Avalonia.Input.TextInput;
 
 public class TextInputOptions
 {
-    public static TextInputOptions FromAvaloniaObject(AvaloniaObject avaloniaObject)
+    public static TextInputOptions FromStyledElement(StyledElement avaloniaObject)
     {
         var result = new TextInputOptions
         {
@@ -21,7 +21,7 @@ public class TextInputOptions
     /// Defines the <see cref="ContentType"/> property.
     /// </summary>
     public static readonly AttachedProperty<TextInputContentType> ContentTypeProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, AvaloniaObject, TextInputContentType>(
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, TextInputContentType>(
             "ContentType",
             defaultValue: TextInputContentType.Normal,
             inherits: true);
@@ -31,7 +31,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetContentType(AvaloniaObject avaloniaObject, TextInputContentType value)
+    public static void SetContentType(StyledElement avaloniaObject, TextInputContentType value)
     {
         avaloniaObject.SetValue(ContentTypeProperty, value);
     }
@@ -41,7 +41,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
     /// <returns>TextInputContentType</returns>
-    public static TextInputContentType GetContentType(AvaloniaObject avaloniaObject)
+    public static TextInputContentType GetContentType(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(ContentTypeProperty);
     }
@@ -55,7 +55,7 @@ public class TextInputOptions
     /// Defines the <see cref="Multiline"/> property.
     /// </summary>
     public static readonly AttachedProperty<bool> MultilineProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, AvaloniaObject, bool>(
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool>(
             "Multiline",
             inherits: true);
     
@@ -64,7 +64,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetMultiline(AvaloniaObject avaloniaObject, bool value)
+    public static void SetMultiline(StyledElement avaloniaObject, bool value)
     {
         avaloniaObject.SetValue(MultilineProperty, value);
     }
@@ -74,7 +74,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
     /// <returns>true if multiline</returns>
-    public static bool GetMultiline(AvaloniaObject avaloniaObject)
+    public static bool GetMultiline(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(MultilineProperty);
     }
@@ -88,7 +88,7 @@ public class TextInputOptions
     /// Defines the <see cref="Lowercase"/> property.
     /// </summary>
     public static readonly AttachedProperty<bool> LowercaseProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, AvaloniaObject, bool>(
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool>(
             "Lowercase",
             inherits: true);
     
@@ -97,7 +97,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetLowercase(AvaloniaObject avaloniaObject, bool value)
+    public static void SetLowercase(StyledElement avaloniaObject, bool value)
     {
         avaloniaObject.SetValue(LowercaseProperty, value);
     }
@@ -107,7 +107,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
     /// <returns>true if Lowercase</returns>
-    public static bool GetLowercase(AvaloniaObject avaloniaObject)
+    public static bool GetLowercase(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(LowercaseProperty);
     }
@@ -121,7 +121,7 @@ public class TextInputOptions
     /// Defines the <see cref="Uppercase"/> property.
     /// </summary>
     public static readonly AttachedProperty<bool> UppercaseProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, AvaloniaObject, bool>(
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool>(
             "Uppercase",
             inherits: true);
     
@@ -130,7 +130,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetUppercase(AvaloniaObject avaloniaObject, bool value)
+    public static void SetUppercase(StyledElement avaloniaObject, bool value)
     {
         avaloniaObject.SetValue(UppercaseProperty, value);
     }
@@ -140,7 +140,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
     /// <returns>true if Uppercase</returns>
-    public static bool GetUppercase(AvaloniaObject avaloniaObject)
+    public static bool GetUppercase(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(UppercaseProperty);
     }
@@ -154,7 +154,7 @@ public class TextInputOptions
     /// Defines the <see cref="AutoCapitalization"/> property.
     /// </summary>
     public static readonly AttachedProperty<bool> AutoCapitalizationProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, AvaloniaObject, bool>(
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool>(
             "AutoCapitalization",
             inherits: true);
     
@@ -163,7 +163,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetAutoCapitalization(AvaloniaObject avaloniaObject, bool value)
+    public static void SetAutoCapitalization(StyledElement avaloniaObject, bool value)
     {
         avaloniaObject.SetValue(AutoCapitalizationProperty, value);
     }
@@ -173,7 +173,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
     /// <returns>true if AutoCapitalization</returns>
-    public static bool GetAutoCapitalization(AvaloniaObject avaloniaObject)
+    public static bool GetAutoCapitalization(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(AutoCapitalizationProperty);
     }
@@ -187,7 +187,7 @@ public class TextInputOptions
     /// Defines the <see cref="IsSensitive"/> property.
     /// </summary>
     public static readonly AttachedProperty<bool> IsSensitiveProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, AvaloniaObject, bool>(
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool>(
             "IsSensitive",
             inherits: true);
     
@@ -196,7 +196,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetIsSensitive(AvaloniaObject avaloniaObject, bool value)
+    public static void SetIsSensitive(StyledElement avaloniaObject, bool value)
     {
         avaloniaObject.SetValue(IsSensitiveProperty, value);
     }
@@ -206,7 +206,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
     /// <returns>true if IsSensitive</returns>
-    public static bool GetIsSensitive(AvaloniaObject avaloniaObject)
+    public static bool GetIsSensitive(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(IsSensitiveProperty);
     }
