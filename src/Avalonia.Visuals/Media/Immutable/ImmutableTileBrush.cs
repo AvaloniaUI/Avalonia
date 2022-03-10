@@ -26,7 +26,7 @@ namespace Avalonia.Media.Immutable
             AlignmentY alignmentY,
             RelativeRect destinationRect,
             double opacity,
-            ImmutableTransform transform,
+            ImmutableTransform? transform,
             RelativeRect sourceRect,
             Stretch stretch,
             TileMode tileMode,
@@ -76,7 +76,7 @@ namespace Avalonia.Media.Immutable
         /// <summary>
         /// Gets the transform of the brush.
         /// </summary>
-        public ITransform Transform { get; }
+        public ITransform? Transform { get; }
 
         /// <inheritdoc/>
         public RelativeRect SourceRect { get; }

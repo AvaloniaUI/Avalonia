@@ -13,7 +13,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="color">The color to use.</param>
         /// <param name="opacity">The opacity of the brush.</param>
         /// <param name="transform">The transform of the brush.</param>
-        public ImmutableSolidColorBrush(Color color, double opacity = 1, ImmutableTransform transform = null)
+        public ImmutableSolidColorBrush(Color color, double opacity = 1, ImmutableTransform? transform = null)
         {
             Color = color;
             Opacity = opacity;
@@ -51,7 +51,7 @@ namespace Avalonia.Media.Immutable
         /// <summary>
         /// Gets the transform of the brush.
         /// </summary>
-        public ITransform Transform { get; }
+        public ITransform? Transform { get; }
 
         public bool Equals(ImmutableSolidColorBrush? other)
         {

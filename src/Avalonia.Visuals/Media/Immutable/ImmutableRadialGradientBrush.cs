@@ -24,7 +24,7 @@ namespace Avalonia.Media.Immutable
         public ImmutableRadialGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
-            ImmutableTransform transform = null,
+            ImmutableTransform? transform = null,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? center = null,
             RelativePoint? gradientOrigin = null,

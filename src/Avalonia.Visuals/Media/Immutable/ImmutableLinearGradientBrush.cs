@@ -19,7 +19,7 @@ namespace Avalonia.Media.Immutable
         public ImmutableLinearGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
-            ImmutableTransform transform = null,
+            ImmutableTransform? transform = null,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? startPoint = null,
             RelativePoint? endPoint = null)
