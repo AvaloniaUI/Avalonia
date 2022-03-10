@@ -57,7 +57,7 @@ namespace Avalonia.Media.Immutable
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity) && (Transform == null && other.Transform == null ? true : Transform.Equals(other.Transform));
+            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity) && (Transform == null && other.Transform == null ? true : (Transform != null && Transform.Equals(other.Transform)));
         }
 
         public override bool Equals(object? obj)
