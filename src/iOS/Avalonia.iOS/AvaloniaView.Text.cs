@@ -61,7 +61,7 @@ public partial class AvaloniaView : ITextInputMethodImpl
         }
     }
 
-    void ITextInputMethodImpl.SetActive(ITextInputMethodClient? client)
+    void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
     {
         _currentClient = client;
 
@@ -112,8 +112,6 @@ public partial class AvaloniaView : ITextInputMethodImpl
 
     void ITextInputMethodImpl.Reset()
     {
-        IsSecureEntry = false;
-        KeyboardType = UIKeyboardType.Default;
         ResignFirstResponder();
     }
 }
