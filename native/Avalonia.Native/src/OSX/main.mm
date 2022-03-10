@@ -1,6 +1,7 @@
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
+#include "window.h"
 
 static NSString* s_appTitle = @"Avalonia";
 
@@ -106,22 +107,33 @@ public:
     
     virtual HRESULT SetApplicationTitle(char* utf8String) override
     {
-        auto appTitle = [NSString stringWithUTF8String: utf8String];
+        START_COM_CALL;
         
-        [[NSProcessInfo processInfo] setProcessName:appTitle];
-        
-        
-        SetProcessName(appTitle);
-        
-        return S_OK;
+        @autoreleasepool
+        {
+            auto appTitle = [NSString stringWithUTF8String: utf8String];
+            
+            [[NSProcessInfo processInfo] setProcessName:appTitle];
+            
+            
+            SetProcessName(appTitle);
+            
+            return S_OK;
+        }
     }
     
     virtual HRESULT SetShowInDock(int show)  override
     {
-        AvnDesiredActivationPolicy = show
-            ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            AvnDesiredActivationPolicy = show
+                ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
+            return S_OK;
+        }
     }
+    
 };
 
 /// See "Using POSIX Threads in a Cocoa Application" section here:
@@ -156,13 +168,15 @@ class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAval
     
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator) override
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* events) override
     {
+        START_COM_CALL;
+        
         _deallocator = deallocator;
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
-        InitializeAvnApp();
+        InitializeAvnApp(events);
         return S_OK;
     };
     
@@ -173,90 +187,189 @@ public:
     
     virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv)  override
     {
-        if(cb == nullptr || ppv == nullptr)
-            return E_POINTER;
-        *ppv = CreateAvnWindow(cb, gl);
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            if(cb == nullptr || ppv == nullptr)
+                return E_POINTER;
+            *ppv = CreateAvnWindow(cb, gl);
+            return S_OK;
+        }
     };
     
     virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) override
     {
-        if(cb == nullptr || ppv == nullptr)
-            return E_POINTER;
+        START_COM_CALL;
         
-        *ppv = CreateAvnPopup(cb, gl);
-        return S_OK;
+        @autoreleasepool
+        {
+            if(cb == nullptr || ppv == nullptr)
+                return E_POINTER;
+            
+            *ppv = CreateAvnPopup(cb, gl);
+            return S_OK;
+        }
     }
     
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv)  override
     {
-        *ppv = CreatePlatformThreading();
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = CreatePlatformThreading();
+            return S_OK;
+        }
     }
     
     virtual HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv) override
     {
-        *ppv = ::CreateSystemDialogs();
-        return  S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateSystemDialogs();
+            return  S_OK;
+        }
     }
     
     virtual HRESULT CreateScreens (IAvnScreens** ppv) override
     {
-        *ppv = ::CreateScreens ();
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateScreens ();
+            return S_OK;
+        }
     }
 
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) override
     {
-        *ppv = ::CreateClipboard (nil, nil);
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateClipboard (nil, nil);
+            return S_OK;
+        }
     }
     
     virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
     {
-        *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
+            return S_OK;
+        }
     }
 
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) override
     {
-        *ppv = ::CreateCursorFactory();
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateCursorFactory();
+            return S_OK;
+        }
     }
     
     virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) override
     {
-        auto rv = ::GetGlDisplay();
-        if(rv == NULL)
-            return E_FAIL;
-        rv->AddRef();
-        *ppv = rv;
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            auto rv = ::GetGlDisplay();
+            if(rv == NULL)
+                return E_FAIL;
+            rv->AddRef();
+            *ppv = rv;
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT CreateTrayIcon (IAvnTrayIcon** ppv) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateTrayIcon();
+            return S_OK;
+        }
     }
     
     virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) override
     {
-        *ppv = ::CreateAppMenu(cb);
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateAppMenu(cb);
+            return S_OK;
+        }
     }
     
     virtual HRESULT CreateMenuItem (IAvnMenuItem** ppv) override
     {
-        *ppv = ::CreateAppMenuItem();
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateAppMenuItem();
+            return S_OK;
+        }
     }
     
-    virtual HRESULT CreateMenuItemSeperator (IAvnMenuItem** ppv) override
+    virtual HRESULT CreateMenuItemSeparator (IAvnMenuItem** ppv) override
     {
-        *ppv = ::CreateAppMenuItemSeperator();
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateAppMenuItemSeparator();
+            return S_OK;
+        }
     }
-    
+        
     virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
     {
-        ::SetAppMenu(s_appTitle, appMenu);
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            ::SetAppMenu(s_appTitle, appMenu);
+            return S_OK;
+        }
     }
+    
+    virtual HRESULT SetServicesMenu (IAvnMenu* servicesMenu) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            ::SetServicesMenu(servicesMenu);
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT CreateApplicationCommands (IAvnApplicationCommands** ppv) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateApplicationCommands();
+            return S_OK;
+        }
+    }
+    
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
@@ -288,6 +401,15 @@ NSPoint ToNSPoint (AvnPoint p)
     return result;
 }
 
+NSRect ToNSRect (AvnRect r)
+{
+    return NSRect
+    {
+        NSPoint { r.X, r.Y },
+        NSSize { r.Width, r.Height }
+    };
+}
+
 AvnPoint ToAvnPoint (NSPoint p)
 {
     AvnPoint result;
@@ -299,10 +421,14 @@ AvnPoint ToAvnPoint (NSPoint p)
 
 AvnPoint ConvertPointY (AvnPoint p)
 {
-    auto sw = [NSScreen.screens objectAtIndex:0].frame;
+    auto primaryDisplayHeight = NSMaxY([[[NSScreen screens] firstObject] frame]);
     
-    auto t = MAX(sw.origin.y, sw.origin.y + sw.size.height);
-    p.Y = t - p.Y;
+    p.Y = primaryDisplayHeight - p.Y;
     
     return p;
+}
+
+CGFloat PrimaryDisplayHeight()
+{
+  return NSMaxY([[[NSScreen screens] firstObject] frame]);
 }

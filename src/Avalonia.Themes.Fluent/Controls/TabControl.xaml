@@ -29,9 +29,9 @@
     <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Margin="{TemplateBinding Margin}"
-                BorderBrush="{TemplateBinding BorderBrush}"
+        <Border BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 Background="{TemplateBinding Background}"
                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalAlignment}">
@@ -60,6 +60,6 @@
     <Setter Property="Orientation" Value="Vertical" />
   </Style>
   <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
-    <Setter Property="Margin" Value="{StaticResource TabControlTopPlacementItemMargin}" />
+    <Setter Property="Margin" Value="{DynamicResource TabControlTopPlacementItemMargin}" />
   </Style>
 </Styles>

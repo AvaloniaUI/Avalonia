@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using Avalonia.Controls;
@@ -8,12 +8,15 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
+using Avalonia.LinuxFramebuffer.Input;
+using Avalonia.LinuxFramebuffer.Input.EvDev;
 using Avalonia.LinuxFramebuffer.Input.LibInput;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -34,16 +37,17 @@ namespace Avalonia.LinuxFramebuffer
             Threading = new InternalPlatformThreadingInterface();
             if (_fb is IGlOutputBackend gl)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(gl.PlatformOpenGlInterface);
+            
+            var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
+                .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-
         }
 
        
@@ -58,6 +62,7 @@ namespace Avalonia.LinuxFramebuffer
     class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
     {
         private readonly IOutputBackend _fb;
+        [CanBeNull] private readonly IInputBackend _inputBackend;
         private TopLevel _topLevel;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         public CancellationToken Token => _cts.Token;
@@ -67,6 +72,12 @@ namespace Avalonia.LinuxFramebuffer
             _fb = fb;
         }
         
+        public LinuxFramebufferLifetime(IOutputBackend fb, IInputBackend input)
+        {
+            _fb = fb;
+            _inputBackend = input;
+        }
+        
         public Control MainView
         {
             get => (Control)_topLevel?.Content;
@@ -74,11 +85,24 @@ namespace Avalonia.LinuxFramebuffer
             {
                 if (_topLevel == null)
                 {
+                    var inputBackend = _inputBackend;
+                    if (inputBackend == null)
+                    {
+                        if (Environment.GetEnvironmentVariable("AVALONIA_USE_EVDEV") == "1")
+                            inputBackend = EvDevBackend.CreateFromEnvironment();
+                        else
+                            inputBackend = new LibInputBackend();
+                    }
 
-                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, new LibInputBackend()));
+                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, inputBackend));
                     tl.Prepare();
                     _topLevel = tl;
                     _topLevel.Renderer.Start();
+
+                    if (_topLevel is IFocusScope scope)
+                    {
+                        FocusManager.Instance?.SetFocusScope(scope);
+                    }
                 }
 
                 _topLevel.Content = value;
@@ -109,7 +133,10 @@ public static class LinuxFramebufferPlatformExtensions
 {
     public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev = null, double scaling = 1)
         where T : AppBuilderBase<T>, new() =>
-        StartLinuxDirect(builder, args, new FbdevOutput(fbdev) {Scaling = scaling});
+        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: null) { Scaling = scaling });
+    public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev, PixelFormat? format, double scaling)
+        where T : AppBuilderBase<T>, new() =>
+        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling });
 
     public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1)
         where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card) {Scaling = scaling});

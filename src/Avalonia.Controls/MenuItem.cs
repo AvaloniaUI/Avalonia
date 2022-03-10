@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -13,8 +14,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -36,26 +35,26 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
         /// </summary>
-        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
+        public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> CommandParameterProperty =
+        public static readonly StyledProperty<object?> CommandParameterProperty =
             Button.CommandParameterProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> IconProperty =
-            AvaloniaProperty.Register<MenuItem, object>(nameof(Icon));
+        public static readonly StyledProperty<object?> IconProperty =
+            AvaloniaProperty.Register<MenuItem, object?>(nameof(Icon));
 
         /// <summary>
         /// Defines the <see cref="InputGesture"/> property.
         /// </summary>
-        public static readonly StyledProperty<KeyGesture> InputGestureProperty =
-            AvaloniaProperty.Register<MenuItem, KeyGesture>(nameof(InputGesture));
+        public static readonly StyledProperty<KeyGesture?> InputGestureProperty =
+            AvaloniaProperty.Register<MenuItem, KeyGesture?>(nameof(InputGesture));
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -68,6 +67,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
             AvaloniaProperty.Register<MenuItem, bool>(nameof(IsSubMenuOpen));
+
+        /// <summary>
+        /// Defines the <see cref="StaysOpenOnClick"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> StaysOpenOnClickProperty =
+            AvaloniaProperty.Register<MenuItem, bool>(nameof(StaysOpenOnClick));
 
         /// <summary>
         /// Defines the <see cref="Click"/> event.
@@ -101,7 +106,10 @@ namespace Avalonia.Controls
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
+        private bool _commandBindingError;
         private Popup? _popup;
+        private KeyGesture? _hotkey;
+        private bool _isEmbeddedInMenu;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -111,6 +119,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             PressedMixin.Attach<MenuItem>();
             CommandProperty.Changed.Subscribe(CommandChanged);
+            CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
             IconProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IconChanged(e));
@@ -145,7 +154,7 @@ namespace Avalonia.Controls
                 {
                     var parent = x as Control;
                     return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
-                        Observable.Return<DefinitionBase.SharedSizeScope?>(null);
+                           Observable.Return<DefinitionBase.SharedSizeScope?>(null);
                 });
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
@@ -154,7 +163,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="MenuItem"/> without a submenu is clicked.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Click
+        public event EventHandler<RoutedEventArgs>? Click
         {
             add { AddHandler(ClickEvent, value); }
             remove { RemoveHandler(ClickEvent, value); }
@@ -166,7 +175,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// A bubbling version of the <see cref="InputElement.PointerEnter"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs> PointerEnterItem
+        public event EventHandler<PointerEventArgs>? PointerEnterItem
         {
             add { AddHandler(PointerEnterItemEvent, value); }
             remove { RemoveHandler(PointerEnterItemEvent, value); }
@@ -178,7 +187,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// A bubbling version of the <see cref="InputElement.PointerLeave"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs> PointerLeaveItem
+        public event EventHandler<PointerEventArgs>? PointerLeaveItem
         {
             add { AddHandler(PointerLeaveItemEvent, value); }
             remove { RemoveHandler(PointerLeaveItemEvent, value); }
@@ -187,7 +196,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="MenuItem"/>'s submenu is opened.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> SubmenuOpened
+        public event EventHandler<RoutedEventArgs>? SubmenuOpened
         {
             add { AddHandler(SubmenuOpenedEvent, value); }
             remove { RemoveHandler(SubmenuOpenedEvent, value); }
@@ -205,7 +214,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets an <see cref="KeyGesture"/> associated with this control
         /// </summary>
-        public KeyGesture HotKey
+        public KeyGesture? HotKey
         {
             get { return GetValue(HotKeyProperty); }
             set { SetValue(HotKeyProperty, value); }
@@ -215,7 +224,7 @@ namespace Avalonia.Controls
         /// Gets or sets the parameter to pass to the <see cref="Command"/> property of a
         /// <see cref="MenuItem"/>.
         /// </summary>
-        public object CommandParameter
+        public object? CommandParameter
         {
             get { return GetValue(CommandParameterProperty); }
             set { SetValue(CommandParameterProperty, value); }
@@ -224,7 +233,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the icon that appears in a <see cref="MenuItem"/>.
         /// </summary>
-        public object Icon
+        public object? Icon
         {
             get { return GetValue(IconProperty); }
             set { SetValue(IconProperty, value); }
@@ -237,7 +246,7 @@ namespace Avalonia.Controls
         /// Setting this property does not cause the input gesture to be handled by the menu item,
         /// it simply displays the gesture text in the menu.
         /// </remarks>
-        public KeyGesture InputGesture
+        public KeyGesture? InputGesture
         {
             get { return GetValue(InputGestureProperty); }
             set { SetValue(InputGestureProperty, value); }
@@ -263,6 +272,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value that indicates the submenu that this <see cref="MenuItem"/> is
+        /// within should not close when this item is clicked.
+        /// </summary>
+        public bool StaysOpenOnClick
+        {
+            get { return GetValue(StaysOpenOnClickProperty); }
+            set { SetValue(StaysOpenOnClickProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets a value that indicates whether the <see cref="MenuItem"/> has a submenu.
         /// </summary>
         public bool HasSubMenu => !Classes.Contains(":empty");
@@ -273,7 +292,7 @@ namespace Avalonia.Controls
         public bool IsTopLevel => Parent is Menu;
 
         /// <inheritdoc/>
-        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
+        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false;
 
         /// <inheritdoc/>
         IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
@@ -290,12 +309,12 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = ItemContainerGenerator.IndexFromContainer(value);
+                SelectedIndex = value is not null ? ItemContainerGenerator.IndexFromContainer(value) : -1;
             }
         }
 
@@ -308,7 +327,7 @@ namespace Avalonia.Controls
                     .Select(x => x.ContainerControl)
                     .OfType<IMenuItem>();
             }
-        }            
+        }
 
         /// <summary>
         /// Opens the submenu.
@@ -335,18 +354,53 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (!_isEmbeddedInMenu)
+            {
+                //Normally the Menu's IMenuInteractionHandler is sending the click events for us
+                //However when the item is not embedded into a menu we need to send them ourselves.
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
+            }
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
+            {
+                HotKey = _hotkey;
+            }
+            
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
             }
+            
+            TryUpdateCanExecute();
+
+            var parent = Parent;
+
+            while (parent is MenuItem)
+            {
+                parent = parent.Parent;
+            }
+
+            _isEmbeddedInMenu = parent?.FindLogicalAncestorOfType<IMenu>(true) != null;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            // This will cause the hotkey manager to dispose the observer and the reference to this control
+            if (HotKey != null)
+            {
+                _hotkey = HotKey;
+                HotKey = null;
+            }
+
             base.OnDetachedFromLogicalTree(e);
 
             if (Command != null)
@@ -441,18 +495,21 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new MenuItemAutomationPeer(this);
+        }
+
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
             base.UpdateDataValidation(property, value);
             if (property == CommandProperty)
             {
-                if (value.Type == BindingValueType.BindingError)
+                _commandBindingError = value.Type == BindingValueType.BindingError;
+                if (_commandBindingError && _commandCanExecute)
                 {
-                    if (_commandCanExecute)
-                    {
-                        _commandCanExecute = false;
-                        UpdateIsEffectivelyEnabled();
-                    }
+                    _commandCanExecute = false;
+                    UpdateIsEffectivelyEnabled();
                 }
             }
         }
@@ -474,22 +531,32 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private static void CommandChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Sender is MenuItem menuItem)
+            if (e.Sender is MenuItem menuItem &&
+                ((ILogical)menuItem).IsAttachedToLogicalTree)
             {
-                if (((ILogical)menuItem).IsAttachedToLogicalTree)
+                if (e.OldValue is ICommand oldCommand)
                 {
-                    if (e.OldValue is ICommand oldCommand)
-                    {
-                        oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
-                    }
-
-                    if (e.NewValue is ICommand newCommand)
-                    {
-                        newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
-                    }
+                    oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
                 }
 
-                menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
+                if (e.NewValue is ICommand newCommand)
+                {
+                    newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                }
+
+                menuItem.TryUpdateCanExecute();
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="CommandParameter"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandParameterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is MenuItem menuItem)
+            {
+                menuItem.TryUpdateCanExecute();
             }
         }
 
@@ -498,10 +565,31 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void CanExecuteChanged(object sender, EventArgs e)
+        private void CanExecuteChanged(object? sender, EventArgs e)
         {
-            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+            TryUpdateCanExecute();
+        }
 
+        /// <summary>
+        /// Tries to evaluate CanExecute value of a Command if menu is opened
+        /// </summary>
+        private void TryUpdateCanExecute()
+        {
+            if (Command == null)
+            {
+                _commandCanExecute = !_commandBindingError;
+                UpdateIsEffectivelyEnabled();
+                return;
+            }
+            
+            //Perf optimization - only raise CanExecute event if the menu is open
+            if (!((ILogical)this).IsAttachedToLogicalTree ||
+                Parent is MenuItem { IsSubMenuOpen: false })
+            {
+                return;
+            }
+            
+            var canExecute = Command.CanExecute(CommandParameter);
             if (canExecute != _commandCanExecute)
             {
                 _commandCanExecute = canExecute;
@@ -571,6 +659,11 @@ namespace Avalonia.Controls
 
             if (value)
             {
+                foreach (var item in Items!.OfType<MenuItem>())
+                {
+                    item.TryUpdateCanExecute();
+                }
+
                 RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
                 IsSelected = true;
                 PseudoClasses.Add(":open");
@@ -588,13 +681,13 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void PopupOpened(object sender, EventArgs e)
+        private void PopupOpened(object? sender, EventArgs e)
         {
             var selected = SelectedIndex;
 
             if (selected != -1)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(selected);
+                var container = ItemContainerGenerator?.ContainerFromIndex(selected);
                 container?.Focus();
             }
         }
@@ -604,7 +697,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void PopupClosed(object sender, EventArgs e)
+        private void PopupClosed(object? sender, EventArgs e)
         {
             SelectedItem = null;
         }
@@ -626,7 +719,7 @@ namespace Avalonia.Controls
             /// </summary>
             /// <param name="serviceType">The service type.</param>
             /// <returns>A service of the requested type.</returns>
-            public object GetService(Type serviceType)
+            public object? GetService(Type serviceType)
             {
                 if (serviceType == typeof(IAccessKeyHandler))
                 {

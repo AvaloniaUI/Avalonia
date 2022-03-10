@@ -9,7 +9,6 @@ namespace Avalonia.Markup.Xaml.Templates
     {
         public Type DataType { get; set; }
 
-        //we need content to be object otherwise portable.xaml is crashing
         [Content]
         [TemplateContent]
         public object Content { get; set; }
@@ -30,7 +29,7 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public IControl Build(object data, IControl existing)
         {
-            return existing ?? TemplateContent.Load(Content).Control;
+            return existing ?? TemplateContent.Load(Content)?.Control;
         }
     }
 }

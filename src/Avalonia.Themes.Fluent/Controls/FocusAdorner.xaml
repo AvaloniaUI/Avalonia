@@ -10,10 +10,10 @@
   <Style Selector=":is(Control)">
     <Setter Property="FocusAdorner">
       <FocusAdornerTemplate>
-        <Border BorderThickness="{StaticResource SystemControlFocusVisualPrimaryThickness}"
+        <Border BorderThickness="{DynamicResource SystemControlFocusVisualPrimaryThickness}"
                 BorderBrush="{DynamicResource SystemControlFocusVisualPrimaryBrush}"
-                Margin="{StaticResource SystemControlFocusVisualMargin}">
-          <Border BorderThickness="{StaticResource SystemControlFocusVisualSecondaryThickness}"
+                Margin="{DynamicResource SystemControlFocusVisualMargin}">
+          <Border BorderThickness="{DynamicResource SystemControlFocusVisualSecondaryThickness}"
                   BorderBrush="{DynamicResource SystemControlFocusVisualSecondaryBrush}" />
         </Border>
       </FocusAdornerTemplate>

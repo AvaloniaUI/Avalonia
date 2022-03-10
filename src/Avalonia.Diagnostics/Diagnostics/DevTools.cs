@@ -1,24 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Diagnostics
 {
     public static class DevTools
     {
-        private static readonly Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
+        private static readonly Dictionary<AvaloniaObject, MainWindow> s_open =
+            new Dictionary<AvaloniaObject, MainWindow>();
+
+        private static bool s_attachedToApplication;
 
         public static IDisposable Attach(TopLevel root, KeyGesture gesture)
         {
-            void PreviewKeyDown(object sender, KeyEventArgs e)
+            return Attach(root, new DevToolsOptions()
             {
-                if (gesture.Matches(e))
+                Gesture = gesture,
+            });
+        }
+
+        public static IDisposable Attach(TopLevel root, DevToolsOptions options)
+        {
+            if (s_attachedToApplication == true)
+            {
+                throw new ArgumentException("DevTools already attached to application", nameof(root));
+            }
+
+            void PreviewKeyDown(object? sender, KeyEventArgs e)
+            {
+                if (options.Gesture.Matches(e))
                 {
-                    Open(root);
+                    Open(root, options);
                 }
             }
 
@@ -28,42 +46,95 @@ namespace Avalonia.Diagnostics
                 RoutingStrategies.Tunnel);
         }
 
-        public static IDisposable Open(TopLevel root)
+        public static IDisposable Open(TopLevel root) => 
+            Open(Application.Current,new DevToolsOptions(),root as Window);
+
+        public static IDisposable Open(TopLevel root, DevToolsOptions options) => 
+            Open(Application.Current, options, root as Window);
+
+        private static void DevToolsClosed(object? sender, EventArgs e)
         {
-            if (s_open.TryGetValue(root, out var window))
+            var window = (MainWindow)sender!;
+            window.Closed -= DevToolsClosed;
+            if (window.Root is Controls.Application host)
             {
+                s_open.Remove(host.Instance);
+            }
+            else
+            {
+                s_open.Remove(window.Root!);
+            }
+        }
+
+        internal static IDisposable Attach(Application? application, DevToolsOptions options, Window? owner = null)
+        {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+            var result = Disposable.Empty;
+            // Skip if call on Design Mode
+            if (!Avalonia.Controls.Design.IsDesignMode
+                && !s_attachedToApplication)
+            {
+
+                var lifeTime = application.ApplicationLifetime
+                    as Avalonia.Controls.ApplicationLifetimes.IControlledApplicationLifetime;
+
+                if (lifeTime is null)
+                {
+                    throw new ArgumentNullException(nameof(Application.ApplicationLifetime));
+                }
+
+                if (application.InputManager is { })
+                {
+                    s_attachedToApplication = true;
+
+                    application.InputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(e =>
+                    {
+                        if (options.Gesture.Matches(e))
+                        {
+                          result =  Open(application, options, owner);
+                        }
+                    });
+
+                }
+            }
+            return result;
+        }
+
+        private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
+        {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+            if (s_open.TryGetValue(application, out var window))
+            {                
                 window.Activate();
             }
             else
             {
                 window = new MainWindow
                 {
-                    Width = 1024,
-                    Height = 512,
-                    Root = root,
+                    Root = new Controls.Application(application),
+                    Width = options.Size.Width,
+                    Height = options.Size.Height,
                 };
+                window.SetOptions(options);
 
                 window.Closed += DevToolsClosed;
-                s_open.Add(root, window);
-
-                if (root is Window inspectedWindow)
+                s_open.Add(application, window);
+                if (options.ShowAsChildWindow && owner is { })
                 {
-                    window.Show(inspectedWindow);
+                    window.Show(owner);
                 }
                 else
                 {
                     window.Show();
                 }
             }
-
             return Disposable.Create(() => window?.Close());
-        }
-
-        private static void DevToolsClosed(object sender, EventArgs e)
-        {
-            var window = (MainWindow)sender;
-            s_open.Remove(window.Root);
-            window.Closed -= DevToolsClosed;
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -15,7 +15,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void UpdateAll(Scene scene)
         {
-            Contract.Requires<ArgumentNullException>(scene != null);
+            _ = scene ?? throw new ArgumentNullException(nameof(scene));
             Dispatcher.UIThread.VerifyAccess();
 
             UpdateSize(scene);
@@ -32,8 +32,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public bool Update(Scene scene, IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(scene != null);
-            Contract.Requires<ArgumentNullException>(visual != null);
+            _ = scene ?? throw new ArgumentNullException(nameof(scene));
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
 
             Dispatcher.UIThread.VerifyAccess();
 
@@ -42,7 +42,7 @@ namespace Avalonia.Rendering.SceneGraph
                 throw new AvaloniaInternalException("Cannot update the scene for an invisible root visual.");
             }
 
-            var node = (VisualNode)scene.FindNode(visual);
+            var node = (VisualNode?)scene.FindNode(visual);
 
             if (visual == scene.Root.Visual)
             {
@@ -58,7 +58,7 @@ namespace Avalonia.Rendering.SceneGraph
                     // The control has changed parents. Remove the node and recurse into the new parent node.
                     ((VisualNode)node.Parent).RemoveChild(node);
                     Deindex(scene, node);
-                    node = (VisualNode)scene.FindNode(visual.VisualParent);
+                    node = (VisualNode?)scene.FindNode(visual.VisualParent);
                 }
 
                 if (visual.IsVisible)
@@ -101,7 +101,7 @@ namespace Avalonia.Rendering.SceneGraph
                     {
                         // The control has been hidden so remove it from its parent and deindex the
                         // node and its descendents.
-                        ((VisualNode)node.Parent)?.RemoveChild(node);
+                        ((VisualNode?)node.Parent)?.RemoveChild(node);
                         Deindex(scene, node);
                         return true;
                     }
@@ -112,7 +112,7 @@ namespace Avalonia.Rendering.SceneGraph
                 // The control has been removed so remove it from its parent and deindex the
                 // node and its descendents.
                 var trim = FindFirstDeadAncestor(scene, node);
-                ((VisualNode)trim.Parent).RemoveChild(trim);
+                ((VisualNode)trim.Parent!).RemoveChild(trim);
                 Deindex(scene, trim);
                 return true;
             }
@@ -120,24 +120,29 @@ namespace Avalonia.Rendering.SceneGraph
             return false;
         }
 
-        private static VisualNode FindExistingAncestor(Scene scene, IVisual visual)
+        private static VisualNode? FindExistingAncestor(Scene scene, IVisual visual)
         {
             var node = scene.FindNode(visual);
 
             while (node == null && visual.IsVisible)
             {
-                visual = visual.VisualParent;
+                var parent = visual.VisualParent;
+
+                if (parent is null)
+                    return null;
+
+                visual = parent;
                 node = scene.FindNode(visual);
             }
 
-            return visual.IsVisible ? (VisualNode)node : null;
+            return visual.IsVisible ? (VisualNode?)node : null;
         }
 
         private static VisualNode FindFirstDeadAncestor(Scene scene, IVisualNode node)
         {
             var parent = node.Parent;
 
-            while (parent.Visual.VisualRoot == null)
+            while (parent!.Visual.VisualRoot == null)
             {
                 node = parent;
                 parent = node.Parent;
@@ -148,7 +153,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static object GetOrCreateChildNode(Scene scene, IVisual child, VisualNode parent)
         {
-            var result = (VisualNode)scene.FindNode(child);
+            var result = (VisualNode?)scene.FindNode(child);
 
             if (result != null && result.Parent != parent)
             {
@@ -164,14 +169,16 @@ namespace Avalonia.Rendering.SceneGraph
             var visual = node.Visual;
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
+#pragma warning disable CS0618 // Type or member is obsolete
             var clipToBoundsRadius = visual is IVisualWithRoundRectClip roundRectClip ?
                 roundRectClip.ClipToBoundsRadius :
                 default;
-            
+#pragma warning restore CS0618 // Type or member is obsolete
+
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
-            contextImpl.Layers.Find(node.LayerRoot)?.Dirty.Add(node.Bounds);
+            contextImpl.Layers.Find(node.LayerRoot!)?.Dirty.Add(node.Bounds);
 
             if (visual.IsVisible)
             {
@@ -247,10 +254,38 @@ namespace Avalonia.Rendering.SceneGraph
 
                     if (forceRecurse)
                     {
-                        foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
+                        var visualChildren = (IList<IVisual>) visual.VisualChildren;
+
+                        node.TryPreallocateChildren(visualChildren.Count);
+
+                        if (visualChildren.Count == 1)
                         {
-                            var childNode = GetOrCreateChildNode(scene, child, node);
+                            var childNode = GetOrCreateChildNode(scene, visualChildren[0], node);
                             Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
+                        }
+                        else if (visualChildren.Count > 1)
+                        {
+                            var count = visualChildren.Count;
+                            var sortedChildren = new (IVisual visual, int index)[count];
+
+                            for (var i = 0; i < count; i++)
+                            {
+                                sortedChildren[i] = (visualChildren[i], i);
+                            }
+
+                            // Regular Array.Sort is unstable, we need to provide indices as well to avoid reshuffling elements.
+                            Array.Sort(sortedChildren, (lhs, rhs) =>
+                            {
+                                var result = ZIndexComparer.Instance.Compare(lhs.visual, rhs.visual);
+
+                                return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
+                            });
+
+                            foreach (var child in sortedChildren)
+                            {
+                                var childNode = GetOrCreateChildNode(scene, child.Item1, node);
+                                Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
+                            }
                         }
 
                         node.SubTreeUpdated = true;
@@ -308,21 +343,24 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static void Deindex(Scene scene, VisualNode node)
         {
-            foreach (VisualNode child in node.Children)
+            var nodeChildren = node.Children;
+            var nodeChildrenCount = nodeChildren.Count;
+
+            for (var i = 0; i < nodeChildrenCount; i++)
             {
-                if (child is VisualNode visual)
+                if (nodeChildren[i] is VisualNode visual)
                 {
                     Deindex(scene, visual);
                 }
             }
+
             scene.Remove(node);
 
             node.SubTreeUpdated = true;
 
-            scene.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
+            scene.Layers[node.LayerRoot!].Dirty.Add(node.Bounds);
 
             node.Visual.TransformedBounds = null;
-
 
             if (node.LayerRoot == node.Visual && node.Visual != scene.Root.Visual)
             {
@@ -332,10 +370,10 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static void ClearLayer(Scene scene, VisualNode node)
         {
-            var parent = (VisualNode)node.Parent;
+            var parent = (VisualNode)node.Parent!;
             var oldLayerRoot = node.LayerRoot;
-            var newLayerRoot = parent.LayerRoot;
-            var existingDirtyRects = scene.Layers[node.LayerRoot].Dirty;
+            var newLayerRoot = parent.LayerRoot!;
+            var existingDirtyRects = scene.Layers[node.LayerRoot!].Dirty;
             var newDirtyRects = scene.Layers[newLayerRoot].Dirty;
 
             existingDirtyRects.Coalesce();
@@ -345,16 +383,16 @@ namespace Avalonia.Rendering.SceneGraph
                 newDirtyRects.Add(r);
             }
 
-            var oldLayer = scene.Layers[oldLayerRoot];
+            var oldLayer = scene.Layers[oldLayerRoot!];
             PropagateLayer(node, scene.Layers[newLayerRoot], oldLayer);
             scene.Layers.Remove(oldLayer);
         }
 
         private static void MakeLayer(Scene scene, VisualNode node)
         {
-            var oldLayerRoot = node.LayerRoot;
+            var oldLayerRoot = node.LayerRoot!;
             var layer = scene.Layers.Add(node.Visual);
-            var oldLayer = scene.Layers[oldLayerRoot];
+            var oldLayer = scene.Layers[oldLayerRoot!];
 
             UpdateLayer(node, layer);
             PropagateLayer(node, layer, scene.Layers[oldLayerRoot]);
@@ -400,22 +438,23 @@ namespace Avalonia.Rendering.SceneGraph
         // HACK: Disabled layers because they're broken in current renderer. See #2244.
         private static bool ShouldStartLayer(IVisual visual) => false;
 
-        private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)
+        private static IGeometryImpl? CreateLayerGeometryClip(VisualNode node)
         {
-            IGeometryImpl result = null;
+            IGeometryImpl? result = null;
+            VisualNode? n = node;
 
             for (;;)
             {
-                node = (VisualNode)node.Parent;
+                n = (VisualNode?)n!.Parent;
 
-                if (node == null || (node.GeometryClip == null && !node.HasAncestorGeometryClip))
+                if (n == null || (n.GeometryClip == null && !n.HasAncestorGeometryClip))
                 {
                     break;
                 }
 
-                if (node?.GeometryClip != null)
+                if (n?.GeometryClip != null)
                 {
-                    var transformed = node.GeometryClip.WithTransform(node.Transform);
+                    var transformed = n.GeometryClip.WithTransform(n.Transform);
 
                     result = result == null ? transformed : result.Intersect(transformed);
                 }

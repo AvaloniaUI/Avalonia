@@ -340,10 +340,30 @@ namespace Avalonia.Controls.Utils
         internal static PropertyInfo GetPropertyOrIndexer(this Type type, string propertyPath, out object[] index)
         {
             index = null;
+            // Return the default value of GetProperty if the first character is not an indexer token.
             if (string.IsNullOrEmpty(propertyPath) || propertyPath[0] != LeftIndexerToken)
             {
-                // Return the default value of GetProperty if the first character is not an indexer token.
-                return type.GetProperty(propertyPath);
+                var property = type.GetProperty(propertyPath);
+                if (property != null)
+                {
+                    return property;
+                }
+
+                // GetProperty does not return inherited interface properties,
+                // so we need to enumerate them manually.
+                if (type.IsInterface)
+                {
+                    foreach (var typeInterface in type.GetInterfaces())
+                    {
+                        property = type.GetProperty(propertyPath);
+                        if (property != null)
+                        {
+                            return property;
+                        }
+                    }
+                }
+
+                return null;
             }
 
             if (propertyPath.Length < 2 || propertyPath[propertyPath.Length - 1] != RightIndexerToken)

@@ -96,7 +96,7 @@ namespace Avalonia.Controls
 
         private double _indeterminateStartingOffset;
         private double _indeterminateEndingOffset;
-        private Border _indicator;
+        private Border? _indicator;
 
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));
@@ -138,6 +138,8 @@ namespace Avalonia.Controls
         static ProgressBar()
         {
             ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
         }
 
@@ -216,9 +218,12 @@ namespace Avalonia.Controls
                     TemplateProperties.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
                     TemplateProperties.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
 
+
+#pragma warning disable CS0618 // Type or member is obsolete
                     // Remove these properties when we switch to fluent as default and removed the old one.
                     IndeterminateStartingOffset = -dim;
                     IndeterminateEndingOffset = dim;
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(

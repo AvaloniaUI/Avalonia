@@ -1,7 +1,14 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             x:DataType="vm:ApplicationViewModel"
+             x:CompileBindings="True"
+             Name="Avalonia ControlCatalog"
              x:Class="ControlCatalog.App">
   <Application.Styles>
+    <Style Selector="TextBlock.h1, TextBlock.h2, TextBlock.h3">
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="16" />
       <Setter Property="FontWeight" Value="Medium" />
@@ -22,6 +29,26 @@
     <Style Selector="Label.h3">
       <Setter Property="FontSize" Value="12" />
     </Style>
-    <StyleInclude Source="/SideBar.xaml"/>
+    <StyleInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
   </Application.Styles>
+  <TrayIcon.Icons>
+    <TrayIcons>
+      <TrayIcon Icon="/Assets/test_icon.ico" ToolTipText="Avalonia Tray Icon ToolTip">
+        <TrayIcon.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Settings">
+              <NativeMenu>
+                <NativeMenuItem Header="Option 1" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
+                <NativeMenuItem Header="Option 2" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
+                <NativeMenuItemSeparator />
+                <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" Command="{Binding ToggleCommand}" />
+                <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Restore Defaults" Command="{Binding ToggleCommand}" />
+              </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />
+          </NativeMenu>
+        </TrayIcon.Menu>
+      </TrayIcon>
+    </TrayIcons>
+  </TrayIcon.Icons>
 </Application>

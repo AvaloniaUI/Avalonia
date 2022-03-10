@@ -17,8 +17,8 @@ namespace Avalonia.ReactiveUI
     /// <typeparam name="TViewModel">ViewModel type.</typeparam>
     public class ReactiveUserControl<TViewModel> : UserControl, IViewFor<TViewModel> where TViewModel : class
     {
-        public static readonly StyledProperty<TViewModel> ViewModelProperty = AvaloniaProperty
-            .Register<ReactiveUserControl<TViewModel>, TViewModel>(nameof(ViewModel));
+        public static readonly StyledProperty<TViewModel?> ViewModelProperty = AvaloniaProperty
+            .Register<ReactiveUserControl<TViewModel>, TViewModel?>(nameof(ViewModel));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReactiveUserControl{TViewModel}"/> class.
@@ -34,24 +34,25 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// The ViewModel.
         /// </summary>
-        public TViewModel ViewModel
+        public TViewModel? ViewModel
         {
             get => GetValue(ViewModelProperty);
             set => SetValue(ViewModelProperty, value);
         }
 
-        object IViewFor.ViewModel
+        object? IViewFor.ViewModel
         {
             get => ViewModel;
-            set => ViewModel = (TViewModel)value;
+            set => ViewModel = (TViewModel?)value;
         }
 
         protected override void OnDataContextChanged(EventArgs e)
         {
+            base.OnDataContextChanged(e);
             ViewModel = DataContext as TViewModel;
         }
 
-        private void OnViewModelChanged(object value)
+        private void OnViewModelChanged(object? value)
         {
             if (value == null)
             {

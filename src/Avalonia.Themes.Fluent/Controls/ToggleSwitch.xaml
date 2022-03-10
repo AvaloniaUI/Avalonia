@@ -53,10 +53,11 @@
             Grid.Row="0"
             Content="{TemplateBinding Content}"
             ContentTemplate="{TemplateBinding ContentTemplate}"
+            RecognizesAccessKey="True"
             VerticalAlignment="Top"/>
 
           <Grid Grid.Row="1"
-            MinWidth="{StaticResource ToggleSwitchThemeMinWidth}"
+            MinWidth="{DynamicResource ToggleSwitchThemeMinWidth}"
             HorizontalAlignment="Left"
             VerticalAlignment="Top">
 

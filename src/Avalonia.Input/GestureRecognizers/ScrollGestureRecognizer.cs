@@ -71,21 +71,21 @@ namespace Avalonia.Input.GestureRecognizers
                 EndGesture();
                 _tracking = e.Pointer;
                 _gestureId = ScrollGestureEventArgs.GetNextFreeId();;
-                _trackedRootPoint = e.GetPosition(null);
+                _trackedRootPoint = e.GetPosition(_target);
             }
         }
 
         // Arbitrary chosen value, probably need to move that to platform settings or something
         private const double ScrollStartDistance = 30;
         
-        // Pixels per second speed that is considered to be the stop of inertiall scroll
+        // Pixels per second speed that is considered to be the stop of inertial scroll
         private const double InertialScrollSpeedEnd = 5;
         
         public void PointerMoved(PointerEventArgs e)
         {
             if (e.Pointer == _tracking)
             {
-                var rootPoint = e.GetPosition(null);
+                var rootPoint = e.GetPosition(_target);
                 if (!_scrolling)
                 {
                     if (CanHorizontallyScroll && Math.Abs(_trackedRootPoint.X - rootPoint.X) > ScrollStartDistance)

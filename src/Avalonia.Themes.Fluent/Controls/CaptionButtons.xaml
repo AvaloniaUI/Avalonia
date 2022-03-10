@@ -56,7 +56,7 @@
   <Style Selector="CaptionButtons:maximized Panel#PART_RestoreButton Path">
     <Setter Property="Data" Value="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
   </Style>
-  <Style Selector="CaptionButtons Panel#PART_FullScreenButton Path">
+  <Style Selector="CaptionButtons Panel#PART_FullScreenButton">
     <Setter Property="IsVisible" Value="False" />
   </Style>
   <Style Selector="CaptionButtons Panel#PART_FullScreenButton Path">

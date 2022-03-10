@@ -7,7 +7,7 @@ namespace ControlCatalog.Pages
     {
         public ViewboxPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         private void InitializeComponent()

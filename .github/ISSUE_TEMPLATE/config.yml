@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions, Discussions, Ideas
+    url: https://github.com/AvaloniaUI/Avalonia/discussions/new
+    about: Please ask and answer questions here.
+  - name: Avalonia Community Support on Telegram
+    url: https://t.me/Avalonia
+    about: Please ask and answer questions here.

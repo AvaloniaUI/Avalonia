@@ -5,8 +5,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Utils;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     public abstract class SelectionNodeBase<T> : ICollectionChangedListener
@@ -202,9 +200,7 @@ namespace Avalonia.Controls.Selection
                     {
                         for (var i = range.Begin; i <= range.End; ++i)
                         {
-#pragma warning disable CS8604
-                            removed.Add((T)items[i - index]);
-#pragma warning restore CS8604
+                            removed.Add((T)items[i - index]!);
                         }
                     }
                 }
@@ -244,14 +240,14 @@ namespace Avalonia.Controls.Selection
             {
                 case NotifyCollectionChangedAction.Add:
                     {
-                        var change = OnItemsAdded(e.NewStartingIndex, e.NewItems);
+                        var change = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
                         shiftIndex = change.ShiftIndex;
                         shiftDelta = change.ShiftDelta;
                         break;
                     }
                 case NotifyCollectionChangedAction.Remove:
                     {
-                        var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems);
+                        var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
                         shiftIndex = change.ShiftIndex;
                         shiftDelta = change.ShiftDelta;
                         removed = change.RemovedItems;
@@ -259,8 +255,8 @@ namespace Avalonia.Controls.Selection
                     }
                 case NotifyCollectionChangedAction.Replace:
                     {
-                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems);
-                        var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems);
+                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                        var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
                         shiftIndex = removeChange.ShiftIndex;
                         shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
                         removed = removeChange.RemovedItems;
@@ -303,7 +299,7 @@ namespace Avalonia.Controls.Selection
 
                 if (e.NewStartingIndex <= lastIndex)
                 {
-                    return lastIndex + e.NewItems.Count < ItemsView.Count;
+                    return lastIndex + e.NewItems!.Count < ItemsView.Count;
                 }
             }
 

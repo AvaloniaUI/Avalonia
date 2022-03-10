@@ -106,6 +106,9 @@ _NCrunch_*/
 *.ncrunchsolution.user
 nCrunchTemp_*
 
+# CodeRush
+.cr/
+
 # Others
 sql/
 *.Cache
@@ -189,13 +192,12 @@ dirs.sln
 
 
 ##################
-# XCode
+# Xcode
 ##################
 Index/
 Logs/
 ModuleCache.noindex/
 Build/Intermediates.noindex/
-info.plist
 build-intermediate
 obj-Direct2D1/
 obj-Skia/
@@ -207,3 +209,6 @@ obj-Skia/
 coc-settings.json
 .ccls-cache
 .ccls
+*.map
+src/Web/Avalonia.Web.Blazor/wwwroot/*.js
+src/Web/Avalonia.Web.Blazor/Interop/Typescript/*.js

@@ -68,18 +68,10 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException("Setter.Property must be set.");
             }
 
-            var value = Value;
-
-            if (value is ITemplate template &&
-                !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
-            {
-                value = template.Build();
-            }
-
             var data = new SetterVisitorData
             {
                 target = target,
-                value = value,
+                value = Value,
             };
 
             Property.Accept(this, ref data);
@@ -97,12 +89,19 @@ namespace Avalonia.Styling
                     property,
                     binding);
             }
+            else if (data.value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(property.PropertyType))
+            {
+                data.result = new PropertySetterLazyInstance<T>(
+                    data.target,
+                    property,
+                    () => (T)template.Build());
+            }
             else
             {
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
-                    (T)data.value);
+                    (T)data.value!);
             }
         }
 
@@ -117,12 +116,19 @@ namespace Avalonia.Styling
                     property,
                     binding);
             }
+            else if (data.value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(property.PropertyType))
+            {
+                data.result = new PropertySetterLazyInstance<T>(
+                    data.target,
+                    property,
+                    () => (T)template.Build());
+            }
             else
             {
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
-                    (T)data.value);
+                    (T)data.value!);
             }
         }
 

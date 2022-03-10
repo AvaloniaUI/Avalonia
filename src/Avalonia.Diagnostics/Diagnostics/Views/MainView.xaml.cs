@@ -19,15 +19,19 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
             AddHandler(KeyDownEvent, PreviewKeyDown, RoutingStrategies.Tunnel);
-            _console = this.FindControl<ConsoleView>("console");
-            _consoleSplitter = this.FindControl<GridSplitter>("consoleSplitter");
-            _rootGrid = this.FindControl<Grid>("rootGrid");
+            _console = this.GetControl<ConsoleView>("console");
+            _consoleSplitter = this.GetControl<GridSplitter>("consoleSplitter");
+            _rootGrid = this.GetControl<Grid>("rootGrid");
             _consoleRow = Grid.GetRow(_console);
         }
 
         public void ToggleConsole()
         {
-            var vm = (MainViewModel)DataContext;
+            var vm = (MainViewModel?)DataContext;
+            if (vm is null)
+            {
+                return;
+            }
 
             if (_consoleHeight == -1)
             {
@@ -54,7 +58,7 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void PreviewKeyDown(object sender, KeyEventArgs e)
+        private void PreviewKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {

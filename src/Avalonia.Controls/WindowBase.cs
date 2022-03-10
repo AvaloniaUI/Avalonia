@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -30,8 +31,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Owner"/> property.
         /// </summary>
-        public static readonly DirectProperty<WindowBase, WindowBase> OwnerProperty =
-            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase>(
+        public static readonly DirectProperty<WindowBase, WindowBase?> OwnerProperty =
+            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(
                 nameof(Owner),
                 o => o.Owner,
                 (o, v) => o.Owner = v);
@@ -39,11 +40,10 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));
 
-        private int _autoSizing;
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private bool _ignoreVisibilityChange;
-        private WindowBase _owner;
+        private WindowBase? _owner;
 
         static WindowBase()
         {
@@ -51,14 +51,14 @@ namespace Avalonia.Controls
             IsVisibleProperty.Changed.AddClassHandler<WindowBase>((x,e) => x.IsVisibleChanged(e));
 
             
-            TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue));
+            TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue!));
         }
 
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
         }
 
-        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver dependencyResolver) : base(impl, dependencyResolver)
+        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
             Screens = new Screens(PlatformImpl?.Screen);
             impl.Activated = HandleActivated;
@@ -69,20 +69,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired when the window is activated.
         /// </summary>
-        public event EventHandler Activated;
+        public event EventHandler? Activated;
 
         /// <summary>
         /// Fired when the window is deactivated.
         /// </summary>
-        public event EventHandler Deactivated;
+        public event EventHandler? Deactivated;
 
         /// <summary>
         /// Fired when the window position is changed.
         /// </summary>
-        public event EventHandler<PixelPointEventArgs> PositionChanged;
+        public event EventHandler<PixelPointEventArgs>? PositionChanged;
 
-        [CanBeNull]
-        public new IWindowBaseImpl PlatformImpl => (IWindowBaseImpl) base.PlatformImpl;
+        public new IWindowBaseImpl? PlatformImpl => (IWindowBaseImpl?) base.PlatformImpl;
 
         /// <summary>
         /// Gets a value that indicates whether the window is active.
@@ -95,15 +94,13 @@ namespace Avalonia.Controls
         
         public Screens Screens { get; private set; }
 
-        /// <summary>
-        /// Whether an auto-size operation is in progress.
-        /// </summary>
-        protected bool AutoSizing => _autoSizing > 0;
+        [Obsolete("No longer used. Always returns false.")]
+        protected bool AutoSizing => false;
 
         /// <summary>
         /// Gets or sets the owner of the window.
         /// </summary>
-        public WindowBase Owner
+        public WindowBase? Owner
         {
             get { return _owner; }
             protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
@@ -162,7 +159,7 @@ namespace Avalonia.Controls
                     LayoutManager.ExecuteInitialLayoutPass();
                     _hasExecutedInitialLayoutPass = true;
                 }
-                PlatformImpl?.Show(true);
+                PlatformImpl?.Show(true, false);
                 Renderer?.Start();
                 OnOpened(EventArgs.Empty);
             }
@@ -172,20 +169,9 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Begins an auto-resize operation.
-        /// </summary>
-        /// <returns>A disposable used to finish the operation.</returns>
-        /// <remarks>
-        /// When an auto-resize operation is in progress any resize events received will not be
-        /// cause the new size to be written to the <see cref="Layoutable.Width"/> and
-        /// <see cref="Layoutable.Height"/> properties.
-        /// </remarks>
-        protected IDisposable BeginAutoSizing()
-        {
-            ++_autoSizing;
-            return Disposable.Create(() => --_autoSizing);
-        }
+
+        [Obsolete("No longer used. Has no effect.")]
+        protected IDisposable BeginAutoSizing() => Disposable.Empty;
 
         /// <summary>
         /// Ensures that the window is initialized.
@@ -207,6 +193,12 @@ namespace Avalonia.Controls
             try
             {
                 IsVisible = false;
+                
+                if (this is IFocusScope scope)
+                {
+                    FocusManager.Instance?.RemoveFocusScope(scope);
+                }
+                
                 base.HandleClosed();
             }
             finally
@@ -215,13 +207,18 @@ namespace Avalonia.Controls
             }
         }
 
+        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
+        protected override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
+
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
-        protected override void HandleResized(Size clientSize)
+        /// <param name="reason">The reason for the resize.</param>
+        protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
             ClientSize = clientSize;
+            FrameSize = PlatformImpl?.FrameSize;
             LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
@@ -263,7 +260,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called durung the arrange pass to set the size of the window.
+        /// Called during the arrange pass to set the size of the window.
         /// </summary>
         /// <param name="size">The requested size of the window.</param>
         /// <returns>The actual size of the window.</returns>
@@ -310,7 +307,7 @@ namespace Avalonia.Controls
         {
             if (!_ignoreVisibilityChange)
             {
-                if ((bool)e.NewValue)
+                if ((bool)e.NewValue!)
                 {
                     Show();
                 }

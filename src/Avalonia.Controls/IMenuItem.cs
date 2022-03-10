@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Controls
+﻿namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.
@@ -22,6 +20,12 @@ namespace Avalonia.Controls
         /// open.
         /// </summary>
         bool IsSubMenuOpen { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that indicates the submenu that this <see cref="MenuItem"/> is
+        /// within should not close when this item is clicked.
+        /// </summary>
+        bool StaysOpenOnClick { get; set; }
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="MenuItem"/> is a top-level main menu item.

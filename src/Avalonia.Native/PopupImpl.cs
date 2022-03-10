@@ -7,7 +7,6 @@ namespace Avalonia.Native
 {
     class PopupImpl : WindowBaseImpl, IPopupImpl
     {
-        private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
         private readonly IWindowBaseImpl _parent;
@@ -15,9 +14,8 @@ namespace Avalonia.Native
         public PopupImpl(IAvaloniaNativeFactory factory,
             AvaloniaNativePlatformOptions opts,
             AvaloniaNativePlatformOpenGlInterface glFeature,
-            IWindowBaseImpl parent) : base(opts, glFeature)
+            IWindowBaseImpl parent) : base(factory, opts, glFeature)
         {
-            _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
             _parent = parent;
@@ -32,7 +30,7 @@ namespace Avalonia.Native
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Position = position;
-            Resize(size);
+            Resize(size, PlatformResizeReason.Layout);
             //TODO: We ignore the scaling override for now
         }
 
@@ -60,14 +58,14 @@ namespace Avalonia.Native
             }
         }
 
-        public override void Show(bool activate)
+        public override void Show(bool activate, bool isDialog)
         {
             var parent = _parent;
             while (parent is PopupImpl p) 
                 parent = p._parent;
             if (parent is WindowImpl w)
                 w.Native.TakeFocusFromChildren();
-            base.Show(false);
+            base.Show(false, isDialog);
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);

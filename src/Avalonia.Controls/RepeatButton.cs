@@ -4,6 +4,9 @@ using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Represents a control that raises its <see cref="Button.Click"/> event repeatedly when it is pressed and held.
+    /// </summary>
     public class RepeatButton : Button
     {
         /// <summary>
@@ -18,7 +21,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> DelayProperty =
             AvaloniaProperty.Register<Button, int>(nameof(Delay), 300);
 
-        private DispatcherTimer _repeatTimer;
+        private DispatcherTimer? _repeatTimer;
 
         /// <summary>
         /// Gets or sets the amount of time, in milliseconds, of repeating clicks.
@@ -52,10 +55,10 @@ namespace Avalonia.Controls
             _repeatTimer.Start();
         }
 
-        private void RepeatTimerOnTick(object sender, EventArgs e)
+        private void RepeatTimerOnTick(object? sender, EventArgs e)
         {
             var interval = TimeSpan.FromMilliseconds(Interval);
-            if (_repeatTimer.Interval != interval)
+            if (_repeatTimer!.Interval != interval)
             {
                 _repeatTimer.Interval = interval;
             }
@@ -65,6 +68,16 @@ namespace Avalonia.Controls
         private void StopTimer()
         {
             _repeatTimer?.Stop();
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsPressedProperty && change.NewValue.GetValueOrDefault<bool>() == false)
+            {
+                StopTimer();
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

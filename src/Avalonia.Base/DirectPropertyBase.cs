@@ -3,8 +3,6 @@ using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -13,7 +11,7 @@ namespace Avalonia
     /// <typeparam name="TValue">The type of the property's value.</typeparam>
     /// <remarks>
     /// Whereas <see cref="DirectProperty{TOwner, TValue}"/> is typed on the owner type, this base
-    /// class provides a non-owner-typed interface to a direct poperty.
+    /// class provides a non-owner-typed interface to a direct property.
     /// </remarks>
     public abstract class DirectPropertyBase<TValue> : AvaloniaProperty<TValue>
     {
@@ -123,9 +121,9 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
         {
-            vistor.Visit(this, ref data);
+            visitor.Visit(this, ref data);
         }
 
         /// <inheritdoc/>
@@ -148,14 +146,14 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable? RouteSetValue(
             IAvaloniaObject o,
-            object value,
+            object? value,
             BindingPriority priority)
         {
             var v = TryConvert(value);
 
             if (v.HasValue)
             {
-                o.SetValue<TValue>(this, (TValue)v.Value);
+                o.SetValue<TValue>(this, (TValue)v.Value!);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {
@@ -172,14 +170,14 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
+            IObservable<BindingValue<object?>> source,
             BindingPriority priority)
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
             return o.Bind<TValue>(this, adapter);
         }
 
-        internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
+        internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject? oldParent)
         {
             throw new NotSupportedException("Direct properties do not support inheritance.");
         }

@@ -27,11 +27,6 @@ namespace Avalonia.Headless
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
 
-        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment, TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new HeadlessFormattedTextStub(text, constraint);
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
@@ -47,6 +42,8 @@ namespace Avalonia.Headless
         }
 
         public IStreamGeometryImpl CreateStreamGeometry() => new HeadlessStreamingGeometryStub();
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => throw new NotImplementedException();
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
 
@@ -66,6 +63,28 @@ namespace Avalonia.Headless
         }
 
         public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
         {
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
         }
@@ -90,9 +109,8 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
-            width = 100;
             return new HeadlessGlyphRunStub();
         }
 
@@ -104,6 +122,9 @@ namespace Avalonia.Headless
             }
 
             public Rect Bounds { get; set; }
+            
+            public double ContourLength { get; } = 0;
+            
             public virtual bool FillContains(Point point) => Bounds.Contains(point);
 
             public Rect GetRenderBounds(IPen pen)
@@ -126,6 +147,25 @@ namespace Avalonia.Headless
 
             public ITransformedGeometryImpl WithTransform(Matrix transform) =>
                 new HeadlessTransformedGeometryStub(this, transform);
+
+            public bool TryGetPointAtDistance(double distance, out Point point)
+            {
+                point = new Point();
+                return false;
+            }
+
+            public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
+            {
+                point = new Point();
+                tangent = new Point();
+                return false;
+            }
+
+            public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+            {
+                segmentGeometry = null;
+                return false;
+            }
         }
 
         class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl
@@ -309,11 +349,6 @@ namespace Avalonia.Headless
 
             }
 
-            public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-            {
-
-            }
-
             public IDrawingContextLayerImpl CreateLayer(Size size)
             {
                 return new HeadlessBitmapStub(size, new Vector(96, 96));
@@ -359,6 +394,16 @@ namespace Avalonia.Headless
 
             }
 
+            public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+            {
+                
+            }
+
+            public void PopBitmapBlendMode()
+            {
+                
+            }
+
             public void Custom(ICustomDrawOperation custom)
             {
 
@@ -392,6 +437,10 @@ namespace Avalonia.Headless
                 
             }
 
+            public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+            {
+            }
+
             public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
             {
                 
@@ -414,32 +463,6 @@ namespace Avalonia.Headless
             {
                 return new HeadlessDrawingContextStub();
             }
-        }
-
-        class HeadlessFormattedTextStub : IFormattedTextImpl
-        {
-            public HeadlessFormattedTextStub(string text, Size constraint)
-            {
-                Text = text;
-                Constraint = constraint;
-                Bounds = new Rect(Constraint.Constrain(new Size(50, 50)));
-            }
-
-            public Size Constraint { get; }
-            public Rect Bounds { get; }
-            public string Text { get; }
-
-
-            public IEnumerable<FormattedTextLine> GetLines()
-            {
-                return new[] { new FormattedTextLine(Text.Length, 10) };
-            }
-
-            public TextHitTestResult HitTestPoint(Point point) => new TextHitTestResult();
-
-            public Rect HitTestTextPosition(int index) => new Rect();
-
-            public IEnumerable<Rect> HitTestTextRange(int index, int length) => new Rect[length];
         }
     }
 }

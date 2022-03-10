@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+
+using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -44,6 +46,11 @@ namespace Avalonia
         private readonly Point _point;
 
         private readonly RelativeUnit _unit;
+
+        static RelativePoint()
+        {
+            Animation.Animation.RegisterAnimator<RelativePointAnimator>(prop => typeof(RelativePoint).IsAssignableFrom(prop.PropertyType));
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RelativePoint"/> struct.
@@ -104,7 +111,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The other object.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
-        public override bool Equals(object obj) => obj is RelativePoint other && Equals(other);
+        public override bool Equals(object? obj) => obj is RelativePoint other && Equals(other);
 
         /// <summary>
         /// Checks if the <see cref="RelativePoint"/> equals another point.

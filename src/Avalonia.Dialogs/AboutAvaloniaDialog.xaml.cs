@@ -1,5 +1,7 @@
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
@@ -7,12 +9,18 @@ namespace Avalonia.Dialogs
 {
     public class AboutAvaloniaDialog : Window
     {
+        private static readonly Version s_version = typeof(AboutAvaloniaDialog).Assembly.GetName().Version;
+
+        public static string Version { get; } = s_version.ToString(2);
+
+        public static bool IsDevelopmentBuild { get; } = s_version.Revision == 999;
+
         public AboutAvaloniaDialog()
         {
             AvaloniaXamlLoader.Load(this);
             DataContext = this;
         }
- 
+
         public static void OpenBrowser(string url)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -23,19 +31,20 @@ namespace Avalonia.Dialogs
             }
             else
             {
-                using (Process process = Process.Start(new ProcessStartInfo
+                using Process process = Process.Start(new ProcessStartInfo
                 {
                     FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
                     Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
                     CreateNoWindow = true,
                     UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                }));
+                });
             }
         }
 
         private static void ShellExec(string cmd, bool waitForExit = true)
         {
-            var escapedArgs = cmd.Replace("\"", "\\\"");
+            var escapedArgs = Regex.Replace(cmd, "(?=[`~!#&*()|;'<>])", "\\")
+                .Replace("\"", "\\\\\\\"");
 
             using (var process = Process.Start(
                 new ProcessStartInfo

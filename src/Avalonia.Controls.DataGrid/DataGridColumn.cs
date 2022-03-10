@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -9,9 +9,13 @@ using Avalonia.VisualTree;
 using Avalonia.Collections;
 using Avalonia.Utilities;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Diagnostics;
+using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Layout;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls
 {
@@ -26,8 +30,8 @@ namespace Avalonia.Controls
         private double? _minWidth;
         private bool _settingWidthInternally;
         private int _displayIndexWithFiller;
-        private bool _isVisible;
         private object _header;
+        private IDataTemplate _headerTemplate;
         private DataGridColumnHeader _headerCell;
         private IControl _editingElement;
         private ICellEditBinding _editBinding;
@@ -39,7 +43,6 @@ namespace Avalonia.Controls
         /// </summary>
         protected internal DataGridColumn()
         {
-            _isVisible = true;
             _displayIndexWithFiller = -1;
             IsInitialDesiredWidthDetermined = false;
             InheritsWidth = true;
@@ -173,31 +176,41 @@ namespace Avalonia.Controls
             get => _editBinding;
         }
 
+
+        /// <summary>
+        /// Defines the <see cref="IsVisible"/> property.
+        /// </summary>
+        public static StyledProperty<bool> IsVisibleProperty =
+             Control.IsVisibleProperty.AddOwner<DataGridColumn>();
+
         /// <summary>
         /// Determines whether or not this column is visible.
         /// </summary>
         public bool IsVisible
         {
-            get
+            get => GetValue(IsVisibleProperty);
+            set => SetValue(IsVisibleProperty, value);
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsVisibleProperty)
             {
-                return _isVisible;
-            }
-            set
-            {
-                if (value != IsVisible)
+                OwningGrid?.OnColumnVisibleStateChanging(this);
+                var isVisible = (change as AvaloniaPropertyChangedEventArgs<bool>).NewValue.Value;
+
+                if (_headerCell != null)
                 {
-                    OwningGrid?.OnColumnVisibleStateChanging(this);
-                    _isVisible = value;
-
-                    if (_headerCell != null)
-                    {
-                        _headerCell.IsVisible = value;
-                    }
-
-                    OwningGrid?.OnColumnVisibleStateChanged(this);
+                    _headerCell.IsVisible = isVisible;
                 }
+
+                OwningGrid?.OnColumnVisibleStateChanged(this);
+                NotifyPropertyChanged(change.Property.Name);
             }
         }
+
 
         /// <summary>
         /// Actual visible width after Width, MinWidth, and MaxWidth setting at the Column level and DataGrid level
@@ -387,25 +400,42 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        ///    Backing field for Header property
+        /// </summary>
+        public static readonly DirectProperty<DataGridColumn, object> HeaderProperty =
+            AvaloniaProperty.RegisterDirect<DataGridColumn, object>(
+                nameof(Header),
+                o => o.Header,
+                (o, v) => o.Header = v);
+
+        /// <summary>
+        ///    Gets or sets the <see cref="DataGridColumnHeader"/> content 
+        /// </summary>
         public object Header
         {
-            get
-            {
-                return _header;
-            }
-            set
-            {
-                if (_header != value)
-                {
-                    _header = value;
-                    if (_headerCell != null)
-                    {
-                        _headerCell.Content = value;
-                    }
-                }
-            }
+            get { return _header; }
+            set { SetAndRaise(HeaderProperty, ref _header, value); }
         }
+        
+        /// <summary>
+        ///    Backing field for Header property
+        /// </summary>
+        public static readonly DirectProperty<DataGridColumn, IDataTemplate> HeaderTemplateProperty =
+            AvaloniaProperty.RegisterDirect<DataGridColumn, IDataTemplate>(
+                nameof(HeaderTemplate),
+                o => o.HeaderTemplate,
+                (o, v) => o.HeaderTemplate = v);
 
+        /// <summary>
+        ///  Gets or sets an <see cref="IDataTemplate"/> for the <see cref="Header"/>
+        /// </summary>
+        public IDataTemplate HeaderTemplate
+        {
+            get { return _headerTemplate; }
+            set { SetAndRaise(HeaderTemplateProperty, ref _headerTemplate, value); }
+        }
+        
         public bool IsAutoGenerated
         {
             get;
@@ -418,7 +448,7 @@ namespace Avalonia.Controls
             internal set;
         }
 
-        public bool IsReadOnly
+        public virtual bool IsReadOnly
         {
             get
             {
@@ -645,6 +675,34 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Clears the current sort direction
+        /// </summary>
+        public void ClearSort()
+        {
+            //InvokeProcessSort is already validating if sorting is possible
+            _headerCell?.InvokeProcessSort(KeyboardHelper.GetPlatformCtrlOrCmdKeyModifier());
+        }
+
+        /// <summary>
+        /// Switches the current state of sort direction
+        /// </summary>
+        public void Sort()
+        {
+            //InvokeProcessSort is already validating if sorting is possible
+            _headerCell?.InvokeProcessSort(Input.KeyModifiers.None);
+        }
+
+        /// <summary>
+        /// Changes the sort direction of this column
+        /// </summary>
+        /// <param name="direction">New sort direction</param>
+        public void Sort(ListSortDirection direction)
+        {
+            //InvokeProcessSort is already validating if sorting is possible
+            _headerCell?.InvokeProcessSort(Input.KeyModifiers.None, direction);
+        }
+
+        /// <summary>
         /// When overridden in a derived class, causes the column cell being edited to revert to the unedited value.
         /// </summary>
         /// <param name="editingElement">
@@ -786,7 +844,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// If the DataGrid is using using layout rounding, the pixel snapping will force all widths to
+        /// If the DataGrid is using layout rounding, the pixel snapping will force all widths to
         /// whole numbers. Since the column widths aren't visual elements, they don't go through the normal
         /// rounding process, so we need to do it ourselves.  If we don't, then we'll end up with some
         /// pixel gaps and/or overlaps between columns.
@@ -796,9 +854,9 @@ namespace Avalonia.Controls
         {
             if (OwningGrid != null && OwningGrid.UseLayoutRounding)
             {
-                double roundedLeftEdge = Math.Floor(leftEdge + 0.5);
-                double roundedRightEdge = Math.Floor(leftEdge + ActualWidth + 0.5);
-                LayoutRoundedWidth = roundedRightEdge - roundedLeftEdge;
+                var scale = LayoutHelper.GetLayoutScale(HeaderCell);
+                var roundSize = LayoutHelper.RoundLayoutSize(new Size(leftEdge + ActualWidth, 1), scale, scale);
+                LayoutRoundedWidth = roundSize.Width - leftEdge;
             }
             else
             {
@@ -811,9 +869,11 @@ namespace Avalonia.Controls
         {
             var result = new DataGridColumnHeader
             {
-                OwningColumn = this,
-                Content = _header
+                OwningColumn = this
             };
+            result[!ContentControl.ContentProperty] = this[!HeaderProperty];
+            result[!ContentControl.ContentTemplateProperty] = this[!HeaderTemplateProperty];
+            
             //result.EnsureStyle(null);
 
             return result;
@@ -1008,6 +1068,14 @@ namespace Avalonia.Controls
             get;
             set;
         }
+        /// <summary>
+        /// Holds a Comparer to use for sorting, if not using the default.
+        /// </summary>
+        public System.Collections.IComparer CustomSortComparer
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// We get the sort description from the data source.  We don't worry whether we can modify sort -- perhaps the sort description
@@ -1019,6 +1087,14 @@ namespace Avalonia.Controls
                 && OwningGrid.DataConnection != null
                 && OwningGrid.DataConnection.SortDescriptions != null)
             {
+                if(CustomSortComparer != null)
+                {
+                    return
+                        OwningGrid.DataConnection.SortDescriptions
+                                  .OfType<DataGridComparerSortDesctiption>()
+                                  .FirstOrDefault(s => s.SourceComparer == CustomSortComparer);
+                }
+
                 string propertyName = GetSortPropertyName();
 
                 return OwningGrid.DataConnection.SortDescriptions.FirstOrDefault(s => s.HasPropertyPath && s.PropertyPath == propertyName);
@@ -1033,13 +1109,16 @@ namespace Avalonia.Controls
 
             if (String.IsNullOrEmpty(result))
             {
-
-                if(this is DataGridBoundColumn boundColumn && 
-                    boundColumn.Binding != null &&
-                    boundColumn.Binding is Binding binding &&
-                    binding.Path != null)
+                if (this is DataGridBoundColumn boundColumn)
                 {
-                    result = binding.Path;
+                    if (boundColumn.Binding is Binding binding)
+                    {
+                        result = binding.Path;
+                    }
+                    else if (boundColumn.Binding is CompiledBindingExtension compiledBinding)
+                    {
+                        result = compiledBinding.Path.ToString();
+                    }
                 }
             }
 

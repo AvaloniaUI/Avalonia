@@ -18,8 +18,8 @@ namespace Avalonia.Controls.Remote
         }
 
         private readonly IAvaloniaRemoteTransportConnection _connection;
-        private FrameMessage _lastFrame;
-        private WriteableBitmap _bitmap;
+        private FrameMessage? _lastFrame;
+        private WriteableBitmap? _bitmap;
         public RemoteWidget(IAvaloniaRemoteTransportConnection connection)
         {
             Mode = SizingMode.Local;
@@ -70,15 +70,17 @@ namespace Avalonia.Controls.Remote
 
         public override void Render(DrawingContext context)
         {
-            if (_lastFrame != null)
+            if (_lastFrame != null && _lastFrame.Width != 0 && _lastFrame.Height != 0)
             {
                 var fmt = (PixelFormat) _lastFrame.Format;
                 if (_bitmap == null || _bitmap.PixelSize.Width != _lastFrame.Width ||
                     _bitmap.PixelSize.Height != _lastFrame.Height)
                 {
                     _bitmap?.Dispose();
+#pragma warning disable CS0618 // Type or member is obsolete
                     _bitmap = new WriteableBitmap(new PixelSize(_lastFrame.Width, _lastFrame.Height),
                         new Vector(96, 96), fmt);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
                 using (var l = _bitmap.Lock())
                 {

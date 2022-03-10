@@ -17,9 +17,9 @@ namespace Avalonia.Diagnostics.Views
         public ConsoleView()
         {
             this.InitializeComponent();
-            _historyList = this.FindControl<ListBox>("historyList");
+            _historyList = this.GetControl<ListBox>("historyList");
             ((ILogical)_historyList).LogicalChildren.CollectionChanged += HistoryChanged;
-            _input = this.FindControl<TextBox>("input");
+            _input = this.GetControl<TextBox>("input");
             _input.KeyDown += InputKeyDown;
         }
 
@@ -30,32 +30,36 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void HistoryChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void HistoryChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems[0] is IControl control)
+            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems?[0] is IControl control)
             {
                 DispatcherTimer.RunOnce(control.BringIntoView, TimeSpan.Zero);
             }
         }
 
-        private void InputKeyDown(object sender, KeyEventArgs e)
+        private void InputKeyDown(object? sender, KeyEventArgs e)
         {
-            var vm = (ConsoleViewModel)DataContext;
+            var vm = (ConsoleViewModel?)DataContext;
+            if (vm is null)
+            {
+                return;
+            }
 
             switch (e.Key)
             {
                 case Key.Enter:
-                    vm.Execute();
+                    _ = vm.Execute();
                     e.Handled = true;
                     break;
                 case Key.Up:
                     vm.HistoryUp();
-                    _input.CaretIndex = _input.Text.Length;
+                    _input.CaretIndex = _input.Text?.Length ?? 0;
                     e.Handled = true;
                     break;
                 case Key.Down:
                     vm.HistoryDown();
-                    _input.CaretIndex = _input.Text.Length;
+                    _input.CaretIndex = _input.Text?.Length ?? 0;
                     e.Handled = true;
                     break;
             }

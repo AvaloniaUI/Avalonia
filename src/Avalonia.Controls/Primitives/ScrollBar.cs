@@ -57,11 +57,23 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> AllowAutoHideProperty =
             AvaloniaProperty.Register<ScrollBar, bool>(nameof(AllowAutoHide), true);
 
-        private Button _lineUpButton;
-        private Button _lineDownButton;
-        private Button _pageUpButton;
-        private Button _pageDownButton;
-        private DispatcherTimer _timer;
+        /// <summary>
+        /// Defines the <see cref="HideDelay"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TimeSpan> HideDelayProperty =
+            AvaloniaProperty.Register<ScrollBar, TimeSpan>(nameof(HideDelay), TimeSpan.FromSeconds(2));
+
+        /// <summary>
+        /// Defines the <see cref="ShowDelay"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TimeSpan> ShowDelayProperty =
+            AvaloniaProperty.Register<ScrollBar, TimeSpan>(nameof(ShowDelay), TimeSpan.FromSeconds(0.5));
+
+        private Button? _lineUpButton;
+        private Button? _lineDownButton;
+        private Button? _pageUpButton;
+        private Button? _pageDownButton;
+        private DispatcherTimer? _timer;
         private bool _isExpanded;
 
         /// <summary>
@@ -126,8 +138,26 @@ namespace Avalonia.Controls.Primitives
             get => GetValue(AllowAutoHideProperty);
             set => SetValue(AllowAutoHideProperty, value);
         }
+        
+        /// <summary>
+        /// Gets a value that determines how long will be the hide delay after user stops interacting with the scrollbar.
+        /// </summary>
+        public TimeSpan HideDelay
+        {
+            get => GetValue(HideDelayProperty);
+            set => SetValue(HideDelayProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets a value that determines how long will be the show delay when user starts interacting with the scrollbar.
+        /// </summary>
+        public TimeSpan ShowDelay
+        {
+            get => GetValue(ShowDelayProperty);
+            set => SetValue(ShowDelayProperty, value);
+        }
 
-        public event EventHandler<ScrollEventArgs> Scroll;
+        public event EventHandler<ScrollEventArgs>? Scroll;
 
         /// <summary>
         /// Calculates and updates whether the scrollbar should be visible.
@@ -263,7 +293,7 @@ namespace Avalonia.Controls.Primitives
                 _timer = new DispatcherTimer(DispatcherPriority.Normal);
                 _timer.Tick += (sender, args) =>
                 {
-                    var senderTimer = (DispatcherTimer)sender;
+                    var senderTimer = (DispatcherTimer)sender!;
 
                     if (senderTimer.Tag is Action action)
                     {
@@ -296,12 +326,12 @@ namespace Avalonia.Controls.Primitives
 
         private void CollapseAfterDelay()
         {
-            InvokeAfterDelay(Collapse, TimeSpan.FromSeconds(2));
+            InvokeAfterDelay(Collapse, HideDelay);
         }
 
         private void ExpandAfterDelay()
         {
-            InvokeAfterDelay(Expand, TimeSpan.FromMilliseconds(400));
+            InvokeAfterDelay(Expand, ShowDelay);
         }
 
         private void Collapse()
@@ -314,22 +344,22 @@ namespace Avalonia.Controls.Primitives
             IsExpanded = true;
         }
 
-        private void LineUpClick(object sender, RoutedEventArgs e)
+        private void LineUpClick(object? sender, RoutedEventArgs e)
         {
             SmallDecrement();
         }
 
-        private void LineDownClick(object sender, RoutedEventArgs e)
+        private void LineDownClick(object? sender, RoutedEventArgs e)
         {
             SmallIncrement();
         }
 
-        private void PageUpClick(object sender, RoutedEventArgs e)
+        private void PageUpClick(object? sender, RoutedEventArgs e)
         {
             LargeDecrement();
         }
 
-        private void PageDownClick(object sender, RoutedEventArgs e)
+        private void PageDownClick(object? sender, RoutedEventArgs e)
         {
             LargeIncrement();
         }

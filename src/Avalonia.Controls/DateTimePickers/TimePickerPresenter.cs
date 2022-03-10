@@ -40,20 +40,20 @@ namespace Avalonia.Controls
         }
 
         // TemplateItems
-        private Grid _pickerContainer;
-        private Button _acceptButton;
-        private Button _dismissButton;
-        private Rectangle _spacer2;
-        private Panel _periodHost;
-        private DateTimePickerPanel _hourSelector;
-        private DateTimePickerPanel _minuteSelector;
-        private DateTimePickerPanel _periodSelector;
-        private Button _hourUpButton;
-        private Button _minuteUpButton;
-        private Button _periodUpButton;
-        private Button _hourDownButton;
-        private Button _minuteDownButton;
-        private Button _periodDownButton;
+        private Grid? _pickerContainer;
+        private Button? _acceptButton;
+        private Button? _dismissButton;
+        private Rectangle? _spacer2;
+        private Panel? _periodHost;
+        private DateTimePickerPanel? _hourSelector;
+        private DateTimePickerPanel? _minuteSelector;
+        private DateTimePickerPanel? _periodSelector;
+        private Button? _hourUpButton;
+        private Button? _minuteUpButton;
+        private Button? _periodUpButton;
+        private Button? _hourDownButton;
+        private Button? _minuteDownButton;
+        private Button? _periodDownButton;
 
         // Backing Fields
         private TimeSpan _time;
@@ -156,9 +156,12 @@ namespace Avalonia.Controls
                     e.Handled = true;
                     break;
                 case Key.Tab:
-                    var nextFocus = KeyboardNavigationHandler.GetNext(FocusManager.Instance.Current, NavigationDirection.Next);
-                    KeyboardDevice.Instance?.SetFocusedElement(nextFocus, NavigationMethod.Tab, KeyModifiers.None);
-                    e.Handled = true;
+                    if (FocusManager.Instance?.Current is IInputElement focus)
+                    {
+                        var nextFocus = KeyboardNavigationHandler.GetNext(focus, NavigationDirection.Next);
+                        KeyboardDevice.Instance?.SetFocusedElement(nextFocus, NavigationMethod.Tab, KeyModifiers.None);
+                        e.Handled = true;
+                    }
                     break;
                 case Key.Enter:
                     OnConfirmed();
@@ -170,9 +173,9 @@ namespace Avalonia.Controls
 
         protected override void OnConfirmed()
         {
-            var hr = _hourSelector.SelectedValue;
-            var min = _minuteSelector.SelectedValue;
-            var per = _periodSelector.SelectedValue;
+            var hr = _hourSelector!.SelectedValue;
+            var min = _minuteSelector!.SelectedValue;
+            var per = _periodSelector!.SelectedValue;
 
             if (ClockIdentifier == "12HourClock")
             {
@@ -190,20 +193,20 @@ namespace Avalonia.Controls
                 return;
 
             bool clock12 = ClockIdentifier == "12HourClock";
-            _hourSelector.MaximumValue = clock12 ? 12 : 23;
+            _hourSelector!.MaximumValue = clock12 ? 12 : 23;
             _hourSelector.MinimumValue = clock12 ? 1 : 0;
             _hourSelector.ItemFormat = "%h";
             var hr = Time.Hours;
             _hourSelector.SelectedValue = !clock12 ? hr :
                 hr > 12 ? hr - 12 : hr == 0 ? 12 : hr;
 
-            _minuteSelector.MaximumValue = 59;
+            _minuteSelector!.MaximumValue = 59;
             _minuteSelector.MinimumValue = 0;
             _minuteSelector.Increment = MinuteIncrement;
             _minuteSelector.SelectedValue = Time.Minutes;
             _minuteSelector.ItemFormat = "mm";
 
-            _periodSelector.MaximumValue = 1;
+            _periodSelector!.MaximumValue = 1;
             _periodSelector.MinimumValue = 0;
             _periodSelector.SelectedValue = hr >= 12 ? 1 : 0;
 
@@ -216,43 +219,46 @@ namespace Avalonia.Controls
             bool use24HourClock = ClockIdentifier == "24HourClock";
 
             var columnsD = use24HourClock ? "*, Auto, *" : "*, Auto, *, Auto, *";
-            _pickerContainer.ColumnDefinitions = new ColumnDefinitions(columnsD);
+            _pickerContainer!.ColumnDefinitions = new ColumnDefinitions(columnsD);
 
-            _spacer2.IsVisible = !use24HourClock;
-            _periodHost.IsVisible = !use24HourClock;
+            _spacer2!.IsVisible = !use24HourClock;
+            _periodHost!.IsVisible = !use24HourClock;
 
             Grid.SetColumn(_spacer2, use24HourClock ? 0 : 3);
             Grid.SetColumn(_periodHost, use24HourClock ? 0 : 4);
         }
 
-        private void OnDismissButtonClicked(object sender, RoutedEventArgs e)
+        private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)
         {
             OnDismiss();
         }
 
-        private void OnAcceptButtonClicked(object sender, RoutedEventArgs e)
+        private void OnAcceptButtonClicked(object? sender, RoutedEventArgs e)
         {
             OnConfirmed();
         }
 
-        private void OnSelectorButtonClick(object sender, RoutedEventArgs e)
+        private void OnSelectorButtonClick(object? sender, RoutedEventArgs e)
         {
             if (sender == _hourUpButton)
-                _hourSelector.ScrollUp();
+                _hourSelector!.ScrollUp();
             else if (sender == _hourDownButton)
-                _hourSelector.ScrollDown();
+                _hourSelector!.ScrollDown();
             else if (sender == _minuteUpButton)
-                _minuteSelector.ScrollUp();
+                _minuteSelector!.ScrollUp();
             else if (sender == _minuteDownButton)
-                _minuteSelector.ScrollDown();
+                _minuteSelector!.ScrollDown();
             else if (sender == _periodUpButton)
-                _periodSelector.ScrollUp();
+                _periodSelector!.ScrollUp();
             else if (sender == _periodDownButton)
-                _periodSelector.ScrollDown();
+                _periodSelector!.ScrollDown();
         }
 
         internal double GetOffsetForPopup()
         {
+            if (_hourSelector is null)
+                return 0;
+
             var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
             return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_hourSelector.ItemHeight / 2);
         }

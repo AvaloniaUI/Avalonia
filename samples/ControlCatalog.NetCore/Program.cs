@@ -109,7 +109,8 @@ namespace ControlCatalog.NetCore
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    UseDBusMenu = true
+                    UseDBusMenu = true,
+                    EnableIme = true,
                 })
                 .With(new Win32PlatformOptions
                 {
@@ -117,6 +118,13 @@ namespace ControlCatalog.NetCore
                 })
                 .UseSkia()
                 .UseManagedSystemDialogs()
+                .AfterSetup(builder =>
+                {
+                    builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+                    {
+                        StartupScreenIndex = 1,
+                    });
+                })
                 .LogToTrace();
 
         static void SilenceConsole()

@@ -11,27 +11,6 @@ namespace Avalonia.Platform
     /// </summary>
     public interface IPlatformRenderInterface
     {
-        /// <summary>
-        /// Creates a formatted text implementation.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="typeface">The base typeface.</param>
-        /// <param name="fontSize">The font size.</param>
-        /// <param name="textAlignment">The text alignment.</param>
-        /// <param name="wrapping">The text wrapping mode.</param>
-        /// <param name="constraint">The text layout constraints.</param>
-        /// <param name="spans">The style spans.</param>
-        /// <returns>An <see cref="IFormattedTextImpl"/>.</returns>
-        IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans);
-
-        /// <summary>
         /// Creates an ellipse geometry implementation.
         /// </summary>
         /// <param name="rect">The bounds of the ellipse.</param>
@@ -58,6 +37,23 @@ namespace Avalonia.Platform
         /// </summary>
         /// <returns>An <see cref="IStreamGeometryImpl"/>.</returns>
         IStreamGeometryImpl CreateStreamGeometry();
+
+        /// <summary>
+        /// Creates a geometry group implementation.
+        /// </summary>
+        /// <param name="fillRule">The fill rule.</param>
+        /// <param name="children">The geometries to group.</param>
+        /// <returns>A combined geometry.</returns>
+        IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children);
+
+        /// <summary>
+        /// Creates a geometry group implementation.
+        /// </summary>
+        /// <param name="combineMode">The combine mode</param>
+        /// <param name="g1">The first geometry.</param>
+        /// <param name="g2">The second geometry.</param>
+        /// <returns>A combined geometry.</returns>
+        IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2);
 
         /// <summary>
         /// Creates a renderer.
@@ -101,6 +97,38 @@ namespace Avalonia.Platform
         IBitmapImpl LoadBitmap(Stream stream);
 
         /// <summary>
+        /// Loads a WriteableBitmap implementation from a stream to a specified width maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="width">The desired width of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a stream to a specified height maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="height">The desired height of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+        
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a file.
+        /// </summary>
+        /// <param name="fileName">The filename of the bitmap.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmap(string fileName);
+
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a file.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmap(Stream stream);
+
+        /// <summary>
         /// Loads a bitmap implementation from a stream to a specified width maintaining aspect ratio.
         /// </summary>
         /// <param name="stream">The stream to read the bitmap from.</param> 
@@ -136,9 +164,8 @@ namespace Avalonia.Platform
         /// Creates a platform implementation of a glyph run.
         /// </summary>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="width">The glyph run's width.</param>
         /// <returns></returns>
-        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
+        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun);
 
         bool SupportsIndividualRoundRects { get; }
 

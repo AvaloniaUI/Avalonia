@@ -16,6 +16,11 @@ namespace Avalonia.Controls.Notifications
         private bool _isClosed;
         private bool _isClosing;
 
+        static NotificationCard()
+        {
+            CloseOnClickProperty.Changed.AddClassHandler<Button>(OnCloseOnClickPropertyChanged);
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationCard"/> class.
         /// </summary>
@@ -32,8 +37,11 @@ namespace Avalonia.Controls.Notifications
                     RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
                 });
 
+            // Disabling nullable checking because of https://github.com/dotnet/reactive/issues/1525
+#pragma warning disable CS8620
             this.GetObservable(ContentProperty)
                 .OfType<Notification>()
+#pragma warning restore CS8620
                 .Subscribe(x =>
                 {
                     switch (x.Type)
@@ -97,7 +105,7 @@ namespace Avalonia.Controls.Notifications
         /// <summary>
         /// Raised when the <see cref="NotificationCard"/> has closed.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> NotificationClosed
+        public event EventHandler<RoutedEventArgs>? NotificationClosed
         {
             add { AddHandler(NotificationClosedEvent, value); }
             remove { RemoveHandler(NotificationClosedEvent, value); }
@@ -105,22 +113,26 @@ namespace Avalonia.Controls.Notifications
 
         public static bool GetCloseOnClick(Button obj)
         {
+            _ = obj ?? throw new ArgumentNullException(nameof(obj));
             return (bool)obj.GetValue(CloseOnClickProperty);
         }
 
         public static void SetCloseOnClick(Button obj, bool value)
         {
+            _ = obj ?? throw new ArgumentNullException(nameof(obj));
             obj.SetValue(CloseOnClickProperty, value);
         }
 
         /// <summary>
         /// Defines the CloseOnClick property.
         /// </summary>
-        public static readonly AvaloniaProperty CloseOnClickProperty =
-          AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(NotificationCard)/*, validate: CloseOnClickChanged*/);
+        public static readonly AttachedProperty<bool> CloseOnClickProperty =
+          AvaloniaProperty.RegisterAttached<NotificationCard, Button, bool>("CloseOnClick", defaultValue: false);
 
-        private static bool CloseOnClickChanged(Button button, bool value)
+        private static void OnCloseOnClickPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
+            var button = (Button)d;
+            var value = (bool)e.NewValue!;
             if (value)
             {
                 button.Click += Button_Click;
@@ -129,17 +141,15 @@ namespace Avalonia.Controls.Notifications
             {
                 button.Click -= Button_Click;
             }
-
-            return true;
         }
 
         /// <summary>
         /// Called when a button inside the Notification is clicked.
         /// </summary>
-        private static void Button_Click(object sender, RoutedEventArgs e)
+        private static void Button_Click(object? sender, RoutedEventArgs e)
         {
             var btn = sender as ILogical;
-            var notification = btn.GetLogicalAncestors().OfType<NotificationCard>().FirstOrDefault();
+            var notification = btn?.GetLogicalAncestors().OfType<NotificationCard>().FirstOrDefault();
             notification?.Close();
         }
 

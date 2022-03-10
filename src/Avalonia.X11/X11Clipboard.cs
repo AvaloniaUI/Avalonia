@@ -52,7 +52,7 @@ namespace Avalonia.X11
                         : null;
         }
         
-        private unsafe void OnEvent(XEvent ev)
+        private unsafe void OnEvent(ref XEvent ev)
         {
             if (ev.type == XEventName.SelectionRequest)
             {       
@@ -62,7 +62,7 @@ namespace Avalonia.X11
                     SelectionEvent =
                     {
                         type = XEventName.SelectionNotify,
-                        send_event = true,
+                        send_event = 1,
                         display = _x11.Display,
                         selection = sel.selection,
                         target = sel.target,

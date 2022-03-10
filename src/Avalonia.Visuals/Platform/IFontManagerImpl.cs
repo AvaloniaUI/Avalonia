@@ -23,6 +23,7 @@ namespace Avalonia.Platform
         /// <param name="codepoint">The codepoint to match against.</param>
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
+        /// <param name="fontStretch">The font stretch.</param>
         /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
         /// <param name="culture">The culture.</param>
         /// <param name="typeface">The matching typeface.</param>
@@ -30,8 +31,8 @@ namespace Avalonia.Platform
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out Typeface typeface);
+            FontWeight fontWeight, FontStretch fontStretch,
+            FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface);
 
         /// <summary>
         ///     Creates a glyph typeface.

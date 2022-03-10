@@ -1,11 +1,24 @@
 using System;
+
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Shared.PlatformSupport;
+
+namespace Avalonia
+{
+    public static class IOSApplicationExtensions
+    {
+        public static T UseiOS<T>(this T builder) where T : AppBuilderBase<T>, new()
+        {
+            return builder
+                .UseWindowingSubsystem(iOS.Platform.Register, "iOS")
+                .UseSkia();
+        }
+    }
+}
 
 namespace Avalonia.iOS
 {
@@ -15,19 +28,27 @@ namespace Avalonia.iOS
         public static DisplayLinkTimer Timer;
         class PlatformSettings : IPlatformSettings
         {
-            public Size DoubleClickSize { get; } = new Size(10, 10);
-            public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
+            /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
+            public Size TouchDoubleClickSize => new Size(10, 10);
+
+            /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
+            public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(500);
+
+            public Size DoubleClickSize => new Size(4, 4);
+
+            public TimeSpan DoubleClickTime => TouchDoubleClickTime;
         }
-        
+
         public static void Register()
         {
             GlFeature ??= new EaglFeature();
             Timer ??= new DisplayLinkTimer();
             var keyboard = new KeyboardDevice();
             var softKeyboard = new SoftKeyboardHelper();
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformOpenGlInterface>().ToConstant(GlFeature)
-                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactoryStub())
+                .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
@@ -37,6 +58,7 @@ namespace Avalonia.iOS
                 .Bind<IRenderTimer>().ToConstant(Timer)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new PlatformThreadingInterface())
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
+
             keyboard.PropertyChanged += (_, changed) =>
             {
                 if (changed.PropertyName == nameof(KeyboardDevice.FocusedElement))

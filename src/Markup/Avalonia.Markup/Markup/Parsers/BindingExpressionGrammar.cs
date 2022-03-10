@@ -6,6 +6,8 @@ using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Avalonia.Markup.Parsers
 {
     internal enum SourceMode
@@ -271,8 +273,8 @@ namespace Avalonia.Markup.Parsers
             }
             else if (mode.SequenceEqual("parent".AsSpan()))
             {
-                string ancestorNamespace = null;
-                string ancestorType = null;
+                string? ancestorNamespace = null;
+                string? ancestorType = null;
                 var ancestorLevel = 0;
                 if (PeekOpenBracket(ref r))
                 {
@@ -424,19 +426,19 @@ namespace Avalonia.Markup.Parsers
 
         public class PropertyNameNode : INode
         {
-            public string PropertyName { get; set; }
+            public string PropertyName { get; set; } = string.Empty;
         }
 
         public class AttachedPropertyNameNode : INode
         {
-            public string Namespace { get; set; }
-            public string TypeName { get; set; }
-            public string PropertyName { get; set; }
+            public string Namespace { get; set; } = string.Empty;
+            public string TypeName { get; set; } = string.Empty;
+            public string PropertyName { get; set; } = string.Empty;
         }
 
         public class IndexerNode : INode
         {
-            public IList<string> Arguments { get; set; }
+            public IList<string> Arguments { get; set; } = Array.Empty<string>();
         }
 
         public class NotNode : INode, ITransformNode { }
@@ -447,20 +449,20 @@ namespace Avalonia.Markup.Parsers
 
         public class NameNode : INode
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
         }
 
         public class AncestorNode : INode
         {
-            public string Namespace { get; set; }
-            public string TypeName { get; set; }
+            public string? Namespace { get; set; }
+            public string? TypeName { get; set; }
             public int Level { get; set; }
         }
 
         public class TypeCastNode : INode
         {
-            public string Namespace { get; set; }
-            public string TypeName { get; set; }
+            public string Namespace { get; set; } = string.Empty;
+            public string TypeName { get; set; } = string.Empty;
         }
     }
 }

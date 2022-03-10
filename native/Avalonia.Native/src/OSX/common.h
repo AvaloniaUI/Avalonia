@@ -22,18 +22,23 @@ extern AvnDragDropEffects ConvertDragDropEffects(NSDragOperation nsop);
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlDisplay* GetGlDisplay();
 extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
+extern IAvnTrayIcon* CreateTrayIcon();
 extern IAvnMenuItem* CreateAppMenuItem();
-extern IAvnMenuItem* CreateAppMenuItemSeperator();
+extern IAvnMenuItem* CreateAppMenuItemSeparator();
+extern IAvnApplicationCommands* CreateApplicationCommands();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern void SetAppMenu (NSString* appName, IAvnMenu* appMenu);
+extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
 
-extern void InitializeAvnApp();
+extern void InitializeAvnApp(IAvnApplicationEvents* events);
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
+extern NSRect ToNSRect (AvnRect r);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
+extern CGFloat PrimaryDisplayHeight();
 extern NSSize ToNSSize (AvnSize s);
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)
@@ -61,6 +66,17 @@ public:
     static bool IsInside();
     AvnInsidePotentialDeadlock();
     ~AvnInsidePotentialDeadlock();
+};
+
+
+class AvnApplicationCommands : public ComSingleObject<IAvnApplicationCommands, &IID_IAvnApplicationCommands>
+{
+public:
+    FORWARD_IUNKNOWN()
+    
+    virtual HRESULT HideApp() override;
+    virtual HRESULT ShowAll() override;
+    virtual HRESULT HideOthers() override;
 };
 
 #endif

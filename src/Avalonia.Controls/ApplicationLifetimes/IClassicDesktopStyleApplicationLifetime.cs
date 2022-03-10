@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
@@ -9,11 +10,17 @@ namespace Avalonia.Controls.ApplicationLifetimes
     public interface IClassicDesktopStyleApplicationLifetime : IControlledApplicationLifetime
     {
         /// <summary>
+        /// Tries to Shutdown the application. <see cref="ShutdownRequested" /> event can be used to cancel the shutdown.
+        /// </summary>
+        /// <param name="exitCode">An integer exit code for an application. The default exit code is 0.</param>
+        bool TryShutdown(int exitCode = 0);
+
+        /// <summary>
         /// Gets the arguments passed to the
         /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime{T}(T, string[], ShutdownMode)"/>
         /// method.
         /// </summary>
-        string[] Args { get; }
+        string[]? Args { get; }
         
         /// <summary>
         /// Gets or sets the <see cref="ShutdownMode"/>. This property indicates whether the application is shutdown explicitly or implicitly. 
@@ -31,8 +38,26 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <value>
         /// The main window.
         /// </value>
-        Window MainWindow { get; set; }
+        Window? MainWindow { get; set; }
         
         IReadOnlyList<Window> Windows { get; }
+
+        /// <summary>
+        /// Raised by the platform when an application shutdown is requested.
+        /// </summary>
+        /// <remarks>
+        /// Application Shutdown can be requested for various reasons like OS shutdown.
+        /// 
+        /// On Windows this will be called when an OS Session (logout or shutdown) terminates. Cancelling the eventargs will 
+        /// block OS shutdown.
+        /// 
+        /// On OSX this has the same behavior as on Windows and in addition:
+        /// This event is raised via the Quit menu or right-clicking on the application icon and selecting Quit. 
+        /// 
+        /// This event provides a first-chance to cancel application shutdown; if shutdown is not canceled at this point the application
+        /// will try to close each non-owned open window, invoking the <see cref="Window.Closing"/> event on each and allowing
+        /// each window to cancel the shutdown of the application. Windows cannot however prevent OS shutdown.
+        /// </remarks>
+        event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
     }
 }

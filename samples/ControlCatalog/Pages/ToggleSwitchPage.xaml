@@ -1,7 +1,8 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ToggleSwitchPage" Margin="5">
-  <StackPanel Width="500" HorizontalAlignment="Center">
+  <StackPanel MaxWidth="500"
+              HorizontalAlignment="Stretch">
     <TextBlock Text="Simple ToggleSwitch" Classes="header"/>
     <Border Classes="Thin">
       <StackPanel>
@@ -10,11 +11,11 @@
       </StackPanel>
     </Border>
 
-    <TextBlock Text="headered ToggleSwitch" Classes="header"/>
+    <TextBlock Text="Headered ToggleSwitch" Classes="header"/>
 
     <Border Classes="Thin">
       <StackPanel>
-        <ToggleSwitch Content="headered" IsChecked="true" Margin="10"/>
+        <ToggleSwitch Content="h_eadered" IsChecked="true" Margin="10"/>
         <TextBox Classes="CodeBox"
           Text="&lt;ToggleSwitch&gt;headered&lt;/ToggleSwitch&gt;"/>
       </StackPanel>
@@ -24,7 +25,7 @@
 
     <Border Classes="Thin">
       <StackPanel>
-        <ToggleSwitch Content="Custom"
+        <ToggleSwitch Content="_Custom"
           OnContent="On"
           OffContent="Off"
           Margin="10"/>
@@ -40,7 +41,7 @@ ContentOff=&quot;Off&quot; /&gt;"
 
     <Border Classes="Thin">
       <StackPanel>
-        <ToggleSwitch Content="Just Click!" Margin="10">
+        <ToggleSwitch Content="_Just Click!" Margin="10">
           <ToggleSwitch.OnContent>
             <Image Source="/Assets/hirsch-899118_640.jpg" Height="32"/>
           </ToggleSwitch.OnContent>

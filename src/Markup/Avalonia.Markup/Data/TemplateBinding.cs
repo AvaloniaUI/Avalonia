@@ -10,15 +10,15 @@ namespace Avalonia.Data
     /// <summary>
     /// A XAML binding to a property on a control's templated parent.
     /// </summary>
-    public class TemplateBinding : SingleSubscriberObservableBase<object>,
+    public class TemplateBinding : SingleSubscriberObservableBase<object?>,
         IBinding,
         IDescription,
-        ISubject<object>,
+        ISubject<object?>,
         ISetterValue
     {
         private bool _isSetterValue;
-        private IStyledElement _target;
-        private Type _targetType;
+        private IStyledElement _target = default!;
+        private Type? _targetType;
 
         public TemplateBinding()
         {
@@ -30,10 +30,10 @@ namespace Avalonia.Data
         }
 
         /// <inheritdoc/>
-        public InstancedBinding Initiate(
+        public InstancedBinding? Initiate(
             IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
-            object anchor = null,
+            AvaloniaProperty? targetProperty,
+            object? anchor = null,
             bool enableDataValidation = false)
         {
             // Usually each `TemplateBinding` will only be instantiated once; in this case we can
@@ -68,12 +68,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
-        public IValueConverter Converter { get; set; }
+        public IValueConverter? Converter { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
         /// </summary>
-        public object ConverterParameter { get; set; }
+        public object? ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
@@ -83,15 +83,15 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.
         /// </summary>
-        public AvaloniaProperty Property { get; set; }
+        public AvaloniaProperty? Property { get; set; }
 
         /// <inheritdoc/>
         public string Description => "TemplateBinding: " + Property;
 
-        void IObserver<object>.OnCompleted() => throw new NotImplementedException();
-        void IObserver<object>.OnError(Exception error) => throw new NotImplementedException();
+        void IObserver<object?>.OnCompleted() => throw new NotImplementedException();
+        void IObserver<object?>.OnError(Exception error) => throw new NotImplementedException();
 
-        void IObserver<object>.OnNext(object value)
+        void IObserver<object?>.OnNext(object? value)
         {
             if (_target.TemplatedParent != null && Property != null)
             {
@@ -137,7 +137,7 @@ namespace Avalonia.Data
                     _target.TemplatedParent.GetValue(Property) :
                     _target.TemplatedParent;
 
-                if (Converter != null)
+                if (Converter is not null && _targetType is not null)
                 {
                     value = Converter.Convert(value, _targetType, ConverterParameter, CultureInfo.CurrentCulture);
                 }
@@ -160,14 +160,11 @@ namespace Avalonia.Data
             PublishValue();
         }
 
-        private void TargetPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void TargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == StyledElement.TemplatedParentProperty)
             {
-                var oldValue = (IAvaloniaObject)e.OldValue;
-                var newValue = (IAvaloniaObject)e.OldValue;
-
-                if (oldValue != null)
+                if (e.OldValue is IAvaloniaObject oldValue)
                 {
                     oldValue.PropertyChanged -= TemplatedParentPropertyChanged;
                 }
@@ -176,7 +173,7 @@ namespace Avalonia.Data
             }
         }
 
-        private void TemplatedParentPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void TemplatedParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Property)
             {

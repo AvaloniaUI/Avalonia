@@ -9,7 +9,7 @@ namespace Avalonia.Threading
     /// </summary>
     public class DispatcherTimer
     {
-        private IDisposable _timer;
+        private IDisposable? _timer;
 
         private readonly DispatcherPriority _priority;
 
@@ -58,7 +58,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Raised when the timer ticks.
         /// </summary>
-        public event EventHandler Tick;
+        public event EventHandler? Tick;
 
         /// <summary>
         /// Gets or sets the interval at which the timer ticks.
@@ -108,7 +108,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Gets or sets user-defined data associated with the timer.
         /// </summary>
-        public object Tag
+        public object? Tag
         {
             get;
             set;
@@ -176,7 +176,7 @@ namespace Avalonia.Threading
         {
             if (!IsEnabled)
             {
-                IPlatformThreadingInterface threading = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
+                var threading = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
 
                 if (threading == null)
                 {
@@ -194,7 +194,7 @@ namespace Avalonia.Threading
         {
             if (IsEnabled)
             {
-                _timer.Dispose();
+                _timer!.Dispose();
                 _timer = null;
             }
         }

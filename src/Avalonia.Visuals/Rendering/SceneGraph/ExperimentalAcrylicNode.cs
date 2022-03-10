@@ -23,7 +23,7 @@ namespace Avalonia.Rendering.SceneGraph
             : base(rect.Rect, transform)
         {
             Transform = transform;
-            Material = material?.ToImmutable();
+            Material = material.ToImmutable();
             Rect = rect;
         }
 

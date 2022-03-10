@@ -7,7 +7,7 @@ using Avalonia.Reactive;
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// A <see cref="Setter"/> which has been instance on a control.
+    /// A <see cref="Setter"/> which has been instanced on a control.
     /// </summary>
     /// <typeparam name="T">The target property type.</typeparam>
     internal class PropertySetterInstance<T> : SingleSubscriberObservableBase<BindingValue<T>>,
@@ -50,14 +50,14 @@ namespace Avalonia.Styling
                 }
                 else
                 {
-                    _subscription = _target.Bind(_directProperty, this);
+                    _subscription = _target.Bind(_directProperty!, this);
                 }
             }
             else
             {
                 if (_styledProperty is object)
                 {
-                    _subscription = _target.SetValue(_styledProperty, _value, BindingPriority.Style);
+                    _subscription = _target.SetValue(_styledProperty!, _value, BindingPriority.Style);
                 }
                 else
                 {
@@ -100,7 +100,7 @@ namespace Avalonia.Styling
                 }
                 else
                 {
-                    _target.ClearValue(_directProperty);
+                    _target.ClearValue(_directProperty!);
                 }
             }
 

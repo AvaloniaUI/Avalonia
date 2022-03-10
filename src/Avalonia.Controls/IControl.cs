@@ -15,6 +15,6 @@ namespace Avalonia.Controls
         INamed,
         IStyledElement
     {
-        new IControl Parent { get; }
+        new IControl? Parent { get; }
     }
 }

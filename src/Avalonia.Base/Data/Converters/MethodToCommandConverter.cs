@@ -11,16 +11,16 @@ namespace Avalonia.Data.Converters
 {
     class MethodToCommandConverter : ICommand
     {
-        readonly static Func<object, bool> AlwaysEnabled = (_) => true;
+        readonly static Func<object?, bool> AlwaysEnabled = (_) => true;
         readonly static MethodInfo tryConvert = typeof(TypeUtilities)
-            .GetMethod(nameof(TypeUtilities.TryConvert), BindingFlags.Public | BindingFlags.Static);
+            .GetMethod(nameof(TypeUtilities.TryConvert), BindingFlags.Public | BindingFlags.Static)!;
         readonly static PropertyInfo currentCulture = typeof(CultureInfo)
-            .GetProperty(nameof(CultureInfo.CurrentCulture), BindingFlags.Public | BindingFlags.Static);
-        readonly Func<object, bool> canExecute;
-        readonly Action<object> execute;
-        readonly WeakPropertyChangedProxy weakPropertyChanged;
-        readonly PropertyChangedEventHandler propertyChangedEventHandler;
-        readonly string[] dependencyProperties;
+            .GetProperty(nameof(CultureInfo.CurrentCulture), BindingFlags.Public | BindingFlags.Static)!;
+        readonly Func<object?, bool> canExecute;
+        readonly Action<object?> execute;
+        readonly WeakPropertyChangedProxy? weakPropertyChanged;
+        readonly PropertyChangedEventHandler? propertyChangedEventHandler;
+        readonly string[]? dependencyProperties;
 
         public MethodToCommandConverter(Delegate action)
         {
@@ -38,7 +38,7 @@ namespace Avalonia.Data.Converters
                 execute = CreateExecute(target, action.Method, parameterInfo);
             }
 
-            var canExecuteMethod = action.Method.DeclaringType.GetRuntimeMethods()
+            var canExecuteMethod = action.Method.DeclaringType?.GetRuntimeMethods()
                 .FirstOrDefault(m => m.Name == canExecuteMethodName
                     && m.GetParameters().Length == 1
                     && m.GetParameters()[0].ParameterType == typeof(object));
@@ -63,7 +63,7 @@ namespace Avalonia.Data.Converters
             }
         }
 
-        void OnPropertyChanged(object sender,PropertyChangedEventArgs args)
+        void OnPropertyChanged(object? sender, PropertyChangedEventArgs args)
         {
             if (string.IsNullOrWhiteSpace(args.PropertyName)
                                || dependencyProperties?.Contains(args.PropertyName) == true)
@@ -74,26 +74,21 @@ namespace Avalonia.Data.Converters
         }
 
 #pragma warning disable 0067
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 #pragma warning restore 0067
 
-        public bool CanExecute(object parameter) => canExecute(parameter);
+        public bool CanExecute(object? parameter) => canExecute(parameter);
 
-        public void Execute(object parameter) => execute(parameter);
+        public void Execute(object? parameter) => execute(parameter);
 
 
-        static Action<object> CreateExecute(object target
+        static Action<object?> CreateExecute(object? target
             , System.Reflection.MethodInfo method)
         {
 
             var parameter = Expression.Parameter(typeof(object), "parameter");
 
-            var instance = Expression.Convert
-            (
-                Expression.Constant(target),
-                method.DeclaringType
-            );
-
+            var instance = ConvertTarget(target, method);
 
             var call = Expression.Call
             (
@@ -103,22 +98,18 @@ namespace Avalonia.Data.Converters
 
 
             return Expression
-                .Lambda<Action<object>>(call, parameter)
+                .Lambda<Action<object?>>(call, parameter)
                 .Compile();
         }
 
-        static Action<object> CreateExecute(object target
+        static Action<object?> CreateExecute(object? target
             , System.Reflection.MethodInfo method
             , Type parameterType)
         {
 
             var parameter = Expression.Parameter(typeof(object), "parameter");
 
-            var instance = Expression.Convert
-            (
-                Expression.Constant(target),
-                method.DeclaringType
-            );
+            var instance = ConvertTarget(target, method);
 
             Expression body;
 
@@ -149,29 +140,16 @@ namespace Avalonia.Data.Converters
                     );
 
             }
-            Action<object> action = null;
-            try
-            {
-                action = Expression
-                   .Lambda<Action<object>>(body, parameter)
-                   .Compile();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            return action;
+            return Expression
+                .Lambda<Action<object?>>(body, parameter)
+                .Compile();
         }
 
-        static Func<object, bool> CreateCanExecute(object target
+        static Func<object?, bool> CreateCanExecute(object? target
             , System.Reflection.MethodInfo method)
         {
             var parameter = Expression.Parameter(typeof(object), "parameter");
-            var instance = Expression.Convert
-            (
-                Expression.Constant(target),
-                method.DeclaringType
-            );
+            var instance = ConvertTarget(target, method);
             var call = Expression.Call
             (
                 instance,
@@ -179,16 +157,18 @@ namespace Avalonia.Data.Converters
                 parameter
             );
             return Expression
-                .Lambda<Func<object, bool>>(call, parameter)
+                .Lambda<Func<object?, bool>>(call, parameter)
                 .Compile();
         }
 
+        private static Expression? ConvertTarget(object? target, MethodInfo method) =>
+            target is null ? null : Expression.Convert(Expression.Constant(target), method.DeclaringType!);
 
         internal class WeakPropertyChangedProxy
         {
-            readonly WeakReference<PropertyChangedEventHandler> _listener = new WeakReference<PropertyChangedEventHandler>(null);
+            readonly WeakReference<PropertyChangedEventHandler?> _listener = new WeakReference<PropertyChangedEventHandler?>(null);
             readonly PropertyChangedEventHandler _handler;
-            internal WeakReference<INotifyPropertyChanged> Source { get; } = new WeakReference<INotifyPropertyChanged>(null);
+            internal WeakReference<INotifyPropertyChanged?> Source { get; } = new WeakReference<INotifyPropertyChanged?>(null);
 
             public WeakPropertyChangedProxy()
             {
@@ -210,21 +190,21 @@ namespace Avalonia.Data.Converters
 
             public void Unsubscribe()
             {
-                if (Source.TryGetTarget(out INotifyPropertyChanged source) && source != null)
+                if (Source.TryGetTarget(out var source) && source != null)
                     source.PropertyChanged -= _handler;
 
                 Source.SetTarget(null);
                 _listener.SetTarget(null);
             }
 
-            void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+            void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
             {
                 if (_listener.TryGetTarget(out var handler) && handler != null)
                     handler(sender, e);
                 else
                     Unsubscribe();
             }
-           
+
         }
     }
 }

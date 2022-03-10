@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"       
-        xmlns:sys="clr-namespace:System;assembly=netstandard">
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        x:CompileBindings="True">
 
   <Design.PreviewWith>
     <Grid RowDefinitions="Auto,Auto"
@@ -49,6 +50,7 @@
     <Setter Property="FontSize" Value="{DynamicResource ToolTipContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource ToolTipBorderThemePadding}" />
     <Setter Property="MaxWidth" Value="{DynamicResource ToolTipContentMaxWidth}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
     <Setter Property="Transitions">
       <Transitions>
         <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
@@ -61,7 +63,7 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 Padding="{TemplateBinding Padding}"
-                CornerRadius="{DynamicResource OverlayCornerRadius}">
+                CornerRadius="{TemplateBinding CornerRadius}">
           <ContentPresenter Name="PART_ContentPresenter"
                             MaxWidth="{TemplateBinding MaxWidth}"
                             Content="{TemplateBinding Content}"

@@ -30,30 +30,32 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceHost
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceHost, IApplicationPlatformEvents
     {
         /// <summary>
         /// The application-global data templates.
         /// </summary>
-        private DataTemplates _dataTemplates;
+        private DataTemplates? _dataTemplates;
 
-        private readonly Lazy<IClipboard> _clipboard =
-            new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
+        private readonly Lazy<IClipboard?> _clipboard =
+            new Lazy<IClipboard?>(() => (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
-        private Styles _styles;
-        private IResourceDictionary _resources;
+        private Styles? _styles;
+        private IResourceDictionary? _resources;
         private bool _notifyingResourcesChanged;
-        private Action<IReadOnlyList<IStyle>> _stylesAdded;
-        private Action<IReadOnlyList<IStyle>> _stylesRemoved;
+        private Action<IReadOnlyList<IStyle>>? _stylesAdded;
+        private Action<IReadOnlyList<IStyle>>? _stylesRemoved;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> DataContextProperty =
+        public static readonly StyledProperty<object?> DataContextProperty =
             StyledElement.DataContextProperty.AddOwner<Application>();
 
         /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
+
+        public event EventHandler<UrlOpenedEventArgs>? UrlsOpened; 
 
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
@@ -70,7 +72,7 @@ namespace Avalonia
         /// The data context property specifies the default object that will
         /// be used for data binding.
         /// </remarks>
-        public object DataContext
+        public object? DataContext
         {
             get { return GetValue(DataContextProperty); }
             set { SetValue(DataContextProperty, value); }
@@ -82,7 +84,7 @@ namespace Avalonia
         /// <value>
         /// The current instance of the <see cref="Application"/> class.
         /// </value>
-        public static Application Current
+        public static Application? Current
         {
             get { return AvaloniaLocator.Current.GetService<Application>(); }
         }
@@ -101,7 +103,7 @@ namespace Avalonia
         /// <value>
         /// The application's focus manager.
         /// </value>
-        public IFocusManager FocusManager
+        public IFocusManager? FocusManager
         {
             get;
             private set;
@@ -113,7 +115,7 @@ namespace Avalonia
         /// <value>
         /// The application's input manager.
         /// </value>
-        public InputManager InputManager
+        public InputManager? InputManager
         {
             get;
             private set;
@@ -122,7 +124,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the application clipboard.
         /// </summary>
-        public IClipboard Clipboard => _clipboard.Value;
+        public IClipboard? Clipboard => _clipboard.Value;
 
         /// <summary>
         /// Gets the application's global resource dictionary.
@@ -160,7 +162,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the styling parent of the application, which is null.
         /// </summary>
-        IStyleHost IStyleHost.StylingParent => null;
+        IStyleHost? IStyleHost.StylingParent => null;
 
         /// <inheritdoc/>
         bool IStyleHost.IsStylesInitialized => _styles != null;
@@ -172,15 +174,15 @@ namespace Avalonia
         /// - <see cref="ISingleViewApplicationLifetime"/>
         /// - <see cref="IControlledApplicationLifetime"/> 
         /// </summary>
-        public IApplicationLifetime ApplicationLifetime { get; set; }
+        public IApplicationLifetime? ApplicationLifetime { get; set; }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
             remove => _stylesAdded -= value;
         }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesRemoved
         {
             add => _stylesRemoved += value;
             remove => _stylesRemoved -= value;
@@ -192,7 +194,7 @@ namespace Avalonia
         public virtual void Initialize() { }
 
         /// <inheritdoc/>
-        bool IResourceNode.TryGetResource(object key, out object value)
+        bool IResourceNode.TryGetResource(object key, out object? value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
@@ -247,7 +249,11 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-            
+        }
+        
+        void  IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
+        {
+            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }
 
         private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
@@ -273,20 +279,21 @@ namespace Avalonia
             NotifyResourcesChanged(e);
         }
 
-        private string _name;
+        private string? _name;
         /// <summary>
         /// Defines Name property
         /// </summary>
-        public static readonly DirectProperty<Application, string> NameProperty =
-            AvaloniaProperty.RegisterDirect<Application, string>("Name", o => o.Name, (o, v) => o.Name = v);
+        public static readonly DirectProperty<Application, string?> NameProperty =
+            AvaloniaProperty.RegisterDirect<Application, string?>("Name", o => o.Name, (o, v) => o.Name = v);
 
         /// <summary>
         /// Application name to be used for various platform-specific purposes
         /// </summary>
-        public string Name
+        public string? Name
         {
             get => _name;
             set => SetAndRaise(NameProperty, ref _name, value);
         }
+        
     }
 }

@@ -37,6 +37,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TransitioningContentControl.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Expander.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml"/>
@@ -56,7 +57,12 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml"/>  
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml"/>  
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FlyoutPresenter.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuFlyoutPresenter.xaml"/>
+  <!-- ManagedFileChooser comes last because it uses (and overrides) styles for a multitude of other controls...the dialogs were originally UserControls, after all-->
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ManagedFileChooser.xaml"/>
 </Styles>

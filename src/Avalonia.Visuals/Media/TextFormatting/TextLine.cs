@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -8,6 +9,14 @@ namespace Avalonia.Media.TextFormatting
     public abstract class TextLine
     {
         /// <summary>
+        /// Gets the text runs that are contained within a line.
+        /// </summary>
+        /// <value>
+        /// The contained text runs.
+        /// </value>
+        public abstract IReadOnlyList<TextRun> TextRuns { get; }
+        
+        /// <summary>
         /// Gets the text range that is covered by the line.
         /// </summary>
         /// <value>
@@ -16,28 +25,28 @@ namespace Avalonia.Media.TextFormatting
         public abstract TextRange TextRange { get; }
 
         /// <summary>
-        /// Gets the text runs.
-        /// </summary>
-        /// <value>
-        /// The text runs.
-        /// </value>
-        public abstract IReadOnlyList<TextRun> TextRuns { get; }
-
-        /// <summary>
-        /// Gets the line metrics.
-        /// </summary>
-        /// <value>
-        /// The line metrics.
-        /// </value>
-        public abstract TextLineMetrics LineMetrics { get; }
-
-        /// <summary>
         /// Gets the state of the line when broken by line breaking process.
         /// </summary>
         /// <returns>
         /// A <see cref="TextLineBreak"/> value that represents the line break.
         /// </returns>
-        public abstract TextLineBreak TextLineBreak { get; }
+        public abstract TextLineBreak? TextLineBreak { get; }
+
+        /// <summary>
+        /// Gets the distance from the top to the baseline of the current TextLine object.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="double"/> that represents the baseline distance.
+        /// </returns>
+        public abstract double Baseline { get; }
+
+        /// <summary>
+        /// Gets the distance from the top-most to bottom-most black pixel in a line.
+        /// </summary>
+        /// <returns>
+        /// A value that represents the extent distance.
+        /// </returns>
+        public abstract double Extent { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the line is collapsed.
@@ -48,10 +57,91 @@ namespace Avalonia.Media.TextFormatting
         public abstract bool HasCollapsed { get; }
 
         /// <summary>
+        /// Gets a value that indicates whether content of the line overflows the specified paragraph width.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c>, it the line overflows the specified paragraph width; otherwise, <c>false</c>.
+        /// </returns>
+        public abstract bool HasOverflowed { get; }
+
+        /// <summary>
+        /// Gets the height of a line of text.
+        /// </summary>
+        /// <returns>
+        /// The text line height.
+        /// </returns>
+        public abstract double Height { get; }
+
+        /// <summary>
+        /// Gets the number of newline characters at the end of a line.
+        /// </summary>
+        /// <returns>
+        /// The number of newline characters.
+        /// </returns>
+        public abstract int NewLineLength { get; }
+        
+        /// <summary>
+        /// Gets the distance that black pixels extend beyond the bottom alignment edge of a line.
+        /// </summary>
+        /// <returns>
+        /// The overhang after distance.
+        /// </returns>
+        public abstract double OverhangAfter { get; }
+
+        /// <summary>
+        /// Gets the distance that black pixels extend prior to the left leading alignment edge of the line.
+        /// </summary>
+        /// <returns>
+        /// The overhang leading distance.
+        /// </returns>
+        public abstract double OverhangLeading { get; }
+
+        /// <summary>
+        /// Gets the distance that black pixels extend following the right trailing alignment edge of the line.
+        /// </summary>
+        /// <returns>
+        /// The overhang trailing distance.
+        /// </returns>
+        public abstract double OverhangTrailing { get; }
+
+        /// <summary>
+        /// Gets the distance from the start of a paragraph to the starting point of a line.
+        /// </summary>
+        /// <returns>
+        /// The distance from the start of a paragraph to the starting point of a line.
+        /// </returns>
+        public abstract double Start { get; }
+
+        /// <summary>
+        /// Gets the number of whitespace code points beyond the last non-blank character in a line.
+        /// </summary>
+        /// <returns>
+        /// The number of whitespace code points beyond the last non-blank character in a line.
+        /// </returns>
+        public abstract int TrailingWhitespaceLength { get; }
+
+        /// <summary>
+        /// Gets the width of a line of text, excluding trailing whitespace characters.
+        /// </summary>
+        /// <returns>
+        /// The text line width, excluding trailing whitespace characters.
+        /// </returns>
+        public abstract double Width { get; }
+
+        /// <summary>
+        /// Gets the width of a line of text, including trailing whitespace characters.
+        /// </summary>
+        /// <returns>
+        /// The text line width, including trailing whitespace characters.
+        /// </returns>
+        public abstract double WidthIncludingTrailingWhitespace { get; }
+
+        /// <summary>
         /// Draws the <see cref="TextLine"/> at the given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
-        public abstract void Draw(DrawingContext drawingContext);
+        /// <param name="lineOrigin"></param>
+        public abstract void Draw(DrawingContext drawingContext, Point lineOrigin);
 
         /// <summary>
         /// Create a collapsed line based on collapsed text properties.
@@ -102,27 +192,45 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets the text line offset x.
         /// </summary>
-        /// <param name="lineWidth">The line width.</param>
+        /// <param name="width">The line width.</param>
+        /// <param name="widthIncludingTrailingWhitespace">The paragraph width including whitespace.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
         /// <param name="textAlignment">The text alignment.</param>
+        /// <param name="flowDirection">The flow direction of the line.</param>
         /// <returns>The paragraph offset.</returns>
-        internal static double GetParagraphOffsetX(double lineWidth, double paragraphWidth, TextAlignment textAlignment)
+        internal static double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace,
+            double paragraphWidth, TextAlignment textAlignment, FlowDirection flowDirection)
         {
             if (double.IsPositiveInfinity(paragraphWidth))
             {
                 return 0;
             }
 
+            if (flowDirection == FlowDirection.LeftToRight)
+            {
+                switch (textAlignment)
+                {
+                    case TextAlignment.Center:
+                        return Math.Max(0, (paragraphWidth - width) / 2);
+
+                    case TextAlignment.Right:
+                        return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
+
+                    default:
+                        return 0;
+                }
+            }
+
             switch (textAlignment)
             {
                 case TextAlignment.Center:
-                    return (paragraphWidth - lineWidth) / 2;
+                    return Math.Max(0, (paragraphWidth - width) / 2);
 
                 case TextAlignment.Right:
-                    return paragraphWidth - lineWidth;
+                    return 0;
 
                 default:
-                    return 0.0f;
+                    return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
             }
         }
     }

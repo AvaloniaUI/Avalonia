@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
@@ -7,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -56,7 +58,44 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("123", target1.SelectedText);
             }
         }
-        
+
+        [Fact]
+        public void Opening_Context_Flyout_Does_not_Lose_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    ContextFlyout = new MenuFlyout
+                    {
+                        Items = new List<MenuItem>
+                        {
+                            new MenuItem { Header = "Item 1" },
+                            new MenuItem {Header = "Item 2" },
+                            new MenuItem {Header = "Item 3" }
+                        }
+                    }
+                };
+                              
+
+                target1.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target1 };
+
+                target1.SelectionStart = 0;
+                target1.SelectionEnd = 3;
+
+                target1.Focus();
+                Assert.True(target1.IsFocused);
+
+                target1.ContextFlyout.ShowAt(target1);
+
+                Assert.Equal("123", target1.SelectedText);
+            }
+        }
+
         [Fact]
         public void DefaultBindingMode_Should_Be_TwoWay()
         {
@@ -76,6 +115,10 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
+                target.ApplyTemplate();
+                
+                target.Measure(Size.Infinity);
+                
                 target.CaretIndex = 3;
                 RaiseKeyEvent(target, Key.Right, 0);
 
@@ -93,6 +136,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
@@ -170,9 +215,13 @@ namespace Avalonia.Controls.UnitTests
             {
                 TextBox textBox = new TextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
-                    CaretIndex = 5
+                    SelectionStart = 5,
+                    SelectionEnd = 5
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
                 RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
@@ -209,9 +258,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 TextBox textBox = new TextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
-                    CaretIndex = 19
+                    CaretIndex = 19,
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
                 RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
@@ -254,6 +306,7 @@ namespace Avalonia.Controls.UnitTests
 
                 textBox.SelectionStart = 2;
                 textBox.SelectionEnd = 2;
+                
                 Assert.Equal(2, textBox.CaretIndex);
             }
         }
@@ -296,6 +349,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = false,
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -313,6 +368,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -331,6 +388,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -340,7 +399,7 @@ namespace Avalonia.Controls.UnitTests
 
         [Theory]
         [InlineData(new object[] { false, TextWrapping.NoWrap, ScrollBarVisibility.Hidden })]
-        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         [InlineData(new object[] { true, TextWrapping.NoWrap, ScrollBarVisibility.Auto })]
         [InlineData(new object[] { true, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         public void Has_Correct_Horizontal_ScrollBar_Visibility(
@@ -370,6 +429,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectionStart = 0;
                 target.SelectionEnd = 9;
@@ -392,6 +453,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectionStart = 8;
                 target.SelectionEnd = 9;
@@ -435,6 +498,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 Assert.True(target.SelectedText == "");
 
@@ -455,6 +520,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectedText = "AA";
                 Assert.True(target.Text == "AA0123");
@@ -516,6 +583,31 @@ namespace Avalonia.Controls.UnitTests
                 target.CaretIndex = 11;
 
                 Assert.True(true);
+            }
+        }
+        
+        [Theory]
+        [InlineData(Key.Up)]
+        [InlineData(Key.Down)]
+        [InlineData(Key.Home)]
+        [InlineData(Key.End)]
+        public void Textbox_doesnt_crash_when_Receives_input_and_template_not_applied(Key key)
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    IsVisible = false
+                };
+
+                var root = new TestRoot { Child = target1 };
+
+                target1.Focus();
+                Assert.True(target1.IsFocused);
+                
+                RaiseKeyEvent(target1, key, KeyModifiers.None);
             }
         }
 
@@ -637,7 +729,9 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var source = new Class1 { Bar = "bar" };
-                var target = new TextBox { DataContext = source };
+                var target = new TextBox { Template = CreateTemplate(), DataContext = source };
+
+                target.ApplyTemplate();
 
                 target.Bind(TextBox.TextProperty, new Binding("Bar"));
 
@@ -646,22 +740,51 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Null(target.Text);
             }
         }
-
-        [Fact]
-        public void Text_Box_MaxLength_Work_Properly()
+        
+        [Theory]
+        [InlineData("abc", "d", 3, 0, 0, false, "abc")]
+        [InlineData("abc", "dd", 4, 3, 3, false, "abcd")]
+        [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
+        [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
+        [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
+        public void MaxLength_Works_Properly(
+            string initalText,
+            string textInput,
+            int maxLength,
+            int selectionStart,
+            int selectionEnd,
+            bool fromClipboard,
+            string expected)
         {
             using (UnitTestApplication.Start(Services))
             {
                 var target = new TextBox
                 {
                     Template = CreateTemplate(),
-                    Text = "abc",
-                    MaxLength = 3,
+                    Text = initalText,
+                    MaxLength = maxLength,
+                    SelectionStart = selectionStart,
+                    SelectionEnd = selectionEnd
                 };
-
-                RaiseKeyEvent(target, Key.D, KeyModifiers.None);
-
-                Assert.Equal("abc", target.Text);
+                
+                target.Measure(Size.Infinity);
+                
+                if (fromClipboard)
+                {
+                    AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
+                    
+                    var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                    clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    
+                    RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
+                    clipboard.ClearAsync().GetAwaiter().GetResult();
+                }
+                else
+                {
+                    RaiseTextEvent(target, textInput);
+                }
+                
+                Assert.Equal(expected, target.Text);
             }
         }
 
@@ -682,6 +805,7 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     AcceptsTab = true
                 };
+                target.ApplyTemplate();
                 target.SelectionStart = 1;
                 target.SelectionEnd = 3;
                 AvaloniaLocator.CurrentMutable
@@ -693,15 +817,68 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_SelectedText_Should_Fire_Single_Text_Changed_Notification()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                var values = new List<string>();
+                target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
+
+                target.SelectedText = "A";
+
+                Assert.Equal(new[] { "0123", "0A3" }, values);
+            }
+        }
+
+        [Fact]
+        public void Entering_Text_With_SelectedText_Should_Fire_Single_Text_Changed_Notification()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                var values = new List<string>();
+                target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
+
+                RaiseTextEvent(target, "A");
+
+                Assert.Equal(new[] { "0123", "0A3" }, values);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new MockTextShaperImpl(),
+            fontManagerImpl: new MockFontManagerImpl());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            renderInterface: new MockPlatformRenderInterface(),
+            textShaperImpl: new MockTextShaperImpl(), 
+            fontManagerImpl: new MockFontManagerImpl());
 
         private IControlTemplate CreateTemplate()
         {
@@ -711,11 +888,18 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_TextPresenter",
                     [!!TextPresenter.TextProperty] = new Binding
                     {
-                        Path = "Text",
+                        Path = nameof(TextPresenter.Text),
                         Mode = BindingMode.TwoWay,
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
+                    [!!TextPresenter.CaretIndexProperty] = new Binding
+                    {
+                        Path = nameof(TextPresenter.CaretIndex),
+                        Mode = BindingMode.TwoWay,
+                        Priority = BindingPriority.TemplatedParent,
+                        RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                    }
                 }.RegisterInNameScope(scope));
         }
 
@@ -758,11 +942,22 @@ namespace Avalonia.Controls.UnitTests
 
         private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
         {
-            public Task<string> GetTextAsync() => Task.FromResult("");
+            private string _text;
 
-            public Task SetTextAsync(string text) => Task.CompletedTask;
+            public Task<string> GetTextAsync() => Task.FromResult(_text);
 
-            public Task ClearAsync() => Task.CompletedTask;
+            public Task SetTextAsync(string text)
+            {
+                _text = text;
+                return Task.CompletedTask;
+            }
+
+            public Task ClearAsync()
+            {
+                _text = null;
+                return Task.CompletedTask;
+            }
+            
             public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());

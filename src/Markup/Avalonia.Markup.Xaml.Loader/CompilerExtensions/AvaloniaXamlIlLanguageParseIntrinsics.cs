@@ -198,6 +198,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return ConvertDefinitionList(node, text, types, types.RowDefinitions, types.RowDefinition, "row definitions", out result);
             }
 
+            if (type.Equals(types.Classes))
+            {
+                var classes = text.Split(' ');
+                var classNodes = classes.Select(c => new XamlAstTextNode(node, c, type: types.XamlIlTypes.String)).ToArray();
+
+                result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, types.Classes, types.XamlIlTypes.String, classNodes);
+                return true;
+            }
+
+            if (types.IBrush.IsAssignableFrom(type))
+            {
+                if (Color.TryParse(text, out Color color))
+                {
+                    var brushTypeRef = new XamlAstClrTypeReference(node, types.ImmutableSolidColorBrush, false);
+
+                    result = new XamlAstNewClrObjectNode(node, brushTypeRef,
+                        types.ImmutableSolidColorBrushConstructorColor,
+                        new List<IXamlAstValueNode> { new XamlConstantNode(node, types.UInt, color.ToUint32()) });
+
+                    return true;
+                }
+            }
+
             result = null;
             return false;
         }

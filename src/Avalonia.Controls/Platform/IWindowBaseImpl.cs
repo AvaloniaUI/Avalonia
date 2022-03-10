@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation.Peers;
 
 namespace Avalonia.Platform
 {
@@ -7,7 +8,9 @@ namespace Avalonia.Platform
         /// <summary>
         /// Shows the window.
         /// </summary>
-        void Show(bool activate);
+        /// <param name="activate">Whether to activate the shown window.</param>
+        /// <param name="isDialog">Whether the window is being shown as a dialog.</param>
+        void Show(bool activate, bool isDialog);
 
         /// <summary>
         /// Hides the window.
@@ -27,7 +30,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets a method called when the window's position changes.
         /// </summary>
-        Action<PixelPoint> PositionChanged { get; set; }
+        Action<PixelPoint>? PositionChanged { get; set; }
 
         /// <summary>
         /// Activates the window.
@@ -37,12 +40,12 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets a method called when the window is deactivated (loses focus).
         /// </summary>
-        Action Deactivated { get; set; }
+        Action? Deactivated { get; set; }
 
         /// <summary>
         /// Gets or sets a method called when the window is activated (receives focus).
         /// </summary>
-        Action Activated { get; set; }
+        Action? Activated { get; set; }
 
         /// <summary>
         /// Gets the platform window handle.

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
@@ -60,23 +61,14 @@ namespace Avalonia.Animation
         /// </summary>
         public Easing SlideOutEasing { get; set; } = new LinearEasing();
 
-        /// <summary>
-        /// Starts the animation.
-        /// </summary>
-        /// <param name="from">
-        /// The control that is being transitioned away from. May be null.
-        /// </param>
-        /// <param name="to">
-        /// The control that is being transitioned to. May be null.
-        /// </param>
-        /// <param name="forward">
-        /// If true, the new page is slid in from the right, or if false from the left.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> that tracks the progress of the animation.
-        /// </returns>
-        public async Task Start(Visual from, Visual to, bool forward)
+        /// <inheritdoc />
+        public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             var tasks = new List<Task>();
             var parent = GetVisualParent(from, to);
             var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
@@ -87,6 +79,7 @@ namespace Avalonia.Animation
                 var animation = new Animation
                 {
                     Easing = SlideOutEasing,
+                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame
@@ -109,7 +102,7 @@ namespace Avalonia.Animation
                     },
                     Duration = Duration
                 };
-                tasks.Add(animation.RunAsync(from));
+                tasks.Add(animation.RunAsync(from, null, cancellationToken));
             }
 
             if (to != null)
@@ -117,6 +110,7 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
+                    FillMode = FillMode.Forward,
                     Easing = SlideInEasing,
                     Children =
                     {
@@ -140,12 +134,12 @@ namespace Avalonia.Animation
                     },
                     Duration = Duration
                 };
-                tasks.Add(animation.RunAsync(to));
+                tasks.Add(animation.RunAsync(to, null, cancellationToken));
             }
 
             await Task.WhenAll(tasks);
 
-            if (from != null)
+            if (from != null && !cancellationToken.IsCancellationRequested)
             {
                 from.IsVisible = false;
             }
@@ -163,17 +157,17 @@ namespace Avalonia.Animation
         /// <remarks>
         /// Any one of the parameters may be null, but not both.
         /// </remarks>
-        private static IVisual GetVisualParent(IVisual from, IVisual to)
+        private static IVisual GetVisualParent(IVisual? from, IVisual? to)
         {
-            var p1 = (from ?? to).VisualParent;
-            var p2 = (to ?? from).VisualParent;
+            var p1 = (from ?? to)!.VisualParent;
+            var p2 = (to ?? from)!.VisualParent;
 
             if (p1 != null && p2 != null && p1 != p2)
             {
                 throw new ArgumentException("Controls for PageSlide must have same parent.");
             }
 
-            return p1;
+            return p1 ?? throw new InvalidOperationException("Cannot determine visual parent.");
         }
     }
 }

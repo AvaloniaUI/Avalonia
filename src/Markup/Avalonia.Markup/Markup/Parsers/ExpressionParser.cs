@@ -11,10 +11,10 @@ namespace Avalonia.Markup.Parsers
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;
-        private readonly Func<string, string, Type> _typeResolver;
-        private readonly INameScope _nameScope;
+        private readonly Func<string, string, Type>? _typeResolver;
+        private readonly INameScope? _nameScope;
 
-        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver, INameScope nameScope)
+        public ExpressionParser(bool enableValidation, Func<string, string, Type>? typeResolver, INameScope? nameScope)
         {
             _typeResolver = typeResolver;
             _nameScope = nameScope;
@@ -23,13 +23,13 @@ namespace Avalonia.Markup.Parsers
 
         public (ExpressionNode Node, SourceMode Mode) Parse(ref CharacterReader r)
         {
-            ExpressionNode rootNode = null;
-            ExpressionNode node = null;
+            ExpressionNode? rootNode = null;
+            ExpressionNode? node = null;
             var (astNodes, mode) = BindingExpressionGrammar.Parse(ref r);
 
             foreach (var astNode in astNodes)
             {
-                ExpressionNode nextNode = null;
+                ExpressionNode? nextNode = null;
                 switch (astNode)
                 {
                     case BindingExpressionGrammar.EmptyExpressionNode _:
@@ -57,13 +57,13 @@ namespace Avalonia.Markup.Parsers
                         nextNode = ParseFindAncestor(ancestor);
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
-                        nextNode = new ElementNameNode(_nameScope, elementName.Name);
+                        nextNode = new ElementNameNode(_nameScope ?? throw new NotSupportedException("Invalid element name binding with null name scope!"), elementName.Name);
                         break;
                     case BindingExpressionGrammar.TypeCastNode typeCast:
                         nextNode = ParseTypeCastNode(typeCast);
                         break;
                 }
-                if (rootNode is null)
+                if (node is null)
                 {
                     rootNode = node = nextNode;
                 }
@@ -74,12 +74,15 @@ namespace Avalonia.Markup.Parsers
                 }
             }
 
+            if (rootNode is null)
+                throw new ExpressionParseException(r.Position, "Unexpected end of expression.");
+
             return (rootNode, mode);
         }
 
         private FindAncestorNode ParseFindAncestor(BindingExpressionGrammar.AncestorNode node)
         {
-            Type ancestorType = null;
+            Type? ancestorType = null;
             var ancestorLevel = node.Level;
 
             if (!(node.Namespace is null) && !(node.TypeName is null))
@@ -97,7 +100,7 @@ namespace Avalonia.Markup.Parsers
 
         private TypeCastNode ParseTypeCastNode(BindingExpressionGrammar.TypeCastNode node)
         {
-            Type castType = null;
+            Type? castType = null;
             if (!(node.Namespace is null) && !(node.TypeName is null))
             {
                 if (_typeResolver == null)
@@ -107,6 +110,9 @@ namespace Avalonia.Markup.Parsers
 
                 castType = _typeResolver(node.Namespace, node.TypeName);
             }
+
+            if (castType is null)
+                throw new InvalidOperationException("Unable to determine type for cast.");
 
             return new TypeCastNode(castType);
         }
@@ -118,7 +124,11 @@ namespace Avalonia.Markup.Parsers
                 throw new InvalidOperationException("Cannot parse a binding path with an attached property without a type resolver. Maybe you can use a LINQ Expression binding path instead?");
             }
 
-            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(_typeResolver(node.Namespace, node.TypeName), node.PropertyName);
+            var type = _typeResolver(node.Namespace, node.TypeName);
+            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(type, node.PropertyName);
+
+            if (property is null)
+                throw new InvalidOperationException($"Cannot find property {type}.{node.PropertyName}.");
 
             return new AvaloniaPropertyAccessorNode(property, _enableValidation);
         }

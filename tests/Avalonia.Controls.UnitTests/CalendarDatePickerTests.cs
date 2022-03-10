@@ -74,7 +74,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private CalendarDatePicker CreateControl()
         {
@@ -105,7 +105,11 @@ namespace Avalonia.Controls.UnitTests
                 var calendar =
                     new Calendar
                     {
-                        Name = "PART_Calendar"
+                        Name = "PART_Calendar", 
+                        [!Calendar.SelectedDateProperty] = control[!CalendarDatePicker.SelectedDateProperty],
+                        [!Calendar.DisplayDateProperty] = control[!CalendarDatePicker.DisplayDateProperty],
+                        [!Calendar.DisplayDateStartProperty] = control[!CalendarDatePicker.DisplayDateStartProperty],
+                        [!Calendar.DisplayDateEndProperty] = control[!CalendarDatePicker.DisplayDateEndProperty]
                     }.RegisterInNameScope(scope);
                 var popup =
                     new Popup

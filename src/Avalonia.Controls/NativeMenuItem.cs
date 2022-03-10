@@ -9,22 +9,23 @@ namespace Avalonia.Controls
 {
     public class NativeMenuItem : NativeMenuItemBase, INativeMenuItemExporterEventsImplBridge
     {
-        private string _header;
-        private KeyGesture _gesture;
+        private string? _header;
+        private KeyGesture? _gesture;
         private bool _isEnabled = true;
-        private ICommand _command;
+        private ICommand? _command;
         private bool _isChecked = false;
         private NativeMenuItemToggleType _toggleType;
-        private IBitmap _icon;
+        private IBitmap? _icon;
+        private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;
 
-        private NativeMenu _menu;
+        private NativeMenu? _menu;
 
         static NativeMenuItem()
         {
             MenuProperty.Changed.Subscribe(args =>
             {
                 var item = (NativeMenuItem)args.Sender;
-                var value = args.NewValue.GetValueOrDefault();
+                var value = args.NewValue.GetValueOrDefault()!;
                 if (value.Parent != null && value.Parent != item)
                     throw new InvalidOperationException("NativeMenu already has a parent");
                 value.Parent = item;
@@ -32,7 +33,7 @@ namespace Avalonia.Controls
         }
 
 
-        class CanExecuteChangedSubscriber : IWeakSubscriber<EventArgs>
+        class CanExecuteChangedSubscriber : IWeakEventSubscriber<EventArgs>
         {
             private readonly NativeMenuItem _parent;
 
@@ -41,13 +42,11 @@ namespace Avalonia.Controls
                 _parent = parent;
             }
 
-            public void OnEvent(object sender, EventArgs e)
+            public void OnEvent(object? sender, WeakEvent ev, EventArgs e)
             {
                 _parent.CanExecuteChanged();
             }
         }
-
-        private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;
 
 
         public NativeMenuItem()
@@ -60,44 +59,44 @@ namespace Avalonia.Controls
             Header = header;
         }
 
-        public static readonly DirectProperty<NativeMenuItem, NativeMenu> MenuProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu>(nameof(Menu), o => o.Menu, (o, v) => o.Menu = v);
+        public static readonly DirectProperty<NativeMenuItem, NativeMenu?> MenuProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu?>(nameof(Menu), o => o.Menu, (o, v) => o.Menu = v);
 
         [Content]
-        public NativeMenu Menu
+        public NativeMenu? Menu
         {
             get => _menu;
             set
             {
-                if (value.Parent != null && value.Parent != this)
+                if (value != null && value.Parent != null && value.Parent != this)
                     throw new InvalidOperationException("NativeMenu already has a parent");
                 SetAndRaise(MenuProperty, ref _menu, value);
             }
         }
 
-        public static readonly DirectProperty<NativeMenuItem, IBitmap> IconProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, IBitmap>(nameof(Icon), o => o.Icon, (o, v) => o.Icon = v);
+        public static readonly DirectProperty<NativeMenuItem, IBitmap?> IconProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, IBitmap?>(nameof(Icon), o => o.Icon, (o, v) => o.Icon = v);
 
 
-        public IBitmap Icon
+        public IBitmap? Icon
         {
             get => _icon;
             set => SetAndRaise(IconProperty, ref _icon, value);
         }  
 
-        public static readonly DirectProperty<NativeMenuItem, string> HeaderProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Header), o => o.Header, (o, v) => o.Header = v);
+        public static readonly DirectProperty<NativeMenuItem, string?> HeaderProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, string?>(nameof(Header), o => o.Header, (o, v) => o.Header = v);
 
-        public string Header
+        public string? Header
         {
             get => _header;
             set => SetAndRaise(HeaderProperty, ref _header, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, KeyGesture> GestureProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, KeyGesture>(nameof(Gesture), o => o.Gesture, (o, v) => o.Gesture = v);
+        public static readonly DirectProperty<NativeMenuItem, KeyGesture?> GestureProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, KeyGesture?>(nameof(Gesture), o => o.Gesture, (o, v) => o.Gesture = v);
 
-        public KeyGesture Gesture
+        public KeyGesture? Gesture
         {
             get => _gesture;
             set => SetAndRaise(GestureProperty, ref _gesture, value);
@@ -127,7 +126,7 @@ namespace Avalonia.Controls
             set => SetAndRaise(ToggleTypeProperty, ref _toggleType, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
+        public static readonly DirectProperty<NativeMenuItem, ICommand?> CommandProperty =
             Button.CommandProperty.AddOwner<NativeMenuItem>(
                 menuItem => menuItem.Command,
                 (menuItem, command) => menuItem.Command = command,
@@ -136,7 +135,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> CommandParameterProperty =
+        public static readonly StyledProperty<object?> CommandParameterProperty =
             Button.CommandParameterProperty.AddOwner<MenuItem>();
 
         public static readonly DirectProperty<NativeMenuItem, bool> IsEnabledProperty =
@@ -155,20 +154,18 @@ namespace Avalonia.Controls
 
         public bool HasClickHandlers => Click != null;
 
-        public ICommand Command
+        public ICommand? Command
         {
             get => _command;
             set
             {
                 if (_command != null)
-                    WeakSubscriptionManager.Unsubscribe(_command,
-                        nameof(ICommand.CanExecuteChanged), _canExecuteChangedSubscriber);
+                    WeakEvents.CommandCanExecuteChanged.Unsubscribe(_command, _canExecuteChangedSubscriber);
 
                 SetAndRaise(CommandProperty, ref _command, value);
 
                 if (_command != null)
-                    WeakSubscriptionManager.Subscribe(_command,
-                        nameof(ICommand.CanExecuteChanged), _canExecuteChangedSubscriber);
+                    WeakEvents.CommandCanExecuteChanged.Subscribe(_command, _canExecuteChangedSubscriber);
 
                 CanExecuteChanged();
             }
@@ -178,7 +175,7 @@ namespace Avalonia.Controls
         /// Gets or sets the parameter to pass to the <see cref="Command"/> property of a
         /// <see cref="NativeMenuItem"/>.
         /// </summary>
-        public object CommandParameter
+        public object? CommandParameter
         {
             get { return GetValue(CommandParameterProperty); }
             set { SetValue(CommandParameterProperty, value); }
@@ -187,7 +184,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="NativeMenuItem"/> is clicked.
         /// </summary>
-        public event EventHandler Click;
+        public event EventHandler? Click;
 
         [Obsolete("Use Click event.")]
         public event EventHandler Clicked

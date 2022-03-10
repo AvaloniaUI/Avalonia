@@ -1,7 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
-        xmlns:sys="clr-namespace:System;assembly=netstandard">
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        x:DataType="MenuItem"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20"
             Width="400"
@@ -43,8 +45,7 @@
 
   <Styles.Resources>
     <conv:PlatformKeyGestureConverter x:Key="KeyGestureConverter" />
-    <x:Double x:Key="MenuFlyoutSubItemPopupHorizontalOffset">-4</x:Double>
-    <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
+    <x:Double x:Key="MenuFlyoutSubItemPopupHorizontalOffset">-4</x:Double>    
     <Thickness x:Key="MenuIconPresenterMargin">0,0,12,0</Thickness>
     <Thickness x:Key="MenuInputGestureTextMargin">24,0,0,0</Thickness>
     <StreamGeometry x:Key="MenuItemChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
@@ -62,7 +63,8 @@
                   Padding="{TemplateBinding Padding}"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}">
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"
@@ -75,8 +77,6 @@
               </Grid.ColumnDefinitions>
               <ContentPresenter Name="PART_IconPresenter"
                                 Content="{TemplateBinding Icon}"
-                                Width="16"
-                                Height="16"
                                 Margin="{DynamicResource MenuIconPresenterMargin}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -112,8 +112,8 @@
           <Popup Name="PART_Popup"
                  WindowManagerAddShadowHint="False"
                  PlacementMode="Right"
-                 HorizontalOffset="{StaticResource MenuFlyoutSubItemPopupHorizontalOffset}"
-                 IsLightDismissEnabled="True"
+                 HorizontalOffset="{DynamicResource MenuFlyoutSubItemPopupHorizontalOffset}"
+                 IsLightDismissEnabled="False"
                  IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
             <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                     BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
@@ -144,7 +144,8 @@
         <Border Name="PART_LayoutRoot"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Panel>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
@@ -159,7 +160,7 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
-                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                   MinWidth="{ReflectionBinding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}">
@@ -189,15 +190,17 @@
 
   <Style Selector="MenuItem">
     <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
-    <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePaddingNarrow}" />
+    <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePaddingNarrow}" />
   </Style>
 
   <Style Selector="Menu > MenuItem">
     <!--  Custom padding for Menu > MenuItem  -->
-    <Setter Property="Padding" Value="{StaticResource MenuBarItemPadding}" />
+    <Setter Property="Padding" Value="{DynamicResource MenuBarItemPadding}" />
   </Style>
 
   <Style Selector="MenuItem /template/ ContentPresenter#PART_IconPresenter">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
     <Setter Property="IsVisible" Value="False" />
   </Style>
   <Style Selector="MenuItem:icon /template/ ContentPresenter#PART_IconPresenter">

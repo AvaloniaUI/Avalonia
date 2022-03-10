@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -21,12 +22,13 @@ namespace Avalonia.DesignerSupport.Remote
         public IPlatformHandle Handle { get; }
         public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
+        public Size? FrameSize => null;
         public double RenderScaling { get; } = 1.0;
         public double DesktopScaling => 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
@@ -53,7 +55,7 @@ namespace Avalonia.DesignerSupport.Remote
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent,
                     (_, size, __) =>
                     {
-                        Resize(size);
+                        Resize(size, PlatformResizeReason.Unspecified);
                     }));
         }
 
@@ -73,11 +75,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
         }
 
-        public void Show(bool activate)
+        public void Show(bool activate, bool isDialog)
         {
         }
 
@@ -97,7 +99,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void Resize(Size clientSize)
+        public void Resize(Size clientSize, PlatformResizeReason reason)
         {
         }
 
@@ -192,9 +194,15 @@ namespace Avalonia.DesignerSupport.Remote
         public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
-    class CursorFactoryStub : IStandardCursorFactory
+    class CursorFactoryStub : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "STUB");
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
+
+        private class CursorStub : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
 
     class IconLoaderStub : IPlatformIconLoader

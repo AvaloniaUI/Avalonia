@@ -590,7 +590,7 @@ namespace Avalonia.Layout
 
                 if (UseLayoutRounding)
                 {
-                    var scale = GetLayoutScale();
+                    var scale = LayoutHelper.GetLayoutScale(this);
                     width = LayoutHelper.RoundLayoutValue(width, scale);
                     height = LayoutHelper.RoundLayoutValue(height, scale);
                 }
@@ -652,7 +652,7 @@ namespace Avalonia.Layout
                 var horizontalAlignment = HorizontalAlignment;
                 var verticalAlignment = VerticalAlignment;
                 var size = availableSizeMinusMargins;
-                var scale = GetLayoutScale();
+                var scale = LayoutHelper.GetLayoutScale(this);
                 var useLayoutRounding = UseLayoutRounding;
 
                 if (horizontalAlignment != HorizontalAlignment.Stretch)
@@ -782,7 +782,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        protected sealed override void OnVisualParentChanged(IVisual? oldParent, IVisual? newParent)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
 
@@ -794,7 +794,7 @@ namespace Avalonia.Layout
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void LayoutManagedLayoutUpdated(object sender, EventArgs e) => _layoutUpdated?.Invoke(this, e);
+        private void LayoutManagedLayoutUpdated(object? sender, EventArgs e) => _layoutUpdated?.Invoke(this, e);
 
         /// <summary>
         /// Tests whether any of a <see cref="Rect"/>'s properties include negative values,
@@ -832,18 +832,6 @@ namespace Avalonia.Layout
         private static Size NonNegative(Size size)
         {
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
-        }
-
-        private double GetLayoutScale()
-        {
-            var result =  (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
-
-            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
-            {
-                throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
-            }
-
-            return result;
         }
     }
 }

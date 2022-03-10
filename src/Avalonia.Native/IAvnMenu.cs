@@ -7,7 +7,7 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
-    class MenuEvents : CallbackBase, IAvnMenuEvents
+    class MenuEvents : NativeCallbackBase, IAvnMenuEvents
     {
         private IAvnMenu _parent;
 
@@ -20,11 +20,23 @@ namespace Avalonia.Native.Interop
         {
             _parent?.RaiseNeedsUpdate();
         }
+
+        public void Opening()
+        {
+            _parent?.RaiseOpening();
+        }
+
+        public void Closed()
+        {
+            _parent?.RaiseClosed();
+        }
     }
 
     partial interface IAvnMenu
     {
         void RaiseNeedsUpdate();
+        void RaiseOpening();
+        void RaiseClosed();
         void Deinitialise();
     }
 }
@@ -43,6 +55,16 @@ namespace Avalonia.Native.Interop.Impl
             (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseNeedsUpdate();
 
             _exporter.UpdateIfNeeded();
+        }
+
+        public void RaiseOpening()
+        {
+            (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseOpening();
+        }
+
+        public void RaiseClosed()
+        {
+            (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseClosed();
         }
 
         internal NativeMenu ManagedMenu { get; private set; }
@@ -74,7 +96,7 @@ namespace Avalonia.Native.Interop.Impl
             _menuItems.Remove(item);
             RemoveItem(item);
 
-            item.Deinitialise();
+            item.Deinitialize();
             item.Dispose();
         }
 
@@ -91,7 +113,7 @@ namespace Avalonia.Native.Interop.Impl
         {
             var result = CreateNew(factory, item);
 
-            result.Initialise(item);
+            result.Initialize(item);
 
             _menuItemLookup.Add(result.ManagedMenuItem, result);
             _menuItems.Insert(index, result);
@@ -103,15 +125,15 @@ namespace Avalonia.Native.Interop.Impl
 
         private __MicroComIAvnMenuItemProxy CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
         {
-            var nativeItem = (__MicroComIAvnMenuItemProxy)(item is NativeMenuItemSeperator ?
-                factory.CreateMenuItemSeperator() :
+            var nativeItem = (__MicroComIAvnMenuItemProxy)(item is NativeMenuItemSeparator ?
+                factory.CreateMenuItemSeparator() :
                 factory.CreateMenuItem());
             nativeItem.ManagedMenuItem = item;
 
             return nativeItem;
         }
 
-        internal void Initialise(AvaloniaNativeMenuExporter exporter, NativeMenu managedMenu, string title)
+        internal void Initialize(AvaloniaNativeMenuExporter exporter, NativeMenu managedMenu, string title)
         {
             _exporter = exporter;
             ManagedMenu = managedMenu;
@@ -128,7 +150,7 @@ namespace Avalonia.Native.Interop.Impl
 
             foreach (var item in _menuItems)
             {
-                item.Deinitialise();
+                item.Deinitialize();
                 item.Dispose();
             }
         }

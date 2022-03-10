@@ -115,25 +115,6 @@ namespace Avalonia.Direct2D1
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new FormattedTextImpl(
-                text,
-                typeface,
-                fontSize,
-                textAlignment,
-                wrapping,
-                constraint,
-                spans);
-        }
-
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             foreach (var s in surfaces)
@@ -175,6 +156,8 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
         public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
 
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
@@ -186,6 +169,28 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new WicBitmapImpl(stream);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new WriteableWicBitmapImpl(stream, width, true, interpolationMode);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new WriteableWicBitmapImpl(stream, height, false, interpolationMode);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            return new WriteableWicBitmapImpl(fileName);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
+        {
+            return new WriteableWicBitmapImpl(stream);
         }
 
         /// <inheritdoc />
@@ -213,11 +218,11 @@ namespace Avalonia.Direct2D1
             return new WicBitmapImpl(format, alphaFormat, data, size, dpi, stride);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
 
-            var glyphCount = glyphRun.GlyphIndices.Length;
+            var glyphCount = glyphRun.GlyphIndices.Count;
 
             var run = new SharpDX.DirectWrite.GlyphRun
             {
@@ -236,19 +241,15 @@ namespace Avalonia.Direct2D1
 
             run.Advances = new float[glyphCount];
 
-            width = 0;
-
             var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
-            if (glyphRun.GlyphAdvances.IsEmpty)
+            if (glyphRun.GlyphAdvances == null)
             {
                 for (var i = 0; i < glyphCount; i++)
                 {
                     var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
 
                     run.Advances[i] = advance;
-
-                    width += advance;
                 }
             }
             else
@@ -258,12 +259,10 @@ namespace Avalonia.Direct2D1
                     var advance = (float)glyphRun.GlyphAdvances[i];
 
                     run.Advances[i] = advance;
-
-                    width += advance;
                 }
             }
 
-            if (glyphRun.GlyphOffsets.IsEmpty)
+            if (glyphRun.GlyphOffsets == null)
             {
                 return new GlyphRunImpl(run);
             }

@@ -11,12 +11,12 @@ namespace Avalonia.Controls.Converters
     {
         public static readonly MenuScrollingVisibilityConverter Instance = new MenuScrollingVisibilityConverter();
 
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             if (parameter == null ||
                 values == null ||
                 values.Count != 4 ||
-                !(values[0] is ScrollBarVisibility visiblity) ||
+                !(values[0] is ScrollBarVisibility visibility) ||
                 !(values[1] is double offset) ||
                 !(values[2] is double extent) ||
                 !(values[3] is double viewport))
@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Converters
                 return AvaloniaProperty.UnsetValue;
             }
 
-            if (visiblity == ScrollBarVisibility.Auto)
+            if (visibility == ScrollBarVisibility.Auto)
             {
                 if (extent == viewport)
                 {

@@ -9,7 +9,7 @@ namespace Avalonia.Media.TextFormatting
     [DebuggerTypeProxy(typeof(TextRunDebuggerProxy))]
     public abstract class TextRun
     {
-        public static readonly int DefaultTextSourceLength = 1;
+        public const int DefaultTextSourceLength = 1;
 
         /// <summary>
         ///  Gets the text source length.
@@ -24,7 +24,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// A set of properties shared by every characters in the run
         /// </summary>
-        public virtual TextRunProperties Properties => null;
+        public virtual TextRunProperties? Properties => null;
 
         private class TextRunDebuggerProxy
         {
@@ -41,7 +41,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     unsafe
                     {
-                        fixed (char* charsPtr = _textRun.Text.Buffer.Span)
+                        fixed (char* charsPtr = _textRun.Text.Span)
                         {
                             return new string(charsPtr, 0, _textRun.Text.Length);
                         }
@@ -49,7 +49,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            public TextRunProperties Properties => _textRun.Properties;
+            public TextRunProperties? Properties => _textRun.Properties;
         }
     }
 }

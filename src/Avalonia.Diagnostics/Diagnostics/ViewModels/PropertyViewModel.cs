@@ -14,11 +14,19 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract object Key { get; }
         public abstract string Name { get; }
         public abstract string Group { get; }
-        public abstract string Type { get; }
-        public abstract string Value { get; set; }
+        public abstract Type AssignedType { get; }
+        public abstract Type? DeclaringType { get; }
+        public abstract string? Value { get; set; }
+        public abstract string Priority { get; }
+        public abstract bool? IsAttached { get; }
         public abstract void Update();
+        public abstract Type PropertyType { get; }
+        public string Type => PropertyType == AssignedType
+            ? PropertyType.GetTypeName()
+            : $"{PropertyType.GetTypeName()} {{{AssignedType.GetTypeName()}}}";
 
-        protected static string ConvertToString(object value)
+
+        protected static string? ConvertToString(object? value)
         {
             if (value is null)
             {
@@ -28,16 +36,16 @@ namespace Avalonia.Diagnostics.ViewModels
             var converter = TypeDescriptor.GetConverter(value);
 
             //CollectionConverter does not deliver any important information. It just displays "(Collection)".
-            if (!converter.CanConvertTo(typeof(string)) || 
+            if (!converter.CanConvertTo(typeof(string)) ||
                 converter.GetType() == typeof(CollectionConverter))
             {
-                return value.ToString();
+                return value.ToString() ?? "(null)";
             }
 
             return converter.ConvertToString(value);
         }
 
-        private static object InvokeParse(string s, Type targetType)
+        private static object? InvokeParse(string s, Type targetType)
         {
             var method = targetType.GetMethod("Parse", PublicStatic, null, StringIFormatProviderParameters, null);
 
@@ -56,8 +64,13 @@ namespace Avalonia.Diagnostics.ViewModels
             throw new InvalidCastException("Unable to convert value.");
         }
 
-        protected static object ConvertFromString(string s, Type targetType)
+        protected static object? ConvertFromString(string? s, Type targetType)
         {
+            if (s is null)
+            {
+                return null;
+            }
+
             var converter = TypeDescriptor.GetConverter(targetType);
 
             if (converter.CanConvertFrom(typeof(string)))

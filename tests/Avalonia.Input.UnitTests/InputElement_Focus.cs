@@ -318,5 +318,24 @@ namespace Avalonia.Input.UnitTests
                 Assert.True(root2.IsKeyboardFocusWithin);
             }
         }
+
+        [Fact]
+        public void Can_Clear_Focus()
+        {
+            Button target;
+
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var root = new TestRoot
+                {
+                    Child = target = new Button()
+                };
+
+                target.Focus();
+                FocusManager.Instance.Focus(null);
+
+                Assert.Null(FocusManager.Instance.Current);
+            }
+        }
     }
 }

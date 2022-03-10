@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Avalonia.Logging;
 using Avalonia.Threading;
 using Tmds.DBus;
 
@@ -11,7 +12,7 @@ namespace Avalonia.FreeDesktop
         /// This class uses synchronous execution at DBus connection establishment stage
         /// then switches to using AvaloniaSynchronizationContext
         /// </summary>
-        class DBusSyncContext : SynchronizationContext
+        private class DBusSyncContext : SynchronizationContext
         {
             private SynchronizationContext _ctx;
             private object _lock = new object();
@@ -48,8 +49,13 @@ namespace Avalonia.FreeDesktop
         }
         public static Connection Connection { get; private set; }
 
-        public static Exception TryInitialize(string dbusAddress = null)
+        public static Connection TryInitialize(string dbusAddress = null)
         {
+            return Connection ?? TryCreateNewConnection(dbusAddress);
+        }
+        
+        public static Connection TryCreateNewConnection(string dbusAddress = null)
+        { 
             var oldContext = SynchronizationContext.Current;
             try
             {
@@ -70,13 +76,15 @@ namespace Avalonia.FreeDesktop
             }
             catch (Exception e)
             {
-                return e;
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(null, "Unable to connect to DBus: " + e);
             }
             finally
             {
                 SynchronizationContext.SetSynchronizationContext(oldContext);
             }
-            return null;
+
+            return Connection;
         }
     }
 }

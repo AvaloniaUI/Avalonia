@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Data;
 
 #nullable enable
@@ -93,16 +94,35 @@ namespace Avalonia.Animation
                 var oldTransitions = change.OldValue.GetValueOrDefault<Transitions>();
                 var newTransitions = change.NewValue.GetValueOrDefault<Transitions>();
 
+                // When transitions are replaced, we add the new transitions before removing the old
+                // transitions, so that when the old transition being disposed causes the value to
+                // change, there is a corresponding entry in `_transitionStates`. This means that we
+                // need to account for any transitions present in both the old and new transitions
+                // collections.
                 if (newTransitions is object)
                 {
+                    var toAdd = (IList)newTransitions;
+
+                    if (newTransitions.Count > 0 && oldTransitions?.Count > 0)
+                    {
+                        toAdd = newTransitions.Except(oldTransitions).ToList();
+                    }
+
                     newTransitions.CollectionChanged += TransitionsCollectionChanged;
-                    AddTransitions(newTransitions);
+                    AddTransitions(toAdd);
                 }
 
                 if (oldTransitions is object)
                 {
+                    var toRemove = (IList)oldTransitions;
+
+                    if (oldTransitions.Count > 0 && newTransitions?.Count > 0)
+                    {
+                        toRemove = oldTransitions.Except(newTransitions).ToList();
+                    }
+
                     oldTransitions.CollectionChanged -= TransitionsCollectionChanged;
-                    RemoveTransitions(oldTransitions);
+                    RemoveTransitions(toRemove);
                 }
             }
             else if (_transitionsEnabled &&
@@ -115,9 +135,9 @@ namespace Avalonia.Animation
                 {
                     var transition = Transitions[i];
 
-                    if (transition.Property == change.Property)
+                    if (transition.Property == change.Property &&
+                        _transitionState.TryGetValue(transition, out var state))
                     {
-                        var state = _transitionState[transition];
                         var oldValue = state.BaseValue;
                         var newValue = GetAnimationBaseValue(transition.Property);
 
@@ -137,7 +157,7 @@ namespace Avalonia.Animation
                             state.Instance?.Dispose();
                             state.Instance = transition.Apply(
                                 this,
-                                Clock ?? AvaloniaLocator.Current.GetService<IGlobalClock>(),
+                                Clock ?? AvaloniaLocator.Current.GetRequiredService<IGlobalClock>(),
                                 oldValue,
                                 newValue);
                             return;
@@ -149,7 +169,7 @@ namespace Avalonia.Animation
             base.OnPropertyChangedCore(change);
         }
 
-        private void TransitionsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void TransitionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (!_transitionsEnabled)
             {
@@ -159,14 +179,14 @@ namespace Avalonia.Animation
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    AddTransitions(e.NewItems);
+                    AddTransitions(e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    RemoveTransitions(e.OldItems);
+                    RemoveTransitions(e.OldItems!);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    RemoveTransitions(e.OldItems);
-                    AddTransitions(e.NewItems);
+                    RemoveTransitions(e.OldItems!);
+                    AddTransitions(e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     throw new NotSupportedException("Transitions collection cannot be reset.");
@@ -184,7 +204,7 @@ namespace Avalonia.Animation
 
             for (var i = 0; i < items.Count; ++i)
             {
-                var t = (ITransition)items[i];
+                var t = (ITransition)items[i]!;
 
                 _transitionState.Add(t, new TransitionState
                 {
@@ -202,7 +222,7 @@ namespace Avalonia.Animation
 
             for (var i = 0; i < items.Count; ++i)
             {
-                var t = (ITransition)items[i];
+                var t = (ITransition)items[i]!;
 
                 if (_transitionState.TryGetValue(t, out var state))
                 {
@@ -212,7 +232,7 @@ namespace Avalonia.Animation
             }
         }
 
-        private object GetAnimationBaseValue(AvaloniaProperty property)
+        private object? GetAnimationBaseValue(AvaloniaProperty property)
         {
             var value = this.GetBaseValue(property, BindingPriority.LocalValue);
 

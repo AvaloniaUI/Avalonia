@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Interactivity
 {
     /// <summary>
@@ -48,12 +50,14 @@ namespace Avalonia.Interactivity
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         public void AddHandler<TEventArgs>(
             RoutedEvent<TEventArgs> routedEvent,
-            EventHandler<TEventArgs> handler,
+            EventHandler<TEventArgs>? handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
             routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
-            handler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+            if (handler is null)
+                return;
 
             static void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
             {
@@ -97,10 +101,11 @@ namespace Avalonia.Interactivity
         /// <typeparam name="TEventArgs">The type of the event's args.</typeparam>
         /// <param name="routedEvent">The routed event.</param>
         /// <param name="handler">The handler.</param>
-        public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
+        public void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs>? handler)
             where TEventArgs : RoutedEventArgs
         {
-            RemoveHandler(routedEvent, (Delegate)handler);
+            if (handler is not null)
+                RemoveHandler(routedEvent, (Delegate)handler);
         }
 
         /// <summary>
@@ -141,7 +146,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The routed event.</param>
         /// <returns>An <see cref="EventRoute"/> describing the route.</returns>
         /// <remarks>
-        /// Usually, calling <see cref="RaiseEvent(RoutedEventArgs)"/> is sufficent to raise a routed
+        /// Usually, calling <see cref="RaiseEvent(RoutedEventArgs)"/> is sufficient to raise a routed
         /// event, however there are situations in which the construction of the event args is expensive
         /// and should be avoided if there are no handlers for an event. In these cases you can call
         /// this method to build the event route and check the <see cref="EventRoute.HasHandlers"/>
@@ -155,8 +160,8 @@ namespace Avalonia.Interactivity
             var result = new EventRoute(e);
             var hasClassHandlers = e.HasRaisedSubscriptions;
 
-            if (e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Bubble) ||
-                e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Tunnel))
+            if (e.RoutingStrategies.HasAllFlags(RoutingStrategies.Bubble) ||
+                e.RoutingStrategies.HasAllFlags(RoutingStrategies.Tunnel))
             {
                 IInteractive? element = this;
 

@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -28,6 +29,7 @@
         <Border Name="PART_LayoutRoot"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{TemplateBinding Padding}">
           <Panel>
             <ContentPresenter Name="PART_ContentPresenter"
@@ -84,7 +86,7 @@
   </Style>
 
   <!-- Selected Pressed state -->
-  <Style Selector="TabItem:pressed /template/ Border#PART_LayoutRoot">
+  <Style Selector="TabItem:selected:pressed /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
   </Style>
@@ -97,8 +99,8 @@
 
   <!-- TabStripPlacement States Group -->
   <Style Selector="TabItem[TabStripPlacement=Left] /template/ Border#PART_SelectedPipe">
-    <Setter Property="Width" Value="{StaticResource TabItemPipeThickness}" />
-    <Setter Property="Height" Value="{StaticResource TabItemVerticalPipeHeight}" />
+    <Setter Property="Width" Value="{DynamicResource TabItemPipeThickness}" />
+    <Setter Property="Height" Value="{DynamicResource TabItemVerticalPipeHeight}" />
     <Setter Property="Margin" Value="0,0,2,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -108,15 +110,15 @@
   </Style>
 
   <Style Selector="TabItem[TabStripPlacement=Top] /template/ Border#PART_SelectedPipe, TabItem[TabStripPlacement=Bottom] /template/ Border#PART_SelectedPipe">
-    <Setter Property="Height" Value="{StaticResource TabItemPipeThickness}" />
+    <Setter Property="Height" Value="{DynamicResource TabItemPipeThickness}" />
     <Setter Property="Margin" Value="0,0,0,2" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Bottom" />
   </Style>
 
   <Style Selector="TabItem[TabStripPlacement=Right] /template/ Border#PART_SelectedPipe">
-    <Setter Property="Width" Value="{StaticResource TabItemPipeThickness}" />
-    <Setter Property="Height" Value="{StaticResource TabItemVerticalPipeHeight}" />
+    <Setter Property="Width" Value="{DynamicResource TabItemPipeThickness}" />
+    <Setter Property="Height" Value="{DynamicResource TabItemVerticalPipeHeight}" />
     <Setter Property="Margin" Value="2,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="VerticalAlignment" Value="Center" />

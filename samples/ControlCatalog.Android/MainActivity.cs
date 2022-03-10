@@ -1,32 +1,16 @@
-﻿using System;
-using Android.App;
-using Android.OS;
+﻿using Android.App;
 using Android.Content.PM;
-using Avalonia.Android;
-using Avalonia.Controls;
-using Avalonia.Controls.Templates;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Styling;
-using Avalonia.Themes.Default;
 using Avalonia;
+using Avalonia.Android;
 
 namespace ControlCatalog.Android
 {
-    [Activity(Label = "ControlCatalog.Android", MainLauncher = true, Icon = "@drawable/icon", LaunchMode = LaunchMode.SingleInstance)]
-    public class MainActivity : AvaloniaActivity
+    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", LaunchMode = LaunchMode.SingleInstance, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    public class MainActivity : AvaloniaActivity<App>
     {
-        protected override void OnCreate(Bundle savedInstanceState)
+        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
-            if (Avalonia.Application.Current == null)           
-            {
-                AppBuilder.Configure<App>()
-                    .UseAndroid()
-                    .SetupWithoutStarting();
-                Content = new MainView();
-            }
-            base.OnCreate(savedInstanceState);
+            return base.CustomizeAppBuilder(builder);
         }
     }
 }
-

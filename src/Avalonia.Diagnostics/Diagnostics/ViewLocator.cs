@@ -7,14 +7,17 @@ namespace Avalonia.Diagnostics
 {
     internal class ViewLocator : IDataTemplate
     {
-        public IControl Build(object data)
+        public IControl? Build(object? data)
         {
-            var name = data.GetType().FullName.Replace("ViewModel", "View");
+            if (data is null)
+                return null;
+
+            var name = data.GetType().FullName!.Replace("ViewModel", "View");
             var type = Type.GetType(name);
 
             if (type != null)
             {
-                return (Control)Activator.CreateInstance(type);
+                return (Control)Activator.CreateInstance(type)!;
             }
             else
             {
@@ -22,7 +25,7 @@ namespace Avalonia.Diagnostics
             }
         }
 
-        public bool Match(object data)
+        public bool Match(object? data)
         {
             return data is ViewModelBase;
         }

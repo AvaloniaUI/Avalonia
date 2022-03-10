@@ -21,10 +21,12 @@ namespace Avalonia.Controls.Platform
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            while (true)
+            var handles = new[] { _signaled, cancellationToken.WaitHandle };
+
+            while (!cancellationToken.IsCancellationRequested)
             {
                 Signaled?.Invoke(null);
-                _signaled.WaitOne();
+                WaitHandle.WaitAny(handles);
             }
         }
 
@@ -34,7 +36,7 @@ namespace Avalonia.Controls.Platform
             private readonly DispatcherPriority _priority;
             private readonly TimeSpan _interval;
             private readonly Action _tick;
-            private Timer _timer;
+            private Timer? _timer;
             private GCHandle _handle;
 
             public TimerImpl(DispatcherPriority priority, TimeSpan interval, Action tick)
@@ -46,7 +48,7 @@ namespace Avalonia.Controls.Platform
                 _handle = GCHandle.Alloc(_timer);
             }
 
-            private void OnTimer(object state)
+            private void OnTimer(object? state)
             {
                 if (_timer == null)
                     return;
@@ -64,7 +66,7 @@ namespace Avalonia.Controls.Platform
             public void Dispose()
             {
                 _handle.Free();
-                _timer.Dispose();
+                _timer?.Dispose();
                 _timer = null;
             }
         }
@@ -82,8 +84,10 @@ namespace Avalonia.Controls.Platform
         [ThreadStatic] private static bool TlsCurrentThreadIsLoopThread;
 
         public bool CurrentThreadIsLoopThread => TlsCurrentThreadIsLoopThread;
-        public event Action<DispatcherPriority?> Signaled;
-        public event Action<TimeSpan> Tick;
+        public event Action<DispatcherPriority?>? Signaled;
+#pragma warning disable CS0067
+        public event Action<TimeSpan>? Tick;
+#pragma warning restore CS0067
 
     }
 }

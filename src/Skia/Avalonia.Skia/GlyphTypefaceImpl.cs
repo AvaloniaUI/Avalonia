@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     {
         private bool _isDisposed;
 
-        public GlyphTypefaceImpl(SKTypeface typeface)
+        public GlyphTypefaceImpl(SKTypeface typeface, bool isFakeBold = false, bool isFakeItalic = false)
         {
             Typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
@@ -52,6 +52,10 @@ namespace Avalonia.Skia
                 0;
 
             IsFixedPitch = Typeface.IsFixedPitch;
+
+            IsFakeBold = isFakeBold;
+
+            IsFakeItalic = isFakeItalic;
         }
 
         public Face Face { get; }
@@ -60,6 +64,8 @@ namespace Avalonia.Skia
 
         public SKTypeface Typeface { get; }
 
+        public int ReplacementCodepoint { get; }
+        
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public short DesignEmHeight { get; }
 
@@ -86,6 +92,10 @@ namespace Avalonia.Skia
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public bool IsFixedPitch { get; }
+        
+        public bool IsFakeBold { get; }
+        
+        public bool IsFakeItalic { get; }
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public ushort GetGlyph(uint codepoint)

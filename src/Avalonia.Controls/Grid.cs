@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -17,7 +18,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Grid
+    /// Defines a flexible grid area that consists of columns and rows.
     /// </summary>
     public class Grid : Panel
     {
@@ -48,7 +49,7 @@ namespace Avalonia.Controls
         /// <param name="value">Column property value.</param>
         public static void SetColumn(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             element.SetValue(ColumnProperty, value);
         }
 
@@ -59,7 +60,7 @@ namespace Avalonia.Controls
         /// <returns>Column property value.</returns>
         public static int GetColumn(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(ColumnProperty);
         }
 
@@ -70,7 +71,7 @@ namespace Avalonia.Controls
         /// <param name="value">Row property value.</param>
         public static void SetRow(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             element.SetValue(RowProperty, value);
         }
 
@@ -81,7 +82,7 @@ namespace Avalonia.Controls
         /// <returns>Row property value.</returns>
         public static int GetRow(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(RowProperty);
         }
 
@@ -92,7 +93,7 @@ namespace Avalonia.Controls
         /// <param name="value">ColumnSpan property value.</param>
         public static void SetColumnSpan(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             element.SetValue(ColumnSpanProperty, value);
         }
 
@@ -103,7 +104,7 @@ namespace Avalonia.Controls
         /// <returns>ColumnSpan property value.</returns>
         public static int GetColumnSpan(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(ColumnSpanProperty);
         }
 
@@ -114,7 +115,7 @@ namespace Avalonia.Controls
         /// <param name="value">RowSpan property value.</param>
         public static void SetRowSpan(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             element.SetValue(RowSpanProperty, value);
         }
 
@@ -125,7 +126,7 @@ namespace Avalonia.Controls
         /// <returns>RowSpan property value.</returns>
         public static int GetRowSpan(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(RowSpanProperty);
         }
 
@@ -136,7 +137,7 @@ namespace Avalonia.Controls
         /// <param name="value">IsSharedSizeScope property value.</param>
         public static void SetIsSharedSizeScope(Control element, bool value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             element.SetValue(IsSharedSizeScopeProperty, value);
         }
 
@@ -147,7 +148,7 @@ namespace Avalonia.Controls
         /// <returns>IsSharedSizeScope property value.</returns>
         public static bool GetIsSharedSizeScope(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(IsSharedSizeScopeProperty);
         }
 
@@ -330,7 +331,7 @@ namespace Avalonia.Controls
                     //  value of Auto column), "cell 2 1" needs to be calculated first,
                     //  as it contributes to the Auto column's calculated value.
                     //  At the same time in order to accurately calculate constraint
-                    //  height for "cell 2 1", "cell 1 2" needs to be calcualted first,
+                    //  height for "cell 2 1", "cell 1 2" needs to be calculated first,
                     //  as it contributes to Auto row height, which is used in the
                     //  computation of Star row resolved height.
                     //
@@ -405,11 +406,11 @@ namespace Avalonia.Controls
                     //
                     //  where:
                     //  *   all [Measure GroupN] - regular children measure process -
-                    //      each cell is measured given contraint size as an input
+                    //      each cell is measured given constraint size as an input
                     //      and each cell's desired size is accumulated on the
                     //      corresponding column / row;
                     //  *   [Measure Group2'] - is when each cell is measured with
-                    //      infinit height as a constraint and a cell's desired
+                    //      infinite height as a constraint and a cell's desired
                     //      height is ignored;
                     //  *   [Measure Groups''] - is when each cell is measured (second
                     //      time during single Grid.MeasureOverride) regularly but its
@@ -573,7 +574,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// <see cref="Panel.ChildrenChanged"/>
         /// </summary>
-        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             CellsStructureDirty = true;
             base.ChildrenChanged(sender, e);
@@ -598,7 +599,7 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Contract.Requires<NullReferenceException>(_data != null);
+            Debug.Assert(_data != null);
 
             //  actual value calculations require structure to be up-to-date
             if (!ColumnDefinitionsDirty)
@@ -620,7 +621,7 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Contract.Requires<NullReferenceException>(_data != null);
+            Debug.Assert(_data != null);
 
             //  actual value calculations require structure to be up-to-date
             if (!RowDefinitionsDirty)
@@ -637,7 +638,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool MeasureOverrideInProgress
         {
-            get { return (CheckFlagsAnd(Flags.MeasureOverrideInProgress)); }
+            get { return CheckFlags(Flags.MeasureOverrideInProgress); }
             set { SetFlags(value, Flags.MeasureOverrideInProgress); }
         }
 
@@ -646,7 +647,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool ArrangeOverrideInProgress
         {
-            get { return (CheckFlagsAnd(Flags.ArrangeOverrideInProgress)); }
+            get { return CheckFlags(Flags.ArrangeOverrideInProgress); }
             set { SetFlags(value, Flags.ArrangeOverrideInProgress); }
         }
 
@@ -780,7 +781,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Initializes DefinitionsU memeber either to user supplied ColumnDefinitions collection
+        /// Initializes DefinitionsU member either to user supplied ColumnDefinitions collection
         /// or to a default single element collection. DefinitionsU gets trimmed to size.
         /// </summary>
         /// <remarks>
@@ -821,7 +822,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Initializes DefinitionsV memeber either to user supplied RowDefinitions collection
+        /// Initializes DefinitionsV member either to user supplied RowDefinitions collection
         /// or to a default single element collection. DefinitionsV gets trimmed to size.
         /// </summary>
         /// <remarks>
@@ -978,6 +979,7 @@ namespace Avalonia.Controls
         /// width is not registered in columns.</param>
         /// <param name="forceInfinityV">Passed through to MeasureCell.
         /// When "true" cells' desired height is not registered in rows.</param>
+        /// <param name="hasDesiredSizeUChanged">When the method exits, indicates whether the desired size has changed.</param>
         private void MeasureCellsGroup(
             int cellsHead,
             Size referenceSize,
@@ -993,7 +995,7 @@ namespace Avalonia.Controls
             }
 
             var children = this.Children;
-            Hashtable spanStore = null;
+            Hashtable? spanStore = null;
             bool ignoreDesiredSizeV = forceInfinityV;
 
             int i = cellsHead;
@@ -1047,7 +1049,7 @@ namespace Avalonia.Controls
                 foreach (DictionaryEntry e in spanStore)
                 {
                     SpanKey key = (SpanKey)e.Key;
-                    double requestedSize = (double)e.Value;
+                    double requestedSize = (double)e.Value!;
 
                     EnsureMinSizeInDefinitionRange(
                         key.U ? DefinitionsU : DefinitionsV,
@@ -1068,7 +1070,7 @@ namespace Avalonia.Controls
         /// <param name="u"><c>true</c> if this is a column span. <c>false</c> if this is a row span.</param>
         /// <param name="value">Value to store. If an entry already exists the biggest value is stored.</param>
         private static void RegisterSpan(
-            ref Hashtable store,
+            ref Hashtable? store,
             int start,
             int count,
             bool u,
@@ -1080,7 +1082,7 @@ namespace Avalonia.Controls
             }
 
             SpanKey key = new SpanKey(start, count, u);
-            object o = store[key];
+            object? o = store[key];
 
             if (o == null
                 || value > (double)o)
@@ -1604,12 +1606,12 @@ namespace Avalonia.Controls
                     while (minCount > 0 && tempDefinitions[minCount - 1].MeasureSize < 0.0)
                     {
                         --minCount;
-                        tempDefinitions[minCount] = null;
+                        tempDefinitions[minCount] = null!;
                     }
                     while (maxCount > 0 && tempDefinitions[defCount + maxCount - 1].MeasureSize < 0.0)
                     {
                         --maxCount;
-                        tempDefinitions[defCount + maxCount] = null;
+                        tempDefinitions[defCount + maxCount] = null!;
                     }
                 }
 
@@ -2131,7 +2133,7 @@ namespace Avalonia.Controls
                 //
                 // Fortunately, our scenarios tend to have a small number of columns (~10 or fewer)
                 // each being allocated a large number of pixels (~50 or greater), and
-                // people don't even notice the kind of 1-pixel anomolies that are
+                // people don't even notice the kind of 1-pixel anomalies that are
                 // theoretically inevitable, or don't care if they do.  At least they shouldn't
                 // care - no one should be using the results WPF's grid layout to make
                 // quantitative decisions; its job is to produce a reasonable display, not
@@ -2320,7 +2322,7 @@ namespace Avalonia.Controls
         /// by adding / removing GridLinesRenderer visual.
         /// Returns a reference to GridLinesRenderer visual or null.
         /// </summary>
-        private GridLinesRenderer EnsureGridLinesRenderer()
+        private GridLinesRenderer? EnsureGridLinesRenderer()
         {
             //
             //  synchronize the state
@@ -2350,25 +2352,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// CheckFlagsAnd returns <c>true</c> if all the flags in the
+        /// CheckFlags returns <c>true</c> if all the flags in the
         /// given bitmask are set on the object.
         /// </summary>
-        private bool CheckFlagsAnd(Flags flags)
+        private bool CheckFlags(Flags flags)
         {
-            return ((_flags & flags) == flags);
-        }
-
-        /// <summary>
-        /// CheckFlagsOr returns <c>true</c> if at least one flag in the
-        /// given bitmask is set.
-        /// </summary>
-        /// <remarks>
-        /// If no bits are set in the given bitmask, the method returns
-        /// <c>true</c>.
-        /// </remarks>
-        private bool CheckFlagsOr(Flags flags)
-        {
-            return (flags == 0 || (_flags & flags) != 0);
+            return _flags.HasAllFlags(flags);
         }
 
         private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
@@ -2381,16 +2370,16 @@ namespace Avalonia.Controls
                 grid.InvalidateVisual();
             }
 
-            grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
+            grid.SetFlags((bool)e.NewValue!, Flags.ShowGridLinesPropertyValue);
         }
 
         private static void OnCellAttachedPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
-            Visual child = d as Visual;
+            Visual? child = d as Visual;
 
             if (child != null)
             {
-                Grid grid = child.GetVisualParent<Grid>();
+                Grid? grid = child.GetVisualParent<Grid>();
                 if (grid != null
                     && grid.ExtData != null
                     && grid.ListenToNotifications)
@@ -2407,7 +2396,7 @@ namespace Avalonia.Controls
         /// true if one or both of x and y are null, in which case result holds
         /// the relative sort order.
         /// </returns>
-        private static bool CompareNullRefs(object x, object y, out int result)
+        private static bool CompareNullRefs([NotNullWhen(false)] object? x, [NotNullWhen(false)] object? y, out int result)
         {
             result = 2;
 
@@ -2438,7 +2427,7 @@ namespace Avalonia.Controls
         /// </summary>
         private IReadOnlyList<DefinitionBase> DefinitionsU
         {
-            get { return (ExtData.DefinitionsU); }
+            get { return (ExtData.DefinitionsU!); }
         }
 
         /// <summary>
@@ -2446,7 +2435,7 @@ namespace Avalonia.Controls
         /// </summary>
         private IReadOnlyList<DefinitionBase> DefinitionsV
         {
-            get { return (ExtData.DefinitionsV); }
+            get { return (ExtData.DefinitionsV!); }
         }
 
         /// <summary>
@@ -2462,7 +2451,7 @@ namespace Avalonia.Controls
                 if (extData.TempDefinitions == null
                     || extData.TempDefinitions.Length < requiredLength)
                 {
-                    WeakReference tempDefinitionsWeakRef = (WeakReference)Thread.GetData(s_tempDefinitionsDataSlot);
+                    WeakReference? tempDefinitionsWeakRef = (WeakReference?)Thread.GetData(s_tempDefinitionsDataSlot);
                     if (tempDefinitionsWeakRef == null)
                     {
                         extData.TempDefinitions = new DefinitionBase[requiredLength];
@@ -2470,7 +2459,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        extData.TempDefinitions = (DefinitionBase[])tempDefinitionsWeakRef.Target;
+                        extData.TempDefinitions = (DefinitionBase[]?)tempDefinitionsWeakRef.Target;
                         if (extData.TempDefinitions == null
                             || extData.TempDefinitions.Length < requiredLength)
                         {
@@ -2527,7 +2516,7 @@ namespace Avalonia.Controls
         /// </summary>
         private CellCache[] PrivateCells
         {
-            get { return (ExtData.CellCachesCollection); }
+            get { return (ExtData.CellCachesCollection!); }
         }
 
         /// <summary>
@@ -2535,7 +2524,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool CellsStructureDirty
         {
-            get { return (!CheckFlagsAnd(Flags.ValidCellsStructure)); }
+            get { return !CheckFlags(Flags.ValidCellsStructure); }
             set { SetFlags(!value, Flags.ValidCellsStructure); }
         }
 
@@ -2544,7 +2533,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool ListenToNotifications
         {
-            get { return (CheckFlagsAnd(Flags.ListenToNotifications)); }
+            get { return CheckFlags(Flags.ListenToNotifications); }
             set { SetFlags(value, Flags.ListenToNotifications); }
         }
 
@@ -2553,7 +2542,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentU
         {
-            get { return (CheckFlagsAnd(Flags.SizeToContentU)); }
+            get { return CheckFlags(Flags.SizeToContentU); }
             set { SetFlags(value, Flags.SizeToContentU); }
         }
 
@@ -2562,7 +2551,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentV
         {
-            get { return (CheckFlagsAnd(Flags.SizeToContentV)); }
+            get { return CheckFlags(Flags.SizeToContentV); }
             set { SetFlags(value, Flags.SizeToContentV); }
         }
 
@@ -2571,7 +2560,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsU
         {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsU)); }
+            get { return CheckFlags(Flags.HasStarCellsU); }
             set { SetFlags(value, Flags.HasStarCellsU); }
         }
 
@@ -2580,7 +2569,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsV
         {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsV)); }
+            get { return CheckFlags(Flags.HasStarCellsV); }
             set { SetFlags(value, Flags.HasStarCellsV); }
         }
 
@@ -2589,7 +2578,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasGroup3CellsInAutoRows
         {
-            get { return (CheckFlagsAnd(Flags.HasGroup3CellsInAutoRows)); }
+            get { return CheckFlags(Flags.HasGroup3CellsInAutoRows); }
             set { SetFlags(value, Flags.HasGroup3CellsInAutoRows); }
         }
 
@@ -2598,7 +2587,7 @@ namespace Avalonia.Controls
         /// </summary>
         private ExtendedData ExtData
         {
-            get { return (_data); }
+            get { return (_data!); }
         }
 
         /// <summary>
@@ -2609,7 +2598,7 @@ namespace Avalonia.Controls
             if (scale < 0.0)
             {
                 // if one of the *-weights is Infinity, adjust the weights by mapping
-                // Infinty to 1.0 and everything else to 0.0:  the infinite items share the
+                // Infinity to 1.0 and everything else to 0.0:  the infinite items share the
                 // available space equally, everyone else gets nothing.
                 return (Double.IsPositiveInfinity(def.UserSize.Value)) ? 1.0 : 0.0;
             }
@@ -2620,17 +2609,17 @@ namespace Avalonia.Controls
         }
 
         // Extended data instantiated on demand, for non-trivial case handling only
-        private ExtendedData _data;
+        private ExtendedData? _data;
 
         // Grid validity / property caches dirtiness flags
         private Flags _flags;
-        private GridLinesRenderer _gridLinesRenderer;
+        private GridLinesRenderer? _gridLinesRenderer;
 
         // Keeps track of definition indices.
-        int[] _definitionIndices;
+        int[]? _definitionIndices;
 
         // Stores unrounded values and rounding errors during layout rounding.
-        double[] _roundingErrors;
+        double[]? _roundingErrors;
 
         // 5 is an arbitrary constant chosen to end the measure loop
         private const int c_layoutLoopMaxCount = 5;
@@ -2647,16 +2636,16 @@ namespace Avalonia.Controls
         /// </summary>
         private class ExtendedData
         {
-            internal ColumnDefinitions ColumnDefinitions;  //  collection of column definitions (logical tree support)
-            internal RowDefinitions RowDefinitions;        //  collection of row definitions (logical tree support)
-            internal IReadOnlyList<DefinitionBase> DefinitionsU;    //  collection of column definitions used during calc
-            internal IReadOnlyList<DefinitionBase> DefinitionsV;    //  collection of row definitions used during calc
-            internal CellCache[] CellCachesCollection;              //  backing store for logical children
+            internal ColumnDefinitions? ColumnDefinitions;  //  collection of column definitions (logical tree support)
+            internal RowDefinitions? RowDefinitions;        //  collection of row definitions (logical tree support)
+            internal IReadOnlyList<DefinitionBase>? DefinitionsU;    //  collection of column definitions used during calc
+            internal IReadOnlyList<DefinitionBase>? DefinitionsV;    //  collection of row definitions used during calc
+            internal CellCache[]? CellCachesCollection;              //  backing store for logical children
             internal int CellGroup1;                                //  index of the first cell in first cell group
             internal int CellGroup2;                                //  index of the first cell in second cell group
             internal int CellGroup3;                                //  index of the first cell in third cell group
             internal int CellGroup4;                                //  index of the first cell in forth cell group
-            internal DefinitionBase[] TempDefinitions;              //  temporary array used during layout for various purposes
+            internal DefinitionBase[]? TempDefinitions;              //  temporary array used during layout for various purposes
                                                                     //  TempDefinitions.Length == Max(definitionsU.Length, definitionsV.Length)
         }
 
@@ -2667,7 +2656,7 @@ namespace Avalonia.Controls
         private enum Flags
         {
             //
-            //  the foolowing flags let grid tracking dirtiness in more granular manner:
+            //  the following flags let grid tracking dirtiness in more granular manner:
             //  * Valid???Structure flags indicate that elements were added or removed.
             //  * Valid???Layout flags indicate that layout time portion of the information
             //    stored on the objects should be updated.
@@ -2696,7 +2685,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// ShowGridLines property. This property is used mostly
-        /// for simplification of visual debuggig. When it is set
+        /// for simplification of visual debugging. When it is set
         /// to <c>true</c> grid lines are drawn to visualize location
         /// of grid lines.
         /// </summary>
@@ -2803,10 +2792,10 @@ namespace Avalonia.Controls
             internal LayoutTimeSizeType SizeTypeU;
             internal LayoutTimeSizeType SizeTypeV;
             internal int Next;
-            internal bool IsStarU { get { return ((SizeTypeU & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoU { get { return ((SizeTypeU & LayoutTimeSizeType.Auto) != 0); } }
-            internal bool IsStarV { get { return ((SizeTypeV & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoV { get { return ((SizeTypeV & LayoutTimeSizeType.Auto) != 0); } }
+            internal bool IsStarU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Auto);
+            internal bool IsStarV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Auto);
         }
 
         /// <summary>
@@ -2843,9 +2832,9 @@ namespace Avalonia.Controls
             /// <summary>
             /// <see cref="object.Equals(object)"/>
             /// </summary>
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
-                SpanKey sk = obj as SpanKey;
+                SpanKey? sk = obj as SpanKey;
                 return (sk != null
                         && sk._start == _start
                         && sk._count == _count
@@ -2878,10 +2867,10 @@ namespace Avalonia.Controls
         /// </summary>
         private class SpanPreferredDistributionOrderComparer : IComparer
         {
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
+                DefinitionBase? definitionX = x as DefinitionBase;
+                DefinitionBase? definitionY = y as DefinitionBase;
 
                 int result;
 
@@ -2920,10 +2909,10 @@ namespace Avalonia.Controls
         /// </summary>
         private class SpanMaxDistributionOrderComparer : IComparer
         {
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
+                DefinitionBase? definitionX = x as DefinitionBase;
+                DefinitionBase? definitionY = y as DefinitionBase;
 
                 int result;
 
@@ -2966,17 +2955,16 @@ namespace Avalonia.Controls
 
             internal StarDistributionOrderIndexComparer(IReadOnlyList<DefinitionBase> definitions)
             {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
+                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 int? indexX = x as int?;
                 int? indexY = y as int?;
 
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
+                DefinitionBase? definitionX = null;
+                DefinitionBase? definitionY = null;
 
                 if (indexX != null)
                 {
@@ -3007,17 +2995,16 @@ namespace Avalonia.Controls
 
             internal DistributionOrderIndexComparer(IReadOnlyList<DefinitionBase> definitions)
             {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
+                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 int? indexX = x as int?;
                 int? indexY = y as int?;
 
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
+                DefinitionBase? definitionX = null;
+                DefinitionBase? definitionY = null;
 
                 if (indexX != null)
                 {
@@ -3050,11 +3037,10 @@ namespace Avalonia.Controls
 
             internal RoundingErrorIndexComparer(double[] errors)
             {
-                Contract.Requires<NullReferenceException>(errors != null);
-                this.errors = errors;
+                this.errors = errors ?? throw new ArgumentNullException(nameof(errors));
             }
 
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 int? indexX = x as int?;
                 int? indexY = y as int?;
@@ -3079,10 +3065,10 @@ namespace Avalonia.Controls
         /// </summary>
         private class MinRatioComparer : IComparer
         {
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
+                DefinitionBase? definitionX = x as DefinitionBase;
+                DefinitionBase? definitionY = y as DefinitionBase;
 
                 int result;
 
@@ -3102,10 +3088,10 @@ namespace Avalonia.Controls
         /// </summary>
         private class MaxRatioComparer : IComparer
         {
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
+                DefinitionBase? definitionX = x as DefinitionBase;
+                DefinitionBase? definitionY = y as DefinitionBase;
 
                 int result;
 
@@ -3124,10 +3110,10 @@ namespace Avalonia.Controls
         /// </summary>
         private class StarWeightComparer : IComparer
         {
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
+                DefinitionBase? definitionX = x as DefinitionBase;
+                DefinitionBase? definitionY = y as DefinitionBase;
 
                 int result;
 
@@ -3149,17 +3135,16 @@ namespace Avalonia.Controls
 
             internal MinRatioIndexComparer(IReadOnlyList<DefinitionBase> definitions)
             {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
+                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 int? indexX = x as int?;
                 int? indexY = y as int?;
 
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
+                DefinitionBase? definitionX = null;
+                DefinitionBase? definitionY = null;
 
                 if (indexX != null)
                 {
@@ -3190,17 +3175,16 @@ namespace Avalonia.Controls
 
             internal MaxRatioIndexComparer(IReadOnlyList<DefinitionBase> definitions)
             {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
+                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 int? indexX = x as int?;
                 int? indexY = y as int?;
 
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
+                DefinitionBase? definitionX = null;
+                DefinitionBase? definitionY = null;
 
                 if (indexX != null)
                 {
@@ -3231,17 +3215,16 @@ namespace Avalonia.Controls
 
             internal StarWeightIndexComparer(IReadOnlyList<DefinitionBase> definitions)
             {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
+                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
             }
 
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 int? indexX = x as int?;
                 int? indexY = y as int?;
 
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
+                DefinitionBase? definitionX = null;
+                DefinitionBase? definitionY = null;
 
                 if (indexX != null)
                 {

@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media
@@ -8,7 +8,7 @@ namespace Avalonia.Media
     public struct BoxShadows
     {
         private readonly BoxShadow _first;
-        private readonly BoxShadow[] _list;
+        private readonly BoxShadow[]? _list;
         public int Count { get; }
 
         static BoxShadows()
@@ -39,8 +39,26 @@ namespace Avalonia.Media
                     throw new IndexOutOfRangeException();
                 if (c == 0)
                     return _first;
-                return _list[c - 1];
+                return _list![c - 1];
             }
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            if (Count == 0)
+            {
+                return "none";
+            }
+
+            foreach (var boxShadow in this)
+            {
+                sb.AppendFormat("{0} ", boxShadow.ToString());
+            }
+
+            return sb.ToString();
+
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -116,7 +134,7 @@ namespace Avalonia.Media
             return true;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BoxShadows other && Equals(other);
         }

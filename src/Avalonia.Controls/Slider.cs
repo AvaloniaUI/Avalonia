@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -8,10 +9,10 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Utilities;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
-
     /// <summary>
     /// Enum which describes how to position the ticks in a <see cref="Slider"/>.
     /// </summary>
@@ -51,6 +52,12 @@ namespace Avalonia.Controls
             ScrollBar.OrientationProperty.AddOwner<Slider>();
 
         /// <summary>
+        /// Defines the <see cref="IsDirectionReversed"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsDirectionReversedProperty =
+            Track.IsDirectionReversedProperty.AddOwner<Slider>();
+
+        /// <summary>
         /// Defines the <see cref="IsSnapToTickEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSnapToTickEnabledProperty =
@@ -76,14 +83,16 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private bool _isDragging = false;
-        private Track _track;
-        private Button _decreaseButton;
-        private Button _increaseButton;
-        private IDisposable _decreaseButtonPressDispose;
-        private IDisposable _decreaseButtonReleaseDispose;
-        private IDisposable _increaseButtonSubscription;
-        private IDisposable _increaseButtonReleaseDispose;
-        private IDisposable _pointerMovedDispose;
+        private Track? _track;
+        private Button? _decreaseButton;
+        private Button? _increaseButton;
+        private IDisposable? _decreaseButtonPressDispose;
+        private IDisposable? _decreaseButtonReleaseDispose;
+        private IDisposable? _increaseButtonSubscription;
+        private IDisposable? _increaseButtonReleaseDispose;
+        private IDisposable? _pointerMovedDispose;
+
+        private const double Tolerance = 0.0001;
 
         /// <summary>
         /// Initializes static members of the <see cref="Slider"/> class. 
@@ -91,12 +100,14 @@ namespace Avalonia.Controls
         static Slider()
         {
             PressedMixin.Attach<Slider>();
+            FocusableProperty.OverrideDefaultValue<Slider>(true);
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
                 RoutingStrategies.Bubble);
-            
+
             ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Slider>(AutomationControlType.Slider);
         }
 
         /// <summary>
@@ -123,6 +134,19 @@ namespace Avalonia.Controls
         {
             get { return GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the direction of increasing value.
+        /// </summary>
+        /// <value>
+        /// true if the direction of increasing value is to the left for a horizontal slider or
+        /// down for a vertical slider; otherwise, false. The default is false.
+        /// </value>
+        public bool IsDirectionReversed
+        {
+            get { return GetValue(IsDirectionReversedProperty); }
+            set { SetValue(IsDirectionReversedProperty, value); }
         }
 
         /// <summary>
@@ -157,13 +181,13 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            
+
             _decreaseButtonPressDispose?.Dispose();
             _decreaseButtonReleaseDispose?.Dispose();
             _increaseButtonSubscription?.Dispose();
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
-
+            
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
@@ -188,7 +212,107 @@ namespace Avalonia.Controls
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
         }
 
-        private void TrackMoved(object sender, PointerEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Handled || e.KeyModifiers != KeyModifiers.None) return;
+
+            var handled = true;
+
+            switch (e.Key)
+            {
+                case Key.Down:
+                case Key.Left:
+                    MoveToNextTick(IsDirectionReversed ? SmallChange : -SmallChange);
+                    break;
+
+                case Key.Up:
+                case Key.Right:
+                    MoveToNextTick(IsDirectionReversed ? -SmallChange : SmallChange);
+                    break;
+
+                case Key.PageUp:
+                    MoveToNextTick(IsDirectionReversed ? -LargeChange : LargeChange);
+                    break;
+
+                case Key.PageDown:
+                    MoveToNextTick(IsDirectionReversed ? LargeChange : -LargeChange);
+                    break;
+
+                case Key.Home:
+                    Value = Minimum;
+                    break;
+
+                case Key.End:
+                    Value = Maximum;
+                    break;
+
+                default:
+                    handled = false;
+                    break;
+            }
+
+            e.Handled = handled;
+        }
+            
+        private void MoveToNextTick(double direction)
+        {
+            if (direction == 0.0) return;
+
+            var value = Value;
+
+            // Find the next value by snapping
+            var next = SnapToTick(Math.Max(Minimum, Math.Min(Maximum, value + direction)));
+
+            var greaterThan = direction > 0; //search for the next tick greater than value?
+
+            // If the snapping brought us back to value, find the next tick point
+            if (Math.Abs(next - value) < Tolerance
+                && !(greaterThan && Math.Abs(value - Maximum) < Tolerance) // Stop if searching up if already at Max
+                && !(!greaterThan && Math.Abs(value - Minimum) < Tolerance)) // Stop if searching down if already at Min
+            {
+                var ticks = Ticks;
+
+                // If ticks collection is available, use it.
+                // Note that ticks may be unsorted.
+                if (ticks != null && ticks.Count > 0)
+                {
+                    foreach (var tick in ticks)
+                    {
+                        // Find the smallest tick greater than value or the largest tick less than value
+                        if (greaterThan && MathUtilities.GreaterThan(tick, value) &&
+                            (MathUtilities.LessThan(tick, next) || Math.Abs(next - value) < Tolerance)
+                            || !greaterThan && MathUtilities.LessThan(tick, value) &&
+                            (MathUtilities.GreaterThan(tick, next) || Math.Abs(next - value) < Tolerance))
+                        {
+                            next = tick;
+                        }
+                    }
+                }
+                else if (MathUtilities.GreaterThan(TickFrequency, 0.0))
+                {
+                    // Find the current tick we are at
+                    var tickNumber = Math.Round((value - Minimum) / TickFrequency);
+
+                    if (greaterThan)
+                        tickNumber += 1.0;
+                    else
+                        tickNumber -= 1.0;
+
+                    next = Minimum + tickNumber * TickFrequency;
+                }
+            }
+
+
+            // Update if we've found a better value
+            if (Math.Abs(next - value) > Tolerance)
+            {
+                Value = next;
+            }
+        }
+
+        private void TrackMoved(object? sender, PointerEventArgs e)
         {
             if (_isDragging)
             {
@@ -196,12 +320,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackReleased(object sender, PointerReleasedEventArgs e)
+        private void TrackReleased(object? sender, PointerReleasedEventArgs e)
         {
             _isDragging = false;
         }
 
-        private void TrackPressed(object sender, PointerPressedEventArgs e)
+        private void TrackPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -210,17 +334,23 @@ namespace Avalonia.Controls
             }
         }
 
-        private void MoveToPoint(PointerPoint x)
+        private void MoveToPoint(PointerPoint posOnTrack)
         {
+            if (_track is null)
+                return;
+
             var orient = Orientation == Orientation.Horizontal;
-
-            var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
-            // Just add epsilon to avoid NaN in case 0/0
-            pointDen += double.Epsilon;
-
-            var pointNum = orient ? x.Position.X : x.Position.Y;
-            var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);
-            var invert = orient ? 0 : 1;
+            var thumbLength = (orient 
+                ? _track.Thumb.Bounds.Width 
+                : _track.Thumb.Bounds.Height) + double.Epsilon;
+            var trackLength = (orient 
+                ? _track.Bounds.Width 
+                : _track.Bounds.Height) - thumbLength;
+            var trackPos = orient ? posOnTrack.Position.X : posOnTrack.Position.Y;
+            var logicalPos = MathUtilities.Clamp((trackPos - thumbLength * 0.5) / trackLength, 0.0d, 1.0d);
+            var invert = orient ? 
+                IsDirectionReversed ? 1 : 0 :
+                IsDirectionReversed ? 0 : 1;
             var calcVal = Math.Abs(invert - logicalPos);
             var range = Maximum - Minimum;
             var finalValue = calcVal * range + Minimum;
@@ -272,19 +402,18 @@ namespace Avalonia.Controls
         {
             if (IsSnapToTickEnabled)
             {
-                double previous = Minimum;
-                double next = Maximum;
+                var previous = Minimum;
+                var next = Maximum;
 
                 // This property is rarely set so let's try to avoid the GetValue
                 var ticks = Ticks;
 
                 // If ticks collection is available, use it.
                 // Note that ticks may be unsorted.
-                if ((ticks != null) && (ticks.Count > 0))
+                if (ticks != null && ticks.Count > 0)
                 {
-                    for (int i = 0; i < ticks.Count; i++)
+                    foreach (var tick in ticks)
                     {
-                        double tick = ticks[i];
                         if (MathUtilities.AreClose(tick, value))
                         {
                             return value;
@@ -302,7 +431,7 @@ namespace Avalonia.Controls
                 }
                 else if (MathUtilities.GreaterThan(TickFrequency, 0.0))
                 {
-                    previous = Minimum + (Math.Round(((value - Minimum) / TickFrequency)) * TickFrequency);
+                    previous = Minimum + Math.Round((value - Minimum) / TickFrequency) * TickFrequency;
                     next = Math.Min(Maximum, previous + TickFrequency);
                 }
 

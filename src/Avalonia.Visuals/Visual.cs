@@ -11,6 +11,8 @@ using Avalonia.Rendering;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -45,8 +47,8 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="Clip"/> property.
         /// </summary>
-        public static readonly StyledProperty<Geometry> ClipProperty =
-            AvaloniaProperty.Register<Visual, Geometry>(nameof(Clip));
+        public static readonly StyledProperty<Geometry?> ClipProperty =
+            AvaloniaProperty.Register<Visual, Geometry?>(nameof(Clip));
 
         /// <summary>
         /// Defines the <see cref="IsVisibleProperty"/> property.
@@ -63,14 +65,14 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="OpacityMask"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> OpacityMaskProperty =
-            AvaloniaProperty.Register<Visual, IBrush>(nameof(OpacityMask));
+        public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
+            AvaloniaProperty.Register<Visual, IBrush?>(nameof(OpacityMask));
 
         /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITransform> RenderTransformProperty =
-            AvaloniaProperty.Register<Visual, ITransform>(nameof(RenderTransform));
+        public static readonly StyledProperty<ITransform?> RenderTransformProperty =
+            AvaloniaProperty.Register<Visual, ITransform?>(nameof(RenderTransform));
 
         /// <summary>
         /// Defines the <see cref="RenderTransformOrigin"/> property.
@@ -81,8 +83,8 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="IVisual.VisualParent"/> property.
         /// </summary>
-        public static readonly DirectProperty<Visual, IVisual> VisualParentProperty =
-            AvaloniaProperty.RegisterDirect<Visual, IVisual>("VisualParent", o => o._visualParent);
+        public static readonly DirectProperty<Visual, IVisual?> VisualParentProperty =
+            AvaloniaProperty.RegisterDirect<Visual, IVisual?>(nameof(IVisual.VisualParent), o => o._visualParent);
 
         /// <summary>
         /// Defines the <see cref="ZIndex"/> property.
@@ -92,8 +94,8 @@ namespace Avalonia
 
         private Rect _bounds;
         private TransformedBounds? _transformedBounds;
-        private IRenderRoot _visualRoot;
-        private IVisual _visualParent;
+        private IRenderRoot? _visualRoot;
+        private IVisual? _visualParent;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -128,12 +130,12 @@ namespace Avalonia
         /// <summary>
         /// Raised when the control is attached to a rooted visual tree.
         /// </summary>
-        public event EventHandler<VisualTreeAttachmentEventArgs> AttachedToVisualTree;
+        public event EventHandler<VisualTreeAttachmentEventArgs>? AttachedToVisualTree;
 
         /// <summary>
         /// Raised when the control is detached from a rooted visual tree.
         /// </summary>
-        public event EventHandler<VisualTreeAttachmentEventArgs> DetachedFromVisualTree;
+        public event EventHandler<VisualTreeAttachmentEventArgs>? DetachedFromVisualTree;
 
         /// <summary>
         /// Gets the bounds of the control relative to its parent.
@@ -150,7 +152,7 @@ namespace Avalonia
         public TransformedBounds? TransformedBounds => _transformedBounds;
 
         /// <summary>
-        /// Gets a value indicating whether the control should be clipped to its bounds.
+        /// Gets or sets a value indicating whether the control should be clipped to its bounds.
         /// </summary>
         public bool ClipToBounds
         {
@@ -161,7 +163,7 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets the geometry clip for this visual.
         /// </summary>
-        public Geometry Clip
+        public Geometry? Clip
         {
             get { return GetValue(ClipProperty); }
             set { SetValue(ClipProperty, value); }
@@ -174,7 +176,7 @@ namespace Avalonia
         {
             get
             {
-                IVisual node = this;
+                IVisual? node = this;
 
                 while (node != null)
                 {
@@ -191,7 +193,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating whether this control is visible.
+        /// Gets or sets a value indicating whether this control is visible.
         /// </summary>
         public bool IsVisible
         {
@@ -200,7 +202,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the opacity of the control.
+        /// Gets or sets the opacity of the control.
         /// </summary>
         public double Opacity
         {
@@ -209,25 +211,25 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the opacity mask of the control.
+        /// Gets or sets the opacity mask of the control.
         /// </summary>
-        public IBrush OpacityMask
+        public IBrush? OpacityMask
         {
             get { return GetValue(OpacityMaskProperty); }
             set { SetValue(OpacityMaskProperty, value); }
         }
 
         /// <summary>
-        /// Gets the render transform of the control.
+        /// Gets or sets the render transform of the control.
         /// </summary>
-        public ITransform RenderTransform
+        public ITransform? RenderTransform
         {
             get { return GetValue(RenderTransformProperty); }
             set { SetValue(RenderTransformProperty, value); }
         }
 
         /// <summary>
-        /// Gets the transform origin of the control.
+        /// Gets or sets the transform origin of the control.
         /// </summary>
         public RelativePoint RenderTransformOrigin
         {
@@ -236,7 +238,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the Z index of the control.
+        /// Gets or sets the Z index of the control.
         /// </summary>
         /// <remarks>
         /// Controls with a higher <see cref="ZIndex"/> will appear in front of controls with
@@ -261,7 +263,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        protected IRenderRoot VisualRoot => _visualRoot ?? (this as IRenderRoot);
+        protected IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
@@ -276,12 +278,12 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's parent visual.
         /// </summary>
-        IVisual IVisual.VisualParent => _visualParent;
+        IVisual? IVisual.VisualParent => _visualParent;
 
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        IRenderRoot IVisual.VisualRoot => VisualRoot;
+        IRenderRoot? IVisual.VisualRoot => VisualRoot;
         
         TransformedBounds? IVisual.TransformedBounds
         {
@@ -375,7 +377,7 @@ namespace Avalonia
             }
         }
 
-        protected override void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
             VisualRoot?.Renderer?.RecalculateChildren(this);
@@ -476,22 +478,19 @@ namespace Avalonia
         /// </summary>
         /// <param name="oldParent">The old visual parent.</param>
         /// <param name="newParent">The new visual parent.</param>
-        protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        protected virtual void OnVisualParentChanged(IVisual? oldParent, IVisual? newParent)
         {
             RaisePropertyChanged(
                 VisualParentProperty,
-                new Optional<IVisual>(oldParent),
-                new BindingValue<IVisual>(newParent),
+                new Optional<IVisual?>(oldParent),
+                new BindingValue<IVisual?>(newParent),
                 BindingPriority.LocalValue);
         }
 
         protected internal sealed override void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            // Don't log a binding error unless the control is attached to a logical or visual tree.
-            // In theory this should only need to check for logical tree attachment, but in practise
-            // due to ContentControlMixin only taking effect when the template has finished being
-            // applied, some controls are attached to the visual tree before the logical tree.
-            if (((ILogical)this).IsAttachedToLogicalTree || ((IVisual)this).IsAttachedToVisualTree)
+            // Don't log a binding error unless the control is attached to a logical tree.
+            if (((ILogical)this).IsAttachedToLogicalTree)
             {
                 if (e is BindingChainException b &&
                     string.IsNullOrEmpty(b.ExpressionErrorPoint) &&
@@ -573,7 +572,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void RenderTransformChanged(object sender, EventArgs e)
+        private void RenderTransformChanged(object? sender, EventArgs e)
         {
             InvalidateVisual();
         }
@@ -582,7 +581,7 @@ namespace Avalonia
         /// Sets the visual parent of the Visual.
         /// </summary>
         /// <param name="value">The visual parent.</param>
-        private void SetVisualParent(Visual value)
+        private void SetVisualParent(Visual? value)
         {
             if (_visualParent == value)
             {
@@ -594,13 +593,14 @@ namespace Avalonia
 
             if (_visualRoot != null)
             {
-                var e = new VisualTreeAttachmentEventArgs(old, VisualRoot);
+                var e = new VisualTreeAttachmentEventArgs(old!, _visualRoot);
                 OnDetachedFromVisualTreeCore(e);
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.FindAncestorOfType<IRenderRoot>();
+                var root = this.FindAncestorOfType<IRenderRoot>() ??
+                    throw new AvaloniaInternalException("Visual is atached to visual tree but root could not be found.");
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
@@ -608,39 +608,39 @@ namespace Avalonia
             OnVisualParentChanged(old, value);
         }
 
-        private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
+        private void AffectsRenderInvalidated(object? sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void VisualChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void VisualChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    SetVisualParent(e.NewItems, this);
+                    SetVisualParent(e.NewItems!, this);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    SetVisualParent(e.OldItems, null);
+                    SetVisualParent(e.OldItems!, null);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    SetVisualParent(e.OldItems, null);
-                    SetVisualParent(e.NewItems, this);
+                    SetVisualParent(e.OldItems!, null);
+                    SetVisualParent(e.NewItems!, this);
                     break;
             }
         }
         
-        private static void SetVisualParent(IList children, Visual parent)
+        private static void SetVisualParent(IList children, Visual? parent)
         {
             var count = children.Count;
 
             for (var i = 0; i < count; i++)
             {
-                var visual = (Visual) children[i];
+                var visual = (Visual) children[i]!;
                 
                 visual.SetVisualParent(parent);
             }

@@ -8,14 +8,16 @@ namespace Avalonia.Diagnostics.ViewModels
         internal bool _updateParent = true;
         private bool _isExpanded;
         private bool? _isEnabled = false;
+        private bool _isVisible;
 
-        protected EventTreeNodeBase(EventTreeNodeBase parent, string text)
+        protected EventTreeNodeBase(EventTreeNodeBase? parent, string text)
         {
             Parent = parent;
             Text = text;
+            IsVisible = true;
         }
 
-        public IAvaloniaReadOnlyList<EventTreeNodeBase> Children
+        public IAvaloniaReadOnlyList<EventTreeNodeBase>? Children
         {
             get;
             protected set;
@@ -33,7 +35,13 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _isEnabled, value);
         }
 
-        public EventTreeNodeBase Parent
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set => RaiseAndSetIfChanged(ref _isVisible, value);
+        }
+
+        public EventTreeNodeBase? Parent
         {
             get;
         }

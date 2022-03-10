@@ -5,7 +5,7 @@ namespace Avalonia.Media.Immutable
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public readonly struct ImmutableSolidColorBrush : ISolidColorBrush, IEquatable<ImmutableSolidColorBrush>
+    public class ImmutableSolidColorBrush : ISolidColorBrush, IEquatable<ImmutableSolidColorBrush>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmutableSolidColorBrush"/> class.
@@ -46,13 +46,14 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         public double Opacity { get; }
 
-        public bool Equals(ImmutableSolidColorBrush other)
+        public bool Equals(ImmutableSolidColorBrush? other)
         {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            return Color == other.Color && Opacity == other.Opacity;
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ImmutableSolidColorBrush other && Equals(other);
         }
@@ -67,12 +68,12 @@ namespace Avalonia.Media.Immutable
 
         public static bool operator ==(ImmutableSolidColorBrush left, ImmutableSolidColorBrush right)
         {
-            return left.Equals(right);
+            return Equals(left, right);
         }
 
         public static bool operator !=(ImmutableSolidColorBrush left, ImmutableSolidColorBrush right)
         {
-            return !left.Equals(right);
+            return !Equals(left, right);
         }
 
         /// <summary>

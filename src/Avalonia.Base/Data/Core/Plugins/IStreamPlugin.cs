@@ -12,7 +12,7 @@ namespace Avalonia.Data.Core.Plugins
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        bool Match(WeakReference<object> reference);
+        bool Match(WeakReference<object?> reference);
 
         /// <summary>
         /// Starts producing output based on the specified value.
@@ -21,6 +21,6 @@ namespace Avalonia.Data.Core.Plugins
         /// <returns>
         /// An observable that produces the output for the value.
         /// </returns>
-        IObservable<object> Start(WeakReference<object> reference);
+        IObservable<object?> Start(WeakReference<object?> reference);
     }
 }

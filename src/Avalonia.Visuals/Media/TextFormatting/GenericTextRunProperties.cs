@@ -7,15 +7,19 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public class GenericTextRunProperties : TextRunProperties
     {
-        public GenericTextRunProperties(Typeface typeface, double fontRenderingEmSize = 12,
-            TextDecorationCollection textDecorations = null, IBrush foregroundBrush = null, IBrush backgroundBrush = null,
-            CultureInfo cultureInfo = null)
+        private const double DefaultFontRenderingEmSize = 12;
+
+        public GenericTextRunProperties(Typeface typeface, double fontRenderingEmSize = DefaultFontRenderingEmSize,
+            TextDecorationCollection? textDecorations = null, IBrush? foregroundBrush = null,
+            IBrush? backgroundBrush = null, BaselineAlignment baselineAlignment = BaselineAlignment.Baseline,
+            CultureInfo? cultureInfo = null)
         {
             Typeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
             TextDecorations = textDecorations;
             ForegroundBrush = foregroundBrush;
             BackgroundBrush = backgroundBrush;
+            BaselineAlignment = baselineAlignment;
             CultureInfo = cultureInfo;
         }
 
@@ -26,15 +30,18 @@ namespace Avalonia.Media.TextFormatting
         public override double FontRenderingEmSize { get; }
 
         /// <inheritdoc />
-        public override TextDecorationCollection TextDecorations { get; }
+        public override TextDecorationCollection? TextDecorations { get; }
 
         /// <inheritdoc />
-        public override IBrush ForegroundBrush { get; }
+        public override IBrush? ForegroundBrush { get; }
 
         /// <inheritdoc />
-        public override IBrush BackgroundBrush { get; }
+        public override IBrush? BackgroundBrush { get; }
 
         /// <inheritdoc />
-        public override CultureInfo CultureInfo { get; }
+        public override BaselineAlignment BaselineAlignment { get; }
+
+        /// <inheritdoc />
+        public override CultureInfo? CultureInfo { get; }
     }
 }

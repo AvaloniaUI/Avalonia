@@ -15,9 +15,6 @@ namespace Avalonia.Controls.Remote
             public EmbeddableRemoteServerTopLevelImpl(IAvaloniaRemoteTransportConnection transport) : base(transport)
             {
             }
-#pragma warning disable 67
-            public Action LostFocus { get; set; }
-
         }
         
         public RemoteServer(IAvaloniaRemoteTransportConnection transport)
@@ -27,7 +24,7 @@ namespace Avalonia.Controls.Remote
             //TODO: Somehow react on closed connection?
         }
 
-        public object Content
+        public object? Content
         {
             get => _topLevel.Content;
             set => _topLevel.Content = value;

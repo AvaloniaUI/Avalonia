@@ -4,7 +4,6 @@ using Android.Content.PM;
 using Android.OS;
 using Avalonia.Android;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -15,20 +14,22 @@ namespace Avalonia.AndroidTestApplication
     [Activity(Label = "Main",
         MainLauncher = true,
         Icon = "@drawable/icon",
+         Theme = "@style/Theme.AppCompat.NoActionBar",
+         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize,
         LaunchMode = LaunchMode.SingleInstance/*,
         ScreenOrientation = ScreenOrientation.Landscape*/)]
-    public class MainBaseActivity : Activity
+    public class MainBaseActivity : AvaloniaActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
             if (Avalonia.Application.Current == null)
             {
                 AppBuilder.Configure<App>()
                     .UseAndroid()
                     .SetupWithoutStarting();
             }
-            SetContentView(new AvaloniaView(this) { Content = App.CreateSimpleWindow() });
+            base.OnCreate(savedInstanceState);
+            Content = App.CreateSimpleWindow();
         }
     }
 
@@ -38,8 +39,7 @@ namespace Avalonia.AndroidTestApplication
         {
             Styles.Add(new DefaultTheme());
 
-            var loader = new AvaloniaXamlLoader();
-            var baseLight = (IStyle)loader.Load(
+            var baseLight = (IStyle)AvaloniaXamlLoader.Load(
                 new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
             Styles.Add(baseLight);
 
@@ -74,13 +74,33 @@ namespace Avalonia.AndroidTestApplication
                             Height = 40,
                             Background = Brushes.LightGreen,
                             Foreground = Brushes.Black
-                        }
+                        },
 
+                        CreateTextBox(Input.TextInput.TextInputContentType.Normal),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Password),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Email),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Url),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Phone),
+                        CreateTextBox(Input.TextInput.TextInputContentType.Number),
                     }
                 }
             };
 
             return window;
+        }
+
+        private static TextBox CreateTextBox(Input.TextInput.TextInputContentType contentType)
+        {
+            var textBox = new TextBox()
+            {
+                Margin = new Thickness(20, 10),
+                Watermark = contentType.ToString(),
+                BorderThickness = new Thickness(3),
+                FontSize = 20
+            };
+            textBox.TextInputOptionsQuery += (s, e) => { e.ContentType = contentType; };
+
+            return textBox;
         }
     }
 }

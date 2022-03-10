@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -9,37 +10,23 @@ namespace Avalonia.Controls
 {
     public class NativeControlHost : Control
     {
-        private TopLevel _currentRoot;
-        private INativeControlHostImpl _currentHost;
-        private INativeControlHostControlTopLevelAttachment _attachment;
-        private IPlatformHandle _nativeControlHandle;
+        private TopLevel? _currentRoot;
+        private INativeControlHostImpl? _currentHost;
+        private INativeControlHostControlTopLevelAttachment? _attachment;
+        private IPlatformHandle? _nativeControlHandle;
         private bool _queuedForDestruction;
         private bool _queuedForMoveResize;
         private readonly List<Visual> _propertyChangedSubscriptions = new List<Visual>();
-        private readonly EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChangedHandler;
-        static NativeControlHost()
-        {
-            IsVisibleProperty.Changed.AddClassHandler<NativeControlHost>(OnVisibleChanged);
-        }
-
-        public NativeControlHost()
-        {
-            _propertyChangedHandler = PropertyChangedHandler;
-        }
-
-        private static void OnVisibleChanged(NativeControlHost host, AvaloniaPropertyChangedEventArgs arg2)
-            => host.UpdateHost();
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _currentRoot = e.Root as TopLevel;
             var visual = (IVisual)this;
-            while (visual != _currentRoot)
+            while (visual != null)
             {
-
                 if (visual is Visual v)
                 {
-                    v.PropertyChanged += _propertyChangedHandler;
+                    v.PropertyChanged += PropertyChangedHandler;
                     _propertyChangedSubscriptions.Add(v);
                 }
 
@@ -49,9 +36,9 @@ namespace Avalonia.Controls
             UpdateHost();
         }
 
-        private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void PropertyChangedHandler(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.IsEffectiveValueChange && e.Property == BoundsProperty)
+            if (e.IsEffectiveValueChange && (e.Property == BoundsProperty || e.Property == IsVisibleProperty))
                 EnqueueForMoveResize();
         }
 
@@ -61,7 +48,7 @@ namespace Avalonia.Controls
             if (_propertyChangedSubscriptions != null)
             {
                 foreach (var v in _propertyChangedSubscriptions)
-                    v.PropertyChanged -= _propertyChangedHandler;
+                    v.PropertyChanged -= PropertyChangedHandler;
                 _propertyChangedSubscriptions.Clear();
             }
             UpdateHost();
@@ -72,9 +59,8 @@ namespace Avalonia.Controls
         {
             _queuedForMoveResize = false;
             _currentHost = (_currentRoot?.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
-            var needsAttachment = _currentHost != null;
             
-            if (needsAttachment)
+            if (_currentHost != null)
             {
                 // If there is an existing attachment, ensure that we are attached to the proper host or destroy the attachment
                 if (_attachment != null && _attachment.AttachedTo != _currentHost)
@@ -133,8 +119,10 @@ namespace Avalonia.Controls
         
         private Rect? GetAbsoluteBounds()
         {
+            Debug.Assert(_currentRoot is not null);
+
             var bounds = Bounds;
-            var position = this.TranslatePoint(bounds.Position, _currentRoot);
+            var position = this.TranslatePoint(default, _currentRoot);
             if (position == null)
                 return null;
             return new Rect(position.Value, bounds.Size);
@@ -154,13 +142,16 @@ namespace Avalonia.Controls
                 return false;
             
             var bounds = GetAbsoluteBounds();
-            var needsShow = IsEffectivelyVisible && bounds.HasValue;
 
-            if (needsShow)
+            if (IsEffectivelyVisible && bounds.HasValue)
+            {
+                if (bounds.Value.IsEmpty)
+                    return false;
                 _attachment?.ShowInBounds(bounds.Value);
+            }
             else
                 _attachment?.HideWithSize(Bounds.Size);
-            return false;
+            return true;
         }
 
         private void CheckDestruction()

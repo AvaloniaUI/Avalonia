@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -16,6 +17,14 @@ namespace Avalonia.Media.TextFormatting
             Properties = properties;
         }
 
+        public TextCharacters(ReadOnlySlice<char> text, int offsetToFirstCharacter, int length,
+            TextRunProperties properties)
+        {
+            Text = text.Skip(offsetToFirstCharacter).Take(length);
+            TextSourceLength = length;
+            Properties = properties;
+        }
+
         /// <inheritdoc />
         public override int TextSourceLength { get; }
 
@@ -29,19 +38,20 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a list of <see cref="ShapeableTextCharacters"/>.
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
-        internal IList<ShapeableTextCharacters> GetShapeableCharacters()
+        internal IList<ShapeableTextCharacters> GetShapeableCharacters(ReadOnlySlice<char> runText, sbyte biDiLevel, 
+            ref TextRunProperties? previousProperties)
         {
             var shapeableCharacters = new List<ShapeableTextCharacters>(2);
 
-            var runText = Text;
-
             while (!runText.IsEmpty)
             {
-                var shapeableRun = CreateShapeableRun(runText, Properties);
+                var shapeableRun = CreateShapeableRun(runText, Properties, biDiLevel, ref previousProperties);
 
                 shapeableCharacters.Add(shapeableRun);
 
                 runText = runText.Skip(shapeableRun.Text.Length);
+
+                previousProperties = shapeableRun.Properties;
             }
 
             return shapeableCharacters;
@@ -52,34 +62,67 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="text">The text to create text runs from.</param>
         /// <param name="defaultProperties">The default text run properties.</param>
+        /// <param name="biDiLevel">The bidi level of the run.</param>
+        /// <param name="previousProperties"></param>
         /// <returns>A list of shapeable text runs.</returns>
-        private ShapeableTextCharacters CreateShapeableRun(ReadOnlySlice<char> text, TextRunProperties defaultProperties)
+        private static ShapeableTextCharacters CreateShapeableRun(ReadOnlySlice<char> text, 
+            TextRunProperties defaultProperties, sbyte biDiLevel, ref TextRunProperties? previousProperties)
         {
             var defaultTypeface = defaultProperties.Typeface;
-
             var currentTypeface = defaultTypeface;
+            var previousTypeface = previousProperties?.Typeface;
 
-            if (TryGetRunProperties(text, currentTypeface, defaultTypeface, out var count))
+            if (TryGetShapeableLength(text, currentTypeface, out var count, out var script))
             {
-                return new ShapeableTextCharacters(text.Take(count),
-                    new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                        defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+                if (script == Script.Common && previousTypeface is not null)
+                {
+                    if(TryGetShapeableLength(text, previousTypeface.Value, out var fallbackCount, out _))
+                    {
+                        return new ShapeableTextCharacters(text.Take(fallbackCount),
+                            defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
+                    }
+                }
 
+                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                    biDiLevel);
+            }
+            
+            if (previousTypeface is not null)
+            {
+                if(TryGetShapeableLength(text, previousTypeface.Value, out count, out _))
+                {
+                    return new ShapeableTextCharacters(text.Take(count),
+                        defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
+                }
             }
 
-            var codepoint = Codepoint.ReadAt(text, count, out _);
+            var codepoint = Codepoint.ReplacementCodepoint;
 
+            var codepointEnumerator = new CodepointEnumerator(text.Skip(count));
+
+            while (codepointEnumerator.MoveNext())
+            {
+                if (codepointEnumerator.Current.IsWhiteSpace)
+                {
+                    continue;
+                }
+                
+                codepoint = codepointEnumerator.Current;
+                    
+                break;
+            }
+            
             //ToDo: Fix FontFamily fallback
             var matchFound =
                 FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
-                    defaultTypeface.FontFamily, defaultProperties.CultureInfo, out currentTypeface);
+                    defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
+                    out currentTypeface);
 
-            if (matchFound && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
+            if (matchFound && TryGetShapeableLength(text, currentTypeface, out count, out _))
             {
                 //Fallback found
-                return new ShapeableTextCharacters(text.Take(count),
-                    new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                    biDiLevel);
             }
 
             // no fallback found
@@ -101,91 +144,64 @@ namespace Avalonia.Media.TextFormatting
                 count += grapheme.Text.Length;
             }
 
-            return new ShapeableTextCharacters(text.Take(count),
-                new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush));
+            return new ShapeableTextCharacters(text.Take(count), defaultProperties, biDiLevel);
         }
 
         /// <summary>
-        /// Tries to get run properties.
+        /// Tries to get a shapeable length that is supported by the specified typeface.
         /// </summary>
-        /// <param name="defaultTypeface"></param>
-        /// <param name="text"></param>
+        /// <param name="text">The text.</param>
         /// <param name="typeface">The typeface that is used to find matching characters.</param>
-        /// <param name="count"></param>
+        /// <param name="length">The shapeable length.</param>
+        /// <param name="script"></param>
         /// <returns></returns>
-        protected bool TryGetRunProperties(ReadOnlySlice<char> text, Typeface typeface, Typeface defaultTypeface,
-            out int count)
+        protected static bool TryGetShapeableLength(ReadOnlySlice<char> text, Typeface typeface, out int length,
+            out Script script)
         {
+            length = 0;
+            script = Script.Unknown;
+
             if (text.Length == 0)
             {
-                count = 0;
                 return false;
             }
 
-            var isFallback = typeface != defaultTypeface;
-
-            count = 0;
-            var script = Script.Common;
-            //var direction = BiDiClass.LeftToRight;
-
             var font = typeface.GlyphTypeface;
-            var defaultFont = defaultTypeface.GlyphTypeface;
 
             var enumerator = new GraphemeEnumerator(text);
 
             while (enumerator.MoveNext())
             {
-                var grapheme = enumerator.Current;
+                var currentGrapheme = enumerator.Current;
 
-                var currentScript = grapheme.FirstCodepoint.Script;
+                var currentScript = currentGrapheme.FirstCodepoint.Script;
 
-                //var currentDirection = grapheme.FirstCodepoint.BiDiClass;
-
-                //// ToDo: Implement BiDi algorithm
-                //if (currentScript.HorizontalDirection != direction)
-                //{
-                //    if (!UnicodeUtility.IsWhiteSpace(grapheme.FirstCodepoint))
-                //    {
-                //        break;
-                //    }
-                //}
-
+                //Stop at the first missing glyph
+                if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                {
+                    break;
+                }
+                
                 if (currentScript != script)
                 {
-                    if (currentScript != Script.Inherited && currentScript != Script.Common)
+                    if (script is Script.Unknown || currentScript != Script.Common &&
+                        script is Script.Common or Script.Inherited)
                     {
-                        if (script == Script.Inherited || script == Script.Common)
-                        {
-                            script = currentScript;
-                        }
-                        else
+                        script = currentScript;
+                    }
+                    else
+                    {
+                        if (currentScript != Script.Inherited && currentScript != Script.Common)
                         {
                             break;
                         }
                     }
                 }
 
-                if (isFallback)
-                {
-                    if (defaultFont.TryGetGlyph(grapheme.FirstCodepoint, out _))
-                    {
-                        break;
-                    }
-                }
-
-                if (!font.TryGetGlyph(grapheme.FirstCodepoint, out _))
-                {
-                    if (!grapheme.FirstCodepoint.IsWhiteSpace)
-                    {
-                        break;
-                    }
-                }
-
-                count += grapheme.Text.Length;
+                length += currentGrapheme.Text.Length;
             }
 
-            return count > 0;
+            return length > 0;
         }
     }
 }

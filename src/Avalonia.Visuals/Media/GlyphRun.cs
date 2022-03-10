@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -10,29 +11,22 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class GlyphRun : IDisposable
     {
-        private static readonly IComparer<ushort> s_ascendingComparer = Comparer<ushort>.Default;
-        private static readonly IComparer<ushort> s_descendingComparer = new ReverseComparer<ushort>();
+        private static readonly IComparer<int> s_ascendingComparer = Comparer<int>.Default;
+        private static readonly IComparer<int> s_descendingComparer = new ReverseComparer<int>();
 
-        private IGlyphRunImpl _glyphRunImpl;
+        private IGlyphRunImpl? _glyphRunImpl;
         private GlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
-        private Size? _size;
         private int _biDiLevel;
         private Point? _baselineOrigin;
+        private GlyphRunMetrics? _glyphRunMetrics;
 
-        private ReadOnlySlice<ushort> _glyphIndices;
-        private ReadOnlySlice<double> _glyphAdvances;
-        private ReadOnlySlice<Vector> _glyphOffsets;
-        private ReadOnlySlice<ushort> _glyphClusters;
         private ReadOnlySlice<char> _characters;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GlyphRun"/> class.
-        /// </summary>
-        public GlyphRun()
-        {
-
-        }
+        private IReadOnlyList<ushort> _glyphIndices;
+        private IReadOnlyList<double>? _glyphAdvances;
+        private IReadOnlyList<Vector>? _glyphOffsets;
+        private IReadOnlyList<int>? _glyphClusters;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GlyphRun"/> class by specifying properties of the class.
@@ -48,24 +42,24 @@ namespace Avalonia.Media
         public GlyphRun(
             GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
-            ReadOnlySlice<ushort> glyphIndices,
-            ReadOnlySlice<double> glyphAdvances = default,
-            ReadOnlySlice<Vector> glyphOffsets = default,
-            ReadOnlySlice<char> characters = default,
-            ReadOnlySlice<ushort> glyphClusters = default,
+            ReadOnlySlice<char> characters,
+            IReadOnlyList<ushort> glyphIndices,
+            IReadOnlyList<double>? glyphAdvances = null,
+            IReadOnlyList<Vector>? glyphOffsets = null,
+            IReadOnlyList<int>? glyphClusters = null,
             int biDiLevel = 0)
         {
-            GlyphTypeface = glyphTypeface;
+            _glyphTypeface = glyphTypeface;  
 
             FontRenderingEmSize = fontRenderingEmSize;
 
-            GlyphIndices = glyphIndices;
+            Characters = characters;
+
+            _glyphIndices = glyphIndices;
 
             GlyphAdvances = glyphAdvances;
 
             GlyphOffsets = glyphOffsets;
-
-            Characters = characters;
 
             GlyphClusters = glyphClusters;
 
@@ -73,13 +67,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets or sets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
+        ///     Gets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public GlyphTypeface GlyphTypeface
-        {
-            get => _glyphTypeface;
-            set => Set(ref _glyphTypeface, value);
-        }
+        public GlyphTypeface GlyphTypeface => _glyphTypeface;
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.
@@ -88,6 +78,24 @@ namespace Avalonia.Media
         {
             get => _fontRenderingEmSize;
             set => Set(ref _fontRenderingEmSize, value);
+        }
+
+        /// <summary>
+        ///     Gets or sets the conservative bounding box of the <see cref="GlyphRun"/>.
+        /// </summary>
+        public Size Size => new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public GlyphRunMetrics Metrics
+        {
+            get
+            {
+                _glyphRunMetrics ??= CreateGlyphRunMetrics();
+
+                return _glyphRunMetrics.Value;
+            }
         }
 
         /// <summary>
@@ -107,7 +115,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets or sets an array of <see cref="ushort"/> values that represent the glyph indices in the rendering physical font.
         /// </summary>
-        public ReadOnlySlice<ushort> GlyphIndices
+        public IReadOnlyList<ushort> GlyphIndices
         {
             get => _glyphIndices;
             set => Set(ref _glyphIndices, value);
@@ -116,7 +124,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets or sets an array of <see cref="double"/> values that represent the advances corresponding to the glyph indices.
         /// </summary>
-        public ReadOnlySlice<double> GlyphAdvances
+        public IReadOnlyList<double>? GlyphAdvances
         {
             get => _glyphAdvances;
             set => Set(ref _glyphAdvances, value);
@@ -125,7 +133,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets or sets an array of <see cref="Vector"/> values representing the offsets of the glyphs in the <see cref="GlyphRun"/>.
         /// </summary>
-        public ReadOnlySlice<Vector> GlyphOffsets
+        public IReadOnlyList<Vector>? GlyphOffsets
         {
             get => _glyphOffsets;
             set => Set(ref _glyphOffsets, value);
@@ -143,7 +151,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets or sets a list of <see cref="int"/> values representing a mapping from character index to glyph index.
         /// </summary>
-        public ReadOnlySlice<ushort> GlyphClusters
+        public IReadOnlyList<int>? GlyphClusters
         {
             get => _glyphClusters;
             set => Set(ref _glyphClusters, value);
@@ -169,19 +177,6 @@ namespace Avalonia.Media
         public bool IsLeftToRight => ((BiDiLevel & 1) == 0);
 
         /// <summary>
-        ///     Gets or sets the conservative bounding box of the <see cref="GlyphRun"/>.
-        /// </summary>
-        public Size Size
-        {
-            get
-            {
-                _size ??= CalculateSize();
-
-                return _size.Value;
-            }
-        }
-
-        /// <summary>
         /// The platform implementation of the <see cref="GlyphRun"/>.
         /// </summary>
         public IGlyphRunImpl GlyphRunImpl
@@ -193,7 +188,7 @@ namespace Avalonia.Media
                     Initialize();
                 }
 
-                return _glyphRunImpl;
+                return _glyphRunImpl!;
             }
         }
 
@@ -208,43 +203,73 @@ namespace Avalonia.Media
         /// </returns>
         public double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
+            var characterIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+           
             var distance = 0.0;
 
-            if (characterHit.FirstCharacterIndex + characterHit.TrailingLength > Characters.End)
+            if (IsLeftToRight)
             {
-                return Size.Width;
-            }
-
-            var glyphIndex = FindGlyphIndex(characterHit.FirstCharacterIndex);
-
-            if (!GlyphClusters.IsEmpty)
-            {
-                var currentCluster = GlyphClusters[glyphIndex];
-
-                if (characterHit.TrailingLength > 0)
+                if (GlyphClusters != null)
                 {
-                    while (glyphIndex < GlyphClusters.Length && GlyphClusters[glyphIndex] == currentCluster)
+                    if (characterIndex < GlyphClusters[0])
                     {
-                        glyphIndex++;
+                        return 0;
+                    }
+
+                    if (characterIndex > GlyphClusters[GlyphClusters.Count - 1])
+                    {
+                        return Metrics.WidthIncludingTrailingWhitespace;
                     }
                 }
-            }
 
-            for (var i = 0; i < glyphIndex; i++)
+                var glyphIndex = FindGlyphIndex(characterIndex);
+                
+                if (GlyphClusters != null)
+                {
+                    var currentCluster = GlyphClusters[glyphIndex];
+
+                    //Move to the end of the glyph cluster
+                    if (characterHit.TrailingLength > 0)
+                    {
+                        while (glyphIndex + 1 < GlyphClusters.Count && GlyphClusters[glyphIndex + 1] == currentCluster)
+                        {
+                            glyphIndex++;
+                        }
+                    }
+                }
+
+                for (var i = 0; i < glyphIndex; i++)
+                {
+                    distance += GetGlyphAdvance(i, out _);
+                }
+
+                return distance;
+            }
+            else
             {
-                if (GlyphAdvances.IsEmpty)
+                //RightToLeft
+                var glyphIndex = FindGlyphIndex(characterIndex);
+                
+                if (GlyphClusters != null)
                 {
-                    var glyph = GlyphIndices[i];
+                    if (characterIndex > GlyphClusters[0])
+                    {
+                        return 0;
+                    }
 
-                    distance += GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+                    if (characterIndex <= GlyphClusters[GlyphClusters.Count - 1])
+                    {
+                        return Size.Width;
+                    }
                 }
-                else
+
+                for (var i = glyphIndex + 1; i < GlyphIndices.Count; i++)
                 {
-                    distance += GlyphAdvances[i];
+                    distance += GetGlyphAdvance(i, out _);
                 }
+
+                return Size.Width - distance;
             }
-
-            return distance;
         }
 
         /// <summary>
@@ -258,57 +283,52 @@ namespace Avalonia.Media
         /// </returns>
         public CharacterHit GetCharacterHitFromDistance(double distance, out bool isInside)
         {
+            var characterIndex = 0;
+            
             // Before
-            if (distance < 0)
+            if (distance <= 0)
             {
                 isInside = false;
 
-                var firstCharacterHit = FindNearestCharacterHit(_glyphClusters[0], out _);
+                if(GlyphClusters != null)
+                {
+                    characterIndex = GlyphClusters[characterIndex];
+                }
+
+                var firstCharacterHit = FindNearestCharacterHit(characterIndex, out _);
 
                 return IsLeftToRight ? new CharacterHit(firstCharacterHit.FirstCharacterIndex) : firstCharacterHit;
             }
 
             //After
-            if (distance > Size.Width)
+            if (distance >= Size.Width)
             {
                 isInside = false;
 
-                var lastCharacterHit = FindNearestCharacterHit(_glyphClusters[_glyphClusters.Length - 1], out _);
+                characterIndex = GlyphIndices.Count - 1;
+
+                if(GlyphClusters != null)
+                {
+                    characterIndex = GlyphClusters[characterIndex];
+                }
+                
+                var lastCharacterHit = FindNearestCharacterHit(characterIndex, out _);
 
                 return IsLeftToRight ? lastCharacterHit : new CharacterHit(lastCharacterHit.FirstCharacterIndex);
             }
 
             //Within
-            var currentX = 0.0;
-            var index = 0;
+            var currentX = 0d;
 
-            if (GlyphTypeface.IsFixedPitch)
+            if (IsLeftToRight)
             {
-                var glyph = GlyphIndices[index];
-
-                var advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
-
-                index = Math.Min(GlyphIndices.Length - 1,
-                    (int)Math.Round(distance / advance, MidpointRounding.AwayFromZero));
-            }
-            else
-            {
-                for (; index < GlyphIndices.Length; index++)
+                for (var index = 0; index < GlyphIndices.Count; index++)
                 {
-                    double advance;
+                    var advance = GetGlyphAdvance(index, out var cluster);
 
-                    if (GlyphAdvances.IsEmpty)
-                    {
-                        var glyph = GlyphIndices[index];
-
-                        advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
-                    }
-                    else
-                    {
-                        advance = GlyphAdvances[index];
-                    }
-
-                    if (currentX + advance >= distance)
+                    characterIndex = cluster;
+                    
+                    if (distance > currentX && distance <= currentX + advance)
                     {
                         break;
                     }
@@ -316,14 +336,33 @@ namespace Avalonia.Media
                     currentX += advance;
                 }
             }
+            else
+            {
+                currentX = Size.Width;
 
-            var characterHit = FindNearestCharacterHit(GlyphClusters.IsEmpty ? index : GlyphClusters[index], out var width);
+                for (var index = GlyphIndices.Count - 1; index >= 0; index--)
+                {
+                    var advance = GetGlyphAdvance(index, out var cluster);
 
-            var offset = GetDistanceFromCharacterHit(new CharacterHit(characterHit.FirstCharacterIndex));
+                    characterIndex = cluster;
+                    
+                    if (currentX - advance < distance)
+                    {
+                        break;
+                    }
+
+                    currentX -= advance;
+                }
+            }
 
             isInside = true;
 
-            var isTrailing = distance > offset + width / 2;
+            var characterHit = FindNearestCharacterHit(characterIndex, out var width);
+
+            var delta = width / 2;
+            var offset = IsLeftToRight ? distance - currentX : currentX - distance;
+
+            var isTrailing = offset > delta;
 
             return isTrailing ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex);
         }
@@ -340,12 +379,26 @@ namespace Avalonia.Media
         {
             if (characterHit.TrailingLength == 0)
             {
-                return FindNearestCharacterHit(characterHit.FirstCharacterIndex, out _);
+                characterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex, out _);
+
+                var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+                return textPosition > _characters.End ?
+                    characterHit :
+                    new CharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength);
             }
 
-            var nextCharacterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
+            var nextCharacterHit =
+                FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
 
-            return new CharacterHit(nextCharacterHit.FirstCharacterIndex);
+            if (characterHit == nextCharacterHit)
+            {
+                return characterHit;
+            }
+
+            return characterHit.TrailingLength > 0 ?
+                nextCharacterHit :
+                new CharacterHit(nextCharacterHit.FirstCharacterIndex);
         }
 
         /// <summary>
@@ -363,17 +416,9 @@ namespace Avalonia.Media
                 return new CharacterHit(characterHit.FirstCharacterIndex);
             }
 
-            return characterHit.FirstCharacterIndex == Characters.Start ?
-                new CharacterHit(Characters.Start) :
-                FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
-        }
+            var previousCharacterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
 
-        private class ReverseComparer<T> : IComparer<T>
-        {
-            public int Compare(T x, T y)
-            {
-                return Comparer<T>.Default.Compare(y, x);
-            }
+            return new CharacterHit(previousCharacterHit.FirstCharacterIndex);
         }
 
         /// <summary>
@@ -385,7 +430,7 @@ namespace Avalonia.Media
         /// </returns>
         public int FindGlyphIndex(int characterIndex)
         {
-            if (GlyphClusters.IsEmpty)
+            if (GlyphClusters == null)
             {
                 return characterIndex;
             }
@@ -397,16 +442,16 @@ namespace Avalonia.Media
                     return 0;
                 }
 
-                if (characterIndex > GlyphClusters[GlyphClusters.Length - 1])
+                if (characterIndex > GlyphClusters[GlyphClusters.Count - 1])
                 {
-                    return _glyphClusters.Length - 1;
+                    return GlyphClusters.Count - 1;
                 }
             }
             else
             {
-                if (characterIndex < GlyphClusters[GlyphClusters.Length - 1])
+                if (characterIndex < GlyphClusters[GlyphClusters.Count - 1])
                 {
-                    return _glyphClusters.Length - 1;
+                    return GlyphClusters.Count - 1;
                 }
 
                 if (characterIndex > GlyphClusters[0])
@@ -417,10 +462,10 @@ namespace Avalonia.Media
 
             var comparer = IsLeftToRight ? s_ascendingComparer : s_descendingComparer;
 
-            var clusters = GlyphClusters.Buffer.Span;
+            var clusters = GlyphClusters;
 
             // Find the start of the cluster at the character index.
-            var start = clusters.BinarySearch((ushort)characterIndex, comparer);
+            var start = clusters.BinarySearch(characterIndex, comparer);
 
             // No cluster found.
             if (start < 0)
@@ -429,7 +474,7 @@ namespace Avalonia.Media
                 {
                     characterIndex--;
 
-                    start = clusters.BinarySearch((ushort)characterIndex, comparer);
+                    start = clusters.BinarySearch(characterIndex, comparer);
                 }
 
                 if (start < 0)
@@ -447,7 +492,7 @@ namespace Avalonia.Media
             }
             else
             {
-                while (start + 1 < clusters.Length && clusters[start + 1] == clusters[start])
+                while (start + 1 < clusters.Count && clusters[start + 1] == clusters[start])
                 {
                     start++;
                 }
@@ -470,9 +515,9 @@ namespace Avalonia.Media
 
             var start = FindGlyphIndex(index);
 
-            if (GlyphClusters.IsEmpty)
+            if (GlyphClusters == null)
             {
-                width = GetGlyphWidth(index);
+                width = GetGlyphAdvance(index, out _);
 
                 return new CharacterHit(start, 1);
             }
@@ -485,13 +530,13 @@ namespace Avalonia.Media
 
             while (nextCluster == cluster)
             {
-                width += GetGlyphWidth(currentIndex);
+                width += GetGlyphAdvance(currentIndex, out _);
 
                 if (IsLeftToRight)
                 {
                     currentIndex++;
 
-                    if (currentIndex == GlyphClusters.Length)
+                    if (currentIndex == GlyphClusters.Count)
                     {
                         break;
                     }
@@ -527,17 +572,20 @@ namespace Avalonia.Media
         /// Gets a glyph's width.
         /// </summary>
         /// <param name="index">The glyph index.</param>
+        /// <param name="cluster">The current cluster.</param>
         /// <returns>The glyph's width.</returns>
-        private double GetGlyphWidth(int index)
+        private double GetGlyphAdvance(int index, out int cluster)
         {
-            if (GlyphAdvances.IsEmpty)
+            cluster = GlyphClusters != null ? GlyphClusters[index] : index;
+            
+            if (GlyphAdvances != null)
             {
-                var glyph = GlyphIndices[index];
-
-                return GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+                return GlyphAdvances[index];
             }
 
-            return GlyphAdvances[index];
+            var glyph = GlyphIndices[index];
+
+            return GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
         }
 
         /// <summary>
@@ -549,34 +597,111 @@ namespace Avalonia.Media
             return new Point(0, -GlyphTypeface.Ascent * Scale);
         }
 
-        /// <summary>
-        /// Calculates the size of the <see cref="GlyphRun"/>.
-        /// </summary>
-        /// <returns>
-        /// The calculated bounds.
-        /// </returns>
-        private Size CalculateSize()
+        private GlyphRunMetrics CreateGlyphRunMetrics()
         {
             var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
+            var widthIncludingTrailingWhitespace = 0d;
 
-            var width = 0.0;
-
-            if (GlyphAdvances.IsEmpty)
+            var trailingWhitespaceLength = GetTrailingWhitespaceLength(out var newLineLength, out var glyphCount);
+            
+            for (var index = 0; index < GlyphIndices.Count; index++)
             {
-                foreach (var glyph in GlyphIndices)
+                var advance = GetGlyphAdvance(index, out _);
+
+                widthIncludingTrailingWhitespace += advance;
+            }
+
+            var width = widthIncludingTrailingWhitespace;
+
+            if (IsLeftToRight)
+            {
+                for (var index = GlyphIndices.Count - glyphCount; index <GlyphIndices.Count; index++)
                 {
-                    width += GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+                    width -= GetGlyphAdvance(index, out _);
                 }
             }
             else
             {
-                foreach (var advance in GlyphAdvances)
+                for (var index = 0; index < glyphCount; index++)
                 {
-                    width += advance;
+                    width -= GetGlyphAdvance(index, out _);
                 }
             }
 
-            return new Size(width, height);
+            return new GlyphRunMetrics(width, widthIncludingTrailingWhitespace, trailingWhitespaceLength, newLineLength,
+                height);
+        }
+
+        private int GetTrailingWhitespaceLength(out int newLineLength, out int glyphCount)
+        {
+            glyphCount = 0;
+            newLineLength = 0;
+
+            if (Characters.IsEmpty)
+            {
+                return 0;
+            }
+
+            var trailingWhitespaceLength = 0;
+
+            if (GlyphClusters == null)
+            {
+                for (var i = _characters.Length - 1; i >= 0;)
+                {
+                    var codepoint = Codepoint.ReadAt(_characters, i, out var count);
+
+                    if (!codepoint.IsWhiteSpace)
+                    {
+                        break;
+                    }
+
+                    if (codepoint.IsBreakChar)
+                    {
+                        newLineLength++;
+                    }
+
+                    trailingWhitespaceLength++;
+
+                    i -= count;
+                    glyphCount++;
+                }
+            }
+            else
+            {
+                for (var i = GlyphClusters.Count - 1; i >= 0; i--)
+                {
+                    var cluster = GlyphClusters[i];
+
+                    var codepointIndex = IsLeftToRight ? cluster - _characters.Start : _characters.End - cluster;
+
+                    if (codepointIndex < 0)
+                    {
+                        trailingWhitespaceLength = _characters.Length;
+                        
+                        glyphCount = GlyphClusters.Count;
+                        
+                        break;
+                    }
+                    
+                    var codepoint = Codepoint.ReadAt(_characters, codepointIndex, out _);
+
+                    if (!codepoint.IsWhiteSpace)
+                    {
+                        break;
+                    }
+
+                    if (codepoint.IsBreakChar)
+                    {
+                        newLineLength++;
+                    }
+
+                    trailingWhitespaceLength++;
+                    
+                    glyphCount++;
+                }
+            }
+
+            return trailingWhitespaceLength;
         }
 
         private void Set<T>(ref T field, T value)
@@ -586,6 +711,10 @@ namespace Avalonia.Media
                 throw new InvalidOperationException("GlyphRun can't be changed after it has been initialized.'");
             }
 
+            _glyphRunMetrics = null;
+
+            _baselineOrigin = null;
+
             field = value;
         }
 
@@ -594,35 +723,39 @@ namespace Avalonia.Media
         /// </summary>
         private void Initialize()
         {
-            if (GlyphIndices.Length == 0)
+            if (GlyphIndices == null)
             {
                 throw new InvalidOperationException();
             }
 
-            var glyphCount = GlyphIndices.Length;
+            var glyphCount = GlyphIndices.Count;
 
-            if (GlyphAdvances.Length > 0 && GlyphAdvances.Length != glyphCount)
+            if (GlyphAdvances != null && GlyphAdvances.Count > 0 && GlyphAdvances.Count != glyphCount)
             {
                 throw new InvalidOperationException();
             }
 
-            if (GlyphOffsets.Length > 0 && GlyphOffsets.Length != glyphCount)
+            if (GlyphOffsets != null && GlyphOffsets.Count > 0 && GlyphOffsets.Count != glyphCount)
             {
                 throw new InvalidOperationException();
             }
 
-            var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-            _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this, out var width);
-
-            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
-
-            _size = new Size(width, height);
+            _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this);
         }
 
         void IDisposable.Dispose()
         {
             _glyphRunImpl?.Dispose();
+        }
+
+        private class ReverseComparer<T> : IComparer<T>
+        {
+            public int Compare(T? x, T? y)
+            {
+                return Comparer<T>.Default.Compare(y, x);
+            }
         }
     }
 }

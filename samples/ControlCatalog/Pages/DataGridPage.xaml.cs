@@ -6,7 +6,9 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using ControlCatalog.Models;
 using Avalonia.Collections;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
 {
@@ -24,8 +26,10 @@ namespace ControlCatalog.Pages
             dg1.LoadingRow += Dg1_LoadingRow;
             dg1.Sorting += (s, a) =>
             {
-                var property = ((a.Column as DataGridBoundColumn)?.Binding as Binding).Path;
-                if (property == dataGridSortDescription.PropertyPath
+                var binding = (a.Column as DataGridBoundColumn)?.Binding as Binding;
+
+                if (binding?.Path is string property
+                    && property == dataGridSortDescription.PropertyPath
                     && !collectionView1.SortDescriptions.Contains(dataGridSortDescription))
                 {
                     collectionView1.SortDescriptions.Add(dataGridSortDescription);
@@ -46,9 +50,9 @@ namespace ControlCatalog.Pages
 
             var items = new List<Person>
             {
-                new Person { FirstName = "John", LastName = "Doe" },
-                new Person { FirstName = "Elizabeth", LastName = "Thomas", IsBanned = true },
-                new Person { FirstName = "Zack", LastName = "Ward" }
+                new Person { FirstName = "John", LastName = "Doe" , Age = 30},
+                new Person { FirstName = "Elizabeth", LastName = "Thomas", IsBanned = true , Age = 40 },
+                new Person { FirstName = "Zack", LastName = "Ward" , Age = 50 }
             };
             var collectionView3 = new DataGridCollectionView(items);
 
@@ -80,6 +84,20 @@ namespace ControlCatalog.Pages
                 }
 
                 return Comparer.Default.Compare(x, y);
+            }
+        }
+
+        private void NumericUpDown_OnTemplateApplied(object sender, TemplateAppliedEventArgs e)
+        {
+            // We want to focus the TextBox of the NumericUpDown. To do so we search for this control when the template
+            // is applied, but we postpone the action until the control is actually loaded. 
+            if (e.NameScope.Find<TextBox>("PART_TextBox") is {} textBox)
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    textBox.Focus();
+                    textBox.SelectAll();
+                }, DispatcherPriority.Loaded);
             }
         }
     }

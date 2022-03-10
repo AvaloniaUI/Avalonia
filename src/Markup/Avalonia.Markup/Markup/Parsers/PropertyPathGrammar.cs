@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Markup.Parsers
 {
 #if !BUILDTASK
@@ -30,7 +32,7 @@ namespace Avalonia.Markup.Parsers
             var parsed = new List<ISyntax>();
             while (state != State.End)
             {
-                ISyntax syntax = null;
+                ISyntax? syntax = null;
                 if (state == State.Start)
                     (state, syntax) = ParseStart(ref r);
                 else if (state == State.Next)
@@ -53,7 +55,7 @@ namespace Avalonia.Markup.Parsers
             return parsed;
         }
         
-        private static (State, ISyntax) ParseNext(ref CharacterReader r)
+        private static (State, ISyntax?) ParseNext(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.End)
@@ -106,7 +108,7 @@ namespace Avalonia.Markup.Parsers
                 });
         }
 
-        static (string ns, string name) ParseXamlIdentifier(ref CharacterReader r)
+        static (string? ns, string name) ParseXamlIdentifier(ref CharacterReader r)
         {
             var ident = r.ParseIdentifier();
             if (ident.IsEmpty)
@@ -147,7 +149,7 @@ namespace Avalonia.Markup.Parsers
             return true;
         }
         
-        private static (State, ISyntax) ParseAfterProperty(ref CharacterReader r)
+        private static (State, ISyntax?) ParseAfterProperty(ref CharacterReader r)
         {
             if (TryParseCasts(ref r, out var rv))
                 return rv;
@@ -182,39 +184,42 @@ namespace Avalonia.Markup.Parsers
             
         }
 
+        // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
+        // only reason they have overridden Equals methods is for unit testing.
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
         public class PropertySyntax : ISyntax
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => obj is PropertySyntax other
                    && other.Name == Name;
         }
         
         public class TypeQualifiedPropertySyntax : ISyntax
         {
-            public string Name { get; set; }
-            public string TypeName { get; set; }
-            public string TypeNamespace { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string TypeName { get; set; } = string.Empty;
+            public string? TypeNamespace { get; set; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => obj is TypeQualifiedPropertySyntax other
                    && other.Name == Name
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
         }
-        
+
         public class ChildTraversalSyntax : ISyntax
         {
             public static ChildTraversalSyntax Instance { get;  } = new ChildTraversalSyntax();
-            public override bool Equals(object obj) => obj is ChildTraversalSyntax;
+            public override bool Equals(object? obj) => obj is ChildTraversalSyntax;
         }
         
         public class EnsureTypeSyntax : ISyntax
         {
-            public string TypeName { get; set; }
-            public string TypeNamespace { get; set; }
-            public override bool Equals(object obj)
+            public string TypeName { get; set; } = string.Empty;
+            public string? TypeNamespace { get; set; }
+            public override bool Equals(object? obj)
                 => obj is EnsureTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
@@ -222,12 +227,13 @@ namespace Avalonia.Markup.Parsers
         
         public class CastTypeSyntax : ISyntax
         {
-            public string TypeName { get; set; }
-            public string TypeNamespace { get; set; }
-            public override bool Equals(object obj)
+            public string TypeName { get; set; } = string.Empty;
+            public string? TypeNamespace { get; set; }
+            public override bool Equals(object? obj)
                 => obj is CastTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
         }
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     }
 }
