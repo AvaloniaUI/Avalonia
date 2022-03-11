@@ -735,7 +735,7 @@ private:
                 return E_INVALIDARG;
             
             // If one tries to show a child window with a minimized parent window, then the parent window will be
-            // restored but MacOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
             // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
             if (cparent->WindowState() == Minimized)
                 cparent->SetWindowState(Normal);

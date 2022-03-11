@@ -12,10 +12,12 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="color">The color to use.</param>
         /// <param name="opacity">The opacity of the brush.</param>
-        public ImmutableSolidColorBrush(Color color, double opacity = 1)
+        /// <param name="transform">The transform of the brush.</param>
+        public ImmutableSolidColorBrush(Color color, double opacity = 1, ImmutableTransform? transform = null)
         {
             Color = color;
             Opacity = opacity;
+            Transform = null;
         }
 
         /// <summary>
@@ -32,7 +34,7 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="source">The brush from which this brush's properties should be copied.</param>
         public ImmutableSolidColorBrush(ISolidColorBrush source)
-            : this(source.Color, source.Opacity)
+            : this(source.Color, source.Opacity, source.Transform?.ToImmutable())
         {
         }
 
@@ -46,11 +48,16 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         public double Opacity { get; }
 
+        /// <summary>
+        /// Gets the transform of the brush.
+        /// </summary>
+        public ITransform? Transform { get; }
+
         public bool Equals(ImmutableSolidColorBrush? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity);
+            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity) && (Transform == null && other.Transform == null ? true : (Transform != null && Transform.Equals(other.Transform)));
         }
 
         public override bool Equals(object? obj)
@@ -62,7 +69,7 @@ namespace Avalonia.Media.Immutable
         {
             unchecked
             {
-                return (Color.GetHashCode() * 397) ^ Opacity.GetHashCode();
+                return (Color.GetHashCode() * 397) ^ Opacity.GetHashCode() ^ (Transform is null ? 0 : Transform.GetHashCode());
             }
         }
 
