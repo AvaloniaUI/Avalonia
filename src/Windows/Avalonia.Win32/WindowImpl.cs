@@ -396,6 +396,11 @@ namespace Avalonia.Win32
                     }
                 }
 
+                if (Win32Platform.WindowsVersion.Major == 10 && effect == BlurEffect.Mica)
+                {
+                    effect = BlurEffect.Acrylic;
+                }
+
                 _blurHost?.SetBlur(effect);
 
                 return transparencyLevel;
@@ -428,7 +433,8 @@ namespace Avalonia.Win32
                         break;
 
                     case WindowTransparencyLevel.AcrylicBlur:
-                    case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
+                    case WindowTransparencyLevel.ForceAcrylicBlur: // hack-force acrylic.
+                    case WindowTransparencyLevel.Mica:
                         accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
                         transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
                         break;
