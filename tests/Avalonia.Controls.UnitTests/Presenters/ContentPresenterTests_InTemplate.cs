@@ -354,7 +354,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Content_Should_Become_Datacontext_When_ControlTemplate_Is_Not_Null()
+        public void Content_Should_Become_DataContext_When_ControlTemplate_Is_Not_Null()
         {
             var (target, _) = CreateTarget();
 
@@ -365,7 +365,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var canvas = new Canvas()
             {
-                Name ="Canvas",
+                Name = "Canvas"
             };
 
             target.ContentTemplate = new FuncDataTemplate<Canvas>((_, __) => textBlock);
