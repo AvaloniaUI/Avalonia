@@ -396,7 +396,7 @@ namespace Avalonia.Win32
                     }
                 }
 
-                if (Win32Platform.WindowsVersion.Major == 10 && effect == BlurEffect.Mica)
+                if (Win32Platform.WindowsVersion < WinUICompositorConnection.MinHostBackdropVersion && effect == BlurEffect.Mica)
                 {
                     effect = BlurEffect.Acrylic;
                 }
