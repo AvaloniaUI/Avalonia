@@ -28,11 +28,5 @@
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Pages\TransitioningContentControlPage.axaml.cs">
-      <DependentUpon>TransitioningContentControlPage.axaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>
