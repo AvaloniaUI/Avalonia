@@ -5,7 +5,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>ControlCatalog.iOS</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.companyname.ControlCatalog.iOS</string>
+	<string>Avalonia.ControlCatalog</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -39,9 +39,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-    <key>UIStatusBarHidden</key>
-    <true/>
-    <key>UIViewControllerBasedStatusBarAppearance</key>
-    <false/>
+	<key>UIStatusBarHidden</key>
+	<true/>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>
