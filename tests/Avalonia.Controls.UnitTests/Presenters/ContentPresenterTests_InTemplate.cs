@@ -376,7 +376,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal("Canvas", textBlock.Text);
         }
 
-
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
         {
             var templatedParent = new ContentControl
