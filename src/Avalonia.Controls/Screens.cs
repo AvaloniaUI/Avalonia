@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -20,36 +21,26 @@ namespace Avalonia.Controls
             _iScreenImpl = iScreenImpl;
         }
 
-        public Screen ScreenFromBounds(PixelRect bounds){
-        
-            Screen currMaxScreen = null;
-            double maxAreaSize = 0;
-            foreach (Screen screen in All)
-            {
-                double left = MathUtilities.Clamp(bounds.X, screen.Bounds.X, screen.Bounds.X + screen.Bounds.Width);
-                double top = MathUtilities.Clamp(bounds.Y, screen.Bounds.Y, screen.Bounds.Y + screen.Bounds.Height);
-                double right = MathUtilities.Clamp(bounds.X + bounds.Width, screen.Bounds.X, screen.Bounds.X + screen.Bounds.Width);
-                double bottom = MathUtilities.Clamp(bounds.Y + bounds.Height, screen.Bounds.Y, screen.Bounds.Y + screen.Bounds.Height);
-                double area = (right - left) * (bottom - top);
-                if (area > maxAreaSize)
-                {
-                    maxAreaSize = area;
-                    currMaxScreen = screen;
-                }
-            }
-
-            return currMaxScreen;
+        public Screen? ScreenFromBounds(PixelRect bounds)
+        {
+            return _iScreenImpl.ScreenFromRect(bounds);
         }
         
-        public Screen ScreenFromPoint(PixelPoint point)
+        public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
-            return All.FirstOrDefault(x => x.Bounds.Contains(point));        
+            return _iScreenImpl.ScreenFromWindow(window);
+        }
+
+        public Screen? ScreenFromPoint(PixelPoint point)
+        {      
+            return _iScreenImpl.ScreenFromPoint(point);
         }
 
         public Screen ScreenFromVisual(IVisual visual)
         {
             var tl = visual.PointToScreen(visual.Bounds.TopLeft);
             var br = visual.PointToScreen(visual.Bounds.BottomRight);
+
             return ScreenFromBounds(new PixelRect(tl, br));
         }
     }

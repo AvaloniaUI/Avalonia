@@ -252,6 +252,18 @@ namespace Avalonia
             return p.X >= _x && p.X <= _x + _width &&
                    p.Y >= _y && p.Y <= _y + _height;
         }
+        
+        /// <summary>
+        /// Determines whether a point is in the bounds of the rectangle, exclusive of the
+        /// rectangle's bottom/right edge.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>    
+        public bool ContainsExclusive(Point p)
+        {
+            return p.X >= _x && p.X < _x + _width &&
+                   p.Y >= _y && p.Y < _y + _height;
+        }
 
         /// <summary>
         /// Determines whether the rectangle fully contains another rectangle.
