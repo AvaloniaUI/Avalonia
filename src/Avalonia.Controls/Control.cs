@@ -309,5 +309,79 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        static Control()
+        {
+            AffectsArrange<Control>(FlowDirectionProperty);
+        }
+
+        private bool _mirrorApplied;
+
+        protected virtual bool ShouldBeMirroredIfRightToLeft()
+        {
+            if (Parent is Control parent)
+            {
+                return parent.ShouldBeMirroredIfRightToLeft();
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        protected override void ArrangeCore(Rect finalRect)
+        {
+            base.ArrangeCore(finalRect);
+
+            FlowDirection parentFD = FlowDirection.LeftToRight;
+            FlowDirection thisFD = FlowDirection;
+            bool shouldBeMirroredIfRightToLeft = ShouldBeMirroredIfRightToLeft();
+
+            if (Parent is Control control)
+            {
+                parentFD = control.FlowDirection;
+            }
+            
+            bool shouldMirror;
+            if (shouldBeMirroredIfRightToLeft)
+            {
+                shouldMirror = ShuoldApplyMirrorTransform(parentFD, thisFD);
+                if (this is PopupRoot && thisFD == FlowDirection.RightToLeft)
+                {
+                    shouldMirror = true;
+                }
+            }
+            else
+            {
+                shouldMirror = ShuoldApplyMirrorTransform(parentFD, FlowDirection.LeftToRight);
+            }
+
+            if (shouldMirror)
+            {
+                ApplyMirrorTransform();
+            }
+            else
+            {
+                //RenderTransform = null;
+            }
+        }
+
+        private void ApplyMirrorTransform()
+        {
+            if (_mirrorApplied)
+            {
+                return;
+            }
+
+            var transform = new MatrixTransform(new Avalonia.Matrix(-1, 0, 0, 1, 0.0, 0.0));
+            RenderTransform = transform;
+            _mirrorApplied = true;
+        }
+
+        internal static bool ShuoldApplyMirrorTransform(FlowDirection parentFD, FlowDirection thisFD)
+        {
+            return ((parentFD == FlowDirection.LeftToRight && thisFD == FlowDirection.RightToLeft) ||
+                    (parentFD == FlowDirection.RightToLeft && thisFD == FlowDirection.LeftToRight));
+        }
     }
 }

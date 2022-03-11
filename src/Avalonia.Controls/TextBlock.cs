@@ -612,5 +612,7 @@ namespace Avalonia.Controls
         {
             InvalidateTextLayout();
         }
+
+        protected override bool ShouldBeMirroredIfRightToLeft() => false;
     }
 }
