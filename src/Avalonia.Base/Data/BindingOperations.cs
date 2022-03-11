@@ -116,8 +116,8 @@ namespace Avalonia.Data
                     return;
                 }
 
-                _first.Dispose();
                 _second.Dispose();
+                _first.Dispose();
 
                 _isDisposed = true;
             }
