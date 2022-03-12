@@ -346,7 +346,7 @@ namespace Avalonia.Controls
             if (shouldBeMirroredIfRightToLeft)
             {
                 shouldMirror = ShuoldApplyMirrorTransform(parentFD, thisFD);
-                if (this is PopupRoot && thisFD == FlowDirection.RightToLeft)
+                if (Parent is Popup && thisFD == FlowDirection.RightToLeft)
                 {
                     shouldMirror = true;
                 }

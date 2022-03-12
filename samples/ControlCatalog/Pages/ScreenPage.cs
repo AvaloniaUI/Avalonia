@@ -78,5 +78,7 @@ namespace ControlCatalog.Pages
             return new FormattedText(textToFormat, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 Typeface.Default, 12, Brushes.Green);
         }
+
+        protected override bool ShouldBeMirroredIfRightToLeft() => false;
     }
 }
