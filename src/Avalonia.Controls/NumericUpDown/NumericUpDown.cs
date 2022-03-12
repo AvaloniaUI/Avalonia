@@ -665,7 +665,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnIncrement()
         {
-            var result = Value ?? 0 + Increment; // Todo: Use default value instead
+            var result = (Value ?? 0) + Increment; // Todo: Use default value instead
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
@@ -674,7 +674,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnDecrement()
         {
-            var result = Value ?? 0 - Increment; // Todo: Use default value instead
+            var result = (Value ?? 0) - Increment; // Todo: Use default value instead
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
