@@ -616,7 +616,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Converts the formatted text to a value.
         /// </summary>
-        private decimal? ConvertTextToValue(string text)
+        private decimal? ConvertTextToValue(string? text)
         {
             decimal? result = null; // Todo Add default value property
 
@@ -688,6 +688,10 @@ namespace Avalonia.Controls
             // Zero increment always prevents spin.
             if (Increment != 0 && !IsReadOnly)
             {
+                if (!Value.HasValue)
+                {
+                    validDirections = ValidSpinDirections.Increase | ValidSpinDirections.Decrease;
+                }
                 if (Value < Maximum)
                 {
                     validDirections = validDirections | ValidSpinDirections.Increase;
@@ -978,20 +982,17 @@ namespace Avalonia.Controls
             {
                 if (updateValueFromText)
                 {
-                    if (!string.IsNullOrEmpty(text))
+                    try
                     {
-                        try
+                        var newValue = ConvertTextToValue(text);
+                        if (!Equals(newValue, Value))
                         {
-                            var newValue = ConvertTextToValue(text);
-                            if (!Equals(newValue, Value))
-                            {
-                                SetValueInternal(newValue);
-                            }
+                            SetValueInternal(newValue);
                         }
-                        catch
-                        {
-                            parsedTextIsValid = false;
-                        }
+                    }
+                    catch
+                    {
+                        parsedTextIsValid = false;
                     }
                 }
 
