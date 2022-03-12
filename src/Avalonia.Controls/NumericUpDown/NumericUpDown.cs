@@ -112,6 +112,13 @@ namespace Avalonia.Controls
                 (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
+        /// Defines the <see cref="DefaultValue"/> property.
+        /// </summary>
+        public static readonly DirectProperty<NumericUpDown, decimal?> DefaultValueProperty =
+            AvaloniaProperty.RegisterDirect<NumericUpDown, decimal?>(nameof(DefaultValue), updown => updown.DefaultValue,
+                (updown, v) => updown.DefaultValue = v);
+
+        /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> WatermarkProperty =
@@ -132,6 +139,7 @@ namespace Avalonia.Controls
         private IDisposable? _textBoxTextChangedSubscription;
 
         private decimal? _value;
+        private decimal? _defaultValue;
         private string? _text;
         private bool _internalValueSet;
         private bool _clipValueToMinMax;
@@ -284,6 +292,19 @@ namespace Avalonia.Controls
             {
                 value = OnCoerceValue(value);
                 SetAndRaise(ValueProperty, ref _value, value);
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the default value which is set if the <see cref="Value"/> is <see langword="null"/>.
+        /// </summary>
+        public decimal? DefaultValue
+        {
+            get { return _defaultValue; }
+            set
+            {
+                value = OnCoerceValue(value);
+                SetAndRaise(DefaultValueProperty, ref _defaultValue, value);
             }
         }
 
@@ -618,11 +639,11 @@ namespace Avalonia.Controls
         /// </summary>
         private decimal? ConvertTextToValue(string? text)
         {
-            decimal? result = null; // Todo Add default value property
+            decimal? result;
 
             if (string.IsNullOrEmpty(text))
             {
-                return result;
+                return DefaultValue;
             }
 
             // Since the conversion from Value to text using a FormatString may not be parsable,
@@ -665,7 +686,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnIncrement()
         {
-            var result = (Value ?? 0) + Increment; // Todo: Use default value instead
+            var result = GetValueOrDefault() + Increment;
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
@@ -674,8 +695,29 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnDecrement()
         {
-            var result = (Value ?? 0) - Increment; // Todo: Use default value instead
+            var result = GetValueOrDefault() - Increment;
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
+        }
+
+        /// <summary>
+        ///   Used to get a non-nullable value.
+        /// </summary>
+        /// <returns>
+        /// The actual value if set <br/>
+        /// or the default value if set <br/>
+        /// otherwise 0
+        /// </returns>
+        private decimal GetValueOrDefault()
+        {
+            if (Value.HasValue)
+            {
+                return Value.Value;
+            }
+            if (DefaultValue.HasValue)
+            {
+                return DefaultValue.Value;
+            }
+            return default;
         }
 
         /// <summary>
