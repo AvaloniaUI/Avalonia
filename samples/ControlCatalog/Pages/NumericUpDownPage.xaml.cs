@@ -32,21 +32,21 @@ namespace ControlCatalog.Pages
         private FormatObject _selectedFormat;
         private IList<Location> _spinnerLocations;
 
-        private double _doubleValue;
-        private decimal _decimalValue;
+        private double? _doubleValue;
+        private decimal? _decimalValue;
 
         public NumbersPageViewModel()
         {
             SelectedFormat = Formats.FirstOrDefault();
         }
 
-        public double DoubleValue
+        public double? DoubleValue
         {
             get { return _doubleValue; }
             set { this.RaiseAndSetIfChanged(ref _doubleValue, value); }
         }
 
-        public decimal DecimalValue
+        public decimal? DecimalValue
         {
             get { return _decimalValue; }
             set { this.RaiseAndSetIfChanged(ref _decimalValue, value); }
