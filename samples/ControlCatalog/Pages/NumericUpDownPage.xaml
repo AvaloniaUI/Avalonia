@@ -54,6 +54,7 @@
       <Grid Grid.Row="0" Grid.Column="2" Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Minimum:</TextBlock>
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding #upDown.Minimum}"
+                       Watermark="Enter a value"
                        CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Maximum:</TextBlock>
