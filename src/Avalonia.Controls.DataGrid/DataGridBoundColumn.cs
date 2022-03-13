@@ -119,7 +119,11 @@ namespace Avalonia.Controls
                 if(result.Subject != null)
                 {
                     var bindingHelper = new CellEditBinding(result.Subject);
-                    var instanceBinding = new InstancedBinding(bindingHelper.InternalSubject, result.Mode, result.Priority); 
+                    var instanceBinding = new InstancedBinding(
+                        bindingHelper.InternalSubject, 
+                        result.Mode, 
+                        result.Priority,
+                        result.UpdateSourceTrigger); 
 
                     BindingOperations.Apply(target, property, instanceBinding, null);
                     return bindingHelper;

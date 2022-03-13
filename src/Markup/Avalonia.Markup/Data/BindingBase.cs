@@ -1,13 +1,10 @@
-﻿
-using System;
-using System.Linq;
+﻿using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Parsers;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
@@ -64,6 +61,8 @@ namespace Avalonia.Data
         /// Gets or sets the binding priority.
         /// </summary>
         public BindingPriority Priority { get; set; }
+
+        public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
 
         /// <summary>
         /// Gets or sets the string format.
@@ -127,7 +126,7 @@ namespace Avalonia.Data
                 ConverterParameter,
                 Priority);
 
-            return new InstancedBinding(subject, Mode, Priority);
+            return new InstancedBinding(subject, Mode, Priority, UpdateSourceTrigger);
         }
 
         protected ExpressionObserver CreateDataContextObserver(

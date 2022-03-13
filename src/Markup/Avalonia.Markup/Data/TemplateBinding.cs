@@ -50,7 +50,9 @@ namespace Avalonia.Data
                 return new InstancedBinding(
                     this,
                     Mode == BindingMode.Default ? BindingMode.OneWay : Mode,
-                    BindingPriority.TemplatedParent);
+                    BindingPriority.TemplatedParent,
+                    UpdateSourceTrigger.Default
+                    );
             }
             else
             {

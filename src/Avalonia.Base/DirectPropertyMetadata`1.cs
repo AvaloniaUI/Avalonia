@@ -17,11 +17,13 @@ namespace Avalonia
         /// <param name="enableDataValidation">
         /// Whether the property is interested in data validation.
         /// </param>
+        /// <param name="updateSourceTrigger"></param>
         public DirectPropertyMetadata(
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.Default,
-            bool? enableDataValidation = null)
-                : base(defaultBindingMode)
+            bool? enableDataValidation = null,
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
+                : base(defaultBindingMode, updateSourceTrigger)
         {
             UnsetValue = unsetValue;
             EnableDataValidation = enableDataValidation;

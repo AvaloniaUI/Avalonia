@@ -16,11 +16,13 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
         /// <param name="coerce">A value coercion callback.</param>
+        /// <param name="updateSourceTrigger"></param>
         public StyledPropertyMetadata(
             Optional<TValue> defaultValue = default,
             BindingMode defaultBindingMode = BindingMode.Default,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
-                : base(defaultBindingMode)
+            Func<IAvaloniaObject, TValue, TValue>? coerce = null,
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
+                : base(defaultBindingMode, updateSourceTrigger)
         {
             _defaultValue = defaultValue;
             CoerceValue = coerce;

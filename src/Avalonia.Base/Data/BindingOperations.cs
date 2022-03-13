@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
@@ -33,9 +34,61 @@ namespace Avalonia.Data
 
             var mode = binding.Mode;
 
+            AvaloniaPropertyMetadata? metadata = null;
+
             if (mode == BindingMode.Default)
             {
-                mode = property.GetMetadata(target.GetType()).DefaultBindingMode;
+                metadata = property.GetMetadata(target.GetType());
+
+                mode = metadata.DefaultBindingMode;
+            }
+
+            var updateSourceTrigger = binding.UpdateSourceTrigger;
+
+            if (updateSourceTrigger == UpdateSourceTrigger.Default)
+            {
+                metadata ??= property.GetMetadata(target.GetType());
+
+                updateSourceTrigger = metadata.UpdateSourceTrigger;
+            }
+
+            static IObservable<object?> GetTargetPropertyObservable(
+                InstancedBinding binding,
+                IAvaloniaObject target,
+                AvaloniaProperty property,
+                UpdateSourceTrigger updateSourceTrigger)
+            {
+                switch (updateSourceTrigger)
+                {
+                    case UpdateSourceTrigger.PropertyChanged:
+                    case UpdateSourceTrigger.Default:
+
+                        return target.GetObservable(property);
+
+
+                    case UpdateSourceTrigger.Explicit:
+
+                        return binding.ExplicitSourceUpdateRequested
+                            .Select(_ => target.GetValue(property));
+
+
+                    case UpdateSourceTrigger.LostFocus:
+
+                        return Observable.FromEventPattern<AvaloniaPropertyChangedEventArgs>(
+                                x => target.PropertyChanged += x,
+                                x => target.PropertyChanged -= x)
+                            .Where(e => e.EventArgs.Property.Name.Equals("IsFocused") &&
+                                        e.EventArgs.OldValue is true &&
+                                        e.EventArgs.NewValue is false)
+                            .Select(_ => target.GetValue(property));
+
+
+                    default:
+                        throw new ArgumentOutOfRangeException(
+                            nameof(updateSourceTrigger),
+                            updateSourceTrigger,
+                            null);
+                }
             }
 
             switch (mode)
@@ -48,9 +101,15 @@ namespace Avalonia.Data
                 case BindingMode.TwoWay:
                     if (binding.Subject is null)
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
+
                     return new TwoWayBindingDisposable(
                         target.Bind(property, binding.Subject, binding.Priority),
-                        target.GetObservable(property).Subscribe(binding.Subject));
+                        GetTargetPropertyObservable(
+                            binding,
+                            target,
+                            property,
+                            updateSourceTrigger).Subscribe(binding.Subject));
+
                 case BindingMode.OneTime:
                     var source = binding.Subject ?? binding.Observable;
 
@@ -86,10 +145,14 @@ namespace Avalonia.Data
                     var bindingCopy = binding;
 
                     return Observable.CombineLatest(
-                        binding.Observable,
-                        target.GetObservable(property),
-                        (_, v) => v)
-                    .Subscribe(x => bindingCopy.Subject.OnNext(x));
+                            binding.Observable,
+                            GetTargetPropertyObservable(
+                                binding,
+                                target,
+                                property,
+                                updateSourceTrigger),
+                            (_, v) => v)
+                        .Subscribe(x => bindingCopy.Subject.OnNext(x));
                 }
 
                 default:

@@ -1,4 +1,5 @@
 using System;
+using System.Reactive;
 using System.Reactive.Subjects;
 
 namespace Avalonia.Data
@@ -14,38 +15,48 @@ namespace Avalonia.Data
     /// </remarks>
     public class InstancedBinding
     {
+        private Subject<Unit>? _explicitSourceUpdateSubject;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
         /// </summary>
         /// <param name="subject">The binding source.</param>
         /// <param name="mode">The binding mode.</param>
         /// <param name="priority">The priority of the binding.</param>
+        /// <param name="updateSourceTrigger"></param>
         /// <remarks>
         /// This constructor can be used to create any type of binding and as such requires an
         /// <see cref="ISubject{Object}"/> as the binding source because this is the only binding
         /// source which can be used for all binding modes. If you wish to create an instance with
         /// something other than a subject, use one of the static creation methods on this class.
         /// </remarks>
-        public InstancedBinding(ISubject<object?> subject, BindingMode mode, BindingPriority priority)
+        public InstancedBinding(ISubject<object?> subject, BindingMode mode, BindingPriority priority, UpdateSourceTrigger updateSourceTrigger)
         {
             Contract.Requires<ArgumentNullException>(subject != null);
 
             Mode = mode;
             Priority = priority;
             Value = subject;
+            UpdateSourceTrigger = updateSourceTrigger;
         }
 
-        private InstancedBinding(object? value, BindingMode mode, BindingPriority priority)
+        private InstancedBinding(object? value, BindingMode mode, BindingPriority priority, UpdateSourceTrigger updateSourceTrigger)
         {
             Mode = mode;
             Priority = priority;
             Value = value;
+            UpdateSourceTrigger = updateSourceTrigger;
         }
 
         /// <summary>
         /// Gets the binding mode with which the binding was initiated.
         /// </summary>
         public BindingMode Mode { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public UpdateSourceTrigger UpdateSourceTrigger { get; }
 
         /// <summary>
         /// Gets the binding priority.
@@ -67,6 +78,24 @@ namespace Avalonia.Data
         /// </summary>
         public ISubject<object?>? Subject => Value as ISubject<object?>;
 
+        internal IObservable<Unit> ExplicitSourceUpdateRequested
+        {
+            get
+            {
+                _explicitSourceUpdateSubject ??= new Subject<Unit>();
+
+                return _explicitSourceUpdateSubject;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void UpdateSource()
+        {
+            _explicitSourceUpdateSubject?.OnNext(Unit.Default);
+        }
+
         /// <summary>
         /// Creates a new one-time binding with a fixed value.
         /// </summary>
@@ -77,7 +106,11 @@ namespace Avalonia.Data
             object value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            return new InstancedBinding(value, BindingMode.OneTime, priority);
+            return new InstancedBinding(
+                value, 
+                BindingMode.OneTime, 
+                priority, 
+                UpdateSourceTrigger.Default);
         }
 
         /// <summary>
@@ -92,7 +125,11 @@ namespace Avalonia.Data
         {
             _ = observable ?? throw new ArgumentNullException(nameof(observable));
 
-            return new InstancedBinding(observable, BindingMode.OneTime, priority);
+            return new InstancedBinding(
+                observable, 
+                BindingMode.OneTime, 
+                priority,
+                UpdateSourceTrigger.Default);
         }
 
         /// <summary>
@@ -107,7 +144,11 @@ namespace Avalonia.Data
         {
             _ = observable ?? throw new ArgumentNullException(nameof(observable));
 
-            return new InstancedBinding(observable, BindingMode.OneWay, priority);
+            return new InstancedBinding(
+                observable, 
+                BindingMode.OneWay, 
+                priority,
+                UpdateSourceTrigger.Default);
         }
 
         /// <summary>
@@ -115,14 +156,20 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="subject">The binding source.</param>
         /// <param name="priority">The priority of the binding.</param>
+        /// <param name="updateSourceTrigger"></param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding OneWayToSource(
             ISubject<object?> subject,
-            BindingPriority priority = BindingPriority.LocalValue)
+            BindingPriority priority = BindingPriority.LocalValue,
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
         {
             _ = subject ?? throw new ArgumentNullException(nameof(subject));
 
-            return new InstancedBinding(subject, BindingMode.OneWayToSource, priority);
+            return new InstancedBinding(
+                subject, 
+                BindingMode.OneWayToSource, 
+                priority, 
+                updateSourceTrigger);
         }
 
         /// <summary>
@@ -130,14 +177,20 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="subject">The binding source.</param>
         /// <param name="priority">The priority of the binding.</param>
+        /// <param name="updateSourceTrigger"></param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding TwoWay(
             ISubject<object?> subject,
-            BindingPriority priority = BindingPriority.LocalValue)
+            BindingPriority priority = BindingPriority.LocalValue,
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
         {
             _ = subject ?? throw new ArgumentNullException(nameof(subject));
 
-            return new InstancedBinding(subject, BindingMode.TwoWay, priority);
+            return new InstancedBinding(
+                subject,
+                BindingMode.TwoWay, 
+                priority, 
+                updateSourceTrigger);
         }
 
         /// <summary>
@@ -147,7 +200,11 @@ namespace Avalonia.Data
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public InstancedBinding WithPriority(BindingPriority priority)
         {
-            return new InstancedBinding(Value, Mode, priority);
+            return new InstancedBinding(
+                Value, 
+                Mode, 
+                priority, 
+                UpdateSourceTrigger);
         }
     }
 }

@@ -5,8 +5,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     using Avalonia.Controls;
     using Avalonia.Data.Converters;
-    using Avalonia.Markup.Data;
-    using Avalonia.Styling;
     using System.ComponentModel;
 
     public class ReflectionBindingExtension
@@ -39,7 +37,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 RelativeSource = RelativeSource,
                 DefaultAnchor = new WeakReference(descriptorContext.GetDefaultAnchor()),
                 TargetNullValue = TargetNullValue,
-                NameScope = new WeakReference<INameScope>(serviceProvider.GetService<INameScope>())
+                NameScope = new WeakReference<INameScope>(serviceProvider.GetService<INameScope>()),
+                UpdateSourceTrigger = UpdateSourceTrigger
             };
         }
 
@@ -65,5 +64,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public RelativeSource RelativeSource { get; set; }
 
         public object TargetNullValue { get; set; } = AvaloniaProperty.UnsetValue;
+
+        public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
     }
 }

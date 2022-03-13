@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.UnitTests;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Input;
 using Avalonia.Threading;
 
 namespace Avalonia.Markup.UnitTests.Data
@@ -455,6 +456,68 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Bind(TextBlock.TextProperty, binding);
 
             Assert.Equal("foo", target.Text);
+        }
+
+        [Fact]
+        public void UpdateSourceTrigger_Explicit_Updates_Source()
+        {
+            var target = new TextBlock { Text = "Bar" };
+            var source = new Source();
+            var binding = new Binding
+            {
+                Path = nameof(source.Foo),
+                Source = source, 
+                UpdateSourceTrigger = UpdateSourceTrigger.Explicit,
+                Mode = BindingMode.OneWayToSource
+            };
+
+            var ib = binding.Initiate(target, TextBlock.TextProperty);
+
+            Assert.NotNull(ib);
+            Assert.Equal(ib.UpdateSourceTrigger, UpdateSourceTrigger.Explicit);
+
+            BindingOperations.Apply(target, TextBlock.TextProperty, ib, null);
+
+            ib.UpdateSource();
+
+            Assert.Equal(1, source.FooSetCount);
+            Assert.Equal("Bar", source.Foo);
+        }
+
+        [Fact]
+        public void UpdateSourceTrigger_LostFocus_Updates_Source()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new TextBlock { Text = "Bar" };
+
+                var root = new TestRoot
+                {
+                    Child = target
+                };
+
+                var source = new Source();
+                var binding = new Binding
+                {
+                    Path = nameof(source.Foo),
+                    Source = source,
+                    UpdateSourceTrigger = UpdateSourceTrigger.LostFocus,
+                    Mode = BindingMode.OneWayToSource
+                };
+
+                var ib = binding.Initiate(target, TextBlock.TextProperty);
+
+                Assert.NotNull(ib);
+                Assert.Equal(ib.UpdateSourceTrigger, UpdateSourceTrigger.LostFocus);
+
+                BindingOperations.Apply(target, TextBlock.TextProperty, ib, null);
+
+                FocusManager.Instance.Focus(target);
+                FocusManager.Instance.Focus(null);
+
+                Assert.Equal(1, source.FooSetCount);
+                Assert.Equal("Bar", source.Foo);
+            }
         }
 
         /// <summary>

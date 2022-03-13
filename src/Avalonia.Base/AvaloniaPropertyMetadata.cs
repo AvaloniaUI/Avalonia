@@ -8,13 +8,15 @@ namespace Avalonia
     public class AvaloniaPropertyMetadata
     {
         private BindingMode _defaultBindingMode;
+        private UpdateSourceTrigger _updateSourceTrigger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaPropertyMetadata"/> class.
         /// </summary>
         /// <param name="defaultBindingMode">The default binding mode.</param>
         public AvaloniaPropertyMetadata(
-            BindingMode defaultBindingMode = BindingMode.Default)
+            BindingMode defaultBindingMode = BindingMode.Default,
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
         {
             _defaultBindingMode = defaultBindingMode;
         }
@@ -31,6 +33,15 @@ namespace Avalonia
             }
         }
 
+        public UpdateSourceTrigger UpdateSourceTrigger
+        {
+            get
+            {
+                return _updateSourceTrigger == UpdateSourceTrigger.Default ?
+                    UpdateSourceTrigger.PropertyChanged : _updateSourceTrigger;
+            }
+        }
+
         /// <summary>
         /// Merges the metadata with the base metadata.
         /// </summary>
@@ -43,6 +54,11 @@ namespace Avalonia
             if (_defaultBindingMode == BindingMode.Default)
             {
                 _defaultBindingMode = baseMetadata.DefaultBindingMode;
+            }
+
+            if (_updateSourceTrigger == UpdateSourceTrigger.Default)
+            {
+                _updateSourceTrigger = baseMetadata.UpdateSourceTrigger;
             }
         }
     }

@@ -85,19 +85,22 @@ namespace Avalonia
         /// <param name="enableDataValidation">
         /// Whether the property is interested in data validation.
         /// </param>
+        /// <param name="updateSourceTrigger"></param>
         /// <returns>The property.</returns>
         public DirectProperty<TNewOwner, TValue> AddOwner<TNewOwner>(
             Func<TNewOwner, TValue> getter,
             Action<TNewOwner, TValue>? setter = null,
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.Default,
-            bool enableDataValidation = false)
+            bool enableDataValidation = false,
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
                 where TNewOwner : AvaloniaObject
         {
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
                 defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
+                enableDataValidation: enableDataValidation,
+                updateSourceTrigger: updateSourceTrigger);
 
             metadata.Merge(GetMetadata<TOwner>(), this);
 
@@ -124,19 +127,22 @@ namespace Avalonia
         /// <param name="enableDataValidation">
         /// Whether the property is interested in data validation.
         /// </param>
+        /// <param name="updateSourceTrigger"></param>
         /// <returns>The property.</returns>
         public DirectProperty<TNewOwner, TValue> AddOwnerWithDataValidation<TNewOwner>(
             Func<TNewOwner, TValue> getter,
             Action<TNewOwner,TValue> setter,
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.Default,
-            bool enableDataValidation = false)
+            bool enableDataValidation = false, 
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
                 where TNewOwner : AvaloniaObject
         {
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
                 defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
+                enableDataValidation: enableDataValidation,
+                updateSourceTrigger: updateSourceTrigger);
 
             metadata.Merge(GetMetadata<TOwner>(), this);
 

@@ -344,6 +344,7 @@ namespace Avalonia
         /// <param name="enableDataValidation">
         /// Whether the property is interested in data validation.
         /// </param>
+        /// <param name="updateSourceTrigger"></param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static DirectProperty<TOwner, TValue> RegisterDirect<TOwner, TValue>(
             string name,
@@ -351,7 +352,8 @@ namespace Avalonia
             Action<TOwner, TValue>? setter = null,
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            bool enableDataValidation = false)
+            bool enableDataValidation = false,
+            UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default)
                 where TOwner : IAvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -360,13 +362,15 @@ namespace Avalonia
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
                 defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
+                enableDataValidation: enableDataValidation,
+                updateSourceTrigger: updateSourceTrigger);
 
             var result = new DirectProperty<TOwner, TValue>(
                 name,
                 getter,
                 setter,
                 metadata);
+
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }

@@ -1,3 +1,12 @@
 Compat issues with assembly Avalonia.Base:
+MembersMustExist : Member 'public Avalonia.DirectProperty<TOwner, TValue> Avalonia.AvaloniaProperty.RegisterDirect<TOwner, TValue>(System.String, System.Func<TOwner, TValue>, System.Action<TOwner, TValue>, TValue, Avalonia.Data.BindingMode, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.AvaloniaPropertyMetadata..ctor(Avalonia.Data.BindingMode)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.DirectProperty<TNewOwner, TValue> Avalonia.DirectProperty<TOwner, TValue>.AddOwner<TNewOwner>(System.Func<TNewOwner, TValue>, System.Action<TNewOwner, TValue>, TValue, Avalonia.Data.BindingMode, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.DirectProperty<TNewOwner, TValue> Avalonia.DirectProperty<TOwner, TValue>.AddOwnerWithDataValidation<TNewOwner>(System.Func<TNewOwner, TValue>, System.Action<TNewOwner, TValue>, TValue, Avalonia.Data.BindingMode, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.DirectPropertyMetadata<TValue>..ctor(TValue, Avalonia.Data.BindingMode, System.Nullable<System.Boolean>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.StyledPropertyMetadata<TValue>..ctor(Avalonia.Data.Optional<TValue>, Avalonia.Data.BindingMode, System.Func<Avalonia.IAvaloniaObject, TValue, TValue>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Data.InstancedBinding..ctor(System.Reactive.Subjects.ISubject<System.Object>, Avalonia.Data.BindingMode, Avalonia.Data.BindingPriority)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Data.InstancedBinding Avalonia.Data.InstancedBinding.OneWayToSource(System.Reactive.Subjects.ISubject<System.Object>, Avalonia.Data.BindingPriority)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Data.InstancedBinding Avalonia.Data.InstancedBinding.TwoWay(System.Reactive.Subjects.ISubject<System.Object>, Avalonia.Data.BindingPriority)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Threading.IDispatcher.Post<T>(System.Action<T>, T, Avalonia.Threading.DispatcherPriority)' is present in the implementation but not in the contract.
-Total Issues: 1
+Total Issues: 10
