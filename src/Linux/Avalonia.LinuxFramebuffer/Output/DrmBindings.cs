@@ -142,20 +142,27 @@ namespace Avalonia.LinuxFramebuffer.Output
         public int Fd { get; private set; }
         public DrmCard(string path = null)
         {
-            if (path == null)
+            if(path == null)
             {
-                Fd = open("/dev/dri/card0", 2, 0);
-                if (Fd == -1)
+                var files = Directory.GetFiles("/dev/dri/");
+
+                foreach(var file in files) 
                 {
-                    Fd = open("/dev/dri/card1", 2, 0);
-                    
-                    if(Fd == -1) throw new Win32Exception("Couldn't open /dev/dri/card0 or /dev/dri/card1");
+                    var match = Regex.Match(file, "card[0-9]+");
+
+                    if(match.Success)
+                    {
+                        Fd = open(file, 2, 0);
+                        if(Fd != -1) break; 
+                    }    
                 }
+
+                if(Fd == -1) throw new Win32Exception("Couldn't open /dev/dri/card[0-9]+");
             }
-            else
+            else 
             {
                 Fd = open(path, 2, 0);
-                if (Fd == -1) throw new Win32Exception($"Couldn't open {path}");
+                if(Fd != -1) throw new Win32Exception($"Couldn't open {path}");
             }
         }
 
