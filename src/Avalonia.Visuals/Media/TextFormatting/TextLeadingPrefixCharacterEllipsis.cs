@@ -20,9 +20,13 @@ namespace Avalonia.Media.TextFormatting
             ReadOnlySlice<char> ellipsis,
             int prefixLength,
             double width,
-            TextRunProperties textRunProperties
-        )
+            TextRunProperties textRunProperties)
         {
+            if (_prefixLength < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(prefixLength));
+            }
+
             _prefixLength = prefixLength;
             Width = width;
             Symbol = new TextCharacters(ellipsis, textRunProperties);
@@ -34,7 +38,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public sealed override TextRun Symbol { get; }
 
-        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine)
+        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine, FlowDirection flowDirection)
         {
             var shapedTextRuns = textLine.TextRuns as List<ShapedTextCharacters>;
 
@@ -45,10 +49,6 @@ namespace Avalonia.Media.TextFormatting
 
             var runIndex = 0;
             var currentWidth = 0.0;
-
-            // TODO: From where this is supposed to come now?
-            var flowDirection = FlowDirection.LeftToRight;
-
             var shapedSymbol = TextFormatterImpl.CreateSymbol(Symbol, flowDirection);
 
             if (Width < shapedSymbol.GlyphRun.Size.Width)
@@ -56,6 +56,8 @@ namespace Avalonia.Media.TextFormatting
                 return new List<ShapedTextCharacters>(0);
             }
 
+            // Overview of ellipsis structure
+            // Prefix length run | Ellipsis symbol | Post split run growing from the end |
             var availableWidth = Width - shapedSymbol.Size.Width;
 
             while (runIndex < shapedTextRuns.Count)
@@ -72,26 +74,42 @@ namespace Avalonia.Media.TextFormatting
 
                     if (measuredLength > 0)
                     {
-                        var splitResult = TextFormatterImpl.SplitShapedRuns(shapedTextRuns, Math.Min(_prefixLength, measuredLength));
+                        List<ShapedTextCharacters>? preSplitRuns = null;
+                        List<ShapedTextCharacters>? postSplitRuns = null;
 
-                        shapedTextCharacters.AddRange(splitResult.First);
+                        if (_prefixLength > 0)
+                        {
+                            var splitResult = TextFormatterImpl.SplitShapedRuns(shapedTextRuns, Math.Min(_prefixLength, measuredLength));
 
-                        TextLineImpl.SortRuns(shapedTextCharacters);
+                            shapedTextCharacters.AddRange(splitResult.First);
+
+                            TextLineImpl.SortRuns(shapedTextCharacters);
+
+                            preSplitRuns = splitResult.First;
+                            postSplitRuns = splitResult.Second;
+                        }
+                        else
+                        {
+                            postSplitRuns = shapedTextRuns;
+                        }
 
                         shapedTextCharacters.Add(shapedSymbol);
 
-                        if (measuredLength > _prefixLength && splitResult.Second is not null)
+                        if (measuredLength > _prefixLength && postSplitRuns is not null)
                         {
                             var availableSuffixWidth = availableWidth;
 
-                            foreach (var run in splitResult.First)
+                            if (preSplitRuns is not null)
                             {
-                                availableSuffixWidth -= run.Size.Width;
+                                foreach (var run in preSplitRuns)
+                                {
+                                    availableSuffixWidth -= run.Size.Width;
+                                }
                             }
 
-                            for (int i = splitResult.Second.Count - 1; i >= 0; i--)
+                            for (int i = postSplitRuns.Count - 1; i >= 0; i--)
                             {
-                                var run = splitResult.Second[i];
+                                var run = postSplitRuns[i];
 
                                 if (run.TryMeasureCharactersBackwards(availableSuffixWidth, out int suffixCount, out double suffixWidth))
                                 {

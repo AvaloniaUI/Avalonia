@@ -28,7 +28,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Text is trimmed after a given prefix length. An ellipsis (...) is drawn in between prefix and suffix and represents remaining text.
         /// </summary>
-        public static TextTrimming PrefixEllipsis { get; } = new TextLeadingPrefixTrimming(s_defaultEllipsisChar, 8);
+        public static TextTrimming PrefixCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(s_defaultEllipsisChar, 8);
 
         /// <summary>
         /// Creates properties that will be used for collapsing lines of text.
@@ -60,9 +60,9 @@ namespace Avalonia.Media
             {
                 return WordEllipsis;
             }
-            else if (Matches(nameof(PrefixEllipsis)))
+            else if (Matches(nameof(PrefixCharacterEllipsis)))
             {
-                return PrefixEllipsis;
+                return PrefixCharacterEllipsis;
             }
 
             throw new FormatException($"Invalid text trimming string: '{s}'.");

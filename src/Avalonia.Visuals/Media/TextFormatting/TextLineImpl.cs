@@ -106,7 +106,7 @@ namespace Avalonia.Media.TextFormatting
 
             var collapsingProperties = collapsingPropertiesList[0];
 
-            var collapsedRuns = collapsingProperties.Collapse(this);
+            var collapsedRuns = collapsingProperties.Collapse(this, _paragraphProperties.FlowDirection);
 
             if (collapsedRuns is List<ShapedTextCharacters> shapedRuns)
             {

@@ -25,7 +25,7 @@ namespace Avalonia.Media
 
         public override string ToString()
         {
-            return nameof(PrefixEllipsis);
+            return nameof(PrefixCharacterEllipsis);
         }
     }
 }

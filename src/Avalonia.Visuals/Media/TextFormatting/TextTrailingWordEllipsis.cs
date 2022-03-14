@@ -30,9 +30,9 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public sealed override TextRun Symbol { get; }
 
-        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine)
+        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine, FlowDirection flowDirection)
         {
-            return TextEllipsisHelper.Collapse(textLine, this, true);
+            return TextEllipsisHelper.Collapse(textLine, flowDirection, this, true);
         }
     }
 }
