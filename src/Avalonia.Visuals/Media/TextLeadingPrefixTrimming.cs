@@ -3,7 +3,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
-    public class TextLeadingPrefixTrimming : TextTrimming
+    public sealed class TextLeadingPrefixTrimming : TextTrimming
     {
         private readonly ReadOnlySlice<char> _ellipsis;
         private readonly int _prefixLength;

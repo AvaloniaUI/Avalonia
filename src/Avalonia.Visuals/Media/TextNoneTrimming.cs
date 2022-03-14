@@ -3,7 +3,7 @@ using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Media
 {
-    internal class TextNoneTrimming : TextTrimming
+    internal sealed class TextNoneTrimming : TextTrimming
     {
         public override TextCollapsingProperties CreateCollapsingProperties(TextCollapsingCreateInfo createInfo)
         {

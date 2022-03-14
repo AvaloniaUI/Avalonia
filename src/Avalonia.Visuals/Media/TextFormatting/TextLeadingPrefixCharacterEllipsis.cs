@@ -7,7 +7,7 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// Ellipsis based on a fixed length leading prefix and suffix growing from the end at character granularity.
     /// </summary>
-    public class TextLeadingPrefixCharacterEllipsis : TextCollapsingProperties
+    public sealed class TextLeadingPrefixCharacterEllipsis : TextCollapsingProperties
     {
         private readonly int _prefixLength;
 

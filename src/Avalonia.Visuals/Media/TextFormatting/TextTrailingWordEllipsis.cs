@@ -7,7 +7,7 @@ namespace Avalonia.Media.TextFormatting
     /// a collapsing properties to collapse whole line toward the end
     /// at word granularity.
     /// </summary>
-    public class TextTrailingWordEllipsis : TextCollapsingProperties
+    public sealed class TextTrailingWordEllipsis : TextCollapsingProperties
     {
         /// <summary>
         /// Construct a text trailing word ellipsis collapsing properties.

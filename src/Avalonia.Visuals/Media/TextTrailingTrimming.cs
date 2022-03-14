@@ -3,7 +3,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
-    public class TextTrailingTrimming : TextTrimming
+    public sealed class TextTrailingTrimming : TextTrimming
     {
         private readonly ReadOnlySlice<char> _ellipsis;
         private readonly bool _isWordBased;
