@@ -360,10 +360,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
-        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingWord, "01234\u2026")]
+        [InlineData("01234 01234", 58, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
+        [InlineData("01234 01234", 58, TextCollapsingStyle.TrailingWord, "01234\u2026")]
+        [InlineData("01234", 9, TextCollapsingStyle.TrailingCharacter, "\u2026")]
+        [InlineData("01234", 2, TextCollapsingStyle.TrailingCharacter, "")]
         [Theory]
-        public void Should_Collapse_Line(string text, int numberOfCharacters, TextCollapsingStyle style, string expected)
+        public void Should_Collapse_Line(string text, double width, TextCollapsingStyle style, string expected)
         {
             using (Start())
             {
@@ -378,19 +380,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.False(textLine.HasCollapsed);
-
-                var glyphTypeface = Typeface.Default.GlyphTypeface;
-
-                var scale = defaultProperties.FontRenderingEmSize / glyphTypeface.DesignEmHeight;
-
-                var width = 1.0;
-
-                for (var i = 0; i < numberOfCharacters; i++)
-                {
-                    var glyph = glyphTypeface.GetGlyph(text[i]);
-
-                    width += glyphTypeface.GetGlyphAdvance(glyph) * scale;
-                }
 
                 TextCollapsingProperties collapsingProperties;
 

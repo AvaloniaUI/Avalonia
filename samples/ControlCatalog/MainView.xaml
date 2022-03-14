@@ -40,6 +40,9 @@
       <TabItem Header="CheckBox">
         <pages:CheckBoxPage />
       </TabItem>
+      <TabItem Header="Clipboard">
+        <pages:ClipboardPage />
+      </TabItem>
       <TabItem Header="ComboBox">
         <pages:ComboBoxPage />
       </TabItem>

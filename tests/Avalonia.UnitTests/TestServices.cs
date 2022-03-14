@@ -53,7 +53,11 @@ namespace Avalonia.UnitTests
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
-            inputManager: new InputManager());
+            inputManager: new InputManager(),
+            assetLoader: new AssetLoader(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new MockFontManagerImpl(),
+            textShaperImpl: new MockTextShaperImpl());
 
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());

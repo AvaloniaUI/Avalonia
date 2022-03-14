@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(new Point(0, 0), target.DesiredSize));
 
             Assert.Equal(new Size(200, 100), target.DesiredSize);
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(2.0, scaleTransform.ScaleX);
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(new Point(0, 0), target.DesiredSize));
 
             Assert.Equal(new Size(100, 50), target.DesiredSize);
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(1.0, scaleTransform.ScaleX);
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(new Point(0, 0), target.DesiredSize));
 
             Assert.Equal(new Size(200, 200), target.DesiredSize);
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(2.0, scaleTransform.ScaleX);
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(new Point(0, 0), target.DesiredSize));
 
             Assert.Equal(new Size(200, 200), target.DesiredSize);
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(4.0, scaleTransform.ScaleX);
@@ -90,7 +90,7 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(new Point(0, 0), target.DesiredSize));
 
             Assert.Equal(new Size(400, 200), target.DesiredSize);
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(4.0, scaleTransform.ScaleX);
@@ -108,7 +108,7 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(new Point(0, 0), target.DesiredSize));
 
             Assert.Equal(new Size(200, 100), target.DesiredSize);
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(2.0, scaleTransform.ScaleX);
@@ -136,7 +136,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Size(expectedWidth, expectedHeight), target.DesiredSize);
 
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(expectedScale, scaleTransform.ScaleX);
@@ -164,7 +164,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Size(expectedWidth, expectedHeight), target.DesiredSize);
 
-            var scaleTransform = target.Child.RenderTransform as ScaleTransform;
+            var scaleTransform = target.InternalTransform as ScaleTransform;
 
             Assert.NotNull(scaleTransform);
             Assert.Equal(expectedScale, scaleTransform.ScaleX);

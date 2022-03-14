@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Avalonia.Automation.Peers;
 using System.Linq;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Generators;
@@ -13,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -107,6 +109,8 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
             PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
+            AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
         }
 
         /// <summary>
@@ -347,6 +351,11 @@ namespace Avalonia.Controls
                 ? PlacementMode.Bottom
                 : PlacementMode;
 
+            //Position of the line below is really important. 
+            //All styles are being applied only when control has logical parent.
+            //Line below will add ContextMenu as child to the Popup and this will trigger styles and they would be applied.
+            //If you will move line below somewhere else it may cause that ContextMenu will behave differently from what you are expecting.
+            _popup.Child = this;
             _popup.PlacementTarget = placementTarget;
             _popup.HorizontalOffset = HorizontalOffset;
             _popup.VerticalOffset = VerticalOffset;
@@ -355,7 +364,6 @@ namespace Avalonia.Controls
             _popup.PlacementGravity = PlacementGravity;
             _popup.PlacementRect = PlacementRect;
             _popup.WindowManagerAddShadowHint = WindowManagerAddShadowHint;
-            _popup.Child = this;
             IsOpen = true;
             _popup.IsOpen = true;
 
