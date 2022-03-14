@@ -5,15 +5,16 @@ namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// A collapsing properties to collapse whole line toward the end
-    /// at character granularity and with ellipsis being the collapsing symbol
+    /// at character granularity.
     /// </summary>
     public class TextTrailingCharacterEllipsis : TextCollapsingProperties
     {
         /// <summary>
         /// Construct a text trailing character ellipsis collapsing properties
         /// </summary>
-        /// <param name="width">width in which collapsing is constrained to</param>
-        /// <param name="textRunProperties">text run properties of ellispis symbol</param>
+        /// <param name="ellipsis">Text used as collapsing symbol.</param>
+        /// <param name="width">Width in which collapsing is constrained to.</param>
+        /// <param name="textRunProperties">Text run properties of ellispis symbol.</param>
         public TextTrailingCharacterEllipsis(ReadOnlySlice<char> ellipsis, double width, TextRunProperties textRunProperties)
         {
             Width = width;

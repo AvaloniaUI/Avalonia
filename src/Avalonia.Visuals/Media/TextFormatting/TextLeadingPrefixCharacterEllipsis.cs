@@ -5,18 +5,20 @@ using Avalonia.Utilities;
 namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
-    /// Ellipsis based on a fixed length leading prefix and suffix growing from the end.
+    /// Ellipsis based on a fixed length leading prefix and suffix growing from the end at character granularity.
     /// </summary>
-    public class TextLeadingPrefixEllipsis : TextCollapsingProperties
+    public class TextLeadingPrefixCharacterEllipsis : TextCollapsingProperties
     {
         private readonly int _prefixLength;
 
         /// <summary>
-        /// Construct a text trailing word ellipsis collapsing properties
+        /// Construct a text trailing word ellipsis collapsing properties.
         /// </summary>
+        /// <param name="ellipsis">Text used as collapsing symbol.</param>
+        /// <param name="prefixLength">Length of leading prefix.</param>
         /// <param name="width">width in which collapsing is constrained to</param>
         /// <param name="textRunProperties">text run properties of ellispis symbol</param>
-        public TextLeadingPrefixEllipsis(
+        public TextLeadingPrefixCharacterEllipsis(
             ReadOnlySlice<char> ellipsis,
             int prefixLength,
             double width,
