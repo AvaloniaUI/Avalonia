@@ -1,23 +1,71 @@
-﻿namespace Avalonia.Media
+﻿using System;
+using Avalonia.Media.TextFormatting;
+
+namespace Avalonia.Media
 {
     /// <summary>
     /// Describes how text is trimmed when it overflows.
     /// </summary>
-    public enum TextTrimming
+    public abstract class TextTrimming
     {
+        public static char s_defaultEllipsisChar = '\u2026';
+
         /// <summary>
         /// Text is not trimmed.
         /// </summary>
-        None,
+        public static TextTrimming None { get; } = new TextNoneTrimming();
 
         /// <summary>
         /// Text is trimmed at a character boundary. An ellipsis (...) is drawn in place of remaining text.
         /// </summary>
-        CharacterEllipsis,
+        public static TextTrimming CharacterEllipsis { get; } = new TextTrailingTrimming(s_defaultEllipsisChar, false);
 
         /// <summary>
         /// Text is trimmed at a word boundary. An ellipsis (...) is drawn in place of remaining text.
         /// </summary>
-        WordEllipsis
+        public static TextTrimming WordEllipsis { get; } = new TextTrailingTrimming(s_defaultEllipsisChar, true);
+
+        /// <summary>
+        /// Text is trimmed after a given prefix length. An ellipsis (...) is drawn in between prefix and suffix and represents remaining text.
+        /// </summary>
+        public static TextTrimming PrefixEllipsis { get; } = new TextLeadingPrefixTrimming(s_defaultEllipsisChar, 8);
+
+        /// <summary>
+        /// Creates properties that will be used for collapsing lines of text.
+        /// </summary>
+        /// <param name="createInfo">Contextual info about text that will be collapsed.</param>
+        public abstract TextCollapsingProperties CreateCollapsingProperties(TextCollapsingCreateInfo createInfo);
+
+        /// <summary>
+        /// Parses a text trimming string. Names must match static properties defined in this class.
+        /// </summary>
+        /// <param name="s">The text trimming string.</param>
+        /// <returns>The <see cref="TextTrimming"/>.</returns>
+        public static TextTrimming Parse(string s)
+        {
+            bool Matches(string name)
+            {
+                return name.Equals(s, StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (Matches(nameof(None)))
+            {
+                return None;
+            }
+            if (Matches(nameof(CharacterEllipsis)))
+            {
+                return CharacterEllipsis;
+            }
+            else if (Matches(nameof(WordEllipsis)))
+            {
+                return WordEllipsis;
+            }
+            else if (Matches(nameof(PrefixEllipsis)))
+            {
+                return PrefixEllipsis;
+            }
+
+            throw new FormatException($"Invalid text trimming string: '{s}'.");
+        }
     }
 }

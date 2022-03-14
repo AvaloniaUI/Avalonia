@@ -1,24 +1,23 @@
-﻿using Avalonia.Utilities;
+﻿using System.Collections.Generic;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
-    /// a collapsing properties to collapse whole line toward the end
+    /// A collapsing properties to collapse whole line toward the end
     /// at character granularity and with ellipsis being the collapsing symbol
     /// </summary>
     public class TextTrailingCharacterEllipsis : TextCollapsingProperties
     {
-        private static readonly ReadOnlySlice<char> s_ellipsis = new ReadOnlySlice<char>(new[] { '\u2026' });
-
         /// <summary>
         /// Construct a text trailing character ellipsis collapsing properties
         /// </summary>
         /// <param name="width">width in which collapsing is constrained to</param>
         /// <param name="textRunProperties">text run properties of ellispis symbol</param>
-        public TextTrailingCharacterEllipsis(double width, TextRunProperties textRunProperties)
+        public TextTrailingCharacterEllipsis(ReadOnlySlice<char> ellipsis, double width, TextRunProperties textRunProperties)
         {
             Width = width;
-            Symbol = new TextCharacters(s_ellipsis, textRunProperties);
+            Symbol = new TextCharacters(ellipsis, textRunProperties);
         }
 
         /// <inheritdoc/>
@@ -27,7 +26,9 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public sealed override TextRun Symbol { get; }
 
-        /// <inheritdoc/>
-        public sealed override TextCollapsingStyle Style { get; } = TextCollapsingStyle.TrailingCharacter;
+        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine)
+        {
+            return TextEllipsisHelper.Collapse(textLine, this, false);
+        }
     }
 }

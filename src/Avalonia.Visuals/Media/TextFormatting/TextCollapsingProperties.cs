@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Media.TextFormatting
+﻿using System.Collections.Generic;
+
+namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Properties of text collapsing
@@ -16,8 +18,9 @@
         public abstract TextRun Symbol { get; }
 
         /// <summary>
-        /// Gets the style of collapsing
+        /// Collapses given text line.
         /// </summary>
-        public abstract TextCollapsingStyle Style { get; }
+        /// <param name="textLine">Text line to collapse.</param>
+        public abstract IReadOnlyList<TextRun>? Collapse(TextLine textLine);
     }
 }
