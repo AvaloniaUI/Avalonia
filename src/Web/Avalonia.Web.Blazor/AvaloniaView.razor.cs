@@ -367,10 +367,12 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        public void SetActive(bool active)
+        public void SetClient(ITextInputMethodClient? client)
         {
             _inputHelper.Clear();
 
+            var active = client is { };
+            
             if (active)
             {
                 _inputHelper.Show();
@@ -386,7 +388,7 @@ namespace Avalonia.Web.Blazor
         {
         }
 
-        public void SetOptions(TextInputOptionsQueryEventArgs options)
+        public void SetOptions(TextInputOptions options)
         {
         }
 

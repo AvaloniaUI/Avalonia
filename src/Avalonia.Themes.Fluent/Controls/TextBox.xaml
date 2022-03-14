@@ -121,7 +121,7 @@
   </Style>
 
   <!-- PointerOver State-->
-  <Style Selector="TextBox:disabled">
+  <Style Selector="TextBox:pointerover">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPointerOver}" />
   </Style>
 

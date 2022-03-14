@@ -48,5 +48,20 @@ namespace Avalonia.Native
             _native?.Dispose();
             _native = null;
         }
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            return ScreenHelper.ScreenFromPoint(point, AllScreens);
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            return ScreenHelper.ScreenFromRect(rect, AllScreens);
+        }
+
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
     }
 }

@@ -202,7 +202,10 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
             TextInputMethodClientRequestedEvent.AddClassHandler<TextBox>((tb, e) =>
             {
-                e.Client = tb._imClient;
+                if (!tb.IsReadOnly)
+                {
+                    e.Client = tb._imClient;
+                }
             });
         }
 
