@@ -362,7 +362,7 @@ partial class Build : NukeBuild
             //download avalonia native osx binary, so we don't have to build it on osx
             //expected to be -> Build/Products/Release/libAvalonia.Native.OSX.dylib
             //Avalonia.Native.0.10.0-preview5.nupkg
-            string nugetversion = "0.10.12";
+            string nugetversion = "0.10.13";
 
             var nugetdir = RootDirectory + "/Build/Products/Release/";
             //string nugeturl = "https://www.myget.org/F/avalonia-ci/api/v2/package/Avalonia.Native/";
