@@ -854,19 +854,9 @@ namespace Avalonia.Media
 
                     var lastRunProps = (GenericTextRunProperties)thatFormatRider.CurrentElement!;
 
-                    TextCollapsingProperties trailingEllipsis;
+                    TextCollapsingProperties collapsingProperties = _that._trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(maxLineLength, lastRunProps));
 
-                    if (_that._trimming == TextTrimming.CharacterEllipsis)
-                    {
-                        trailingEllipsis = new TextTrailingCharacterEllipsis(maxLineLength, lastRunProps);
-                    }
-                    else
-                    {
-                        Debug.Assert(_that._trimming == TextTrimming.WordEllipsis);
-                        trailingEllipsis = new TextTrailingWordEllipsis(maxLineLength, lastRunProps);
-                    }
-
-                    var collapsedLine = line.Collapse(trailingEllipsis);
+                    var collapsedLine = line.Collapse(collapsingProperties);
 
                     line = collapsedLine;
                 }
@@ -1121,11 +1111,6 @@ namespace Avalonia.Media
         {
             set
             {
-                if ((int)value < 0 || (int)value > (int)TextTrimming.WordEllipsis)
-                {
-                    throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(TextTrimming));
-                }
-
                 _trimming = value;
 
                 _defaultParaProps.SetTextWrapping(_trimming == TextTrimming.None ?

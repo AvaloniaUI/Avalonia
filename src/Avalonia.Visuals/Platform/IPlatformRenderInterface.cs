@@ -11,6 +11,7 @@ namespace Avalonia.Platform
     /// </summary>
     public interface IPlatformRenderInterface
     {
+        /// <summary>
         /// Creates an ellipse geometry implementation.
         /// </summary>
         /// <param name="rect">The bounds of the ellipse.</param>

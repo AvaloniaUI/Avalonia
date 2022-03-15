@@ -360,12 +360,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [InlineData("01234 01234", 58, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
-        [InlineData("01234 01234", 58, TextCollapsingStyle.TrailingWord, "01234\u2026")]
-        [InlineData("01234", 9, TextCollapsingStyle.TrailingCharacter, "\u2026")]
-        [InlineData("01234", 2, TextCollapsingStyle.TrailingCharacter, "")]
+        public static IEnumerable<object[]> CollapsingData
+        {
+            get
+            {
+                yield return CreateData("01234 01234 01234", 120, TextTrimming.PrefixCharacterEllipsis, "01234 01\u20264 01234");
+                yield return CreateData("01234 01234", 58, TextTrimming.CharacterEllipsis, "01234 0\u2026");
+                yield return CreateData("01234 01234", 58, TextTrimming.WordEllipsis, "01234\u2026");
+                yield return CreateData("01234", 9, TextTrimming.CharacterEllipsis, "\u2026");
+                yield return CreateData("01234", 2, TextTrimming.CharacterEllipsis, "");
+                
+                object[] CreateData(string text, double width, TextTrimming mode, string expected)
+                {
+                    return new object[]
+                    {
+                        text, width, mode, expected
+                    };
+                }
+            }
+        }
+
+        [MemberData(nameof(CollapsingData))]
         [Theory]
-        public void Should_Collapse_Line(string text, double width, TextCollapsingStyle style, string expected)
+        public void Should_Collapse_Line(string text, double width, TextTrimming trimming, string expected)
         {
             using (Start())
             {
@@ -381,16 +398,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.False(textLine.HasCollapsed);
 
-                TextCollapsingProperties collapsingProperties;
-
-                if (style == TextCollapsingStyle.TrailingCharacter)
-                {
-                    collapsingProperties = new TextTrailingCharacterEllipsis(width, defaultProperties);
-                }
-                else
-                {
-                    collapsingProperties = new TextTrailingWordEllipsis(width, defaultProperties);
-                }
+                TextCollapsingProperties collapsingProperties = trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, defaultProperties));
 
                 var collapsedLine = textLine.Collapse(collapsingProperties);
 
