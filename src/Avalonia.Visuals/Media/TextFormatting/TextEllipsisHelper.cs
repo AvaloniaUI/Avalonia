@@ -5,7 +5,7 @@ namespace Avalonia.Media.TextFormatting
 {
     internal class TextEllipsisHelper
     {
-        public static List<ShapedTextCharacters>? Collapse(TextLine textLine, FlowDirection flowDirection, TextCollapsingProperties properties, bool isWordEllipsis)
+        public static List<ShapedTextCharacters>? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
         {
             var shapedTextRuns = textLine.TextRuns as List<ShapedTextCharacters>;
 
@@ -18,7 +18,7 @@ namespace Avalonia.Media.TextFormatting
             var currentWidth = 0.0;
             var collapsedLength = 0;
             var textRange = textLine.TextRange;
-            var shapedSymbol = TextFormatterImpl.CreateSymbol(properties.Symbol, flowDirection);
+            var shapedSymbol = TextFormatterImpl.CreateSymbol(properties.Symbol, FlowDirection.LeftToRight);
 
             if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
             {

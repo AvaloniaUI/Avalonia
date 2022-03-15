@@ -40,7 +40,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public sealed override TextRun Symbol { get; }
 
-        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine, FlowDirection flowDirection)
+        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine)
         {
             var shapedTextRuns = textLine.TextRuns as List<ShapedTextCharacters>;
 
@@ -51,7 +51,7 @@ namespace Avalonia.Media.TextFormatting
 
             var runIndex = 0;
             var currentWidth = 0.0;
-            var shapedSymbol = TextFormatterImpl.CreateSymbol(Symbol, flowDirection);
+            var shapedSymbol = TextFormatterImpl.CreateSymbol(Symbol, FlowDirection.LeftToRight);
 
             if (Width < shapedSymbol.GlyphRun.Size.Width)
             {

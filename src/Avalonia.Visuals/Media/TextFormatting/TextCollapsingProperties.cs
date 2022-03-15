@@ -21,7 +21,6 @@ namespace Avalonia.Media.TextFormatting
         /// Collapses given text line.
         /// </summary>
         /// <param name="textLine">Text line to collapse.</param>
-        /// <param name="flowDirection">Text flow direction.</param>
-        public abstract IReadOnlyList<TextRun>? Collapse(TextLine textLine, FlowDirection flowDirection);
+        public abstract IReadOnlyList<TextRun>? Collapse(TextLine textLine);
     }
 }

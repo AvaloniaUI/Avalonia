@@ -364,7 +364,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             get
             {
-                yield return CreateData("01234 01234 01234", 120, TextTrimming.PrefixEllipsis, "01234 01\u20264 01234");
+                yield return CreateData("01234 01234 01234", 120, TextTrimming.PrefixCharacterEllipsis, "01234 01\u20264 01234");
                 yield return CreateData("01234 01234", 58, TextTrimming.CharacterEllipsis, "01234 0\u2026");
                 yield return CreateData("01234 01234", 58, TextTrimming.WordEllipsis, "01234\u2026");
                 yield return CreateData("01234", 9, TextTrimming.CharacterEllipsis, "\u2026");

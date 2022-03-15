@@ -31,6 +31,11 @@ namespace Avalonia.Media
         public static TextTrimming PrefixCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(s_defaultEllipsisChar, 8);
 
         /// <summary>
+        /// Text is trimmed at a character boundary starting from the beginning. An ellipsis (...) is drawn in place of remaining text.
+        /// </summary>
+        public static TextTrimming LeadingCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(s_defaultEllipsisChar, 0);
+
+        /// <summary>
         /// Creates properties that will be used for collapsing lines of text.
         /// </summary>
         /// <param name="createInfo">Contextual info about text that will be collapsed.</param>
