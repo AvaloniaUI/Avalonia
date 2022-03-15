@@ -332,39 +332,17 @@ namespace Avalonia.Controls
             }
         }
 
-        static Control()
-        {
-            //var m = new StyledPropertyMetadata<ITransform?>(coerce: (s, e) => null);
-            //RenderTransformProperty.OverrideMetadata<Control>(m);
-
-            //AffectsRender<Control>(FlowDirectionProperty);
-            //FlowDirectionProperty.Changed.AddClassHandler<Control>((s, e) => 
-            //{
-            //    s.InvalidateFlowDirection();
-            //    foreach (var logical in LogicalTree.LogicalExtensions.GetLogicalDescendants(s))
-            //    {
-            //        if (logical is Control control)
-            //        {
-            //            //if (control)
-            //            //control.InvalidateFlowDirection();
-            //        }
-            //    }
-            //});
-        }
-
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
             
             if (change.Property == FlowDirectionProperty)
             {
-                // Avoid inherit value change to invoke this method
-                if (!GetBaseValue(FlowDirectionProperty, change.Priority).HasValue)
+                // Avoid inherited value change to call this method 
+                if (GetBaseValue(FlowDirectionProperty, change.Priority).HasValue)
                 {
-                    return;
+                    InvalidateFlowDirection();
                 }
-
-                InvalidateFlowDirection();
             }
         }
 
@@ -375,14 +353,6 @@ namespace Avalonia.Controls
             InvalidateFlowDirection();
         }
 
-        protected override void OnAttachedToLogicalTree(LogicalTree.LogicalTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToLogicalTree(e);
-            //InvalidateFlowDirection();
-        }
-
-        protected virtual bool ShouldGetMirrored() => true;
-
         private void InvalidateFlowDirection()
         {
             FlowDirection parentFD = FlowDirection.LeftToRight;
@@ -391,7 +361,7 @@ namespace Avalonia.Controls
             bool parentShouldGetMirrored = true;
             bool thisShouldGetMirrored = ShouldGetMirrored();
 
-            if (((Visual)this).GetVisualParent() is Control control)
+            if (this.GetVisualParent() is Control control)
             {
                 parentFD = control.FlowDirection;
                 parentShouldGetMirrored = control.ShouldGetMirrored();
@@ -433,14 +403,15 @@ namespace Avalonia.Controls
             }
 
             var mirrorTransform = MirrorTrasform();
+            var rendertransform = RenderTransform;
 
             ITransform? finalTransform = mirrorTransform;
-            if (RenderTransform != null)
+            if (rendertransform != null)
             {
-                finalTransform = MargeTransforms(RenderTransform, mirrorTransform);
+                finalTransform = MargeTransforms(rendertransform, mirrorTransform);
             }
 
-            RenderTransform = finalTransform;
+            base.RenderTransform = finalTransform;
             _hasMirrorTransform = true;
         }
 
@@ -452,16 +423,19 @@ namespace Avalonia.Controls
             }
 
             var mirrorTransform = MirrorTrasform();
+            var rendertransform = RenderTransform;
             
-            ITransform? finalTransform = MargeTransforms(RenderTransform, mirrorTransform);
+            ITransform? finalTransform = MargeTransforms(rendertransform, mirrorTransform);
             if (finalTransform!.Value == Matrix.Identity)
             {
                 finalTransform = null;
             }
 
             _hasMirrorTransform = false;
-            RenderTransform = finalTransform;
+            base.RenderTransform = finalTransform;
         }
+
+        protected virtual bool ShouldGetMirrored() => true;
 
         static ITransform? MargeTransforms(ITransform? iTransform1, ITransform? iTransform2)
         {
