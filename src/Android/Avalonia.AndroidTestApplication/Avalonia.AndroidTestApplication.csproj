@@ -11,7 +11,13 @@
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <DebugType>portable</DebugType>
   </PropertyGroup>
-  
+
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\build\Assets\Icon.png">
+      <Link>Resources\drawable\Icon.png</Link>
+    </AndroidResource>
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Release' and '$(TF_BUILD)' == ''">
     <DebugSymbols>True</DebugSymbols>
     <RunAOTCompilation>True</RunAOTCompilation>
