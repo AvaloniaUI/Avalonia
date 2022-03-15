@@ -22,7 +22,7 @@
     <DebugSymbols>True</DebugSymbols>
     <RunAOTCompilation>True</RunAOTCompilation>
     <EnableLLVM>True</EnableLLVM>
-    <!--<AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>-->
+    <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
   </PropertyGroup>
   
   <ItemGroup>
