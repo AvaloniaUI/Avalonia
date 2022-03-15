@@ -55,7 +55,8 @@ namespace Avalonia.Platform
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry);
+        /// <param name="boxShadow">A BoxShadows.</param>
+        void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadow = default);
 
         /// <summary>
         /// Draws a rectangle with the specified Brush and Pen.

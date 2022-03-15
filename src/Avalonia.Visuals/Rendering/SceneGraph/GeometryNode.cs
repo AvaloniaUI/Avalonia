@@ -18,18 +18,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
+        /// <param name="boxShadowses">The BoxShadows.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public GeometryNode(Matrix transform,
             IBrush? brush,
             IPen? pen,
             IGeometryImpl geometry,
+            BoxShadows boxShadowses,
             IDictionary<IVisual, Scene>? childScenes = null)
-            : base(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen), transform)
+            : base(boxShadowses.TransformBounds(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen)), transform)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Geometry = geometry;
+            BoxShadows = boxShadowses;
             ChildScenes = childScenes;
         }
 
@@ -53,6 +56,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public IGeometryImpl Geometry { get; }
 
+        /// <summary>
+        /// Gets the BoxShadows
+        /// </summary>
+        public BoxShadows BoxShadows { get; }
+
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
@@ -63,24 +71,26 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
         /// <param name="geometry">The geometry of the other draw operation.</param>
+        /// <param name="boxShadows">A list of BoxShadows of the other draw</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush? brush, IPen? pen, IGeometryImpl geometry)
+        public bool Equals(Matrix transform, IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadows)
         {
             return transform == Transform &&
                    Equals(brush, Brush) &&
                    Equals(Pen, pen) &&
-                   Equals(geometry, Geometry);
+                   Equals(geometry, Geometry) &&
+                   Equals(boxShadows, BoxShadows);
         }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawGeometry(Brush, Pen, Geometry);
+            context.DrawGeometry(Brush, Pen, Geometry, BoxShadows);
         }
 
         /// <inheritdoc/>

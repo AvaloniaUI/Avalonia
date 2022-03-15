@@ -58,16 +58,19 @@ namespace Avalonia.Controls.Shapes
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
+        public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
+            AvaloniaProperty.Register<Shape, BoxShadows>(nameof(BoxShadow));
+
         private Matrix _transform = Matrix.Identity;
         private Geometry? _definingGeometry;
         private Geometry? _renderedGeometry;
 
         static Shape()
         {
-            AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty);
+            AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty, BoxShadowProperty);
 
             AffectsRender<Shape>(FillProperty, StrokeProperty, StrokeDashArrayProperty, StrokeDashOffsetProperty,
-                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty);
+                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty, BoxShadowProperty);
         }
 
         /// <summary>
@@ -192,6 +195,15 @@ namespace Avalonia.Controls.Shapes
             set { SetValue(StrokeJoinProperty, value); }
         }
 
+        /// <summary>
+        /// Get or sets a <see cref="BoxShadows"/>
+        /// </summary>
+        public BoxShadows BoxShadow
+        {
+            get { return GetValue(BoxShadowProperty); }
+            set { SetValue(BoxShadowProperty, value); }
+        }
+
         public override void Render(DrawingContext context)
         {
             var geometry = RenderedGeometry;
@@ -221,7 +233,7 @@ namespace Avalonia.Controls.Shapes
                         StrokeJoin);
                 }
 
-                context.DrawGeometry(Fill, pen, geometry);
+                context.DrawGeometry(Fill, pen, geometry, BoxShadow);
             }
         }
 

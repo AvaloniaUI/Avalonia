@@ -174,11 +174,32 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry, BoxShadows boxShadows = default)
         {
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
+            
+            foreach (var boxShadow in boxShadows)
+            {
+                if (!boxShadow.IsEmpty && !boxShadow.IsInset)
+                {
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+                    {
+                        Canvas.Save();
+                        
+                        Canvas.ClipPath(impl.EffectivePath,
+                            shadow.ClipOperation, true);
 
+                        var oldTransform = Transform;
+                        Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
+                        Canvas.DrawPath(impl.EffectivePath, shadow.Paint);
+                        Transform = oldTransform;
+                            
+                        Canvas.Restore();
+                    }
+                }
+            }
+            
             using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
             using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
             {

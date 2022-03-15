@@ -411,13 +411,14 @@ namespace Avalonia.Headless
 
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
-                throw new NotImplementedException();
+
             }
 
-            public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+            public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadow = default)
             {
-            }
 
+            }
+            
             public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
             {
             }

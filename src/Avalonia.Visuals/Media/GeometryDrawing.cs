@@ -30,6 +30,9 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Pen> PenProperty =
             AvaloniaProperty.Register<GeometryDrawing, Pen>(nameof(Pen));
 
+        public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
+            AvaloniaProperty.Register<GeometryDrawing, BoxShadows>(nameof(BoxShadow));
+
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Media.Geometry"/> that describes the shape of this <see cref="GeometryDrawing"/>.
         /// </summary>
@@ -58,11 +61,17 @@ namespace Avalonia.Media
             set => SetValue(PenProperty, value);
         }
 
+        public BoxShadows BoxShadow
+        {
+            get => GetValue(BoxShadowProperty);
+            set => SetValue(BoxShadowProperty, value);
+        }
+
         public override void Draw(DrawingContext context)
         {
             if (Geometry != null)
             {
-                context.DrawGeometry(Brush, Pen, Geometry);
+                context.DrawGeometry(Brush, Pen, Geometry, BoxShadow);
             }
         }
 

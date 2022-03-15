@@ -31,7 +31,7 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry, BoxShadows boxShadows = default)
         {
         }
 

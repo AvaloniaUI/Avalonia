@@ -119,10 +119,11 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry)
+        /// <param name="boxShadows">A list of BoxShadows.</param>
+        public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry, BoxShadows boxShadows = default)
         {
             if (geometry.PlatformImpl is not null)
-                DrawGeometry(brush, pen, geometry.PlatformImpl);
+                DrawGeometry(brush, pen, geometry.PlatformImpl, boxShadows);
         }
 
         /// <summary>
@@ -131,13 +132,14 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
+        /// <param name="boxShadows">A list of BoxShadows.</param>
+        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadows = default)
         {
             _ = geometry ?? throw new ArgumentNullException(nameof(geometry));
 
             if (brush != null || PenIsVisible(pen))
             {
-                PlatformImpl.DrawGeometry(brush, pen, geometry);
+                PlatformImpl.DrawGeometry(brush, pen, geometry, boxShadows);
             }
         }
 

@@ -97,13 +97,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadows = default)
         {
             var next = NextDrawAs<GeometryNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, pen, geometry))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, geometry, boxShadows))
             {
-                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
+                Add(new GeometryNode(Transform, brush, pen, geometry, boxShadows, CreateChildScene(brush)));
             }
             else
             {
