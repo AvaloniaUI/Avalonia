@@ -37,6 +37,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TransitioningContentControl.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Expander.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml"/>

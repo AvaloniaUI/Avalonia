@@ -256,6 +256,11 @@ namespace Avalonia.Controls
         public new IWindowImpl PlatformImpl => (IWindowImpl)base.PlatformImpl;
 
         /// <summary>
+        /// Gets a collection of child windows owned by this window.
+        /// </summary>
+        public IReadOnlyList<Window> OwnedWindows => _children.Select(x => x.child).ToList();
+
+        /// <summary>
         /// Gets or sets a value indicating how the window will size itself to fit its content.
         /// </summary>
         /// <remarks>
@@ -854,6 +859,17 @@ namespace Avalonia.Controls
 
         private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
         {
+            var startupLocation = WindowStartupLocation;
+
+            if (startupLocation == WindowStartupLocation.CenterOwner &&
+                Owner is Window ownerWindow &&
+                ownerWindow.WindowState == WindowState.Minimized)
+            {
+                // If startup location is CenterOwner, but owner is minimized then fall back
+                // to CenterScreen. This behavior is consistent with WPF.
+                startupLocation = WindowStartupLocation.CenterScreen;
+            }
+
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
 
             // TODO: We really need non-client size here.
@@ -861,7 +877,7 @@ namespace Avalonia.Controls
                 PixelPoint.Origin,
                 PixelSize.FromSize(ClientSize, scaling));
 
-            if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+            if (startupLocation == WindowStartupLocation.CenterScreen)
             {
                 var screen = Screens.ScreenFromPoint(owner?.Position ?? Position);
 
@@ -870,7 +886,7 @@ namespace Avalonia.Controls
                     Position = screen.WorkingArea.CenterRect(rect).Position;
                 }
             }
-            else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
+            else if (startupLocation == WindowStartupLocation.CenterOwner)
             {
                 if (owner != null)
                 {

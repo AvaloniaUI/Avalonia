@@ -50,13 +50,7 @@ namespace Avalonia.X11
         private double? _scalingOverride;
         private bool _disabled;
         private TransparencyHelper _transparencyHelper;
-
-        class InputEventContainer
-        {
-            public RawInputEventArgs Event;
-        }
-        private readonly Queue<InputEventContainer> _inputQueue = new Queue<InputEventContainer>();
-        private InputEventContainer _lastEvent;
+        private RawEventGrouper _rawEventGrouper;
         private bool _useRenderWindow = false;
         public X11Window(AvaloniaX11Platform platform, IWindowImpl popupParent)
         {
@@ -180,6 +174,8 @@ namespace Avalonia.X11
             UpdateMotifHints();
             UpdateSizeHints(null);
 
+            _rawEventGrouper = new RawEventGrouper(e => Input?.Invoke(e));
+            
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
 
@@ -721,33 +717,14 @@ namespace Avalonia.X11
             if (args is RawDragEvent drag)
                 drag.Location = drag.Location / RenderScaling;
             
-            _lastEvent = new InputEventContainer() {Event = args};
-            _inputQueue.Enqueue(_lastEvent);
-            if (_inputQueue.Count == 1)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    while (_inputQueue.Count > 0)
-                    {
-                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-                        var ev = _inputQueue.Dequeue();
-                        Input?.Invoke(ev.Event);
-                    }
-                }, DispatcherPriority.Input);
-            }
+            _rawEventGrouper.HandleEvent(args);
         }
         
         void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
-                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods)); 
-            if(type == RawPointerEventType.Move && _inputQueue.Count>0 && _lastEvent.Event is RawPointerEventArgs ma)
-                if (ma.Type == RawPointerEventType.Move)
-                {
-                    _lastEvent.Event = mev;
-                    return;
-                }
+                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods));
             ScheduleInput(mev, ref ev);
         }
 
@@ -775,6 +752,12 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_rawEventGrouper != null)
+            {
+                _rawEventGrouper.Dispose();
+                _rawEventGrouper = null;
+            }
+            
             if (_transparencyHelper != null)
             {
                 _transparencyHelper.Dispose();
