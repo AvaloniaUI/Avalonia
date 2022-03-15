@@ -28,6 +28,7 @@
         <Compile Include="MarkupExtensions\CompiledBindings\StrongTypeCastNode.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
+        <Compile Include="MarkupExtensions\OnPlatformExtension.cs" />
         <Compile Include="MarkupExtensions\ResolveByNameExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -50,6 +51,7 @@
         <Compile Include="Templates\TreeDataTemplate.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
+        <Compile Include="XamlIl\Runtime\RuntimePlatformInfo.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
         <Compile Include="XamlLoadException.cs" />
         <Compile Include="..\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs" />
