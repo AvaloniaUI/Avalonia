@@ -134,7 +134,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TextTrimming"/> property.
         /// </summary>
         public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
-            AvaloniaProperty.Register<TextBlock, TextTrimming>(nameof(TextTrimming));
+            AvaloniaProperty.Register<TextBlock, TextTrimming>(nameof(TextTrimming), defaultValue: TextTrimming.None);
 
         /// <summary>
         /// Defines the <see cref="TextDecorations"/> property.
