@@ -1065,6 +1065,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void Binds_To_Self_In_Style()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+       
+    <Window.Styles>
+        <Style Selector='Button'>
+            <Setter Property='IsVisible' Value='{CompiledBinding $self.IsEnabled}' />
+        </Style>
+    </Window.Styles>
+
+    <Button Name='button' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                Assert.True(button.IsVisible);
+
+                button.IsEnabled = false;
+
+                Assert.False(button.IsVisible);
+            }
+        }
+
+        [Fact]
         public void SupportsMethodBindingAsDelegate()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
