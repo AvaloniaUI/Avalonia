@@ -127,5 +127,7 @@ namespace Avalonia.Controls
                 return new Size();
             }
         }
+
+        protected override bool ShouldGetMirrored() => false;
     }
 }
