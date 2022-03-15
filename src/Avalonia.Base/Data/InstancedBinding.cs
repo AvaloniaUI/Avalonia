@@ -1,6 +1,6 @@
 using System;
-using System.Reactive;
 using System.Reactive.Subjects;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
@@ -15,7 +15,13 @@ namespace Avalonia.Data
     /// </remarks>
     public class InstancedBinding
     {
-        private Subject<Unit>? _explicitSourceUpdateSubject;
+        private SingleSubscriberSubject<ExplicitUpdateMode>? _explicitUpdateSubject;
+
+        internal enum ExplicitUpdateMode
+        {
+            Source,
+            Target
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
@@ -78,13 +84,13 @@ namespace Avalonia.Data
         /// </summary>
         public ISubject<object?>? Subject => Value as ISubject<object?>;
 
-        internal IObservable<Unit> ExplicitSourceUpdateRequested
+        internal IObservable<ExplicitUpdateMode> ExplicitUpdateRequested
         {
             get
             {
-                _explicitSourceUpdateSubject ??= new Subject<Unit>();
+                _explicitUpdateSubject ??= new SingleSubscriberSubject<ExplicitUpdateMode>();
 
-                return _explicitSourceUpdateSubject;
+                return _explicitUpdateSubject;
             }
         }
 
@@ -93,7 +99,15 @@ namespace Avalonia.Data
         /// </summary>
         public void UpdateSource()
         {
-            _explicitSourceUpdateSubject?.OnNext(Unit.Default);
+            _explicitUpdateSubject?.OnNext(ExplicitUpdateMode.Source);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void UpdateTarget()
+        {
+            _explicitUpdateSubject?.OnNext(ExplicitUpdateMode.Target);
         }
 
         /// <summary>

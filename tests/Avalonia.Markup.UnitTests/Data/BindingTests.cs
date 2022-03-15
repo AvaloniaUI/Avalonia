@@ -459,7 +459,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public void UpdateSourceTrigger_Explicit_Updates_Source()
+        public void InstancedBinding_UpdateSource_Updates_Source()
         {
             var target = new TextBlock { Text = "Bar" };
             var source = new Source();
@@ -485,7 +485,32 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public void UpdateSourceTrigger_LostFocus_Updates_Source()
+        public void InstancedBinding_UpdateTarget_Updates_Target()
+        {
+            var target = new TextBlock();
+            var source = new Source();
+            var binding = new Binding
+            {
+                Path = nameof(source.Foo),
+                Source = source,
+                Mode = BindingMode.TwoWay
+            };
+
+            var ib = binding.Initiate(target, TextBlock.TextProperty);
+
+            Assert.NotNull(ib);
+
+            BindingOperations.Apply(target, TextBlock.TextProperty, ib, null);
+
+            source.Foo = "Bar";
+
+            ib.UpdateTarget();
+
+            Assert.Equal("Bar", target.Text);
+        }
+
+        [Fact]
+        public void UpdateSourceTrigger_LostFocus_Updates_Source_When_Focus_Is_Lost()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
