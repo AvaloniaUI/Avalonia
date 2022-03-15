@@ -798,5 +798,7 @@ namespace Avalonia.Controls.Presenters
                 }
             }
         }
+
+        protected override bool ShouldGetMirrored() => false;
     }
 }

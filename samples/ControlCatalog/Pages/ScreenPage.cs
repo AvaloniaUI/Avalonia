@@ -79,6 +79,6 @@ namespace ControlCatalog.Pages
                 Typeface.Default, 12, Brushes.Green);
         }
 
-        protected override bool ShouldBeMirroredIfRightToLeft() => false;
+        protected override bool ShouldGetMirrored() => false;
     }
 }

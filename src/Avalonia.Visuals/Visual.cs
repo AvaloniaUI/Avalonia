@@ -222,7 +222,7 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets the render transform of the control.
         /// </summary>
-        public ITransform? RenderTransform
+        public virtual ITransform? RenderTransform
         {
             get { return GetValue(RenderTransformProperty); }
             set { SetValue(RenderTransformProperty, value); }

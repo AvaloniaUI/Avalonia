@@ -67,10 +67,17 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
-        
+
+        /// <summary>
+        /// Defines the <see cref="RenderTransform"/> property.
+        /// </summary>
+        public static new readonly StyledProperty<ITransform?> RenderTransformProperty =
+            Visual.RenderTransformProperty.AddOwner<Control>();
+    
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
+        private bool _hasMirrorTransform;
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -124,6 +131,21 @@ namespace Avalonia.Controls
         {
             get => GetValue(FlowDirectionProperty);
             set => SetValue(FlowDirectionProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public override ITransform? RenderTransform 
+        { 
+            get => base.RenderTransform;
+            set
+            {
+                if (_hasMirrorTransform)
+                {
+                    value = MargeTransforms(MirrorTrasform(), value);
+                }
+
+                base.RenderTransform = value; 
+            }
         }
 
         /// <summary>
@@ -312,76 +334,152 @@ namespace Avalonia.Controls
 
         static Control()
         {
-            AffectsArrange<Control>(FlowDirectionProperty);
+            //var m = new StyledPropertyMetadata<ITransform?>(coerce: (s, e) => null);
+            //RenderTransformProperty.OverrideMetadata<Control>(m);
+
+            //AffectsRender<Control>(FlowDirectionProperty);
+            //FlowDirectionProperty.Changed.AddClassHandler<Control>((s, e) => 
+            //{
+            //    s.InvalidateFlowDirection();
+            //    foreach (var logical in LogicalTree.LogicalExtensions.GetLogicalDescendants(s))
+            //    {
+            //        if (logical is Control control)
+            //        {
+            //            //if (control)
+            //            //control.InvalidateFlowDirection();
+            //        }
+            //    }
+            //});
         }
 
-        private bool _mirrorApplied;
-
-        protected virtual bool ShouldBeMirroredIfRightToLeft()
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (Parent is Control parent)
+            base.OnPropertyChanged(change);
+            
+            if (change.Property == FlowDirectionProperty)
             {
-                return parent.ShouldBeMirroredIfRightToLeft();
-            }
-            else
-            {
-                return true;
+                // Avoid inherit value change to invoke this method
+                if (!GetBaseValue(FlowDirectionProperty, change.Priority).HasValue)
+                {
+                    return;
+                }
+
+                InvalidateFlowDirection();
             }
         }
 
-        protected override void ArrangeCore(Rect finalRect)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.ArrangeCore(finalRect);
+            base.OnAttachedToVisualTree(e);
 
+            InvalidateFlowDirection();
+        }
+
+        protected override void OnAttachedToLogicalTree(LogicalTree.LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            //InvalidateFlowDirection();
+        }
+
+        protected virtual bool ShouldGetMirrored() => true;
+
+        private void InvalidateFlowDirection()
+        {
             FlowDirection parentFD = FlowDirection.LeftToRight;
             FlowDirection thisFD = FlowDirection;
-            bool shouldBeMirroredIfRightToLeft = ShouldBeMirroredIfRightToLeft();
 
-            if (Parent is Control control)
+            bool parentShouldGetMirrored = true;
+            bool thisShouldGetMirrored = ShouldGetMirrored();
+
+            if (((Visual)this).GetVisualParent() is Control control)
             {
                 parentFD = control.FlowDirection;
+                parentShouldGetMirrored = control.ShouldGetMirrored();
             }
-            
-            bool shouldMirror;
-            if (shouldBeMirroredIfRightToLeft)
+            else if (Parent is Control logicalControl)
             {
-                shouldMirror = ShuoldApplyMirrorTransform(parentFD, thisFD);
-                if (Parent is Popup && thisFD == FlowDirection.RightToLeft)
-                {
-                    shouldMirror = true;
-                }
-            }
-            else
-            {
-                shouldMirror = ShuoldApplyMirrorTransform(parentFD, FlowDirection.LeftToRight);
+                parentFD = logicalControl.FlowDirection;
+                parentShouldGetMirrored = logicalControl.ShouldGetMirrored();
             }
 
-            if (shouldMirror)
+            bool shouldBeMirrored = thisFD == FlowDirection.RightToLeft && thisShouldGetMirrored;
+            bool parentMirrored = parentFD == FlowDirection.RightToLeft && parentShouldGetMirrored;
+
+            bool shouldApplyMirrorTransform = shouldBeMirrored != parentMirrored;
+
+            if (shouldApplyMirrorTransform)
             {
-                ApplyMirrorTransform();
+                AddMirrorTransform();
             }
             else
             {
-                //RenderTransform = null;
+                RemoveMirrorTransform();
+            }
+
+            foreach (var visual in VisualChildren)
+            {
+                if (visual is Control child)
+                {
+                    child.InvalidateFlowDirection();
+                }
             }
         }
 
-        private void ApplyMirrorTransform()
+        private void AddMirrorTransform()
         {
-            if (_mirrorApplied)
+            if (_hasMirrorTransform)
             {
                 return;
             }
 
-            var transform = new MatrixTransform(new Avalonia.Matrix(-1, 0, 0, 1, 0.0, 0.0));
-            RenderTransform = transform;
-            _mirrorApplied = true;
+            var mirrorTransform = MirrorTrasform();
+
+            ITransform? finalTransform = mirrorTransform;
+            if (RenderTransform != null)
+            {
+                finalTransform = MargeTransforms(RenderTransform, mirrorTransform);
+            }
+
+            RenderTransform = finalTransform;
+            _hasMirrorTransform = true;
         }
 
-        internal static bool ShuoldApplyMirrorTransform(FlowDirection parentFD, FlowDirection thisFD)
+        private void RemoveMirrorTransform()
         {
-            return ((parentFD == FlowDirection.LeftToRight && thisFD == FlowDirection.RightToLeft) ||
-                    (parentFD == FlowDirection.RightToLeft && thisFD == FlowDirection.LeftToRight));
+            if (!_hasMirrorTransform)
+            {
+                return;
+            }
+
+            var mirrorTransform = MirrorTrasform();
+            
+            ITransform? finalTransform = MargeTransforms(RenderTransform, mirrorTransform);
+            if (finalTransform!.Value == Matrix.Identity)
+            {
+                finalTransform = null;
+            }
+
+            _hasMirrorTransform = false;
+            RenderTransform = finalTransform;
         }
+
+        static ITransform? MargeTransforms(ITransform? iTransform1, ITransform? iTransform2)
+        {
+            // don't know how to marge ITransform
+            if (iTransform1 is Transform transform1 && iTransform2 is Transform transform2)
+            {
+                TransformGroup groupTransform = new TransformGroup();
+
+                groupTransform.Children.Add(transform1);
+                groupTransform.Children.Add(transform2);
+
+                return groupTransform;
+            }
+
+            return iTransform1;
+        }
+
+        static ITransform MirrorTrasform() => 
+            new MatrixTransform(new Avalonia.Matrix(-1, 0, 0, 1, 0.0, 0.0));
     }
 }

@@ -1504,7 +1504,5 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        protected override bool ShouldBeMirroredIfRightToLeft() => false;
     }
 }
