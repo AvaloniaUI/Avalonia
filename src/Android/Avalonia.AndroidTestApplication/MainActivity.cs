@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content.PM;
 using Avalonia.Android;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.TextInput;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -30,11 +31,17 @@ namespace Avalonia.AndroidTestApplication
     {
         public override void Initialize()
         {
-            Styles.Add(new DefaultTheme());
+            Styles.Add(new SimpleTheme(new Uri("avares://Avalonia.AndroidTestApplication")));
+        }
 
-            var baseLight = (IStyle)AvaloniaXamlLoader.Load(
-                new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
-            Styles.Add(baseLight);
+        public override void OnFrameworkInitializationCompleted()
+        {
+            if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
+            {
+                singleViewLifetime.MainView = CreateSimpleWindow();
+            }
+
+            base.OnFrameworkInitializationCompleted();
         }
 
         // This provides a simple UI tree for testing input handling, drawing, etc
