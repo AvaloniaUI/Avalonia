@@ -147,6 +147,8 @@ namespace Avalonia.Input
             if(mouse._disposed)
                 return;
 
+            if (e.Type == RawPointerEventType.NonClientLeftButtonDown) return;
+
             _position = e.Root.PointToScreen(e.Position);
             var props = CreateProperties(e);
             var keyModifiers = KeyModifiersUtils.ConvertToKey(e.InputModifiers);
