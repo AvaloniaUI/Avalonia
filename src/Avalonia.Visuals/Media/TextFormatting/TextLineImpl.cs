@@ -106,85 +106,18 @@ namespace Avalonia.Media.TextFormatting
 
             var collapsingProperties = collapsingPropertiesList[0];
 
-            var runIndex = 0;
-            var currentWidth = 0.0;
-            var textRange = TextRange;
-            var collapsedLength = 0;
+            var collapsedRuns = collapsingProperties.Collapse(this);
 
-            var shapedSymbol = TextFormatterImpl.CreateSymbol(collapsingProperties.Symbol, _paragraphProperties.FlowDirection);
-            
-            if (collapsingProperties.Width < shapedSymbol.GlyphRun.Size.Width)
+            if (collapsedRuns is List<ShapedTextCharacters> shapedRuns)
             {
-                return new TextLineImpl(new List<ShapedTextCharacters>(0), textRange, _paragraphWidth, _paragraphProperties,
-                    _flowDirection, TextLineBreak, true);
-            }
-            
-            var availableWidth = collapsingProperties.Width - shapedSymbol.GlyphRun.Size.Width;
+                var collapsedLine = new TextLineImpl(shapedRuns, TextRange, _paragraphWidth, _paragraphProperties, _flowDirection, TextLineBreak, true);
 
-            while (runIndex < _textRuns.Count)
-            {
-                var currentRun = _textRuns[runIndex];
-
-                currentWidth += currentRun.Size.Width;
-
-                if (currentWidth > availableWidth)
+                if (shapedRuns.Count > 0)
                 {
-                    if (currentRun.TryMeasureCharacters(availableWidth, out var measuredLength))
-                    {
-                        if (collapsingProperties.Style == TextCollapsingStyle.TrailingWord &&
-                            measuredLength < textRange.End)
-                        {
-                            var currentBreakPosition = 0;
-
-                            var lineBreaker = new LineBreakEnumerator(currentRun.Text);
-
-                            while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
-                            {
-                                var nextBreakPosition = lineBreaker.Current.PositionMeasure;
-
-                                if (nextBreakPosition == 0)
-                                {
-                                    break;
-                                }
-
-                                if (nextBreakPosition >= measuredLength)
-                                {
-                                    break;
-                                }
-
-                                currentBreakPosition = nextBreakPosition;
-                            }
-
-                            measuredLength = currentBreakPosition;
-                        }
-                    }
-
-                    collapsedLength += measuredLength;
-
-                    var shapedTextCharacters = new List<ShapedTextCharacters>(_textRuns.Count);
-                    
-                    if (collapsedLength > 0)
-                    {
-                        var splitResult = TextFormatterImpl.SplitShapedRuns(_textRuns, collapsedLength);
-                    
-                        shapedTextCharacters.AddRange(splitResult.First);
-
-                        SortRuns(shapedTextCharacters);
-                    }
-
-                    shapedTextCharacters.Add(shapedSymbol);
-
-                    var textLine = new TextLineImpl(shapedTextCharacters, textRange, _paragraphWidth, _paragraphProperties,
-                        _flowDirection, TextLineBreak, true);
-
-                    return textLine.FinalizeLine();
+                    collapsedLine.FinalizeLine();
                 }
 
-                availableWidth -= currentRun.Size.Width;
-
-                collapsedLength += currentRun.GlyphRun.Characters.Length;
-
-                runIndex++;
+                return collapsedLine;
             }
 
             return this;

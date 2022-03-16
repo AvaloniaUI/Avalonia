@@ -12,16 +12,18 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="gradientStops">The gradient stops.</param>
         /// <param name="opacity">The opacity of the brush.</param>
+        /// <param name="transform">The transform of the brush.</param>
         /// <param name="spreadMethod">The spread method.</param>
         /// <param name="startPoint">The start point for the gradient.</param>
         /// <param name="endPoint">The end point for the gradient.</param>
         public ImmutableLinearGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
+            ImmutableTransform? transform = null,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? startPoint = null,
             RelativePoint? endPoint = null)
-            : base(gradientStops, opacity, spreadMethod)
+            : base(gradientStops, opacity, transform, spreadMethod)
         {
             StartPoint = startPoint ?? RelativePoint.TopLeft;
             EndPoint = endPoint ?? RelativePoint.BottomRight;

@@ -153,14 +153,14 @@ namespace Avalonia.X11
         }
 
         private static void StaticErrorHandler(IntPtr smcConn, bool swap, int offendingMinorOpcode,
-            ulong offendingSequence, int errorClass, int severity, IntPtr values)
+            nuint offendingSequence, int errorClass, int severity, IntPtr values)
         {
             GetInstance(smcConn)
                 ?.ErrorHandler(swap, offendingMinorOpcode, offendingSequence, errorClass, severity, values);
         }
 
         // ReSharper disable UnusedParameter.Local
-        private void ErrorHandler(bool swap, int offendingMinorOpcode, ulong offendingSequence, int errorClass,
+        private void ErrorHandler(bool swap, int offendingMinorOpcode, nuint offendingSequence, int errorClass,
             int severity, IntPtr values)
         {
             Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?.Log(this,
