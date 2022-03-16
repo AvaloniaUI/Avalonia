@@ -141,7 +141,7 @@ namespace Avalonia.Controls
             {
                 if (_hasMirrorTransform)
                 {
-                    value = MargeTransforms(MirrorTrasform(), value);
+                    value = MergeTransforms(MirrorTrasform(), value);
                 }
 
                 base.RenderTransform = value; 
@@ -357,23 +357,16 @@ namespace Avalonia.Controls
 
         private void InvalidateFlowDirection()
         {
-            FlowDirection parentFD = FlowDirection.LeftToRight;
-            FlowDirection thisFD = FlowDirection;
-
-            bool parentShouldGetMirrored = true;
-            bool thisShouldGetMirrored = ShouldGetInvertedIfRightToLeft();
+            bool parentShouldGetMirrored = false;
+            bool thisShouldGetMirrored = ShouldPresentedMirrored();
 
             var parent = this.FindAncestorOfType<Control>();
             if (parent != null)
             {
-                parentFD = parent.FlowDirection;
-                parentShouldGetMirrored = parent.ShouldGetInvertedIfRightToLeft();
+                parentShouldGetMirrored = parent.ShouldPresentedMirrored();
             }
 
-            bool shouldBeMirrored = thisFD == FlowDirection.RightToLeft && thisShouldGetMirrored;
-            bool parentMirrored = parentFD == FlowDirection.RightToLeft && parentShouldGetMirrored;
-
-            bool shouldApplyMirrorTransform = shouldBeMirrored != parentMirrored;
+            bool shouldApplyMirrorTransform = thisShouldGetMirrored != parentShouldGetMirrored;
 
             if (shouldApplyMirrorTransform)
             {
@@ -404,12 +397,12 @@ namespace Avalonia.Controls
             }
 
             var mirrorTransform = MirrorTrasform();
-            var rendertransform = RenderTransform;
+            var renderTransform = RenderTransform;
 
             ITransform? finalTransform = mirrorTransform;
-            if (rendertransform != null)
+            if (renderTransform != null)
             {
-                finalTransform = MargeTransforms(rendertransform, mirrorTransform);
+                finalTransform = MergeTransforms(renderTransform, mirrorTransform);
             }
 
             base.RenderTransform = finalTransform;
@@ -424,9 +417,9 @@ namespace Avalonia.Controls
             }
 
             var mirrorTransform = MirrorTrasform();
-            var rendertransform = RenderTransform;
+            var renderTransform = RenderTransform;
             
-            ITransform? finalTransform = MargeTransforms(rendertransform, mirrorTransform);
+            ITransform? finalTransform = MergeTransforms(renderTransform, mirrorTransform);
             if (finalTransform!.Value == Matrix.Identity)
             {
                 finalTransform = null;
@@ -438,12 +431,15 @@ namespace Avalonia.Controls
 
 
         /// <summary>
-        /// Determines whether the element should be inverted if the 
-        /// flow direction is RightToLeft
+        /// Determines whether the element should be presented mirrored
+        /// by FlowDirection system
         /// </summary>
-        protected virtual bool ShouldGetInvertedIfRightToLeft() => true;
+        protected virtual bool ShouldPresentedMirrored()
+        {
+            return FlowDirection == FlowDirection.RightToLeft;
+        }
 
-        static ITransform? MargeTransforms(ITransform? iTransform1, ITransform? iTransform2)
+        static ITransform? MergeTransforms(ITransform? iTransform1, ITransform? iTransform2)
         {
             // don't know how to marge ITransform
             if (iTransform1 is Transform transform1 && iTransform2 is Transform transform2)
