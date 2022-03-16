@@ -18,8 +18,20 @@ namespace Avalonia.Media
             Children.CollectionChanged += delegate
             {
                 Children.ForEachItem(
-                    (tr) => tr.Changed += ChildTransform_Changed,
-                    (tr) => tr.Changed -= ChildTransform_Changed,
+                    (tr) => 
+                    {
+                        if (tr is IMutableTransform mutTr)
+                        {
+                            mutTr.Changed += ChildTransform_Changed;
+                        }
+                    },
+                    (tr) => 
+                    {
+                        if (tr is IMutableTransform mutTr)
+                        {
+                            mutTr.Changed -= ChildTransform_Changed;
+                        }
+                    },
                     () => { });
             };
         }
@@ -61,7 +73,7 @@ namespace Avalonia.Media
         }
     }
 
-    public sealed class Transforms : AvaloniaList<Transform>
+    public sealed class Transforms : AvaloniaList<ITransform>
     {
     }
 }

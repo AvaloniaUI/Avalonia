@@ -141,7 +141,14 @@ namespace Avalonia.Controls
             {
                 if (_hasMirrorTransform)
                 {
-                    value = MergeTransforms(MirrorTrasform(), value);
+                    if (value == null)
+                    {
+                        value = MirrorTrasform();
+                    }
+                    else
+                    {
+                        value = MirrorTrasform().MergeTransforms(value);
+                    }
                 }
 
                 base.RenderTransform = value; 
@@ -402,7 +409,7 @@ namespace Avalonia.Controls
             ITransform? finalTransform = mirrorTransform;
             if (renderTransform != null)
             {
-                finalTransform = MergeTransforms(renderTransform, mirrorTransform);
+                finalTransform = mirrorTransform.MergeTransforms(renderTransform);
             }
 
             base.RenderTransform = finalTransform;
@@ -416,10 +423,10 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var mirrorTransform = MirrorTrasform();
-            var renderTransform = RenderTransform;
+            ITransform mirrorTransform = MirrorTrasform();
+            ITransform renderTransform = RenderTransform!;
             
-            ITransform? finalTransform = MergeTransforms(renderTransform, mirrorTransform);
+            ITransform? finalTransform = mirrorTransform.MergeTransforms(renderTransform);
             if (finalTransform!.Value == Matrix.Identity)
             {
                 finalTransform = null;
@@ -437,22 +444,6 @@ namespace Avalonia.Controls
         protected virtual bool ShouldPresentedMirrored()
         {
             return FlowDirection == FlowDirection.RightToLeft;
-        }
-
-        static ITransform? MergeTransforms(ITransform? iTransform1, ITransform? iTransform2)
-        {
-            // don't know how to marge ITransform
-            if (iTransform1 is Transform transform1 && iTransform2 is Transform transform2)
-            {
-                TransformGroup groupTransform = new TransformGroup();
-
-                groupTransform.Children.Add(transform1);
-                groupTransform.Children.Add(transform2);
-
-                return groupTransform;
-            }
-
-            return iTransform1;
         }
 
         static ITransform MirrorTrasform() => 
