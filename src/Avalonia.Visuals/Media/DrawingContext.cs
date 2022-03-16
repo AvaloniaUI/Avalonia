@@ -119,11 +119,11 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <param name="boxShadows">A list of BoxShadows.</param>
-        public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry, BoxShadows boxShadows = default)
+        /// <param name="dropShadows">A list of DropShadows. Inset and Spread will be ignored.</param>
+        public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry, BoxShadows dropShadows = default)
         {
             if (geometry.PlatformImpl is not null)
-                DrawGeometry(brush, pen, geometry.PlatformImpl, boxShadows);
+                DrawGeometry(brush, pen, geometry.PlatformImpl, dropShadows);
         }
 
         /// <summary>
@@ -132,14 +132,14 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <param name="boxShadows">A list of BoxShadows.</param>
-        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadows = default)
+        /// <param name="dropShadows">A list of DropShadows. Inset and Spread will be ignored.</param>
+        public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows dropShadows = default)
         {
             _ = geometry ?? throw new ArgumentNullException(nameof(geometry));
 
             if (brush != null || PenIsVisible(pen))
             {
-                PlatformImpl.DrawGeometry(brush, pen, geometry, boxShadows);
+                PlatformImpl.DrawGeometry(brush, pen, geometry, dropShadows);
             }
         }
 

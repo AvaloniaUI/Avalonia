@@ -241,7 +241,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <param name="boxShadows">A list of BoxShadows.</param>
+        /// <param name="boxShadows">The BoxShadows filter. Parameter will be ignored.</param>
         public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry, BoxShadows boxShadows = default)
         {
             if (brush != null)

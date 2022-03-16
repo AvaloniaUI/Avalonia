@@ -124,8 +124,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         class MockStreamGeometry : IStreamGeometryImpl
         {
             private MockStreamGeometryContext _impl = new MockStreamGeometryContext();
-            public BoxShadow BoxShadow { get; }
-
+            
             public Rect Bounds
             {
                 get

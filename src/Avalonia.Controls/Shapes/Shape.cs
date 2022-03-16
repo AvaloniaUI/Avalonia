@@ -58,8 +58,11 @@ namespace Avalonia.Controls.Shapes
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
-        public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
-            AvaloniaProperty.Register<Shape, BoxShadows>(nameof(BoxShadow));
+        /// <summary>
+        /// Defines the <see cref="DropShadow"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BoxShadows> DropShadowProperty =
+            AvaloniaProperty.Register<Shape, BoxShadows>(nameof(DropShadow));
 
         private Matrix _transform = Matrix.Identity;
         private Geometry? _definingGeometry;
@@ -67,10 +70,10 @@ namespace Avalonia.Controls.Shapes
 
         static Shape()
         {
-            AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty, BoxShadowProperty);
+            AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty, DropShadowProperty);
 
             AffectsRender<Shape>(FillProperty, StrokeProperty, StrokeDashArrayProperty, StrokeDashOffsetProperty,
-                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty, BoxShadowProperty);
+                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty, DropShadowProperty);
         }
 
         /// <summary>
@@ -196,12 +199,12 @@ namespace Avalonia.Controls.Shapes
         }
 
         /// <summary>
-        /// Get or sets a <see cref="BoxShadows"/>
+        /// Get or sets a <see cref="BoxShadows"/>. <see cref="Media.BoxShadow.IsInset"/> is not supported.
         /// </summary>
-        public BoxShadows BoxShadow
+        public BoxShadows DropShadow
         {
-            get { return GetValue(BoxShadowProperty); }
-            set { SetValue(BoxShadowProperty, value); }
+            get { return GetValue(DropShadowProperty); }
+            set { SetValue(DropShadowProperty, value); }
         }
 
         public override void Render(DrawingContext context)
@@ -233,7 +236,7 @@ namespace Avalonia.Controls.Shapes
                         StrokeJoin);
                 }
 
-                context.DrawGeometry(Fill, pen, geometry, BoxShadow);
+                context.DrawGeometry(Fill, pen, geometry, DropShadow);
             }
         }
 

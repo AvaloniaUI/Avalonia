@@ -10,6 +10,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
+using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -179,39 +180,49 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
             
-            foreach (var boxShadow in boxShadows)
+            foreach (var dropShadow in boxShadows)
             {
-                if (!boxShadow.IsEmpty && !boxShadow.IsInset)
+                if (!dropShadow.IsEmpty && !dropShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
-                    {
-                        Canvas.Save();
+                    using var shadow = BoxShadowFilter.Create(_boxShadowPaint, dropShadow, _currentOpacity, pen);
+                    Canvas.Save();
                         
-                        Canvas.ClipPath(impl.EffectivePath,
-                            shadow.ClipOperation, true);
+                    Canvas.ClipPath(impl.EffectivePath,
+                        shadow.ClipOperation, true);
 
-                        var oldTransform = Transform;
-                        Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
-                        Canvas.DrawPath(impl.EffectivePath, shadow.Paint);
-                        Transform = oldTransform;
-                            
-                        Canvas.Restore();
+                    var oldTransform = Transform;
+                    Transform = oldTransform * Matrix.CreateTranslation(dropShadow.OffsetX, dropShadow.OffsetY);
+
+                    Canvas.DrawPath(impl.EffectivePath, shadow.Paint);
+
+                    var strokeThickness = (float)(pen?.Thickness ?? 0 + dropShadow.Spread);
+
+                    if (strokeThickness > float.Epsilon)
+                    {
+                        using var strokePaint = shadow.Paint.Clone();
+                        strokePaint.IsStroke = true;
+                        strokePaint.StrokeWidth = strokeThickness;
+
+                        Canvas.DrawPath(impl.EffectivePath, strokePaint);
                     }
+
+                    Transform = oldTransform;
+                            
+                    Canvas.Restore();
                 }
             }
-            
-            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
-            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
-            {
-                if (fill.Paint != null)
-                {
-                    Canvas.DrawPath(impl.EffectivePath, fill.Paint);
-                }
 
-                if (stroke.Paint != null)
-                {
-                    Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
-                }
+            using var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper);
+            using var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper);
+            
+            if (fill.Paint != null)
+            {
+                Canvas.DrawPath(impl.EffectivePath, fill.Paint);
+            }
+            
+            if (stroke.Paint != null)
+            {
+                Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
             }
         }
 
@@ -226,7 +237,7 @@ namespace Avalonia.Skia
                     return 0.0f;
                 return 0.288675f * (float)radius + 0.5f;
             }
-            public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity)
+            public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity, [CanBeNull] IPen pen = null)
             {
                 var ac = shadow.Color;
 

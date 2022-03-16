@@ -414,7 +414,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadow = default)
+            public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry, BoxShadows boxShadows = default)
             {
 
             }

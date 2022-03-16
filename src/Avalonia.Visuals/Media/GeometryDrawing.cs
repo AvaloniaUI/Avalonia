@@ -30,8 +30,11 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Pen> PenProperty =
             AvaloniaProperty.Register<GeometryDrawing, Pen>(nameof(Pen));
 
-        public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
-            AvaloniaProperty.Register<GeometryDrawing, BoxShadows>(nameof(BoxShadow));
+        /// <summary>
+        /// Defines the <see cref="DropShadow"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BoxShadows> DropShadowProperty =
+            AvaloniaProperty.Register<GeometryDrawing, BoxShadows>(nameof(DropShadow));
 
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Media.Geometry"/> that describes the shape of this <see cref="GeometryDrawing"/>.
@@ -61,17 +64,20 @@ namespace Avalonia.Media
             set => SetValue(PenProperty, value);
         }
 
-        public BoxShadows BoxShadow
+        /// <summary>
+        /// Get or sets a <see cref="BoxShadows"/>. <see cref="BoxShadow.IsInset"/> is not supported.
+        /// </summary>
+        public BoxShadows DropShadow
         {
-            get => GetValue(BoxShadowProperty);
-            set => SetValue(BoxShadowProperty, value);
+            get => GetValue(DropShadowProperty);
+            set => SetValue(DropShadowProperty, value);
         }
 
         public override void Draw(DrawingContext context)
         {
             if (Geometry != null)
             {
-                context.DrawGeometry(Brush, Pen, Geometry, BoxShadow);
+                context.DrawGeometry(Brush, Pen, Geometry, DropShadow);
             }
         }
 

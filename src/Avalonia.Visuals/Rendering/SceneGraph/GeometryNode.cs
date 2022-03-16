@@ -18,21 +18,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <param name="boxShadowses">The BoxShadows.</param>
+        /// <param name="dropShadows">The BoxShadows effect.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public GeometryNode(Matrix transform,
             IBrush? brush,
             IPen? pen,
             IGeometryImpl geometry,
-            BoxShadows boxShadowses,
+            BoxShadows dropShadows,
             IDictionary<IVisual, Scene>? childScenes = null)
-            : base(boxShadowses.TransformBounds(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen)), transform)
+            : base(dropShadows.TransformBounds(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen)), transform)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Geometry = geometry;
-            BoxShadows = boxShadowses;
+            BoxShadows = dropShadows;
             ChildScenes = childScenes;
         }
 
