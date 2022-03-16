@@ -128,6 +128,6 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override bool ShouldApplyMirrorTransform() => false;
+        protected override bool ShouldPresentedMirrored() => false;
     }
 }
