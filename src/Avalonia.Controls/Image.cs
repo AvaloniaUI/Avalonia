@@ -128,6 +128,6 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override bool ShouldGetMirrored() => false;
+        protected override bool ShouldGetInvertedIfRightToLeft() => false;
     }
 }

@@ -530,6 +530,6 @@ namespace Avalonia.Controls
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
             (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
 
-        protected override bool ShouldGetMirrored() => false;
+        protected override bool ShouldGetInvertedIfRightToLeft() => false;
     }
 }

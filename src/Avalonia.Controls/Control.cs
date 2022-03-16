@@ -338,10 +338,12 @@ namespace Avalonia.Controls
             
             if (change.Property == FlowDirectionProperty)
             {
-                // Avoid inherited value change to call this method 
+                // A change in value inherited should be prevented from calling this method
+                // Because it will be handled from here by NotifyDescendantFlowDirection
                 if (GetBaseValue(FlowDirectionProperty, change.Priority).HasValue)
                 {
                     InvalidateFlowDirection();
+                    NotifyDescendantFlowDirection();
                 }
             }
         }
@@ -359,17 +361,13 @@ namespace Avalonia.Controls
             FlowDirection thisFD = FlowDirection;
 
             bool parentShouldGetMirrored = true;
-            bool thisShouldGetMirrored = ShouldGetMirrored();
+            bool thisShouldGetMirrored = ShouldGetInvertedIfRightToLeft();
 
-            if (this.GetVisualParent() is Control control)
+            var parent = this.FindAncestorOfType<Control>();
+            if (parent != null)
             {
-                parentFD = control.FlowDirection;
-                parentShouldGetMirrored = control.ShouldGetMirrored();
-            }
-            else if (Parent is Control logicalControl)
-            {
-                parentFD = logicalControl.FlowDirection;
-                parentShouldGetMirrored = logicalControl.ShouldGetMirrored();
+                parentFD = parent.FlowDirection;
+                parentShouldGetMirrored = parent.ShouldGetInvertedIfRightToLeft();
             }
 
             bool shouldBeMirrored = thisFD == FlowDirection.RightToLeft && thisShouldGetMirrored;
@@ -385,8 +383,11 @@ namespace Avalonia.Controls
             {
                 RemoveMirrorTransform();
             }
+        }
 
-            foreach (var visual in VisualChildren)
+        private void NotifyDescendantFlowDirection()
+        {
+            foreach (var visual in this.GetVisualDescendants())
             {
                 if (visual is Control child)
                 {
@@ -435,7 +436,12 @@ namespace Avalonia.Controls
             base.RenderTransform = finalTransform;
         }
 
-        protected virtual bool ShouldGetMirrored() => true;
+
+        /// <summary>
+        /// Determines whether the element should be inverted if the 
+        /// flow direction is RightToLeft
+        /// </summary>
+        protected virtual bool ShouldGetInvertedIfRightToLeft() => true;
 
         static ITransform? MargeTransforms(ITransform? iTransform1, ITransform? iTransform2)
         {

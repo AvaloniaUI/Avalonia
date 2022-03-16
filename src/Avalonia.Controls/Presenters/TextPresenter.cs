@@ -799,6 +799,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override bool ShouldGetMirrored() => false;
+        protected override bool ShouldGetInvertedIfRightToLeft() => false;
     }
 }
