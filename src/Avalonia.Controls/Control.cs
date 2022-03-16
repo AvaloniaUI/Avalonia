@@ -432,7 +432,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Determines whether the element should be presented mirrored
-        /// by FlowDirection system
+        /// if FlowDirection is RightToLeft
         /// </summary>
         protected virtual bool ShouldPresentedMirrored()
         {
