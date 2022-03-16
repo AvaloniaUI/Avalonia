@@ -39,6 +39,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     typeSystem.GetType("Avalonia.Metadata.ContentAttribute")
                 },
+                WhitespaceSignificantCollectionAttributes =
+                {
+                     typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
+                },
+                TrimSurroundingWhitespaceAttributes =
+                {
+                    typeSystem.GetType("Avalonia.Metadata.TrimSurroundingWhitespaceAttribute")
+                },
                 ProvideValueTarget = typeSystem.GetType("Avalonia.Markup.Xaml.IProvideValueTarget"),
                 RootObjectProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IRootObjectProvider"),
                 RootObjectProviderIntermediateRootPropertyName = "IntermediateRootObject",

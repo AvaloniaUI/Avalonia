@@ -2,7 +2,7 @@
 
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Shared.PlatformSupport;
+using Avalonia.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 

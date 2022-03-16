@@ -1,10 +1,7 @@
 using System.Threading;
-
 using Avalonia.Animation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-
-#nullable enable
 
 namespace Avalonia.Controls
 {

@@ -18,4 +18,5 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

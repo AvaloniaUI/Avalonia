@@ -30,6 +30,7 @@ MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDownV
 MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDownValueChangedEventArgs.OldValue.get()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.StyledProperty<System.Boolean> Avalonia.StyledProperty<System.Boolean> Avalonia.Controls.ScrollViewer.AllowAutoHideProperty' does not exist in the implementation but it does exist in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.TopLevel' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.Viewbox' does not inherit from base type 'Avalonia.Controls.Decorator' in the implementation but it does in the contract.
 MembersMustExist : Member 'public Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.Controls.Viewbox.StretchProperty' does not exist in the implementation but it does exist in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.Window' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.WindowBase' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
@@ -43,8 +44,16 @@ MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.Off
 MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.SetCursor(Avalonia.Platform.IPlatformHandle)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.AvaloniaProperty Avalonia.AvaloniaProperty Avalonia.Controls.Notifications.NotificationCard.CloseOnClickProperty' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.Platform.ITopLevelNativeMenuExporter.SetNativeMenu(Avalonia.Controls.NativeMenu)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'protected Avalonia.Media.FormattedText Avalonia.Controls.Presenters.TextPresenter.CreateFormattedText()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Media.FormattedText Avalonia.Controls.Presenters.TextPresenter.FormattedText.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Int32 Avalonia.Controls.Presenters.TextPresenter.GetCaretIndex(Avalonia.Point)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.Presenters.TextPresenter.InvalidateFormattedText()' does not exist in the implementation but it does exist in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Controls.Primitives.PopupRoot' does not implement interface 'Avalonia.Utilities.IWeakSubscriber<Avalonia.Controls.ResourcesChangedEventArgs>' in the implementation but it does in the contract.
+TypesMustExist : Type 'Avalonia.Platform.ExportWindowingSubsystemAttribute' does not exist in the implementation but it does exist in the contract.
 EnumValuesMustMatch : Enum value 'Avalonia.Platform.ExtendClientAreaChromeHints Avalonia.Platform.ExtendClientAreaChromeHints.Default' is (System.Int32)2 in the implementation but (System.Int32)1 in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.Screen Avalonia.Platform.IScreenImpl.ScreenFromPoint(Avalonia.PixelPoint)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.Screen Avalonia.Platform.IScreenImpl.ScreenFromRect(Avalonia.PixelRect)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.Screen Avalonia.Platform.IScreenImpl.ScreenFromWindow(Avalonia.Platform.IWindowBaseImpl)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Nullable<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.FrameSize' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Nullable<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.FrameSize.get()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Action<Avalonia.Size, Avalonia.Platform.PlatformResizeReason> Avalonia.Platform.ITopLevelImpl.Resized.get()' is present in the implementation but not in the contract.
@@ -63,4 +72,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.ITrayIconImpl Avalonia.Platform.IWindowingPlatform.CreateTrayIcon()' is present in the implementation but not in the contract.
-Total Issues: 64
+Total Issues: 73

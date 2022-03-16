@@ -8,8 +8,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -83,12 +81,13 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = ItemContainerGenerator.IndexFromContainer(value);
+                SelectedIndex = value is not null ?
+                    ItemContainerGenerator.IndexFromContainer(value) : -1;
             }
         }
 
@@ -111,7 +110,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is opened.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> MenuOpened
+        public event EventHandler<RoutedEventArgs>? MenuOpened
         {
             add { AddHandler(MenuOpenedEvent, value); }
             remove { RemoveHandler(MenuOpenedEvent, value); }
@@ -120,7 +119,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is closed.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> MenuClosed
+        public event EventHandler<RoutedEventArgs>? MenuClosed
         {
             add { AddHandler(MenuClosedEvent, value); }
             remove { RemoveHandler(MenuClosedEvent, value); }

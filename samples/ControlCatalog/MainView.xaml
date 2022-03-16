@@ -22,8 +22,8 @@
       <TabItem Header="Border">
         <pages:BorderPage />
       </TabItem>
-      <TabItem Header="Button">
-        <pages:ButtonPage />
+      <TabItem Header="Buttons">
+        <pages:ButtonsPage />
       </TabItem>
       <TabItem Header="ButtonSpinner">
         <pages:ButtonSpinnerPage />
@@ -39,6 +39,9 @@
       </TabItem>
       <TabItem Header="CheckBox">
         <pages:CheckBoxPage />
+      </TabItem>
+      <TabItem Header="Clipboard">
+        <pages:ClipboardPage />
       </TabItem>
       <TabItem Header="ComboBox">
         <pages:ComboBoxPage />

@@ -15,57 +15,57 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        event EventHandler<GotFocusEventArgs> GotFocus;
+        event EventHandler<GotFocusEventArgs>? GotFocus;
 
         /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
-        event EventHandler<RoutedEventArgs> LostFocus;
+        event EventHandler<RoutedEventArgs>? LostFocus;
 
         /// <summary>
         /// Occurs when a key is pressed while the control has focus.
         /// </summary>
-        event EventHandler<KeyEventArgs> KeyDown;
+        event EventHandler<KeyEventArgs>? KeyDown;
 
         /// <summary>
         /// Occurs when a key is released while the control has focus.
         /// </summary>
-        event EventHandler<KeyEventArgs> KeyUp;
+        event EventHandler<KeyEventArgs>? KeyUp;
 
         /// <summary>
         /// Occurs when a user typed some text while the control has focus.
         /// </summary>
-        event EventHandler<TextInputEventArgs> TextInput;
+        event EventHandler<TextInputEventArgs>? TextInput;
 
         /// <summary>
         /// Occurs when the pointer enters the control.
         /// </summary>
-        event EventHandler<PointerEventArgs> PointerEnter;
+        event EventHandler<PointerEventArgs>? PointerEnter;
 
         /// <summary>
         /// Occurs when the pointer leaves the control.
         /// </summary>
-        event EventHandler<PointerEventArgs> PointerLeave;
+        event EventHandler<PointerEventArgs>? PointerLeave;
 
         /// <summary>
         /// Occurs when the pointer is pressed over the control.
         /// </summary>
-        event EventHandler<PointerPressedEventArgs> PointerPressed;
+        event EventHandler<PointerPressedEventArgs>? PointerPressed;
 
         /// <summary>
         /// Occurs when the pointer moves over the control.
         /// </summary>
-        event EventHandler<PointerEventArgs> PointerMoved;
+        event EventHandler<PointerEventArgs>? PointerMoved;
 
         /// <summary>
         /// Occurs when the pointer is released over the control.
         /// </summary>
-        event EventHandler<PointerReleasedEventArgs> PointerReleased;
+        event EventHandler<PointerReleasedEventArgs>? PointerReleased;
 
         /// <summary>
         /// Occurs when the mouse wheel is scrolled over the control.
         /// </summary>
-        event EventHandler<PointerWheelEventArgs> PointerWheelChanged;
+        event EventHandler<PointerWheelEventArgs>? PointerWheelChanged;
 
         /// <summary>
         /// Gets or sets a value indicating whether the control can receive keyboard focus.

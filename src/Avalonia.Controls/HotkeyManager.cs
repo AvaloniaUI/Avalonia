@@ -7,29 +7,29 @@ namespace Avalonia.Controls
 {
     public class HotKeyManager
     {
-        public static readonly AttachedProperty<KeyGesture> HotKeyProperty
-            = AvaloniaProperty.RegisterAttached<Control, KeyGesture>("HotKey", typeof(HotKeyManager));
+        public static readonly AttachedProperty<KeyGesture?> HotKeyProperty
+            = AvaloniaProperty.RegisterAttached<Control, KeyGesture?>("HotKey", typeof(HotKeyManager));
 
         class HotkeyCommandWrapper : ICommand
         {
-            public HotkeyCommandWrapper(ICommandSource control)
+            public HotkeyCommandWrapper(ICommandSource? control)
             {
                 CommandSource = control;
             }
 
-            public readonly ICommandSource CommandSource;
+            public readonly ICommandSource? CommandSource;
 
-            private ICommand GetCommand() => CommandSource.Command;
+            private ICommand? GetCommand() => CommandSource?.Command;
 
-            public bool CanExecute(object parameter) =>
-                CommandSource.Command?.CanExecute(CommandSource.CommandParameter) == true
+            public bool CanExecute(object? parameter) =>
+                CommandSource?.Command?.CanExecute(CommandSource.CommandParameter) == true
                 && CommandSource.IsEffectivelyEnabled;
 
-            public void Execute(object parameter) =>
-                GetCommand()?.Execute(CommandSource.CommandParameter);
+            public void Execute(object? parameter) =>
+                GetCommand()?.Execute(CommandSource?.CommandParameter);
 
 #pragma warning disable 67 // Event not used
-            public event EventHandler CanExecuteChanged;
+            public event EventHandler? CanExecuteChanged;
 #pragma warning restore 67
         }
 
@@ -37,12 +37,12 @@ namespace Avalonia.Controls
         class Manager
         {
             private readonly IControl _control;
-            private TopLevel _root;
-            private IDisposable _parentSub;
-            private IDisposable _hotkeySub;
-            private KeyGesture _hotkey;
+            private TopLevel? _root;
+            private IDisposable? _parentSub;
+            private IDisposable? _hotkeySub;
+            private KeyGesture? _hotkey;
             private readonly HotkeyCommandWrapper _wrapper;
-            private KeyBinding _binding;
+            private KeyBinding? _binding;
 
             public Manager(IControl control)
             {
@@ -56,14 +56,14 @@ namespace Avalonia.Controls
                 _parentSub = AncestorFinder.Create<TopLevel>(_control).Subscribe(OnParentChanged);
             }
 
-            private void OnParentChanged(TopLevel control)
+            private void OnParentChanged(TopLevel? control)
             {
                 Unregister();
                 _root = control;
                 Register();
             }
 
-            private void OnHotkeyChanged(KeyGesture hotkey)
+            private void OnHotkeyChanged(KeyGesture? hotkey)
             {
                 if (hotkey == null)
                     //Subscription will be recreated by static property watcher
@@ -95,8 +95,8 @@ namespace Avalonia.Controls
             void Stop()
             {
                 Unregister();
-                _parentSub.Dispose();
-                _hotkeySub.Dispose();
+                _parentSub?.Dispose();
+                _hotkeySub?.Dispose();
             }
         }
 
@@ -118,6 +118,6 @@ namespace Avalonia.Controls
             });
         }
         public static void SetHotKey(AvaloniaObject target, KeyGesture value) => target.SetValue(HotKeyProperty, value);
-        public static KeyGesture GetHotKey(AvaloniaObject target) => target.GetValue(HotKeyProperty);
+        public static KeyGesture? GetHotKey(AvaloniaObject target) => target.GetValue(HotKeyProperty);
     }
 }

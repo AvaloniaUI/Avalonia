@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -8,7 +9,7 @@ using Avalonia.Interactivity;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A control scrolls its content if the content is bigger than the space available.
+    /// A control which scrolls its content if the content is bigger than the space available.
     /// </summary>
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
@@ -182,6 +183,14 @@ namespace Avalonia.Controls
                 true);
 
         /// <summary>
+        /// Defines the <see cref="IsScrollChainingEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsScrollChainingEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(IsScrollChainingEnabled),
+                defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -191,8 +200,8 @@ namespace Avalonia.Controls
 
         internal const double DefaultSmallChange = 16;
 
-        private IDisposable _childSubscription;
-        private ILogicalScrollable _logicalScrollable;
+        private IDisposable? _childSubscription;
+        private ILogicalScrollable? _logicalScrollable;
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
@@ -202,7 +211,7 @@ namespace Avalonia.Controls
         private Size _largeChange;
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
-        private IDisposable _scrollBarExpandSubscription;
+        private IDisposable? _scrollBarExpandSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -224,7 +233,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when changes are detected to the scroll position, extent, or viewport size.
         /// </summary>
-        public event EventHandler<ScrollChangedEventArgs> ScrollChanged
+        public event EventHandler<ScrollChangedEventArgs>? ScrollChanged
         {
             add => AddHandler(ScrollChangedEvent, value);
             remove => RemoveHandler(ScrollChangedEvent, value);
@@ -332,7 +341,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public IControl CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
+        public IControl? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
 
         /// <summary>
         /// Gets the maximum horizontal scrollbar value.
@@ -416,6 +425,20 @@ namespace Avalonia.Controls
         {
             get => GetValue(AllowAutoHideProperty);
             set => SetValue(AllowAutoHideProperty, value);
+        }
+
+        /// <summary>
+        ///  Gets or sets if scroll chaining is enabled. The default value is true.
+        /// </summary>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public bool IsScrollChainingEnabled
+        {
+            get => GetValue(IsScrollChainingEnabledProperty);
+            set => SetValue(IsScrollChainingEnabledProperty, value);
         }
 
         /// <summary>
@@ -549,6 +572,36 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Sets the value of the IsScrollChainingEnabled attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public static void SetIsScrollChainingEnabled(Control control, bool value)
+        {
+            control.SetValue(IsScrollChainingEnabledProperty, value);
+        }
+
+        /// <summary>
+        ///  Gets the value of the IsScrollChainingEnabled attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        /// <remarks>
+        ///  After a user hits a scroll limit on an element that has been nested within another scrollable element,
+        /// you can specify whether that parent element should continue the scrolling operation begun in its child element.
+        /// This is called scroll chaining.
+        /// </remarks>
+        public static bool GetIsScrollChainingEnabled(Control control)
+        {
+            return control.GetValue(IsScrollChainingEnabledProperty);
+        }
+
+        /// <summary>
         /// Gets the value of the VerticalScrollBarVisibility attached property.
         /// </summary>
         /// <param name="control">The control to set the value on.</param>
@@ -604,7 +657,7 @@ namespace Avalonia.Controls
             return double.IsNaN(result) ? 0 : result;
         }
 
-        private void ChildChanged(IControl child)
+        private void ChildChanged(IControl? child)
         {
             if (_logicalScrollable is object)
             {
@@ -621,7 +674,7 @@ namespace Avalonia.Controls
             CalculatedPropertiesChanged();
         }
 
-        private void LogicalScrollInvalidated(object sender, EventArgs e)
+        private void LogicalScrollInvalidated(object? sender, EventArgs e)
         {
             CalculatedPropertiesChanged();
         }
@@ -710,9 +763,14 @@ namespace Avalonia.Controls
             _scrollBarExpandSubscription = SubscribeToScrollBars(e);
         }
 
-        private IDisposable SubscribeToScrollBars(TemplateAppliedEventArgs e)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            static IObservable<bool> GetExpandedObservable(ScrollBar scrollBar)
+            return new ScrollViewerAutomationPeer(this);
+        }
+
+        private IDisposable? SubscribeToScrollBars(TemplateAppliedEventArgs e)
+        {
+            static IObservable<bool>? GetExpandedObservable(ScrollBar? scrollBar)
             {
                 return scrollBar?.GetObservable(ScrollBar.IsExpandedProperty);
             }
@@ -723,7 +781,7 @@ namespace Avalonia.Controls
             var horizontalExpanded = GetExpandedObservable(horizontalScrollBar);
             var verticalExpanded = GetExpandedObservable(verticalScrollBar);
 
-            IObservable<bool> actualExpanded = null;
+            IObservable<bool>? actualExpanded = null;
 
             if (horizontalExpanded != null && verticalExpanded != null)
             {
@@ -749,7 +807,7 @@ namespace Avalonia.Controls
             IsExpanded = isExpanded;
         }
 
-        private void OnLayoutUpdated(object sender, EventArgs e) => RaiseScrollChanged();
+        private void OnLayoutUpdated(object? sender, EventArgs e) => RaiseScrollChanged();
 
         private void RaiseScrollChanged()
         {

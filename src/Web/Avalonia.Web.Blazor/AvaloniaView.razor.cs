@@ -224,7 +224,7 @@ namespace Avalonia.Web.Blazor
 
         private void OnKeyDown(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Key, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, GetModifiers(e));
         }
 
         private void OnKeyUp(KeyboardEventArgs e)
@@ -287,17 +287,22 @@ namespace Avalonia.Web.Blazor
 
                 _topLevelImpl.SetSurface(_context, _jsGlInfo, ColorType,
                     new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi);
+                
+                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _initialised = true;
 
-                _topLevel.Prepare();
+                Threading.Dispatcher.UIThread.Post(async () =>
+                {
+                    _interop.RequestAnimationFrame(true);
+                    
+                    _sizeWatcher = await SizeWatcherInterop.ImportAsync(Js, _htmlCanvas, OnSizeChanged);
+                    _dpiWatcher = await DpiWatcherInterop.ImportAsync(Js, OnDpiChanged);
+                    
+                    _topLevel.Prepare();
 
-                _topLevel.Renderer.Start();
-
-                Invalidate();
-
-                _sizeWatcher = await SizeWatcherInterop.ImportAsync(Js, _htmlCanvas, OnSizeChanged);
-                _dpiWatcher = await DpiWatcherInterop.ImportAsync(Js, OnDpiChanged);
+                    _topLevel.Renderer.Start();
+                });
             }
         }
 
@@ -336,43 +341,38 @@ namespace Avalonia.Web.Blazor
 
         private void OnDpiChanged(double newDpi)
         {
-            _dpi = newDpi;
+            if (Math.Abs(_dpi - newDpi) > 0.0001)
+            {
+                _dpi = newDpi;
 
-            _topLevelImpl.SetClientSize(_canvasSize, _dpi);
-            
-            ForceBlit();
+                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
-            Invalidate();
+                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+
+                ForceBlit();
+            }
         }
 
         private void OnSizeChanged(SKSize newSize)
         {
-            _canvasSize = newSize;
-            
-            _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
-
-            _topLevelImpl.SetClientSize(_canvasSize, _dpi);
-
-            ForceBlit();
-
-            Invalidate();
-        }
-
-        public void Invalidate()
-        {
-            if (!_initialised || _jsGlInfo == null)
+            if (_canvasSize != newSize)
             {
-                Console.WriteLine("invalidate ignored");
-                return;
-            }
+                _canvasSize = newSize;
 
-            _interop.RequestAnimationFrame(true);
+                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+
+                _topLevelImpl.SetClientSize(_canvasSize, _dpi);
+
+                ForceBlit();
+            }
         }
 
-        public void SetActive(bool active)
+        public void SetClient(ITextInputMethodClient? client)
         {
             _inputHelper.Clear();
 
+            var active = client is { };
+            
             if (active)
             {
                 _inputHelper.Show();
@@ -388,7 +388,7 @@ namespace Avalonia.Web.Blazor
         {
         }
 
-        public void SetOptions(TextInputOptionsQueryEventArgs options)
+        public void SetOptions(TextInputOptions options)
         {
         }
 

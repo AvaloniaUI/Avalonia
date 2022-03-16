@@ -21,8 +21,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the DataValidationErrors.Errors attached property.
         /// </summary>
-        public static readonly AttachedProperty<IEnumerable<object>> ErrorsProperty =
-            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>>("Errors");
+        public static readonly AttachedProperty<IEnumerable<object>?> ErrorsProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>?>("Errors");
 
         /// <summary>
         /// Defines the DataValidationErrors.HasErrors attached property.
@@ -34,15 +34,15 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataValidationErrors, IDataTemplate>(nameof(ErrorTemplate));
 
 
-        private Control _owner;
+        private Control? _owner;
 
-        public static readonly DirectProperty<DataValidationErrors, Control> OwnerProperty =
-            AvaloniaProperty.RegisterDirect<DataValidationErrors, Control>(
+        public static readonly DirectProperty<DataValidationErrors, Control?> OwnerProperty =
+            AvaloniaProperty.RegisterDirect<DataValidationErrors, Control?>(
                 nameof(Owner),
                 o => o.Owner,
                 (o, v) => o.Owner = v);
 
-        public Control Owner
+        public Control? Owner
         {
             get { return _owner; }
             set { SetAndRaise(OwnerProperty, ref _owner, value); }
@@ -75,7 +75,7 @@ namespace Avalonia.Controls
         private static void ErrorsChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
-            var errors = (IEnumerable<object>)e.NewValue;
+            var errors = (IEnumerable<object>?)e.NewValue;
 
             var hasErrors = false;
             if (errors != null && errors.Any())
@@ -87,18 +87,18 @@ namespace Avalonia.Controls
         {
             var control = (Control)e.Sender;
             var classes = (IPseudoClasses)control.Classes;
-            classes.Set(":error", (bool)e.NewValue);
+            classes.Set(":error", (bool)e.NewValue!);
         }
 
-        public static IEnumerable<object> GetErrors(Control control)
+        public static IEnumerable<object>? GetErrors(Control control)
         {
             return control.GetValue(ErrorsProperty);
         }
-        public static void SetErrors(Control control, IEnumerable<object> errors)
+        public static void SetErrors(Control control, IEnumerable<object>? errors)
         {
             control.SetValue(ErrorsProperty, errors);
         }
-        public static void SetError(Control control, Exception error)
+        public static void SetError(Control control, Exception? error)
         {
             SetErrors(control, UnpackException(error));
         }
@@ -111,7 +111,7 @@ namespace Avalonia.Controls
             return control.GetValue(HasErrorsProperty);
         }
 
-        private static IEnumerable<object> UnpackException(Exception exception)
+        private static IEnumerable<object>? UnpackException(Exception? exception)
         {
             if (exception != null)
             {
@@ -132,8 +132,9 @@ namespace Avalonia.Controls
 
         private static object GetExceptionData(Exception exception)
         {
-            if (exception is DataValidationException dataValidationException)
-                return dataValidationException.ErrorData;
+            if (exception is DataValidationException dataValidationException &&
+                dataValidationException.ErrorData is object data)
+                return data;
 
             return exception;
         }

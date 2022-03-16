@@ -1,6 +1,3 @@
-variables:
-    MSBuildEnableWorkloadResolver: 'false'
-
 jobs:
 
 - job: GetPRNumber
@@ -41,7 +38,7 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -72,7 +69,7 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
       
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -144,7 +141,13 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install --no-cache --disable-parallel android ios --skip-manifest-update --source "https://api.nuget.org/v3/index.json"
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

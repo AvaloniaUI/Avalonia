@@ -1,4 +1,7 @@
-﻿using Avalonia.Utilities;
+﻿using System;
+using System.Diagnostics;
+using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -7,14 +10,22 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public sealed class ShapedTextCharacters : DrawableTextRun
     {
-        public ShapedTextCharacters(GlyphRun glyphRun, TextRunProperties properties)
+        private GlyphRun? _glyphRun;
+
+        public ShapedTextCharacters(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
-            Text = glyphRun.Characters;
+            ShapedBuffer = shapedBuffer;
+            Text = shapedBuffer.Text;
             Properties = properties;
             TextSourceLength = Text.Length;
-            FontMetrics = new FontMetrics(Properties.Typeface, Properties.FontRenderingEmSize);
-            GlyphRun = glyphRun;
+            FontMetrics = new FontMetrics(properties.Typeface, properties.FontRenderingEmSize);
         }
+
+        public bool IsReversed { get; private set; }
+
+        public sbyte BidiLevel => ShapedBuffer.BidiLevel;
+
+        public ShapedBuffer ShapedBuffer { get; }
 
         /// <inheritdoc/>
         public override ReadOnlySlice<char> Text { get; }
@@ -25,31 +36,29 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override int TextSourceLength { get; }
 
-        /// <inheritdoc/>
-        public override Size Size => GlyphRun.Size;
-
-        /// <summary>
-        /// Gets the font metrics.
-        /// </summary>
-        /// <value>
-        /// The font metrics.
-        /// </value>
         public FontMetrics FontMetrics { get; }
 
-        /// <summary>
-        /// Gets the glyph run.
-        /// </summary>
-        /// <value>
-        /// The glyphs.
-        /// </value>
-        public GlyphRun GlyphRun { get; }
+        public override Size Size => GlyphRun.Size;
+
+        public GlyphRun GlyphRun
+        {
+            get
+            {
+                if(_glyphRun is null)
+                {
+                    _glyphRun = CreateGlyphRun();
+                }
+
+                return _glyphRun;
+            }
+        }
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
             using (drawingContext.PushPreTransform(Matrix.CreateTranslation(origin)))
             {
-                if (GlyphRun.GlyphIndices.Length == 0)
+                if (GlyphRun.GlyphIndices.Count == 0)
                 {
                     return;
                 }
@@ -78,116 +87,117 @@ namespace Avalonia.Media.TextFormatting
 
                 foreach (var textDecoration in Properties.TextDecorations)
                 {
-                    textDecoration.Draw(drawingContext, this);
+                    textDecoration.Draw(drawingContext, GlyphRun, FontMetrics, Properties.ForegroundBrush);
                 }
             }
         }
 
-        /// <summary>
-        /// Splits the <see cref="TextRun"/> at specified length.
-        /// </summary>
-        /// <param name="length">The length.</param>
-        /// <returns>The split result.</returns>
-        public SplitTextCharactersResult Split(int length)
+        internal void Reverse()
         {
-            var glyphCount = GlyphRun.IsLeftToRight ?
-                GlyphRun.FindGlyphIndex(GlyphRun.Characters.Start + length) :
-                GlyphRun.FindGlyphIndex(GlyphRun.Characters.End - length);
+            _glyphRun = null;
 
-            if (GlyphRun.Characters.Length == length)
-            {
-                return new SplitTextCharactersResult(this, null);
-            }
+            ShapedBuffer.GlyphInfos.Span.Reverse();
 
-            if (GlyphRun.GlyphIndices.Length == glyphCount)
-            {
-                return new SplitTextCharactersResult(this, null);
-            }
-
-            if (GlyphRun.IsLeftToRight)
-            {
-                var firstGlyphRun = new GlyphRun(
-                    Properties.Typeface.GlyphTypeface,
-                    Properties.FontRenderingEmSize,
-                    GlyphRun.GlyphIndices.Take(glyphCount),
-                    GlyphRun.GlyphAdvances.Take(glyphCount),
-                    GlyphRun.GlyphOffsets.Take(glyphCount),
-                    GlyphRun.Characters.Take(length),
-                    GlyphRun.GlyphClusters.Take(glyphCount),
-                    GlyphRun.BiDiLevel);
-
-                var firstTextRun = new ShapedTextCharacters(firstGlyphRun, Properties);
-
-                var secondGlyphRun = new GlyphRun(
-                    Properties.Typeface.GlyphTypeface,
-                    Properties.FontRenderingEmSize,
-                    GlyphRun.GlyphIndices.Skip(glyphCount),
-                    GlyphRun.GlyphAdvances.Skip(glyphCount),
-                    GlyphRun.GlyphOffsets.Skip(glyphCount),
-                    GlyphRun.Characters.Skip(length),
-                    GlyphRun.GlyphClusters.Skip(glyphCount),
-                    GlyphRun.BiDiLevel);
-
-                var secondTextRun = new ShapedTextCharacters(secondGlyphRun, Properties);
-
-                return new SplitTextCharactersResult(firstTextRun, secondTextRun);
-            }
-            else
-            {
-                var take = GlyphRun.GlyphIndices.Length - glyphCount;
-                
-                var firstGlyphRun = new GlyphRun(
-                    Properties.Typeface.GlyphTypeface,
-                    Properties.FontRenderingEmSize,
-                    GlyphRun.GlyphIndices.Take(take),
-                    GlyphRun.GlyphAdvances.Take(take),
-                    GlyphRun.GlyphOffsets.Take(take),
-                    GlyphRun.Characters.Skip(length),
-                    GlyphRun.GlyphClusters.Take(take),
-                    GlyphRun.BiDiLevel);
-
-                var firstTextRun = new ShapedTextCharacters(firstGlyphRun, Properties);
-
-                var secondGlyphRun = new GlyphRun(
-                    Properties.Typeface.GlyphTypeface,
-                    Properties.FontRenderingEmSize,
-                    GlyphRun.GlyphIndices.Skip(take),
-                    GlyphRun.GlyphAdvances.Skip(take),
-                    GlyphRun.GlyphOffsets.Skip(take),
-                    GlyphRun.Characters.Take(length),
-                    GlyphRun.GlyphClusters.Skip(take),
-                    GlyphRun.BiDiLevel);
-
-                var secondTextRun = new ShapedTextCharacters(secondGlyphRun, Properties);
-
-                return new SplitTextCharactersResult(secondTextRun,firstTextRun);
-            }
+            IsReversed = !IsReversed;
         }
 
-        public readonly struct SplitTextCharactersResult
+        /// <summary>
+        /// Measures the number of characters that fit into available width.
+        /// </summary>
+        /// <param name="availableWidth">The available width.</param>
+        /// <param name="length">The count of fitting characters.</param>
+        /// <returns>
+        /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
+        /// </returns>
+        internal bool TryMeasureCharacters(double availableWidth, out int length)
         {
-            public SplitTextCharactersResult(ShapedTextCharacters first, ShapedTextCharacters? second)
-            {
-                First = first;
+            length = 0;
+            var currentWidth = 0.0;
 
-                Second = second;
+            for (var i = 0; i < ShapedBuffer.Length; i++)
+            {
+                var advance = ShapedBuffer.GlyphAdvances[i];
+
+                if (currentWidth + advance > availableWidth)
+                {
+                    break;
+                }
+
+                Codepoint.ReadAt(GlyphRun.Characters, length, out var count);
+
+                length += count;
+                currentWidth += advance;
             }
 
-            /// <summary>
-            /// Gets the first text run.
-            /// </summary>
-            /// <value>
-            /// The first text run.
-            /// </value>
-            public ShapedTextCharacters First { get; }
+            return length > 0;
+        }
 
-            /// <summary>
-            /// Gets the second text run.
-            /// </summary>
-            /// <value>
-            /// The second text run.
-            /// </value>
-            public ShapedTextCharacters? Second { get; }
+        internal bool TryMeasureCharactersBackwards(double availableWidth, out int length, out double width)
+        {
+            length = 0;
+            width = 0;
+
+            for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
+            {
+                var advance = ShapedBuffer.GlyphAdvances[i];
+
+                if (width + advance > availableWidth)
+                {
+                    break;
+                }
+
+                Codepoint.ReadAt(GlyphRun.Characters, length, out var count);
+
+                length += count;
+                width += advance;
+            }
+
+            return length > 0;
+        }
+
+        internal SplitResult<ShapedTextCharacters> Split(int length)
+        {
+            if (IsReversed)
+            {
+                Reverse();
+            }
+
+#if DEBUG
+            if(length == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
+            }
+#endif
+            
+            var splitBuffer = ShapedBuffer.Split(length);
+
+            var first = new ShapedTextCharacters(splitBuffer.First, Properties);
+
+            #if DEBUG
+
+            if (first.Text.Length != length)
+            {
+                throw new InvalidOperationException("Split length mismatch.");
+            }
+            
+            #endif
+
+            var second = new ShapedTextCharacters(splitBuffer.Second!, Properties);
+
+            return new SplitResult<ShapedTextCharacters>(first, second);
+        }
+
+        internal GlyphRun CreateGlyphRun()
+        {
+            return new GlyphRun(
+                ShapedBuffer.GlyphTypeface,
+                ShapedBuffer.FontRenderingEmSize,
+                Text,
+                ShapedBuffer.GlyphIndices,
+                ShapedBuffer.GlyphAdvances,
+                ShapedBuffer.GlyphOffsets,
+                ShapedBuffer.GlyphClusters,
+                BidiLevel);
         }
     }
 }

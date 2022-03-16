@@ -2,12 +2,15 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Remote;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -19,6 +22,7 @@ namespace Avalonia.Win32
         protected virtual unsafe IntPtr AppWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             const double wheelDelta = 120.0;
+            const long UiaRootObjectId = -25;
             uint timestamp = unchecked((uint)GetMessageTime());
             RawInputEventArgs e = null;
             var shouldTakeFocus = false;
@@ -77,6 +81,8 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
+                        UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
+
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
@@ -738,6 +744,15 @@ namespace Avalonia.Win32
                     break;
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     Imm32InputMethod.Current.IsComposing = false;
+                    break;
+
+                case WindowsMessage.WM_GETOBJECT:
+                    if ((long)lParam == UiaRootObjectId)
+                    {
+                        var peer = ControlAutomationPeer.CreatePeerForElement((Control)_owner);
+                        var node = AutomationNode.GetOrCreate(peer);
+                        return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
+                    }
                     break;
             }
 
