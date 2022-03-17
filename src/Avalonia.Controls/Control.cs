@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
-        
+
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -371,7 +371,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Determines whether the element should be presented mirrored, this
-        /// method related to FlowDirection system and as return true if FlowDirection
+        /// method related to FlowDirection system and returns true if FlowDirection
         /// is RightToLeft. For controls that want to avoid this behavior, it is 
         /// possible to override this method and return false. 
         /// </summary>
