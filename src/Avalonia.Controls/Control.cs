@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
-
+        
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -345,7 +345,7 @@ namespace Avalonia.Controls
             }
 
             bool shouldApplyMirrorTransform = thisShouldPresentedMirrored != parentShouldPresentedMirrored;
-            
+
             IsMirrorTransform = shouldApplyMirrorTransform;
         }
 
