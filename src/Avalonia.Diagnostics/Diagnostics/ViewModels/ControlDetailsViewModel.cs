@@ -8,6 +8,7 @@ using System.Reflection;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -87,7 +88,16 @@ namespace Avalonia.Diagnostics.ViewModels
                                 }
                                 else
                                 {
-                                    setterVm = new SetterViewModel(regularSetter.Property, setterValue);
+                                    var bindingInfo = GetBindingInfo(setterValue);
+
+                                    if (bindingInfo is not null)
+                                    {
+                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue, bindingInfo.Value.path, bindingInfo.Value.isCompiled);
+                                    }
+                                    else
+                                    {
+                                        setterVm = new SetterViewModel(regularSetter.Property, setterValue);
+                                    }
                                 }
 
                                 setters.Add(setterVm);
@@ -115,6 +125,16 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             return null;
+        }
+
+        private (string path, bool isCompiled)? GetBindingInfo(object? value)
+        {
+            return value switch
+            {
+                Binding binding => (binding.Path, false),
+                CompiledBindingExtension compiledBinding => (compiledBinding.Path.ToString(), true),
+                _ => null,
+            };
         }
 
         public TreePageViewModel TreePage { get; }
