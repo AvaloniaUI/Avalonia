@@ -69,6 +69,12 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, IBrush?>(nameof(OpacityMask));
 
         /// <summary>
+        /// Defines the <see cref="IsMirrorTransform"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Visual, bool> IsMirrorTransformProperty =
+            AvaloniaProperty.RegisterDirect<Visual, bool>(nameof(IsMirrorTransform), o => o.IsMirrorTransform);
+
+        /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
         public static readonly StyledProperty<ITransform?> RenderTransformProperty =
@@ -96,6 +102,7 @@ namespace Avalonia
         private TransformedBounds? _transformedBounds;
         private IRenderRoot? _visualRoot;
         private IVisual? _visualParent;
+        private bool _isMirrorTransform;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -107,7 +114,8 @@ namespace Avalonia
                 ClipProperty,
                 ClipToBoundsProperty,
                 IsVisibleProperty,
-                OpacityProperty);
+                OpacityProperty,
+                IsMirrorTransformProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
@@ -119,7 +127,7 @@ namespace Avalonia
         {
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
-
+            
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = visual => ValidateVisualChild(visual);
@@ -220,9 +228,18 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this control presented as mirror.
+        /// </summary>
+        public bool IsMirrorTransform 
+        { 
+            get { return _isMirrorTransform; }
+            protected set { SetAndRaise(IsMirrorTransformProperty, ref _isMirrorTransform, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the render transform of the control.
         /// </summary>
-        public virtual ITransform? RenderTransform
+        public ITransform? RenderTransform
         {
             get { return GetValue(RenderTransformProperty); }
             set { SetValue(RenderTransformProperty, value); }

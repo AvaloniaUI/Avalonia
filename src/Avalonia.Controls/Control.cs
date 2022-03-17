@@ -67,17 +67,10 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
-
-        /// <summary>
-        /// Defines the <see cref="RenderTransform"/> property.
-        /// </summary>
-        public static new readonly StyledProperty<ITransform?> RenderTransformProperty =
-            Visual.RenderTransformProperty.AddOwner<Control>();
     
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
-        private bool _hasMirrorTransform;
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -131,28 +124,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(FlowDirectionProperty);
             set => SetValue(FlowDirectionProperty, value);
-        }
-
-        /// <inheritdoc/>
-        public override ITransform? RenderTransform 
-        { 
-            get => base.RenderTransform;
-            set
-            {
-                if (_hasMirrorTransform)
-                {
-                    if (value == null)
-                    {
-                        value = MirrorTrasform();
-                    }
-                    else
-                    {
-                        value = MirrorTrasform().MergeTransforms(value);
-                    }
-                }
-
-                base.RenderTransform = value; 
-            }
         }
 
         /// <summary>
@@ -375,13 +346,15 @@ namespace Avalonia.Controls
 
             bool shouldApplyMirrorTransform = thisShouldGetMirrored != parentShouldGetMirrored;
 
+            if (this is IRenderRoot) shouldApplyMirrorTransform = false;
+
             if (shouldApplyMirrorTransform)
             {
-                AddMirrorTransform();
+                IsMirrorTransform = true;
             }
             else
             {
-                RemoveMirrorTransform();
+                IsMirrorTransform = false;
             }
         }
 
@@ -396,57 +369,15 @@ namespace Avalonia.Controls
             }
         }
 
-        private void AddMirrorTransform()
-        {
-            if (_hasMirrorTransform)
-            {
-                return;
-            }
-
-            var mirrorTransform = MirrorTrasform();
-            var renderTransform = RenderTransform;
-
-            ITransform? finalTransform = mirrorTransform;
-            if (renderTransform != null)
-            {
-                finalTransform = mirrorTransform.MergeTransforms(renderTransform);
-            }
-
-            base.RenderTransform = finalTransform;
-            _hasMirrorTransform = true;
-        }
-
-        private void RemoveMirrorTransform()
-        {
-            if (!_hasMirrorTransform)
-            {
-                return;
-            }
-
-            ITransform mirrorTransform = MirrorTrasform();
-            ITransform renderTransform = RenderTransform!;
-            
-            ITransform? finalTransform = mirrorTransform.MergeTransforms(renderTransform);
-            if (finalTransform!.Value == Matrix.Identity)
-            {
-                finalTransform = null;
-            }
-
-            _hasMirrorTransform = false;
-            base.RenderTransform = finalTransform;
-        }
-
-
         /// <summary>
-        /// Determines whether the element should be presented mirrored
-        /// if FlowDirection is RightToLeft
+        /// Determines whether the element should be presented mirrored, this
+        /// method related to FlowDirection system and as return true if FlowDirection
+        /// is RightToLeft. For controls that want to avoid this behavior, it is 
+        /// possible to override this method and return false. 
         /// </summary>
         protected virtual bool ShouldPresentedMirrored()
         {
             return FlowDirection == FlowDirection.RightToLeft;
         }
-
-        static ITransform MirrorTrasform() => 
-            new MatrixTransform(new Avalonia.Matrix(-1, 0, 0, 1, 0.0, 0.0));
     }
 }

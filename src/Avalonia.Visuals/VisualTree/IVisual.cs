@@ -76,6 +76,11 @@ namespace Avalonia.VisualTree
         IBrush? OpacityMask { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this control presented as mirror.
+        /// </summary>
+        bool IsMirrorTransform { get; }
+
+        /// <summary>
         /// Gets or sets the render transform of the control.
         /// </summary>
         ITransform? RenderTransform { get; set; }
