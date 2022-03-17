@@ -88,11 +88,11 @@ namespace Avalonia.Diagnostics.ViewModels
                                 }
                                 else
                                 {
-                                    var bindingInfo = GetBindingInfo(setterValue);
+                                    var isBinding = IsBinding(setterValue);
 
-                                    if (bindingInfo is not null)
+                                    if (isBinding)
                                     {
-                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue, bindingInfo.Value.path, bindingInfo.Value.isCompiled);
+                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue);
                                     }
                                     else
                                     {
@@ -127,14 +127,17 @@ namespace Avalonia.Diagnostics.ViewModels
             return null;
         }
 
-        private (string path, bool isCompiled)? GetBindingInfo(object? value)
+        private bool IsBinding(object? value)
         {
-            return value switch
+            switch (value)
             {
-                Binding binding => (binding.Path, false),
-                CompiledBindingExtension compiledBinding => (compiledBinding.Path.ToString(), true),
-                _ => null,
-            };
+                case Binding:
+                case CompiledBindingExtension:
+                case TemplateBinding:
+                    return true;
+            }
+
+            return false;
         }
 
         public TreePageViewModel TreePage { get; }
