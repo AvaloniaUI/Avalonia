@@ -322,6 +322,8 @@ namespace Avalonia.Controls
                 {
                     InvalidateFlowDirection();
                     NotifyDescendantFlowDirection();
+
+                    InvalidateVisual();
                 }
             }
         }

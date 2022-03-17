@@ -114,8 +114,7 @@ namespace Avalonia
                 ClipProperty,
                 ClipToBoundsProperty,
                 IsVisibleProperty,
-                OpacityProperty,
-                IsMirrorTransformProperty);
+                OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
