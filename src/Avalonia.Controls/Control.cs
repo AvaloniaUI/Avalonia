@@ -346,8 +346,6 @@ namespace Avalonia.Controls
 
             bool shouldApplyMirrorTransform = thisShouldGetMirrored != parentShouldGetMirrored;
 
-            if (this is IRenderRoot) shouldApplyMirrorTransform = false;
-
             if (shouldApplyMirrorTransform)
             {
                 IsMirrorTransform = true;
