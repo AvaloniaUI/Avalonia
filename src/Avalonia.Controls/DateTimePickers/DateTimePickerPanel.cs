@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -63,13 +64,14 @@ namespace Avalonia.Controls.Primitives
         public DateTimePickerPanel()
         {
             FormatDate = DateTime.Now;
-            AddHandler(ListBoxItem.PointerPressedEvent, OnItemPointerDown, Avalonia.Interactivity.RoutingStrategies.Bubble);
-            AddHandler(ListBoxItem.PointerReleasedEvent, OnItemPointerUp, Avalonia.Interactivity.RoutingStrategies.Bubble);
+            AddHandler(PointerPressedEvent, OnItemPointerDown, Avalonia.Interactivity.RoutingStrategies.Bubble);
+            AddHandler(PointerReleasedEvent, OnItemPointerUp, Avalonia.Interactivity.RoutingStrategies.Bubble);
         }
 
         static DateTimePickerPanel()
         {
             FocusableProperty.OverrideDefaultValue<DateTimePickerPanel>(true);
+            BackgroundProperty.OverrideDefaultValue<DateTimePickerPanel>(Brushes.Transparent);
             AffectsMeasure<DateTimePickerPanel>(ItemHeightProperty);
         }
 
@@ -529,7 +531,6 @@ namespace Avalonia.Controls.Primitives
                 e.Source is IVisual source)
             {
                 _pressedItem = GetItemFromSource(source);
-                e.Handled = true;
             }
         }
 
@@ -543,7 +544,6 @@ namespace Avalonia.Controls.Primitives
             {
                 SelectedValue = tag;
                 _pressedItem = null;
-                e.Handled = true;
             }
         }
 
