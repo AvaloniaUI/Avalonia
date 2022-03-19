@@ -37,6 +37,8 @@
     <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonBorderThemeThickness}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <!--<Setter Property="UseSystemFocusVisuals" Value="True" />
     <Setter Property="FocusVisualMargin" Value="-3" />-->
     <Setter Property="KeyboardNavigation.IsTabStop" Value="True" />
