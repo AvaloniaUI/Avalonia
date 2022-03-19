@@ -172,6 +172,7 @@
                   Width="32" />
         </DropDownButton>
         <DropDownButton IsEnabled="False">Disabled</DropDownButton>
+        <DropDownButton />
       </StackPanel>
     </Border>
 
@@ -197,7 +198,8 @@
           <TextBlock Text="Disabled" />
         </SplitButton>
         <SplitButton Flyout="{StaticResource SharedMenuFlyout}"
-                     Content="Re-themed">
+                     Content="Re-themed"
+                     Foreground="White">
           <SplitButton.Styles>
             <Style>
               <Style.Resources>

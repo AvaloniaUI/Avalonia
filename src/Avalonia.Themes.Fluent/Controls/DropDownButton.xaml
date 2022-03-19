@@ -11,6 +11,10 @@
     </Border>
   </Design.PreviewWith>
 
+  <Styles.Resources>
+    <x:Double x:Key="DropDownButtonMinHeight">32</x:Double>
+  </Styles.Resources>
+  
   <Style Selector="DropDownButton">
     <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
@@ -29,7 +33,8 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{TemplateBinding CornerRadius}">
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  ClipToBounds="True">
             <Grid x:Name="InnerGrid">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -49,6 +54,7 @@
                         Grid.Column="1"
                         UseLayoutRounding="False"
                         IsHitTestVisible="False"
+                        MinHeight="{DynamicResource DropDownButtonMinHeight}"
                         Height="12"
                         Width="12"
                         Margin="0,0,10,0"

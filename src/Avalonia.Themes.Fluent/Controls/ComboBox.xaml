@@ -106,6 +106,7 @@
                       Grid.Column="1"
                       UseLayoutRounding="False"
                       IsHitTestVisible="False"
+                      MinHeight="{DynamicResource ComboBoxMinHeight}"
                       Height="12"
                       Width="12"
                       Margin="0,0,10,0"
