@@ -136,6 +136,7 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
 
             Handle = new SurfacePlatformHandle(this);
+
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
