@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Android.Content;
 using Android.Graphics;
-using Android.Runtime;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.OpenGL;
