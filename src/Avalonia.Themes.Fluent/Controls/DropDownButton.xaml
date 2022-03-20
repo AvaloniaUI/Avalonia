@@ -21,6 +21,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+    <Setter Property="MinHeight" Value="{DynamicResource DropDownButtonMinHeight}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -56,7 +57,6 @@
                         Grid.Column="1"
                         UseLayoutRounding="False"
                         IsHitTestVisible="False"
-                        MinHeight="{DynamicResource DropDownButtonMinHeight}"
                         Height="12"
                         Width="12"
                         Margin="0,0,10,0"
