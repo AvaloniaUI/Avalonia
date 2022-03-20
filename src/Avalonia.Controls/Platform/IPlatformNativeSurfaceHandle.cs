@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Platform
+namespace Avalonia.Platform
 {
     public interface IPlatformNativeSurfaceHandle : IPlatformHandle
     {
