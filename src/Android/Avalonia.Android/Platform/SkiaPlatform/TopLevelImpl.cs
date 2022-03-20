@@ -41,7 +41,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _gl = GlPlatformSurface.TryCreate(this);
             _framebuffer = new FramebufferManager(this);
 
-            RenderScaling = (int)_view.Resources.DisplayMetrics.Density;
+            RenderScaling = (int)_view.Scaling;
 
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
@@ -76,7 +76,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, this };
+        public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
             AndroidPlatform.Options.UseDeferredRendering
@@ -217,7 +217,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         IntPtr EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
 
-        public PixelSize Size => new PixelSize(_view.Holder.SurfaceFrame.Width(), _view.Holder.SurfaceFrame.Height());
+        public PixelSize Size => _view.Size;
 
         public double Scaling => RenderScaling;
 
