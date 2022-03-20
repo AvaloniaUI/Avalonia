@@ -2,8 +2,10 @@ using System;
 using Android.Content;
 using Android.Graphics;
 using Android.OS;
+using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Platform;
 
 namespace Avalonia.Android
@@ -13,6 +15,9 @@ namespace Avalonia.Android
         bool _invalidateQueued;
         readonly object _lock = new object();
         private readonly Handler _handler;
+
+        IntPtr IPlatformHandle.Handle =>
+            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, Holder.Surface.Handle);
    
 
         public InvalidationAwareSurfaceView(Context context) : base(context)

@@ -459,7 +459,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
+        public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer, this};
 
         public PixelPoint Position
         {
