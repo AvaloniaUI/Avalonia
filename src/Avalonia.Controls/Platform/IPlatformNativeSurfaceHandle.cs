@@ -6,7 +6,5 @@ namespace Avalonia.Platform
     {
         PixelSize Size { get; }
         double Scaling { get; }
-
-        IntPtr Display { get { return IntPtr.Zero; } }
     }
 }

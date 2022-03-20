@@ -1163,8 +1163,6 @@ namespace Avalonia.X11
 
             public IntPtr Handle { get; }
             public string? HandleDescriptor { get; }
-
-            public IntPtr Display => _owner._x11.Display;
         }
     }
 }
