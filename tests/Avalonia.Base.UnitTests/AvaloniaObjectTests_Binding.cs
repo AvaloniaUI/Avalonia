@@ -829,6 +829,30 @@ namespace Avalonia.Base.UnitTests
             subscription.Dispose();
         }
 
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Call_Setter_On_Creation_With_Value()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel() { Value = 1 };
+            source.ResetSetterCalled();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+
+            Assert.False(source.SetterCalled);
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Call_Setter_On_Creation_Indexer_With_Value()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel() { [0] = 1 };
+            source.ResetSetterCalled();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding("[0]", BindingMode.TwoWay) { Source = source });
+
+            Assert.False(source.SetterCalled);
+        }
+
         /// <summary>
         /// Returns an observable that returns a single value but does not complete.
         /// </summary>
@@ -943,6 +967,11 @@ namespace Avalonia.Base.UnitTests
             }
 
             public bool SetterCalled { get; private set; }
+
+            public void ResetSetterCalled()
+            {
+                SetterCalled = false;
+            }
         }
     }
 }
