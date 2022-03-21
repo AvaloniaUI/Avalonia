@@ -521,7 +521,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (_isPointerOver)
             {
-                //VisualStateManager.GoToState(this, "PointerOver", useTransitions);
+                // The ":pointerover" pseudo class is set in the base Control
                 PseudoClasses.Set(pcLargeSelector, false);
             }
             else

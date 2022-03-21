@@ -110,6 +110,10 @@
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
 
+  <Style Selector="ColorSpectrum:pointerover /template/ Ellipse#SelectionEllipse">
+    <Setter Property="Opacity" Value="0.8" />
+  </Style>
+
   <!-- Selector Size -->
   <Style Selector="ColorSpectrum /template/ Grid#PART_SelectionEllipsePanel">
     <Setter Property="Width" Value="16" />
@@ -121,19 +125,6 @@
   </Style>
 
   <!--<VisualStateManager.VisualStateGroups>
-    <VisualStateGroup
-      x:Name="CommonStates">
-      <VisualState
-        x:Name="PointerOver">
-        <VisualState.Setters>
-          <Setter
-            Target="SelectionEllipse.Opacity"
-            Value="0.8" />
-        </VisualState.Setters>
-      </VisualState>
-      <VisualState
-        x:Name="Pressed" />
-    </VisualStateGroup>
     <VisualStateGroup
       x:Name="FocusStates">
       <VisualState
