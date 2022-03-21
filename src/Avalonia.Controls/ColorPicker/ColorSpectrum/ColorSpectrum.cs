@@ -191,6 +191,8 @@ namespace Avalonia.Controls.Primitives
 
             HsvChannel incrementChannel = HsvChannel.Hue;
 
+            bool isSaturationValue = false;
+
             if (key == Key.Left ||
                 key == Key.Right)
             {
@@ -201,8 +203,10 @@ namespace Avalonia.Controls.Primitives
                         incrementChannel = HsvChannel.Hue;
                         break;
 
-                    case ColorSpectrumChannels.SaturationHue:
                     case ColorSpectrumChannels.SaturationValue:
+                        isSaturationValue = true;
+                        goto case ColorSpectrumChannels.SaturationHue;
+                    case ColorSpectrumChannels.SaturationHue:
                         incrementChannel = HsvChannel.Saturation;
                         break;
 
@@ -227,8 +231,10 @@ namespace Avalonia.Controls.Primitives
                         incrementChannel = HsvChannel.Saturation;
                         break;
 
-                    case ColorSpectrumChannels.HueValue:
                     case ColorSpectrumChannels.SaturationValue:
+                        isSaturationValue = true;
+                        goto case ColorSpectrumChannels.HueValue;
+                    case ColorSpectrumChannels.HueValue:
                         incrementChannel = HsvChannel.Value;
                         break;
                 }
@@ -263,6 +269,23 @@ namespace Avalonia.Controls.Primitives
                 (incrementChannel != HsvChannel.Hue && (key == Key.Right || key == Key.Down)) ?
                 IncrementDirection.Lower :
                 IncrementDirection.Higher;
+
+            // Image is flipped in RightToLeft, so we need to invert direction in that case.
+            // The combination saturation and value is also flipped, so we need to invert in that case too.
+            // If both are false, we don't need to invert.
+            // If both are true, we would invert twice, so not invert at all.
+            if ((FlowDirection == FlowDirection.RightToLeft) != isSaturationValue &&
+                (key == Key.Left || key == Key.Right))
+            {
+                if (direction == IncrementDirection.Higher)
+                {
+                    direction = IncrementDirection.Lower;
+                }
+                else
+                {
+                    direction = IncrementDirection.Higher;
+                }
+            }
 
             IncrementAmount amount = isControlDown ? IncrementAmount.Large : IncrementAmount.Small;
 
@@ -404,10 +427,18 @@ namespace Avalonia.Controls.Primitives
         {
             Color newColor = Color;
 
-            if (_oldColor.A != newColor.A ||
+            bool colorChanged =
+                _oldColor.A != newColor.A ||
                 _oldColor.R != newColor.R ||
                 _oldColor.G != newColor.G ||
-                _oldColor.B != newColor.B)
+                _oldColor.B != newColor.B;
+
+            bool areBothColorsBlack =
+                (_oldColor.R == newColor.R && newColor.R == 0) ||
+                (_oldColor.G == newColor.G && newColor.G == 0) ||
+                (_oldColor.B == newColor.B && newColor.B == 0);
+
+            if (colorChanged || areBothColorsBlack)
             {
                 var colorChangedEventArgs = new ColorChangedEventArgs();
 
@@ -745,7 +776,7 @@ namespace Avalonia.Controls.Primitives
                 // we inverted the direction of that axis in order to put more hue on the outside of the ring,
                 // so we need to do similarly here when positioning the ellipse.
                 if (_componentsFromLastBitmapCreation == ColorSpectrumChannels.HueSaturation ||
-                    _componentsFromLastBitmapCreation == ColorSpectrumChannels.ValueHue)
+                    _componentsFromLastBitmapCreation == ColorSpectrumChannels.SaturationHue)
                 {
                     sThetaValue = 360 - sThetaValue;
                     sRValue = -sRValue - 1;
