@@ -60,7 +60,7 @@ namespace Avalonia.Controls
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
-            Screens = new Screens(PlatformImpl?.Screen);
+            Screens = new Screens(impl.Screen);
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
