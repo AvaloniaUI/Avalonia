@@ -43,6 +43,9 @@
       <TabItem Header="Clipboard">
         <pages:ClipboardPage />
       </TabItem>
+      <TabItem Header="ColorPicker">
+        <pages:ColorPickerPage />
+      </TabItem>
       <TabItem Header="ComboBox">
         <pages:ComboBoxPage />
       </TabItem>
