@@ -1448,16 +1448,10 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateBitmapSources()
         {
-            var spectrumOverlayRectangle = _spectrumOverlayRectangle;
-            var spectrumOverlayEllipse = _spectrumOverlayEllipse;
-
-            var spectrumRectangle = _spectrumRectangle;
-            var spectrumEllipse = _spectrumEllipse;
-
-            if (spectrumOverlayRectangle == null ||
-                spectrumOverlayEllipse == null ||
-                spectrumRectangle == null ||
-                spectrumEllipse == null)
+            if (_spectrumOverlayRectangle == null ||
+                _spectrumOverlayEllipse == null ||
+                _spectrumRectangle == null ||
+                _spectrumEllipse == null)
             {
                 return;
             }
@@ -1482,17 +1476,15 @@ namespace Avalonia.Controls.Primitives
                             return;
                         }
 
-                        ImageBrush spectrumBrush;
-                        ImageBrush spectrumOverlayBrush;
+                        ImageBrush spectrumBrush = new ImageBrush(_saturationMinimumBitmap);
+                        ImageBrush spectrumOverlayBrush = new ImageBrush(_saturationMaximumBitmap);
 
-                        spectrumBrush = new ImageBrush(_saturationMinimumBitmap);
-                        spectrumOverlayBrush = new ImageBrush(_saturationMaximumBitmap);
-                        spectrumOverlayRectangle.Opacity = hsvColor.S;
-                        spectrumOverlayEllipse.Opacity = hsvColor.S;
-                        spectrumRectangle.Fill = spectrumBrush;
-                        spectrumEllipse.Fill = spectrumBrush;
-                        spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
-                        spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+                        _spectrumOverlayRectangle.Opacity = hsvColor.S;
+                        _spectrumOverlayEllipse.Opacity = hsvColor.S;
+                        _spectrumRectangle.Fill = spectrumBrush;
+                        _spectrumEllipse.Fill = spectrumBrush;
+                        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+                        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
                     }
                     break;
 
@@ -1504,17 +1496,15 @@ namespace Avalonia.Controls.Primitives
                             return;
                         }
 
-                        ImageBrush spectrumBrush;
-                        ImageBrush spectrumOverlayBrush;
+                        ImageBrush spectrumBrush = new ImageBrush(_valueBitmap);
+                        ImageBrush spectrumOverlayBrush = new ImageBrush(_valueBitmap);
 
-                        spectrumBrush = new ImageBrush(_valueBitmap);
-                        spectrumOverlayBrush = new ImageBrush(_valueBitmap);
-                        spectrumOverlayRectangle.Opacity = 1.0;
-                        spectrumOverlayEllipse.Opacity = 1.0;
-                        spectrumRectangle.Fill = spectrumBrush;
-                        spectrumEllipse.Fill = spectrumBrush;
-                        spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
-                        spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+                        _spectrumOverlayRectangle.Opacity = 1.0;
+                        _spectrumOverlayEllipse.Opacity = 1.0;
+                        _spectrumRectangle.Fill = spectrumBrush;
+                        _spectrumEllipse.Fill = spectrumBrush;
+                        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+                        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
                     }
                     break;
 
@@ -1567,12 +1557,12 @@ namespace Avalonia.Controls.Primitives
                             spectrumOverlayBrush = new ImageBrush(_hueRedBitmap);
                         }
 
-                        spectrumOverlayRectangle.Opacity = sextant - (int)sextant;
-                        spectrumOverlayEllipse.Opacity = sextant - (int)sextant;
-                        spectrumRectangle.Fill = spectrumBrush;
-                        spectrumEllipse.Fill = spectrumBrush;
-                        spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
-                        spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+                        _spectrumOverlayRectangle.Opacity = sextant - (int)sextant;
+                        _spectrumOverlayEllipse.Opacity = sextant - (int)sextant;
+                        _spectrumRectangle.Fill = spectrumBrush;
+                        _spectrumEllipse.Fill = spectrumBrush;
+                        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+                        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
                     }
                     break;
             }
