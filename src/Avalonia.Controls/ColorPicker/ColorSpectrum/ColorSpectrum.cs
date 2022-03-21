@@ -20,9 +20,10 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A two dimensional spectrum for color selection.
     /// </summary>
-    [PseudoClasses(pcLightSelector)]
+    [PseudoClasses(pcLargeSelector, pcLightSelector)]
     public partial class ColorSpectrum : TemplatedControl
     {
+        protected const string pcLargeSelector = ":large-selector";
         protected const string pcLightSelector = ":light-selector";
 
         /// <summary>
@@ -514,18 +515,19 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         private void UpdatePseudoClasses()
         {
-            //if (m_isPointerPressed)
-            //{
-            //    VisualStateManager.GoToState(this, m_shouldShowLargeSelection ? "PressedLarge" : "Pressed", useTransitions);
-            //}
-            //else if (m_isPointerOver)
-            //{
-            //    VisualStateManager.GoToState(this, "PointerOver", useTransitions);
-            //}
-            //else
-            //{
-            //    VisualStateManager.GoToState(this, "Normal", useTransitions);
-            //}
+            if (_isPointerPressed)
+            {
+                PseudoClasses.Set(pcLargeSelector, _shouldShowLargeSelection);
+            }
+            else if (_isPointerOver)
+            {
+                //VisualStateManager.GoToState(this, "PointerOver", useTransitions);
+                PseudoClasses.Set(pcLargeSelector, false);
+            }
+            else
+            {
+                PseudoClasses.Set(pcLargeSelector, false);
+            }
 
             PseudoClasses.Set(pcLightSelector, SelectionEllipseShouldBeLight());
 

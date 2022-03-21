@@ -52,9 +52,7 @@
                       Background="Transparent"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
-                <Grid x:Name="PART_SelectionEllipsePanel"
-                      Width="16"
-                      Height="16">
+                <Grid x:Name="PART_SelectionEllipsePanel">
                   <Ellipse x:Name="FocusEllipse"
                            Margin="-2"
                            StrokeThickness="2"
@@ -98,7 +96,7 @@
     </Setter>
   </Style>
 
-  <!-- SelectionEllipseColor -->
+  <!-- Selector Color -->
   <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
@@ -112,11 +110,19 @@
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
 
+  <!-- Selector Size -->
+  <Style Selector="ColorSpectrum /template/ Grid#PART_SelectionEllipsePanel">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
+  </Style>
+  <Style Selector="ColorSpectrum:large-selector /template/ Grid#PART_SelectionEllipsePanel">
+    <Setter Property="Width" Value="48" />
+    <Setter Property="Height" Value="48" />
+  </Style>
+
   <!--<VisualStateManager.VisualStateGroups>
     <VisualStateGroup
       x:Name="CommonStates">
-      <VisualState
-        x:Name="Normal" />
       <VisualState
         x:Name="PointerOver">
         <VisualState.Setters>
@@ -127,17 +133,6 @@
       </VisualState>
       <VisualState
         x:Name="Pressed" />
-      <VisualState
-        x:Name="PressedLarge">
-        <VisualState.Setters>
-          <Setter
-            Target="SelectionEllipsePanel.Width"
-            Value="48" />
-          <Setter
-            Target="SelectionEllipsePanel.Height"
-            Value="48" />
-        </VisualState.Setters>
-      </VisualState>
     </VisualStateGroup>
     <VisualStateGroup
       x:Name="FocusStates">
