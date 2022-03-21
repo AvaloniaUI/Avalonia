@@ -14,8 +14,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
-using Avalonia.Media;
-using Avalonia.Controls.Primitives.PopupPositioning;
 
 namespace Avalonia.Controls
 {
