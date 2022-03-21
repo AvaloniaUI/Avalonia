@@ -190,6 +190,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
+            InvalidateFlowDirection();
             InitializeIfNeeded();
         }
 
@@ -317,25 +318,29 @@ namespace Avalonia.Controls
             if (change.Property == FlowDirectionProperty)
             {
                 // A change in value inherited should be prevented from calling this method
-                // Because it will be handled from here by NotifyDescendantFlowDirection
+                // because it will be handled from here
                 if (GetBaseValue(FlowDirectionProperty, change.Priority).HasValue)
                 {
                     InvalidateFlowDirection();
-                    NotifyDescendantFlowDirection();
+                    
+                    foreach (var visual in this.GetVisualDescendants())
+                    {
+                        if (visual is Control child)
+                        {
+                            child.InvalidateFlowDirection();
+                        }
+                    }
 
                     InvalidateVisual();
                 }
             }
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            InvalidateFlowDirection();
-        }
-
-        private void InvalidateFlowDirection()
+        /// <summary>
+        /// Computes the <see cref="IVisual.IsMirrorTransform"/> value according to the 
+        /// <see cref="FlowDirection"/>
+        /// </summary>
+        public virtual void InvalidateFlowDirection()
         {
             bool parentShouldPresentedMirrored = false;
             bool thisShouldPresentedMirrored = ShouldPresentedMirrored();
@@ -345,21 +350,14 @@ namespace Avalonia.Controls
             {
                 parentShouldPresentedMirrored = parent.ShouldPresentedMirrored();
             }
+            else if (this.Parent is Control logicalParent)
+            {
+                parentShouldPresentedMirrored = logicalParent.ShouldPresentedMirrored();
+            }
 
             bool shouldApplyMirrorTransform = thisShouldPresentedMirrored != parentShouldPresentedMirrored;
 
             IsMirrorTransform = shouldApplyMirrorTransform;
-        }
-
-        private void NotifyDescendantFlowDirection()
-        {
-            foreach (var visual in this.GetVisualDescendants())
-            {
-                if (visual is Control child)
-                {
-                    child.InvalidateFlowDirection();
-                }
-            }
         }
 
         /// <summary>

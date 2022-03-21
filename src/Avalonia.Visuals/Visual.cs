@@ -227,7 +227,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this control presented as mirror.
+        /// Gets or sets a value indicating whether to apply mirror transform on this control.
         /// </summary>
         public bool IsMirrorTransform 
         { 

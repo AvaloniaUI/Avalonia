@@ -14,6 +14,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using Avalonia.Media;
+using Avalonia.Controls.Primitives.PopupPositioning;
 
 namespace Avalonia.Controls
 {
@@ -409,6 +411,33 @@ namespace Avalonia.Controls
             }
         }
 
+        public override void InvalidateFlowDirection()
+        {
+            if (_popup != null && Parent is Menu)
+            {
+                var popupAnchor = FlowDirection == FlowDirection.LeftToRight ? 
+                    PopupAnchor.BottomLeft : PopupAnchor.BottomRight;
+
+                var popupGravity = FlowDirection == FlowDirection.LeftToRight ? 
+                    PopupGravity.BottomRight : PopupGravity.BottomLeft;
+
+                var placement = FlowDirection == FlowDirection.LeftToRight ? 
+                    PlacementMode.Right : PlacementMode.Left;
+
+                _popup.PlacementAnchor = popupAnchor;
+                _popup.PlacementGravity = popupGravity;
+            }
+            else if (_popup != null)
+            {
+                var placement = FlowDirection == FlowDirection.LeftToRight ? 
+                    PlacementMode.Right : PlacementMode.Left;
+
+                _popup.PlacementMode = placement;
+            }
+
+            base.InvalidateFlowDirection();
+        }
+
         /// <summary>
         /// Called when the <see cref="MenuItem"/> is clicked.
         /// </summary>
@@ -493,6 +522,8 @@ namespace Avalonia.Controls
                 _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
             }
+
+            InvalidateFlowDirection();
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()

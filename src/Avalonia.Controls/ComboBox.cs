@@ -13,6 +13,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -180,6 +181,24 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             this.UpdateSelectionBoxItem(SelectedItem);
+        }
+
+        // Because the SelectedItem isn't connected to the visual tree
+        public override void InvalidateFlowDirection()
+        {
+            if (SelectedItem is Control selectedControl)
+            {
+                selectedControl.InvalidateFlowDirection();
+                foreach (var logical in selectedControl.GetLogicalDescendants())
+                {
+                    if (logical is Control childControl)
+                    {
+                        childControl.InvalidateFlowDirection();
+                    }
+                }
+            }
+
+            base.InvalidateFlowDirection();
         }
 
         /// <inheritdoc/>

@@ -530,6 +530,10 @@ namespace Avalonia.Controls
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
             (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
 
+        public override void InvalidateFlowDirection()
+        {
+        }
+        
         protected override bool ShouldPresentedMirrored() => false;
     }
 }
