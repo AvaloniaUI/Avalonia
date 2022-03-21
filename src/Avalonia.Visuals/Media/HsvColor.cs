@@ -173,7 +173,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSV color to it's RGB color equivalent.
+        /// Converts the given HSV color to its RGB color equivalent.
         /// </summary>
         /// <param name="hsvColor">The color in the HSV color model.</param>
         /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSVA values.</returns>
@@ -183,7 +183,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSVA color channel values to it's RGB color equivalent.
+        /// Converts the given HSVA color channel values to its RGB color equivalent.
         /// </summary>
         /// <param name="hue">The hue channel value in the HSV color model in the range from 0..360.</param>
         /// <param name="saturation">The saturation channel value in the HSV color model in the range from 0..1.</param>
@@ -321,7 +321,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given RGB color to it's HSV color equivalent.
+        /// Converts the given RGB color to its HSV color equivalent.
         /// </summary>
         /// <param name="color">The color in the RGB color model.</param>
         /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
@@ -331,7 +331,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given RGBA color channel values to it's HSV color equivalent.
+        /// Converts the given RGBA color channel values to its HSV color equivalent.
         /// </summary>
         /// <param name="red">The red channel value in the RGB color model.</param>
         /// <param name="green">The green channel value in the RGB color model.</param>
@@ -344,16 +344,38 @@ namespace Avalonia.Media
             byte blue,
             byte alpha = 0xFF)
         {
+            // Normalize RGBA channel values into the 0..1 range
+            return HsvColor.FromRgb(
+                (red / 255.0),
+                (green / 255.0),
+                (blue / 255.0),
+                (alpha / 255.0));
+        }
+
+        // TODO: Mark the below method Internal and make Internals visible to Avalonia.Controls...
+
+        /// <summary>
+        /// Converts the given RGBA color channel values to its HSV color equivalent.
+        /// </summary>
+        /// <remarks>
+        /// Warning: No bounds checks or clamping is done on the input channel values.
+        /// This method is for internal-use only and the caller must ensure bounds.
+        /// </remarks>
+        /// <param name="r">The red channel value in the RGB color model within the range 0..1.</param>
+        /// <param name="g">The green channel value in the RGB color model within the range 0..1.</param>
+        /// <param name="b">The blue channel value in the RGB color model within the range 0..1.</param>
+        /// <param name="a">The alpha channel value in the RGB color model within the range 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
+        public static HsvColor FromRgb(
+            double r,
+            double g,
+            double b,
+            double a = 1.0)
+        {
             // Note: Conversion code is originally based on the C++ in WinUI (licensed MIT)
             // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/Common/ColorConversion.cpp
             // This was used because it is the best documented and likely most optimized for performance
             // Alpha channel support was added
-
-            // Normalize RGBA channel values into the 0..1 range used by this algorithm
-            double r = red / 255.0;
-            double g = green / 255.0;
-            double b = blue / 255.0;
-            double a = alpha / 255.0;
 
             double hue;
             double saturation;
