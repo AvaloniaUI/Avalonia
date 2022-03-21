@@ -308,12 +308,10 @@ namespace Avalonia.Controls.Primitives
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (_colorNameToolTip is ToolTip colorNameToolTip)
+            if (_colorNameToolTip != null &&
+                ColorHelpers.ToDisplayNameExists)
             {
-                if (ColorHelpers.ToDisplayNameExists)
-                {
-                    //colorNameToolTip.IsOpen = true;
-                }
+                ToolTip.SetIsOpen(_colorNameToolTip, true);
             }
 
             UpdatePseudoClasses();
@@ -323,12 +321,10 @@ namespace Avalonia.Controls.Primitives
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (_colorNameToolTip is ToolTip colorNameToolTip)
+            if (_colorNameToolTip != null &&
+                ColorHelpers.ToDisplayNameExists)
             {
-                if (ColorHelpers.ToDisplayNameExists)
-                {
-                    //colorNameToolTip.IsOpen = false;
-                }
+                ToolTip.SetIsOpen(_colorNameToolTip, false);
             }
 
             UpdatePseudoClasses();
@@ -449,9 +445,9 @@ namespace Avalonia.Controls.Primitives
 
                 if (ColorHelpers.ToDisplayNameExists)
                 {
-                    if (_colorNameToolTip is ToolTip colorNameToolTip)
+                    if (_colorNameToolTip != null)
                     {
-                        colorNameToolTip.Content = ColorHelpers.ToDisplayName(newColor);
+                        _colorNameToolTip.Content = ColorHelpers.ToDisplayName(newColor);
                     }
                 }
             }
@@ -832,12 +828,12 @@ namespace Avalonia.Controls.Primitives
             // We only want to bother with the color name tool tip if we can provide color names.
             if (ColorHelpers.ToDisplayNameExists)
             {
-                if (_colorNameToolTip is ToolTip colorNameToolTip)
+                if (_colorNameToolTip != null)
                 {
                     // ToolTip doesn't currently provide any way to re-run its placement logic if its placement target moves,
                     // so toggling IsEnabled induces it to do that without incurring any visual glitches.
-                    colorNameToolTip.IsEnabled = false;
-                    colorNameToolTip.IsEnabled = true;
+                    _colorNameToolTip.IsEnabled = false;
+                    _colorNameToolTip.IsEnabled = true;
                 }
             }
 
