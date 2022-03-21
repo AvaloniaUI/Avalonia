@@ -22,7 +22,7 @@
 
   <Styles.Resources>
     <x:Double x:Key="PaneCompactWidth">40</x:Double>
-    <x:Double x:Key="PaneExpandWidth">200</x:Double>
+    <x:Double x:Key="PaneExpandWidth">220</x:Double>
     <x:Double x:Key="HeaderHeight">36</x:Double>
     <x:Double x:Key="NavigationItemHeight">36</x:Double>
     <x:Double x:Key="HamburgerMenuButtonHeight">32</x:Double>

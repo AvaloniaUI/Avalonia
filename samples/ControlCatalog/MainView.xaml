@@ -148,6 +148,9 @@
       <TabItem Header="ToolTip">
         <pages:ToolTipPage />
       </TabItem>
+      <TabItem Header="TransitioningContentControl">
+        <pages:TransitioningContentControlPage />
+      </TabItem>
       <TabItem Header="TreeView">
         <pages:TreeViewPage />
       </TabItem>
