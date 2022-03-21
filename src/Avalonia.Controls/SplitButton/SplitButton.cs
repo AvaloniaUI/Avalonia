@@ -227,6 +227,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            base.OnApplyTemplate(e);
+
             UnregisterEvents();
             UnregisterFlyoutEvents(Flyout);
 
