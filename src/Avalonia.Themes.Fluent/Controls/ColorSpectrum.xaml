@@ -1,11 +1,13 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:CompileBindings="True">
+        x:CompileBindings="True"
+        xmlns:converters="using:Avalonia.Controls.Converters">
 
   <Design.PreviewWith>
   </Design.PreviewWith>
 
   <Styles.Resources>
+    <converters:EnumValueEqualsConverter x:Key="EnumValueEquals" />
   </Styles.Resources>
 
   <Style Selector="ColorSpectrum">
@@ -22,25 +24,27 @@
               <Rectangle x:Name="PART_SpectrumRectangle"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch" />
+                         VerticalAlignment="Stretch"
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
                          <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                          RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
               <Rectangle x:Name="PART_SpectrumOverlayRectangle"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch" />
+                         VerticalAlignment="Stretch"
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
                          <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                          RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
               <Ellipse x:Name="PART_SpectrumEllipse"
                        IsHitTestVisible="False"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
-                       IsVisible="False" />
+                       IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Ring'}" />
               <Ellipse x:Name="PART_SpectrumOverlayEllipse"
                        IsHitTestVisible="False"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
-                       IsVisible="False" />
+                       IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Ring'}" />
               <Canvas x:Name="PART_InputTarget"
                       Background="Transparent"
                       HorizontalAlignment="Stretch"
@@ -75,16 +79,17 @@
                          StrokeThickness="2"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch" />
+                         VerticalAlignment="Stretch"
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
                          <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                          RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
               <Ellipse x:Name="EllipseBorder"
                        Stroke="{DynamicResource SystemControlForegroundListLowBrush}"
                        StrokeThickness="2"
                        IsHitTestVisible="False"
-                       IsVisible="False"
                        HorizontalAlignment="Stretch"
-                       VerticalAlignment="Stretch" />
+                       VerticalAlignment="Stretch"
+                       IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Ring'}" />
             </Grid>
           </Grid>
         </ControlTemplate>
@@ -132,34 +137,6 @@
           <Setter
             Target="SelectionEllipse.Stroke"
             Value="{ThemeResource SystemControlBackgroundChromeBlackHighBrush}" />
-        </VisualState.Setters>
-      </VisualState>
-    </VisualStateGroup>
-    <VisualStateGroup
-      x:Name="ShapeSelected">
-      <VisualState
-        x:Name="BoxSelected" />
-      <VisualState
-        x:Name="RingSelected">
-        <VisualState.Setters>
-          <Setter
-            Target="SpectrumRectangle.Visibility"
-            Value="Collapsed" />
-          <Setter
-            Target="SpectrumOverlayRectangle.Visibility"
-            Value="Collapsed" />
-          <Setter
-            Target="RectangleBorder.Visibility"
-            Value="Collapsed" />
-          <Setter
-            Target="SpectrumEllipse.Visibility"
-            Value="Visible" />
-          <Setter
-            Target="SpectrumOverlayEllipse.Visibility"
-            Value="Visible" />
-          <Setter
-            Target="EllipseBorder.Visibility"
-            Value="Visible" />
         </VisualState.Setters>
       </VisualState>
     </VisualStateGroup>

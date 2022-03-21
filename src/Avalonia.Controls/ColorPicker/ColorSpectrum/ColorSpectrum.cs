@@ -526,7 +526,6 @@ namespace Avalonia.Controls.Primitives
             //    VisualStateManager.GoToState(this, "Normal", useTransitions);
             //}
 
-            //VisualStateManager.GoToState(this, m_shapeFromLastBitmapCreation == ColorSpectrumShape.Box ? "BoxSelected" : "RingSelected", useTransitions);
             //VisualStateManager.GoToState(this, SelectionEllipseShouldBeLight() ? "SelectionEllipseLight" : "SelectionEllipseDark", useTransitions);
 
             //if (IsEnabled && FocusState != FocusState.Unfocused)
