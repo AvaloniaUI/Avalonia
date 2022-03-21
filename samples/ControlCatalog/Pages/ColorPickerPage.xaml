@@ -15,7 +15,7 @@
                    Width="256" />
     <ColorSpectrum Grid.Column="1"
                    Grid.Row="0"
-                   Color="Red"
+                   Color="Green"
                    Shape="Ring"
                    Height="256"
                    Width="256" />
