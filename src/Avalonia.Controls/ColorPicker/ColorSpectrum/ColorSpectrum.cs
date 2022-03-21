@@ -119,7 +119,10 @@ namespace Avalonia.Controls.Primitives
 
             if (_layoutRoot != null)
             {
-                _layoutRootDisposable = _layoutRoot.GetObservable(BoundsProperty).Subscribe(_ => OnLayoutRootSizeChanged());
+                _layoutRootDisposable = _layoutRoot.GetObservable(BoundsProperty).Subscribe(_ => 
+                {
+                    CreateBitmapsAndColorMap();
+                });
             }
 
             if (_inputTarget != null)
@@ -335,72 +338,119 @@ namespace Avalonia.Controls.Primitives
         {
             if (change.Property == ColorProperty)
             {
-                OnColorChanged(change);
+                // If we're in the process of internally updating the color,
+                // then we don't want to respond to the Color property changing.
+                if (!_updatingColor)
+                {
+                    Color color = Color;
+
+                    _updatingHsvColor = true;
+                    Hsv newHsv = (new Rgb(color)).ToHsv();
+                    HsvColor = newHsv.ToHsvColor(color.A / 255.0);
+                    _updatingHsvColor = false;
+
+                    UpdateEllipse();
+                    UpdateBitmapSources();
+                }
+
+                _oldColor = change.OldValue.GetValueOrDefault<Color>();
             }
             else if (change.Property == HsvColorProperty)
             {
-                OnHsvColorChanged(change);
+                // If we're in the process of internally updating the HSV color,
+                // then we don't want to respond to the HsvColor property changing.
+                if (!_updatingHsvColor)
+                {
+                    SetColor();
+                }
+
+                _oldHsvColor = change.OldValue.GetValueOrDefault<HsvColor>();
             }
-            else if (
-                change.Property == MinHueProperty ||
-                change.Property == MaxHueProperty)
+            else if (change.Property == MinHueProperty ||
+                     change.Property == MaxHueProperty)
             {
-                OnMinMaxHueChanged();
+                int minHue = MinHue;
+                int maxHue = MaxHue;
+
+                if (minHue < 0 || minHue > 359)
+                {
+                    throw new ArgumentException("MinHue must be between 0 and 359.");
+                }
+                else if (maxHue < 0 || maxHue > 359)
+                {
+                    throw new ArgumentException("MaxHue must be between 0 and 359.");
+                }
+
+                ColorSpectrumChannels channels = Channels;
+
+                // If hue is one of the axes in the spectrum bitmap, then we'll need to regenerate it
+                // if the maximum or minimum value has changed.
+                if (channels != ColorSpectrumChannels.SaturationValue &&
+                    channels != ColorSpectrumChannels.ValueSaturation)
+                {
+                    CreateBitmapsAndColorMap();
+                }
             }
-            else if (
-                change.Property == MinSaturationProperty ||
-                change.Property == MaxSaturationProperty)
+            else if (change.Property == MinSaturationProperty ||
+                     change.Property == MaxSaturationProperty)
             {
-                OnMinMaxSaturationChanged();
+                int minSaturation = MinSaturation;
+                int maxSaturation = MaxSaturation;
+
+                if (minSaturation < 0 || minSaturation > 100)
+                {
+                    throw new ArgumentException("MinSaturation must be between 0 and 100.");
+                }
+                else if (maxSaturation < 0 || maxSaturation > 100)
+                {
+                    throw new ArgumentException("MaxSaturation must be between 0 and 100.");
+                }
+
+                ColorSpectrumChannels channels = Channels;
+
+                // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
+                // if the maximum or minimum value has changed.
+                if (channels != ColorSpectrumChannels.HueValue &&
+                    channels != ColorSpectrumChannels.ValueHue)
+                {
+                    CreateBitmapsAndColorMap();
+                }
             }
-            else if (
-                change.Property == MinValueProperty ||
-                change.Property == MaxValueProperty)
+            else if (change.Property == MinValueProperty ||
+                     change.Property == MaxValueProperty)
             {
-                OnMinMaxValueChanged();
+                int minValue = MinValue;
+                int maxValue = MaxValue;
+
+                if (minValue < 0 || minValue > 100)
+                {
+                    throw new ArgumentException("MinValue must be between 0 and 100.");
+                }
+                else if (maxValue < 0 || maxValue > 100)
+                {
+                    throw new ArgumentException("MaxValue must be between 0 and 100.");
+                }
+
+                ColorSpectrumChannels channels = Channels;
+
+                // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
+                // if the maximum or minimum value has changed.
+                if (channels != ColorSpectrumChannels.HueSaturation &&
+                    channels != ColorSpectrumChannels.SaturationHue)
+                {
+                    CreateBitmapsAndColorMap();
+                }
             }
             else if (change.Property == ShapeProperty)
             {
-                OnShapeChanged();
+                CreateBitmapsAndColorMap();
             }
             else if (change.Property == ChannelsProperty)
             {
-                OnComponentsChanged();
+                CreateBitmapsAndColorMap();
             }
 
             base.OnPropertyChanged(change);
-        }
-
-        private void OnColorChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-        {
-            // If we're in the process of internally updating the color,
-            // then we don't want to respond to the Color property changing.
-            if (!_updatingColor)
-            {
-                Color color = Color;
-
-                _updatingHsvColor = true;
-                Hsv newHsv = (new Rgb(color)).ToHsv();
-                HsvColor = newHsv.ToHsvColor(color.A / 255.0);
-                _updatingHsvColor = false;
-
-                UpdateEllipse();
-                UpdateBitmapSources();
-            }
-
-            _oldColor = change.OldValue.GetValueOrDefault<Color>();
-        }
-
-        private void OnHsvColorChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-        {
-            // If we're in the process of internally updating the HSV color,
-            // then we don't want to respond to the HsvColor property changing.
-            if (!_updatingHsvColor)
-            {
-                SetColor();
-            }
-
-            _oldHsvColor = change.OldValue.GetValueOrDefault<HsvColor>();
         }
 
         private void SetColor()
@@ -451,91 +501,6 @@ namespace Avalonia.Controls.Primitives
                     }
                 }
             }
-        }
-
-        protected void OnMinMaxHueChanged()
-        {
-            int minHue = MinHue;
-            int maxHue = MaxHue;
-
-            if (minHue < 0 || minHue > 359)
-            {
-                throw new ArgumentException("MinHue must be between 0 and 359.");
-            }
-            else if (maxHue < 0 || maxHue > 359)
-            {
-                throw new ArgumentException("MaxHue must be between 0 and 359.");
-            }
-
-            ColorSpectrumChannels channels = Channels;
-
-            // If hue is one of the axes in the spectrum bitmap, then we'll need to regenerate it
-            // if the maximum or minimum value has changed.
-            if (channels != ColorSpectrumChannels.SaturationValue &&
-                channels != ColorSpectrumChannels.ValueSaturation)
-            {
-                CreateBitmapsAndColorMap();
-            }
-        }
-
-        protected void OnMinMaxSaturationChanged()
-        {
-            int minSaturation = MinSaturation;
-            int maxSaturation = MaxSaturation;
-
-            if (minSaturation < 0 || minSaturation > 100)
-            {
-                throw new ArgumentException("MinSaturation must be between 0 and 100.");
-            }
-            else if (maxSaturation < 0 || maxSaturation > 100)
-            {
-                throw new ArgumentException("MaxSaturation must be between 0 and 100.");
-            }
-
-            ColorSpectrumChannels channels = Channels;
-
-            // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
-            // if the maximum or minimum value has changed.
-            if (channels != ColorSpectrumChannels.HueValue &&
-                channels != ColorSpectrumChannels.ValueHue)
-            {
-                CreateBitmapsAndColorMap();
-            }
-        }
-
-        private void OnMinMaxValueChanged()
-        {
-            int minValue = MinValue;
-            int maxValue = MaxValue;
-
-            if (minValue < 0 || minValue > 100)
-            {
-                throw new ArgumentException("MinValue must be between 0 and 100.");
-            }
-            else if (maxValue < 0 || maxValue > 100)
-            {
-                throw new ArgumentException("MaxValue must be between 0 and 100.");
-            }
-
-            ColorSpectrumChannels channels = Channels;
-
-            // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
-            // if the maximum or minimum value has changed.
-            if (channels != ColorSpectrumChannels.HueSaturation &&
-                channels != ColorSpectrumChannels.SaturationHue)
-            {
-                CreateBitmapsAndColorMap();
-            }
-        }
-
-        private void OnShapeChanged()
-        {
-            CreateBitmapsAndColorMap();
-        }
-
-        private void OnComponentsChanged()
-        {
-            CreateBitmapsAndColorMap();
         }
 
         /// <summary>
@@ -838,11 +803,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             UpdatePseudoClasses();
-        }
-
-        private void OnLayoutRootSizeChanged()
-        {
-            CreateBitmapsAndColorMap();
         }
 
         private void OnInputTargetPointerEnter(object? sender, PointerEventArgs args)
