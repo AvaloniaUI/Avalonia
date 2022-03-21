@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -413,78 +415,105 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERUPDATE:
                     {
                         GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
-                        Point[]? intermediatePoints = null;
+                        if (info.pointerType == PointerInputType.PT_TOUCH
+                            && ShouldIgnoreTouchEmulatedMessage())
+                        {
+                            break;
+                        }
 
+                        var historyCount = (int)info.historyCount;
+                        Lazy<IReadOnlyList<RawPointerPoint>> intermediatePoints = null;
                         if (info.historyCount > 1)
                         {
-                            if (info.pointerType == PointerInputType.PT_TOUCH)
+                            intermediatePoints = new Lazy<IReadOnlyList<RawPointerPoint>>(() =>
                             {
-                                if (ShouldIgnoreTouchEmulatedMessage())
+                                var list = new List<RawPointerPoint>(historyCount - 1);
+                                if (info.pointerType == PointerInputType.PT_TOUCH)
                                 {
-                                    break;
-                                }
-
-                                var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                                var historyCount = (int)info.historyCount;
-                                var historyTouchInfos = new POINTER_TOUCH_INFO[historyCount];
-                                if (GetPointerTouchInfoHistory(pointerId, ref historyCount, historyTouchInfos))
-                                {
-                                    //last info is the same as the current so skip it
-                                    for (int i = 0; i < historyCount - 1; i++)
+                                    var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+                                    var historyTouchInfos = ArrayPool<POINTER_TOUCH_INFO>.Shared.Rent(historyCount);
+                                    try
                                     {
-                                        var historyTouchInfo = historyTouchInfos[i];
-                                        var historyInfo = historyTouchInfo.pointerInfo;
-                                        var historyEventType = GetEventType(message, historyInfo);
-                                        var historyPoint = PointToClient(new PixelPoint(
-                                            historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
-                                        var historyModifiers = GetInputModifiers(historyInfo.dwKeyStates);
-                                        var historyTimestamp = historyInfo.dwTime == 0 ? timestamp : historyInfo.dwTime;
-                                        Input?.Invoke(new RawTouchEventArgs(_touchDevice, historyTimestamp, _owner,
-                                            historyEventType, historyPoint, historyModifiers, historyInfo.pointerId));
+                                        if (GetPointerTouchInfoHistory(pointerId, ref historyCount, historyTouchInfos))
+                                        {
+                                            //last info is the same as the current so skip it
+                                            for (int i = 0; i < historyCount - 1; i++)
+                                            {
+                                                var historyTouchInfo = historyTouchInfos[i];
+                                                var historyInfo = historyTouchInfo.pointerInfo;
+                                                var historyPoint = PointToClient(new PixelPoint(
+                                                    historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
+                                                list.Add(new RawPointerPoint
+                                                {
+                                                    Position = historyPoint,
+                                                });
+                                            }
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        ArrayPool<POINTER_TOUCH_INFO>.Shared.Return(historyTouchInfos);
                                     }
                                 }
-                            }
-                            else if (info.pointerType == PointerInputType.PT_PEN)
-                            {
-                                var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                                var historyCount = (int)info.historyCount;
-                                var historyPenInfos = new POINTER_PEN_INFO[historyCount];
-                                if (GetPointerPenInfoHistory(pointerId, ref historyCount, historyPenInfos))
+                                else if (info.pointerType == PointerInputType.PT_PEN)
                                 {
-                                    //last info is the same as the current so skip it
-                                    for (int i = 0; i < historyCount - 1; i++)
+                                    var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+                                    var historyPenInfos = ArrayPool<POINTER_PEN_INFO>.Shared.Rent(historyCount);
+                                    try
                                     {
-                                        var historyPenInfo = historyPenInfos[i];
-                                        var historyInfo = historyPenInfo.pointerInfo;
-                                        var historyEventType = GetEventType(message, historyInfo);
-                                        var historyPoint = PointToClient(new PixelPoint(
-                                            historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
-                                        var historyModifiers = GetInputModifiers(historyInfo.dwKeyStates);
-                                        var historyTimestamp = historyInfo.dwTime == 0 ? timestamp : historyInfo.dwTime;
-
-                                        ApplyPenInfo(historyPenInfo);
-                                        Input?.Invoke(new RawPointerEventArgs(_penDevice, historyTimestamp, _owner,
-                                            historyEventType, historyPoint, historyModifiers));
+                                        if (GetPointerPenInfoHistory(pointerId, ref historyCount, historyPenInfos))
+                                        {
+                                            //last info is the same as the current so skip it
+                                            for (int i = 0; i < historyCount - 1; i++)
+                                            {
+                                                var historyPenInfo = historyPenInfos[i];
+                                                var historyInfo = historyPenInfo.pointerInfo;
+                                                var historyPoint = PointToClient(new PixelPoint(
+                                                    historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
+                                                list.Add(new RawPointerPoint
+                                                {
+                                                    Position = historyPoint,
+                                                    Pressure = historyPenInfo.pressure,
+                                                    Twist = historyPenInfo.rotation,
+                                                    XTilt = historyPenInfo.tiltX,
+                                                    YTilt = historyPenInfo.tiltX
+                                                });
+                                            }
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        ArrayPool<POINTER_PEN_INFO>.Shared.Return(historyPenInfos);
                                     }
                                 }
-                            }
-                            else
-                            {
-                                var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                                var historyCount = (int)info.historyCount;
-                                var historyInfos = new POINTER_INFO[historyCount];
-                                if (GetPointerInfoHistory(pointerId, ref historyCount, historyInfos))
+                                else
                                 {
-                                    //last info is the same as the current so skip it
-                                    intermediatePoints = new Point[historyCount - 1];
-                                    for (int i = 0;i < historyCount - 1; i++)
+                                    var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+                                    var historyInfos = ArrayPool<POINTER_INFO>.Shared.Rent(historyCount);
+                                    try
                                     {
-                                        var historyInfo = historyInfos[i];
-                                        intermediatePoints[i] = PointToClient(new PixelPoint(
-                                            historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
+                                        if (GetPointerInfoHistory(pointerId, ref historyCount, historyInfos))
+                                        {
+                                            //last info is the same as the current so skip it
+                                            for (int i = 0; i < historyCount - 1; i++)
+                                            {
+                                                var historyInfo = historyInfos[i];
+                                                var historyPoint = PointToClient(new PixelPoint(
+                                                    historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
+                                                list.Add(new RawPointerPoint
+                                                {
+                                                    Position = historyPoint
+                                                });
+                                            }
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        ArrayPool<POINTER_INFO>.Shared.Return(historyInfos);
                                     }
                                 }
-                            }
+                                return list;
+                            });
                         }
 
                         var eventType = GetEventType(message, info);

@@ -84,6 +84,23 @@ namespace Avalonia.Input
             IsBarrelButtonPressed = isBarrel;
         }
 
+        internal PointerPointProperties(PointerPointProperties basedOn, Raw.RawPointerPoint rawPoint)
+        {
+            IsLeftButtonPressed = basedOn.IsLeftButtonPressed;
+            IsMiddleButtonPressed = basedOn.IsMiddleButtonPressed;
+            IsRightButtonPressed = basedOn.IsRightButtonPressed;
+            IsXButton1Pressed = basedOn.IsXButton1Pressed;
+            IsXButton2Pressed = basedOn.IsXButton2Pressed;
+            IsInverted = basedOn.IsInverted;
+            IsEraser = basedOn.IsEraser;
+            IsBarrelButtonPressed = basedOn.IsBarrelButtonPressed;
+
+            Twist = rawPoint.Twist;
+            Pressure = rawPoint.Pressure;
+            XTilt = rawPoint.XTilt;
+            YTilt = rawPoint.YTilt;
+        }
+
         public static PointerPointProperties None { get; } = new PointerPointProperties();
     }
 

@@ -128,7 +128,8 @@ namespace Avalonia.Input
             for (var c = 0; c < previousPoints.Count; c++)
             {
                 var pt = previousPoints[c];
-                points[c] = new PointerPoint(Pointer, GetPosition(pt.Position, relativeTo), _properties);
+                var pointProperties = new PointerPointProperties(_properties, pt);
+                points[c] = new PointerPoint(Pointer, GetPosition(pt.Position, relativeTo), pointProperties);
             }
 
             points[points.Length - 1] = GetCurrentPoint(relativeTo);

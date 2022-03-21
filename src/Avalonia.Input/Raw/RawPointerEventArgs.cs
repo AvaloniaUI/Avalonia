@@ -128,10 +128,16 @@ namespace Avalonia.Input.Raw
         /// Pointer position, in client DIPs.
         /// </summary>
         public Point Position { get; set; }
-        
+
+        public float Twist { get; set; }
+        public float Pressure { get; set; }
+        public float XTilt { get; set; }
+        public float YTilt { get; set; }
+
+
         public RawPointerPoint()
         {
-            Position = default;
+            this = default;
         }
     }
 }
