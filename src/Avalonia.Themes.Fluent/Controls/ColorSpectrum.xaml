@@ -1,0 +1,183 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
+
+  <Design.PreviewWith>
+  </Design.PreviewWith>
+
+  <Styles.Resources>
+  </Styles.Resources>
+
+  <Style Selector="ColorSpectrum">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid x:Name="PART_LayoutRoot">
+            <Grid x:Name="PART_SizingGrid"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+              <Grid.Clip>
+                <RectangleGeometry />
+              </Grid.Clip>
+              <Rectangle x:Name="PART_SpectrumRectangle"
+                         IsHitTestVisible="False"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch" />
+                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+              <Rectangle x:Name="PART_SpectrumOverlayRectangle"
+                         IsHitTestVisible="False"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch" />
+                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+              <Ellipse x:Name="PART_SpectrumEllipse"
+                       IsHitTestVisible="False"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       IsVisible="False" />
+              <Ellipse x:Name="PART_SpectrumOverlayEllipse"
+                       IsHitTestVisible="False"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       IsVisible="False" />
+              <Canvas x:Name="PART_InputTarget"
+                      Background="Transparent"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                <Grid x:Name="PART_SelectionEllipsePanel"
+                      Width="16"
+                      Height="16">
+                  <Ellipse x:Name="FocusEllipse"
+                           Stroke="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}"
+                           Margin="-2"
+                           StrokeThickness="2"
+                           IsHitTestVisible="False"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch"
+                           IsVisible="False" />
+                  <Ellipse x:Name="SelectionEllipse"
+                           Stroke="{DynamicResource SystemControlBackgroundChromeWhiteBrush}"
+                           StrokeThickness="2"
+                           IsHitTestVisible="False"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch"
+                           ToolTip.VerticalOffset="-20"
+                           ToolTip.Placement="Top">
+                    <ToolTip.Tip>
+                      <ToolTip x:Name="PART_ColorNameToolTip" />
+                    </ToolTip.Tip>
+                  </Ellipse>
+                </Grid>
+              </Canvas>
+              <Rectangle x:Name="RectangleBorder"
+                         Stroke="{DynamicResource SystemControlForegroundListLowBrush}"
+                         StrokeThickness="2"
+                         IsHitTestVisible="False"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch" />
+                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+              <Ellipse x:Name="EllipseBorder"
+                       Stroke="{DynamicResource SystemControlForegroundListLowBrush}"
+                       StrokeThickness="2"
+                       IsHitTestVisible="False"
+                       IsVisible="False"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch" />
+            </Grid>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!--<VisualStateManager.VisualStateGroups>
+    <VisualStateGroup
+      x:Name="CommonStates">
+      <VisualState
+        x:Name="Normal" />
+      <VisualState
+        x:Name="PointerOver">
+        <VisualState.Setters>
+          <Setter
+            Target="SelectionEllipse.Opacity"
+            Value="0.8" />
+        </VisualState.Setters>
+      </VisualState>
+      <VisualState
+        x:Name="Pressed" />
+      <VisualState
+        x:Name="PressedLarge">
+        <VisualState.Setters>
+          <Setter
+            Target="SelectionEllipsePanel.Width"
+            Value="48" />
+          <Setter
+            Target="SelectionEllipsePanel.Height"
+            Value="48" />
+        </VisualState.Setters>
+      </VisualState>
+    </VisualStateGroup>
+    <VisualStateGroup
+      x:Name="SelectionEllipseColor">
+      <VisualState
+        x:Name="SelectionEllipseLight" />
+      <VisualState
+        x:Name="SelectionEllipseDark">
+        <VisualState.Setters>
+          <Setter
+            Target="FocusEllipse.Stroke"
+            Value="{ThemeResource SystemControlBackgroundChromeWhiteBrush}" />
+          <Setter
+            Target="SelectionEllipse.Stroke"
+            Value="{ThemeResource SystemControlBackgroundChromeBlackHighBrush}" />
+        </VisualState.Setters>
+      </VisualState>
+    </VisualStateGroup>
+    <VisualStateGroup
+      x:Name="ShapeSelected">
+      <VisualState
+        x:Name="BoxSelected" />
+      <VisualState
+        x:Name="RingSelected">
+        <VisualState.Setters>
+          <Setter
+            Target="SpectrumRectangle.Visibility"
+            Value="Collapsed" />
+          <Setter
+            Target="SpectrumOverlayRectangle.Visibility"
+            Value="Collapsed" />
+          <Setter
+            Target="RectangleBorder.Visibility"
+            Value="Collapsed" />
+          <Setter
+            Target="SpectrumEllipse.Visibility"
+            Value="Visible" />
+          <Setter
+            Target="SpectrumOverlayEllipse.Visibility"
+            Value="Visible" />
+          <Setter
+            Target="EllipseBorder.Visibility"
+            Value="Visible" />
+        </VisualState.Setters>
+      </VisualState>
+    </VisualStateGroup>
+    <VisualStateGroup
+      x:Name="FocusStates">
+      <VisualState
+        x:Name="Unfocused" />
+      <VisualState
+        x:Name="Focused">
+        <VisualState.Setters>
+          <Setter
+            Target="FocusEllipse.Visibility"
+            Value="Visible" />
+        </VisualState.Setters>
+      </VisualState>
+      <VisualState
+        x:Name="PointerFocused" />
+    </VisualStateGroup>
+  </VisualStateManager.VisualStateGroups>-->
+  
+</Styles>

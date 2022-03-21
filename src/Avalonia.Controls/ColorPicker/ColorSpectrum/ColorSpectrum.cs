@@ -104,15 +104,15 @@ namespace Avalonia.Controls.Primitives
 
             UnregisterEvents();
 
-            _layoutRoot = e.NameScope.Find<Grid>("LayoutRoot");
-            _sizingGrid = e.NameScope.Find<Grid>("SizingGrid");
-            _spectrumRectangle = e.NameScope.Find<Rectangle>("SpectrumRectangle");
-            _spectrumEllipse = e.NameScope.Find<Ellipse>("SpectrumEllipse");
-            _spectrumOverlayRectangle = e.NameScope.Find<Rectangle>("SpectrumOverlayRectangle");
-            _spectrumOverlayEllipse = e.NameScope.Find<Ellipse>("SpectrumOverlayEllipse");
-            _inputTarget = e.NameScope.Find<Canvas>("InputTarget");
-            _selectionEllipsePanel = e.NameScope.Find<Panel>("SelectionEllipsePanel");
-            _colorNameToolTip = e.NameScope.Find<ToolTip>("ColorNameToolTip");
+            _layoutRoot = e.NameScope.Find<Grid>("PART_LayoutRoot");
+            _sizingGrid = e.NameScope.Find<Grid>("PART_SizingGrid");
+            _spectrumRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumRectangle");
+            _spectrumEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumEllipse");
+            _spectrumOverlayRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumOverlayRectangle");
+            _spectrumOverlayEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumOverlayEllipse");
+            _inputTarget = e.NameScope.Find<Canvas>("PART_InputTarget");
+            _selectionEllipsePanel = e.NameScope.Find<Panel>("PART_SelectionEllipsePanel");
+            _colorNameToolTip = e.NameScope.Find<ToolTip>("PART_ColorNameToolTip");
 
             if (_layoutRoot != null)
             {
@@ -149,7 +149,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             UpdateEllipse();
-            UpdateVisualState(useTransitions: false);
+            UpdatePseudoClasses();
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
         }
 
         /// <inheritdoc/>
@@ -305,7 +305,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
         }
 
         /// <inheritdoc/>
@@ -508,7 +508,10 @@ namespace Avalonia.Controls.Primitives
             CreateBitmapsAndColorMap();
         }
 
-        private void UpdateVisualState(bool useTransitions)
+        /// <summary>
+        /// Updates the visual state of the control by applying latest PseudoClasses.
+        /// </summary>
+        private void UpdatePseudoClasses()
         {
             //if (m_isPointerPressed)
             //{
@@ -555,7 +558,7 @@ namespace Avalonia.Controls.Primitives
             HsvColor = newHsv.ToHsvColor(alpha);
 
             UpdateEllipse();
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
 
             _updatingHsvColor = false;
             _updatingColor = false;
@@ -822,7 +825,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
         }
 
         private void OnLayoutRootSizeChanged()
@@ -833,14 +836,14 @@ namespace Avalonia.Controls.Primitives
         private void OnInputTargetPointerEnter(object? sender, PointerEventArgs args)
         {
             _isPointerOver = true;
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
             args.Handled = true;
         }
 
         private void OnInputTargetPointerLeave(object? sender, PointerEventArgs args)
         {
             _isPointerOver = false;
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
             args.Handled = true;
         }
 
@@ -858,7 +861,7 @@ namespace Avalonia.Controls.Primitives
 
             args.Pointer.Capture(inputTarget);
             UpdateColorFromPoint(args.GetCurrentPoint(inputTarget));
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
             UpdateEllipse();
 
             args.Handled = true;
@@ -881,7 +884,7 @@ namespace Avalonia.Controls.Primitives
             _shouldShowLargeSelection = false;
 
             args.Pointer.Capture(null);
-            UpdateVisualState(useTransitions: true);
+            UpdatePseudoClasses();
             UpdateEllipse();
 
             args.Handled = true;
