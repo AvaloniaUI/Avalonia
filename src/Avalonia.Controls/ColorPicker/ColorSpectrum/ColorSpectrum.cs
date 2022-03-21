@@ -42,15 +42,12 @@ namespace Avalonia.Controls.Primitives
         // XAML template parts
         private Grid? _layoutRoot;
         private Grid? _sizingGrid;
-
         private Rectangle? _spectrumRectangle;
         private Ellipse? _spectrumEllipse;
         private Rectangle? _spectrumOverlayRectangle;
         private Ellipse? _spectrumOverlayEllipse;
-
         private Canvas? _inputTarget;
         private Panel? _selectionEllipsePanel;
-
         private ToolTip? _colorNameToolTip;
 
         // Put the spectrum images in a bitmap, which is then given to an ImageBrush.
