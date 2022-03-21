@@ -4,6 +4,9 @@
         xmlns:converters="using:Avalonia.Controls.Converters">
 
   <Design.PreviewWith>
+    <Border Padding="20">
+      <ColorSpectrum Width="256" Height="256" />
+    </Border>
   </Design.PreviewWith>
 
   <Styles.Resources>
@@ -53,7 +56,6 @@
                       Width="16"
                       Height="16">
                   <Ellipse x:Name="FocusEllipse"
-                           Stroke="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}"
                            Margin="-2"
                            StrokeThickness="2"
                            IsHitTestVisible="False"
@@ -61,7 +63,6 @@
                            VerticalAlignment="Stretch"
                            IsVisible="False" />
                   <Ellipse x:Name="SelectionEllipse"
-                           Stroke="{DynamicResource SystemControlBackgroundChromeWhiteBrush}"
                            StrokeThickness="2"
                            IsHitTestVisible="False"
                            HorizontalAlignment="Stretch"
@@ -97,6 +98,20 @@
     </Setter>
   </Style>
 
+  <!-- SelectionEllipseColor -->
+  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
+  </Style>
+  <Style Selector="ColorSpectrum /template/ Ellipse#SelectionEllipse">
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
+  </Style>
+  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#FocusEllipse">
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
+  </Style>
+  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#SelectionEllipse">
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
+  </Style>
+
   <!--<VisualStateManager.VisualStateGroups>
     <VisualStateGroup
       x:Name="CommonStates">
@@ -121,22 +136,6 @@
           <Setter
             Target="SelectionEllipsePanel.Height"
             Value="48" />
-        </VisualState.Setters>
-      </VisualState>
-    </VisualStateGroup>
-    <VisualStateGroup
-      x:Name="SelectionEllipseColor">
-      <VisualState
-        x:Name="SelectionEllipseLight" />
-      <VisualState
-        x:Name="SelectionEllipseDark">
-        <VisualState.Setters>
-          <Setter
-            Target="FocusEllipse.Stroke"
-            Value="{ThemeResource SystemControlBackgroundChromeWhiteBrush}" />
-          <Setter
-            Target="SelectionEllipse.Stroke"
-            Value="{ThemeResource SystemControlBackgroundChromeBlackHighBrush}" />
         </VisualState.Setters>
       </VisualState>
     </VisualStateGroup>

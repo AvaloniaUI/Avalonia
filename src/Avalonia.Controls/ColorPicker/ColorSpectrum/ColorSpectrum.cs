@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -19,8 +20,11 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A two dimensional spectrum for color selection.
     /// </summary>
+    [PseudoClasses(pcLightSelector)]
     public partial class ColorSpectrum : TemplatedControl
     {
+        protected const string pcLightSelector = ":light-selector";
+
         /// <summary>
         /// Event for when the selected color changes within the spectrum.
         /// </summary>
@@ -526,7 +530,7 @@ namespace Avalonia.Controls.Primitives
             //    VisualStateManager.GoToState(this, "Normal", useTransitions);
             //}
 
-            //VisualStateManager.GoToState(this, SelectionEllipseShouldBeLight() ? "SelectionEllipseLight" : "SelectionEllipseDark", useTransitions);
+            PseudoClasses.Set(pcLightSelector, SelectionEllipseShouldBeLight());
 
             //if (IsEnabled && FocusState != FocusState.Unfocused)
             //{
@@ -1574,23 +1578,18 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Determines whether the selection ellipse should be light based on the relative
+        /// luminance of the selected color.
+        /// </summary>
         private bool SelectionEllipseShouldBeLight()
         {
             // The selection ellipse should be light if and only if the chosen color
             // contrasts more with black than it does with white.
             // To find how much something contrasts with white, we use the equation
-            // for relative luminance, which is given by
+            // for relative luminance.
             //
-            // L = 0.2126 * Rg + 0.7152 * Gg + 0.0722 * Bg
-            //
-            // where Xg = { X/3294 if X <= 10, (R/269 + 0.0513)^2.4 otherwise }
-            //
-            // If L is closer to 1, then the color is closer to white; if it is closer to 0,
-            // then the color is closer to black.  This is based on the fact that the human
-            // eye perceives green to be much brighter than red, which in turn is perceived to be
-            // brighter than blue.
-            //
-            // If the third dimension is value, then we won't be updating the spectrum's displayed colors,
+            // If the third channel is value, then we won't be updating the spectrum's displayed colors,
             // so in that case we should use a value of 1 when considering the backdrop
             // for the selection ellipse.
             Color displayedColor;
@@ -1607,11 +1606,9 @@ namespace Avalonia.Controls.Primitives
                 displayedColor = Color;
             }
 
-            double rg = displayedColor.R <= 10 ? displayedColor.R / 3294.0 : Math.Pow(displayedColor.R / 269.0 + 0.0513, 2.4);
-            double gg = displayedColor.G <= 10 ? displayedColor.G / 3294.0 : Math.Pow(displayedColor.G / 269.0 + 0.0513, 2.4);
-            double bg = displayedColor.B <= 10 ? displayedColor.B / 3294.0 : Math.Pow(displayedColor.B / 269.0 + 0.0513, 2.4);
+            var lum = ColorHelpers.GetRelativeLuminance(displayedColor);
 
-            return ((0.2126 * rg + 0.7152 * gg + 0.0722 * bg) <= 0.5);
+            return lum <= 0.5;
         }
     }
 }
