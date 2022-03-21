@@ -3,7 +3,6 @@
 //
 // Licensed to The Avalonia Project under the MIT License.
 
-using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
 

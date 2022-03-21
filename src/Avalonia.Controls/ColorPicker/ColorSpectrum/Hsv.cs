@@ -3,7 +3,6 @@
 //
 // Licensed to The Avalonia Project under the MIT License.
 
-using System.Numerics;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
