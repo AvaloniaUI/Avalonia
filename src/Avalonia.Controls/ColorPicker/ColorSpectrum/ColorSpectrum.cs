@@ -20,9 +20,10 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A two dimensional spectrum for color selection.
     /// </summary>
-    [PseudoClasses(pcLargeSelector, pcLightSelector)]
+    [PseudoClasses(pcPressed, pcLargeSelector, pcLightSelector)]
     public partial class ColorSpectrum : TemplatedControl
     {
+        protected const string pcPressed       = ":pressed";
         protected const string pcLargeSelector = ":large-selector";
         protected const string pcLightSelector = ":light-selector";
 
@@ -515,14 +516,12 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         private void UpdatePseudoClasses()
         {
+            PseudoClasses.Set(pcPressed, _isPointerPressed);
+            // Note: The ":pointerover" pseudo class is set in the base Control
+
             if (_isPointerPressed)
             {
                 PseudoClasses.Set(pcLargeSelector, _shouldShowLargeSelection);
-            }
-            else if (_isPointerOver)
-            {
-                // The ":pointerover" pseudo class is set in the base Control
-                PseudoClasses.Set(pcLargeSelector, false);
             }
             else
             {
@@ -530,22 +529,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             PseudoClasses.Set(pcLightSelector, SelectionEllipseShouldBeLight());
-
-            //if (IsEnabled && FocusState != FocusState.Unfocused)
-            //{
-            //    if (FocusState == FocusState.Pointer)
-            //    {
-            //        VisualStateManager.GoToState(this, "PointerFocused", useTransitions);
-            //    }
-            //    else
-            //    {
-            //        VisualStateManager.GoToState(this, "Focused", useTransitions);
-            //    }
-            //}
-            //else
-            //{
-            //    VisualStateManager.GoToState(this, "Unfocused", useTransitions);
-            //}
         }
 
         private void UpdateColor(Hsv newHsv)

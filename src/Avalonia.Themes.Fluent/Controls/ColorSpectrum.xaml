@@ -58,8 +58,7 @@
                            StrokeThickness="2"
                            IsHitTestVisible="False"
                            HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch"
-                           IsVisible="False" />
+                           VerticalAlignment="Stretch" />
                   <Ellipse x:Name="SelectionEllipse"
                            StrokeThickness="2"
                            IsHitTestVisible="False"
@@ -96,6 +95,14 @@
     </Setter>
   </Style>
 
+  <!-- Focus -->
+  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ColorSpectrum:focus-visible /template/ Ellipse#FocusEllipse">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
   <!-- Selector Color -->
   <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
@@ -123,23 +130,5 @@
     <Setter Property="Width" Value="48" />
     <Setter Property="Height" Value="48" />
   </Style>
-
-  <!--<VisualStateManager.VisualStateGroups>
-    <VisualStateGroup
-      x:Name="FocusStates">
-      <VisualState
-        x:Name="Unfocused" />
-      <VisualState
-        x:Name="Focused">
-        <VisualState.Setters>
-          <Setter
-            Target="FocusEllipse.Visibility"
-            Value="Visible" />
-        </VisualState.Setters>
-      </VisualState>
-      <VisualState
-        x:Name="PointerFocused" />
-    </VisualStateGroup>
-  </VisualStateManager.VisualStateGroups>-->
   
 </Styles>
