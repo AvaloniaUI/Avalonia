@@ -184,6 +184,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Binding_To_Self_In_Style_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+       
+    <Window.Styles>
+        <Style Selector='Button'>
+            <Setter Property='IsVisible' Value='{Binding $self.IsEnabled}' />
+        </Style>
+    </Window.Styles>
+
+    <Button Name='button' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                Assert.True(button.IsVisible);
+
+                button.IsEnabled = false;
+
+                Assert.False(button.IsVisible);
+            }
+        }
+
+        [Fact]
         public void Stream_Binding_To_Observable_Works()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))

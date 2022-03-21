@@ -221,6 +221,32 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.TextTrimming))
+            {
+                foreach (var property in types.TextTrimming.Properties)
+                {
+                    if (property.PropertyType == types.TextTrimming && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+
+                        return true;
+                    }
+                }
+            }
+
+            if (type.Equals(types.TextDecorationCollection))
+            {
+                foreach (var property in types.TextDecorations.Properties)
+                {
+                    if (property.PropertyType == types.TextDecorationCollection && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+
+                        return true;
+                    }
+                }
+            }
+
             result = null;
             return false;
         }
