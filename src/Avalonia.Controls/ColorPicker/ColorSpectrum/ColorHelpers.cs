@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Primitives
 
         public static Hsv IncrementColorChannel(
             Hsv originalHsv,
-            ColorPickerHsvChannel channel,
+            HsvChannel channel,
             IncrementDirection direction,
             IncrementAmount amount,
             bool shouldWrap,
@@ -54,23 +54,23 @@ namespace Avalonia.Controls.Primitives
                 // for saturation and value, this is every increment of 10.
                 switch (channel)
                 {
-                    case ColorPickerHsvChannel.Hue:
+                    case HsvChannel.Hue:
                         valueToIncrement = ref newHsv.H;
                         incrementAmount = amount == IncrementAmount.Small ? 1 : 30;
                         break;
 
-                    case ColorPickerHsvChannel.Saturation:
+                    case HsvChannel.Saturation:
                         valueToIncrement = ref newHsv.S;
                         incrementAmount = amount == IncrementAmount.Small ? 1 : 10;
                         break;
 
-                    case ColorPickerHsvChannel.Value:
+                    case HsvChannel.Value:
                         valueToIncrement = ref newHsv.V;
                         incrementAmount = amount == IncrementAmount.Small ? 1 : 10;
                         break;
 
                     default:
-                        throw new InvalidOperationException("Invalid ColorPickerHsvChannel.");
+                        throw new InvalidOperationException("Invalid HsvChannel.");
                 }
 
                 double previousValue = valueToIncrement;
@@ -99,8 +99,8 @@ namespace Avalonia.Controls.Primitives
                 // While working with named colors, we're going to need to be working in actual HSV units,
                 // so we'll divide the min bound and max bound by 100 in the case of saturation or value,
                 // since we'll have received units between 0-100 and we need them within 0-1.
-                if (channel == ColorPickerHsvChannel.Saturation ||
-                    channel == ColorPickerHsvChannel.Value)
+                if (channel == HsvChannel.Saturation ||
+                    channel == HsvChannel.Value)
                 {
                     minBound /= 100;
                     maxBound /= 100;
@@ -114,7 +114,7 @@ namespace Avalonia.Controls.Primitives
 
         public static Hsv FindNextNamedColor(
             Hsv originalHsv,
-            ColorPickerHsvChannel channel,
+            HsvChannel channel,
             IncrementDirection direction,
             bool shouldWrap,
             double minBound,
@@ -138,26 +138,26 @@ namespace Avalonia.Controls.Primitives
 
             switch (channel)
             {
-                case ColorPickerHsvChannel.Hue:
+                case HsvChannel.Hue:
                     originalValue = originalHsv.H;
                     newValue = ref newHsv.H;
                     incrementAmount = 1;
                     break;
 
-                case ColorPickerHsvChannel.Saturation:
+                case HsvChannel.Saturation:
                     originalValue = originalHsv.S;
                     newValue = ref newHsv.S;
                     incrementAmount = 0.01;
                     break;
 
-                case ColorPickerHsvChannel.Value:
+                case HsvChannel.Value:
                     originalValue = originalHsv.V;
                     newValue = ref newHsv.V;
                     incrementAmount = 0.01;
                     break;
 
                 default:
-                    throw new InvalidOperationException("Invalid ColorPickerHsvChannel.");
+                    throw new InvalidOperationException("Invalid HsvChannel.");
             }
 
             bool shouldFindMidPoint = true;
@@ -230,26 +230,26 @@ namespace Avalonia.Controls.Primitives
 
                 switch (channel)
                 {
-                    case ColorPickerHsvChannel.Hue:
+                    case HsvChannel.Hue:
                         startValue = ref startHsv.H;
                         currentValue = ref currentHsv.H;
                         wrapIncrement = 360.0;
                         break;
 
-                    case ColorPickerHsvChannel.Saturation:
+                    case HsvChannel.Saturation:
                         startValue = ref startHsv.S;
                         currentValue = ref currentHsv.S;
                         wrapIncrement = 1.0;
                         break;
 
-                    case ColorPickerHsvChannel.Value:
+                    case HsvChannel.Value:
                         startValue = ref startHsv.V;
                         currentValue = ref currentHsv.V;
                         wrapIncrement = 1.0;
                         break;
 
                     default:
-                        throw new InvalidOperationException("Invalid ColorPickerHsvChannel.");
+                        throw new InvalidOperationException("Invalid HsvChannel.");
                 }
 
                 while (newColorName == currentColorName)

@@ -190,7 +190,7 @@ namespace Avalonia.Controls.Primitives
 
             bool isControlDown = e.KeyModifiers.HasFlag(KeyModifiers.Control);
 
-            ColorPickerHsvChannel incrementChannel = ColorPickerHsvChannel.Hue;
+            HsvChannel incrementChannel = HsvChannel.Hue;
 
             if (key == Key.Left ||
                 key == Key.Right)
@@ -199,17 +199,17 @@ namespace Avalonia.Controls.Primitives
                 {
                     case ColorSpectrumChannels.HueSaturation:
                     case ColorSpectrumChannels.HueValue:
-                        incrementChannel = ColorPickerHsvChannel.Hue;
+                        incrementChannel = HsvChannel.Hue;
                         break;
 
                     case ColorSpectrumChannels.SaturationHue:
                     case ColorSpectrumChannels.SaturationValue:
-                        incrementChannel = ColorPickerHsvChannel.Saturation;
+                        incrementChannel = HsvChannel.Saturation;
                         break;
 
                     case ColorSpectrumChannels.ValueHue:
                     case ColorSpectrumChannels.ValueSaturation:
-                        incrementChannel = ColorPickerHsvChannel.Value;
+                        incrementChannel = HsvChannel.Value;
                         break;
                 }
             }
@@ -220,17 +220,17 @@ namespace Avalonia.Controls.Primitives
                 {
                     case ColorSpectrumChannels.SaturationHue:
                     case ColorSpectrumChannels.ValueHue:
-                        incrementChannel = ColorPickerHsvChannel.Hue;
+                        incrementChannel = HsvChannel.Hue;
                         break;
 
                     case ColorSpectrumChannels.HueSaturation:
                     case ColorSpectrumChannels.ValueSaturation:
-                        incrementChannel = ColorPickerHsvChannel.Saturation;
+                        incrementChannel = HsvChannel.Saturation;
                         break;
 
                     case ColorSpectrumChannels.HueValue:
                     case ColorSpectrumChannels.SaturationValue:
-                        incrementChannel = ColorPickerHsvChannel.Value;
+                        incrementChannel = HsvChannel.Value;
                         break;
                 }
             }
@@ -240,17 +240,17 @@ namespace Avalonia.Controls.Primitives
 
             switch (incrementChannel)
             {
-                case ColorPickerHsvChannel.Hue:
+                case HsvChannel.Hue:
                     minBound = MinHue;
                     maxBound = MaxHue;
                     break;
 
-                case ColorPickerHsvChannel.Saturation:
+                case HsvChannel.Saturation:
                     minBound = MinSaturation;
                     maxBound = MaxSaturation;
                     break;
 
-                case ColorPickerHsvChannel.Value:
+                case HsvChannel.Value:
                     minBound = MinValue;
                     maxBound = MaxValue;
                     break;
@@ -260,8 +260,8 @@ namespace Avalonia.Controls.Primitives
             // so we want left and up to be lower for hue, but higher for saturation and value.
             // This will ensure that the icon always moves in the direction of the key press.
             IncrementDirection direction =
-                (incrementChannel == ColorPickerHsvChannel.Hue && (key == Key.Left || key == Key.Up)) ||
-                (incrementChannel != ColorPickerHsvChannel.Hue && (key == Key.Right || key == Key.Down)) ?
+                (incrementChannel == HsvChannel.Hue && (key == Key.Left || key == Key.Up)) ||
+                (incrementChannel != HsvChannel.Hue && (key == Key.Right || key == Key.Down)) ?
                 IncrementDirection.Lower :
                 IncrementDirection.Higher;
 

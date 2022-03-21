@@ -8,7 +8,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Defines a specific HSV color model channel.
     /// </summary>
-    public enum ColorPickerHsvChannel
+    public enum HsvChannel
     {
         /// <summary>
         /// The Hue channel.
