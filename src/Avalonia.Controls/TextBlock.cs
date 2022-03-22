@@ -329,6 +329,8 @@ namespace Avalonia.Controls
             set => SetValue(TextDecorationsProperty, value);
         }
 
+        protected override bool BypassFlowDirectionPolicies => true;
+
         /// <summary>
         /// Gets the value of the attached <see cref="FontFamilyProperty"/> on a control.
         /// </summary>
@@ -612,7 +614,5 @@ namespace Avalonia.Controls
         {
             InvalidateTextLayout();
         }
-
-        protected override bool ShouldPresentMirrored() => false;
     }
 }

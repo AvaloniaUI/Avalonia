@@ -66,6 +66,8 @@ namespace Avalonia.Controls
             set { SetValue(StretchDirectionProperty, value); }
         }
 
+        protected override bool BypassFlowDirectionPolicies => true;
+        
         /// <summary>
         /// Renders the control.
         /// </summary>
@@ -127,7 +129,5 @@ namespace Avalonia.Controls
                 return new Size();
             }
         }
-
-        protected override bool ShouldPresentMirrored() => false;
     }
 }

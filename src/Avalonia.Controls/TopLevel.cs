@@ -348,6 +348,12 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
+        public override void InvalidateFlowDirection()
+        {
+        }
+        
+        protected override bool BypassFlowDirectionPolicies => true;
+        
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
@@ -529,11 +535,5 @@ namespace Avalonia.Controls
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
             (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
-
-        public override void InvalidateFlowDirection()
-        {
-        }
-        
-        protected override bool ShouldPresentMirrored() => false;
     }
 }

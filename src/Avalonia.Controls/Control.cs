@@ -140,6 +140,17 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
+        /// <summary>
+        /// Gets a value indicating whether control bypass FlowDirecton policies.
+        /// </summary>
+        /// <remarks>
+        /// Related to FlowDirection system and returns false as default, so if 
+        /// <see cref="FlowDirection"/> is RTL then control will get a mirror presentation. 
+        /// For controls that want to avoid mirror presentation, it is possible to override 
+        /// this property and return true.
+        /// </remarks>
+        protected virtual bool BypassFlowDirectionPolicies => false;
+
         /// <inheritdoc/>
         void ISetterValue.Initialize(ISetter setter)
         {
@@ -338,37 +349,34 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Computes the <see cref="IVisual.IsMirrorTransform"/> value according to the 
-        /// <see cref="FlowDirection"/>
+        /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
         /// </summary>
         public virtual void InvalidateFlowDirection()
         {
-            bool parentShouldPresentMirrored = false;
-            bool thisShouldPresentMirrored = ShouldPresentMirrored();
+            FlowDirection thisFD = this.FlowDirection;
+            FlowDirection parentFD = FlowDirection.LeftToRight;
+
+            bool thisBypassFlowDirectionPolicies = BypassFlowDirectionPolicies;
+            bool parentBypassFlowDirectionPolicies = false;
 
             var parent = this.FindAncestorOfType<Control>();
             if (parent != null)
             {
-                parentShouldPresentMirrored = parent.ShouldPresentMirrored();
+                parentFD = parent.FlowDirection;
+                parentBypassFlowDirectionPolicies = parent.BypassFlowDirectionPolicies;
             }
             else if (this.Parent is Control logicalParent)
             {
-                parentShouldPresentMirrored = logicalParent.ShouldPresentMirrored();
+                parentFD = logicalParent.FlowDirection;
+                parentBypassFlowDirectionPolicies = logicalParent.BypassFlowDirectionPolicies;
             }
 
-            bool shouldApplyMirrorTransform = thisShouldPresentMirrored != parentShouldPresentMirrored;
+            bool thisShouldBeMirrored = thisFD == FlowDirection.RightToLeft && !BypassFlowDirectionPolicies;
+            bool parentShouldBeMirrored = parentFD == FlowDirection.RightToLeft && !parentBypassFlowDirectionPolicies;
+
+            bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
 
             IsMirrorTransform = shouldApplyMirrorTransform;
-        }
-
-        /// <summary>
-        /// Determines whether the element should be present mirrored, this
-        /// method related to FlowDirection system and returns true if FlowDirection
-        /// is RightToLeft. For controls that want to avoid this behavior, it is 
-        /// possible to override this method and return false. 
-        /// </summary>
-        protected virtual bool ShouldPresentMirrored()
-        {
-            return FlowDirection == FlowDirection.RightToLeft;
         }
     }
 }
