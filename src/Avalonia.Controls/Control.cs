@@ -342,31 +342,31 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void InvalidateFlowDirection()
         {
-            bool parentShouldPresentedMirrored = false;
-            bool thisShouldPresentedMirrored = ShouldPresentedMirrored();
+            bool parentShouldPresentMirrored = false;
+            bool thisShouldPresentMirrored = ShouldPresentMirrored();
 
             var parent = this.FindAncestorOfType<Control>();
             if (parent != null)
             {
-                parentShouldPresentedMirrored = parent.ShouldPresentedMirrored();
+                parentShouldPresentMirrored = parent.ShouldPresentMirrored();
             }
             else if (this.Parent is Control logicalParent)
             {
-                parentShouldPresentedMirrored = logicalParent.ShouldPresentedMirrored();
+                parentShouldPresentMirrored = logicalParent.ShouldPresentMirrored();
             }
 
-            bool shouldApplyMirrorTransform = thisShouldPresentedMirrored != parentShouldPresentedMirrored;
+            bool shouldApplyMirrorTransform = thisShouldPresentMirrored != parentShouldPresentMirrored;
 
             IsMirrorTransform = shouldApplyMirrorTransform;
         }
 
         /// <summary>
-        /// Determines whether the element should be presented mirrored, this
+        /// Determines whether the element should be present mirrored, this
         /// method related to FlowDirection system and returns true if FlowDirection
         /// is RightToLeft. For controls that want to avoid this behavior, it is 
         /// possible to override this method and return false. 
         /// </summary>
-        protected virtual bool ShouldPresentedMirrored()
+        protected virtual bool ShouldPresentMirrored()
         {
             return FlowDirection == FlowDirection.RightToLeft;
         }

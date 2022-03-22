@@ -799,6 +799,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override bool ShouldPresentedMirrored() => false;
+        protected override bool ShouldPresentMirrored() => false;
     }
 }

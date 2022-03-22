@@ -613,6 +613,6 @@ namespace Avalonia.Controls
             InvalidateTextLayout();
         }
 
-        protected override bool ShouldPresentedMirrored() => false;
+        protected override bool ShouldPresentMirrored() => false;
     }
 }
