@@ -183,8 +183,7 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(SelectedItem);
         }
 
-        // Because the SelectedItem and his children sometimes isn't connected 
-        // to the visual tree and sometimes not to logical tree
+        // Because the SelectedItem isn't connected to the visual tree
         public override void InvalidateFlowDirection()
         {
             base.InvalidateFlowDirection();
@@ -196,14 +195,6 @@ namespace Avalonia.Controls
                 foreach (var visual in selectedControl.GetVisualDescendants())
                 {
                     if (visual is Control childControl)
-                    {
-                        childControl.InvalidateFlowDirection();
-                    }
-                }
-
-                foreach (var logical in selectedControl.GetLogicalDescendants())
-                {
-                    if (logical is Control childControl)
                     {
                         childControl.InvalidateFlowDirection();
                     }
