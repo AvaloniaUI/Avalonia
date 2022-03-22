@@ -146,8 +146,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Related to FlowDirection system and returns false as default, so if 
         /// <see cref="FlowDirection"/> is RTL then control will get a mirror presentation. 
-        /// For controls that want to avoid mirror presentation, it is possible to override 
-        /// this property and return true.
+        /// For controls that want to avoid this behavior, override this property and return true.
         /// </remarks>
         protected virtual bool BypassFlowDirectionPolicies => false;
 
