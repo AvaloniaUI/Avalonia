@@ -2,6 +2,8 @@
 using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -58,18 +60,17 @@ namespace Avalonia.Controls.Primitives
         private Vector _offset;
         private bool _hasInit;
         private bool _suppressUpdateOffset;
-        private ListBoxItem? _pressedItem;
 
         public DateTimePickerPanel()
         {
             FormatDate = DateTime.Now;
-            AddHandler(ListBoxItem.PointerPressedEvent, OnItemPointerDown, Avalonia.Interactivity.RoutingStrategies.Bubble);
-            AddHandler(ListBoxItem.PointerReleasedEvent, OnItemPointerUp, Avalonia.Interactivity.RoutingStrategies.Bubble);
+            AddHandler(TappedEvent, OnItemTapped, RoutingStrategies.Bubble);
         }
 
         static DateTimePickerPanel()
         {
             FocusableProperty.OverrideDefaultValue<DateTimePickerPanel>(true);
+            BackgroundProperty.OverrideDefaultValue<DateTimePickerPanel>(Brushes.Transparent);
             AffectsMeasure<DateTimePickerPanel>(ItemHeightProperty);
         }
 
@@ -523,26 +524,13 @@ namespace Avalonia.Controls.Primitives
             return newValue;
         }
 
-        private void OnItemPointerDown(object? sender, PointerPressedEventArgs e)
+        private void OnItemTapped(object? sender, TappedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed &&
-                e.Source is IVisual source)
-            {
-                _pressedItem = GetItemFromSource(source);
-                e.Handled = true;
-            }
-        }
-
-        private void OnItemPointerUp(object? sender, PointerReleasedEventArgs e)
-        {
-            if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased &&
-                _pressedItem != null &&
-                e.Source is IVisual source &&
-                GetItemFromSource(source) is ListBoxItem item &&
-                item.Tag is int tag)
+            if (e.Source is IVisual source && 
+                GetItemFromSource(source) is ListBoxItem listBoxItem &&
+                listBoxItem.Tag is int tag)
             {
                 SelectedValue = tag;
-                _pressedItem = null;
                 e.Handled = true;
             }
         }
