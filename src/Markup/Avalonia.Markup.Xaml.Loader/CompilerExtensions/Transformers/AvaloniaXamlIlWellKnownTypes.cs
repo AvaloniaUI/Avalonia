@@ -88,6 +88,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ImmutableSolidColorBrush { get; }
         public IXamlConstructor ImmutableSolidColorBrushConstructorColor { get; }
         public IXamlType TypeUtilities { get; }
+        public IXamlType TextDecorationCollection { get; }
+        public IXamlType TextDecorations { get; }
+        public IXamlType TextTrimming { get; }
+        public IXamlType ISetter { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -193,6 +197,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ImmutableSolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.Immutable.ImmutableSolidColorBrush");
             ImmutableSolidColorBrushConstructorColor = ImmutableSolidColorBrush.GetConstructor(new List<IXamlType> { UInt });
             TypeUtilities = cfg.TypeSystem.GetType("Avalonia.Utilities.TypeUtilities");
+            TextDecorationCollection = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorationCollection");
+            TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
+            TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
+            ISetter = cfg.TypeSystem.GetType("Avalonia.Styling.ISetter");
         }
     }
 
