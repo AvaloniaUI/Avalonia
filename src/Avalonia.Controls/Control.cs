@@ -324,24 +324,17 @@ namespace Avalonia.Controls
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
-            
+
             if (change.Property == FlowDirectionProperty)
             {
-                // A change in value inherited should be prevented from calling this method
-                // because it will be handled from here
-                if (GetBaseValue(FlowDirectionProperty, change.Priority).HasValue)
+                InvalidateFlowDirection();
+                
+                foreach (var visual in VisualChildren)
                 {
-                    InvalidateFlowDirection();
-                    
-                    foreach (var visual in this.GetVisualDescendants())
+                    if (visual is Control child)
                     {
-                        if (visual is Control child)
-                        {
-                            child.InvalidateFlowDirection();
-                        }
+                        child.InvalidateFlowDirection();
                     }
-
-                    InvalidateVisual();
                 }
             }
         }
