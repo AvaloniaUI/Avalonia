@@ -69,7 +69,9 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="HsvColor"/> property.
         /// </summary>
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
-            AvaloniaProperty.Register<ColorSpectrum, HsvColor>(nameof(HsvColor), new HsvColor(1, 0, 0, 1));
+            AvaloniaProperty.Register<ColorSpectrum, HsvColor>(
+                nameof(HsvColor),
+                new HsvColor(1, 0, 0, 1));
 
         /// <summary>
         /// Gets or sets the maximum value of the Hue channel in the range from 0..359.

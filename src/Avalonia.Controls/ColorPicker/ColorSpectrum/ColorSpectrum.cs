@@ -40,6 +40,7 @@ namespace Avalonia.Controls.Primitives
         private List<Hsv> _hsvValues = new List<Hsv>();
 
         private IDisposable? _layoutRootDisposable;
+        private IDisposable? _selectionEllipsePanelDisposable;
 
         // XAML template parts
         private Grid? _layoutRoot;
@@ -134,18 +135,18 @@ namespace Avalonia.Controls.Primitives
                 _inputTarget.PointerReleased += OnInputTargetPointerReleased;
             }
 
-            if (ColorHelpers.ToDisplayNameExists)
+            if (ColorHelpers.ToDisplayNameExists &&
+                _colorNameToolTip != null)
             {
-                if (_colorNameToolTip != null)
-                {
-                    _colorNameToolTip.Content = ColorHelpers.ToDisplayName(Color);
-                }
+                _colorNameToolTip.Content = ColorHelpers.ToDisplayName(Color);
             }
 
             if (_selectionEllipsePanel != null)
             {
-                // TODO: After FlowDirection PR is merged: https://github.com/AvaloniaUI/Avalonia/pull/7810
-                //m_selectionEllipsePanel.RegisterPropertyChangedCallback(FrameworkElement.FlowDirectionProperty, OnSelectionEllipseFlowDirectionChanged);
+                _selectionEllipsePanelDisposable = _selectionEllipsePanel.GetObservable(FlowDirectionProperty).Subscribe(_ => 
+                {
+                    UpdateEllipse();
+                });
             }
 
             // If we haven't yet created our bitmaps, do so now.
@@ -165,6 +166,9 @@ namespace Avalonia.Controls.Primitives
         {
             _layoutRootDisposable?.Dispose();
             _layoutRootDisposable = null;
+
+            _selectionEllipsePanelDisposable?.Dispose();
+            _selectionEllipsePanelDisposable = null;
 
             if (_inputTarget != null)
             {
@@ -861,12 +865,6 @@ namespace Avalonia.Controls.Primitives
 
             args.Handled = true;
         }
-
-        // TODO: After FlowDirection PR is merged: https://github.com/AvaloniaUI/Avalonia/pull/7810
-        //private void OnSelectionEllipseFlowDirectionChanged(DependencyObject o, DependencyProperty p)
-        //{
-        //    UpdateEllipse();
-        //}
 
         private async void CreateBitmapsAndColorMap()
         {
