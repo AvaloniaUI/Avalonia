@@ -13,7 +13,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
-using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
