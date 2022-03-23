@@ -34,7 +34,7 @@ namespace Avalonia.Diagnostics.ViewModels
             IsVisible = true;
         }
 
-        public void CopyValue()
+        public virtual void CopyValue()
         {
             var textToCopy = Value?.ToString();
 
