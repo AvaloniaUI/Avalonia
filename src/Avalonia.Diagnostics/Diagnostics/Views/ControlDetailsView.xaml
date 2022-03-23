@@ -141,6 +141,14 @@
                         <Style Selector="TextBlock.property-name:pointerover">
                           <Setter Property="TextDecorations" Value="Underline" />
                         </Style>
+                        
+                        <Style Selector="Rectangle.property-inactive">
+                          <Setter Property="IsHitTestVisible" Value="False" />
+                          <Setter Property="Height" Value="1" />
+                          <Setter Property="Fill" Value="#6C6C6C" />
+                          <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                        
                       </ItemsControl.Styles>
                       
                       <ItemsControl.DataTemplates>
@@ -179,7 +187,7 @@
                               <TextBlock Text="{Binding Path}" />
                               <TextBlock>}</TextBlock>
                             </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" VerticalAlignment="Center" IsVisible="{Binding !IsActive}" />
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>
                         </DataTemplate>
 
@@ -201,7 +209,7 @@
                               <TextBlock FontStyle="Italic" Text="{Binding Key}" />
                               <TextBlock>)</TextBlock>
                             </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" IsVisible="{Binding !IsActive}" />
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>
                         </DataTemplate>
 
@@ -218,7 +226,7 @@
                               <TextBlock Text=":" />
                               <ContentControl Content="{Binding Value}"/>
                             </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" VerticalAlignment="Center" IsVisible="{Binding !IsActive}" />
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>
                         </DataTemplate>
 
