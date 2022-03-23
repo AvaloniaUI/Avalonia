@@ -134,8 +134,8 @@ namespace Avalonia.X11
                                        SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
             else
                 _renderHandle = _handle;
-                
-            Handle = new SurfacePlatformHandle(_handle, "XID", this);
+
+            Handle = new SurfacePlatformHandle(this);
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -1154,15 +1154,13 @@ namespace Avalonia.X11
 
             public double Scaling => _owner.RenderScaling;
 
-            public SurfacePlatformHandle(IntPtr handle, string? descriptor, X11Window owner)
+            public SurfacePlatformHandle(X11Window owner)
             {
-                Handle = handle;
-                HandleDescriptor = descriptor;
                 _owner = owner;
             }
 
-            public IntPtr Handle { get; }
-            public string? HandleDescriptor { get; }
+            public IntPtr Handle => _owner._renderHandle;
+            public string? HandleDescriptor => "XID";
         }
     }
 }
