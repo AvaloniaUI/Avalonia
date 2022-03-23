@@ -254,7 +254,7 @@
 
   <Style Selector="ToggleSwitch:disabled /template/ Border#OuterBorder">
     <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchStrokeOffDisabled}"/>
-    <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOffPressed}"/>
+    <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOffDisabled}"/>
   </Style>
 
   <Style Selector="ToggleSwitch:disabled /template/ Ellipse#SwitchKnobOff">
