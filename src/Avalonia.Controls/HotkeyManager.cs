@@ -19,7 +19,7 @@ namespace Avalonia.Controls
                 reference = new WeakReference(control);
             }
 
-            public ICommand GetCommand()
+            public ICommand? GetCommand()
             {
                 if (reference.Target is { } target)
                 {
@@ -35,7 +35,7 @@ namespace Avalonia.Controls
                 return null;
             }
 
-            public bool CanExecute(object parameter)
+            public bool CanExecute(object? parameter)
             {
                 if (reference.Target is { } target)
                 {
@@ -52,7 +52,7 @@ namespace Avalonia.Controls
                 return false;
             }
 
-            public void Execute(object parameter)
+            public void Execute(object? parameter)
             {
                 if (reference.Target is { } target)
                 {
