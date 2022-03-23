@@ -107,9 +107,6 @@ namespace Avalonia.Controls.Presenters
             AffectsRender<ContentPresenter>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
             AffectsArrange<ContentPresenter>(HorizontalContentAlignmentProperty, VerticalContentAlignmentProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
-            ContentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
-            ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
-            TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.TemplatedParentChanged(e));
         }
 
         public ContentPresenter()
@@ -240,6 +237,21 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            switch (change.Property.Name)
+            {
+                case nameof(Content):
+                case nameof(ContentTemplate):
+                    ContentChanged(change);
+                    break;
+                case nameof(TemplatedParent):
+                    TemplatedParentChanged(change);
+                    break;
+            }
+        }
+
         /// <summary>
         /// Updates the <see cref="Child"/> control based on the control's <see cref="Content"/>.
         /// </summary>
@@ -254,8 +266,14 @@ namespace Avalonia.Controls.Presenters
         public void UpdateChild()
         {
             var content = Content;
+            UpdateChild(content);
+        }
+
+        private void UpdateChild(object? content)
+        {
+            var contentTemplate = ContentTemplate;
             var oldChild = Child;
-            var newChild = CreateChild();
+            var newChild = CreateChild(content, oldChild, contentTemplate);
             var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
 
             // Remove the old child if we're not recycling it.
@@ -271,7 +289,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             // Set the DataContext if the data isn't a control.
-            if (!(content is IControl))
+            if (contentTemplate is { } || !(content is IControl))
             {
                 DataContext = content;
             }
@@ -299,6 +317,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             _createdChild = true;
+
         }
 
         /// <inheritdoc/>
@@ -325,18 +344,23 @@ namespace Avalonia.Controls.Presenters
         {
             var content = Content;
             var oldChild = Child;
+            return CreateChild(content, oldChild, ContentTemplate);
+        }
+
+        private IControl? CreateChild(object? content, IControl? oldChild, IDataTemplate? template)
+        {            
             var newChild = content as IControl;
 
             // We want to allow creating Child from the Template, if Content is null.
             // But it's important to not use DataTemplates, otherwise we will break content presenters in many places,
             // otherwise it will blow up every ContentPresenter without Content set.
-            if (newChild == null
-                && (content != null || ContentTemplate != null))
+            if ((newChild == null 
+                && (content != null || template != null)) || (newChild is { } && template is { }))
             {
-                var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? 
+                var dataTemplate = this.FindDataTemplate(content, template) ??
                     (
-                        RecognizesAccessKey 
-                            ? FuncDataTemplate.Access 
+                        RecognizesAccessKey
+                            ? FuncDataTemplate.Access
                             : FuncDataTemplate.Default
                     );
 
@@ -446,7 +470,14 @@ namespace Avalonia.Controls.Presenters
 
             if (((ILogical)this).IsAttachedToLogicalTree)
             {
-                UpdateChild();
+                if (e.Property.Name == nameof(Content))
+                {
+                    UpdateChild(e.NewValue);
+                }
+                else
+                {
+                    UpdateChild();
+                }
             }
             else if (Child != null)
             {

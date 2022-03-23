@@ -138,6 +138,26 @@
                           </StackPanel>
                         </DataTemplate>
 
+                        <DataTemplate DataType="vm:BindingSetterViewModel">
+                          <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
+                            <Panel.ContextMenu>
+                              <ContextMenu>
+                                <MenuItem Header="Copy property name" Command="{Binding CopyPropertyName} "/>
+                                <MenuItem Header="Copy value" Command="{Binding CopyValue} "/>
+                              </ContextMenu>
+                            </Panel.ContextMenu>
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                              <TextBlock Text=":" />
+                              <TextBlock>{</TextBlock>
+                              <Rectangle Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}"/>
+                              <TextBlock Text="{Binding Path}" />
+                              <TextBlock>}</TextBlock>
+                            </StackPanel>
+                            <Rectangle Height="1" Fill="#6C6C6C" VerticalAlignment="Center" IsVisible="{Binding !IsActive}" />
+                          </Panel>
+                        </DataTemplate>
+
                         <DataTemplate DataType="Color">
                           <StackPanel Orientation="Horizontal" Spacing="2">
                             <Border BorderThickness="1" BorderBrush="Black" Width="8" Height="8">

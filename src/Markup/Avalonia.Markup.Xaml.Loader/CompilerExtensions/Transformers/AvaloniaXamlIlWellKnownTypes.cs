@@ -91,6 +91,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType TextDecorationCollection { get; }
         public IXamlType TextDecorations { get; }
         public IXamlType TextTrimming { get; }
+        public IXamlType ISetter { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -199,6 +200,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TextDecorationCollection = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorationCollection");
             TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
             TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
+            ISetter = cfg.TypeSystem.GetType("Avalonia.Styling.ISetter");
         }
     }
 
