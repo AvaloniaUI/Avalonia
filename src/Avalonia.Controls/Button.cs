@@ -550,6 +550,7 @@ namespace Avalonia.Controls
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
                 OnClick();
+                e.Handled = true;
             }
         }
 
@@ -563,6 +564,7 @@ namespace Avalonia.Controls
             if (e.Key == Key.Escape && IsVisible && IsEnabled)
             {
                 OnClick();
+                e.Handled = true;
             }
         }
 
