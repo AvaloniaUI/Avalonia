@@ -459,7 +459,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
+        public IEnumerable<object> Surfaces => new object[] { (IPlatformNativeSurfaceHandle)Handle, _gl, _framebuffer };
 
         public PixelPoint Position
         {
@@ -1383,12 +1383,16 @@ namespace Avalonia.Win32
 
         public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
 
-        private class WindowImplPlatformHandle : IPlatformHandle
+        private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
         {
             private readonly WindowImpl _owner;
             public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;
             public IntPtr Handle => _owner.Hwnd;
             public string HandleDescriptor => PlatformConstants.WindowHandleType;
+
+            public PixelSize Size => PixelSize.FromSize(_owner.ClientSize, Scaling);
+
+            public double Scaling => _owner.RenderScaling;
         }
     }
 }
