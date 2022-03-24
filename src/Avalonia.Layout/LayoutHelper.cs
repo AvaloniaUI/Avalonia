@@ -52,14 +52,42 @@ namespace Avalonia.Layout
 
         public static Size ArrangeChild(ILayoutable? child, Size availableSize, Thickness padding, Thickness borderThickness)
         {
-            return ArrangeChild(child, availableSize, padding + borderThickness);
+            if (IsParentLayoutRounded(child, out double scale))
+            {
+                padding = RoundLayoutThickness(padding, scale, scale);
+                borderThickness = RoundLayoutThickness(borderThickness, scale, scale);
+            }
+
+            return ArrangeChildInternal(child, availableSize, padding + borderThickness);
         }
 
         public static Size ArrangeChild(ILayoutable? child, Size availableSize, Thickness padding)
         {
+            if(IsParentLayoutRounded(child, out double scale))
+                padding = RoundLayoutThickness(padding, scale, scale);
+
+            return ArrangeChildInternal(child, availableSize, padding);
+        }
+
+        private static Size ArrangeChildInternal(ILayoutable? child, Size availableSize, Thickness padding)
+        {
             child?.Arrange(new Rect(availableSize).Deflate(padding));
 
             return availableSize;
+        }
+
+        private static bool IsParentLayoutRounded(ILayoutable? child, out double scale)
+        {
+            var layoutableParent = (ILayoutable?)child?.GetVisualParent();
+
+            if (layoutableParent == null || !((Layoutable)layoutableParent).UseLayoutRounding)
+            {
+                scale = 1.0;
+                return false;
+            }
+
+            scale = GetLayoutScale(layoutableParent);
+            return true;
         }
 
         /// <summary>
@@ -127,6 +155,32 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Rounds a thickness to integer values for layout purposes, compensating for high DPI screen
+        /// coordinates.
+        /// </summary>
+        /// <param name="thickness">Input thickness.</param>
+        /// <param name="dpiScaleX">DPI along x-dimension.</param>
+        /// <param name="dpiScaleY">DPI along y-dimension.</param>
+        /// <returns>Value of thickness that will be rounded under screen DPI.</returns>
+        /// <remarks>
+        /// This is a layout helper method. It takes DPI into account and also does not return
+        /// the rounded value if it is unacceptable for layout, e.g. Infinity or NaN. It's a helper
+        /// associated with the UseLayoutRounding property and should not be used as a general rounding
+        /// utility.
+        /// </remarks>
+        public static Thickness RoundLayoutThickness(Thickness thickness, double dpiScaleX, double dpiScaleY)
+        {
+            return new Thickness(
+                RoundLayoutValue(thickness.Left, dpiScaleX),
+                RoundLayoutValue(thickness.Top, dpiScaleY),
+                RoundLayoutValue(thickness.Right, dpiScaleX),
+                RoundLayoutValue(thickness.Bottom, dpiScaleY)
+            );
+        }
+
+
+
+        /// <summary>
         /// Calculates the value to be used for layout rounding at high DPI.
         /// </summary>
         /// <param name="value">Input value to be rounded.</param>
@@ -163,8 +217,7 @@ namespace Avalonia.Layout
 
             return newValue;
         }
-
-
+        
         /// <summary>
         /// Calculates the min and max height for a control. Ported from WPF.
         /// </summary>

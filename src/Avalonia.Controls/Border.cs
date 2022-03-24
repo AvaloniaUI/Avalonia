@@ -169,13 +169,36 @@ namespace Avalonia.Controls
             set => SetValue(BoxShadowProperty, value);
         }
 
+        private Thickness _layoutThickness = default;
+
+        private Thickness LayoutThickness
+        {
+            get
+            {
+                if (_layoutThickness == default)
+                {
+                    var borderThickness = BorderThickness;
+
+                    if (UseLayoutRounding)
+                    {
+                        var scale = LayoutHelper.GetLayoutScale(this);
+                        borderThickness = LayoutHelper.RoundLayoutThickness(BorderThickness, scale, scale);
+                    }
+
+                    _layoutThickness = borderThickness;
+                }
+
+                return _layoutThickness;
+            }
+        }
+
         /// <summary>
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+            _borderRenderHelper.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow, BorderDashOffset, BorderLineCap, BorderLineJoin, BorderDashArray);
         }
 
