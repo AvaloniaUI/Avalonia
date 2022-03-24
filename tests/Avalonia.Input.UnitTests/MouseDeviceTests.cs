@@ -16,7 +16,7 @@ namespace Avalonia.Input.UnitTests
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         [Fact]
-        public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
+        public void Capture_Is_Set_To_Null_When_Control_Removed()
         {
             Canvas control;
             var root = new TestRoot
@@ -30,7 +30,7 @@ namespace Avalonia.Input.UnitTests
 
             root.Child = null;
 
-            Assert.Same(root, target.Captured);
+            Assert.Same(null, target.Captured);
         }
 #pragma warning restore CS0618 // Type or member is obsolete
 
