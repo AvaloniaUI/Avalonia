@@ -99,6 +99,33 @@ namespace ControlCatalog.NetCore
                 SilenceConsole();
                 return builder.StartLinuxDrm(args, scaling: GetScaling());
             }
+            else if (args.Contains("--vulkan"))
+            {
+                builder
+                    .With(new X11PlatformOptions
+                    {
+                        EnableMultiTouch = true,
+                        UseDBusMenu = true, 
+                        EnableIme = true, 
+                        UseGpu = false
+                    })
+                    .With(new Win32PlatformOptions
+                    {
+                        EnableMultitouch = true, 
+                        UseWgl = false, 
+                        AllowEglInitialization = false
+                    })
+                    .With(new VulkanOptions() { 
+                        UseDebug = true, 
+                        PreferDiscreteGpu = true 
+                    })
+                    .UseSkia()
+                    .With(new SkiaOptions()
+                    {
+                        CustomGpuFactory = VulkanSkiaGpu.CreateGpu
+                    });
+                return builder.StartWithClassicDesktopLifetime(args);
+            }
             else
                 return builder.StartWithClassicDesktopLifetime(args);
         }
@@ -114,24 +141,12 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
-                    UseGpu = false
                 })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
-                    UseWgl = false,
-                    AllowEglInitialization = false
-                })
-                .With(new VulkanOptions()
-                {
-                    UseDebug = true,
-                    PreferDiscreteGpu = true
                 })
                 .UseSkia()
-                .With(new SkiaOptions()
-                {
-                    CustomGpuFactory = () => VulkanSkiaGpu.CreateGpu()
-                })
                 .UseManagedSystemDialogs()
                 .AfterSetup(builder =>
                 {
