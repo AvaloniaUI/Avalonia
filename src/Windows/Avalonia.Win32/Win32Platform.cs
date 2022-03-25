@@ -63,7 +63,16 @@ namespace Avalonia
         /// <remarks>
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
+        [Obsolete("Multitouch is always enabled")]
         public bool? EnableMultitouch { get; set; } = true;
+
+        /// <summary>
+        /// Enables Win8+ WM_POINTER events support. The default value is false.
+        /// </summary>
+        /// <remarks>
+        /// Required for extended Pen and Touch support.
+        /// </remarks>
+        public bool? EnableWmPointerEvents { get; set; } = false;
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.

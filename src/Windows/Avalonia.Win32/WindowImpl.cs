@@ -75,7 +75,7 @@ namespace Avalonia.Win32
         private WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
-        private bool _multitouch;
+        private bool _wmPointerEnabled;
         private IInputRoot _owner;
         private WindowProperties _windowProperties;
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
@@ -128,7 +128,10 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
-            if (Win8Plus && !IsMouseInPointerEnabled())
+            _wmPointerEnabled = Win32Platform.Options.EnableWmPointerEvents
+                ?? Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
+
+            if (_wmPointerEnabled && !IsMouseInPointerEnabled())
             {
                 EnableMouseInPointer(true);
             }
@@ -795,12 +798,7 @@ namespace Avalonia.Win32
 
             Handle = new WindowImplPlatformHandle(this);
 
-            _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
-
-            if (_multitouch)
-            {
-                RegisterTouchWindow(_hwnd, 0);
-            }
+            RegisterTouchWindow(_hwnd, 0);
 
             if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
             {

@@ -174,7 +174,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONDOWN:
                 case WindowsMessage.WM_XBUTTONDOWN:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -207,7 +207,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -240,7 +240,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -275,7 +275,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEWHEEL:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -291,7 +291,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEHWHEEL:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -307,7 +307,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSELEAVE:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -327,7 +327,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCMBUTTONDOWN:
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -351,7 +351,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_TOUCH:
                     {
-                        if (Win8Plus)
+                        if (_wmPointerEnabled)
                         {
                             break;
                         }
@@ -384,12 +384,20 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERDEVICECHANGE:
                     {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         //notifies about changes in the settings of a monitor that has a digitizer attached to it.
                         //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdevicechange
                         break;
                     }
                 case WindowsMessage.WM_POINTERDEVICEINRANGE:
                     {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         _mouseDevice.Capture(null);
                         //notifies about proximity of pointer device to the digitizer.
                         //contains pointer id and proximity.
@@ -398,11 +406,19 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
                     {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         _penDevice.Capture(null);
                         break;
                     }
                 case WindowsMessage.WM_NCPOINTERUPDATE:
                     {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         //NC stands for non-client area - window header and window border
                         //As I found above in an old message handling - we dont need to handle NC pointer move/updates.
                         //All we need is pointer down and up. So this is skipped for now.
@@ -415,8 +431,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERUPDATE:
                     {
                         GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
-                        if (info.pointerType == PointerInputType.PT_TOUCH
-                            && ShouldIgnoreTouchEmulatedMessage())
+                        if (!_wmPointerEnabled)
                         {
                             break;
                         }
@@ -522,10 +537,6 @@ namespace Avalonia.Win32
 
                         if (device is TouchDevice)
                         {
-                            if (ShouldIgnoreTouchEmulatedMessage())
-                            {
-                                break;
-                            }
                             e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, eventType, point, modifiers, info.pointerId)
                             {
                                 IntermediatePoints = intermediatePoints
@@ -542,6 +553,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERENTER:
                     {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         //this is not handled by WM_MOUSEENTER so I think there is no need to handle this too.
                         //but we can detect a new pointer by this message and calling IS_POINTER_NEW_WPARAM
 
@@ -552,6 +567,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERLEAVE:
                     {
                         GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         if (device is TouchDevice)
                         {
                             break;
@@ -567,6 +586,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERHWHEEL:
                     {
                         GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
 
                         var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
                         var modifiers = GetInputModifiers(info.dwKeyStates);
@@ -577,6 +600,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERACTIVATE:
                     {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         //occurs when a pointer activates an inactive window.
                         //we should handle this and return PA_ACTIVATE or PA_NOACTIVATE
                         //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointeractivate
@@ -584,6 +611,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_POINTERCAPTURECHANGED:
                     {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         _mouseDevice.Capture(null);
                         _penDevice.Capture(null);
                         return IntPtr.Zero;
@@ -913,8 +944,6 @@ namespace Avalonia.Win32
             };
         }
 
-        public readonly bool Win8Plus = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
-
         private void UpdateInputMethod(IntPtr hkl)
         {
             // note: for non-ime language, also create it so that emoji panel tracks cursor
@@ -951,10 +980,7 @@ namespace Avalonia.Win32
 
         private bool ShouldIgnoreTouchEmulatedMessage()
         {
-            if (!_multitouch)
-            {
-                return false;
-            }
+            // Note: GetMessageExtraInfo doesn't work with WM_POINTER events.
 
             // MI_WP_SIGNATURE
             // https://docs.microsoft.com/en-us/windows/win32/tablet/system-events-and-mouse-messages
