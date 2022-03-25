@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Logging;
@@ -250,12 +251,34 @@ namespace Avalonia.Rendering
 
                 if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
                 {
-                    foreach (var child in visual.VisualChildren.SortByZIndex())
+                    var childrenCount = visual.VisualChildren.Count;
+                    
+                    if (childrenCount > 1)
                     {
-                        foreach (var result in HitTest(child, p, filter))
+                        var childrenArray = ArrayPool<IVisual>.Shared.Rent(childrenCount);
+                    
+                        try
                         {
-                            yield return result;
+                            for (int i = 0; i < childrenCount; i++)
+                                childrenArray[i] = visual.VisualChildren[i];
+                    
+                            childrenArray.StableHitTestSort(childrenCount);
+                        
+                            for (int i = 0; i < childrenCount; i++)
+                            {
+                                foreach (var result in HitTest(childrenArray[i], p, filter))
+                                    yield return result;
+                            }
                         }
+                        finally
+                        {
+                            ArrayPool<IVisual>.Shared.Return(childrenArray, true);
+                        }
+                    }
+                    else if (childrenCount == 1)
+                    {
+                        foreach (var result in HitTest(visual.VisualChildren[0], p, filter))
+                            yield return result;
                     }
                 }
 
@@ -323,21 +346,29 @@ namespace Avalonia.Rendering
                     if (_updateTransformedBounds)
                         visual.TransformedBounds = transformed;
 
-                    foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
+                    int childrenCount = visual.VisualChildren.Count;
+                    
+                    if (childrenCount > 1)
                     {
-                        var childBounds = GetTransformedBounds(child);
-
-                        if (!child.ClipToBounds || clipRect.Intersects(childBounds))
+                        var sortingArray = ArrayPool<IVisual>.Shared.Rent(childrenCount);
+                        try
                         {
-                            var childClipRect = child.RenderTransform == null
-                                ? clipRect.Translate(-childBounds.Position)
-                                : clipRect;
-                            Render(context, child, childClipRect);
+                            for (int i = 0; i < childrenCount; i++)
+                                sortingArray[i] = visual.VisualChildren[i];
+                    
+                            sortingArray.StableSort(childrenCount, ZIndexComparer.Instance);
+                        
+                            for (int i = 0; i < childrenCount; i++)
+                                RenderChildInBounds(sortingArray[i], clipRect, context);
                         }
-                        else if (_updateTransformedBounds)
+                        finally
                         {
-                            ClearTransformedBounds(child);
+                            ArrayPool<IVisual>.Shared.Return(sortingArray, true);
                         }
+                    }
+                    else if (childrenCount == 1)
+                    {
+                        RenderChildInBounds(visual.VisualChildren[0], clipRect, context);
                     }
                 }
             }
@@ -345,6 +376,23 @@ namespace Avalonia.Rendering
             if (!visual.IsVisible && _updateTransformedBounds)
             {
                 ClearTransformedBounds(visual);
+            }
+        }
+
+        private void RenderChildInBounds(IVisual child, Rect clipRect, DrawingContext context)
+        {
+            var childBounds = GetTransformedBounds(child);
+
+            if (!child.ClipToBounds || clipRect.Intersects(childBounds))
+            {
+                var childClipRect = child.RenderTransform == null ?
+                    clipRect.Translate(-childBounds.Position) :
+                    clipRect;
+                Render(context, child, childClipRect);
+            }
+            else if (_updateTransformedBounds)
+            {
+                ClearTransformedBounds(child);
             }
         }
     }
