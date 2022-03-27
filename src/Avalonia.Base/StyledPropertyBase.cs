@@ -159,9 +159,9 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
         {
-            vistor.Visit(this, ref data);
+            visitor.Visit(this, ref data);
         }
 
         /// <summary>
@@ -241,12 +241,6 @@ namespace Avalonia
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
             return GetMetadata(type).DefaultValue;
-        }
-
-        [DebuggerHidden]
-        private Func<IAvaloniaObject, TValue, TValue> Cast<THost>(Func<THost, TValue, TValue> validate)
-        {
-            return (o, v) => validate((THost)o, v);
         }
     }
 }
