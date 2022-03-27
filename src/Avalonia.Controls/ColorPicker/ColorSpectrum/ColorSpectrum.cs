@@ -20,6 +20,15 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A two dimensional spectrum for color selection.
     /// </summary>
+    [TemplatePart(Name = "PART_ColorNameToolTip",         Type = typeof(ToolTip))]
+    [TemplatePart(Name = "PART_InputTarget",              Type = typeof(Canvas))]
+    [TemplatePart(Name = "PART_LayoutRoot",               Type = typeof(Grid))]
+    [TemplatePart(Name = "PART_SelectionEllipsePanel",    Type = typeof(Panel))]
+    [TemplatePart(Name = "PART_SizingGrid",               Type = typeof(Grid))]
+    [TemplatePart(Name = "PART_SpectrumEllipse",          Type = typeof(Ellipse))]
+    [TemplatePart(Name = "PART_SpectrumRectangle",        Type = typeof(Rectangle))]
+    [TemplatePart(Name = "PART_SpectrumOverlayEllipse",   Type = typeof(Ellipse))]
+    [TemplatePart(Name = "PART_SpectrumOverlayRectangle", Type = typeof(Rectangle))]
     [PseudoClasses(pcPressed, pcLargeSelector, pcLightSelector)]
     public partial class ColorSpectrum : TemplatedControl
     {
@@ -108,15 +117,15 @@ namespace Avalonia.Controls.Primitives
 
             UnregisterEvents();
 
-            _layoutRoot = e.NameScope.Find<Grid>("PART_LayoutRoot");
-            _sizingGrid = e.NameScope.Find<Grid>("PART_SizingGrid");
-            _spectrumRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumRectangle");
-            _spectrumEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumEllipse");
-            _spectrumOverlayRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumOverlayRectangle");
-            _spectrumOverlayEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumOverlayEllipse");
-            _inputTarget = e.NameScope.Find<Canvas>("PART_InputTarget");
-            _selectionEllipsePanel = e.NameScope.Find<Panel>("PART_SelectionEllipsePanel");
             _colorNameToolTip = e.NameScope.Find<ToolTip>("PART_ColorNameToolTip");
+            _inputTarget = e.NameScope.Find<Canvas>("PART_InputTarget");
+            _layoutRoot = e.NameScope.Find<Grid>("PART_LayoutRoot");
+            _selectionEllipsePanel = e.NameScope.Find<Panel>("PART_SelectionEllipsePanel");
+            _sizingGrid = e.NameScope.Find<Grid>("PART_SizingGrid");
+            _spectrumEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumEllipse");
+            _spectrumRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumRectangle");
+            _spectrumOverlayEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumOverlayEllipse");
+            _spectrumOverlayRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumOverlayRectangle");
 
             if (_layoutRoot != null)
             {
