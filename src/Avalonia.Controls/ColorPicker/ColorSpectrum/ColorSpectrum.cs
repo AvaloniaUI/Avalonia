@@ -889,41 +889,33 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            var layoutRoot = _layoutRoot;
-            var sizingGrid = _sizingGrid;
-            var inputTarget = _inputTarget;
-            var spectrumRectangle = _spectrumRectangle;
-            var spectrumEllipse = _spectrumEllipse;
-            var spectrumOverlayRectangle = _spectrumOverlayRectangle;
-            var spectrumOverlayEllipse = _spectrumOverlayEllipse;
-
             // We want ColorSpectrum to always be a square, so we'll take the smaller of the dimensions
             // and size the sizing grid to that.
-            double minDimension = Math.Min(layoutRoot.Bounds.Width, layoutRoot.Bounds.Height);
+            double minDimension = Math.Min(_layoutRoot.Bounds.Width, _layoutRoot.Bounds.Height);
 
             if (minDimension == 0)
             {
                 return;
             }
 
-            sizingGrid.Width = minDimension;
-            sizingGrid.Height = minDimension;
+            _sizingGrid.Width = minDimension;
+            _sizingGrid.Height = minDimension;
 
-            if (sizingGrid.Clip is RectangleGeometry clip)
+            if (_sizingGrid.Clip is RectangleGeometry clip)
             {
                 clip.Rect = new Rect(0, 0, minDimension, minDimension);
             }
 
-            inputTarget.Width = minDimension;
-            inputTarget.Height = minDimension;
-            spectrumRectangle.Width = minDimension;
-            spectrumRectangle.Height = minDimension;
-            spectrumEllipse.Width = minDimension;
-            spectrumEllipse.Height = minDimension;
-            spectrumOverlayRectangle.Width = minDimension;
-            spectrumOverlayRectangle.Height = minDimension;
-            spectrumOverlayEllipse.Width = minDimension;
-            spectrumOverlayEllipse.Height = minDimension;
+            _inputTarget.Width = minDimension;
+            _inputTarget.Height = minDimension;
+            _spectrumRectangle.Width = minDimension;
+            _spectrumRectangle.Height = minDimension;
+            _spectrumEllipse.Width = minDimension;
+            _spectrumEllipse.Height = minDimension;
+            _spectrumOverlayRectangle.Width = minDimension;
+            _spectrumOverlayRectangle.Height = minDimension;
+            _spectrumOverlayEllipse.Width = minDimension;
+            _spectrumOverlayEllipse.Height = minDimension;
 
             HsvColor hsvColor = HsvColor;
             int minHue = MinHue;
