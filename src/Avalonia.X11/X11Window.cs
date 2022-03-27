@@ -134,8 +134,8 @@ namespace Avalonia.X11
                                        SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
             else
                 _renderHandle = _handle;
-                
-            Handle = new PlatformHandle(_handle, "XID");
+
+            Handle = new SurfacePlatformHandle(this);
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
@@ -169,7 +169,9 @@ namespace Avalonia.X11
             if (glx != null)
                 surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,
                     new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
-            
+
+            surfaces.Add(Handle);
+
             Surfaces = surfaces.ToArray();
             UpdateMotifHints();
             UpdateSizeHints(null);
@@ -1142,5 +1144,23 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
+
+
+        public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
+        {
+            private readonly X11Window _owner;
+
+            public PixelSize Size => _owner.ToPixelSize(_owner.ClientSize);
+
+            public double Scaling => _owner.RenderScaling;
+
+            public SurfacePlatformHandle(X11Window owner)
+            {
+                _owner = owner;
+            }
+
+            public IntPtr Handle => _owner._renderHandle;
+            public string? HandleDescriptor => "XID";
+        }
     }
 }
