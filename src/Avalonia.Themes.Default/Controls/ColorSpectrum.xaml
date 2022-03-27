@@ -1,0 +1,138 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True"
+        xmlns:converters="using:Avalonia.Controls.Converters">
+
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <ColorSpectrum Width="256" Height="256" />
+    </Border>
+  </Design.PreviewWith>
+
+  <Styles.Resources>
+    <converters:EnumValueEqualsConverter x:Key="EnumValueEquals" />
+  </Styles.Resources>
+
+  <Style Selector="ColorSpectrum">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid x:Name="PART_LayoutRoot">
+            <Grid x:Name="PART_SizingGrid"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+              <Grid.Clip>
+                <RectangleGeometry />
+              </Grid.Clip>
+              <Rectangle x:Name="PART_SpectrumRectangle"
+                         IsHitTestVisible="False"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
+                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+              <Rectangle x:Name="PART_SpectrumOverlayRectangle"
+                         IsHitTestVisible="False"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
+                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+              <Ellipse x:Name="PART_SpectrumEllipse"
+                       IsHitTestVisible="False"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Ring'}" />
+              <Ellipse x:Name="PART_SpectrumOverlayEllipse"
+                       IsHitTestVisible="False"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Ring'}" />
+              <Canvas x:Name="PART_InputTarget"
+                      Background="Transparent"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                <Grid x:Name="PART_SelectionEllipsePanel">
+                  <Ellipse x:Name="FocusEllipse"
+                           Margin="-2"
+                           StrokeThickness="2"
+                           IsHitTestVisible="False"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch" />
+                  <Ellipse x:Name="SelectionEllipse"
+                           StrokeThickness="2"
+                           IsHitTestVisible="False"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch"
+                           ToolTip.VerticalOffset="-20"
+                           ToolTip.Placement="Top">
+                    <ToolTip.Tip>
+                      <ToolTip x:Name="PART_ColorNameToolTip" />
+                    </ToolTip.Tip>
+                  </Ellipse>
+                </Grid>
+              </Canvas>
+              <Rectangle x:Name="RectangleBorder"
+                         IsHitTestVisible="False"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
+                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+              <Ellipse x:Name="EllipseBorder"
+                       IsHitTestVisible="False"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Ring'}" />
+            </Grid>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Normal -->
+  <!-- Separating this allows easier customization in applications -->
+  <Style Selector="ColorSpectrum /template/ Ellipse#EllipseBorder,
+                   ColorSpectrum /template/ Rectangle#RectangleBorder">
+    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderLowBrush}" />
+    <Setter Property="StrokeThickness" Value="1" />
+  </Style>
+
+  <!-- Focus -->
+  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ColorSpectrum:focus-visible /template/ Ellipse#FocusEllipse">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
+  <!-- Selector Color -->
+  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
+    <Setter Property="Stroke" Value="White" />
+  </Style>
+  <Style Selector="ColorSpectrum /template/ Ellipse#SelectionEllipse">
+    <Setter Property="Stroke" Value="Black" />
+  </Style>
+  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#FocusEllipse">
+    <Setter Property="Stroke" Value="Black" />
+  </Style>
+  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#SelectionEllipse">
+    <Setter Property="Stroke" Value="White" />
+  </Style>
+
+  <Style Selector="ColorSpectrum:pointerover /template/ Ellipse#SelectionEllipse">
+    <Setter Property="Opacity" Value="0.8" />
+  </Style>
+
+  <!-- Selector Size -->
+  <Style Selector="ColorSpectrum /template/ Grid#PART_SelectionEllipsePanel">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
+  </Style>
+  <Style Selector="ColorSpectrum:large-selector /template/ Grid#PART_SelectionEllipsePanel">
+    <Setter Property="Width" Value="48" />
+    <Setter Property="Height" Value="48" />
+  </Style>
+  
+</Styles>
