@@ -14,11 +14,13 @@ namespace Avalonia.Diagnostics.ViewModels
                 case Binding binding:
                     Path = binding.Path;
                     Tint = Brushes.CornflowerBlue;
+                    ValueTypeTooltip = "Reflection Binding";
 
                     break;
                 case CompiledBindingExtension binding:
                     Path = binding.Path.ToString();
                     Tint = Brushes.DarkGreen;
+                    ValueTypeTooltip = "Compiled Binding";
 
                     break;
                 case TemplateBinding binding:
@@ -32,6 +34,7 @@ namespace Avalonia.Diagnostics.ViewModels
                     }
 
                     Tint = Brushes.OrangeRed;
+                    ValueTypeTooltip = "Template Binding";
 
                     break;
                 default:
@@ -40,6 +43,8 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public IBrush Tint { get; }
+        
+        public string ValueTypeTooltip { get; }
 
         public string Path { get; }
 
