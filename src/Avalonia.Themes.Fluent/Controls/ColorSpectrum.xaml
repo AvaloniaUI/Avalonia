@@ -73,8 +73,6 @@
                 </Grid>
               </Canvas>
               <Rectangle x:Name="RectangleBorder"
-                         Stroke="{DynamicResource SystemControlForegroundListLowBrush}"
-                         StrokeThickness="2"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch"
@@ -82,8 +80,6 @@
                          <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                          RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
               <Ellipse x:Name="EllipseBorder"
-                       Stroke="{DynamicResource SystemControlForegroundListLowBrush}"
-                       StrokeThickness="2"
                        IsHitTestVisible="False"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
@@ -93,6 +89,14 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+  </Style>
+
+  <!-- Normal -->
+  <!-- Separating this allows easier customization in applications -->
+  <Style Selector="ColorSpectrum /template/ Ellipse#EllipseBorder,
+                   ColorSpectrum /template/ Rectangle#RectangleBorder">
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundListLowBrush}" />
+    <Setter Property="StrokeThickness" Value="2" />
   </Style>
 
   <!-- Focus -->
