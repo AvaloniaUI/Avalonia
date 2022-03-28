@@ -72,14 +72,14 @@
                   </Ellipse>
                 </Grid>
               </Canvas>
-              <Rectangle x:Name="RectangleBorder"
+              <Rectangle x:Name="BorderRectangle"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch"
                          IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
                          <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                          RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
-              <Ellipse x:Name="EllipseBorder"
+              <Ellipse x:Name="BorderEllipse"
                        IsHitTestVisible="False"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
@@ -93,8 +93,8 @@
 
   <!-- Normal -->
   <!-- Separating this allows easier customization in applications -->
-  <Style Selector="ColorSpectrum /template/ Ellipse#EllipseBorder,
-                   ColorSpectrum /template/ Rectangle#RectangleBorder">
+  <Style Selector="ColorSpectrum /template/ Ellipse#BorderEllipse,
+                   ColorSpectrum /template/ Rectangle#BorderRectangle">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundListLowBrush}" />
     <Setter Property="StrokeThickness" Value="1" />
   </Style>
