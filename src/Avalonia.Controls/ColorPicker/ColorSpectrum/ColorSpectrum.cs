@@ -48,9 +48,6 @@ namespace Avalonia.Controls.Primitives
         private bool _shouldShowLargeSelection = false;
         private List<Hsv> _hsvValues = new List<Hsv>();
 
-        private IDisposable? _layoutRootDisposable;
-        private IDisposable? _selectionEllipsePanelDisposable;
-
         // XAML template parts
         private Panel? _layoutRoot;
         private Panel? _sizingPanel;
@@ -136,22 +133,6 @@ namespace Avalonia.Controls.Primitives
                 _inputTarget.PointerReleased += InputTarget_PointerReleased;
             }
 
-            if (_layoutRoot != null)
-            {
-                _layoutRootDisposable = _layoutRoot.GetObservable(BoundsProperty).Subscribe(_ => 
-                {
-                    CreateBitmapsAndColorMap();
-                });
-            }
-
-            if (_selectionEllipsePanel != null)
-            {
-                _selectionEllipsePanelDisposable = _selectionEllipsePanel.GetObservable(FlowDirectionProperty).Subscribe(_ => 
-                {
-                    UpdateEllipse();
-                });
-            }
-
             if (ColorHelpers.ToDisplayNameExists &&
                 _colorNameToolTip != null)
             {
@@ -187,12 +168,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         private void UnregisterEvents()
         {
-            _layoutRootDisposable?.Dispose();
-            _layoutRootDisposable = null;
-
-            _selectionEllipsePanelDisposable?.Dispose();
-            _selectionEllipsePanelDisposable = null;
-
             if (_inputTarget != null)
             {
                 _inputTarget.PointerEnter -= InputTarget_PointerEnter;
@@ -363,7 +338,11 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.Property == ColorProperty)
+            if (change.Property == BoundsProperty)
+            {
+                CreateBitmapsAndColorMap();
+            }
+            else if (change.Property == ColorProperty)
             {
                 // If we're in the process of internally updating the color,
                 // then we don't want to respond to the Color property changing.
@@ -381,6 +360,10 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 _oldColor = change.OldValue.GetValueOrDefault<Color>();
+            }
+            else if (change.Property == FlowDirectionProperty)
+            {
+                UpdateEllipse();
             }
             else if (change.Property == HsvColorProperty)
             {
