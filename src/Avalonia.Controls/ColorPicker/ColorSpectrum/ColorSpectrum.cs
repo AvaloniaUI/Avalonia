@@ -115,7 +115,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            UnregisterEvents();
+            UnregisterEvents(); // Failsafe
 
             _colorNameToolTip = e.NameScope.Find<ToolTip>("PART_ColorNameToolTip");
             _inputTarget = e.NameScope.Find<Canvas>("PART_InputTarget");
@@ -127,14 +127,6 @@ namespace Avalonia.Controls.Primitives
             _spectrumOverlayEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumOverlayEllipse");
             _spectrumOverlayRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumOverlayRectangle");
 
-            if (_layoutRoot != null)
-            {
-                _layoutRootDisposable = _layoutRoot.GetObservable(BoundsProperty).Subscribe(_ => 
-                {
-                    CreateBitmapsAndColorMap();
-                });
-            }
-
             if (_inputTarget != null)
             {
                 _inputTarget.PointerEnter += OnInputTargetPointerEnter;
@@ -144,10 +136,12 @@ namespace Avalonia.Controls.Primitives
                 _inputTarget.PointerReleased += OnInputTargetPointerReleased;
             }
 
-            if (ColorHelpers.ToDisplayNameExists &&
-                _colorNameToolTip != null)
+            if (_layoutRoot != null)
             {
-                _colorNameToolTip.Content = ColorHelpers.ToDisplayName(Color);
+                _layoutRootDisposable = _layoutRoot.GetObservable(BoundsProperty).Subscribe(_ => 
+                {
+                    CreateBitmapsAndColorMap();
+                });
             }
 
             if (_selectionEllipsePanel != null)
@@ -158,6 +152,12 @@ namespace Avalonia.Controls.Primitives
                 });
             }
 
+            if (ColorHelpers.ToDisplayNameExists &&
+                _colorNameToolTip != null)
+            {
+                _colorNameToolTip.Content = ColorHelpers.ToDisplayName(Color);
+            }
+
             // If we haven't yet created our bitmaps, do so now.
             if (_hsvValues.Count == 0)
             {
@@ -166,6 +166,22 @@ namespace Avalonia.Controls.Primitives
 
             UpdateEllipse();
             UpdatePseudoClasses();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            // OnAttachedToVisualTree is called after OnApplyTemplate so events cannot be connected here
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            UnregisterEvents();
         }
 
         /// <summary>
