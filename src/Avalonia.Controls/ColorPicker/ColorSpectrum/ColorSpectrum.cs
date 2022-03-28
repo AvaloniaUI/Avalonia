@@ -499,11 +499,7 @@ namespace Avalonia.Controls.Primitives
 
             if (colorChanged || areBothColorsBlack)
             {
-                var colorChangedEventArgs = new ColorChangedEventArgs();
-
-                colorChangedEventArgs.OldColor = _oldColor;
-                colorChangedEventArgs.NewColor = newColor;
-
+                var colorChangedEventArgs = new ColorChangedEventArgs(_oldColor, newColor);
                 ColorChanged?.Invoke(this, colorChangedEventArgs);
 
                 if (ColorHelpers.ToDisplayNameExists)

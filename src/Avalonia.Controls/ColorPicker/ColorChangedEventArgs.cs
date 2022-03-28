@@ -17,16 +17,6 @@ namespace Avalonia.Controls
     /// </remarks>
     public class ColorChangedEventArgs : EventArgs
     {
-        private Color _OldColor;
-        private Color _NewColor;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ColorChangedEventArgs"/> class.
-        /// </summary>
-        public ColorChangedEventArgs()
-        {
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorChangedEventArgs"/> class.
         /// </summary>
@@ -34,26 +24,18 @@ namespace Avalonia.Controls
         /// <param name="newColor">The new/updated color that triggered the change event.</param>
         public ColorChangedEventArgs(Color oldColor, Color newColor)
         {
-            _OldColor = oldColor;
-            _NewColor = newColor;
+            OldColor = oldColor;
+            NewColor = newColor;
         }
 
         /// <summary>
         /// Gets the old/original color from before the change event.
         /// </summary>
-        public Color OldColor
-        {
-            get => _OldColor;
-            internal set => _OldColor = value;
-        }
+        public Color OldColor { get; private set; }
 
         /// <summary>
         /// Gets the new/updated color that triggered the change event.
         /// </summary>
-        public Color NewColor
-        {
-            get => _NewColor;
-            internal set => _NewColor = value;
-        }
+        public Color NewColor { get; private set; }
     }
 }
