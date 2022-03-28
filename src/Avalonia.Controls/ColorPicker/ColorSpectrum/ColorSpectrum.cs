@@ -22,9 +22,9 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     [TemplatePart("PART_ColorNameToolTip",         typeof(ToolTip))]
     [TemplatePart("PART_InputTarget",              typeof(Canvas))]
-    [TemplatePart("PART_LayoutRoot",               typeof(Grid))]
+    [TemplatePart("PART_LayoutRoot",               typeof(Panel))]
     [TemplatePart("PART_SelectionEllipsePanel",    typeof(Panel))]
-    [TemplatePart("PART_SizingGrid",               typeof(Grid))]
+    [TemplatePart("PART_SizingPanel",              typeof(Panel))]
     [TemplatePart("PART_SpectrumEllipse",          typeof(Ellipse))]
     [TemplatePart("PART_SpectrumRectangle",        typeof(Rectangle))]
     [TemplatePart("PART_SpectrumOverlayEllipse",   typeof(Ellipse))]
@@ -52,8 +52,8 @@ namespace Avalonia.Controls.Primitives
         private IDisposable? _selectionEllipsePanelDisposable;
 
         // XAML template parts
-        private Grid? _layoutRoot;
-        private Grid? _sizingGrid;
+        private Panel? _layoutRoot;
+        private Panel? _sizingPanel;
         private Rectangle? _spectrumRectangle;
         private Ellipse? _spectrumEllipse;
         private Rectangle? _spectrumOverlayRectangle;
@@ -119,9 +119,9 @@ namespace Avalonia.Controls.Primitives
 
             _colorNameToolTip = e.NameScope.Find<ToolTip>("PART_ColorNameToolTip");
             _inputTarget = e.NameScope.Find<Canvas>("PART_InputTarget");
-            _layoutRoot = e.NameScope.Find<Grid>("PART_LayoutRoot");
+            _layoutRoot = e.NameScope.Find<Panel>("PART_LayoutRoot");
             _selectionEllipsePanel = e.NameScope.Find<Panel>("PART_SelectionEllipsePanel");
-            _sizingGrid = e.NameScope.Find<Grid>("PART_SizingGrid");
+            _sizingPanel = e.NameScope.Find<Panel>("PART_SizingPanel");
             _spectrumEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumEllipse");
             _spectrumRectangle = e.NameScope.Find<Rectangle>("PART_SpectrumRectangle");
             _spectrumOverlayEllipse = e.NameScope.Find<Ellipse>("PART_SpectrumOverlayEllipse");
@@ -893,7 +893,7 @@ namespace Avalonia.Controls.Primitives
         private async void CreateBitmapsAndColorMap()
         {
             if (_layoutRoot == null ||
-                _sizingGrid == null ||
+                _sizingPanel == null ||
                 _inputTarget == null ||
                 _spectrumRectangle == null ||
                 _spectrumEllipse == null ||
@@ -913,8 +913,8 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            _sizingGrid.Width = minDimension;
-            _sizingGrid.Height = minDimension;
+            _sizingPanel.Width = minDimension;
+            _sizingPanel.Height = minDimension;
             _inputTarget.Width = minDimension;
             _inputTarget.Height = minDimension;
             _spectrumRectangle.Width = minDimension;

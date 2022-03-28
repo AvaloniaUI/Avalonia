@@ -17,11 +17,13 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Grid x:Name="PART_LayoutRoot">
-            <Grid x:Name="PART_SizingGrid"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  ClipToBounds="True">
+          <Panel x:Name="PART_LayoutRoot"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch">
+            <Panel x:Name="PART_SizingPanel"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   ClipToBounds="True">
               <Rectangle x:Name="PART_SpectrumRectangle"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
@@ -82,8 +84,8 @@
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Ring'}" />
-            </Grid>
-          </Grid>
+            </Panel>
+          </Panel>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
