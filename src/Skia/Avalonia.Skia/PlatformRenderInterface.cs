@@ -35,6 +35,9 @@ namespace Avalonia.Skia
             var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
             if (gl != null) 
                 _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
+
+            //TODO: SKFont crashes when disposed in finalizer so we keep it alive
+            GC.SuppressFinalize(s_font);
         }
 
         /// <inheritdoc />
