@@ -915,12 +915,6 @@ namespace Avalonia.Controls.Primitives
 
             _sizingGrid.Width = minDimension;
             _sizingGrid.Height = minDimension;
-
-            if (_sizingGrid.Clip is RectangleGeometry clip)
-            {
-                clip.Rect = new Rect(0, 0, minDimension, minDimension);
-            }
-
             _inputTarget.Width = minDimension;
             _inputTarget.Height = minDimension;
             _spectrumRectangle.Width = minDimension;

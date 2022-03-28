@@ -20,10 +20,8 @@
           <Grid x:Name="PART_LayoutRoot">
             <Grid x:Name="PART_SizingGrid"
                   HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
-              <Grid.Clip>
-                <RectangleGeometry />
-              </Grid.Clip>
+                  VerticalAlignment="Center"
+                  ClipToBounds="True">
               <Rectangle x:Name="PART_SpectrumRectangle"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
