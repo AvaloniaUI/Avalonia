@@ -10,7 +10,6 @@ namespace Avalonia.X11
 {
     partial class X11Window
     {
-
         class XimInputMethod : ITextInputMethodImpl, IX11InputMethodControl
         {
             private readonly X11Window _parent;
@@ -58,9 +57,9 @@ namespace Avalonia.X11
                 UpdateActive();
             }
 
-            public void SetActive(bool active)
+            public void SetClient(ITextInputMethodClient client)
             {
-                _controlActive = active;
+                _controlActive = client is { };
                 UpdateActive();
             }
 
@@ -87,7 +86,7 @@ namespace Avalonia.X11
                 // No-op
             }
             
-            public void SetOptions(TextInputOptionsQueryEventArgs options)
+            public void SetOptions(TextInputOptions options)
             {
                 // No-op
             }

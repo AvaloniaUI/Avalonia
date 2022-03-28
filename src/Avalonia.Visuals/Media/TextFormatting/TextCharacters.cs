@@ -79,14 +79,12 @@ namespace Avalonia.Media.TextFormatting
                     if(TryGetShapeableLength(text, previousTypeface.Value, out var fallbackCount, out _))
                     {
                         return new ShapeableTextCharacters(text.Take(fallbackCount),
-                            new GenericTextRunProperties(previousTypeface.Value, defaultProperties.FontRenderingEmSize,
-                                defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                            defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                     }
                 }
 
-                return new ShapeableTextCharacters(text.Take(count),
-                    new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                        defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                    biDiLevel);
             }
             
             if (previousTypeface is not null)
@@ -94,8 +92,7 @@ namespace Avalonia.Media.TextFormatting
                 if(TryGetShapeableLength(text, previousTypeface.Value, out count, out _))
                 {
                     return new ShapeableTextCharacters(text.Take(count),
-                        new GenericTextRunProperties(previousTypeface.Value, defaultProperties.FontRenderingEmSize,
-                            defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                        defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                 }
             }
 
@@ -118,14 +115,14 @@ namespace Avalonia.Media.TextFormatting
             //ToDo: Fix FontFamily fallback
             var matchFound =
                 FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
-                    defaultTypeface.FontFamily, defaultProperties.CultureInfo, out currentTypeface);
+                    defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
+                    out currentTypeface);
 
             if (matchFound && TryGetShapeableLength(text, currentTypeface, out count, out _))
             {
                 //Fallback found
-                return new ShapeableTextCharacters(text.Take(count),
-                    new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                    biDiLevel);
             }
 
             // no fallback found
@@ -147,9 +144,7 @@ namespace Avalonia.Media.TextFormatting
                 count += grapheme.Text.Length;
             }
 
-            return new ShapeableTextCharacters(text.Take(count),
-                new GenericTextRunProperties(currentTypeface, defaultProperties.FontRenderingEmSize,
-                    defaultProperties.TextDecorations, defaultProperties.ForegroundBrush), biDiLevel);
+            return new ShapeableTextCharacters(text.Take(count), defaultProperties, biDiLevel);
         }
 
         /// <summary>
@@ -181,6 +176,12 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
 
+                //Stop at the first missing glyph
+                if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                {
+                    break;
+                }
+                
                 if (currentScript != script)
                 {
                     if (script is Script.Unknown || currentScript != Script.Common &&
@@ -195,12 +196,6 @@ namespace Avalonia.Media.TextFormatting
                             break;
                         }
                     }
-                }
-
-                //Stop at the first missing glyph
-                if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
-                {
-                    break;
                 }
 
                 length += currentGrapheme.Text.Length;

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -57,13 +58,12 @@ namespace Avalonia.Controls
         {
         }
 
-        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(ValidatingWindowBaseImpl.Wrap(impl), dependencyResolver)
+        public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
-            Screens = new Screens(PlatformImpl?.Screen);
-            var wrapped = PlatformImpl!;
-            wrapped.Activated = HandleActivated;
-            wrapped.Deactivated = HandleDeactivated;
-            wrapped.PositionChanged = HandlePositionChanged;
+            Screens = new Screens(impl.Screen);
+            impl.Activated = HandleActivated;
+            impl.Deactivated = HandleDeactivated;
+            impl.PositionChanged = HandlePositionChanged;
         }
 
         /// <summary>

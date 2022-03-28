@@ -126,14 +126,6 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, TextInputMethodClientRequestedEventArgs>(
                 "TextInputMethodClientRequested",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
-        /// <summary>
-        /// Defines the <see cref="TextInputOptionsQuery"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<TextInputOptionsQueryEventArgs> TextInputOptionsQueryEvent =
-            RoutedEvent.Register<InputElement, TextInputOptionsQueryEventArgs>(
-                "TextInputOptionsQuery",
-                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerEnter"/> event.
@@ -282,15 +274,6 @@ namespace Avalonia.Input
         {
             add { AddHandler(TextInputMethodClientRequestedEvent, value); }
             remove { RemoveHandler(TextInputMethodClientRequestedEvent, value); }
-        }
-        
-        /// <summary>
-        /// Occurs when an input element gains input focus and input method is asking for required content options
-        /// </summary>
-        public event EventHandler<TextInputOptionsQueryEventArgs>? TextInputOptionsQuery
-        {
-            add { AddHandler(TextInputOptionsQueryEvent, value); }
-            remove { RemoveHandler(TextInputOptionsQueryEvent, value); }
         }
 
         /// <summary>

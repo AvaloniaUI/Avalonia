@@ -12,7 +12,7 @@ namespace Avalonia.Android
 {
     public class AvaloniaView : FrameLayout
     {
-        private readonly EmbeddableControlRoot _root;
+        private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
 
         private IDisposable? _timerSubscription;
@@ -21,6 +21,11 @@ namespace Avalonia.Android
         {
             _view = new ViewImpl(context);
             AddView(_view.View);
+            
+        }
+
+        internal void Prepare ()
+        {
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -131,6 +132,29 @@ namespace Avalonia.Media.TextFormatting
             return length > 0;
         }
 
+        internal bool TryMeasureCharactersBackwards(double availableWidth, out int length, out double width)
+        {
+            length = 0;
+            width = 0;
+
+            for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
+            {
+                var advance = ShapedBuffer.GlyphAdvances[i];
+
+                if (width + advance > availableWidth)
+                {
+                    break;
+                }
+
+                Codepoint.ReadAt(GlyphRun.Characters, length, out var count);
+
+                length += count;
+                width += advance;
+            }
+
+            return length > 0;
+        }
+
         internal SplitResult<ShapedTextCharacters> Split(int length)
         {
             if (IsReversed)
@@ -138,16 +162,13 @@ namespace Avalonia.Media.TextFormatting
                 Reverse();
             }
 
+#if DEBUG
             if(length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
-
-            if(length == ShapedBuffer.Length)
-            {
-                return new SplitResult<ShapedTextCharacters>(this, null);
-            }
-
+#endif
+            
             var splitBuffer = ShapedBuffer.Split(length);
 
             var first = new ShapedTextCharacters(splitBuffer.First, Properties);

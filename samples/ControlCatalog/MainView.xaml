@@ -40,6 +40,9 @@
       <TabItem Header="CheckBox">
         <pages:CheckBoxPage />
       </TabItem>
+      <TabItem Header="Clipboard">
+        <pages:ClipboardPage />
+      </TabItem>
       <TabItem Header="ComboBox">
         <pages:ComboBoxPage />
       </TabItem>
@@ -141,6 +144,9 @@
       </TabItem>
       <TabItem Header="ToolTip">
         <pages:ToolTipPage />
+      </TabItem>
+      <TabItem Header="TransitioningContentControl">
+        <pages:TransitioningContentControlPage />
       </TabItem>
       <TabItem Header="TreeView">
         <pages:TreeViewPage />

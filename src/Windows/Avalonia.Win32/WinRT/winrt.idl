@@ -358,6 +358,12 @@ interface ICompositor2 : IInspectable
     [overload("CreateStepEasingFunction")] HRESULT CreateStepEasingFunctionWithStepCount([in] INT32 stepCount, [out] [retval] void** result);
 }
 
+[uuid(C9DD8EF0-6EB1-4E3C-A658-675D9C64D4AB)]
+interface ICompositor3 : IInspectable
+{
+    HRESULT CreateHostBackdropBrush([out][retval] ICompositionBackdropBrush** result);
+}
+
 [uuid(0D8FB190-F122-5B8D-9FDD-543B0D8EB7F3)]
 interface ICompositorWithBlurredWallpaperBackdropBrush : IInspectable
 {
