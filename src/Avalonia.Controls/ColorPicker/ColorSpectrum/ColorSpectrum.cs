@@ -180,8 +180,6 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-
-            UnregisterEvents();
         }
 
         /// <summary>
