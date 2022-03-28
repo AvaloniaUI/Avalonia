@@ -129,11 +129,11 @@ namespace Avalonia.Controls.Primitives
 
             if (_inputTarget != null)
             {
-                _inputTarget.PointerEnter += OnInputTargetPointerEnter;
-                _inputTarget.PointerLeave += OnInputTargetPointerLeave;
-                _inputTarget.PointerPressed += OnInputTargetPointerPressed;
-                _inputTarget.PointerMoved += OnInputTargetPointerMoved;
-                _inputTarget.PointerReleased += OnInputTargetPointerReleased;
+                _inputTarget.PointerEnter += InputTarget_PointerEnter;
+                _inputTarget.PointerLeave += InputTarget_PointerLeave;
+                _inputTarget.PointerPressed += InputTarget_PointerPressed;
+                _inputTarget.PointerMoved += InputTarget_PointerMoved;
+                _inputTarget.PointerReleased += InputTarget_PointerReleased;
             }
 
             if (_layoutRoot != null)
@@ -197,11 +197,11 @@ namespace Avalonia.Controls.Primitives
 
             if (_inputTarget != null)
             {
-                _inputTarget.PointerEnter -= OnInputTargetPointerEnter;
-                _inputTarget.PointerLeave -= OnInputTargetPointerLeave;
-                _inputTarget.PointerPressed -= OnInputTargetPointerPressed;
-                _inputTarget.PointerMoved -= OnInputTargetPointerMoved;
-                _inputTarget.PointerReleased -= OnInputTargetPointerReleased;
+                _inputTarget.PointerEnter -= InputTarget_PointerEnter;
+                _inputTarget.PointerLeave -= InputTarget_PointerLeave;
+                _inputTarget.PointerPressed -= InputTarget_PointerPressed;
+                _inputTarget.PointerMoved -= InputTarget_PointerMoved;
+                _inputTarget.PointerReleased -= InputTarget_PointerReleased;
             }
         }
 
@@ -830,21 +830,24 @@ namespace Avalonia.Controls.Primitives
             UpdatePseudoClasses();
         }
 
-        private void OnInputTargetPointerEnter(object? sender, PointerEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerEnter"/>
+        private void InputTarget_PointerEnter(object? sender, PointerEventArgs args)
         {
             _isPointerOver = true;
             UpdatePseudoClasses();
             args.Handled = true;
         }
 
-        private void OnInputTargetPointerLeave(object? sender, PointerEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerLeave"/>
+        private void InputTarget_PointerLeave(object? sender, PointerEventArgs args)
         {
             _isPointerOver = false;
             UpdatePseudoClasses();
             args.Handled = true;
         }
 
-        private void OnInputTargetPointerPressed(object? sender, PointerPressedEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerPressed"/>
+        private void InputTarget_PointerPressed(object? sender, PointerPressedEventArgs args)
         {
             var inputTarget = _inputTarget;
 
@@ -864,7 +867,8 @@ namespace Avalonia.Controls.Primitives
             args.Handled = true;
         }
 
-        private void OnInputTargetPointerMoved(object? sender, PointerEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerMoved"/>
+        private void InputTarget_PointerMoved(object? sender, PointerEventArgs args)
         {
             if (!_isPointerPressed)
             {
@@ -875,7 +879,8 @@ namespace Avalonia.Controls.Primitives
             args.Handled = true;
         }
 
-        private void OnInputTargetPointerReleased(object? sender, PointerReleasedEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerReleased"/>
+        private void InputTarget_PointerReleased(object? sender, PointerReleasedEventArgs args)
         {
             _isPointerPressed = false;
             _shouldShowLargeSelection = false;
