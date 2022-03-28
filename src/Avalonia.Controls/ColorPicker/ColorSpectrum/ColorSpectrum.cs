@@ -20,15 +20,15 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A two dimensional spectrum for color selection.
     /// </summary>
-    [TemplatePart(Name = "PART_ColorNameToolTip",         Type = typeof(ToolTip))]
-    [TemplatePart(Name = "PART_InputTarget",              Type = typeof(Canvas))]
-    [TemplatePart(Name = "PART_LayoutRoot",               Type = typeof(Grid))]
-    [TemplatePart(Name = "PART_SelectionEllipsePanel",    Type = typeof(Panel))]
-    [TemplatePart(Name = "PART_SizingGrid",               Type = typeof(Grid))]
-    [TemplatePart(Name = "PART_SpectrumEllipse",          Type = typeof(Ellipse))]
-    [TemplatePart(Name = "PART_SpectrumRectangle",        Type = typeof(Rectangle))]
-    [TemplatePart(Name = "PART_SpectrumOverlayEllipse",   Type = typeof(Ellipse))]
-    [TemplatePart(Name = "PART_SpectrumOverlayRectangle", Type = typeof(Rectangle))]
+    [TemplatePart("PART_ColorNameToolTip",         typeof(ToolTip))]
+    [TemplatePart("PART_InputTarget",              typeof(Canvas))]
+    [TemplatePart("PART_LayoutRoot",               typeof(Grid))]
+    [TemplatePart("PART_SelectionEllipsePanel",    typeof(Panel))]
+    [TemplatePart("PART_SizingGrid",               typeof(Grid))]
+    [TemplatePart("PART_SpectrumEllipse",          typeof(Ellipse))]
+    [TemplatePart("PART_SpectrumRectangle",        typeof(Rectangle))]
+    [TemplatePart("PART_SpectrumOverlayEllipse",   typeof(Ellipse))]
+    [TemplatePart("PART_SpectrumOverlayRectangle", typeof(Rectangle))]
     [PseudoClasses(pcPressed, pcLargeSelector, pcLightSelector)]
     public partial class ColorSpectrum : TemplatedControl
     {
