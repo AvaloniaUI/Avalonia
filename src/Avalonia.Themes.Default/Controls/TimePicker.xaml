@@ -33,7 +33,7 @@
 
   <Style Selector="TimePicker">    
     <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource TimePickerBorderThemeThickness}"/>
@@ -48,7 +48,7 @@
                  ContentTemplate="{TemplateBinding HeaderTemplate}"
                  Margin="{DynamicResource TimePickerTopHeaderMargin}"
                  MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
-                 TextBlock.Foreground="{DynamicResource ThemeForegroundColor}"
+                 TextElement.Foreground="{DynamicResource ThemeForegroundColor}"
                  HorizontalAlignment="Stretch"
                  VerticalAlignment="Top" />
 
@@ -74,7 +74,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
                                 Content="{TemplateBinding Content}"
-                                TextBlock.Foreground="{TemplateBinding Foreground}"
+                                TextElement.Foreground="{TemplateBinding Foreground}"
                                 HorizontalContentAlignment="Stretch"
                                 VerticalContentAlignment="Stretch" />
               </ControlTemplate>
@@ -135,7 +135,7 @@
   </Style>
 
   <Style Selector="TimePicker:disabled /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   </Style>
   <Style Selector="TimePicker:disabled /template/ Rectangle">
     <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
@@ -144,7 +144,7 @@
   <Style Selector="TimePicker /template/ Button#FlyoutButton:pointerover /template/ ContentPresenter">
     <!--<Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPointerOver}"/>-->
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighBrush}"/>
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   </Style>
 
   <Style Selector="TimePicker /template/ Button:pressed /template/ ContentPresenter">
@@ -152,18 +152,18 @@
       <SolidColorBrush Color="{DynamicResource ThemeControlMidHighColor}" Opacity="0.6" />
     </Setter>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlLowBrush}"/>
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   </Style>
 
   <Style Selector="TimePicker /template/ Button:disabled /template/ ContentPresenter">
     <!--<Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundDisabled}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushDisabled}"/>
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundDisabled}"/>-->
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TimePickerButtonForegroundDisabled}"/>-->
     <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
   </Style>
 
   <Style Selector="TimePicker:hasnotime /template/ Button#FlyoutButton TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}"/>
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundLowBrush}"/>
   </Style>
 
   <Style Selector="TimePickerPresenter">

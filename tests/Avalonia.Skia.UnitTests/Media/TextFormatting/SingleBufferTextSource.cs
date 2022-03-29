@@ -23,13 +23,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
             
             var runText = _text.Skip(textSourceIndex);
-            
-            if (runText.IsEmpty)
-            {
-                return new TextEndOfParagraph();
-            }
 
-            return new TextCharacters(runText, _defaultGenericPropertiesRunProperties);
+            return runText.IsEmpty ? null : new TextCharacters(runText, _defaultGenericPropertiesRunProperties);
         }
     }
 }

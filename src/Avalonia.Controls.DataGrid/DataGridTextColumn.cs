@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Controls.Documents;
 
 namespace Avalonia.Controls
 {
@@ -94,7 +95,7 @@ namespace Avalonia.Controls
         /// Identifies the Foreground dependency property.
         /// </summary>
         public static readonly AttachedProperty<IBrush> ForegroundProperty =
-            TextBlock.ForegroundProperty.AddOwner<DataGridTextColumn>();
+            TextElement.ForegroundProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets a brush that describes the foreground of the column cells.

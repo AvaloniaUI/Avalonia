@@ -1,10 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="CaptionButtons">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
     <Setter Property="MaxHeight" Value="30" />
     <Setter Property="Template">
       <ControlTemplate>
-        <StackPanel Spacing="2" VerticalAlignment="Stretch" TextBlock.FontSize="10" Orientation="Horizontal">
+        <StackPanel Spacing="2" VerticalAlignment="Stretch" FontSize="10" Orientation="Horizontal">
           <StackPanel.Styles>
             <Style Selector="Panel">
               <Setter Property="Width" Value="45" />

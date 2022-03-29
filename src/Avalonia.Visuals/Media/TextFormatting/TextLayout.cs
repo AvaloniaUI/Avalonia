@@ -193,187 +193,34 @@ namespace Avalonia.Media.TextFormatting
             var result = new List<Rect>(TextLines.Count);
             
             var currentY = 0d;
-            var currentPosition = 0;
-            var currentRect = Rect.Empty;
 
             foreach (var textLine in TextLines)
             {
                 //Current line isn't covered.
-                if (currentPosition + textLine.TextRange.Length <= start)
+                if (textLine.TextRange.Start + textLine.TextRange.Length <= start)
                 {
                     currentY += textLine.Height;
-                    currentPosition += textLine.TextRange.Length;
 
                     continue;
                 }
 
-                //The whole line is covered.
-                if (currentPosition >= start && start + length > currentPosition + textLine.TextRange.Length)
+                var textBounds = textLine.GetTextBounds(start, length);
+
+                foreach (var bounds in textBounds)
                 {
-                    currentRect = new Rect(textLine.Start, currentY, textLine.WidthIncludingTrailingWhitespace,
-                        textLine.Height);
-                    
-                    result.Add(currentRect);
-                    
-                    currentY += textLine.Height;
-                    currentPosition += textLine.TextRange.Length;
-                    
-                    continue;
-                }
-                
-                var startX = textLine.Start;
-                
-                //A portion of the line is covered.
-                for (var index = 0; index < textLine.TextRuns.Count; index++)
-                {
-                    var currentRun = (ShapedTextCharacters)textLine.TextRuns[index];
-                    ShapedTextCharacters? nextRun = null;
+                    Rect? last = result.Count > 0 ? result[result.Count - 1] : null;
 
-                    if (index + 1 < textLine.TextRuns.Count)
+                    if (last.HasValue && MathUtilities.AreClose(last.Value.Right, bounds.Rectangle.Left) && MathUtilities.AreClose(last.Value.Top, currentY))
                     {
-                        nextRun = (ShapedTextCharacters)textLine.TextRuns[index + 1];
-                    }
-
-                    if (nextRun != null)
-                    {
-                        if (nextRun.Text.Start < currentRun.Text.Start && start + length < currentRun.Text.End)
-                        {
-                            goto skip;
-                        }
-
-                        if (currentRun.Text.Start >= start + length)
-                        {
-                            goto skip;
-                        }
-
-                        if (currentRun.Text.Start > nextRun.Text.Start && currentRun.Text.Start < start)
-                        {
-                            goto skip;
-                        }
-
-                        if (currentRun.Text.End < start)
-                        {
-                            goto skip;
-                        }
-                        
-                        goto noop;
-                        
-                        skip:
-                        {
-                            startX += currentRun.Size.Width;
-
-                            currentPosition = currentRun.Text.Start;
-                        }
-                        
-                        continue;
-                        
-                        noop:{ }
-                    }
-
-                    var endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(
-                        currentRun.ShapedBuffer.IsLeftToRight ?
-                            new CharacterHit(start + length) :
-                            new CharacterHit(start));
-
-                    var endX = startX + endOffset;
-                    
-                    var startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(
-                        currentRun.ShapedBuffer.IsLeftToRight ?
-                            new CharacterHit(start) :
-                            new CharacterHit(start + length));
-
-                    startX += startOffset;
-
-                    var characterHit = currentRun.GlyphRun.IsLeftToRight ?
-                        currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _) :
-                        currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
-                    
-                    currentPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-
-                    if(nextRun != null)
-                    {
-                        if (currentRun.ShapedBuffer.IsLeftToRight == nextRun.ShapedBuffer.IsLeftToRight)
-                        {
-                            endOffset = nextRun.GlyphRun.GetDistanceFromCharacterHit(
-                                nextRun.ShapedBuffer.IsLeftToRight ?
-                                    new CharacterHit(start + length) :
-                                    new CharacterHit(start));
-                            
-                            index++;
-
-                            endX += endOffset;
-
-                            currentRun = nextRun;
-
-                            if (currentRun.ShapedBuffer.IsLeftToRight)
-                            {
-                                characterHit = nextRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
-
-                                currentPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-                            }
-                        }
-                    }
-
-                    if (endX < startX)
-                    {
-                        (endX, startX) = (startX, endX);
-                    }
-
-                    var width = endX - startX;
-
-                    if (result.Count > 0 && MathUtilities.AreClose(currentRect.Top, currentY) &&
-                        MathUtilities.AreClose(currentRect.Right, startX))
-                    {
-                        result[result.Count - 1] = currentRect.WithWidth(currentRect.Width + width);
+                        result[result.Count - 1] = last.Value.WithWidth(last.Value.Width + bounds.Rectangle.Width);
                     }
                     else
                     {
-                        currentRect = new Rect(startX, currentY, width, textLine.Height);
-                        
-                        result.Add(currentRect);
-                    }
-                    
-                    if (currentRun.ShapedBuffer.IsLeftToRight)
-                    {
-                        if (nextRun != null)
-                        {
-                            if (nextRun.Text.Start > currentRun.Text.Start && nextRun.Text.Start >= start + length)
-                            {
-                                break;
-                            }
-                          
-                            currentPosition = nextRun.Text.End;
-                        }
-                        else
-                        {
-                            if (currentPosition >= start + length)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (currentPosition <= start)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (!currentRun.ShapedBuffer.IsLeftToRight && currentPosition != currentRun.Text.Start)
-                    {
-                        endX += currentRun.GlyphRun.Size.Width - endOffset;
-                    }
-
-                    startX = endX;
+                        result.Add(bounds.Rectangle.WithY(currentY));
+                    }                  
                 }
 
-                if (currentPosition == start || currentPosition == start + length)
-                {
-                    break;
-                }
-                
-                if (textLine.TextRange.Start + textLine.TextRange.Length >= start + length)
+                if(textLine.TextRange.Start + textLine.TextRange.Length >= start + length)
                 {
                     break;
                 }
@@ -541,7 +388,7 @@ namespace Avalonia.Media.TextFormatting
             var shapedBuffer = new ShapedBuffer(text, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
                 (sbyte)flowDirection);
 
-            var textRuns = new List<ShapedTextCharacters> { new ShapedTextCharacters(shapedBuffer, properties) };
+            var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
 
             var textRange = new TextRange(startingIndex, 1);
 

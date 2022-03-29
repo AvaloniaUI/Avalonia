@@ -133,9 +133,12 @@ namespace Avalonia.Headless
 
     class HeadlessTextShaperStub : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
-            CultureInfo culture, sbyte bidiLevel)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidLevel;
+
             return new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
         }
     }

@@ -117,60 +117,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets or sets the font family.
-        /// </summary>
-        public FontFamily FontFamily
-        {
-            get => TextBlock.GetFontFamily(this);
-            set => TextBlock.SetFontFamily(this, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the font size.
-        /// </summary>
-        public double FontSize
-        {
-            get => TextBlock.GetFontSize(this);
-            set => TextBlock.SetFontSize(this, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the font style.
-        /// </summary>
-        public FontStyle FontStyle
-        {
-            get => TextBlock.GetFontStyle(this);
-            set => TextBlock.SetFontStyle(this, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the font weight.
-        /// </summary>
-        public FontWeight FontWeight
-        {
-            get => TextBlock.GetFontWeight(this);
-            set => TextBlock.SetFontWeight(this, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the font stretch.
-        /// </summary>
-        public FontStretch FontStretch
-        {
-            get => TextBlock.GetFontStretch(this);
-            set => TextBlock.SetFontStretch(this, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a brush used to paint the text.
-        /// </summary>
-        public IBrush? Foreground
-        {
-            get => TextBlock.GetForeground(this);
-            set => TextBlock.SetForeground(this, value);
-        }
-
-        /// <summary>
         /// Gets or sets the control's text wrapping mode.
         /// </summary>
         public TextWrapping TextWrapping
@@ -353,7 +299,7 @@ namespace Avalonia.Controls.Presenters
 
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(selectionBrush, rect);
+                    context.FillRectangle(selectionBrush, PixelRect.FromRect(rect, 1).ToRect(1));
                 }
             }
 
@@ -528,9 +474,9 @@ namespace Avalonia.Controls.Presenters
             {
                 return finalSize;
             }
-            
-            _constraint = finalSize;
-                
+
+            _constraint = new Size(finalSize.Width, Math.Ceiling(finalSize.Height));
+
             _textLayout = null;
 
             return finalSize;
@@ -637,14 +583,7 @@ namespace Avalonia.Controls.Presenters
             if (Text is null)
             {
                 return default;
-            }
-            
-            if (FlowDirection == FlowDirection.RightToLeft)
-            {
-                direction = direction == LogicalDirection.Forward ?
-                    LogicalDirection.Backward :
-                    LogicalDirection.Forward;
-            }
+            }          
 
             var characterHit = _lastCharacterHit;
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
@@ -719,6 +658,13 @@ namespace Avalonia.Controls.Presenters
         
         public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
         {
+            if (FlowDirection == FlowDirection.RightToLeft)
+            {
+                direction = direction == LogicalDirection.Forward ?
+                    LogicalDirection.Backward :
+                    LogicalDirection.Forward;
+            }
+
             var characterHit = GetNextCharacterHit(direction);
 
             UpdateCaret(characterHit);
@@ -779,11 +725,11 @@ namespace Avalonia.Controls.Presenters
             
             switch (change.Property.Name)
             {
-                case nameof (TextBlock.Foreground):
-                case nameof (TextBlock.FontSize):
-                case nameof (TextBlock.FontStyle):
-                case nameof (TextBlock.FontWeight):
-                case nameof (TextBlock.FontFamily):
+                case nameof (Foreground):
+                case nameof (FontSize):
+                case nameof (FontStyle):
+                case nameof (FontWeight):
+                case nameof (FontFamily):
                 case nameof (Text):
                 case nameof (TextAlignment):
                 case nameof (TextWrapping):
@@ -792,6 +738,7 @@ namespace Avalonia.Controls.Presenters
                 case nameof (SelectionForegroundBrush):
                 case nameof (PasswordChar):
                 case nameof (RevealPassword):
+                case nameof(FlowDirection):
                 {
                     InvalidateTextLayout();
                     break;

@@ -38,14 +38,14 @@
   <Style Selector="Slider:horizontal">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
           <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}"
+              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" Foreground="{DynamicResource SliderHeaderForeground}"
               Margin="{DynamicResource SliderTopHeaderMargin}" />
               <Grid x:Name="SliderContainer" Grid.Row="1">
                 <Grid.Styles>
@@ -100,14 +100,14 @@
   <Style Selector="Slider:vertical">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
           <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}"
+              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" Foreground="{DynamicResource SliderHeaderForeground}"
               Margin="{DynamicResource SliderTopHeaderMargin}" />
               <Grid x:Name="SliderContainer" Grid.Row="1">
                 <Grid.Styles>
@@ -208,7 +208,7 @@
   <!-- Disabled State -->
 
   <Style Selector="Slider:disabled /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
   </Style>
   
   <Style Selector="Slider:disabled /template/ RepeatButton#PART_DecreaseButton">
@@ -270,6 +270,6 @@
   </Style>
   
   <Style Selector="Slider:error">
-      <Setter Property="Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
   </Style>
 </Styles>

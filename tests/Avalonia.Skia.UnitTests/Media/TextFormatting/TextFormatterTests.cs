@@ -508,7 +508,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, 33, paragraphProperties);
                 
-                Assert.NotNull(textLine.TextLineBreak?.RemainingCharacters);
+                Assert.NotNull(textLine.TextLineBreak?.RemainingRuns);
             }
         }
 
@@ -558,6 +558,98 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         
                         Assert.Equal(expectedGlyphs, actualGlyphs);
                     }
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_FormatLine_With_DrawableRuns()
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+            var textSource = new CustomTextSource("Hello World ->");
+
+            using (Start())
+            {
+                var textLine =
+                    TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+                
+                Assert.Equal(3, textLine.TextRuns.Count);
+                
+                Assert.True(textLine.TextRuns[1] is RectangleRun);
+            }
+        }
+
+        [Fact]
+        public void Should_Format_With_EndOfLineRun()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+                var textSource = new EndOfLineTextSource();
+                
+                var textLine =
+                    TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+                
+                Assert.NotNull(textLine.TextLineBreak);
+                
+                Assert.Equal(TextRun.DefaultTextSourceLength, textLine.TextRange.Length);
+            }
+        }
+
+        private class EndOfLineTextSource : ITextSource
+        {
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                return new TextEndOfLine();
+            }
+        }
+
+        private class CustomTextSource : ITextSource
+        {
+            private readonly string _text;
+
+            public CustomTextSource(string text)
+            {
+                _text = text;
+            }
+            
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                if (textSourceIndex >= _text.Length + TextRun.DefaultTextSourceLength + _text.Length)
+                {
+                    return null;
+                }
+
+                if (textSourceIndex == _text.Length)
+                {
+                    return new RectangleRun(new Rect(0, 0, 50, 50), Brushes.Green);
+                }
+
+                return new TextCharacters(_text.AsMemory(),
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+            }
+        }
+
+        private class RectangleRun : DrawableTextRun
+        {
+            private readonly Rect _rect;
+            private readonly IBrush _fill;
+
+            public RectangleRun(Rect rect, IBrush fill)
+            {
+                _rect = rect;
+                _fill = fill;
+            }
+
+            public override Size Size => _rect.Size;
+            public override double Baseline => 0;
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
+                using (drawingContext.PushPreTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
+                {
+                    drawingContext.FillRectangle(_fill, _rect);
                 }
             }
         }

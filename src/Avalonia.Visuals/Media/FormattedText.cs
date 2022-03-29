@@ -56,7 +56,7 @@ namespace Avalonia.Media
             FlowDirection flowDirection,
             Typeface typeface,
             double emSize,
-            IBrush foreground)
+            IBrush? foreground)
         {
             if (culture is null)
             {
@@ -160,7 +160,7 @@ namespace Avalonia.Media
         /// <param name="foregroundBrush">Foreground brush</param>
         /// <param name="startIndex">The start index of initial character to apply the change to.</param>
         /// <param name="count">The number of characters the change should be applied to.</param>
-        public void SetForegroundBrush(IBrush foregroundBrush, int startIndex, int count)
+        public void SetForegroundBrush(IBrush? foregroundBrush, int startIndex, int count)
         {
             var limit = ValidateRange(startIndex, count);
             for (var i = startIndex; i < limit;)

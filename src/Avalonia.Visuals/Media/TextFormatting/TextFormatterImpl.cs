@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -17,20 +15,20 @@ namespace Avalonia.Media.TextFormatting
             var textWrapping = paragraphProperties.TextWrapping;
             FlowDirection flowDirection;
             TextLineBreak? nextLineBreak = null;
-            List<ShapedTextCharacters> shapedRuns;
+            List<DrawableTextRun> drawableTextRuns;
 
             var textRuns = FetchTextRuns(textSource, firstTextSourceIndex,
                 out var textEndOfLine, out var textRange);
 
-            if (previousLineBreak?.RemainingCharacters != null)
+            if (previousLineBreak?.RemainingRuns != null)
             {
                 flowDirection = previousLineBreak.FlowDirection;
-                shapedRuns = previousLineBreak.RemainingCharacters.ToList();
+                drawableTextRuns = previousLineBreak.RemainingRuns.ToList();
                 nextLineBreak = previousLineBreak;
             }
             else
             {
-                shapedRuns = ShapeTextRuns(textRuns, paragraphProperties.FlowDirection,out flowDirection);
+                drawableTextRuns = ShapeTextRuns(textRuns, paragraphProperties, out flowDirection);
 
                 if(nextLineBreak == null && textEndOfLine != null)
                 {
@@ -44,9 +42,9 @@ namespace Avalonia.Media.TextFormatting
             {
                 case TextWrapping.NoWrap:
                     {
-                        TextLineImpl.SortRuns(shapedRuns);
+                        TextLineImpl.SortRuns(drawableTextRuns);
 
-                        textLine = new TextLineImpl(shapedRuns, textRange, paragraphWidth, paragraphProperties,
+                        textLine = new TextLineImpl(drawableTextRuns, textRange, paragraphWidth, paragraphProperties,
                         flowDirection, nextLineBreak);
 
                         textLine.FinalizeLine();
@@ -56,7 +54,7 @@ namespace Avalonia.Media.TextFormatting
                 case TextWrapping.WrapWithOverflow:
                 case TextWrapping.Wrap:
                     {
-                        textLine = PerformTextWrapping(shapedRuns, textRange, paragraphWidth, paragraphProperties,
+                        textLine = PerformTextWrapping(drawableTextRuns, textRange, paragraphWidth, paragraphProperties,
                             flowDirection, nextLineBreak);
                         break;
                     }
@@ -73,7 +71,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textRuns">The text run's.</param>
         /// <param name="length">The length to split at.</param>
         /// <returns>The split text runs.</returns>
-        internal static SplitResult<List<ShapedTextCharacters>> SplitShapedRuns(List<ShapedTextCharacters> textRuns, int length)
+        internal static SplitResult<List<DrawableTextRun>> SplitDrawableRuns(List<DrawableTextRun> textRuns, int length)
         {
             var currentLength = 0;
 
@@ -83,13 +81,14 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentLength + currentRun.Text.Length < length)
                 {
-                    currentLength += currentRun.Text.Length;
+                    currentLength += currentRun.TextSourceLength;
+                    
                     continue;
                 }
 
                 var firstCount = currentRun.Text.Length >= 1 ? i + 1 : i;
 
-                var first = new List<ShapedTextCharacters>(firstCount);
+                var first = new List<DrawableTextRun>(firstCount);
 
                 if (firstCount > 1)
                 {
@@ -103,7 +102,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentLength + currentRun.Text.Length == length)
                 {
-                    var second = secondCount > 0 ? new List<ShapedTextCharacters>(secondCount) : null;
+                    var second = secondCount > 0 ? new List<DrawableTextRun>(secondCount) : null;
 
                     if (second != null)
                     {
@@ -117,15 +116,20 @@ namespace Avalonia.Media.TextFormatting
 
                     first.Add(currentRun);
 
-                    return new SplitResult<List<ShapedTextCharacters>>(first, second);
+                    return new SplitResult<List<DrawableTextRun>>(first, second);
                 }
                 else
                 {
                     secondCount++;
 
-                    var second = new List<ShapedTextCharacters>(secondCount);
+                    var second = new List<DrawableTextRun>(secondCount);
 
-                    var split = currentRun.Split(length - currentLength);
+                    if (currentRun is not ShapedTextCharacters shapedTextCharacters)
+                    {
+                        throw new NotSupportedException("Only shaped runs can be split in between.");
+                    }
+
+                    var split = shapedTextCharacters.Split(length - currentLength);
 
                     first.Add(split.First);
 
@@ -136,32 +140,43 @@ namespace Avalonia.Media.TextFormatting
                         second.Add(textRuns[i + j]);
                     }
 
-                    return new SplitResult<List<ShapedTextCharacters>>(first, second);
+                    return new SplitResult<List<DrawableTextRun>>(first, second);
                 }
             }
 
-            return new SplitResult<List<ShapedTextCharacters>>(textRuns, null);
+            return new SplitResult<List<DrawableTextRun>>(textRuns, null);
         }
 
         /// <summary>
         /// Shape specified text runs with specified paragraph embedding.
         /// </summary>
         /// <param name="textRuns">The text runs to shape.</param>
-        /// <param name="flowDirection">The paragraph embedding level.</param>
+        /// <param name="paragraphProperties">The default paragraph properties.</param>
         /// <param name="resolvedFlowDirection">The resolved flow direction.</param>
         /// <returns>
         /// A list of shaped text characters.
         /// </returns>
-        private static List<ShapedTextCharacters> ShapeTextRuns(List<TextCharacters> textRuns,
-            FlowDirection flowDirection, out FlowDirection resolvedFlowDirection)
+        private static List<DrawableTextRun> ShapeTextRuns(List<TextRun> textRuns, TextParagraphProperties paragraphProperties, 
+            out FlowDirection resolvedFlowDirection)
         {
-            var shapedTextCharacters = new List<ShapedTextCharacters>();
+            var flowDirection = paragraphProperties.FlowDirection;
+            var drawableTextRuns = new List<DrawableTextRun>();
 
             var biDiData = new BidiData((sbyte)flowDirection);
 
             foreach (var textRun in textRuns)
             {
-                biDiData.Append(textRun.Text);
+                if (textRun.Text.IsEmpty)
+                {
+                    var text = new char[textRun.TextSourceLength];
+
+                    biDiData.Append(text);
+                }
+                else
+                {
+                    biDiData.Append(textRun.Text);
+                }
+                
             }
 
             var biDi = BidiAlgorithm.Instance.Value!;
@@ -173,68 +188,90 @@ namespace Avalonia.Media.TextFormatting
             resolvedFlowDirection =
                 (resolvedEmbeddingLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 
-            var shapeableRuns = new List<ShapeableTextCharacters>(textRuns.Count);
+            var processedRuns = new List<TextRun>(textRuns.Count);
 
             foreach (var coalescedRuns in CoalesceLevels(textRuns, biDi.ResolvedLevels))
             {
-                shapeableRuns.AddRange(coalescedRuns);
+                processedRuns.AddRange(coalescedRuns);
             }
 
-            for (var index = 0; index < shapeableRuns.Count; index++)
+            for (var index = 0; index < processedRuns.Count; index++)
             {
-                var currentRun = shapeableRuns[index];
-                var groupedRuns = new List<ShapeableTextCharacters>(2) { currentRun };
-                var text = currentRun.Text;
-                var start = currentRun.Text.Start;
-                var length = currentRun.Text.Length;
-                var bufferOffset = currentRun.Text.BufferOffset;
+                var currentRun = processedRuns[index];
 
-                while (index + 1 < shapeableRuns.Count)
+                switch (currentRun)
                 {
-                    var nextRun = shapeableRuns[index + 1];
-
-                    if (currentRun.CanShapeTogether(nextRun))
+                    case DrawableTextRun drawableRun:
                     {
-                        groupedRuns.Add(nextRun);
+                        drawableTextRuns.Add(drawableRun);
 
-                        length += nextRun.Text.Length;
-                        
-                        if (start > nextRun.Text.Start)
-                        {
-                            start = nextRun.Text.Start;
-                        }
-
-                        if (bufferOffset > nextRun.Text.BufferOffset)
-                        {
-                            bufferOffset = nextRun.Text.BufferOffset;
-                        }
-
-                        text = new ReadOnlySlice<char>(text.Buffer, start, length, bufferOffset);
-                        
-                        index++;
-
-                        currentRun = nextRun;
-
-                        continue;
+                        break;
                     }
 
-                    break;
-                }
+                    case ShapeableTextCharacters shapeableRun:
+                    {
+                        var groupedRuns = new List<ShapeableTextCharacters>(2) { shapeableRun };
+                        var text = currentRun.Text;
+                        var start = currentRun.Text.Start;
+                        var length = currentRun.Text.Length;
+                        var bufferOffset = currentRun.Text.BufferOffset;
 
-                shapedTextCharacters.AddRange(ShapeTogether(groupedRuns, text));
+                        while (index + 1 < processedRuns.Count)
+                        {
+                            if (processedRuns[index + 1] is not ShapeableTextCharacters nextRun)
+                            {
+                                break;
+                            }
+
+                            if (shapeableRun.CanShapeTogether(nextRun))
+                            {
+                                groupedRuns.Add(nextRun);
+
+                                length += nextRun.Text.Length;
+
+                                if (start > nextRun.Text.Start)
+                                {
+                                    start = nextRun.Text.Start;
+                                }
+
+                                if (bufferOffset > nextRun.Text.BufferOffset)
+                                {
+                                    bufferOffset = nextRun.Text.BufferOffset;
+                                }
+
+                                text = new ReadOnlySlice<char>(text.Buffer, start, length, bufferOffset);
+
+                                index++;
+
+                                shapeableRun = nextRun;
+
+                                continue;
+                            }
+
+                            break;
+                        }
+
+                        var shaperOptions = new TextShaperOptions(currentRun.Properties!.Typeface.GlyphTypeface,
+                                    currentRun.Properties.FontRenderingEmSize,
+                                     shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, paragraphProperties.DefaultIncrementalTab);
+
+                        drawableTextRuns.AddRange(ShapeTogether(groupedRuns, text, shaperOptions));
+
+                        break;
+                    }
+                }
             }
 
-            return shapedTextCharacters;
+            return drawableTextRuns;
         }
 
         private static IReadOnlyList<ShapedTextCharacters> ShapeTogether(
-            IReadOnlyList<ShapeableTextCharacters> textRuns, ReadOnlySlice<char> text)
+            IReadOnlyList<ShapeableTextCharacters> textRuns, ReadOnlySlice<char> text, TextShaperOptions options)
         {
             var shapedRuns = new List<ShapedTextCharacters>(textRuns.Count);
             var firstRun = textRuns[0];
 
-            var shapedBuffer = TextShaper.Current.ShapeText(text, firstRun.Properties.Typeface.GlyphTypeface,
-                firstRun.Properties.FontRenderingEmSize, firstRun.Properties.CultureInfo, firstRun.BidiLevel);
+            var shapedBuffer = TextShaper.Current.ShapeText(text, options);
 
             for (var i = 0; i < textRuns.Count; i++)
             {
@@ -256,8 +293,8 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textCharacters">The text characters to form <see cref="ShapeableTextCharacters"/> from.</param>
         /// <param name="levels">The bidi levels.</param>
         /// <returns></returns>
-        private static IEnumerable<IList<ShapeableTextCharacters>> CoalesceLevels(
-            IReadOnlyList<TextCharacters> textCharacters,
+        private static IEnumerable<IReadOnlyList<TextRun>> CoalesceLevels(
+            IReadOnlyList<TextRun> textCharacters,
             ReadOnlySlice<sbyte> levels)
         {
             if (levels.Length == 0)
@@ -275,7 +312,19 @@ namespace Avalonia.Media.TextFormatting
             for (var i = 0; i < textCharacters.Count; i++)
             {
                 var j = 0;
-                currentRun = textCharacters[i];
+                currentRun = textCharacters[i] as TextCharacters;
+
+                if (currentRun == null)
+                {
+                    var drawableRun = textCharacters[i];
+                    
+                    yield return new[] { drawableRun };
+
+                    levelIndex += drawableRun.TextSourceLength;
+                    
+                    continue;
+                }
+                
                 runText = currentRun.Text;
 
                 for (; j < runText.Length;)
@@ -334,14 +383,14 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The formatted text runs.
         /// </returns>
-        private static List<TextCharacters> FetchTextRuns(ITextSource textSource, int firstTextSourceIndex,
+        private static List<TextRun> FetchTextRuns(ITextSource textSource, int firstTextSourceIndex,
             out TextEndOfLine? endOfLine, out TextRange textRange)
         {
             var length = 0;
 
             endOfLine = null;
 
-            var textRuns = new List<TextCharacters>();
+            var textRuns = new List<TextRun>();
 
             var textRunEnumerator = new TextRunEnumerator(textSource, firstTextSourceIndex);
 
@@ -351,6 +400,17 @@ namespace Avalonia.Media.TextFormatting
 
                 if(textRun == null)
                 {
+                    break;
+                }
+
+                if (textRun is TextEndOfLine textEndOfLine)
+                {
+                    endOfLine = textEndOfLine;
+
+                    textRuns.Add(textRun);
+                    
+                    length += textRun.TextSourceLength;
+                    
                     break;
                 }
 
@@ -376,12 +436,14 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
-                    case TextEndOfLine textEndOfLine:
-                        endOfLine = textEndOfLine;
+                    case DrawableTextRun drawableTextRun:
+                    {
+                        textRuns.Add(drawableTextRun);
                         break;
+                    }
                 }
 
-                length += textRun.Text.Length;
+                length += textRun.TextSourceLength;
             }
 
             textRange = new TextRange(firstTextSourceIndex, length);
@@ -415,7 +477,7 @@ namespace Avalonia.Media.TextFormatting
             return false;
         }
 
-        private static int MeasureLength(IReadOnlyList<ShapedTextCharacters> textRuns, TextRange textRange,
+        private static int MeasureLength(IReadOnlyList<DrawableTextRun> textRuns, TextRange textRange,
             double paragraphWidth)
         {
             var currentWidth = 0.0;
@@ -423,19 +485,42 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var currentRun in textRuns)
             {
-                for (var i = 0; i < currentRun.ShapedBuffer.Length; i++)
+                switch (currentRun)
                 {
-                    var glyphInfo = currentRun.ShapedBuffer[i];
-
-                    if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                    case ShapedTextCharacters shapedTextCharacters:
                     {
-                        var measuredLength = lastCluster - textRange.Start;
+                        for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
+                        {
+                            var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
 
-                        return measuredLength == 0 ? 1 : measuredLength;
+                            if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                            {
+                                var measuredLength = lastCluster - textRange.Start;
+
+                                return measuredLength == 0 ? 1 : measuredLength;
+                            }
+
+                            lastCluster = glyphInfo.GlyphCluster;
+                            currentWidth += glyphInfo.GlyphAdvance;
+                        }
+                        
+                        break;
                     }
 
-                    lastCluster = glyphInfo.GlyphCluster;
-                    currentWidth += glyphInfo.GlyphAdvance;
+                    case { } drawableTextRun:
+                    {
+                        if (currentWidth + drawableTextRun.Size.Width > paragraphWidth)
+                        {
+                            var measuredLength = lastCluster - textRange.Start;
+                            
+                            return measuredLength == 0 ? 1 : measuredLength; 
+                        }
+                        
+                        lastCluster += currentRun.TextSourceLength;
+                        currentWidth += currentRun.Size.Width;
+                        
+                        break;
+                    }
                 }
             }
 
@@ -452,7 +537,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="flowDirection"></param>
         /// <param name="currentLineBreak">The current line break if the line was explicitly broken.</param>
         /// <returns>The wrapped text line.</returns>
-        private static TextLineImpl PerformTextWrapping(List<ShapedTextCharacters> textRuns, TextRange textRange,
+        private static TextLineImpl PerformTextWrapping(List<DrawableTextRun> textRuns, TextRange textRange,
             double paragraphWidth, TextParagraphProperties paragraphProperties, FlowDirection flowDirection,
             TextLineBreak? currentLineBreak)
         {
@@ -568,7 +653,7 @@ namespace Avalonia.Media.TextFormatting
                 break;
             }
 
-            var splitResult = SplitShapedRuns(textRuns, measuredLength);
+            var splitResult = SplitDrawableRuns(textRuns, measuredLength);
 
             textRange = new TextRange(textRange.Start, measuredLength);
 
@@ -644,7 +729,9 @@ namespace Avalonia.Media.TextFormatting
 
             var cultureInfo = textRun.Properties.CultureInfo;
 
-            var shapedBuffer = textShaper.ShapeText(textRun.Text, glyphTypeface, fontRenderingEmSize, cultureInfo, (sbyte)flowDirection);
+            var shaperOptions = new TextShaperOptions(glyphTypeface, fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
+
+            var shapedBuffer = textShaper.ShapeText(textRun.Text, shaperOptions);
 
             return new ShapedTextCharacters(shapedBuffer, textRun.Properties);
         }

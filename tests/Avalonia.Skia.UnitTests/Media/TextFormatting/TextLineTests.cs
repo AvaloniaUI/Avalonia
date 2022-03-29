@@ -277,6 +277,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 firstCharacterHit = previousCharacterHit;
 
+                firstCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
+
                 previousCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
 
                 Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
@@ -416,24 +418,144 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
-        public void TextLineBreak_Should_Contain_TextEndOfLine()
+        public void Should_Get_Next_CharacterHit_For_Drawable_Runs()
         {
             using (Start())
             {
-                var defaultTextRunProperties =
-                    new GenericTextRunProperties(Typeface.Default);
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new DrawableRunTextSource();
+                
+                var formatter = new TextFormatterImpl();
 
-                const string text = "0123456789";
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
 
-                var source = new SingleBufferTextSource(text, defaultTextRunProperties);
+                Assert.Equal(4, textLine.TextRuns.Count);
 
-                var textParagraphProperties = new GenericTextParagraphProperties(defaultTextRunProperties);
+                var currentHit = textLine.GetNextCaretCharacterHit(new CharacterHit(0));
 
-                var formatter = TextFormatter.Current;
+                Assert.Equal(1, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
 
-                var textLine = formatter.FormatLine(source, 0, double.PositiveInfinity, textParagraphProperties);
+                currentHit = textLine.GetNextCaretCharacterHit(currentHit);
 
-                Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
+                Assert.Equal(2, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
+
+                currentHit = textLine.GetNextCaretCharacterHit(currentHit);
+
+                Assert.Equal(3, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
+
+                currentHit = textLine.GetNextCaretCharacterHit(currentHit);
+
+                Assert.Equal(3, currentHit.FirstCharacterIndex);
+                Assert.Equal(1, currentHit.TrailingLength);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Previous_CharacterHit_For_Drawable_Runs()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new DrawableRunTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.Equal(4, textLine.TextRuns.Count);
+
+                var currentHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(3,1));
+
+                Assert.Equal(3, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
+
+                currentHit = textLine.GetPreviousCaretCharacterHit(currentHit);
+
+                Assert.Equal(2, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
+
+                currentHit = textLine.GetPreviousCaretCharacterHit(currentHit);
+
+                Assert.Equal(1, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
+
+                currentHit = textLine.GetPreviousCaretCharacterHit(currentHit);
+
+                Assert.Equal(0, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_CharacterHit_From_Distance_For_Drawable_Runs()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new DrawableRunTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHit = textLine.GetCharacterHitFromDistance(50);
+
+                Assert.Equal(3, characterHit.FirstCharacterIndex);
+                Assert.Equal(1, characterHit.TrailingLength);
+
+                characterHit = textLine.GetCharacterHitFromDistance(32);
+
+
+                Assert.Equal(3, characterHit.FirstCharacterIndex);
+                Assert.Equal(0, characterHit.TrailingLength);
+            }
+        }
+
+        private class DrawableRunTextSource : ITextSource
+        {
+            const string Text = "A_A_";
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                switch (textSourceIndex)
+                {
+                    case 0:
+                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 0, 1), new GenericTextRunProperties(Typeface.Default));
+                    case 1:
+                        return new CustomDrawableRun(1);
+                    case 2:
+                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 2, 1, 2), new GenericTextRunProperties(Typeface.Default));
+                    case 3:
+                        return new CustomDrawableRun(3);
+                    default:
+                        return null;
+                }
+            }
+        }
+        
+        private class CustomDrawableRun : DrawableTextRun
+        {
+            public CustomDrawableRun(int start)
+            {
+                Text = new ReadOnlySlice<char>(new char[1], start, DefaultTextSourceLength);
+            }
+
+            public override ReadOnlySlice<char> Text { get; }
+
+            public override Size Size => new(14, 14);
+            public override double Baseline => 14;
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
+               
             }
         }
 
@@ -515,6 +637,63 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
 
             return rects;
+        }
+
+        [Fact]
+        public void Should_Get_TextBounds()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var text = "0123".AsMemory();
+                var ltrOptions = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, 0, CultureInfo.CurrentCulture);
+                var rtlOptions = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, 1, CultureInfo.CurrentCulture);
+
+                var textRuns = new List<TextRun>
+                {
+                    new ShapedTextCharacters(TextShaper.Current.ShapeText(new ReadOnlySlice<char>(text), ltrOptions), defaultProperties),
+                    new ShapedTextCharacters(TextShaper.Current.ShapeText(new ReadOnlySlice<char>(text, text.Length, text.Length), ltrOptions), defaultProperties),
+                    new ShapedTextCharacters(TextShaper.Current.ShapeText(new ReadOnlySlice<char>(text, text.Length * 2, text.Length), rtlOptions), defaultProperties),
+                    new ShapedTextCharacters(TextShaper.Current.ShapeText(new ReadOnlySlice<char>(text, text.Length * 3, text.Length), ltrOptions), defaultProperties)
+                };
+
+             
+                var textSource = new FixedRunsTextSource(textRuns);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var textBounds = textLine.GetTextBounds(0, text.Length * 4);
+
+                Assert.Equal(3, textBounds.Count);
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
+            }
+        }
+
+        private class FixedRunsTextSource : ITextSource
+        {
+            private readonly IReadOnlyList<TextRun> _textRuns;
+
+            public FixedRunsTextSource(IReadOnlyList<TextRun> textRuns)
+            {
+                _textRuns = textRuns;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                foreach (var textRun in _textRuns)
+                {
+                    if(textRun.Text.Start == textSourceIndex)
+                    {
+                        return textRun;
+                    }
+                }
+
+                return null;
+            }
         }
 
         private static IDisposable Start()

@@ -10,7 +10,7 @@
     </Border>
   </Design.PreviewWith>
   <Style Selector="ListBox">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />

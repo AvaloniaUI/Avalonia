@@ -11,7 +11,7 @@
   </Design.PreviewWith>
   <Style Selector="RadioButton">
     <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
-    <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="8,0,0,0" />
@@ -49,7 +49,7 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              TextBlock.Foreground="{TemplateBinding Foreground}"
+                              Foreground="{TemplateBinding Foreground}"
                               Margin="{TemplateBinding Padding}"
                               RecognizesAccessKey="True"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -81,7 +81,7 @@
 
   <!-- PointerOver State -->
   <Style Selector="RadioButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="(TextBlock.Foreground)" Value="{DynamicResource RadioButtonForegroundPointerOver}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForegroundPointerOver}" />
   </Style>
 
   <Style Selector="RadioButton:pointerover /template/ Border#RootBorder">
@@ -107,7 +107,7 @@
 
   <!-- Pressed State -->
   <Style Selector="RadioButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="(TextBlock.Foreground)" Value="{DynamicResource RadioButtonForegroundPressed}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForegroundPressed}" />
   </Style>
 
   <Style Selector="RadioButton:pressed /template/ Border#RootBorder">
@@ -133,7 +133,7 @@
 
   <!-- Disabled State -->
   <Style Selector="RadioButton:disabled /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="(TextBlock.Foreground)" Value="{DynamicResource RadioButtonForegroundDisabled}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForegroundDisabled}" />
   </Style>
 
   <Style Selector="RadioButton:disabled /template/ Border#RootBorder">

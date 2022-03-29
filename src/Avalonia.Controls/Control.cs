@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -67,7 +67,43 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
-        
+
+        /// <summary>
+        /// Defines the <see cref="FontFamily"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
+            TextElement.FontFamilyProperty.AddOwner<Control>();
+
+        /// <summary>
+        /// Defines the <see cref="FontSize"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<double> FontSizeProperty =
+            TextElement.FontSizeProperty.AddOwner<Control>();
+
+        /// <summary>
+        /// Defines the <see cref="FontStyle"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FontStyle> FontStyleProperty =
+            TextElement.FontStyleProperty.AddOwner<Control>();
+
+        /// <summary>
+        /// Defines the <see cref="FontWeight"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FontWeight> FontWeightProperty =
+            TextElement.FontWeightProperty.AddOwner<Control>();
+
+        /// <summary>
+        /// Defines the <see cref="FontStretch"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FontStretch> FontStretchProperty =
+            TextElement.FontStretchProperty.AddOwner<Control>();
+
+        /// <summary>
+        /// Defines the <see cref="Foreground"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<IBrush?> ForegroundProperty =
+            TextElement.ForegroundProperty.AddOwner<Control>();
+
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -127,6 +163,60 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the font family.
+        /// </summary>
+        public FontFamily FontFamily
+        {
+            get { return GetValue(FontFamilyProperty); }
+            set { SetValue(FontFamilyProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
+        public double FontSize
+        {
+            get { return GetValue(FontSizeProperty); }
+            set { SetValue(FontSizeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the font style.
+        /// </summary>
+        public FontStyle FontStyle
+        {
+            get { return GetValue(FontStyleProperty); }
+            set { SetValue(FontStyleProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the font weight.
+        /// </summary>
+        public FontWeight FontWeight
+        {
+            get { return GetValue(FontWeightProperty); }
+            set { SetValue(FontWeightProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the font stretch.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get { return GetValue(FontStretchProperty); }
+            set { SetValue(FontStretchProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a brush used to paint the text.
+        /// </summary>
+        public IBrush? Foreground
+        {
+            get { return GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
+        }
+
+        /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>
         public event EventHandler<ContextRequestedEventArgs>? ContextRequested
@@ -136,6 +226,26 @@ namespace Avalonia.Controls
         }
 
         public new IControl? Parent => (IControl?)base.Parent;
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The flow direction.</returns>
+        public static FlowDirection GetFlowDirection(Control control)
+        {
+            return control.GetValue(FlowDirectionProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFlowDirection(Control control, FlowDirection value)
+        {
+            control.SetValue(FlowDirectionProperty, value);
+        }
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;

@@ -17,8 +17,9 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
+                var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, direction, CultureInfo.CurrentCulture);
                 var shapedBuffer =
-                    TextShaper.Current.ShapeText(text.AsMemory(), Typeface.Default.GlyphTypeface, 10, CultureInfo.CurrentCulture, direction);
+                    TextShaper.Current.ShapeText(text.AsMemory(), options);
 
                 var glyphRun = CreateGlyphRun(shapedBuffer);
 
@@ -59,8 +60,9 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
+                var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, direction, CultureInfo.CurrentCulture);
                 var shapedBuffer =
-                    TextShaper.Current.ShapeText(text.AsMemory(), Typeface.Default.GlyphTypeface, 10, CultureInfo.CurrentCulture, direction);
+                    TextShaper.Current.ShapeText(text.AsMemory(), options);
 
                 var glyphRun = CreateGlyphRun(shapedBuffer);
 
@@ -103,8 +105,9 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             using (Start())
             {
+                var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, direction, CultureInfo.CurrentCulture);
                 var shapedBuffer =
-                   TextShaper.Current.ShapeText(text.AsMemory(), Typeface.Default.GlyphTypeface, 10, CultureInfo.CurrentCulture, direction);
+                   TextShaper.Current.ShapeText(text.AsMemory(), options);
 
                 var glyphRun = CreateGlyphRun(shapedBuffer);
 

@@ -3,7 +3,7 @@
     <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Padding" Value="4"/>
@@ -18,7 +18,7 @@
                           Content="{TemplateBinding Content}"
                           Padding="{TemplateBinding Padding}"
                           RecognizesAccessKey="True"
-                          TextBlock.Foreground="{TemplateBinding Foreground}"
+                          Foreground="{TemplateBinding Foreground}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
       </ControlTemplate>

@@ -30,7 +30,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (runText.IsEmpty)
             {
-                return new TextEndOfParagraph();
+                return null;
             }
 
             var textStyleRun = CreateTextStyleRun(runText, _defaultProperties, _textModifier);

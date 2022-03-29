@@ -5,6 +5,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Avalonia.Visuals\Rendering\SceneGraph\LineBoundsHelper.cs" Link="LineBoundsHelper.cs" />
+    <Compile Update="Pages\TextFormatterPage.axaml.cs">
+      <DependentUpon>TextFormatterPage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />

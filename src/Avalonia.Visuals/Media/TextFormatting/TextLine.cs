@@ -190,6 +190,14 @@ namespace Avalonia.Media.TextFormatting
         public abstract CharacterHit GetBackspaceCaretCharacterHit(CharacterHit characterHit);
 
         /// <summary>
+        /// Get an array of bounding rectangles of a range of characters within a text line.
+        /// </summary>
+        /// <param name="firstTextSourceCharacterIndex">index of first character of specified range</param>
+        /// <param name="textLength">number of characters of the specified range</param>
+        /// <returns>an array of bounding rectangles.</returns>
+        public abstract IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceCharacterIndex, int textLength);
+        
+        /// <summary>
         /// Gets the text line offset x.
         /// </summary>
         /// <param name="width">The line width.</param>
