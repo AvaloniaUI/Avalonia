@@ -135,7 +135,7 @@ namespace Avalonia.Diagnostics
                 {
                     window.Show();
                 }
-            }           
+            }
             return Disposable.Create(() => window?.Close());
         }
     }
