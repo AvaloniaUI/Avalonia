@@ -785,14 +785,19 @@ namespace Avalonia.Controls.Presenters
                 case nameof (FontStyle):
                 case nameof (FontWeight):
                 case nameof (FontFamily):
+                case nameof (FontStretch):
+
                 case nameof (Text):
                 case nameof (TextAlignment):
                 case nameof (TextWrapping):
+
                 case nameof (SelectionStart):
                 case nameof (SelectionEnd):
                 case nameof (SelectionForegroundBrush):
+
                 case nameof (PasswordChar):
                 case nameof (RevealPassword):
+
                 case nameof(FlowDirection):
                 {
                     InvalidateTextLayout();

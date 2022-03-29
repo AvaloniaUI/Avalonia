@@ -500,6 +500,7 @@ namespace Avalonia.Controls
                 case nameof (TextWrapping):
                 case nameof (TextTrimming):
                 case nameof (TextAlignment):
+
                 case nameof (FlowDirection):
 
                 case nameof (Padding):
