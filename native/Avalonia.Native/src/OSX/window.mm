@@ -457,7 +457,8 @@ public:
             }
             
             point = ConvertPointY(point);
-            auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
+            NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
+            auto viewPoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
             
             *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
             
@@ -477,7 +478,8 @@ public:
             }
             
             auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
-            auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
+            NSRect convertRect = [Window convertRectToScreen:NSMakeRect(cocoaViewPoint.x, cocoaViewPoint.y, 0.0, 0.0)];
+            auto cocoaScreenPoint = NSPointFromCGPoint(NSMakePoint(convertRect.origin.x, convertRect.origin.y));
             *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
             
             return S_OK;
@@ -573,7 +575,8 @@ public:
         if(!((nseventType >= NSEventTypeLeftMouseDown && nseventType <= NSEventTypeMouseExited)
            || (nseventType >= NSEventTypeOtherMouseDown && nseventType <= NSEventTypeOtherMouseDragged)))
         {
-            auto nspoint = [Window convertBaseToScreen: ToNSPoint(point)];
+            NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
+            auto nspoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);            
             CGPoint cgpoint = NSPointToCGPoint(nspoint);
             auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
             nsevent = [NSEvent eventWithCGEvent: cgevent];

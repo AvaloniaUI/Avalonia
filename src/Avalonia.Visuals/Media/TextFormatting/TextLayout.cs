@@ -41,7 +41,7 @@ namespace Avalonia.Media.TextFormatting
             IBrush? foreground,
             TextAlignment textAlignment = TextAlignment.Left,
             TextWrapping textWrapping = TextWrapping.NoWrap,
-            TextTrimming textTrimming = TextTrimming.None,
+            TextTrimming? textTrimming = null,
             TextDecorationCollection? textDecorations = null,
             FlowDirection flowDirection = FlowDirection.LeftToRight,
             double maxWidth = double.PositiveInfinity,
@@ -58,7 +58,7 @@ namespace Avalonia.Media.TextFormatting
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
                     textDecorations, flowDirection, lineHeight);
 
-            _textTrimming = textTrimming;
+            _textTrimming = textTrimming ?? TextTrimming.None;
 
             _textStyleOverrides = textStyleOverrides;
 
@@ -641,14 +641,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The <see cref="TextCollapsingProperties"/>.</returns>
         private TextCollapsingProperties GetCollapsingProperties(double width)
         {
-            return _textTrimming switch
-            {
-                TextTrimming.CharacterEllipsis => new TextTrailingCharacterEllipsis(width,
-                    _paragraphProperties.DefaultTextRunProperties),
-                TextTrimming.WordEllipsis => new TextTrailingWordEllipsis(width,
-                    _paragraphProperties.DefaultTextRunProperties),
-                _ => throw new ArgumentOutOfRangeException(),
-            };
+            return _textTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties));
         }
     }
 }

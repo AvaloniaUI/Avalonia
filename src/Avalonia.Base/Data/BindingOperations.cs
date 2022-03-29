@@ -188,14 +188,15 @@ namespace Avalonia.Data
 
         private sealed class TwoWayBindingDisposable : IDisposable
         {
-            private readonly IDisposable _first;
-            private readonly IDisposable _second;
+            private readonly IDisposable _toTargetSubscription;
+            private readonly IDisposable _fromTargetSubsription;
+
             private bool _isDisposed;
 
-            public TwoWayBindingDisposable(IDisposable first, IDisposable second)
+            public TwoWayBindingDisposable(IDisposable toTargetSubscription, IDisposable fromTargetSubsription)
             {
-                _first = first;
-                _second = second;
+                _toTargetSubscription = toTargetSubscription;
+                _fromTargetSubsription = fromTargetSubsription;
             }
 
             public void Dispose()
@@ -205,8 +206,8 @@ namespace Avalonia.Data
                     return;
                 }
 
-                _first.Dispose();
-                _second.Dispose();
+                _fromTargetSubsription.Dispose();
+                _toTargetSubscription.Dispose();
 
                 _isDisposed = true;
             }
