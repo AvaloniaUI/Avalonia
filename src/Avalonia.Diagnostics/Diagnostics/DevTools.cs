@@ -105,13 +105,15 @@ namespace Avalonia.Diagnostics
 
         private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
         {
+            var focussedControl = KeyboardDevice.Instance?.FocusedElement as IControl;
             if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
             if (s_open.TryGetValue(application, out var window))
-            {                
+            {
                 window.Activate();
+                window.SelectedControl(focussedControl);
             }
             else
             {
@@ -122,7 +124,7 @@ namespace Avalonia.Diagnostics
                     Height = options.Size.Height,
                 };
                 window.SetOptions(options);
-
+                window.SelectedControl(focussedControl);
                 window.Closed += DevToolsClosed;
                 s_open.Add(application, window);
                 if (options.ShowAsChildWindow && owner is { })
