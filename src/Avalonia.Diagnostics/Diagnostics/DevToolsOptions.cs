@@ -41,5 +41,10 @@ namespace Avalonia.Diagnostics
         /// <remarks>Default handler is <see cref="Screenshots.FilePickerHandler"/></remarks>
         public IScreenshotHandler ScreenshotHandler { get; set; }
           = Convetions.DefaultScreenshotHandler;
+
+        /// <summary>
+        /// Gets or sets whether DevTools should use the dark mode theme
+        /// </summary>
+        public bool UseDarkMode { get; set; }
     }
 }
