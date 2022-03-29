@@ -70,7 +70,7 @@
                   BorderBrush="{DynamicResource DateTimePickerFlyoutButtonBorderBrush}"
                   BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
                   Content="{TemplateBinding Content}"
-                  Foreground="{DynamicResource SystemControlHighlightAltBaseHighBrush}"
+                  TextElement.Foreground="{DynamicResource SystemControlHighlightAltBaseHighBrush}"
                   ContentTemplate="{TemplateBinding ContentTemplate}"
                   Padding="{TemplateBinding Padding}"
                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -165,7 +165,7 @@
                                     Background="{TemplateBinding Background}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     Content="{TemplateBinding Content}"
-                                    Foreground="{TemplateBinding Foreground}"
+                                    TextElement.Foreground="{TemplateBinding Foreground}"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch"
                                     CornerRadius="{TemplateBinding CornerRadius}"/>

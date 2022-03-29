@@ -53,7 +53,7 @@
                               Grid.Column="0"
                               Grid.ColumnSpan="2"
                               IsVisible="False"
-                              FontWeight="{DynamicResource ComboBoxHeaderThemeFontWeight}"
+                              TextElement.FontWeight="{DynamicResource ComboBoxHeaderThemeFontWeight}"
                               Margin="{DynamicResource ComboBoxTopHeaderMargin}"
                               VerticalAlignment="Top" />
             <Border x:Name="Background"

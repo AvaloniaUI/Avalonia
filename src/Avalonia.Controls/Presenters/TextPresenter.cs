@@ -8,6 +8,7 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
+using Avalonia.Controls.Documents;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -114,6 +115,60 @@ namespace Avalonia.Controls.Presenters
         {
             get => _text;
             set => SetAndRaise(TextProperty, ref _text, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font family.
+        /// </summary>
+        public FontFamily FontFamily
+        {
+            get => TextElement.GetFontFamily(this);
+            set => TextElement.SetFontFamily(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
+        public double FontSize
+        {
+            get => TextElement.GetFontSize(this);
+            set => TextElement.SetFontSize(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font style.
+        /// </summary>
+        public FontStyle FontStyle
+        {
+            get => TextElement.GetFontStyle(this);
+            set => TextElement.SetFontStyle(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font weight.
+        /// </summary>
+        public FontWeight FontWeight
+        {
+            get => TextElement.GetFontWeight(this);
+            set => TextElement.SetFontWeight(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font stretch.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get => TextElement.GetFontStretch(this);
+            set => TextElement.SetFontStretch(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a brush used to paint the text.
+        /// </summary>
+        public IBrush? Foreground
+        {
+            get => TextElement.GetForeground(this);
+            set => TextElement.SetForeground(this, value);
         }
 
         /// <summary>

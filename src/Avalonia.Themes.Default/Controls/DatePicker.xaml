@@ -58,7 +58,7 @@
                   BorderBrush="{DynamicResource ThemeControlTransparentBrush}"
                   BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
                   Content="{TemplateBinding Content}"
-                  Foreground="{DynamicResource ThemeForegroundBrush}"
+                  TextElement.Foreground="{DynamicResource ThemeForegroundBrush}"
                   ContentTemplate="{TemplateBinding ContentTemplate}"
                   Padding="{TemplateBinding Padding}"
                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -151,7 +151,7 @@
                                   BorderThickness="{TemplateBinding BorderThickness}"
                                   CornerRadius="{TemplateBinding CornerRadius}"
                                   Content="{TemplateBinding Content}"
-                                  Foreground="{TemplateBinding Foreground}"
+                                  TextElement.Foreground="{TemplateBinding Foreground}"
                                   HorizontalContentAlignment="Stretch"
                                   VerticalContentAlignment="Stretch"/>
               </ControlTemplate>

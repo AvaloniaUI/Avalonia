@@ -68,42 +68,6 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
 
-        /// <summary>
-        /// Defines the <see cref="FontFamily"/> property.
-        /// </summary>
-        public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
-            TextElement.FontFamilyProperty.AddOwner<Control>();
-
-        /// <summary>
-        /// Defines the <see cref="FontSize"/> property.
-        /// </summary>
-        public static readonly AttachedProperty<double> FontSizeProperty =
-            TextElement.FontSizeProperty.AddOwner<Control>();
-
-        /// <summary>
-        /// Defines the <see cref="FontStyle"/> property.
-        /// </summary>
-        public static readonly AttachedProperty<FontStyle> FontStyleProperty =
-            TextElement.FontStyleProperty.AddOwner<Control>();
-
-        /// <summary>
-        /// Defines the <see cref="FontWeight"/> property.
-        /// </summary>
-        public static readonly AttachedProperty<FontWeight> FontWeightProperty =
-            TextElement.FontWeightProperty.AddOwner<Control>();
-
-        /// <summary>
-        /// Defines the <see cref="FontStretch"/> property.
-        /// </summary>
-        public static readonly AttachedProperty<FontStretch> FontStretchProperty =
-            TextElement.FontStretchProperty.AddOwner<Control>();
-
-        /// <summary>
-        /// Defines the <see cref="Foreground"/> property.
-        /// </summary>
-        public static readonly AttachedProperty<IBrush?> ForegroundProperty =
-            TextElement.ForegroundProperty.AddOwner<Control>();
-
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -160,60 +124,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(FlowDirectionProperty);
             set => SetValue(FlowDirectionProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the font family.
-        /// </summary>
-        public FontFamily FontFamily
-        {
-            get { return GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the font size.
-        /// </summary>
-        public double FontSize
-        {
-            get { return GetValue(FontSizeProperty); }
-            set { SetValue(FontSizeProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the font style.
-        /// </summary>
-        public FontStyle FontStyle
-        {
-            get { return GetValue(FontStyleProperty); }
-            set { SetValue(FontStyleProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the font weight.
-        /// </summary>
-        public FontWeight FontWeight
-        {
-            get { return GetValue(FontWeightProperty); }
-            set { SetValue(FontWeightProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the font stretch.
-        /// </summary>
-        public FontStretch FontStretch
-        {
-            get { return GetValue(FontStretchProperty); }
-            set { SetValue(FontStretchProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a brush used to paint the text.
-        /// </summary>
-        public IBrush? Foreground
-        {
-            get { return GetValue(ForegroundProperty); }
-            set { SetValue(ForegroundProperty, value); }
         }
 
         /// <summary>
