@@ -182,8 +182,8 @@ namespace Avalonia.Controls.Selection
             try
             {
                 var items = WritableSelectedItems;
-                var deselected = e.DeselectedItems.ToList();
-                var selected = e.SelectedItems.ToList();
+                var deselected = e.DeselectedItems.ToArray();
+                var selected = e.SelectedItems.ToArray();
 
                 _ignoreSelectedItemsChanges = true;
 
