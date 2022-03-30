@@ -175,13 +175,13 @@ namespace Avalonia.Media
             //
             //   Where:
             //
-            //          hue : integer from 0 to 360
-            //   saturation : double from 0.0 to 1.0
-            //                (HTML uses percentages)
-            //        value : double from 0.0 to 1.0
-            //                (HTML uses percentages)
-            //        alpha : double from 0.0 to 1.0
-            //                (HTML does not use percent for alpha)
+            //          hue : double from 0 to 360
+            //   saturation : double from 0 to 1
+            //                (HTML uses a percentage)
+            //        value : double from 0 to 1
+            //                (HTML uses a percentage)
+            //        alpha : double from 0 to 1
+            //                (HTML does not use a percentage for alpha)
 
             sb.Append("hsva(");
             sb.Append(H.ToString(CultureInfo.InvariantCulture));
