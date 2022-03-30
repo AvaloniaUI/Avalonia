@@ -643,9 +643,7 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateEllipse()
         {
-            var selectionEllipsePanel = _selectionEllipsePanel;
-
-            if (selectionEllipsePanel == null)
+            if (_selectionEllipsePanel == null)
             {
                 return;
             }
@@ -654,12 +652,12 @@ namespace Avalonia.Controls.Primitives
             if (_imageWidthFromLastBitmapCreation == 0 ||
                 _imageHeightFromLastBitmapCreation == 0)
             {
-                selectionEllipsePanel.IsVisible = false;
+                _selectionEllipsePanel.IsVisible = false;
                 return;
             }
             else
             {
-                selectionEllipsePanel.IsVisible = true;
+                _selectionEllipsePanel.IsVisible = true;
             }
 
             double xPosition;
@@ -810,8 +808,8 @@ namespace Avalonia.Controls.Primitives
                 yPosition = (Math.Sin((thetaValue * Math.PI / 180.0) + Math.PI) * radius * rValue) + radius;
             }
 
-            Canvas.SetLeft(selectionEllipsePanel, xPosition - (selectionEllipsePanel.Width / 2));
-            Canvas.SetTop(selectionEllipsePanel, yPosition - (selectionEllipsePanel.Height / 2));
+            Canvas.SetLeft(_selectionEllipsePanel, xPosition - (_selectionEllipsePanel.Width / 2));
+            Canvas.SetTop(_selectionEllipsePanel, yPosition - (_selectionEllipsePanel.Height / 2));
 
             // We only want to bother with the color name tool tip if we can provide color names.
             if (ColorHelpers.ToDisplayNameExists)
@@ -905,7 +903,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             // We want ColorSpectrum to always be a square, so we'll take the smaller of the dimensions
-            // and size the sizing grid to that.
+            // and size the sizing panel to that.
             double minDimension = Math.Min(_layoutRoot.Bounds.Width, _layoutRoot.Bounds.Height);
 
             if (minDimension == 0)
