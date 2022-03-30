@@ -219,16 +219,16 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (workingString.StartsWith("hsva(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal) &&
-                workingString.Length > 6)
+            if (workingString.Length > 6 &&
+                workingString.StartsWith("hsva(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
             }
 
-            if (workingString.StartsWith("hsv(", StringComparison.OrdinalIgnoreCase) &&
-                workingString.EndsWith(")", StringComparison.Ordinal) &&
-                workingString.Length > 5)
+            if (workingString.Length > 5 &&
+                workingString.StartsWith("hsv(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
             }
