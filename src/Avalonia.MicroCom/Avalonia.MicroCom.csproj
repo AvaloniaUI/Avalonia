@@ -10,6 +10,8 @@
     <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <ExcludeAssets>all</ExcludeAssets>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
