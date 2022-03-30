@@ -186,6 +186,7 @@ namespace Avalonia.Media.TextFormatting
 
             // process hit that happens within the line
             var characterHit = new CharacterHit();
+            var currentPosition = TextRange.Start;
 
             foreach (var currentRun in _textRuns)
             {
@@ -200,11 +201,11 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if(distance < currentRun.Size.Width / 2)
                             {
-                                characterHit = new CharacterHit(currentRun.Text.Start);
+                                characterHit = new CharacterHit(currentPosition);
                             }
                             else
                             {
-                                characterHit = new CharacterHit(currentRun.Text.Start, currentRun.Text.Length);
+                                characterHit = new CharacterHit(currentPosition, currentRun.TextSourceLength);
                             }
                             break;
                         }
@@ -216,6 +217,7 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 distance -= currentRun.Size.Width;
+                currentPosition += currentRun.TextSourceLength;
             }
 
             return characterHit;
@@ -225,8 +227,8 @@ namespace Avalonia.Media.TextFormatting
         public override double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
             var characterIndex = characterHit.FirstCharacterIndex + (characterHit.TrailingLength != 0 ? 1 : 0);
-
             var currentDistance = Start;
+            var currentPosition = TextRange.Start;
 
             GlyphRun? lastRun = null;
 
@@ -321,7 +323,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     default:
                         {
-                            if(characterIndex == textRun.Text.Start)
+                            if(characterIndex == currentPosition)
                             {
                                 return currentDistance;
                             }
@@ -332,6 +334,7 @@ namespace Avalonia.Media.TextFormatting
 
                 //No hit hit found so we add the full width
                 currentDistance += textRun.Size.Width;
+                currentPosition += textRun.TextSourceLength;
             }
 
             return currentDistance;
