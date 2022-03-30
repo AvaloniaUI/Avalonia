@@ -4,6 +4,8 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.Globalization;
+using System.Text;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -153,6 +155,109 @@ namespace Avalonia.Media
         {
             // Use the by-channel conversion method directly for performance
             return HsvColor.ToRgb(H, S, V, A);
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            // Use a format similar to HSL in HTML/CSS "hsla(0, 100%, 50%, 0.5)"
+            //
+            // However:
+            //   - To ensure precision is never lost, allow decimal places
+            //   - To maintain numerical consistency do not use percent
+            //
+            // Example:
+            //
+            // hsva(hue, saturation, value, alpha)
+            // hsva(230, 1.0, 0.5, 1.0)
+            //
+            //   Where:
+            //
+            //          hue : integer from 0 to 360
+            //   saturation : double from 0.0 to 1.0
+            //                (HTML uses percentages)
+            //        value : double from 0.0 to 1.0
+            //                (HTML uses percentages)
+            //        alpha : double from 0.0 to 1.0
+            //                (HTML does not use percent for alpha)
+
+            sb.Append("hsva(");
+            sb.Append(H.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(S.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(V.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(A.ToString(CultureInfo.InvariantCulture));
+            sb.Append(')');
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Parses an HSV color string.
+        /// </summary>
+        /// <param name="s">The HSV color string to parse.</param>
+        /// <param name="hsvColor">The parsed HSV color.</param>
+        /// <returns>True if parsing was successful; otherwise, false.</returns>
+        public static bool TryParse(string s, out HsvColor hsvColor)
+        {
+            hsvColor = default;
+
+            if (s is null)
+            {
+                return false;
+            }
+
+            string workingString = s.Trim();
+
+            if (workingString.Length == 0 ||
+                workingString.IndexOf(",", StringComparison.Ordinal) < 0)
+            {
+                return false;
+            }
+
+            if (workingString.StartsWith("hsva(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal) &&
+                workingString.Length > 6)
+            {
+                workingString = workingString.Substring(5, workingString.Length - 6);
+            }
+
+            if (workingString.StartsWith("hsv(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal) &&
+                workingString.Length > 5)
+            {
+                workingString = workingString.Substring(4, workingString.Length - 5);
+            }
+
+            string[] components = workingString.Split(',');
+
+            if (components.Length == 3) // HSV
+            {
+                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
+                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value))
+                {
+                    hsvColor = new HsvColor(1.0, hue, saturation, value);
+                    return true;
+                }
+            }
+            else if (components.Length == 4) // HSVA
+            {
+                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
+                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value) &&
+                    double.TryParse(components[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double alpha))
+                {
+                    hsvColor = new HsvColor(alpha, hue, saturation, value);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
