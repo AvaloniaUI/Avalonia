@@ -200,7 +200,27 @@ namespace Avalonia.Media
         /// Parses an HSV color string.
         /// </summary>
         /// <param name="s">The HSV color string to parse.</param>
-        /// <param name="hsvColor">The parsed HSV color.</param>
+        /// <returns>The parsed <see cref="HsvColor"/>.</returns>
+        public static HsvColor Parse(string s)
+        {
+            if (s is null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (TryParse(s, out HsvColor hsvColor))
+            {
+                return hsvColor;
+            }
+
+            throw new FormatException($"Invalid HSV color string: '{s}'.");
+        }
+
+        /// <summary>
+        /// Parses an HSV color string.
+        /// </summary>
+        /// <param name="s">The HSV color string to parse.</param>
+        /// <param name="hsvColor">The parsed <see cref="HsvColor"/>.</param>
         /// <returns>True if parsing was successful; otherwise, false.</returns>
         public static bool TryParse(string s, out HsvColor hsvColor)
         {
