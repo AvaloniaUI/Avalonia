@@ -520,22 +520,46 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Get_Distance_From_CharacterHit_Drawable_Runs()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new DrawableRunTextSource();
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(1));
+
+                Assert.Equal(14, distance);
+
+                distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(2));
+
+                Assert.True(distance > 14);
+            }
+        }
+
         private class DrawableRunTextSource : ITextSource
         {
-            const string Text = "A_A_";
+            const string Text = "_A_A";
 
             public TextRun? GetTextRun(int textSourceIndex)
             {
                 switch (textSourceIndex)
                 {
                     case 0:
-                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 0, 1), new GenericTextRunProperties(Typeface.Default));
+                        return new CustomDrawableRun();                     
                     case 1:
-                        return new CustomDrawableRun(1);
+                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 1, 1), new GenericTextRunProperties(Typeface.Default));
                     case 2:
-                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 2, 1, 2), new GenericTextRunProperties(Typeface.Default));
+                        return new CustomDrawableRun();                      
                     case 3:
-                        return new CustomDrawableRun(3);
+                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 3, 1, 3), new GenericTextRunProperties(Typeface.Default));
                     default:
                         return null;
                 }
@@ -544,13 +568,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         
         private class CustomDrawableRun : DrawableTextRun
         {
-            public CustomDrawableRun(int start)
-            {
-                Text = new ReadOnlySlice<char>(new char[1], start, DefaultTextSourceLength);
-            }
-
-            public override ReadOnlySlice<char> Text { get; }
-
             public override Size Size => new(14, 14);
             public override double Baseline => 14;
             public override void Draw(DrawingContext drawingContext, Point origin)

@@ -328,6 +328,11 @@ namespace Avalonia.Media.TextFormatting
                                 return currentDistance;
                             }
 
+                            if(characterIndex == currentPosition + textRun.TextSourceLength)
+                            {
+                                return currentDistance + textRun.Size.Width;
+                            }
+
                             break;
                         }
                 }
