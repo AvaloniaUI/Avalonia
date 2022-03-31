@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
@@ -1165,9 +1164,9 @@ namespace Avalonia.Media.TextFormatting
                                     }
                             }
 
-                            if (ascent > -drawableTextRun.Size.Height)
+                            if (descent - ascent + lineGap < drawableTextRun.Size.Height || lineHeight < drawableTextRun.Size.Height)
                             {
-                                ascent = -drawableTextRun.Size.Height;
+                                lineHeight = drawableTextRun.Size.Height;
                             }
 
                             break;
@@ -1178,9 +1177,12 @@ namespace Avalonia.Media.TextFormatting
             start = GetParagraphOffsetX(width, widthIncludingWhitespace, _paragraphWidth,
                 _paragraphProperties.TextAlignment, _paragraphProperties.FlowDirection);
 
-            height = double.IsNaN(lineHeight) || MathUtilities.IsZero(lineHeight) ?
-                descent - ascent + lineGap :
-                lineHeight;
+            height = descent - ascent + lineGap;
+           
+            if(!double.IsNaN(lineHeight) && lineHeight > height)
+            {
+                height = lineHeight;
+            }
 
             return new TextLineMetrics(widthIncludingWhitespace > _paragraphWidth, height, newLineLength, start,
                 -ascent, trailingWhitespaceLength, width, widthIncludingWhitespace);
