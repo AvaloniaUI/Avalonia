@@ -114,7 +114,7 @@ namespace Avalonia.Input
         {
             if (_disposed)
                 return;
-            var values = _pointers.Values.ToList();
+            var values = _pointers.Values.ToArray();
             _pointers.Clear();
             _disposed = true;
             foreach (var p in values)
