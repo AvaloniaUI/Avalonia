@@ -119,11 +119,7 @@ namespace ControlCatalog.NetCore
                         UseDebug = true, 
                         PreferDiscreteGpu = true 
                     })
-                    .UseSkia()
-                    .With(new SkiaOptions()
-                    {
-                        CustomGpuFactory = VulkanSkiaGpu.CreateGpu
-                    });
+                    .UseVulkan();
                 return builder.StartWithClassicDesktopLifetime(args);
             }
             else
