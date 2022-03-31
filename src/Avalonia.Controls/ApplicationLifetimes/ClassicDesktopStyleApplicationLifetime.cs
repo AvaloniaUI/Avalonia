@@ -65,7 +65,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <inheritdoc/>
         public Window? MainWindow { get; set; }
 
-        public IReadOnlyList<Window> Windows => _windows.ToList();
+        public IReadOnlyList<Window> Windows => _windows.ToArray();
 
         private void HandleWindowClosed(Window window)
         {

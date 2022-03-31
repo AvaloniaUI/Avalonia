@@ -217,8 +217,9 @@ namespace Avalonia.Win32
                 }
 
                 public IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens =>
-                _hiddenWindow.Screens.All.Select(s => new ManagedPopupPositionerScreenInfo(
-                    s.Bounds.ToRect(1), s.Bounds.ToRect(1))).ToList();
+                    _hiddenWindow.Screens.All
+                        .Select(s => new ManagedPopupPositionerScreenInfo(s.Bounds.ToRect(1), s.Bounds.ToRect(1)))
+                        .ToArray();
 
                 public Rect ParentClientAreaScreenGeometry
                 {
