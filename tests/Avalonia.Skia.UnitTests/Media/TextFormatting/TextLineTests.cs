@@ -450,8 +450,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 currentHit = textLine.GetNextCaretCharacterHit(currentHit);
 
-                Assert.Equal(4, currentHit.FirstCharacterIndex);
-                Assert.Equal(0, currentHit.TrailingLength);
+                Assert.Equal(3, currentHit.FirstCharacterIndex);
+                Assert.Equal(1, currentHit.TrailingLength);
             }
         }
 
@@ -514,9 +514,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 characterHit = textLine.GetCharacterHitFromDistance(32);
 
-
-                Assert.Equal(3, characterHit.FirstCharacterIndex);
-                Assert.Equal(0, characterHit.TrailingLength);
+                Assert.Equal(2, characterHit.FirstCharacterIndex);
+                Assert.Equal(1, characterHit.TrailingLength);
             }
         }
 
@@ -555,7 +554,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     case 0:
                         return new CustomDrawableRun();                     
                     case 1:
-                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 1, 1), new GenericTextRunProperties(Typeface.Default));
+                        return new TextCharacters(new ReadOnlySlice<char>(Text.AsMemory(), 1, 1, 1), new GenericTextRunProperties(Typeface.Default));
                     case 2:
                         return new CustomDrawableRun();                      
                     case 3:
