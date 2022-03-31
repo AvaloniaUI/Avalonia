@@ -849,7 +849,7 @@ namespace Avalonia.Controls
         /// <param name="desired">The desired items.</param>
         private static void SynchronizeItems(IList items, IEnumerable<object> desired)
         {
-            var list = items.Cast<object>().ToList();
+            var list = items.Cast<object>();
             var toRemove = list.Except(desired).ToList();
             var toAdd = desired.Except(list).ToList();
 
