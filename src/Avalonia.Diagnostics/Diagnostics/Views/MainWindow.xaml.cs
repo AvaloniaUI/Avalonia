@@ -161,8 +161,19 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var root = Root as TopLevel
-                ?? vm.PointerOverRoot as TopLevel;
+            var root = vm.PointerOverRoot as TopLevel;
+            IControl? parent = root;
+
+            while (parent?.Parent != null)
+            {
+                parent = parent.Parent;
+            }
+
+            if (parent != null)
+            {
+                root = parent as TopLevel;
+            }
+
             if (root is null)
             {
                 return;
