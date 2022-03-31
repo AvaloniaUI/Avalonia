@@ -6,7 +6,7 @@
                 Value="{DynamicResource ThemeBorderLowBrush}" />
         <Setter Property="BorderThickness"
                 Value="{DynamicResource ThemeBorderThickness}" />
-        <Setter Property="TextElement.Foreground"
+        <Setter Property="Foreground"
                 Value="{DynamicResource ThemeForegroundBrush}" />
         <Setter Property="HorizontalContentAlignment"
                 Value="Center" />

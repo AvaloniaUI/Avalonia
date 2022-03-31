@@ -11,7 +11,7 @@
   </Design.PreviewWith>
   <Style Selector="RadioButton">
     <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="8,0,0,0" />

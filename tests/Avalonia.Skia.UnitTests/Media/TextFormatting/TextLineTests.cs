@@ -450,8 +450,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 currentHit = textLine.GetNextCaretCharacterHit(currentHit);
 
-                Assert.Equal(3, currentHit.FirstCharacterIndex);
-                Assert.Equal(1, currentHit.TrailingLength);
+                Assert.Equal(4, currentHit.FirstCharacterIndex);
+                Assert.Equal(0, currentHit.TrailingLength);
             }
         }
 

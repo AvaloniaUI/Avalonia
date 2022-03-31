@@ -12,7 +12,7 @@
   <Style Selector="RepeatButton">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackground}" />
     <!--<Setter Property="BackgroundSizing" Value="OuterBorderEdge" />-->
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource RepeatButtonForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />

@@ -13,7 +13,7 @@
   <Style Selector="Button">
     <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
     <!--<Setter Property="BackgroundSizing" Value="OuterBorderEdge" />-->
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />

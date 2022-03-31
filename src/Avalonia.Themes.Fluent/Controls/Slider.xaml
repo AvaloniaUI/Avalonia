@@ -38,7 +38,7 @@
   <Style Selector="Slider:horizontal">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
+    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -100,7 +100,7 @@
   <Style Selector="Slider:vertical">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
+    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -270,6 +270,6 @@
   </Style>
   
   <Style Selector="Slider:error">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
   </Style>
 </Styles>

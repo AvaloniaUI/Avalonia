@@ -18,7 +18,7 @@
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
     <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselected}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
     <Setter Property="Padding" Value="{DynamicResource TabItemHeaderMargin}" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinHeight" Value="{DynamicResource TabStripItemMinHeight}" />
@@ -69,7 +69,7 @@
   <!--  We don't use selector to PART_LayoutRoot, so developer can override selected item background with TabStripItem.Background  -->
   <Style Selector="TabStripItem:selected">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelected}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
   </Style>
   <Style Selector="TabStripItem:selected /template/ Border#PART_SelectedPipe">
     <Setter Property="IsVisible" Value="True" />

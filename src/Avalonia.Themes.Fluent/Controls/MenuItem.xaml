@@ -53,7 +53,7 @@
 
   <Style Selector="MenuItem">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackground}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
     <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePadding}" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
@@ -208,7 +208,7 @@
   </Style>
 
   <Style Selector="MenuItem /template/ TextBlock#PART_InputGestureText">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" />
   </Style>
   <Style Selector="MenuItem /template/ Path#PART_ChevronPath">
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevron}" />
@@ -221,7 +221,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPointerOver}" />
   </Style>
   <Style Selector="MenuItem:selected /template/ TextBlock#PART_InputGestureText">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
   </Style>
   <Style Selector="MenuItem:selected /template/ Path#PART_ChevronPath">
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPointerOver}" />
@@ -235,7 +235,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPressed}" />
   </Style>
   <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover TextBlock#PART_InputGestureText">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
   </Style>
   <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover Path#PART_ChevronPath">
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPressed}" />
@@ -248,7 +248,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
   </Style>
   <Style Selector="MenuItem:disabled /template/ TextBlock#PART_InputGestureText">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
   </Style>
   <Style Selector="MenuItem:disabled /template/ Path#PART_ChevronPath">
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronDisabled}" />

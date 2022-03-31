@@ -56,7 +56,7 @@
 
   <!-- Unchecked Normal State -->
   <Style Selector="CheckBox">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
+    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
   </Style>
 
   <Style Selector="CheckBox">
@@ -134,7 +134,7 @@
 
   <!-- Checked Normal State -->
   <Style Selector="CheckBox:checked">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource CheckBoxForegroundChecked}" />
+    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundChecked}" />
   </Style>
 
   <Style Selector="CheckBox:checked">
@@ -214,7 +214,7 @@
 
   <!-- Indeterminate Normal State -->
   <Style Selector="CheckBox:indeterminate">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminate}" />
+    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminate}" />
   </Style>
 
   <Style Selector="CheckBox:indeterminate">

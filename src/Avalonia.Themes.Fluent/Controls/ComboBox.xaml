@@ -30,7 +30,7 @@
     <Setter Property="Padding" Value="{DynamicResource ComboBoxPadding}" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="MaxDropDownHeight" Value="504" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForeground}" />
     <Setter Property="Background" Value="{DynamicResource ComboBoxBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ComboBoxBorderThemeThickness}" />
@@ -146,7 +146,7 @@
 
   <!--  Normal State  -->
   <Style Selector="ComboBox /template/ TextBlock#PlaceholderTextBlock">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
   </Style>
 
   <Style Selector="ComboBox /template/ Border#HighlightBackground">
@@ -154,7 +154,7 @@
   </Style>
 
   <Style Selector="ComboBox /template/ PathIcon#DropDownGlyph">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
     <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
   </Style>
 
@@ -185,11 +185,11 @@
   </Style>
 
   <Style Selector="ComboBox:disabled /template/ TextBlock#PlaceholderTextBlock">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
   </Style>
 
   <Style Selector="ComboBox:disabled /template/ PathIcon#DropDownGlyph">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundDisabled}" />
   </Style>
 
   <!--  Focused State  -->
@@ -203,11 +203,11 @@
   </Style>
 
   <Style Selector="ComboBox:focus-visible /template/ TextBlock#PlaceholderTextBlock">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
   </Style>
 
   <Style Selector="ComboBox:focus-visible /template/ PathIcon#DropDownGlyph">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocused}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocused}" />
   </Style>
 
   <!--  Focus Pressed State  -->
@@ -216,11 +216,11 @@
   </Style>
 
   <Style Selector="ComboBox:focused:pressed /template/ TextBlock#PlaceholderTextBlock">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
   </Style>
 
   <Style Selector="ComboBox:focused:pressed /template/ PathIcon#DropDownGlyph">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
   </Style>
   
   <!-- Error State -->

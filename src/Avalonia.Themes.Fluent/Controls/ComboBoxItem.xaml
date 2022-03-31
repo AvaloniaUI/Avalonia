@@ -18,7 +18,7 @@
   </Design.PreviewWith>
 
   <Style Selector="ComboBoxItem">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxItemForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxItemForeground}" />
     <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackground}" />
     <Setter Property="Padding" Value="{DynamicResource ComboBoxItemThemePadding}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />

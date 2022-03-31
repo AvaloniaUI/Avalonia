@@ -358,7 +358,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             // Can't move, we're after the last character
-            var runIndex = GetRunIndexAtCharacterIndex(TextRange.End, LogicalDirection.Forward);
+            var runIndex = GetRunIndexAtCharacterIndex(TextRange.End, LogicalDirection.Forward, out var currentPosition);
 
             var currentRun = _textRuns[runIndex];
 
@@ -371,7 +371,7 @@ namespace Avalonia.Media.TextFormatting
                     }
                 default:
                     {
-                        characterHit = new CharacterHit(currentRun.Text.Start, currentRun.Text.Length);
+                        characterHit = new CharacterHit(currentPosition + currentRun.TextSourceLength);
                         break;
                     }
             }
@@ -804,7 +804,7 @@ namespace Avalonia.Media.TextFormatting
                 codepointIndex = TextRange.Start;
             }
 
-            var runIndex = GetRunIndexAtCharacterIndex(codepointIndex, LogicalDirection.Forward);
+            var runIndex = GetRunIndexAtCharacterIndex(codepointIndex, LogicalDirection.Forward, out var currentPosition);
 
             while (runIndex < _textRuns.Count)
             {
@@ -848,9 +848,9 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                            if (textPosition == currentRun.Text.Start)
+                            if (textPosition == currentPosition)
                             {
-                                nextCharacterHit = new CharacterHit(currentRun.Text.Start + currentRun.Text.Length);
+                                nextCharacterHit = new CharacterHit(currentPosition + currentRun.TextSourceLength);
 
                                 return true;
                             }
@@ -859,6 +859,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                 }
 
+                currentPosition += currentRun.TextSourceLength;
                 runIndex++;
             }
 
@@ -889,7 +890,7 @@ namespace Avalonia.Media.TextFormatting
                 return false; // Cannot go backward anymore.
             }
 
-            var runIndex = GetRunIndexAtCharacterIndex(characterIndex, LogicalDirection.Backward);
+            var runIndex = GetRunIndexAtCharacterIndex(characterIndex, LogicalDirection.Backward, out var currentPosition);
 
             while (runIndex >= 0)
             {
@@ -924,9 +925,9 @@ namespace Avalonia.Media.TextFormatting
                         }
                     default:
                         {
-                            if(characterIndex == currentRun.Text.Start + currentRun.Text.Length)
+                            if(characterIndex == currentPosition + currentRun.TextSourceLength)
                             {
-                                previousCharacterHit = new CharacterHit(currentRun.Text.Start);
+                                previousCharacterHit = new CharacterHit(currentPosition);
 
                                 return true;
                             }
@@ -935,6 +936,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                 }
 
+                currentPosition -= currentRun.TextSourceLength;
                 runIndex--;
             }
 
@@ -946,10 +948,12 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="codepointIndex">The codepoint index.</param>
         /// <param name="direction">The logical direction.</param>
+        /// <param name="textPosition">The text position of the found run index.</param>
         /// <returns>The text run index.</returns>
-        private int GetRunIndexAtCharacterIndex(int codepointIndex, LogicalDirection direction)
+        private int GetRunIndexAtCharacterIndex(int codepointIndex, LogicalDirection direction, out int textPosition)
         {
             var runIndex = 0;
+            textPosition = TextRange.Start;
             DrawableTextRun? previousRun = null;
 
             while (runIndex < _textRuns.Count)
@@ -994,31 +998,22 @@ namespace Avalonia.Media.TextFormatting
                                 }
                             }
 
-                            if (runIndex + 1 < _textRuns.Count)
+                            if (runIndex + 1 >= _textRuns.Count)
                             {
-                                runIndex++;
-                                previousRun = currentRun;
+                                return runIndex;
                             }
-                            else
-                            {
-                                break;
-                            }
+
                             break;
                         }
 
                     default:
                         {
-                            if (codepointIndex == currentRun.Text.Start)
+                            if (codepointIndex == textPosition)
                             {
                                 return runIndex;
                             }
 
-                            if (runIndex + 1 < _textRuns.Count)
-                            {
-                                runIndex++;
-                                previousRun = currentRun;
-                            }
-                            else
+                            if (runIndex + 1 >= _textRuns.Count)
                             {
                                 return runIndex;
                             }
@@ -1026,6 +1021,10 @@ namespace Avalonia.Media.TextFormatting
                             break;
                         }
                 }
+
+                runIndex++;
+                previousRun = currentRun;
+                textPosition += currentRun.TextSourceLength;
             }
 
             return runIndex;

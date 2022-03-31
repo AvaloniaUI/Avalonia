@@ -32,7 +32,7 @@
 
   <Style Selector="SplitButton">
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonBorderThemeThickness}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
@@ -125,7 +125,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
   </Style>
   <Style Selector="SplitButton /template/ Button#PART_SecondaryButton:pointerover PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPointerOver}" />
   </Style>
 
   <!-- Primary and Secondary buttons Pressed State -->
@@ -136,7 +136,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
   <Style Selector="SplitButton /template/ Button#PART_SecondaryButton:pressed PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
 
   <!-- SplitButton Pressed State -->
@@ -148,7 +148,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
   <Style Selector="SplitButton:pressed /template/ Button#PART_SecondaryButton PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
 
   <!-- Primary and Secondary buttons Flyout Open State -->
@@ -160,7 +160,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
   <Style Selector="SplitButton:flyout-open /template/ Button#PART_SecondaryButton PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundPressed}" />
   </Style>
 
   <!-- Disabled State -->
@@ -172,7 +172,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundDisabled}" />
   </Style>
   <Style Selector="SplitButton:disabled /template/ Button#PART_SecondaryButton PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundDisabled}" />
   </Style>
 
   <!-- Checked State -->
@@ -184,7 +184,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundChecked}" />
   </Style>
 
   <!-- Checked PointerOver State -->
@@ -195,7 +195,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton:pointerover PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPointerOver}" />
   </Style>
 
   <!-- Checked Pressed State -->
@@ -206,7 +206,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:checked /template/ Button#PART_SecondaryButton:pressed PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
   <!-- SplitButton Checked Pressed State -->
@@ -218,7 +218,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:pressed:checked /template/ Button#PART_SecondaryButton PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
   <!-- Checked Flyout Open State -->
@@ -230,7 +230,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
   <Style Selector="SplitButton:checked:flyout-open /template/ Button#PART_SecondaryButton PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedPressed}" />
   </Style>
 
   <!-- Disabled Checked State -->
@@ -242,6 +242,6 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedDisabled}" />
   </Style>
   <Style Selector="SplitButton:checked:disabled /template/ Button#PART_SecondaryButton PathIcon">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SplitButtonForegroundCheckedDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource SplitButtonForegroundCheckedDisabled}" />
   </Style>
 </Styles>

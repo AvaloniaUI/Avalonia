@@ -112,7 +112,7 @@
 
   <Style Selector="DatePicker">    
     <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
@@ -226,7 +226,7 @@
 
   <!-- Changes foreground for watermark text when SelectedDate is null-->
   <Style Selector="DatePicker:hasnodate /template/ Button#FlyoutButton TextBlock">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundLowBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}"/>
   </Style>
 
   <!--WinUI: DatePickerFlyoutPresenter-->

@@ -1,6 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="CaptionButtons">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
     <Setter Property="MaxHeight" Value="30" />
     <Setter Property="Template">
       <ControlTemplate>

@@ -125,7 +125,7 @@
 
   <Style Selector="DatePicker">    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
@@ -238,7 +238,7 @@
 
   <!-- Changes foreground for watermark text when SelectedDate is null-->
   <Style Selector="DatePicker:hasnodate /template/ Button#FlyoutButton TextBlock">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
   </Style>
   
   <Style Selector="DatePicker:error /template/ Button#FlyoutButton /template/ ContentPresenter">

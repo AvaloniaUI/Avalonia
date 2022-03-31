@@ -15,7 +15,7 @@
   </Styles.Resources>
   <Style Selector="ToggleButton">
     <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ToggleButtonForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ToggleButtonBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />

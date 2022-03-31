@@ -34,7 +34,7 @@
 
   <Style Selector="TimePicker">    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource TimePickerBorderThemeThickness}"/>
@@ -57,7 +57,7 @@
 
             <Button x:Name="FlyoutButton"
                     Grid.Row="1"
-                    TextElement.Foreground="{TemplateBinding Foreground}"
+                    Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
@@ -164,7 +164,7 @@
   </Style>
 
   <Style Selector="TimePicker:hasnotime /template/ Button#FlyoutButton TextBlock">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
   </Style>
   
   <Style Selector="TimePicker:error /template/ Button#FlyoutButton /template/ ContentPresenter">

@@ -58,7 +58,7 @@
     <Setter Property="Background" Value="{DynamicResource TreeViewItemBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TreeViewItemBorderThemeThickness}" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource TreeViewItemForeground}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForeground}" />
     <Setter Property="MinHeight" Value="{DynamicResource TreeViewItemMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
