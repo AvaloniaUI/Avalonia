@@ -40,7 +40,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
                             {
-                                if (isWordEllipsis && measuredLength < textRange.End)
+                                if (isWordEllipsis && measuredLength < textRange.Length)
                                 {
                                     var currentBreakPosition = 0;
 
