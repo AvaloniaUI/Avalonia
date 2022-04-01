@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Skia;
 using Avalonia.Vulkan.Skia;
 
 namespace Avalonia.Vulkan

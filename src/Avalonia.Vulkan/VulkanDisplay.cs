@@ -9,7 +9,8 @@ namespace Avalonia.Vulkan
 {
     public class VulkanDisplay : IDisposable
     {
-        private static KhrSwapchain _swapchainExtension;
+        private static KhrSwapchain s_swapchainExtension;
+        
         private readonly VulkanInstance _instance;
         private readonly VulkanPhysicalDevice _physicalDevice;
         private readonly VulkanSemaphorePair _semaphorePair;
@@ -22,7 +23,9 @@ namespace Avalonia.Vulkan
         private VulkanDevice _device { get; }
         private ImageView[] _swapchainImageViews = new ImageView[0];
 
-        public VulkanCommandBufferPool CommandBufferPool { get; set; }
+        public VulkanCommandBufferPool CommandBufferPool { get; }
+        public PixelSize Size { get; private set; }
+        public uint QueueFamilyIndex => _physicalDevice.QueueFamilyIndex;
 
         public object Lock => _device.Lock;
 
@@ -43,10 +46,7 @@ namespace Avalonia.Vulkan
 
             CommandBufferPool = new VulkanCommandBufferPool(device, physicalDevice);
         }
-
-        public PixelSize Size { get; private set; }
-        public uint QueueFamilyIndex => _physicalDevice.QueueFamilyIndex;
-
+        
         internal SurfaceFormatKHR SurfaceFormat
         {
             get
@@ -63,7 +63,7 @@ namespace Avalonia.Vulkan
             _device.WaitIdle();
             _semaphorePair?.Dispose();
             DestroyCurrentImageViews();
-            _swapchainExtension.DestroySwapchain(_device.InternalHandle, _swapchain, null);
+            s_swapchainExtension.DestroySwapchain(_device.InternalHandle, _swapchain, null);
             CommandBufferPool.Dispose();
         }
 
@@ -71,11 +71,11 @@ namespace Avalonia.Vulkan
             VulkanPhysicalDevice physicalDevice, VulkanSurface surface, out Extent2D swapchainExtent,
             VulkanDisplay oldDisplay = null)
         {
-            if (_swapchainExtension == null)
+            if (s_swapchainExtension == null)
             {
                 instance.Api.TryGetDeviceExtension(instance.InternalHandle, device.InternalHandle, out KhrSwapchain extension);
 
-                _swapchainExtension = extension;
+                s_swapchainExtension = extension;
             }
 
             while (!surface.CanSurfacePresent(physicalDevice))
@@ -159,10 +159,10 @@ namespace Avalonia.Vulkan
 
             if (oldDisplay != null)
             {
-                _swapchainExtension.DestroySwapchain(device.InternalHandle, oldDisplay._swapchain, null);
+                s_swapchainExtension.DestroySwapchain(device.InternalHandle, oldDisplay._swapchain, null);
             }
 
-            _swapchainExtension.CreateSwapchain(device.InternalHandle, swapchainCreateInfo, null, out var swapchain)
+            s_swapchainExtension.CreateSwapchain(device.InternalHandle, swapchainCreateInfo, null, out var swapchain)
                 .ThrowOnError();
 
             return swapchain;
@@ -185,13 +185,13 @@ namespace Avalonia.Vulkan
 
             uint imageCount = 0;
 
-            _swapchainExtension.GetSwapchainImages(_device.InternalHandle, _swapchain, &imageCount, null);
+            s_swapchainExtension.GetSwapchainImages(_device.InternalHandle, _swapchain, &imageCount, null);
 
             _swapchainImages = new Image[imageCount];
 
             fixed (Image* pSwapchainImages = _swapchainImages)
             {
-                _swapchainExtension.GetSwapchainImages(_device.InternalHandle, _swapchain, &imageCount, pSwapchainImages);
+                s_swapchainExtension.GetSwapchainImages(_device.InternalHandle, _swapchain, &imageCount, pSwapchainImages);
             }
 
             _swapchainImageViews = new ImageView[imageCount];
@@ -204,9 +204,10 @@ namespace Avalonia.Vulkan
 
         private unsafe void DestroyCurrentImageViews()
         {
-            if (_swapchainImageViews.Length > 0)
-                for (var i = 0; i < _swapchainImageViews.Length; i++)
-                    _instance.Api.DestroyImageView(_device.InternalHandle, _swapchainImageViews[i], null);
+            if (_swapchainImageViews.Length <= 0) 
+                return;
+            for (var i = 0; i < _swapchainImageViews.Length; i++)
+                _instance.Api.DestroyImageView(_device.InternalHandle, _swapchainImageViews[i], null);
         }
 
         private void Recreate()
@@ -262,7 +263,7 @@ namespace Avalonia.Vulkan
             _nextImage = 0;
             while (true)
             {
-                var acquireResult = _swapchainExtension.AcquireNextImage(
+                var acquireResult = s_swapchainExtension.AcquireNextImage(
                     _device.InternalHandle,
                     _swapchain,
                     ulong.MaxValue,
@@ -383,7 +384,7 @@ namespace Avalonia.Vulkan
 
             lock (_device.Lock)
             {
-                _swapchainExtension.QueuePresent(_device.PresentQueue.InternalHandle, presentInfo);
+                s_swapchainExtension.QueuePresent(_device.PresentQueue.InternalHandle, presentInfo);
             }
             
             CommandBufferPool.FreeUsedCommandBuffers();

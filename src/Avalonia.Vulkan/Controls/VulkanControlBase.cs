@@ -6,7 +6,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
-using Avalonia.Utilities;
 using Avalonia.Vulkan.Skia;
 using Silk.NET.Vulkan;
 using SkiaSharp;
@@ -147,7 +146,7 @@ namespace Avalonia.Vulkan.Controls
 
         private class VulkanDrawOperation : ICustomDrawOperation
         {
-            private VulkanBitmapAttachment _bitmap;
+            private readonly VulkanBitmapAttachment _bitmap;
 
             public Rect Bounds => _control.Bounds;
 
@@ -169,7 +168,7 @@ namespace Avalonia.Vulkan.Controls
 
             public bool Equals(ICustomDrawOperation other)
             {
-                return other is VulkanDrawOperation operation && Equals(this, other);
+                return other is VulkanDrawOperation && Equals(this, other);
             }
 
             public bool HitTest(Point p)

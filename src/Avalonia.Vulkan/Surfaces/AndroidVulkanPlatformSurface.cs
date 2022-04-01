@@ -33,8 +33,6 @@ namespace Avalonia.Vulkan.Surfaces
 
         public float Scaling => Math.Max(0, (float)_surfaceHandle.Scaling);
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

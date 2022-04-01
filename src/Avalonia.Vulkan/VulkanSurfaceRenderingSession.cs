@@ -26,8 +26,7 @@ namespace Avalonia.Vulkan
         public Vk Api => _device.Api;
 
         public float Scaling { get; }
-
-        public bool IsYFlipped { get; } = true;
+        public bool IsYFlipped => true;
 
         public void Dispose()
         {

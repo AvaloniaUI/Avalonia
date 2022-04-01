@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
 using Avalonia.Vulkan.Surfaces;
 using Silk.NET.Vulkan;
 
@@ -8,7 +6,7 @@ namespace Avalonia.Vulkan
 {
     public class VulkanPlatformInterface : IDisposable
     {
-        private static VulkanOptions _options;
+        private static VulkanOptions s_options;
 
         private VulkanPlatformInterface(VulkanInstance instance)
         {
@@ -19,7 +17,7 @@ namespace Avalonia.Vulkan
         public VulkanPhysicalDevice PhysicalDevice { get; private set; }
         public VulkanInstance Instance { get; }
         public VulkanDevice Device { get; private set; }
-        public Vk Api { get; private set; }
+        public Vk Api { get; }
 
         public void Dispose()
         {
@@ -32,14 +30,14 @@ namespace Avalonia.Vulkan
         {
             try
             {
-                _options = AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new VulkanOptions();
+                s_options = AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new VulkanOptions();
 
 #if NET6_0_OR_GREATER
             if (OperatingSystem.IsAndroid())
                 Silk.NET.Core.Loader.SearchPathContainer.Platform = Silk.NET.Core.Loader.UnderlyingPlatform.Android;
 #endif
 
-                var instance = VulkanInstance.Create(_options);
+                var instance = VulkanInstance.Create(s_options);
 
                 return new VulkanPlatformInterface(instance);
             }
@@ -69,8 +67,8 @@ namespace Avalonia.Vulkan
             {
                 if (Device == null)
                 {
-                    PhysicalDevice = VulkanPhysicalDevice.FindSuitablePhysicalDevice(Instance, surface, _options.PreferDiscreteGpu, _options.PreferredDevice);
-                    Device = VulkanDevice.Create(Instance, PhysicalDevice, _options);
+                    PhysicalDevice = VulkanPhysicalDevice.FindSuitablePhysicalDevice(Instance, surface, s_options.PreferDiscreteGpu, s_options.PreferredDevice);
+                    Device = VulkanDevice.Create(Instance, PhysicalDevice, s_options);
                 }
             }
             catch (Exception ex)

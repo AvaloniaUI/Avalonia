@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 
@@ -9,7 +7,7 @@ namespace Avalonia.Vulkan
 {
     public class VulkanDevice : IDisposable
     {
-        private static object _lock = new object();
+        private static readonly object _lock = new();
 
         private VulkanDevice(Device apiHandle, VulkanPhysicalDevice physicalDevice, Vk api)
         {
@@ -20,7 +18,6 @@ namespace Avalonia.Vulkan
 
             var vulkanQueue = new VulkanQueue(this, queue);
             Queue = vulkanQueue;
-
             PresentQueue = vulkanQueue;
 
             CommandBufferPool = new VulkanCommandBufferPool(this, physicalDevice);
@@ -44,7 +41,7 @@ namespace Avalonia.Vulkan
             Queue = null;
         }
 
-        public static unsafe VulkanDevice Create(VulkanInstance instance, VulkanPhysicalDevice physicalDevice,
+        public static VulkanDevice Create(VulkanInstance instance, VulkanPhysicalDevice physicalDevice,
             VulkanOptions options)
         {
             if(options.VulkanDeviceInitialization != null)

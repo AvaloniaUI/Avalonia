@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Skia;
@@ -12,17 +11,16 @@ namespace Avalonia.Vulkan.Skia
 {
     public class VulkanSkiaGpu : ISkiaGpu
     {
-        private readonly VulkanPlatformInterface _vulkan;
+        private readonly VulkanPlatformInterface _vulkanPlatformInterface;
         private readonly long? _maxResourceBytes;
-        private GRContext _grContext;
         private GRVkBackendContext _grVkBackend;
         private bool _initialized;
 
-        public GRContext GrContext { get => _grContext; set => _grContext = value; }
+        public GRContext GrContext { get; set; }
 
-        public VulkanSkiaGpu(VulkanPlatformInterface vulkan, long? maxResourceBytes)
+        public VulkanSkiaGpu(VulkanPlatformInterface vulkanPlatformInterface, long? maxResourceBytes)
         {
-            _vulkan = vulkan;
+            _vulkanPlatformInterface = vulkanPlatformInterface;
             _maxResourceBytes = maxResourceBytes;
         }
 
@@ -49,44 +47,45 @@ namespace Avalonia.Vulkan.Skia
             }
 
             _initialized = true;
-            GRVkGetProcedureAddressDelegate getProc = (string name, IntPtr instanceHandle, IntPtr deviceHandle) =>
+            GRVkGetProcedureAddressDelegate getProcedureDelegate = (name, instanceHandle, deviceHandle) =>
             {
-                IntPtr addr = IntPtr.Zero;
+                IntPtr address;
 
                 if (deviceHandle != IntPtr.Zero)
                 {
-                    addr = _vulkan.Device.Api.GetDeviceProcAddr(new Device(deviceHandle), name);
-                    if (addr != IntPtr.Zero)
-                        return addr;
+                    address = _vulkanPlatformInterface.Device.Api.GetDeviceProcAddr(new Device(deviceHandle), name);
+                    if (address != IntPtr.Zero)
+                        return address;
 
-                    addr = _vulkan.Device.Api.GetDeviceProcAddr(new Device(_vulkan.Device.Handle), name);
+                    address = _vulkanPlatformInterface.Device.Api.GetDeviceProcAddr(new Device(_vulkanPlatformInterface.Device.Handle), name);
 
-                    if (addr != IntPtr.Zero)
-                        return addr;
+                    if (address != IntPtr.Zero)
+                        return address;
                 }
 
-                addr = _vulkan.Device.Api.GetInstanceProcAddr(new Instance(_vulkan.Instance.Handle), name);
+                address = _vulkanPlatformInterface.Device.Api.GetInstanceProcAddr(new Instance(_vulkanPlatformInterface.Instance.Handle), name);
 
 
-                if (addr == IntPtr.Zero)
-                    addr = _vulkan.Device.Api.GetInstanceProcAddr(new Instance(instanceHandle), name);
+                if (address == IntPtr.Zero)
+                    address = _vulkanPlatformInterface.Device.Api.GetInstanceProcAddr(new Instance(instanceHandle), name);
 
-                return addr;
+                return address;
             };
             
             _grVkBackend = new GRVkBackendContext()
             {
-                VkInstance = _vulkan.Device.Handle,
-                VkPhysicalDevice = _vulkan.PhysicalDevice.Handle,
-                VkDevice = _vulkan.Device.Handle,
-                VkQueue = _vulkan.Device.Queue.Handle,
-                GraphicsQueueIndex = _vulkan.PhysicalDevice.QueueFamilyIndex,
-                GetProcedureAddress = getProc
+                VkInstance = _vulkanPlatformInterface.Device.Handle,
+                VkPhysicalDevice = _vulkanPlatformInterface.PhysicalDevice.Handle,
+                VkDevice = _vulkanPlatformInterface.Device.Handle,
+                VkQueue = _vulkanPlatformInterface.Device.Queue.Handle,
+                GraphicsQueueIndex = _vulkanPlatformInterface.PhysicalDevice.QueueFamilyIndex,
+                GetProcedureAddress = getProcedureDelegate
             };
-            _grContext = GRContext.CreateVulkan(_grVkBackend);
+            
+            GrContext = GRContext.CreateVulkan(_grVkBackend);
             if (_maxResourceBytes.HasValue)
             {
-                _grContext.SetResourceCacheLimit(_maxResourceBytes.Value);
+                GrContext.SetResourceCacheLimit(_maxResourceBytes.Value);
             }
         }
 
@@ -114,11 +113,11 @@ namespace Avalonia.Vulkan.Skia
                     else
                         continue;
                     
-                    var vulkanRenderTarget = new VulkanRenderTarget(_vulkan, platformSurface);
+                    var vulkanRenderTarget = new VulkanRenderTarget(_vulkanPlatformInterface, platformSurface);
                     
                     Initialize();
 
-                    vulkanRenderTarget.GrContext = _grContext;
+                    vulkanRenderTarget.GrContext = GrContext;
 
                     return vulkanRenderTarget;
                 }

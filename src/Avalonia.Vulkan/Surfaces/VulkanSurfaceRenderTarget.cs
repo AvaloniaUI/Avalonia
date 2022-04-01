@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using Silk.NET.Vulkan;
 
 namespace Avalonia.Vulkan.Surfaces
@@ -23,11 +22,10 @@ namespace Avalonia.Vulkan.Surfaces
                 platformInterface.PhysicalDevice, surface);
             Surface = surface;
 
-            // Skia seems to only create surfaces from images with unorm format
-
             IsRgba = Display.SurfaceFormat.Format >= Format.R8G8B8A8Unorm &&
                      Display.SurfaceFormat.Format <= Format.R8G8B8A8Srgb;
-            
+
+            // Skia seems to only create surfaces from images with unorm format
             _format = IsRgba ? Format.R8G8B8A8Unorm : Format.B8G8R8A8Unorm;
         }
 

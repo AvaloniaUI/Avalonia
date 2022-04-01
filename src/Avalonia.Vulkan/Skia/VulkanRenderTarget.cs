@@ -68,7 +68,7 @@ namespace Avalonia.Vulkan.Skia
                     };
 
                     var renderTarget =
-                        new GRBackendRenderTarget((int)size.Width, (int)size.Height, 1,
+                        new GRBackendRenderTarget(size.Width, size.Height, 1,
                             imageInfo);
                     var surface = SKSurface.Create(GrContext, renderTarget,
                         session.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,

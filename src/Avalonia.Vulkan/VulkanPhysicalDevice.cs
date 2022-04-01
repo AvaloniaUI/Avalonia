@@ -16,13 +16,13 @@ namespace Avalonia.Vulkan
             Api = api;
             QueueCount = queueCount;
             QueueFamilyIndex = queueFamilyIndex;
-            
+
             api.GetPhysicalDeviceProperties(apiHandle, out var properties);
-            
+
             DeviceName = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
-            
+
             var version = (Version32)properties.ApiVersion;
-            ApiVersion = new Version((int) version.Major, (int) version.Minor, 0, (int) version.Patch);
+            ApiVersion = new Version((int)version.Major, (int)version.Minor, 0, (int)version.Patch);
         }
 
         internal PhysicalDevice InternalHandle { get; }
@@ -34,7 +34,7 @@ namespace Avalonia.Vulkan
         public string DeviceName { get; }
         public Version ApiVersion { get; }
 
-        internal static unsafe VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
+        internal static VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
             VulkanSurface surface, bool preferDiscreteGpu, uint? preferredDevice)
         {
             uint physicalDeviceCount;
@@ -68,12 +68,13 @@ namespace Avalonia.Vulkan
 
             if (preferDiscreteGpu)
             {
-                var discreteGpus = physicalDeviceProperties.Where(p => p.Value.DeviceType == PhysicalDeviceType.DiscreteGpu);
+                var discreteGpus =
+                    physicalDeviceProperties.Where(p => p.Value.DeviceType == PhysicalDeviceType.DiscreteGpu);
 
                 foreach (var gpu in discreteGpus)
                 {
                     if (IsSuitableDevice(instance.Api, gpu.Key, gpu.Value, surface.ApiHandle, out var queueCount,
-                    out var queueFamilyIndex))
+                        out var queueFamilyIndex))
                         return new VulkanPhysicalDevice(gpu.Key, instance.Api, queueCount, queueFamilyIndex);
 
                     physicalDeviceProperties.Remove(gpu.Key);
@@ -81,14 +82,16 @@ namespace Avalonia.Vulkan
             }
 
             foreach (var physicalDevice in physicalDeviceProperties)
-                if (IsSuitableDevice(instance.Api, physicalDevice.Key, physicalDevice.Value, surface.ApiHandle, out var queueCount,
+                if (IsSuitableDevice(instance.Api, physicalDevice.Key, physicalDevice.Value, surface.ApiHandle,
+                    out var queueCount,
                     out var queueFamilyIndex))
                     return new VulkanPhysicalDevice(physicalDevice.Key, instance.Api, queueCount, queueFamilyIndex);
 
             throw new Exception("No suitable physical device found");
         }
 
-        private static unsafe bool IsSuitableDevice(Vk api, PhysicalDevice physicalDevice, PhysicalDeviceProperties properties, SurfaceKHR surface,
+        private static bool IsSuitableDevice(Vk api, PhysicalDevice physicalDevice,
+            PhysicalDeviceProperties properties, SurfaceKHR surface,
             out uint queueCount, out uint familyIndex)
         {
             queueCount = 0;
@@ -126,7 +129,7 @@ namespace Avalonia.Vulkan
             return false;
         }
 
-        internal unsafe string[] GetSupportedExtensions()
+        internal string[] GetSupportedExtensions()
         {
             uint propertiesCount;
 
@@ -136,14 +139,15 @@ namespace Avalonia.Vulkan
 
             fixed (ExtensionProperties* pExtensionProperties = extensionProperties)
             {
-                Api.EnumerateDeviceExtensionProperties(InternalHandle, (byte*)null, &propertiesCount, pExtensionProperties)
+                Api.EnumerateDeviceExtensionProperties(InternalHandle, (byte*)null, &propertiesCount,
+                        pExtensionProperties)
                     .ThrowOnError();
             }
 
             return extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToArray();
         }
 
-        private static unsafe uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface,
+        private static uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface,
             out uint queueCount)
         {
             const QueueFlags RequiredFlags = QueueFlags.QueueGraphicsBit | QueueFlags.QueueComputeBit;

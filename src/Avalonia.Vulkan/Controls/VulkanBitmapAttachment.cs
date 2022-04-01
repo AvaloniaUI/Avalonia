@@ -6,7 +6,7 @@ namespace Avalonia.Vulkan.Controls
 {
     public class VulkanBitmapAttachment
     {
-        private readonly DisposableLock _lock = new DisposableLock();
+        private readonly DisposableLock _lock = new();
         private bool _disposed;
 
         public VulkanImage Image { get; set; }
