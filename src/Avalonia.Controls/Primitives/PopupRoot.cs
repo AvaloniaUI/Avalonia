@@ -16,7 +16,6 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
-        private readonly TopLevel _parent;
         private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
@@ -46,7 +45,7 @@ namespace Avalonia.Controls.Primitives
         public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver? dependencyResolver)
             : base(ValidatingPopupImpl.Wrap(impl), dependencyResolver)
         {
-            _parent = parent;
+            ParentTopLevel = parent;
         }
 
         /// <summary>
@@ -72,6 +71,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IStyleHost? IStyleHost.StylingParent => Parent;
 
+        public TopLevel ParentTopLevel { get; }
+
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -90,7 +91,7 @@ namespace Avalonia.Controls.Primitives
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
-            _positionerParameters.ConfigurePosition(_parent, target,
+            _positionerParameters.ConfigurePosition(ParentTopLevel, target,
                 placement, offset, anchor, gravity, constraintAdjustment, rect);
 
             if (_positionerParameters.Size != default)

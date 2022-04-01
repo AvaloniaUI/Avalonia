@@ -162,21 +162,15 @@ namespace Avalonia.Diagnostics.Views
             }
 
             var root = vm.PointerOverRoot as TopLevel;
-            IControl? parent = root;
-
-            while (parent?.Parent != null)
-            {
-                parent = parent.Parent;
-            }
-
-            if (parent != null)
-            {
-                root = parent as TopLevel;
-            }
 
             if (root is null)
             {
                 return;
+            }
+
+            if (root is PopupRoot pr && pr.ParentTopLevel != null)
+            {
+                root = pr.ParentTopLevel;
             }
 
             switch (e.Modifiers)
