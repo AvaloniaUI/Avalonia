@@ -252,6 +252,10 @@ namespace Avalonia.Controls
     /// drop-down that contains possible matches based on the input in the text
     /// box.
     /// </summary>
+    [TemplatePart(ElementPopup,            typeof(Popup))]
+    [TemplatePart(ElementSelector,         typeof(SelectingItemsControl))]
+    [TemplatePart(ElementSelectionAdapter, typeof(ISelectionAdapter))]
+    [TemplatePart(ElementTextBox,          typeof(TextBox))]
     [PseudoClasses(":dropdownopen")]
     public class AutoCompleteBox : TemplatedControl
     {
