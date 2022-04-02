@@ -22,7 +22,8 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
         /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.</param>
+        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
         /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
         /// <param name="value">The Value channel value in the range from 0..1.</param>
         public HsvColor(
@@ -35,6 +36,12 @@ namespace Avalonia.Media
             H = MathUtilities.Clamp(hue,        0.0, 360.0);
             S = MathUtilities.Clamp(saturation, 0.0, 1.0);
             V = MathUtilities.Clamp(value,      0.0, 1.0);
+
+            // The maximum value of Hue is technically 360 minus epsilon (just below 360).
+            // This is because, in a color circle, 360 degrees is equivalent to 0 degrees.
+            // However, that is too tricky to work with in code and isn't as intuitive.
+            // Therefore, since 360 == 0, just wrap 360 if needed back to 0.
+            H = (H == 360.0 ? 0 : H);
         }
 
         /// <summary>
@@ -45,7 +52,8 @@ namespace Avalonia.Media
         /// Whether or not the channel values are in the correct ranges must be known.
         /// </remarks>
         /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.</param>
+        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
         /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
         /// <param name="value">The Value channel value in the range from 0..1.</param>
         /// <param name="clampValues">Whether to clamp channel values to their required ranges.</param>
@@ -62,6 +70,9 @@ namespace Avalonia.Media
                 H = MathUtilities.Clamp(hue,        0.0, 360.0);
                 S = MathUtilities.Clamp(saturation, 0.0, 1.0);
                 V = MathUtilities.Clamp(value,      0.0, 1.0);
+
+                // See comments in constructor above
+                H = (H == 360.0 ? 0 : H);
             }
             else
             {
@@ -93,6 +104,7 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Gets the Hue channel value in the range from 0..360.
+        /// Note that 360 is equivalent to 0 and will be adjusted automatically.
         /// </summary>
         public double H { get; }
 
