@@ -16,6 +16,8 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a spinner control that includes two Buttons.
     /// </summary>
+    [TemplatePart("PART_DecreaseButton", typeof(Button))]
+    [TemplatePart("PART_IncreaseButton", typeof(Button))]
     [PseudoClasses(":left", ":right")]
     public class ButtonSpinner : Spinner
     {

@@ -12,6 +12,18 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a time.
     /// </summary>
+    [TemplatePart("FirstColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("FirstPickerHost",         typeof(Border))]
+    [TemplatePart("FlyoutButton",            typeof(Button))]
+    [TemplatePart("FlyoutButtonContentGrid", typeof(Grid))]
+    [TemplatePart("HourTextBlock",           typeof(TextBlock))]
+    [TemplatePart("MinuteTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PeriodTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PickerPresenter",         typeof(TimePickerPresenter))]
+    [TemplatePart("Popup",                   typeof(Popup))]
+    [TemplatePart("SecondColumnDivider",     typeof(Rectangle))]
+    [TemplatePart("SecondPickerHost",        typeof(Border))]
+    [TemplatePart("ThirdPickerHost",         typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {

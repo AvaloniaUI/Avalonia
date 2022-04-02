@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -10,6 +11,20 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a time. Intended for use with
     /// <see cref="TimePicker"/> but can be used independently
     /// </summary>
+    [TemplatePart("AcceptButton",     typeof(Button))]
+    [TemplatePart("DismissButton",    typeof(Button))]
+    [TemplatePart("HourDownButton",   typeof(RepeatButton))]
+    [TemplatePart("HourSelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("HourUpButton",     typeof(RepeatButton))]
+    [TemplatePart("MinuteDownButton", typeof(RepeatButton))]
+    [TemplatePart("MinuteSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("MinuteUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PeriodDownButton", typeof(RepeatButton))]
+    [TemplatePart("PeriodHost",       typeof(Panel))]
+    [TemplatePart("PeriodSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PeriodUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PickerContainer",  typeof(Grid))]
+    [TemplatePart("SecondSpacer",     typeof(Rectangle))]
     public class TimePickerPresenter : PickerPresenterBase
     {
         /// <summary>

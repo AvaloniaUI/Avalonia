@@ -9,6 +9,8 @@ namespace Avalonia.Controls
     /// <summary>
     /// A Toggle Switch control.
     /// </summary>
+    [TemplatePart("MovingKnobs", typeof(Panel))]
+    [TemplatePart("SwitchKnob",  typeof(Panel))]
     [PseudoClasses(":dragging")]
     public class ToggleSwitch : ToggleButton
     {

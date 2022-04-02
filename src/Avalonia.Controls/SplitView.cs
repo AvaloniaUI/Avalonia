@@ -77,6 +77,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
+    [TemplatePart("PART_PaneRoot", typeof(Panel))]
     [PseudoClasses(":open", ":closed")]
     [PseudoClasses(":compactoverlay", ":compactinline", ":overlay", ":inline")]
     [PseudoClasses(":left", ":right")]

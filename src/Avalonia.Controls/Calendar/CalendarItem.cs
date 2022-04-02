@@ -19,6 +19,11 @@ namespace Avalonia.Controls.Primitives
     /// Represents the currently displayed month or year on a
     /// <see cref="T:Avalonia.Controls.Calendar" />.
     /// </summary>
+    [TemplatePart(PART_ElementHeaderButton,   typeof(Button))]
+    [TemplatePart(PART_ElementMonthView,      typeof(Grid))]
+    [TemplatePart(PART_ElementNextButton,     typeof(Button))]
+    [TemplatePart(PART_ElementPreviousButton, typeof(Button))]
+    [TemplatePart(PART_ElementYearView,       typeof(Grid))]
     [PseudoClasses(":calendardisabled")]
     public sealed class CalendarItem : TemplatedControl
     {

@@ -22,6 +22,10 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A scrollbar control.
     /// </summary>
+    [TemplatePart("PART_LineDownButton", typeof(Button))]
+    [TemplatePart("PART_LineUpButton",   typeof(Button))]
+    [TemplatePart("PART_PageDownButton", typeof(Button))]
+    [TemplatePart("PART_PageUpButton",   typeof(Button))]
     [PseudoClasses(":vertical", ":horizontal")]
     public class ScrollBar : RangeBase
     {

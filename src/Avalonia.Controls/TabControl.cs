@@ -9,12 +9,14 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
+    [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
     public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         /// <summary>
