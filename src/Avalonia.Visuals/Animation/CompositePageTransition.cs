@@ -41,7 +41,7 @@ namespace Avalonia.Animation
         {
             var transitionTasks = PageTransitions
                 .Select(transition => transition.Start(from, to, forward, cancellationToken))
-                .ToList();
+                .ToArray();
             return Task.WhenAll(transitionTasks);
         }
     }

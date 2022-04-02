@@ -2180,7 +2180,7 @@ namespace Avalonia.Controls
             }
 
             // Store a local cached copy of the data
-            _items = newValue == null ? null : new List<object>(newValue.Cast<object>().ToList());
+            _items = newValue == null ? null : new List<object>(newValue.Cast<object>());
 
             // Clear and set the view on the selection adapter
             ClearView();
@@ -2239,7 +2239,7 @@ namespace Avalonia.Controls
                 ClearView();
                 if (Items != null)
                 {
-                    _items = new List<object>(Items.Cast<object>().ToList());
+                    _items = new List<object>(Items.Cast<object>());
                 }
             }
 

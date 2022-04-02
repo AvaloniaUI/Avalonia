@@ -101,23 +101,17 @@
                     IsVisible="False"
                     HorizontalAlignment="Right" />
 
-            <Viewbox UseLayoutRounding="False"
-                     MinHeight="{DynamicResource ComboBoxMinHeight}"
-                     Grid.Row="1"
-                     Grid.Column="1"
-                     IsHitTestVisible="False"
-                     Margin="0,0,10,0"
-                     Height="12"
-                     Width="12"
-                     HorizontalAlignment="Right"
-                     VerticalAlignment="Center">
-              <Panel>
-                <Panel Height="12"
-                       Width="12" />
-                <Path x:Name="DropDownGlyph"
+            <PathIcon x:Name="DropDownGlyph"
+                      Grid.Row="1"
+                      Grid.Column="1"
+                      UseLayoutRounding="False"
+                      IsHitTestVisible="False"
+                      Height="12"
+                      Width="12"
+                      Margin="0,0,10,0"
+                      HorizontalAlignment="Right"
                       VerticalAlignment="Center" />
-              </Panel>
-            </Viewbox>
+
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
                    IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
@@ -159,10 +153,9 @@
     <Setter Property="IsVisible" Value="False" />
   </Style>
 
-  <Style Selector="ComboBox /template/ Path#DropDownGlyph">
-    <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
+  <Style Selector="ComboBox /template/ PathIcon#DropDownGlyph">
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
     <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
-    <Setter Property="Stretch" Value="Uniform" />
   </Style>
 
   <!--  PointerOver State  -->
@@ -195,8 +188,8 @@
     <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
   </Style>
 
-  <Style Selector="ComboBox:disabled /template/ Path#DropDownGlyph">
-    <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForegroundDisabled}" />
+  <Style Selector="ComboBox:disabled /template/ PathIcon#DropDownGlyph">
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundDisabled}" />
   </Style>
 
   <!--  Focused State  -->
@@ -213,8 +206,8 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
   </Style>
 
-  <Style Selector="ComboBox:focus-visible /template/ Path#DropDownGlyph">
-    <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocused}" />
+  <Style Selector="ComboBox:focus-visible /template/ PathIcon#DropDownGlyph">
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocused}" />
   </Style>
 
   <!--  Focus Pressed State  -->
@@ -226,8 +219,8 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
   </Style>
 
-  <Style Selector="ComboBox:focused:pressed /template/ Path#DropDownGlyph">
-    <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
+  <Style Selector="ComboBox:focused:pressed /template/ PathIcon#DropDownGlyph">
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
   </Style>
   
   <!-- Error State -->
