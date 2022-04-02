@@ -88,8 +88,6 @@ namespace Avalonia.Media.TextFormatting
 
                                     collapsedRuns.AddRange(splitResult.First);
 
-                                    TextLineImpl.SortRuns(collapsedRuns);
-
                                     preSplitRuns = splitResult.First;
                                     postSplitRuns = splitResult.Second;
                                 }

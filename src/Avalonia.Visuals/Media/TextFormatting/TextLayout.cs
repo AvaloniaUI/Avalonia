@@ -162,7 +162,9 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textLine in TextLines)
             {
-                if (textLine.TextRange.End < textPosition)
+                var end = textLine.FirstTextSourceIndex + textLine.Length - 1;
+
+                if (end < textPosition)
                 {
                     currentY += textLine.Height;
 
@@ -197,7 +199,7 @@ namespace Avalonia.Media.TextFormatting
             foreach (var textLine in TextLines)
             {
                 //Current line isn't covered.
-                if (textLine.TextRange.Start + textLine.TextRange.Length <= start)
+                if (textLine.FirstTextSourceIndex + textLine.Length <= start)
                 {
                     currentY += textLine.Height;
 
@@ -220,7 +222,7 @@ namespace Avalonia.Media.TextFormatting
                     }                  
                 }
 
-                if(textLine.TextRange.Start + textLine.TextRange.Length >= start + length)
+                if(textLine.FirstTextSourceIndex + textLine.Length >= start + length)
                 {
                     break;
                 }
@@ -280,12 +282,13 @@ namespace Avalonia.Media.TextFormatting
             {
                 var textLine = TextLines[index];
 
-                if (textLine.TextRange.Start + textLine.TextRange.Length < charIndex)
+                if (textLine.FirstTextSourceIndex + textLine.Length < charIndex)
                 {
                     continue;
                 }
 
-                if (charIndex >= textLine.TextRange.Start && charIndex <= textLine.TextRange.End + (trailingEdge ? 1 : 0))
+                if (charIndex >= textLine.FirstTextSourceIndex && 
+                    charIndex <= textLine.FirstTextSourceIndex + textLine.Length - (trailingEdge ? 0 : 1))
                 {
                     return index;
                 }
@@ -298,11 +301,11 @@ namespace Avalonia.Media.TextFormatting
         {
             var (x, y) = point;
 
-            var lastTrailingIndex = textLine.TextRange.Start + textLine.TextRange.Length;
+            var lastTrailingIndex = textLine.FirstTextSourceIndex + textLine.Length;
 
             var isInside = x >= 0 && x <= textLine.Width && y >= 0 && y <= textLine.Height;
 
-            if (x >= textLine.Width && textLine.TextRange.Length > 0 && textLine.NewLineLength > 0)
+            if (x >= textLine.Width && textLine.Length > 0 && textLine.NewLineLength > 0)
             {
                 lastTrailingIndex -= textLine.NewLineLength;
             }
@@ -312,7 +315,7 @@ namespace Avalonia.Media.TextFormatting
             var isTrailing = lastTrailingIndex == textPosition && characterHit.TrailingLength > 0 ||
                              y > Bounds.Bottom;
 
-            if (textPosition == textLine.TextRange.Start + textLine.TextRange.Length)
+            if (textPosition == textLine.FirstTextSourceIndex + textLine.Length)
             {
                 textPosition -= textLine.NewLineLength;
             }
@@ -376,23 +379,21 @@ namespace Avalonia.Media.TextFormatting
         /// Creates an empty text line.
         /// </summary>
         /// <returns>The empty text line.</returns>
-        private TextLine CreateEmptyTextLine(int startingIndex)
+        private TextLine CreateEmptyTextLine(int firstTextSourceIndex)
         {
             var flowDirection = _paragraphProperties.FlowDirection;
             var properties = _paragraphProperties.DefaultTextRunProperties;
             var glyphTypeface = properties.Typeface.GlyphTypeface;
-            var text = new ReadOnlySlice<char>(s_empty, startingIndex, 1);
+            var text = new ReadOnlySlice<char>(s_empty, firstTextSourceIndex, 1);
             var glyph = glyphTypeface.GetGlyph(s_empty[0]);
-            var glyphInfos = new[] { new GlyphInfo(glyph, startingIndex) };
+            var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex) };
 
             var shapedBuffer = new ShapedBuffer(text, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
                 (sbyte)flowDirection);
 
             var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
 
-            var textRange = new TextRange(startingIndex, 1);
-
-            return new TextLineImpl(textRuns, textRange, MaxWidth, _paragraphProperties, flowDirection).FinalizeLine();
+            return new TextLineImpl(textRuns, firstTextSourceIndex, 1, MaxWidth, _paragraphProperties, flowDirection).FinalizeLine();
         }
 
         private IReadOnlyList<TextLine> CreateTextLines()
@@ -423,13 +424,13 @@ namespace Avalonia.Media.TextFormatting
                     _paragraphProperties, previousLine?.TextLineBreak);
 
 #if DEBUG
-                if (textLine.TextRange.Length == 0)
+                if (textLine.Length == 0)
                 {
                     throw new InvalidOperationException($"{nameof(textLine)} should not be empty.");
                 }
 #endif
 
-                currentPosition += textLine.TextRange.Length;
+                currentPosition += textLine.Length;
                 
                 //Fulfill max height constraint
                 if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight) && height + textLine.Height > MaxHeight)

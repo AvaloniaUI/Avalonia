@@ -15,7 +15,6 @@ namespace Avalonia.Media.TextFormatting
             var runIndex = 0;
             var currentWidth = 0.0;
             var collapsedLength = 0;
-            var textRange = textLine.TextRange;
             var shapedSymbol = TextFormatterImpl.CreateSymbol(properties.Symbol, FlowDirection.LeftToRight);
 
             if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
@@ -40,7 +39,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
                             {
-                                if (isWordEllipsis && measuredLength < textRange.Length)
+                                if (isWordEllipsis && measuredLength < textLine.Length)
                                 {
                                     var currentBreakPosition = 0;
 
@@ -76,8 +75,6 @@ namespace Avalonia.Media.TextFormatting
                                 var splitResult = TextFormatterImpl.SplitDrawableRuns(textRuns, collapsedLength);
 
                                 collapsedRuns.AddRange(splitResult.First);
-
-                                TextLineImpl.SortRuns(collapsedRuns);
                             }
 
                             collapsedRuns.Add(shapedSymbol);
@@ -103,8 +100,6 @@ namespace Avalonia.Media.TextFormatting
                                 var splitResult = TextFormatterImpl.SplitDrawableRuns(textRuns, collapsedLength);
 
                                 collapsedRuns.AddRange(splitResult.First);
-
-                                TextLineImpl.SortRuns(collapsedRuns);
                             }
 
                             collapsedRuns.Add(shapedSymbol);

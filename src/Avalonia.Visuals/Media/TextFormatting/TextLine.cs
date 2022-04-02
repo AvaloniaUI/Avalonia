@@ -16,13 +16,9 @@ namespace Avalonia.Media.TextFormatting
         /// </value>
         public abstract IReadOnlyList<TextRun> TextRuns { get; }
         
-        /// <summary>
-        /// Gets the text range that is covered by the line.
-        /// </summary>
-        /// <value>
-        /// The text range that is covered by the line.
-        /// </value>
-        public abstract TextRange TextRange { get; }
+        public abstract int FirstTextSourceIndex { get; }
+
+        public abstract int Length { get; }
 
         /// <summary>
         /// Gets the state of the line when broken by line breaking process.

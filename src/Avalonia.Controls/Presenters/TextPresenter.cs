@@ -660,7 +660,7 @@ namespace Avalonia.Controls.Presenters
 
                     caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                    if (textLine.NewLineLength > 0 && caretIndex == textLine.TextRange.Start + textLine.TextRange.Length)
+                    if (textLine.NewLineLength > 0 && caretIndex == textLine.FirstTextSourceIndex + textLine.Length)
                     {
                         characterHit = new CharacterHit(caretIndex);
                     }
@@ -672,7 +672,7 @@ namespace Avalonia.Controls.Presenters
                         break;
                     }
 
-                    if (caretIndex - textLine.NewLineLength == textLine.TextRange.Start + textLine.TextRange.Length)
+                    if (caretIndex - textLine.NewLineLength == textLine.FirstTextSourceIndex + textLine.Length)
                     {
                         break;
                     }

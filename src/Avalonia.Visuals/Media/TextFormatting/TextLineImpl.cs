@@ -6,30 +6,18 @@ namespace Avalonia.Media.TextFormatting
 {
     internal class TextLineImpl : TextLine
     {
-        private static readonly Comparer<int> s_compareStart = Comparer<int>.Default;
-
-        private static readonly Comparison<DrawableTextRun> s_compareLogicalOrder =
-            (a, b) =>
-            {
-                if (a is ShapedTextCharacters && b is ShapedTextCharacters)
-                {
-                    return s_compareStart.Compare(a.Text.Start, b.Text.Start);
-                }
-
-                return 0;
-            };
-
         private readonly List<DrawableTextRun> _textRuns;
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
         private readonly FlowDirection _flowDirection;
 
-        public TextLineImpl(List<DrawableTextRun> textRuns, TextRange textRange, double paragraphWidth,
+        public TextLineImpl(List<DrawableTextRun> textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
             TextParagraphProperties paragraphProperties, FlowDirection flowDirection = FlowDirection.LeftToRight,
             TextLineBreak? lineBreak = null, bool hasCollapsed = false)
         {
-            TextRange = textRange;
+            FirstTextSourceIndex = firstTextSourceIndex;
+            Length = length;
             TextLineBreak = lineBreak;
             HasCollapsed = hasCollapsed;
 
@@ -44,7 +32,10 @@ namespace Avalonia.Media.TextFormatting
         public override IReadOnlyList<TextRun> TextRuns => _textRuns;
 
         /// <inheritdoc/>
-        public override TextRange TextRange { get; }
+        public override int FirstTextSourceIndex { get; }
+
+        /// <inheritdoc/>
+        public override int Length { get; }
 
         /// <inheritdoc/>
         public override TextLineBreak? TextLineBreak { get; }
@@ -144,7 +135,7 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
-            var collapsedLine = new TextLineImpl(collapsedRuns, TextRange, _paragraphWidth, _paragraphProperties,
+            var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
                 _flowDirection, TextLineBreak, true);
 
             if (collapsedRuns.Count > 0)
@@ -159,17 +150,15 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override CharacterHit GetCharacterHitFromDistance(double distance)
         {
+            if (_textRuns.Count == 0)
+            {
+                return new CharacterHit();
+            }
+
             distance -= Start;
 
             if (distance <= 0)
-            {
-                if (_textRuns.Count == 0)
-                {
-                    return _flowDirection == FlowDirection.LeftToRight ?
-                        new CharacterHit(TextRange.Start) :
-                        new CharacterHit(TextRange.Start, TextRange.Length);
-                }
-
+            {              
                 // hit happens before the line, return the first position
                 var firstRun = _textRuns[0];
 
@@ -179,13 +168,13 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 return _flowDirection == FlowDirection.LeftToRight ?
-                    new CharacterHit(TextRange.Start) :
-                    new CharacterHit(TextRange.Start + TextRange.Length);
+                    new CharacterHit(FirstTextSourceIndex) :
+                    new CharacterHit(FirstTextSourceIndex + Length);
             }
 
             // process hit that happens within the line
             var characterHit = new CharacterHit();
-            var currentPosition = TextRange.Start;
+            var currentPosition = FirstTextSourceIndex;
 
             foreach (var currentRun in _textRuns)
             {
@@ -227,7 +216,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var characterIndex = characterHit.FirstCharacterIndex + (characterHit.TrailingLength != 0 ? 1 : 0);
             var currentDistance = Start;
-            var currentPosition = TextRange.Start;
+            var currentPosition = FirstTextSourceIndex;
 
             GlyphRun? lastRun = null;
 
@@ -346,14 +335,10 @@ namespace Avalonia.Media.TextFormatting
 
         /// <inheritdoc/>
         public override CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit)
-        {
+        {         
             if (_textRuns.Count == 0)
             {
-                var textPosition = TextRange.Start + TextRange.Length;
-
-                return characterHit.FirstCharacterIndex + characterHit.TrailingLength == textPosition ?
-                    characterHit :
-                    new CharacterHit(textPosition);
+                return new CharacterHit();
             }
 
             if (TryFindNextCharacterHit(characterHit, out var nextCharacterHit))
@@ -361,8 +346,10 @@ namespace Avalonia.Media.TextFormatting
                 return nextCharacterHit;
             }
 
+            var lastTextPosition = FirstTextSourceIndex + Length;
+
             // Can't move, we're after the last character
-            var runIndex = GetRunIndexAtCharacterIndex(TextRange.End, LogicalDirection.Forward, out var currentPosition);
+            var runIndex = GetRunIndexAtCharacterIndex(lastTextPosition, LogicalDirection.Forward, out var currentPosition);
 
             var currentRun = _textRuns[runIndex];
 
@@ -391,9 +378,9 @@ namespace Avalonia.Media.TextFormatting
                 return previousCharacterHit;
             }
 
-            if (characterHit.FirstCharacterIndex <= TextRange.Start)
+            if (characterHit.FirstCharacterIndex <= FirstTextSourceIndex)
             {
-                characterHit = new CharacterHit(TextRange.Start);
+                characterHit = new CharacterHit(FirstTextSourceIndex);
             }
 
             return characterHit; // Can't move, we're before the first character
@@ -408,7 +395,7 @@ namespace Avalonia.Media.TextFormatting
 
         public override IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceCharacterIndex, int textLength)
         {
-            if (firstTextSourceCharacterIndex + textLength <= TextRange.Start)
+            if (firstTextSourceCharacterIndex + textLength <= FirstTextSourceIndex)
             {
                 return Array.Empty<TextBounds>();
             }
@@ -599,11 +586,6 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return result;
-        }
-
-        public static void SortRuns(List<DrawableTextRun> textRuns)
-        {
-            textRuns.Sort(s_compareLogicalOrder);
         }
 
         public TextLineImpl FinalizeLine()
@@ -797,15 +779,16 @@ namespace Avalonia.Media.TextFormatting
             nextCharacterHit = characterHit;
 
             var codepointIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+            var lastCodepointIndex = FirstTextSourceIndex + Length;
 
-            if (codepointIndex >= TextRange.End)
+            if (codepointIndex >= lastCodepointIndex)
             {
                 return false; // Cannot go forward anymore
             }
 
-            if (codepointIndex < TextRange.Start)
+            if (codepointIndex < FirstTextSourceIndex)
             {
-                codepointIndex = TextRange.Start;
+                codepointIndex = FirstTextSourceIndex;
             }
 
             var runIndex = GetRunIndexAtCharacterIndex(codepointIndex, LogicalDirection.Forward, out var currentPosition);
@@ -820,8 +803,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var foundCharacterHit = shapedRun.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
 
-                            var isAtEnd = foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength ==
-                                          TextRange.Start + TextRange.Length;
+                            var isAtEnd = foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength == FirstTextSourceIndex + Length;
 
                             if (isAtEnd && !shapedRun.GlyphRun.IsLeftToRight)
                             {
@@ -880,16 +862,16 @@ namespace Avalonia.Media.TextFormatting
         {
             var characterIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-            if (characterIndex == TextRange.Start)
+            if (characterIndex == FirstTextSourceIndex)
             {
-                previousCharacterHit = new CharacterHit(TextRange.Start);
+                previousCharacterHit = new CharacterHit(FirstTextSourceIndex);
 
                 return true;
             }
 
             previousCharacterHit = characterHit;
 
-            if (characterIndex < TextRange.Start)
+            if (characterIndex < FirstTextSourceIndex)
             {
                 return false; // Cannot go backward anymore.
             }
@@ -957,7 +939,7 @@ namespace Avalonia.Media.TextFormatting
         private int GetRunIndexAtCharacterIndex(int codepointIndex, LogicalDirection direction, out int textPosition)
         {
             var runIndex = 0;
-            textPosition = TextRange.Start;
+            textPosition = FirstTextSourceIndex;
             DrawableTextRun? previousRun = null;
 
             while (runIndex < _textRuns.Count)
@@ -1089,6 +1071,11 @@ namespace Avalonia.Media.TextFormatting
                                 {
                                     lineGap = fontMetrics.LineGap;
                                 }
+
+                                if(descent - ascent + lineGap > height)
+                                {
+                                    height = descent - ascent + lineGap;
+                                }
                             }
 
                             switch (_paragraphProperties.FlowDirection)
@@ -1164,9 +1151,9 @@ namespace Avalonia.Media.TextFormatting
                                     }
                             }
 
-                            if (descent - ascent + lineGap < drawableTextRun.Size.Height || lineHeight < drawableTextRun.Size.Height)
+                            if (drawableTextRun.Size.Height > height)
                             {
-                                lineHeight = drawableTextRun.Size.Height;
+                                height = drawableTextRun.Size.Height;
                             }
 
                             break;
@@ -1176,10 +1163,8 @@ namespace Avalonia.Media.TextFormatting
 
             start = GetParagraphOffsetX(width, widthIncludingWhitespace, _paragraphWidth,
                 _paragraphProperties.TextAlignment, _paragraphProperties.FlowDirection);
-
-            height = descent - ascent + lineGap;
            
-            if(!double.IsNaN(lineHeight) && lineHeight > height)
+            if(!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
                 height = lineHeight;
             }

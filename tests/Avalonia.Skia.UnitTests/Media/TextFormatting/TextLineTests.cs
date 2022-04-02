@@ -35,9 +35,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var firstCharacterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(int.MinValue));
 
-                    Assert.Equal(textLine.TextRange.Start, firstCharacterHit.FirstCharacterIndex);
+                    Assert.Equal(textLine.FirstTextSourceIndex, firstCharacterHit.FirstCharacterIndex);
 
-                    currentIndex += textLine.TextRange.Length;
+                    currentIndex += textLine.Length;
                 }
             }
         }
@@ -63,10 +63,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var lastCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(int.MaxValue));
 
-                    Assert.Equal(textLine.TextRange.Start + textLine.TextRange.Length,
+                    Assert.Equal(textLine.FirstTextSourceIndex + textLine.Length,
                         lastCharacterHit.FirstCharacterIndex + lastCharacterHit.TrailingLength);
 
-                    currentIndex += textLine.TextRange.Length;
+                    currentIndex += textLine.Length;
                 }
             }
         }

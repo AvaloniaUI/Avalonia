@@ -1390,7 +1390,7 @@ namespace Avalonia.Controls
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
                 var textLine = textLines[lineIndex];
 
-                _presenter.MoveCaretToTextPosition(textLine.TextRange.Start);
+                _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
             }
         }
 
@@ -1414,7 +1414,7 @@ namespace Avalonia.Controls
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
                 var textLine = textLines[lineIndex];
 
-                var textPosition = textLine.TextRange.Start + textLine.TextRange.Length;
+                var textPosition = textLine.FirstTextSourceIndex + textLine.Length;
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }
