@@ -13,6 +13,8 @@ namespace Avalonia.Controls
     /// A button with primary and secondary parts that can each be pressed separately.
     /// The primary part behaves like a <see cref="Button"/> and the secondary part opens a flyout.
     /// </summary>
+    [TemplatePart("PART_PrimaryButton",   typeof(Button))]
+    [TemplatePart("PART_SecondaryButton", typeof(Button))]
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public class SplitButton : ContentControl, ICommandSource
     {
