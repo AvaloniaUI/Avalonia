@@ -20,6 +20,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A menu item control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
     [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
     public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
     {
