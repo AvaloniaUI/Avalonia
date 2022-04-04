@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -15,6 +16,8 @@ namespace Avalonia.Controls
     /// <summary>
     /// Control that represents a TextBox with button spinners that allow incrementing and decrementing numeric values.
     /// </summary>
+    [TemplatePart("PART_Spinner", typeof(Spinner))]
+    [TemplatePart("PART_TextBox", typeof(TextBox))]
     public class NumericUpDown : TemplatedControl
     {
         /// <summary>
