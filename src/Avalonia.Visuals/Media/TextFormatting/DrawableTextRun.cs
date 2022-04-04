@@ -9,6 +9,11 @@
         /// Gets the size.
         /// </summary>
         public abstract Size Size { get; }
+        
+        /// <summary>
+        /// Run baseline in ratio relative to run height
+        /// </summary>
+        public abstract double Baseline { get; }
 
         /// <summary>
         /// Draws the <see cref="DrawableTextRun"/> at the given origin.
