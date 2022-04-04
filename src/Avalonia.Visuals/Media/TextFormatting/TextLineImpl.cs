@@ -241,7 +241,7 @@ namespace Avalonia.Media.TextFormatting
                             }
 
                             //Look for a hit in within the current run
-                            if (characterIndex >= textRun.Text.Start && characterIndex <= textRun.Text.End)
+                            if (characterIndex >= textRun.Text.Start && characterIndex <= textRun.Text.Start + textRun.Text.Length)
                             {
                                 var distance = currentRun.GetDistanceFromCharacterHit(characterHit);
 
