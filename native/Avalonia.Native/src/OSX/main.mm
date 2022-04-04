@@ -1,6 +1,7 @@
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
+#include "window.h"
 
 static NSString* s_appTitle = @"Avalonia";
 
@@ -335,7 +336,7 @@ public:
             return S_OK;
         }
     }
-    
+        
     virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
     {
         START_COM_CALL;
@@ -398,6 +399,15 @@ NSPoint ToNSPoint (AvnPoint p)
     result.y = p.Y;
     
     return result;
+}
+
+NSRect ToNSRect (AvnRect r)
+{
+    return NSRect
+    {
+        NSPoint { r.X, r.Y },
+        NSSize { r.Width, r.Height }
+    };
 }
 
 AvnPoint ToAvnPoint (NSPoint p)

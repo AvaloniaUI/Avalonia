@@ -292,11 +292,11 @@ namespace Avalonia.Controls.Primitives
                             "collection is different to the Items on the control.");
                     }
 
-                    var oldSelection = _selection?.SelectedItems.ToList();
+                    var oldSelection = _selection?.SelectedItems.ToArray();
                     DeinitializeSelectionModel(_selection);
                     _selection = value;
 
-                    if (oldSelection?.Count > 0)
+                    if (oldSelection?.Length > 0)
                     {
                         RaiseEvent(new SelectionChangedEventArgs(
                             SelectionChangedEvent,
@@ -531,11 +531,23 @@ namespace Avalonia.Controls.Primitives
 
                 _textSearchTerm += e.Text;
 
-                bool match(ItemContainerInfo info) =>
-                    info.ContainerControl is IContentControl control &&
-                    control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                bool Match(ItemContainerInfo info)
+                {
+                    if (info.ContainerControl.IsSet(TextSearch.TextProperty))
+                    {
+                        var searchText = info.ContainerControl.GetValue(TextSearch.TextProperty);
 
-                var info = ItemContainerGenerator?.Containers.FirstOrDefault(match);
+                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return info.ContainerControl is IContentControl control &&
+                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                }
+                
+                var info = ItemContainerGenerator?.Containers.FirstOrDefault(Match);
 
                 if (info != null)
                 {
@@ -833,8 +845,8 @@ namespace Avalonia.Controls.Primitives
             {
                 var ev = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    e.DeselectedItems.ToList(),
-                    e.SelectedItems.ToList());
+                    e.DeselectedItems.ToArray(),
+                    e.SelectedItems.ToArray());
                 RaiseEvent(ev);
             }
         }
@@ -976,7 +988,7 @@ namespace Avalonia.Controls.Primitives
                 RaiseEvent(new SelectionChangedEventArgs(
                     SelectionChangedEvent,
                     Array.Empty<object>(),
-                    Selection.SelectedItems.ToList()));
+                    Selection.SelectedItems.ToArray()));
             }
         }
 

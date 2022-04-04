@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
@@ -12,12 +13,14 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A drop-down list control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
     public class ComboBox : SelectingItemsControl
     {
         /// <summary>
@@ -293,6 +296,11 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ComboBoxAutomationPeer(this);
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)

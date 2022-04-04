@@ -93,7 +93,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                 (uint)args.Timestamp).ConfigureAwait(false);
         }
         
-        public override void SetOptions(TextInputOptionsQueryEventArgs options) =>
+        public override void SetOptions(TextInputOptions options) =>
             Enqueue(async () =>
             {
                 if(_context == null)
@@ -111,7 +111,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                     flags |= FcitxCapabilityFlags.CAPACITY_NUMBER;
                 else if (options.ContentType == TextInputContentType.Password)
                     flags |= FcitxCapabilityFlags.CAPACITY_PASSWORD;
-                else if (options.ContentType == TextInputContentType.Phone)
+                else if (options.ContentType == TextInputContentType.Digits)
                     flags |= FcitxCapabilityFlags.CAPACITY_DIALABLE;
                 else if (options.ContentType == TextInputContentType.Url)
                     flags |= FcitxCapabilityFlags.CAPACITY_URL;

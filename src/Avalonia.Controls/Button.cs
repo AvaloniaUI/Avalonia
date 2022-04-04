@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -237,7 +238,7 @@ namespace Avalonia.Controls
             {
                 HotKey = _hotkey;
             }
-            
+
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
@@ -455,6 +456,8 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new ButtonAutomationPeer(this);
+
         /// <inheritdoc/>
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
@@ -471,6 +474,8 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        internal void PerformClick() => OnClick();
 
         /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
@@ -534,6 +539,7 @@ namespace Avalonia.Controls
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
                 OnClick();
+                e.Handled = true;
             }
         }
 
@@ -547,6 +553,7 @@ namespace Avalonia.Controls
             if (e.Key == Key.Escape && IsVisible && IsEnabled)
             {
                 OnClick();
+                e.Handled = true;
             }
         }
 

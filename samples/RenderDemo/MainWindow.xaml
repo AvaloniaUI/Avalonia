@@ -66,5 +66,8 @@
     <TabItem Header="Path Measurement">
       <pages:PathMeasurementPage />
     </TabItem>
+    <TabItem Header="Brushes">
+      <pages:BrushesPage />
+    </TabItem>
   </controls:HamburgerMenu>
 </Window>

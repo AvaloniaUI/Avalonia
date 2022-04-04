@@ -153,6 +153,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the font stretch.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get => TextBlock.GetFontStretch(this);
+            set => TextBlock.SetFontStretch(this, value);
+        }
+
+        /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
         public IBrush? Foreground
@@ -310,7 +319,7 @@ namespace Avalonia.Controls.Presenters
             var top = 0d;
             var left = 0.0;
 
-            var (_, textHeight) = TextLayout.Size;
+            var textHeight = TextLayout.Bounds.Height;
 
             if (Bounds.Height < textHeight)
             {
@@ -385,10 +394,14 @@ namespace Avalonia.Controls.Presenters
             var x = Math.Floor(_caretBounds.X) + 0.5;
             var y = Math.Floor(_caretBounds.Y) + 0.5;
             var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
+            
+            var caretIndex = _lastCharacterHit.FirstCharacterIndex + _lastCharacterHit.TrailingLength;
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, _lastCharacterHit.TrailingLength > 0);
+            var textLine = TextLayout.TextLines[lineIndex];
 
-            if (x >= Bounds.Width)
+            if (_caretBounds.X > 0 && _caretBounds.X >= textLine.WidthIncludingTrailingWhitespace)
             {
-                x = Math.Floor(_caretBounds.X - 1) + 0.5;
+                x -= 1;
             }
             
             return (new Point(x, y), new Point(x, b));
@@ -459,8 +472,8 @@ namespace Avalonia.Controls.Presenters
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
-            var selectionStart = SelectionStart;
-            var selectionEnd = SelectionEnd;
+            var selectionStart = CoerceCaretIndex(SelectionStart);
+            var selectionEnd = CoerceCaretIndex(SelectionEnd);
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
@@ -498,25 +511,29 @@ namespace Avalonia.Controls.Presenters
         
         protected override Size MeasureOverride(Size availableSize)
         {
-            _textLayout = null;
-
             _constraint = availableSize;
+            
+            _textLayout = null;
+            
+            InvalidateArrange();
 
-            return TextLayout.Size;
+            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, 1);
+            
+            return new Size(measuredSize.Width, measuredSize.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (!double.IsInfinity(_constraint.Width))
+            if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
             {
-                return base.ArrangeOverride(finalSize);
+                return finalSize;
             }
             
             _constraint = finalSize;
-            
+                
             _textLayout = null;
 
-            return base.ArrangeOverride(finalSize); 
+            return finalSize;
         }
 
         private int CoerceCaretIndex(int value)
@@ -615,11 +632,11 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
+        public CharacterHit GetNextCharacterHit(LogicalDirection direction = LogicalDirection.Forward)
         {
             if (Text is null)
             {
-                return;
+                return default;
             }
             
             if (FlowDirection == FlowDirection.RightToLeft)
@@ -636,7 +653,7 @@ namespace Avalonia.Controls.Presenters
 
             if (lineIndex < 0)
             {
-                return;
+                return default;
             }
 
             if (direction == LogicalDirection.Forward)
@@ -696,6 +713,13 @@ namespace Avalonia.Controls.Presenters
                     break;
                 }
             }
+
+            return characterHit;
+        }
+        
+        public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
+        {
+            var characterHit = GetNextCharacterHit(direction);
 
             UpdateCaret(characterHit);
 

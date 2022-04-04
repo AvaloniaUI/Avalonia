@@ -201,7 +201,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             if (type.Equals(types.Classes))
             {
                 var classes = text.Split(' ');
-                var classNodes = classes.Select(c => new XamlAstTextNode(node, c, types.XamlIlTypes.String)).ToArray();
+                var classNodes = classes.Select(c => new XamlAstTextNode(node, c, type: types.XamlIlTypes.String)).ToArray();
 
                 result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, types.Classes, types.XamlIlTypes.String, classNodes);
                 return true;
@@ -218,6 +218,32 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         new List<IXamlAstValueNode> { new XamlConstantNode(node, types.UInt, color.ToUint32()) });
 
                     return true;
+                }
+            }
+
+            if (type.Equals(types.TextTrimming))
+            {
+                foreach (var property in types.TextTrimming.Properties)
+                {
+                    if (property.PropertyType == types.TextTrimming && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+
+                        return true;
+                    }
+                }
+            }
+
+            if (type.Equals(types.TextDecorationCollection))
+            {
+                foreach (var property in types.TextDecorations.Properties)
+                {
+                    if (property.PropertyType == types.TextDecorationCollection && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+
+                        return true;
+                    }
                 }
             }
 

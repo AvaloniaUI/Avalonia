@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -26,6 +27,7 @@ namespace Avalonia.Controls
     /// It handles scheduling layout, styling and rendering as well as
     /// tracking the widget's <see cref="ClientSize"/>.
     /// </remarks>
+    [TemplatePart("PART_TransparencyFallback", typeof(Border))]
     public abstract class TopLevel : ContentControl,
         IInputRoot,
         ILayoutRoot,
@@ -134,8 +136,6 @@ namespace Avalonia.Controls
                     "Could not create window implementation: maybe no windowing subsystem was initialized?");
             }
 
-            impl = ValidatingToplevelImpl.Wrap(impl);
-            
             PlatformImpl = impl;
 
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            

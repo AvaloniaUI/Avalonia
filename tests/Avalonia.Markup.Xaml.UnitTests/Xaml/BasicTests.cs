@@ -935,6 +935,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact]
+        public void Should_Parse_Tip_With_Comment()
+        {
+            var xaml = @"
+                <TextBlock xmlns='https://github.com/avaloniaui' Text='TextBlock with tooltip'>
+                    <ToolTip.Tip>
+                        <!--Comment-->
+                        <ToolTip>
+                            Foo
+                        </ToolTip>
+                    </ToolTip.Tip>
+                </TextBlock>";
+
+            var textBlock = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(xaml);
+
+            var toolTip = ToolTip.GetTip(textBlock) as ToolTip;
+
+            Assert.NotNull(toolTip);
+
+            Assert.Equal("Foo", toolTip.Content);
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }

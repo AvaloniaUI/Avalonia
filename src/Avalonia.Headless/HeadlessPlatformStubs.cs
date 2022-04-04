@@ -157,9 +157,10 @@ namespace Avalonia.Headless
             return new List<string> { "Arial" };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
+            FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
         {
-            typeface = new Typeface("Arial", fontStyle, fontWeight);
+            typeface = new Typeface("Arial", fontStyle, fontWeight, fontStretch);
             return true;
         }
     }
@@ -199,5 +200,20 @@ namespace Avalonia.Headless
             new Screen(1, new PixelRect(0, 0, 1920, 1280),
                 new PixelRect(0, 0, 1920, 1280), true),
         };
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            return ScreenHelper.ScreenFromPoint(point, AllScreens);
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            return ScreenHelper.ScreenFromRect(rect, AllScreens);
+        }
+
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
     }
 }

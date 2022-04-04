@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Themes.Default;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
@@ -109,7 +110,7 @@ namespace Avalonia.Diagnostics.Views
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
-#pragma warning restore CS0618 // Type or member is obsolete                
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return (IControl?)topLevel.GetVisualsAt(point, x =>
                 {
@@ -247,7 +248,25 @@ namespace Avalonia.Diagnostics.Views
 
         private void RootClosed(object? sender, EventArgs e) => Close();
 
-        public void SetOptions(DevToolsOptions options) =>
+        public void SetOptions(DevToolsOptions options)
+        {
             (DataContext as MainViewModel)?.SetOptions(options);
+
+            if (options.UseDarkMode)
+            {
+                if (Styles[0] is SimpleTheme st)
+                {
+                    st.Mode = SimpleThemeMode.Dark;
+                }                
+            }
+        }
+
+        internal void SelectedControl(IControl? control)
+        {
+            if (control is { })
+            {
+                (DataContext as MainViewModel)?.SelectControl(control);
+            }
+        }
     }
 }

@@ -588,7 +588,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, layout.TextLines.Count);
 
-                Assert.Equal(lineHeight, layout.Size.Height);
+                Assert.Equal(lineHeight, layout.Bounds.Height);
             }
         }
 
@@ -716,7 +716,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var selectedRect = rects[0];
 
-                Assert.Equal(selectedText.Size.Width, selectedRect.Width);
+                Assert.Equal(selectedText.Bounds.Width, selectedRect.Width);
             }
         }
 
@@ -832,7 +832,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     12,
                     Brushes.Black);
                 
-                Assert.True(layout.Size.Height > 0);
+                Assert.True(layout.Bounds.Height > 0);
             }
         }
 

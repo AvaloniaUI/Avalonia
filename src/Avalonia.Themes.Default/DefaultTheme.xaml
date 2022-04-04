@@ -3,8 +3,9 @@
         x:Class="Avalonia.Themes.Default.DefaultTheme">
   <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToolTip.xaml"/>
+  <!-- PathIcon also needs to be defined early so it can be overriden by other styles (e.g. ComboBox) -->
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/PathIcon.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/DataValidationErrors.xaml"/>
-
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/FocusAdorner.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Button.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Carousel.xaml"/>
@@ -22,7 +23,6 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ContextMenu.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/MenuItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/OverlayPopupHost.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/PathIcon.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/PopupRoot.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ProgressBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/RadioButton.xaml"/>
@@ -38,6 +38,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TabItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TextBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ToggleButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TransitioningContentControl.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Expander.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TitleBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/TreeView.xaml"/>

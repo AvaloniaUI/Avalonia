@@ -27,6 +27,8 @@
 @clr-map REFGUID System.Guid*
 @clr-map REFIID System.Guid*
 @clr-map WCHAR System.Char
+@clr-map STGMEDIUM Avalonia.Win32.Interop.STGMEDIUM
+@clr-map FORMATETC Avalonia.Win32.Interop.FORMATETC
 
 [flags]
 enum FILEOPENDIALOGOPTIONS
@@ -51,6 +53,16 @@ enum FILEOPENDIALOGOPTIONS
     FOS_DONTADDTORECENT = 0x02000000,
     FOS_FORCESHOWHIDDEN = 0x10000000,
     FOS_DEFAULTNOMINIMODE = 0x20000000
+}
+
+[flags]
+enum DropEffect
+{
+    None = 0,
+    Copy = 1,
+    Move = 2,
+    Link = 4,
+    Scroll = -2147483648,
 }
 
 [
@@ -188,4 +200,115 @@ interface IFileOpenDialog : IFileDialog
 
     HRESULT GetSelectedItems(
         [out] IShellItemArray** ppsai);
+}
+
+[
+    object,
+    uuid(00000103-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IEnumFORMATETC : IUnknown
+{
+    UINT32 Next(
+        [in] ULONG celt,
+        [out] FORMATETC* rgelt,
+        ULONG* pceltFetched);
+
+    UINT32 Skip(
+        [in] ULONG celt);
+
+    HRESULT Reset();
+
+    HRESULT Clone(
+        [out] IEnumFORMATETC** ppenum);
+}
+
+[
+    object,
+    uuid(0000010e-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IDataObject : IUnknown
+{
+    UINT32 GetData(
+        [in, unique] FORMATETC* pformatetcIn,
+        [out] STGMEDIUM* pmedium);
+
+    UINT32 GetDataHere(
+        [in, unique] FORMATETC* pformatetc,
+        [in] STGMEDIUM* pmedium);
+
+    UINT32 QueryGetData(
+        [in, unique] FORMATETC* pformatetc);
+
+    HRESULT GetCanonicalFormatEtc(
+        [in, unique] FORMATETC* pformatectIn,
+        [out] FORMATETC* pformatetcOut);
+
+    UINT32 SetData(
+        [in, unique] FORMATETC* pformatetc,
+        [in, unique] STGMEDIUM* pmedium,
+        [in] BOOL fRelease);
+
+    HRESULT EnumFormatEtc(
+        [in] DWORD dwDirection,
+        [out] IEnumFORMATETC** ppenumFormatEtc);
+
+    HRESULT DAdvise(
+        [in] FORMATETC* pformatetc,
+        [in] DWORD advf,
+        [in, unique] void* pAdvSink,
+        [out] DWORD* pdwConnection);
+
+    HRESULT DUnadvise(
+        [in] DWORD dwConnection);
+
+    HRESULT EnumDAdvise(
+        [out] void** ppenumAdvise);
+}
+
+[
+    local,
+    object,
+    uuid(00000121-0000-0000-C000-000000000046)
+]
+
+interface IDropSource : IUnknown
+{
+    INT32 QueryContinueDrag([in] BOOL fEscapePressed, [in] DWORD grfKeyState);
+
+    INT32 GiveFeedback([in] DropEffect dwEffect);
+}
+
+[
+    object,
+    uuid(00000122-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IDropTarget : IUnknown
+{
+    HRESULT DragEnter
+    (
+        [in, unique] IDataObject* pDataObj,
+        [in] DWORD grfKeyState,
+        [in] POINT pt,
+        [in] DropEffect* pdwEffect
+    );
+
+    HRESULT DragOver
+    (
+        [in] DWORD grfKeyState,
+        [in] POINT pt,
+        [in] DropEffect* pdwEffect
+    );
+
+    HRESULT DragLeave();
+
+    HRESULT Drop
+    (
+        [in, unique] IDataObject* pDataObj,
+        [in] DWORD grfKeyState,
+        [in] POINT pt,
+        [in] DropEffect* pdwEffect
+    );
 }

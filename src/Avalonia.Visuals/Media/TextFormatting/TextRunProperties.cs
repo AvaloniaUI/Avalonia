@@ -90,5 +90,11 @@ namespace Avalonia.Media.TextFormatting
         {
             return !Equals(left, right);
         }
+        
+        internal TextRunProperties WithTypeface(Typeface typeface)
+        {
+            return new GenericTextRunProperties(typeface, FontRenderingEmSize,
+                TextDecorations, ForegroundBrush, BackgroundBrush, BaselineAlignment);
+        }
     }
 }
