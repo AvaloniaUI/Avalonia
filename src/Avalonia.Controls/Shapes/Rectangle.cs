@@ -7,6 +7,8 @@ namespace Avalonia.Controls.Shapes
     /// </summary>
     public class Rectangle : Shape
     {
+        private const double PiOver2 = 1.57079633; // 90 deg to rad
+
         /// <summary>
         /// Defines the <see cref="RadiusX"/> property.
         /// </summary>
@@ -68,7 +70,6 @@ namespace Avalonia.Controls.Shapes
                 var rect = new Rect(Bounds.Size).Deflate(StrokeThickness / 2);
                 var geometry = new StreamGeometry();
                 var arcSize = new Size(x, y);
-                var piOver2 = 1.57079633; // 90 deg to rad
 
                 using (StreamGeometryContext context = geometry.Open())
                 {
@@ -95,7 +96,7 @@ namespace Avalonia.Controls.Shapes
                     context.ArcTo(
                         new Point(rect.Right, rect.Top + y),
                         arcSize,
-                        rotationAngle: piOver2,
+                        rotationAngle: PiOver2,
                         isLargeArc: false,
                         SweepDirection.Clockwise);
 
@@ -104,7 +105,7 @@ namespace Avalonia.Controls.Shapes
                     context.ArcTo(
                         new Point(rect.Right - x, rect.Bottom),
                         arcSize,
-                        rotationAngle: piOver2,
+                        rotationAngle: PiOver2,
                         isLargeArc: false,
                         SweepDirection.Clockwise);
 
@@ -113,7 +114,7 @@ namespace Avalonia.Controls.Shapes
                     context.ArcTo(
                         new Point(rect.Left, rect.Bottom - y),
                         arcSize,
-                        rotationAngle: piOver2,
+                        rotationAngle: PiOver2,
                         isLargeArc: false,
                         SweepDirection.Clockwise);
 
@@ -122,7 +123,7 @@ namespace Avalonia.Controls.Shapes
                     context.ArcTo(
                         new Point(rect.Left + x, rect.Top),
                         arcSize,
-                        rotationAngle: piOver2,
+                        rotationAngle: PiOver2,
                         isLargeArc: false,
                         SweepDirection.Clockwise);
 
