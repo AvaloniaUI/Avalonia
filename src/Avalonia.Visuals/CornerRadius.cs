@@ -15,6 +15,8 @@ namespace Avalonia
 #endif
     readonly struct CornerRadius : IEquatable<CornerRadius>
     {
+        private readonly bool _isCircular;
+
         static CornerRadius()
         {
 #if !BUILDTASK
@@ -26,49 +28,127 @@ namespace Avalonia
         {
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;
 
+            TopLeftRadiusX     = TopLeftRadiusY     = TopLeft;
+            TopRightRadiusX    = TopRightRadiusY    = TopRight;
+            BottomRightRadiusX = BottomRightRadiusY = BottomRight;
+            BottomLeftRadiusX  = BottomLeftRadiusY  = BottomLeft;
+
+            _isCircular = true;
         }
+
         public CornerRadius(double top, double bottom)
         {
-            TopLeft = TopRight = top;
+            TopLeft    = TopRight    = top;
             BottomLeft = BottomRight = bottom;
+
+            TopLeftRadiusX     = TopLeftRadiusY     = TopLeft;
+            TopRightRadiusX    = TopRightRadiusY    = TopRight;
+            BottomRightRadiusX = BottomRightRadiusY = BottomRight;
+            BottomLeftRadiusX  = BottomLeftRadiusY  = BottomLeft;
+
+            _isCircular = true;
         }
-        public CornerRadius(double topLeft, double topRight, double bottomRight, double bottomLeft)
+
+        public CornerRadius(
+            double topLeft,
+            double topRight,
+            double bottomRight,
+            double bottomLeft)
         {
-            TopLeft = topLeft;
-            TopRight = topRight;
+            TopLeft     = topLeft;
+            TopRight    = topRight;
             BottomRight = bottomRight;
-            BottomLeft = bottomLeft;
+            BottomLeft  = bottomLeft;
+
+            TopLeftRadiusX     = TopLeftRadiusY     = TopLeft;
+            TopRightRadiusX    = TopRightRadiusY    = TopRight;
+            BottomRightRadiusX = BottomRightRadiusY = BottomRight;
+            BottomLeftRadiusX  = BottomLeftRadiusY  = BottomLeft;
+
+            _isCircular = true;
+        }
+
+        public CornerRadius(
+            double topLeftRadiusX,
+            double topLeftRadiusY,
+            double topRightRadiusX,
+            double topRightRadiusY,
+            double bottomRightRadiusX,
+            double bottomRightRadiusY,
+            double bottomLeftRadiusX,
+            double bottomLeftRadiusY)
+        {
+            TopLeftRadiusX     = topLeftRadiusX;
+            TopLeftRadiusY     = topLeftRadiusY;
+            TopRightRadiusX    = topRightRadiusX;
+            TopRightRadiusY    = topRightRadiusY;
+            BottomRightRadiusX = bottomRightRadiusX;
+            BottomRightRadiusY = bottomRightRadiusY;
+            BottomLeftRadiusX  = bottomLeftRadiusX;
+            BottomLeftRadiusY  = bottomLeftRadiusY;
+
+            TopLeft     = (TopLeftRadiusX     + TopLeftRadiusY)     / 2.0;
+            TopRight    = (TopRightRadiusX    + TopRightRadiusY)    / 2.0;
+            BottomRight = (BottomRightRadiusX + BottomRightRadiusY) / 2.0;
+            BottomLeft  = (BottomLeftRadiusX  + BottomLeftRadiusY)  / 2.0;
+
+            _isCircular = (TopLeftRadiusX     == TopLeftRadiusY &&
+                           TopRightRadiusX    == TopRightRadiusY &&
+                           BottomRightRadiusX == BottomRightRadiusY &&
+                           BottomLeftRadiusX  == BottomLeftRadiusY);
         }
 
         /// <summary>
-        /// Radius of the top left corner.
+        /// Gets the circular radius of the top left corner.
         /// </summary>
         public double TopLeft { get; }
 
+        public double TopLeftRadiusX { get; }
+        public double TopLeftRadiusY { get; }
+
         /// <summary>
-        /// Radius of the top right corner.
+        /// Gets the circular radius of the top right corner.
         /// </summary>
         public double TopRight { get; }
 
+        public double TopRightRadiusX { get; }
+        public double TopRightRadiusY { get; }
+
         /// <summary>
-        /// Radius of the bottom right corner.
+        /// Gets the circular radius of the bottom right corner.
         /// </summary>
         public double BottomRight { get; }
 
+        public double BottomRightRadiusX { get; }
+        public double BottomRightRadiusY { get; }
+
         /// <summary>
-        /// Radius of the bottom left corner.
+        /// Gets the circular radius of the bottom left corner.
         /// </summary>
         public double BottomLeft { get; }
+
+        public double BottomLeftRadiusX { get; }
+        public double BottomLeftRadiusY { get; }
 
         /// <summary>
         /// Gets a value indicating whether all corner radii are set to 0.
         /// </summary>
         public bool IsEmpty => TopLeft.Equals(0) && IsUniform;
 
+        public bool IsCircular => _isCircular;
+
+        public bool IsElliptical => !_isCircular;
+
         /// <summary>
         /// Gets a value indicating whether all corner radii are equal.
         /// </summary>
-        public bool IsUniform => TopLeft.Equals(TopRight) && BottomLeft.Equals(BottomRight) && TopRight.Equals(BottomRight);
+        public bool IsUniform
+        {
+            get => _isCircular &&
+                   TopLeft.Equals(TopRight) &&
+                   BottomLeft.Equals(BottomRight) &&
+                   TopRight.Equals(BottomRight);
+        }
 
         /// <summary>
         /// Returns a boolean indicating whether the corner radius is equal to the other given corner radius.
@@ -79,10 +159,17 @@ namespace Avalonia
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
             return TopLeft == other.TopLeft &&
-                   
                    TopRight == other.TopRight &&
                    BottomRight == other.BottomRight &&
-                   BottomLeft == other.BottomLeft;
+                   BottomLeft == other.BottomLeft &&
+                   TopLeftRadiusX == other.TopLeftRadiusX &&
+                   TopLeftRadiusY == other.TopLeftRadiusY &&
+                   TopRightRadiusX == other.TopRightRadiusX &&
+                   TopRightRadiusY == other.TopRightRadiusY &&
+                   BottomRightRadiusX == other.BottomRightRadiusX &&
+                   BottomRightRadiusY == other.BottomRightRadiusY &&
+                   BottomLeftRadiusX == other.BottomLeftRadiusX &&
+                   BottomLeftRadiusY == other.BottomLeftRadiusY;
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
