@@ -169,8 +169,12 @@ namespace Avalonia.Platform
         IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun);
 
         /// <summary>
-        /// Gets a value indicating whether the platform supports rectangles with rounded corners.
+        /// Gets a value indicating whether the platform directly supports rectangles with rounded corners.
         /// </summary>
+        /// <remarks>
+        /// Some platform renderers can't directly handle rounded corners on rectangles.
+        /// In this case, code that requires rounded corners must generate and retain a geometry instead.
+        /// </remarks>
         bool SupportsIndividualRoundRects { get; }
 
         /// <summary>

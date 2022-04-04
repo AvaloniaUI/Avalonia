@@ -21,7 +21,11 @@ namespace Avalonia.Controls.Shapes
 
         static Rectangle()
         {
-            AffectsGeometry<Rectangle>(BoundsProperty, StrokeThicknessProperty);
+            AffectsGeometry<Rectangle>(
+                BoundsProperty,
+                RadiusXProperty,
+                RadiusYProperty,
+                StrokeThicknessProperty);
         }
 
         /// <summary>
