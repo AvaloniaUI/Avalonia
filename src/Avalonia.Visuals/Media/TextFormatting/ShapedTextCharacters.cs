@@ -38,6 +38,8 @@ namespace Avalonia.Media.TextFormatting
 
         public FontMetrics FontMetrics { get; }
 
+        public override double Baseline => -FontMetrics.Ascent;
+
         public override Size Size => GlyphRun.Size;
 
         public GlyphRun GlyphRun
