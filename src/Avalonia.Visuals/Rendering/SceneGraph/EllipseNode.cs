@@ -59,6 +59,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public override void Render(IDrawingContextImpl context)
         {
+            context.Transform = Transform;
             context.DrawEllipse(Brush, Pen, Rect);
         }
 

@@ -56,7 +56,7 @@ namespace Avalonia.Media
             FlowDirection flowDirection,
             Typeface typeface,
             double emSize,
-            IBrush foreground)
+            IBrush? foreground)
         {
             if (culture is null)
             {
@@ -160,7 +160,7 @@ namespace Avalonia.Media
         /// <param name="foregroundBrush">Foreground brush</param>
         /// <param name="startIndex">The start index of initial character to apply the change to.</param>
         /// <param name="count">The number of characters the change should be applied to.</param>
-        public void SetForegroundBrush(IBrush foregroundBrush, int startIndex, int count)
+        public void SetForegroundBrush(IBrush? foregroundBrush, int startIndex, int count)
         {
             var limit = ValidateRange(startIndex, count);
             for (var i = startIndex; i < limit;)
@@ -768,7 +768,7 @@ namespace Avalonia.Media
                 // as a result of the next line measurement
 
                 // maybe there is no next line at all
-                if (Position + Current.TextRange.Length < _that._text.Length)
+                if (Position + Current.Length < _that._text.Length)
                 {
                     bool nextLineFits;
 
@@ -780,7 +780,7 @@ namespace Avalonia.Media
                     {
                         _nextLine = FormatLine(
                             _textSource,
-                            Position + Current.TextRange.Length,
+                            Position + Current.Length,
                             MaxLineLength(_lineCount + 1),
                             _that._defaultParaProps,
                             currentLineBreak
@@ -819,7 +819,7 @@ namespace Avalonia.Media
 
                 _previousHeight = Current.Height;
 
-                Length = Current.TextRange.Length;
+                Length = Current.Length;
 
                 _previousLineBreak = currentLineBreak;
 
@@ -839,17 +839,17 @@ namespace Avalonia.Media
                     lineBreak
                     );
 
-                if (_that._trimming != TextTrimming.None && line.HasOverflowed && line.TextRange.Length > 0)
+                if (_that._trimming != TextTrimming.None && line.HasOverflowed && line.Length > 0)
                 {
                     // what I really need here is the last displayed text run of the line
                     // textSourcePosition + line.Length - 1 works except the end of paragraph case,
                     // where line length includes the fake paragraph break run
-                    Debug.Assert(_that._text.Length > 0 && textSourcePosition + line.TextRange.Length <= _that._text.Length + 1);
+                    Debug.Assert(_that._text.Length > 0 && textSourcePosition + line.Length <= _that._text.Length + 1);
 
                     var thatFormatRider = new SpanRider(
                         _that._formatRuns,
                         _that._latestPosition,
-                        Math.Min(textSourcePosition + line.TextRange.Length - 1, _that._text.Length - 1)
+                        Math.Min(textSourcePosition + line.Length - 1, _that._text.Length - 1)
                         );
 
                     var lastRunProps = (GenericTextRunProperties)thatFormatRider.CurrentElement!;

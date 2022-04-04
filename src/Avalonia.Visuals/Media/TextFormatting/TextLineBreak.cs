@@ -5,11 +5,11 @@ namespace Avalonia.Media.TextFormatting
     public class TextLineBreak
     {
         public TextLineBreak(TextEndOfLine? textEndOfLine = null, FlowDirection flowDirection = FlowDirection.LeftToRight, 
-            IReadOnlyList<ShapedTextCharacters>? remainingCharacters = null)
+            IReadOnlyList<DrawableTextRun>? remainingRuns = null)
         {
             TextEndOfLine = textEndOfLine;
             FlowDirection = flowDirection;
-            RemainingCharacters = remainingCharacters;
+            RemainingRuns = remainingRuns;
         }
 
         /// <summary>
@@ -23,8 +23,8 @@ namespace Avalonia.Media.TextFormatting
         public FlowDirection FlowDirection { get; }
         
         /// <summary>
-        /// Get the remaining shaped characters that were split up by the <see cref="TextFormatter"/> during the formatting process.
+        /// Get the remaining runs that were split up by the <see cref="TextFormatter"/> during the formatting process.
         /// </summary>
-        public IReadOnlyList<ShapedTextCharacters>? RemainingCharacters { get; }
+        public IReadOnlyList<DrawableTextRun>? RemainingRuns { get; }
     }
 }
