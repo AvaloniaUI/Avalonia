@@ -1,4 +1,5 @@
 using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -12,6 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
     /// </summary>
+    [TemplatePart("PART_ContentPresenter", typeof(IContentPresenter))]
     public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
         /// <summary>
