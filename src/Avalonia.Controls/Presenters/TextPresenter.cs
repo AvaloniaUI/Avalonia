@@ -8,6 +8,7 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
+using Avalonia.Controls.Documents;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -121,8 +122,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public FontFamily FontFamily
         {
-            get => TextBlock.GetFontFamily(this);
-            set => TextBlock.SetFontFamily(this, value);
+            get => TextElement.GetFontFamily(this);
+            set => TextElement.SetFontFamily(this, value);
         }
 
         /// <summary>
@@ -130,8 +131,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public double FontSize
         {
-            get => TextBlock.GetFontSize(this);
-            set => TextBlock.SetFontSize(this, value);
+            get => TextElement.GetFontSize(this);
+            set => TextElement.SetFontSize(this, value);
         }
 
         /// <summary>
@@ -139,8 +140,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public FontStyle FontStyle
         {
-            get => TextBlock.GetFontStyle(this);
-            set => TextBlock.SetFontStyle(this, value);
+            get => TextElement.GetFontStyle(this);
+            set => TextElement.SetFontStyle(this, value);
         }
 
         /// <summary>
@@ -148,8 +149,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public FontWeight FontWeight
         {
-            get => TextBlock.GetFontWeight(this);
-            set => TextBlock.SetFontWeight(this, value);
+            get => TextElement.GetFontWeight(this);
+            set => TextElement.SetFontWeight(this, value);
         }
 
         /// <summary>
@@ -157,8 +158,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public FontStretch FontStretch
         {
-            get => TextBlock.GetFontStretch(this);
-            set => TextBlock.SetFontStretch(this, value);
+            get => TextElement.GetFontStretch(this);
+            set => TextElement.SetFontStretch(this, value);
         }
 
         /// <summary>
@@ -166,8 +167,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public IBrush? Foreground
         {
-            get => TextBlock.GetForeground(this);
-            set => TextBlock.SetForeground(this, value);
+            get => TextElement.GetForeground(this);
+            set => TextElement.SetForeground(this, value);
         }
 
         /// <summary>
@@ -355,7 +356,7 @@ namespace Avalonia.Controls.Presenters
 
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(selectionBrush, rect);
+                    context.FillRectangle(selectionBrush, PixelRect.FromRect(rect, 1).ToRect(1));
                 }
             }
 
@@ -530,9 +531,9 @@ namespace Avalonia.Controls.Presenters
             {
                 return finalSize;
             }
-            
-            _constraint = finalSize;
-                
+
+            _constraint = new Size(finalSize.Width, Math.Ceiling(finalSize.Height));
+
             _textLayout = null;
 
             return finalSize;
@@ -639,14 +640,7 @@ namespace Avalonia.Controls.Presenters
             if (Text is null)
             {
                 return default;
-            }
-            
-            if (FlowDirection == FlowDirection.RightToLeft)
-            {
-                direction = direction == LogicalDirection.Forward ?
-                    LogicalDirection.Backward :
-                    LogicalDirection.Forward;
-            }
+            }          
 
             var characterHit = _lastCharacterHit;
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
@@ -668,7 +662,7 @@ namespace Avalonia.Controls.Presenters
 
                     caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                    if (textLine.NewLineLength > 0 && caretIndex == textLine.TextRange.Start + textLine.TextRange.Length)
+                    if (textLine.NewLineLength > 0 && caretIndex == textLine.FirstTextSourceIndex + textLine.Length)
                     {
                         characterHit = new CharacterHit(caretIndex);
                     }
@@ -680,7 +674,7 @@ namespace Avalonia.Controls.Presenters
                         break;
                     }
 
-                    if (caretIndex - textLine.NewLineLength == textLine.TextRange.Start + textLine.TextRange.Length)
+                    if (caretIndex - textLine.NewLineLength == textLine.FirstTextSourceIndex + textLine.Length)
                     {
                         break;
                     }
@@ -721,6 +715,13 @@ namespace Avalonia.Controls.Presenters
         
         public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
         {
+            if (FlowDirection == FlowDirection.RightToLeft)
+            {
+                direction = direction == LogicalDirection.Forward ?
+                    LogicalDirection.Backward :
+                    LogicalDirection.Forward;
+            }
+
             var characterHit = GetNextCharacterHit(direction);
 
             UpdateCaret(characterHit);
@@ -781,19 +782,25 @@ namespace Avalonia.Controls.Presenters
             
             switch (change.Property.Name)
             {
-                case nameof (TextBlock.Foreground):
-                case nameof (TextBlock.FontSize):
-                case nameof (TextBlock.FontStyle):
-                case nameof (TextBlock.FontWeight):
-                case nameof (TextBlock.FontFamily):
+                case nameof (Foreground):
+                case nameof (FontSize):
+                case nameof (FontStyle):
+                case nameof (FontWeight):
+                case nameof (FontFamily):
+                case nameof (FontStretch):
+
                 case nameof (Text):
                 case nameof (TextAlignment):
                 case nameof (TextWrapping):
+
                 case nameof (SelectionStart):
                 case nameof (SelectionEnd):
                 case nameof (SelectionForegroundBrush):
+
                 case nameof (PasswordChar):
                 case nameof (RevealPassword):
+
+                case nameof(FlowDirection):
                 {
                     InvalidateTextLayout();
                     break;

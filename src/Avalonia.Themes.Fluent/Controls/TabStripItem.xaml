@@ -36,9 +36,9 @@
                               Content="{TemplateBinding Content}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                              TextBlock.FontSize="{TemplateBinding FontSize}"
-                              TextBlock.FontWeight="{TemplateBinding FontWeight}" />
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}" />
           </Panel>
@@ -69,7 +69,7 @@
   <!--  We don't use selector to PART_LayoutRoot, so developer can override selected item background with TabStripItem.Background  -->
   <Style Selector="TabStripItem:selected">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelected}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
   </Style>
   <Style Selector="TabStripItem:selected /template/ Border#PART_SelectedPipe">
     <Setter Property="IsVisible" Value="True" />
@@ -78,30 +78,30 @@
   <!--  PointerOver state  -->
   <Style Selector="TabStripItem:pointerover /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
   </Style>
 
   <!--  Selected PointerOver state  -->
   <Style Selector="TabStripItem:selected:pointerover /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPointerOver}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
   </Style>
 
   <!--  Pressed state  -->
   <Style Selector="TabStripItem:pressed /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPressed}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
   </Style>
 
   <!--  Selected Pressed state  -->
   <Style Selector="TabStripItem:selected:pressed /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
   </Style>
 
   <!--  Disabled state  -->
   <Style Selector="TabStripItem:disabled /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundDisabled}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundDisabled}" />
   </Style>
 </Styles>

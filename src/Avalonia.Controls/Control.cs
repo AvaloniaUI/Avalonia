@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
-        
+
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -136,6 +136,26 @@ namespace Avalonia.Controls
         }
 
         public new IControl? Parent => (IControl?)base.Parent;
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The flow direction.</returns>
+        public static FlowDirection GetFlowDirection(Control control)
+        {
+            return control.GetValue(FlowDirectionProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFlowDirection(Control control, FlowDirection value)
+        {
+            control.SetValue(FlowDirectionProperty, value);
+        }
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;

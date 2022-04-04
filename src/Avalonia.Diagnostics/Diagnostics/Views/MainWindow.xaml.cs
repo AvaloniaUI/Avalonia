@@ -110,7 +110,7 @@ namespace Avalonia.Diagnostics.Views
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
-#pragma warning restore CS0618 // Type or member is obsolete                
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return (IControl?)topLevel.GetVisualsAt(point, x =>
                 {
@@ -162,11 +162,16 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var root = Root as TopLevel
-                ?? vm.PointerOverRoot as TopLevel;
+            var root = vm.PointerOverRoot as TopLevel;
+
             if (root is null)
             {
                 return;
+            }
+
+            if (root is PopupRoot pr && pr.ParentTopLevel != null)
+            {
+                root = pr.ParentTopLevel;
             }
 
             switch (e.Modifiers)
@@ -253,6 +258,14 @@ namespace Avalonia.Diagnostics.Views
                 {
                     st.Mode = SimpleThemeMode.Dark;
                 }                
+            }
+        }
+
+        internal void SelectedControl(IControl? control)
+        {
+            if (control is { })
+            {
+                (DataContext as MainViewModel)?.SelectControl(control);
             }
         }
     }

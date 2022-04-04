@@ -63,5 +63,13 @@
         {
             get { return 0; }
         }
+        
+        /// <summary>
+        /// Default Incremental Tab
+        /// </summary>
+        public virtual double DefaultIncrementalTab
+        {
+            get { return 4 * DefaultTextRunProperties.FontRenderingEmSize; }
+        }
     }
 }

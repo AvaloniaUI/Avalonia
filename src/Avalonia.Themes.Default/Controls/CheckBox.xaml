@@ -38,7 +38,7 @@
             </Panel>
           </Border>
           <ContentPresenter Name="PART_ContentPresenter"
-                            TextBlock.Foreground="{TemplateBinding Foreground}"
+                            TextElement.Foreground="{TemplateBinding Foreground}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             Content="{TemplateBinding Content}"
                             Margin="{TemplateBinding Padding}"

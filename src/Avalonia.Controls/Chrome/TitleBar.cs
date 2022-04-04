@@ -8,6 +8,7 @@ namespace Avalonia.Controls.Chrome
     /// <summary>
     /// Draws a titlebar when managed client decorations are enabled.
     /// </summary>
+    [TemplatePart("PART_CaptionButtons", typeof(CaptionButtons))]
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class TitleBar : TemplatedControl
     {

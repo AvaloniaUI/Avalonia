@@ -105,7 +105,7 @@ namespace Avalonia.Build.Tasks
         {
             var typeToXamlIndex = new Dictionary<string, string>(); 
             
-            foreach (var s in sources.ToList())
+            foreach (var s in sources.ToArray())
             {
                 if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml") || s.Path.ToLowerInvariant().EndsWith(".axaml"))
                 {
