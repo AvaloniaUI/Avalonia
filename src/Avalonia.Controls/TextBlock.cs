@@ -317,7 +317,7 @@ namespace Avalonia.Controls
             get => GetValue(TextDecorationsProperty);
             set => SetValue(TextDecorationsProperty, value);
         }
-
+        
         protected override bool BypassFlowDirectionPolicies => true;
 
         /// <summary>
