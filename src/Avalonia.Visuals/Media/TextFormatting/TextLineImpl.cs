@@ -158,7 +158,7 @@ namespace Avalonia.Media.TextFormatting
             distance -= Start;
 
             if (distance <= 0)
-            {              
+            {
                 // hit happens before the line, return the first position
                 var firstRun = _textRuns[0];
 
@@ -187,7 +187,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     default:
                         {
-                            if(distance < currentRun.Size.Width / 2)
+                            if (distance < currentRun.Size.Width / 2)
                             {
                                 characterHit = new CharacterHit(currentPosition);
                             }
@@ -311,12 +311,12 @@ namespace Avalonia.Media.TextFormatting
                         }
                     default:
                         {
-                            if(characterIndex == currentPosition)
+                            if (characterIndex == currentPosition)
                             {
                                 return currentDistance;
                             }
 
-                            if(characterIndex == currentPosition + textRun.TextSourceLength)
+                            if (characterIndex == currentPosition + textRun.TextSourceLength)
                             {
                                 return currentDistance + textRun.Size.Width;
                             }
@@ -335,7 +335,7 @@ namespace Avalonia.Media.TextFormatting
 
         /// <inheritdoc/>
         public override CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit)
-        {         
+        {
             if (_textRuns.Count == 0)
             {
                 return new CharacterHit();
@@ -897,7 +897,7 @@ namespace Avalonia.Media.TextFormatting
 
                             var previousPosition = foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength;
 
-                            if(foundCharacterHit.TrailingLength > 0 && previousPosition == characterIndex)
+                            if (foundCharacterHit.TrailingLength > 0 && previousPosition == characterIndex)
                             {
                                 previousCharacterHit = new CharacterHit(foundCharacterHit.FirstCharacterIndex);
                             }
@@ -911,7 +911,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     default:
                         {
-                            if(characterIndex == currentPosition + currentRun.TextSourceLength)
+                            if (characterIndex == currentPosition + currentRun.TextSourceLength)
                             {
                                 previousCharacterHit = new CharacterHit(currentPosition);
 
@@ -1072,7 +1072,7 @@ namespace Avalonia.Media.TextFormatting
                                     lineGap = fontMetrics.LineGap;
                                 }
 
-                                if(descent - ascent + lineGap > height)
+                                if (descent - ascent + lineGap > height)
                                 {
                                     height = descent - ascent + lineGap;
                                 }
@@ -1156,6 +1156,11 @@ namespace Avalonia.Media.TextFormatting
                                 height = drawableTextRun.Size.Height;
                             }
 
+                            if (ascent > -drawableTextRun.Baseline)
+                            {
+                                ascent = -drawableTextRun.Baseline;
+                            }
+
                             break;
                         }
                 }
@@ -1163,8 +1168,8 @@ namespace Avalonia.Media.TextFormatting
 
             start = GetParagraphOffsetX(width, widthIncludingWhitespace, _paragraphWidth,
                 _paragraphProperties.TextAlignment, _paragraphProperties.FlowDirection);
-           
-            if(!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
+
+            if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
                 height = lineHeight;
             }
