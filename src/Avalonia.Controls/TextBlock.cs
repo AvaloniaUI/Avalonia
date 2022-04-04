@@ -321,46 +321,6 @@ namespace Avalonia.Controls
         protected override bool BypassFlowDirectionPolicies => true;
 
         /// <summary>
-        /// Gets the value of the attached <see cref="FontFamilyProperty"/> on a control.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>The font family.</returns>
-        public static FontFamily GetFontFamily(Control control)
-        {
-            return control.GetValue(FontFamilyProperty);
-        }
-
-        /// <summary>
-        /// Gets the value of the attached <see cref="FontSizeProperty"/> on a control.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>The font size.</returns>
-        public static double GetFontSize(Control control)
-        {
-            return control.GetValue(FontSizeProperty);
-        }
-
-        /// <summary>
-        /// Gets the value of the attached <see cref="FontStyleProperty"/> on a control.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>The font style.</returns>
-        public static FontStyle GetFontStyle(Control control)
-        {
-            return control.GetValue(FontStyleProperty);
-        }
-
-        /// <summary>
-        /// Gets the value of the attached <see cref="FontWeightProperty"/> on a control.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>The font weight.</returns>
-        public static FontWeight GetFontWeight(Control control)
-        {
-            return control.GetValue(FontWeightProperty);
-        }
-        
-        /// <summary>
         /// The BaselineOffset property provides an adjustment to baseline offset
         /// </summary>
         public double BaselineOffset
