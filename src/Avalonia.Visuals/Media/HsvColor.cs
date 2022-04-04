@@ -4,6 +4,8 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.Globalization;
+using System.Text;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -20,7 +22,8 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
         /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.</param>
+        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
         /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
         /// <param name="value">The Value channel value in the range from 0..1.</param>
         public HsvColor(
@@ -33,6 +36,12 @@ namespace Avalonia.Media
             H = MathUtilities.Clamp(hue,        0.0, 360.0);
             S = MathUtilities.Clamp(saturation, 0.0, 1.0);
             V = MathUtilities.Clamp(value,      0.0, 1.0);
+
+            // The maximum value of Hue is technically 360 minus epsilon (just below 360).
+            // This is because, in a color circle, 360 degrees is equivalent to 0 degrees.
+            // However, that is too tricky to work with in code and isn't as intuitive.
+            // Therefore, since 360 == 0, just wrap 360 if needed back to 0.
+            H = (H == 360.0 ? 0 : H);
         }
 
         /// <summary>
@@ -43,7 +52,8 @@ namespace Avalonia.Media
         /// Whether or not the channel values are in the correct ranges must be known.
         /// </remarks>
         /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.</param>
+        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
         /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
         /// <param name="value">The Value channel value in the range from 0..1.</param>
         /// <param name="clampValues">Whether to clamp channel values to their required ranges.</param>
@@ -60,6 +70,9 @@ namespace Avalonia.Media
                 H = MathUtilities.Clamp(hue,        0.0, 360.0);
                 S = MathUtilities.Clamp(saturation, 0.0, 1.0);
                 V = MathUtilities.Clamp(value,      0.0, 1.0);
+
+                // See comments in constructor above
+                H = (H == 360.0 ? 0 : H);
             }
             else
             {
@@ -91,6 +104,7 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Gets the Hue channel value in the range from 0..360.
+        /// Note that 360 is equivalent to 0 and will be adjusted automatically.
         /// </summary>
         public double H { get; }
 
@@ -153,6 +167,129 @@ namespace Avalonia.Media
         {
             // Use the by-channel conversion method directly for performance
             return HsvColor.ToRgb(H, S, V, A);
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            // Use a format similar to HSL in HTML/CSS "hsla(0, 100%, 50%, 0.5)"
+            //
+            // However:
+            //   - To ensure precision is never lost, allow decimal places
+            //   - To maintain numerical consistency do not use percent
+            //
+            // Example:
+            //
+            // hsva(hue, saturation, value, alpha)
+            // hsva(230, 1.0, 0.5, 1.0)
+            //
+            //   Where:
+            //
+            //          hue : double from 0 to 360
+            //   saturation : double from 0 to 1
+            //                (HTML uses a percentage)
+            //        value : double from 0 to 1
+            //                (HTML uses a percentage)
+            //        alpha : double from 0 to 1
+            //                (HTML does not use a percentage for alpha)
+
+            sb.Append("hsva(");
+            sb.Append(H.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(S.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(V.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(A.ToString(CultureInfo.InvariantCulture));
+            sb.Append(')');
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Parses an HSV color string.
+        /// </summary>
+        /// <param name="s">The HSV color string to parse.</param>
+        /// <returns>The parsed <see cref="HsvColor"/>.</returns>
+        public static HsvColor Parse(string s)
+        {
+            if (s is null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (TryParse(s, out HsvColor hsvColor))
+            {
+                return hsvColor;
+            }
+
+            throw new FormatException($"Invalid HSV color string: '{s}'.");
+        }
+
+        /// <summary>
+        /// Parses an HSV color string.
+        /// </summary>
+        /// <param name="s">The HSV color string to parse.</param>
+        /// <param name="hsvColor">The parsed <see cref="HsvColor"/>.</param>
+        /// <returns>True if parsing was successful; otherwise, false.</returns>
+        public static bool TryParse(string s, out HsvColor hsvColor)
+        {
+            hsvColor = default;
+
+            if (s is null)
+            {
+                return false;
+            }
+
+            string workingString = s.Trim();
+
+            if (workingString.Length == 0 ||
+                workingString.IndexOf(",", StringComparison.Ordinal) < 0)
+            {
+                return false;
+            }
+
+            if (workingString.Length > 6 &&
+                workingString.StartsWith("hsva(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(5, workingString.Length - 6);
+            }
+
+            if (workingString.Length > 5 &&
+                workingString.StartsWith("hsv(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(4, workingString.Length - 5);
+            }
+
+            string[] components = workingString.Split(',');
+
+            if (components.Length == 3) // HSV
+            {
+                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
+                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value))
+                {
+                    hsvColor = new HsvColor(1.0, hue, saturation, value);
+                    return true;
+                }
+            }
+            else if (components.Length == 4) // HSVA
+            {
+                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
+                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value) &&
+                    double.TryParse(components[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double alpha))
+                {
+                    hsvColor = new HsvColor(alpha, hue, saturation, value);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
