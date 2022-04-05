@@ -19,5 +19,11 @@
                    Shape="Ring"
                    Height="256"
                    Width="256" />
+    <ColorSpectrum Grid.Column="0"
+                   Grid.Row="1"
+                   CornerRadius="10"
+                   Color="Blue"
+                   Height="256"
+                   Width="256" />
   </Grid>
 </UserControl>

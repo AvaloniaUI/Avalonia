@@ -11,6 +11,8 @@
 
   <Styles.Resources>
     <converters:EnumValueEqualsConverter x:Key="EnumValueEquals" />
+    <converters:CornerRadiusToDoubleConverter x:Key="TopLeftCornerRadius" Corner="TopLeft" />
+    <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadius" Corner="BottomRight" />
   </Styles.Resources>
 
   <Style Selector="ColorSpectrum">
@@ -28,16 +30,16 @@
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch"
-                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
-                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}"
+                         RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
+                         RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
               <Rectangle x:Name="PART_SpectrumOverlayRectangle"
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch"
-                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
-                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}"
+                         RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
+                         RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
               <Ellipse x:Name="PART_SpectrumEllipse"
                        IsHitTestVisible="False"
                        HorizontalAlignment="Stretch"
@@ -76,9 +78,9 @@
                          IsHitTestVisible="False"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch"
-                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}" />
-                         <!--RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                         RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />-->
+                         IsVisible="{TemplateBinding Shape, Converter={StaticResource EnumValueEquals}, ConverterParameter='Box'}"
+                         RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
+                         RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
               <Ellipse x:Name="BorderEllipse"
                        IsHitTestVisible="False"
                        HorizontalAlignment="Stretch"
