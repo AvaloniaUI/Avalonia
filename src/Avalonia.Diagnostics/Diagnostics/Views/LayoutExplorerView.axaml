@@ -47,7 +47,7 @@
 
                 <controls:ThicknessEditor Grid.Row="0" Grid.Column="0" Header="margin" VerticalAlignment="Top"
                                           HorizontalAlignment="Center"
-                                          TextBlock.Foreground="{StaticResource ThicknessEditorForeground}"
+                                          Foreground="{StaticResource ThicknessEditorForeground}"
                                           Background="{StaticResource MarginBackgroundBrush}"
                                           Highlight="{StaticResource MarginHighlightBrush}"
                                           Thickness="{Binding MarginThickness}">

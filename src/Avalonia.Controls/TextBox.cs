@@ -78,6 +78,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> MaxLengthProperty =
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
 
+        public static readonly StyledProperty<int> MaxLinesProperty =
+      AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
+
         public static readonly DirectProperty<TextBox, string?> TextProperty =
             TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
                 o => o.Text,
@@ -348,6 +351,12 @@ namespace Avalonia.Controls
         {
             get { return GetValue(MaxLengthProperty); }
             set { SetValue(MaxLengthProperty, value); }
+        }
+
+        public int MaxLines
+        {
+            get { return GetValue(MaxLinesProperty); }
+            set { SetValue(MaxLinesProperty, value); }
         }
 
         [Content]
@@ -670,6 +679,39 @@ namespace Avalonia.Controls
             }
             _selectedTextChangesMadeSinceLastUndoSnapshot++;
             SnapshotUndoRedo(ignoreChangeCount: false);
+
+            if (_presenter != null && MaxLines > 0)
+            {
+                var lineCount = _presenter.TextLayout.TextLines.Count;
+
+                var length = 0;
+
+                var graphemeEnumerator = new GraphemeEnumerator(input.AsMemory());
+
+                while (graphemeEnumerator.MoveNext())
+                {
+                    var grapheme = graphemeEnumerator.Current;
+
+                    if (grapheme.FirstCodepoint.IsBreakChar)
+                    {
+                        if(lineCount + 1 > MaxLines)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            lineCount++;
+                        }                       
+                    }
+
+                    length += grapheme.Text.Length;
+                }
+
+                if (length < input.Length)
+                {
+                    input = input.Remove(Math.Max(0, length));
+                }
+            }
 
             var text = Text ?? string.Empty;
             var newLength = input.Length + text.Length - Math.Abs(SelectionStart - SelectionEnd);
@@ -998,18 +1040,25 @@ namespace Avalonia.Controls
                             SetSelectionForControlBackspace();
                         }
 
-                        if (!DeleteSelection() && caretIndex > 0)
+                        if (!DeleteSelection())
                         {
-                            _presenter.MoveCaretHorizontal(LogicalDirection.Backward);
+                            var characterHit = _presenter.GetNextCharacterHit(LogicalDirection.Backward);
 
-                            var removedCharacters = Math.Max(0, caretIndex - _presenter.CaretIndex);
-                            
-                            var length = Math.Max(0, caretIndex - removedCharacters);
+                            var backspacePosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                            SetTextInternal(text.Substring(0, length) +
-                                            text.Substring(caretIndex));
+                            if (caretIndex != backspacePosition)
+                            {
+                                var start = Math.Min(backspacePosition, caretIndex);
+                                var end = Math.Max(backspacePosition, caretIndex);
 
-                            CaretIndex = _presenter.CaretIndex;
+                                var length = end - start;
+
+                                var editedText = text.Substring(0, start) + text.Substring(Math.Min(end, text.Length));
+
+                                SetTextInternal(editedText);
+
+                                CaretIndex = end;
+                            } 
                         }
                         
                         SnapshotUndoRedo();
@@ -1025,15 +1074,21 @@ namespace Avalonia.Controls
                             SetSelectionForControlDelete();
                         }
 
-                        if (!DeleteSelection() && caretIndex < text.Length)
+                        if (!DeleteSelection())
                         {
                             var characterHit = _presenter.GetNextCharacterHit();
 
-                            var removedCharacters = Math.Max(0,
-                                characterHit.FirstCharacterIndex + characterHit.TrailingLength - caretIndex);
+                            var nextPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                            SetTextInternal(text.Substring(0, caretIndex) +
-                                            text.Substring(caretIndex + removedCharacters));
+                            if(nextPosition != caretIndex)
+                            {
+                                var start = Math.Min(nextPosition, caretIndex);
+                                var end = Math.Max(nextPosition, caretIndex);
+
+                                var editedText = text.Substring(0, start) + text.Substring(Math.Min(end, text.Length));
+
+                                SetTextInternal(editedText);
+                            }
                         }
 
                         SnapshotUndoRedo();
@@ -1250,17 +1305,17 @@ namespace Avalonia.Controls
 
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
         {
+            if (_presenter == null)
+            {
+                return;
+            }
+            
             var text = Text ?? string.Empty;
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
             if (!wholeWord)
             {
-                if (_presenter == null)
-                {
-                    return;
-                }
-                
                 if (isSelecting)
                 {
                     _presenter.MoveCaretToTextPosition(selectionEnd);
@@ -1304,9 +1359,15 @@ namespace Avalonia.Controls
                 
                 SelectionEnd += offset;
 
+                _presenter.MoveCaretToTextPosition(SelectionEnd);
+
                 if (!isSelecting)
                 {
                     CaretIndex = SelectionEnd;
+                }
+                else
+                {
+                    SelectionStart = selectionStart;
                 }
             }
         }
@@ -1327,10 +1388,10 @@ namespace Avalonia.Controls
             else
             {
                 var textLines = _presenter.TextLayout.TextLines;
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
                 var textLine = textLines[lineIndex];
 
-                _presenter.MoveCaretToTextPosition(textLine.TextRange.Start);
+                _presenter.MoveCaretToTextPosition(textLine.FirstTextSourceIndex);
             }
         }
 
@@ -1351,16 +1412,10 @@ namespace Avalonia.Controls
             else
             {
                 var textLines = _presenter.TextLayout.TextLines;
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, true);
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
                 var textLine = textLines[lineIndex];
-                
-                if (caretIndex == textLine.TextRange.Start + textLine.TextRange.Length  - textLine.NewLineLength &&
-                    lineIndex + 1 < textLines.Count)
-                {
-                    textLine = textLines[++lineIndex];
-                }
 
-                var textPosition = textLine.TextRange.Start + textLine.TextRange.Length - textLine.NewLineLength;
+                var textPosition = textLine.FirstTextSourceIndex + textLine.Length;
 
                 _presenter.MoveCaretToTextPosition(textPosition, true);
             }
