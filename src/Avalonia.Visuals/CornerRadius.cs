@@ -28,31 +28,27 @@ namespace Avalonia
         {
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;
 
-            TopLeftRadiusX     = TopLeftRadiusY     = TopLeft;
-            TopRightRadiusX    = TopRightRadiusY    = TopRight;
-            BottomRightRadiusX = BottomRightRadiusY = BottomRight;
-            BottomLeftRadiusX  = BottomLeftRadiusY  = BottomLeft;
+            TopLeftSize     = new Size(TopLeft, TopLeft);
+            TopRightSize    = new Size(TopRight, TopRight);
+            BottomRightSize = new Size(BottomRight, BottomRight);
+            BottomLeftSize  = new Size(BottomLeft, BottomLeft);
 
             _isCircular = true;
         }
 
-        public CornerRadius(Size uniformEllipticalRadius)
+        public CornerRadius(Size ellipticalRadius)
         {
-            TopLeftRadiusX     = uniformEllipticalRadius.Width;
-            TopLeftRadiusY     = uniformEllipticalRadius.Height;
-            TopRightRadiusX    = uniformEllipticalRadius.Width;
-            TopRightRadiusY    = uniformEllipticalRadius.Height;
-            BottomRightRadiusX = uniformEllipticalRadius.Width;
-            BottomRightRadiusY = uniformEllipticalRadius.Height;
-            BottomLeftRadiusX  = uniformEllipticalRadius.Width;
-            BottomLeftRadiusY  = uniformEllipticalRadius.Height;
+            TopLeftSize     = ellipticalRadius;
+            TopRightSize    = ellipticalRadius;
+            BottomRightSize = ellipticalRadius;
+            BottomLeftSize  = ellipticalRadius;
 
-            TopLeft     = (TopLeftRadiusX     + TopLeftRadiusY)     / 2.0;
-            TopRight    = (TopRightRadiusX    + TopRightRadiusY)    / 2.0;
-            BottomRight = (BottomRightRadiusX + BottomRightRadiusY) / 2.0;
-            BottomLeft  = (BottomLeftRadiusX  + BottomLeftRadiusY)  / 2.0;
+            TopLeft     = (TopLeftSize.Width     + TopLeftSize.Height)     / 2.0;
+            TopRight    = (TopRightSize.Width    + TopRightSize.Height)    / 2.0;
+            BottomRight = (BottomRightSize.Width + BottomRightSize.Height) / 2.0;
+            BottomLeft  = (BottomLeftSize.Width  + BottomLeftSize.Height)  / 2.0;
 
-            _isCircular = (uniformEllipticalRadius.Width == uniformEllipticalRadius.Height);
+            _isCircular = (ellipticalRadius.Width == ellipticalRadius.Height);
         }
 
         public CornerRadius(double top, double bottom)
@@ -60,10 +56,10 @@ namespace Avalonia
             TopLeft    = TopRight    = top;
             BottomLeft = BottomRight = bottom;
 
-            TopLeftRadiusX     = TopLeftRadiusY     = TopLeft;
-            TopRightRadiusX    = TopRightRadiusY    = TopRight;
-            BottomRightRadiusX = BottomRightRadiusY = BottomRight;
-            BottomLeftRadiusX  = BottomLeftRadiusY  = BottomLeft;
+            TopLeftSize     = new Size(TopLeft, TopLeft);
+            TopRightSize    = new Size(TopRight, TopRight);
+            BottomRightSize = new Size(BottomRight, BottomRight);
+            BottomLeftSize  = new Size(BottomLeft, BottomLeft);
 
             _isCircular = true;
         }
@@ -79,10 +75,10 @@ namespace Avalonia
             BottomRight = bottomRight;
             BottomLeft  = bottomLeft;
 
-            TopLeftRadiusX     = TopLeftRadiusY     = TopLeft;
-            TopRightRadiusX    = TopRightRadiusY    = TopRight;
-            BottomRightRadiusX = BottomRightRadiusY = BottomRight;
-            BottomLeftRadiusX  = BottomLeftRadiusY  = BottomLeft;
+            TopLeftSize     = new Size(TopLeft, TopLeft);
+            TopRightSize    = new Size(TopRight, TopRight);
+            BottomRightSize = new Size(BottomRight, BottomRight);
+            BottomLeftSize  = new Size(BottomLeft, BottomLeft);
 
             _isCircular = true;
         }
@@ -93,24 +89,20 @@ namespace Avalonia
             Size bottomRight,
             Size bottomLeft)
         {
-            TopLeftRadiusX     = topLeft.Width;
-            TopLeftRadiusY     = topLeft.Height;
-            TopRightRadiusX    = topRight.Width;
-            TopRightRadiusY    = topRight.Height;
-            BottomRightRadiusX = bottomRight.Width;
-            BottomRightRadiusY = bottomRight.Height;
-            BottomLeftRadiusX  = bottomLeft.Width;
-            BottomLeftRadiusY  = bottomLeft.Height;
+            TopLeftSize     = topLeft;
+            TopRightSize    = topRight;
+            BottomRightSize = bottomRight;
+            BottomLeftSize  = bottomLeft;
 
-            TopLeft     = (TopLeftRadiusX     + TopLeftRadiusY)     / 2.0;
-            TopRight    = (TopRightRadiusX    + TopRightRadiusY)    / 2.0;
-            BottomRight = (BottomRightRadiusX + BottomRightRadiusY) / 2.0;
-            BottomLeft  = (BottomLeftRadiusX  + BottomLeftRadiusY)  / 2.0;
+            TopLeft     = (TopLeftSize.Width     + TopLeftSize.Height)     / 2.0;
+            TopRight    = (TopRightSize.Width    + TopRightSize.Height)    / 2.0;
+            BottomRight = (BottomRightSize.Width + BottomRightSize.Height) / 2.0;
+            BottomLeft  = (BottomLeftSize.Width  + BottomLeftSize.Height)  / 2.0;
 
-            _isCircular = (TopLeftRadiusX     == TopLeftRadiusY &&
-                           TopRightRadiusX    == TopRightRadiusY &&
-                           BottomRightRadiusX == BottomRightRadiusY &&
-                           BottomLeftRadiusX  == BottomLeftRadiusY);
+            _isCircular = (TopLeftSize.Width     == TopLeftSize.Height &&
+                           TopRightSize.Width    == TopRightSize.Height &&
+                           BottomRightSize.Width == BottomRightSize.Height &&
+                           BottomLeftSize.Width  == BottomLeftSize.Height);
         }
 
         public CornerRadius(
@@ -123,24 +115,20 @@ namespace Avalonia
             double bottomLeftRadiusX,
             double bottomLeftRadiusY)
         {
-            TopLeftRadiusX     = topLeftRadiusX;
-            TopLeftRadiusY     = topLeftRadiusY;
-            TopRightRadiusX    = topRightRadiusX;
-            TopRightRadiusY    = topRightRadiusY;
-            BottomRightRadiusX = bottomRightRadiusX;
-            BottomRightRadiusY = bottomRightRadiusY;
-            BottomLeftRadiusX  = bottomLeftRadiusX;
-            BottomLeftRadiusY  = bottomLeftRadiusY;
+            TopLeftSize     = new Size(topLeftRadiusX, topLeftRadiusY);
+            TopRightSize    = new Size(topRightRadiusX, topRightRadiusY);
+            BottomRightSize = new Size(bottomRightRadiusX, bottomRightRadiusY);
+            BottomLeftSize  = new Size(bottomLeftRadiusX, bottomLeftRadiusY);
 
-            TopLeft     = (TopLeftRadiusX     + TopLeftRadiusY)     / 2.0;
-            TopRight    = (TopRightRadiusX    + TopRightRadiusY)    / 2.0;
-            BottomRight = (BottomRightRadiusX + BottomRightRadiusY) / 2.0;
-            BottomLeft  = (BottomLeftRadiusX  + BottomLeftRadiusY)  / 2.0;
+            TopLeft     = (TopLeftSize.Width     + TopLeftSize.Height)     / 2.0;
+            TopRight    = (TopRightSize.Width    + TopRightSize.Height)    / 2.0;
+            BottomRight = (BottomRightSize.Width + BottomRightSize.Height) / 2.0;
+            BottomLeft  = (BottomLeftSize.Width  + BottomLeftSize.Height)  / 2.0;
 
-            _isCircular = (TopLeftRadiusX     == TopLeftRadiusY &&
-                           TopRightRadiusX    == TopRightRadiusY &&
-                           BottomRightRadiusX == BottomRightRadiusY &&
-                           BottomLeftRadiusX  == BottomLeftRadiusY);
+            _isCircular = (TopLeftSize.Width     == TopLeftSize.Height &&
+                           TopRightSize.Width    == TopRightSize.Height &&
+                           BottomRightSize.Width == BottomRightSize.Height &&
+                           BottomLeftSize.Width  == BottomLeftSize.Height);
         }
 
         /// <summary>
@@ -148,40 +136,58 @@ namespace Avalonia
         /// </summary>
         public double TopLeft { get; }
 
-        public double TopLeftRadiusX { get; }
-        public double TopLeftRadiusY { get; }
+        public Size TopLeftSize { get; }
 
         /// <summary>
         /// Gets the circular radius of the top right corner.
         /// </summary>
+        /// <remarks>
+        /// This is only valid when <see cref="IsCircular"/> is true; otherwise,
+        /// the elliptical radii in <see cref="TopRightSize"/> should be used.
+        /// When the corner radius is elliptical this is set to the average of the
+        /// width and height components.
+        /// </remarks>
         public double TopRight { get; }
 
-        public double TopRightRadiusX { get; }
-        public double TopRightRadiusY { get; }
+        /// <summary>
+        /// Gets the elliptical components of the top right corner radius.
+        /// </summary>
+        public Size TopRightSize { get; }
 
         /// <summary>
         /// Gets the circular radius of the bottom right corner.
         /// </summary>
         public double BottomRight { get; }
 
-        public double BottomRightRadiusX { get; }
-        public double BottomRightRadiusY { get; }
+        public Size BottomRightSize { get; }
 
         /// <summary>
         /// Gets the circular radius of the bottom left corner.
         /// </summary>
         public double BottomLeft { get; }
 
-        public double BottomLeftRadiusX { get; }
-        public double BottomLeftRadiusY { get; }
+        public Size BottomLeftSize { get; }
 
         /// <summary>
         /// Gets a value indicating whether all corner radii are set to 0.
         /// </summary>
-        public bool IsEmpty => TopLeft.Equals(0) && IsUniform;
+        public bool IsEmpty
+        {
+            get => TopLeftSize.IsDefault &&
+                   TopRightSize.IsDefault &&
+                   BottomRightSize.IsDefault &&
+                   BottomLeftSize.IsDefault;
+        }
 
+        /// <summary>
+        /// Gets a value indicating whether all corner radii are circular and have equal width and height.
+        /// </summary>
         public bool IsCircular => _isCircular;
 
+        /// <summary>
+        /// Gets a value indicating whether one or more corner radii are elliptical and do not have equal
+        /// width and height.
+        /// </summary>
         public bool IsElliptical => !_isCircular;
 
         /// <summary>
@@ -203,18 +209,10 @@ namespace Avalonia
         public bool Equals(CornerRadius other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
-            return TopLeft == other.TopLeft &&
-                   TopRight == other.TopRight &&
-                   BottomRight == other.BottomRight &&
-                   BottomLeft == other.BottomLeft &&
-                   TopLeftRadiusX == other.TopLeftRadiusX &&
-                   TopLeftRadiusY == other.TopLeftRadiusY &&
-                   TopRightRadiusX == other.TopRightRadiusX &&
-                   TopRightRadiusY == other.TopRightRadiusY &&
-                   BottomRightRadiusX == other.BottomRightRadiusX &&
-                   BottomRightRadiusY == other.BottomRightRadiusY &&
-                   BottomLeftRadiusX == other.BottomLeftRadiusX &&
-                   BottomLeftRadiusY == other.BottomLeftRadiusY;
+            return TopLeftSize == other.TopLeftSize &&
+                   TopRightSize == other.TopRightSize &&
+                   BottomRightSize == other.BottomRightSize &&
+                   BottomLeftSize == other.BottomLeftSize;
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
