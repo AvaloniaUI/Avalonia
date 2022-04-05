@@ -10,6 +10,16 @@ namespace Avalonia.Media
     /// </summary>
     public class TextDecorationCollection : AvaloniaList<TextDecoration>
     {
+        public TextDecorationCollection()
+        {
+            
+        }
+
+        public TextDecorationCollection(IEnumerable<TextDecoration> textDecorations) : base(textDecorations)
+        {
+            
+        }
+        
         /// <summary>
         /// Parses a <see cref="TextDecorationCollection"/> string.
         /// </summary>

@@ -110,7 +110,7 @@
                               BorderThickness="0"
                               Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              TextBlock.Foreground="{DynamicResource ExpanderForeground}" />
+                              TextElement.Foreground="{DynamicResource ExpanderForeground}" />
             <Border x:Name="ExpandCollapseChevronBorder"
                     Grid.Column="1"
                     Width="32"

@@ -23,7 +23,7 @@ namespace Avalonia.Utilities
 
             var assetDoc = XDocument.Load(stream);
             XNamespace assetNs = assetDoc.Root!.Attribute("xmlns")!.Value;
-            List<AvaloniaResourcesIndexEntry> entries=         
+            List<AvaloniaResourcesIndexEntry> entries =         
                 (from entry in assetDoc.Root.Element(assetNs + "Entries")!.Elements(assetNs + "AvaloniaResourcesIndexEntry")
                     select new AvaloniaResourcesIndexEntry
                     {

@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
@@ -41,31 +42,37 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
         public static readonly StyledProperty<FontFamily> FontFamilyProperty =
-            TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
+            TextElement.FontFamilyProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly StyledProperty<double> FontSizeProperty =
-            TextBlock.FontSizeProperty.AddOwner<TemplatedControl>();
+            TextElement.FontSizeProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
         public static readonly StyledProperty<FontStyle> FontStyleProperty =
-            TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
+            TextElement.FontStyleProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
         public static readonly StyledProperty<FontWeight> FontWeightProperty =
-            TextBlock.FontWeightProperty.AddOwner<TemplatedControl>();
+            TextElement.FontWeightProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
+        /// Defines the <see cref="FontWeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontStretch> FontStretchProperty =
+            TextElement.FontStretchProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> ForegroundProperty =
-            TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
+            TextElement.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -183,6 +190,15 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(FontWeightProperty); }
             set { SetValue(FontWeightProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the font stretch used to draw the control's text.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get { return GetValue(FontStretchProperty); }
+            set { SetValue(FontStretchProperty, value); }
         }
 
         /// <summary>
