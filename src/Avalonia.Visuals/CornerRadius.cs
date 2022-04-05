@@ -36,6 +36,25 @@ namespace Avalonia
             _isCircular = true;
         }
 
+        public CornerRadius(Size uniformEllipticalRadius)
+        {
+            TopLeftRadiusX     = uniformEllipticalRadius.Width;
+            TopLeftRadiusY     = uniformEllipticalRadius.Height;
+            TopRightRadiusX    = uniformEllipticalRadius.Width;
+            TopRightRadiusY    = uniformEllipticalRadius.Height;
+            BottomRightRadiusX = uniformEllipticalRadius.Width;
+            BottomRightRadiusY = uniformEllipticalRadius.Height;
+            BottomLeftRadiusX  = uniformEllipticalRadius.Width;
+            BottomLeftRadiusY  = uniformEllipticalRadius.Height;
+
+            TopLeft     = (TopLeftRadiusX     + TopLeftRadiusY)     / 2.0;
+            TopRight    = (TopRightRadiusX    + TopRightRadiusY)    / 2.0;
+            BottomRight = (BottomRightRadiusX + BottomRightRadiusY) / 2.0;
+            BottomLeft  = (BottomLeftRadiusX  + BottomLeftRadiusY)  / 2.0;
+
+            _isCircular = (uniformEllipticalRadius.Width == uniformEllipticalRadius.Height);
+        }
+
         public CornerRadius(double top, double bottom)
         {
             TopLeft    = TopRight    = top;
@@ -66,6 +85,32 @@ namespace Avalonia
             BottomLeftRadiusX  = BottomLeftRadiusY  = BottomLeft;
 
             _isCircular = true;
+        }
+
+        public CornerRadius(
+            Size topLeft,
+            Size topRight,
+            Size bottomRight,
+            Size bottomLeft)
+        {
+            TopLeftRadiusX     = topLeft.Width;
+            TopLeftRadiusY     = topLeft.Height;
+            TopRightRadiusX    = topRight.Width;
+            TopRightRadiusY    = topRight.Height;
+            BottomRightRadiusX = bottomRight.Width;
+            BottomRightRadiusY = bottomRight.Height;
+            BottomLeftRadiusX  = bottomLeft.Width;
+            BottomLeftRadiusY  = bottomLeft.Height;
+
+            TopLeft     = (TopLeftRadiusX     + TopLeftRadiusY)     / 2.0;
+            TopRight    = (TopRightRadiusX    + TopRightRadiusY)    / 2.0;
+            BottomRight = (BottomRightRadiusX + BottomRightRadiusY) / 2.0;
+            BottomLeft  = (BottomLeftRadiusX  + BottomLeftRadiusY)  / 2.0;
+
+            _isCircular = (TopLeftRadiusX     == TopLeftRadiusY &&
+                           TopRightRadiusX    == TopRightRadiusY &&
+                           BottomRightRadiusX == BottomRightRadiusY &&
+                           BottomLeftRadiusX  == BottomLeftRadiusY);
         }
 
         public CornerRadius(
