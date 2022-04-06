@@ -32,7 +32,7 @@ namespace Avalonia.Controls
     /// A standard button control.
     /// </summary>
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
-    public class Button : ContentControl, ICommandSource
+    public class Button : ContentControl, ICommandSource, IClickableControl
     {
         protected const string pcPressed    = ":pressed";
         protected const string pcFlyoutOpen = ":flyout-open";
@@ -633,6 +633,8 @@ namespace Avalonia.Controls
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
+        void IClickableControl.RaiseClick() => OnClick();
+        
         /// <summary>
         /// Event handler for when the button's flyout is opened.
         /// </summary>
