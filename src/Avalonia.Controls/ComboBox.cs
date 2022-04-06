@@ -185,19 +185,19 @@ namespace Avalonia.Controls
         }
 
         // Because the SelectedItem isn't connected to the visual tree
-        public override void InvalidateFlowDirection()
+        public override void InvalidateMirrorTransform()
         {
-            base.InvalidateFlowDirection();
+            base.InvalidateMirrorTransform();
 
             if (SelectedItem is Control selectedControl)
             {
-                selectedControl.InvalidateFlowDirection();
+                selectedControl.InvalidateMirrorTransform();
 
                 foreach (var visual in selectedControl.GetVisualDescendants())
                 {
                     if (visual is Control childControl)
                     {
-                        childControl.InvalidateFlowDirection();
+                        childControl.InvalidateMirrorTransform();
                     }
                 }
             }

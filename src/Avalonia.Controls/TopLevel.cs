@@ -350,7 +350,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
-        public override void InvalidateFlowDirection()
+        public override void InvalidateMirrorTransform()
         {
         }
         

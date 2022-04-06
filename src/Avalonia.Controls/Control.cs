@@ -234,7 +234,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            InvalidateFlowDirection();
+            InvalidateMirrorTransform();
         }
 
         /// <inheritdoc/>
@@ -354,13 +354,13 @@ namespace Avalonia.Controls
 
             if (change.Property == FlowDirectionProperty)
             {
-                InvalidateFlowDirection();
+                InvalidateMirrorTransform();
                 
                 foreach (var visual in VisualChildren)
                 {
                     if (visual is Control child)
                     {
-                        child.InvalidateFlowDirection();
+                        child.InvalidateMirrorTransform();
                     }
                 }
             }
@@ -370,7 +370,7 @@ namespace Avalonia.Controls
         /// Computes the <see cref="IVisual.HasMirrorTransform"/> value according to the 
         /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
         /// </summary>
-        public virtual void InvalidateFlowDirection()
+        public virtual void InvalidateMirrorTransform()
         {
             var flowDirection = this.FlowDirection;
             var parentFlowDirection = FlowDirection.LeftToRight;
