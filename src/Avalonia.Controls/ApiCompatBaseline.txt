@@ -1,4 +1,6 @@
 Compat issues with assembly Avalonia.Controls:
+TypesMustExist : Type 'Avalonia.Controls.DropDown' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Controls.DropDownItem' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Controls.IMenuItem.StaysOpenOnClick' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Controls.IMenuItem.StaysOpenOnClick.get()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.IMenuItem.StaysOpenOnClick.set(System.Boolean)' is present in the implementation but not in the contract.
@@ -87,4 +89,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.ITrayIconImpl Avalonia.Platform.IWindowingPlatform.CreateTrayIcon()' is present in the implementation but not in the contract.
-Total Issues: 88
+Total Issues: 90
