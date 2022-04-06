@@ -2461,6 +2461,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     if(_parent != nullptr)
     {
+        auto cparent = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        
+        if(cparent != nullptr)
+        {
+            if(cparent->WindowState() == Maximized)
+            {
+                cparent->SetWindowState(Normal);
+            }
+        }
+        
         _parent->GetPosition(&position);
         _parent->BaseEvents->PositionChanged(position);
     }
