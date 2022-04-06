@@ -69,10 +69,10 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, IBrush?>(nameof(OpacityMask));
 
         /// <summary>
-        /// Defines the <see cref="IsMirrorTransform"/> property.
+        /// Defines the <see cref="HasMirrorTransform"/> property.
         /// </summary>
-        public static readonly DirectProperty<Visual, bool> IsMirrorTransformProperty =
-            AvaloniaProperty.RegisterDirect<Visual, bool>(nameof(IsMirrorTransform), o => o.IsMirrorTransform);
+        public static readonly DirectProperty<Visual, bool> HasMirrorTransformProperty =
+            AvaloniaProperty.RegisterDirect<Visual, bool>(nameof(HasMirrorTransform), o => o.HasMirrorTransform);
 
         /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
@@ -102,7 +102,7 @@ namespace Avalonia
         private TransformedBounds? _transformedBounds;
         private IRenderRoot? _visualRoot;
         private IVisual? _visualParent;
-        private bool _isMirrorTransform;
+        private bool _hasMirrorTransform;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -115,7 +115,7 @@ namespace Avalonia
                 ClipToBoundsProperty,
                 IsVisibleProperty,
                 OpacityProperty,
-                IsMirrorTransformProperty);
+                HasMirrorTransformProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
@@ -230,10 +230,10 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets a value indicating whether to apply mirror transform on this control.
         /// </summary>
-        public bool IsMirrorTransform 
+        public bool HasMirrorTransform 
         { 
-            get { return _isMirrorTransform; }
-            protected set { SetAndRaise(IsMirrorTransformProperty, ref _isMirrorTransform, value); }
+            get { return _hasMirrorTransform; }
+            protected set { SetAndRaise(HasMirrorTransformProperty, ref _hasMirrorTransform, value); }
         }
 
         /// <summary>

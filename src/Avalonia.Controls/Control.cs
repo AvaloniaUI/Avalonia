@@ -367,35 +367,35 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Computes the <see cref="IVisual.IsMirrorTransform"/> value according to the 
+        /// Computes the <see cref="IVisual.HasMirrorTransform"/> value according to the 
         /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
         /// </summary>
         public virtual void InvalidateFlowDirection()
         {
-            FlowDirection thisFD = this.FlowDirection;
-            FlowDirection parentFD = FlowDirection.LeftToRight;
+            var flowDirection = this.FlowDirection;
+            var parentFlowDirection = FlowDirection.LeftToRight;
 
-            bool thisBypassFlowDirectionPolicies = BypassFlowDirectionPolicies;
+            bool bypassFlowDirectionPolicies = BypassFlowDirectionPolicies;
             bool parentBypassFlowDirectionPolicies = false;
 
             var parent = this.FindAncestorOfType<Control>();
             if (parent != null)
             {
-                parentFD = parent.FlowDirection;
+                parentFlowDirection = parent.FlowDirection;
                 parentBypassFlowDirectionPolicies = parent.BypassFlowDirectionPolicies;
             }
-            else if (this.Parent is Control logicalParent)
+            else if (Parent is Control logicalParent)
             {
-                parentFD = logicalParent.FlowDirection;
+                parentFlowDirection = logicalParent.FlowDirection;
                 parentBypassFlowDirectionPolicies = logicalParent.BypassFlowDirectionPolicies;
             }
 
-            bool thisShouldBeMirrored = thisFD == FlowDirection.RightToLeft && !BypassFlowDirectionPolicies;
-            bool parentShouldBeMirrored = parentFD == FlowDirection.RightToLeft && !parentBypassFlowDirectionPolicies;
+            bool thisShouldBeMirrored = flowDirection == FlowDirection.RightToLeft && !bypassFlowDirectionPolicies;
+            bool parentShouldBeMirrored = parentFlowDirection == FlowDirection.RightToLeft && !parentBypassFlowDirectionPolicies;
 
             bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
 
-            IsMirrorTransform = shouldApplyMirrorTransform;
+            HasMirrorTransform = shouldApplyMirrorTransform;
         }
     }
 }

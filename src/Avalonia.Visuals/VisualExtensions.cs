@@ -110,7 +110,7 @@ namespace Avalonia
                     result *= renderTransform;
                 }
 
-                if (v.IsMirrorTransform)
+                if (v.HasMirrorTransform)
                 {
                     var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, v.Bounds.Width, 0);
                     result *= mirrorMatrix;

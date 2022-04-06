@@ -78,7 +78,7 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets a value indicating whether to apply mirror transform on this control.
         /// </summary>
-        bool IsMirrorTransform { get; }
+        bool HasMirrorTransform { get; }
 
         /// <summary>
         /// Gets or sets the render transform of the control.

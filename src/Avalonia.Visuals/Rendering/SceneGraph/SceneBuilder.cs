@@ -195,7 +195,7 @@ namespace Avalonia.Rendering.SceneGraph
                     renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
                 }
 
-                if (visual.IsMirrorTransform)
+                if (visual.HasMirrorTransform)
                 {
                     var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
                     renderTransform *= mirrorMatrix;
