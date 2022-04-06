@@ -45,7 +45,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Run vertical box alignment
         /// </summary>
-        public abstract BaselineAlignment BaselineAlignment { get; }
+        public virtual BaselineAlignment BaselineAlignment => BaselineAlignment.Baseline;
 
         public bool Equals(TextRunProperties? other)
         {
@@ -89,6 +89,12 @@ namespace Avalonia.Media.TextFormatting
         public static bool operator !=(TextRunProperties left, TextRunProperties right)
         {
             return !Equals(left, right);
+        }
+        
+        internal TextRunProperties WithTypeface(Typeface typeface)
+        {
+            return new GenericTextRunProperties(typeface, FontRenderingEmSize,
+                TextDecorations, ForegroundBrush, BackgroundBrush, BaselineAlignment);
         }
     }
 }

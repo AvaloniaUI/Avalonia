@@ -104,7 +104,7 @@ namespace Avalonia.Input
                 target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, args.Root,
                     args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), PointerUpdateKind.Other),
-                    GetKeyModifiers(args.InputModifiers)));
+                    GetKeyModifiers(args.InputModifiers), args.IntermediatePoints));
             }
 
 
@@ -114,7 +114,7 @@ namespace Avalonia.Input
         {
             if (_disposed)
                 return;
-            var values = _pointers.Values.ToList();
+            var values = _pointers.Values.ToArray();
             _pointers.Clear();
             _disposed = true;
             foreach (var p in values)

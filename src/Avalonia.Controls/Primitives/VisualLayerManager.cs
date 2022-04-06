@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives
         private const int LightDismissOverlayZIndex = int.MaxValue - 98;
         private const int OverlayZIndex = int.MaxValue - 97;
 
-        private ILogicalRoot _logicalRoot;
+        private ILogicalRoot? _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
 
         public static readonly StyledProperty<ChromeOverlayLayer> ChromeOverlayLayerProperty =
@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public OverlayLayer OverlayLayer
+        public OverlayLayer? OverlayLayer
         {
             get
             {
@@ -83,9 +83,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         protected override int VisualChildrenCount => base.VisualChildrenCount + _layers.Count;
-        protected override event EventHandler VisualChildrenChanged;
+        protected override event EventHandler? VisualChildrenChanged;
 
-        T FindLayer<T>() where T : class
+        T? FindLayer<T>() where T : class
         {
             foreach (var layer in _layers)
                 if (layer is T match)
@@ -102,7 +102,7 @@ namespace Avalonia.Controls.Primitives
             VisualChildrenChanged?.Invoke(this, EventArgs.Empty);
             if (((ILogical)this).IsAttachedToLogicalTree)
                 ((ILogical)layer).NotifyAttachedToLogicalTree(
-                    new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
+                    new LogicalTreeAttachmentEventArgs(_logicalRoot!, layer, this));
             InvalidateArrange();
         }
 

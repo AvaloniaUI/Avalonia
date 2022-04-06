@@ -1,4 +1,7 @@
 using System;
+using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -11,19 +14,20 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
     /// </summary>
+    [TemplatePart("PART_ContentPresenter", typeof(IContentPresenter))]
     public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> ContentProperty =
-            AvaloniaProperty.Register<ContentControl, object>(nameof(Content));
+        public static readonly StyledProperty<object?> ContentProperty =
+            AvaloniaProperty.Register<ContentControl, object?>(nameof(Content));
 
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
-            AvaloniaProperty.Register<ContentControl, IDataTemplate>(nameof(ContentTemplate));
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
+            AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(ContentTemplate));
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -37,14 +41,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             AvaloniaProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
 
-        private ILogical _logicalChild;
+        private ILogical? _logicalChild;
 
         /// <summary>
         /// Gets or sets the content to display.
         /// </summary>
         [Content]
         [DependsOn(nameof(ContentTemplate))]
-        public object Content
+        public object? Content
         {
             get { return GetValue(ContentProperty); }
             set { SetValue(ContentProperty, value); }
@@ -53,7 +57,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the data template used to display the content of the control.
         /// </summary>
-        public IDataTemplate ContentTemplate
+        public IDataTemplate? ContentTemplate
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
@@ -62,7 +66,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
-        public IContentPresenter Presenter
+        public IContentPresenter? Presenter
         {
             get;
             private set;
@@ -87,14 +91,14 @@ namespace Avalonia.Controls
         }
 
         protected override int LogicalChildrenCount => _logicalChild is null ? 0 : 1;
-        protected override event EventHandler LogicalChildrenChanged;
+        protected override event EventHandler? LogicalChildrenChanged;
 
         void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
             RegisterContentPresenter(presenter);
         }
 
-        void IContentPresenterHost.RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        void IContentPresenterHost.RegisterLogicalChild(IContentPresenter presenter, ILogical? child)
         {
             RegisterLogicalChild(presenter, child);
         }
@@ -133,13 +137,13 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="presenter">The presenter.</param>
         /// <param name="child">The new logical child.</param>
-        protected virtual void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        protected virtual void RegisterLogicalChild(IContentPresenter presenter, ILogical? child)
         {
             if (presenter == Presenter)
                 SetLogicalChild(child);
         }
 
-        private void SetLogicalChild(ILogical child)
+        private void SetLogicalChild(ILogical? child)
         {
             if (_logicalChild != child)
             {

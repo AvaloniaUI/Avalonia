@@ -12,7 +12,7 @@ namespace Avalonia.LogicalTree
         {
         }
 
-        public ChildIndexChangedEventArgs(ILogical child)
+        public ChildIndexChangedEventArgs(ILogical? child)
         {
             Child = child;
         }

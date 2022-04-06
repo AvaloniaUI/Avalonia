@@ -1,15 +1,16 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -60,9 +61,16 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
             RoutedEvent.Register<Control, ContextRequestedEventArgs>(nameof(ContextRequested),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="FlowDirection"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
+            AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
 
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
+        private AutomationPeer? _automationPeer;
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -108,17 +116,46 @@ namespace Avalonia.Controls
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
         }
+        
+        /// <summary>
+        /// Gets or sets the text flow direction.
+        /// </summary>
+        public FlowDirection FlowDirection
+        {
+            get => GetValue(FlowDirectionProperty);
+            set => SetValue(FlowDirectionProperty, value);
+        }
 
         /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>
-        public event EventHandler<ContextRequestedEventArgs> ContextRequested
+        public event EventHandler<ContextRequestedEventArgs>? ContextRequested
         {
             add => AddHandler(ContextRequestedEvent, value);
             remove => RemoveHandler(ContextRequestedEvent, value);
         }
 
         public new IControl? Parent => (IControl?)base.Parent;
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The flow direction.</returns>
+        public static FlowDirection GetFlowDirection(Control control)
+        {
+            return control.GetValue(FlowDirectionProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFlowDirection(Control control, FlowDirection value)
+        {
+            control.SetValue(FlowDirectionProperty, value);
+        }
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
@@ -225,6 +262,24 @@ namespace Avalonia.Controls
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
             }
+        }
+
+        protected virtual AutomationPeer OnCreateAutomationPeer()
+        {
+            return new NoneAutomationPeer(this);
+        }
+
+        internal AutomationPeer GetOrCreateAutomationPeer()
+        {
+            VerifyAccess();
+
+            if (_automationPeer is object)
+            {
+                return _automationPeer;
+            }
+
+            _automationPeer = OnCreateAutomationPeer();
+            return _automationPeer;
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)

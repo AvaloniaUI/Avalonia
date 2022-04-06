@@ -86,7 +86,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             protected override void Initialize(AvaloniaList<TreeNode> nodes)
             {
-                if (_application.ApplicationLifetime is Lifetimes.ISingleViewApplicationLifetime single)
+                if (_application.ApplicationLifetime is Lifetimes.ISingleViewApplicationLifetime single &&
+                    single.MainView is not null)
                 {
                     nodes.Add(new LogicalTreeNode(single.MainView, Owner));
                 }

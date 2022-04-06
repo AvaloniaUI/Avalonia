@@ -7,7 +7,7 @@
     {
         /// <summary>
         /// This property specifies whether the primary text advance 
-        /// direction shall be left-to-right, right-to-left, or top-to-bottom.
+        /// direction shall be left-to-right, right-to-left.
         /// </summary>
         public abstract FlowDirection FlowDirection { get; }
 
@@ -62,6 +62,14 @@
         public virtual double ParagraphIndent
         {
             get { return 0; }
+        }
+        
+        /// <summary>
+        /// Default Incremental Tab
+        /// </summary>
+        public virtual double DefaultIncrementalTab
+        {
+            get { return 4 * DefaultTextRunProperties.FontRenderingEmSize; }
         }
     }
 }

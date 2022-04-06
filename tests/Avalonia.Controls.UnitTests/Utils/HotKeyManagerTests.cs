@@ -170,7 +170,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Theory]
-        [MemberData(nameof(ElementsFactory))]
+        [MemberData(nameof(ElementsFactory), parameters: true)]
         public void HotKeyManager_Should_Use_CommandParameter(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -215,7 +215,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
 
         [Theory]
-        [MemberData(nameof(ElementsFactory))]
+        [MemberData(nameof(ElementsFactory), parameters: true)]
         public void HotKeyManager_Should_Do_Not_Executed_When_IsEnabled_False(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -256,11 +256,127 @@ namespace Avalonia.Controls.UnitTests.Utils
             }
         }
 
-        public static TheoryData<string, Factory> ElementsFactory =>
+        [Theory]
+        [MemberData(nameof(ElementsFactory), parameters:false)]
+        public void HotKeyManager_Should_Invoke_Event_Click_When_Command_Is_Null(string factoryName, Factory factory)
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                var styler = new Mock<Styler>();
+                var target = new KeyboardDevice();
+                var clickExecutedCount = 0;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
+                    .Bind<IStyler>().ToConstant(styler.Object);
+
+                var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                void Clickable_Click(object sender, Interactivity.RoutedEventArgs e)
+                {
+                    clickExecutedCount++;
+                }
+
+                var root = new Window();
+                var element = factory(0, default, root) as InputElement;
+                if (element is IClickableControl clickable)
+                {
+                    clickable.Click += Clickable_Click;
+                }
+
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter.ApplyTemplate();
+
+                HotKeyManager.SetHotKey(element, gesture);
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                element.IsEnabled = false;
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+
+                Assert.True(clickExecutedCount == 1, $"{factoryName} Execution raised when IsEnabled is false.");
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ElementsFactory), parameters: true)]
+        public void HotKeyManager_Should_Not_Invoke_Event_Click_When_Command_Is_Not_Null(string factoryName, Factory factory)
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                var styler = new Mock<Styler>();
+                var target = new KeyboardDevice();
+                var clickExecutedCount = 0;
+                var commandExecutedCount = 0;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
+                    .Bind<IStyler>().ToConstant(styler.Object);
+
+                var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                void DoExecute(object parameter)
+                {
+                    commandExecutedCount++;
+                }
+
+                void Clickable_Click(object sender, Interactivity.RoutedEventArgs e)
+                {
+                    clickExecutedCount++;
+                }
+
+                var root = new Window();
+                var element = factory(0, DoExecute, root) as InputElement;
+                if (element is IClickableControl clickable)
+                {
+                    clickable.Click += Clickable_Click;
+                }
+
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter.ApplyTemplate();
+
+                HotKeyManager.SetHotKey(element, gesture);
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                element.IsEnabled = false;
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                Assert.True(commandExecutedCount == 1, $"{factoryName} Execution raised when IsEnabled is false.");
+                Assert.True(clickExecutedCount == 0, $"{factoryName} Execution raised event Click.");
+            }
+        }
+
+
+        public static TheoryData<string, Factory> ElementsFactory(bool withCommand) =>
+
             new TheoryData<string, Factory>()
             {
-                {nameof(Button), MakeButton},
-                {nameof(MenuItem),MakeMenu},
+                {nameof(Button), withCommand ? MakeButton : MakeButtonWithoutCommand},
+                {nameof(MenuItem),withCommand ? MakeMenu : MakeMenuWithoutCommand},
             };
 
         private static AvaloniaObject MakeMenu(int expectedParameter, Action<object> action, Window root)
@@ -284,6 +400,29 @@ namespace Avalonia.Controls.UnitTests.Utils
             {
                 Command = new Command(action),
                 CommandParameter = expectedParameter,
+            };
+
+            root.Content = button;
+            return button;
+        }
+
+        private static AvaloniaObject MakeMenuWithoutCommand(int expectedParameter, Action<object> action, Window root)
+        {
+            var menuitem = new MenuItem()
+            {
+            };
+            var rootMenu = new Menu();
+
+            rootMenu.Items = new[] { menuitem };
+
+            root.Content = rootMenu;
+            return menuitem;
+        }
+
+        private static AvaloniaObject MakeButtonWithoutCommand(int expectedParameter, Action<object> action, Window root)
+        {
+            var button = new Button()
+            {
             };
 
             root.Content = button;

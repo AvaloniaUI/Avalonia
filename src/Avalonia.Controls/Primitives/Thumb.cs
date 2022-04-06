@@ -26,19 +26,19 @@ namespace Avalonia.Controls.Primitives
             DragCompletedEvent.AddClassHandler<Thumb>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
         }
 
-        public event EventHandler<VectorEventArgs> DragStarted
+        public event EventHandler<VectorEventArgs>? DragStarted
         {
             add { AddHandler(DragStartedEvent, value); }
             remove { RemoveHandler(DragStartedEvent, value); }
         }
 
-        public event EventHandler<VectorEventArgs> DragDelta
+        public event EventHandler<VectorEventArgs>? DragDelta
         {
             add { AddHandler(DragDeltaEvent, value); }
             remove { RemoveHandler(DragDeltaEvent, value); }
         }
 
-        public event EventHandler<VectorEventArgs> DragCompleted
+        public event EventHandler<VectorEventArgs>? DragCompleted
         {
             add { AddHandler(DragCompletedEvent, value); }
             remove { RemoveHandler(DragCompletedEvent, value); }

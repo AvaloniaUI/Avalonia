@@ -1,3 +1,4 @@
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.LogicalTree;
 
@@ -11,15 +12,15 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Header"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
+        public static readonly StyledProperty<object?> HeaderProperty =
             HeaderedContentControl.HeaderProperty.AddOwner<HeaderedItemsControl>();
 
-        private ILogical _headerChild;
+        private ILogical? _headerChild;
 
         /// <summary>
         /// Gets or sets the content of the control's header.
         /// </summary>
-        public object Header
+        public object? Header
         {
             get { return GetValue(HeaderProperty); }
             set { SetValue(HeaderProperty, value); }
@@ -28,7 +29,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the header presenter from the control's template.
         /// </summary>
-        public IContentPresenter HeaderPresenter
+        public IContentPresenter? HeaderPresenter
         {
             get;
             private set;
@@ -39,7 +40,7 @@ namespace Avalonia.Controls.Primitives
             RegisterContentPresenter(presenter);
         }
 
-        void IContentPresenterHost.RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        void IContentPresenterHost.RegisterLogicalChild(IContentPresenter presenter, ILogical? child)
         {
             RegisterLogicalChild(presenter, child);
         }
@@ -67,13 +68,13 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="presenter">The presenter.</param>
         /// <param name="child">The new logical child.</param>
-        protected virtual void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        protected virtual void RegisterLogicalChild(IContentPresenter presenter, ILogical? child)
         {
             if (presenter == HeaderPresenter)
                 SetHeaderChild(child);
         }
 
-        private void SetHeaderChild(ILogical child)
+        private void SetHeaderChild(ILogical? child)
         {
             if (_headerChild != child)
             {

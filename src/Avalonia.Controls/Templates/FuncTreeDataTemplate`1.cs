@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Templates
         /// </summary>
         /// <param name="f">The typed function.</param>
         /// <returns>The untyped function.</returns>
-        private static Func<object, bool> CastMatch(Func<T, bool> f)
+        private static Func<object?, bool> CastMatch(Func<T, bool> f)
         {
             return o => (o is T) && f((T)o);
         }
@@ -68,9 +68,9 @@ namespace Avalonia.Controls.Templates
         /// <typeparam name="TResult">The result.</typeparam>
         /// <param name="f">The typed function.</param>
         /// <returns>The untyped function.</returns>
-        private static Func<object, INameScope, TResult> Cast<TResult>(Func<T, INameScope, TResult> f)
+        private static Func<object?, INameScope, TResult> Cast<TResult>(Func<T, INameScope, TResult> f)
         {
-            return (o, s) => f((T)o, s);
+            return (o, s) => f((T)o!, s);
         }
         
         /// <summary>
@@ -79,9 +79,9 @@ namespace Avalonia.Controls.Templates
         /// <typeparam name="TResult">The result.</typeparam>
         /// <param name="f">The typed function.</param>
         /// <returns>The untyped function.</returns>
-        private static Func<object, TResult> Cast<TResult>(Func<T, TResult> f)
+        private static Func<object?, TResult> Cast<TResult>(Func<T, TResult> f)
         {
-            return o => f((T)o);
+            return o => f((T)o!);
         }
     }
 }

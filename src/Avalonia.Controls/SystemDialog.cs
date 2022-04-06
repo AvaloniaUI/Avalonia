@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -53,6 +51,11 @@ namespace Avalonia.Controls
         /// Gets or sets the default extension to be used to save the file (including the period ".").
         /// </summary>
         public string? DefaultExtension { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to display a warning if the user specifies the name of a file that already exists.
+        /// </summary>
+        public bool? ShowOverwritePrompt { get; set; }
 
         /// <summary>
         /// Shows the save file dialog.

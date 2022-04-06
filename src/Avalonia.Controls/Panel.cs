@@ -18,10 +18,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<Panel>();
 
-        private PanelChildren _children;
+        private PanelChildren? _children;
 
         /// <summary>
         /// Initializes static members of the <see cref="Panel"/> class.
@@ -31,7 +31,7 @@ namespace Avalonia.Controls
             AffectsRender<Panel>(BackgroundProperty);
         }
 
-        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+        private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
         /// Gets the children of the <see cref="Panel"/>.
@@ -42,7 +42,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or Sets Panel background brush.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -51,15 +51,15 @@ namespace Avalonia.Controls
         protected override int LogicalChildrenCount => Children.Count;
         protected override int VisualChildrenCount => Children.Count;
 
-        protected override event EventHandler LogicalChildrenChanged;
+        protected override event EventHandler? LogicalChildrenChanged;
         
-        protected override event EventHandler VisualChildrenChanged
+        protected override event EventHandler? VisualChildrenChanged
         {
             add => LogicalChildrenChanged += value;
             remove => LogicalChildrenChanged -= value;
         }
 
-        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
@@ -118,7 +118,7 @@ namespace Avalonia.Controls
             VisualRoot?.Renderer?.RecalculateChildren(this);
         }
 
-        protected void OnChildIndexChanged(ILogical changed = null)
+        protected void OnChildIndexChanged(ILogical? changed = null)
         {
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(changed));
         }

@@ -95,11 +95,11 @@
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
         <TextBlock Text="Chat Room | " />
-        <Button Classes="Hyperlink" CommandParameter="https://gitter.im/AvaloniaUI/Avalonia/"  />
+        <Button Classes="Hyperlink" CommandParameter="https://t.me/Avalonia"  />
       </StackPanel>
      </StackPanel> 
     <StackPanel VerticalAlignment="Bottom" Margin="10">
-      <TextBlock Text="© 2021 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
+      <TextBlock Text="© 2022 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
     </StackPanel>
   </Grid>
 </Window>

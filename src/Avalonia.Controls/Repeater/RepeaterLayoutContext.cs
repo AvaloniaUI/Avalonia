@@ -26,7 +26,7 @@ namespace Avalonia.Controls
             set => _owner.LayoutOrigin = value;
         }
 
-        protected override object LayoutStateCore
+        protected override object? LayoutStateCore
         {
             get => _owner.LayoutState;
             set => _owner.LayoutState = value;
@@ -57,7 +57,7 @@ namespace Avalonia.Controls
                 options.HasAllFlags(ElementRealizationOptions.SuppressAutoRecycle));
         }
 
-        protected override object GetItemAtCore(int index) => _owner.ItemsSourceView.GetAt(index);
+        protected override object GetItemAtCore(int index) => _owner.ItemsSourceView!.GetAt(index)!;
 
         protected override void RecycleElementCore(ILayoutable element)
         {

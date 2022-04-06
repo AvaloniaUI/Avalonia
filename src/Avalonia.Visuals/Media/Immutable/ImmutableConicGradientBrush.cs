@@ -12,16 +12,18 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="gradientStops">The gradient stops.</param>
         /// <param name="opacity">The opacity of the brush.</param>
+        /// <param name="transform">The transform of the brush.</param>
         /// <param name="spreadMethod">The spread method.</param>
         /// <param name="center">The center point for the gradient.</param>
         /// <param name="angle">The starting angle for the gradient.</param>
         public ImmutableConicGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
+            ImmutableTransform? transform = null,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? center = null,
             double angle = 0)
-            : base(gradientStops, opacity, spreadMethod)
+            : base(gradientStops, opacity, transform, spreadMethod)
         {
             Center = center ?? RelativePoint.Center;
             Angle = angle;

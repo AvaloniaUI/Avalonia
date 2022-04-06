@@ -6,6 +6,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -222,6 +223,8 @@ namespace Avalonia.Controls
     /// element in XAML.
     /// </para>
     /// </remarks>
+    [TemplatePart(PART_ElementMonth, typeof(CalendarItem))]
+    [TemplatePart(PART_ElementRoot,  typeof(Panel))]
     public class Calendar : TemplatedControl
     {
         internal const int RowsPerMonth = 7;
@@ -240,11 +243,11 @@ namespace Avalonia.Controls
         private bool _isShiftPressed;
         private bool _displayDateIsChanging = false;
 
-        internal CalendarDayButton FocusButton { get; set; }
-        internal CalendarButton FocusCalendarButton { get; set; }
+        internal CalendarDayButton? FocusButton { get; set; }
+        internal CalendarButton? FocusCalendarButton { get; set; }
 
-        internal Panel Root { get; set; }
-        internal CalendarItem MonthControl
+        internal Panel? Root { get; set; }
+        internal CalendarItem? MonthControl
         {
             get
             {
@@ -261,6 +264,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Calendar, DayOfWeek>(
                     nameof(FirstDayOfWeek),
                     defaultValue: DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek);
+
         /// <summary>
         /// Gets or sets the day that is considered the beginning of the week.
         /// </summary>
@@ -273,6 +277,7 @@ namespace Avalonia.Controls
             get { return GetValue(FirstDayOfWeekProperty); }
             set { SetValue(FirstDayOfWeekProperty, value); }
         }
+
         /// <summary>
         /// FirstDayOfWeekProperty property changed handler.
         /// </summary>
@@ -280,7 +285,7 @@ namespace Avalonia.Controls
         private void OnFirstDayOfWeekChanged(AvaloniaPropertyChangedEventArgs e)
         {
 
-            if (IsValidFirstDayOfWeek(e.NewValue))
+            if (IsValidFirstDayOfWeek(e.NewValue!))
             {
                 UpdateMonths();
             }
@@ -289,6 +294,7 @@ namespace Avalonia.Controls
                 throw new ArgumentOutOfRangeException("d", "Invalid DayOfWeek");
             }
         }
+
         /// <summary>
         /// Inherited code: Requires comment.
         /// </summary>
@@ -311,6 +317,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Calendar, bool>(
                 nameof(IsTodayHighlighted),
                 defaultValue: true);
+
         /// <summary>
         /// Gets or sets a value indicating whether the current date is
         /// highlighted.
@@ -324,6 +331,7 @@ namespace Avalonia.Controls
             get { return GetValue(IsTodayHighlightedProperty); }
             set { SetValue(IsTodayHighlightedProperty, value); }
         }
+
         /// <summary>
         /// IsTodayHighlightedProperty property changed handler.
         /// </summary>
@@ -343,6 +351,7 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<IBrush> HeaderBackgroundProperty =
             AvaloniaProperty.Register<Calendar, IBrush>(nameof(HeaderBackground));
+
         public IBrush HeaderBackground
         {
             get { return GetValue(HeaderBackgroundProperty); }
@@ -367,15 +376,16 @@ namespace Avalonia.Controls
             get { return GetValue(DisplayModeProperty); }
             set { SetValue(DisplayModeProperty, value); }
         }
+
         /// <summary>
         /// DisplayModeProperty property changed handler.
         /// </summary>
         /// <param name="e">The DependencyPropertyChangedEventArgs.</param>
         private void OnDisplayModePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            CalendarMode mode = (CalendarMode)e.NewValue;
-            CalendarMode oldMode = (CalendarMode)e.OldValue;
-            CalendarItem monthControl = MonthControl;
+            CalendarMode mode = (CalendarMode)e.NewValue!;
+            CalendarMode oldMode = (CalendarMode)e.OldValue!;
+            CalendarItem? monthControl = MonthControl;
 
             if (monthControl != null)
             {
@@ -424,6 +434,7 @@ namespace Avalonia.Controls
                 || mode == CalendarMode.Year
                 || mode == CalendarMode.Decade;
         }
+
         private void OnDisplayModeChanged(CalendarModeChangedEventArgs args)
         {
             DisplayModeChanged?.Invoke(this, args);
@@ -433,6 +444,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Calendar, CalendarSelectionMode>(
                 nameof(SelectionMode),
                 defaultValue: CalendarSelectionMode.SingleDate);
+
         /// <summary>
         /// Gets or sets a value that indicates what kind of selections are
         /// allowed.
@@ -457,9 +469,10 @@ namespace Avalonia.Controls
             get { return GetValue(SelectionModeProperty); }
             set { SetValue(SelectionModeProperty, value); }
         }
+
         private void OnSelectionModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (IsValidSelectionMode(e.NewValue))
+            if (IsValidSelectionMode(e.NewValue!))
             {
                 _displayDateIsChanging = true;
                 SelectedDate = null;
@@ -471,6 +484,7 @@ namespace Avalonia.Controls
                 throw new ArgumentOutOfRangeException("d", "Invalid SelectionMode");
             }
         }
+
         /// <summary>
         /// Inherited code: Requires comment.
         /// </summary>
@@ -492,6 +506,7 @@ namespace Avalonia.Controls
                 o => o.SelectedDate,
                 (o, v) => o.SelectedDate = v,
                 defaultBindingMode: BindingMode.TwoWay);
+
         /// <summary>
         /// Gets or sets the currently selected date.
         /// </summary>
@@ -656,7 +671,7 @@ namespace Avalonia.Controls
                     {
                         FocusButton.IsCurrent = false;
                     }
-                    FocusButton = FindDayButtonFromDay(LastSelectedDate.Value);
+                    FocusButton = FindDayButtonFromDay(LastSelectedDate!.Value);
                     if (FocusButton != null)
                     {
                         FocusButton.IsCurrent = HasFocusInternal;
@@ -720,6 +735,7 @@ namespace Avalonia.Controls
                 o => o.DisplayDate,
                 (o, v) => o.DisplayDate = v,
                 defaultBindingMode: BindingMode.TwoWay);
+
         /// <summary>
         /// Gets or sets the date to display.
         /// </summary>
@@ -754,11 +770,11 @@ namespace Avalonia.Controls
 
         private void OnDisplayDateChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateDisplayDate(this, (DateTime)e.NewValue, (DateTime)e.OldValue);
+            UpdateDisplayDate(this, (DateTime)e.NewValue!, (DateTime)e.OldValue!);
         }
         private static void UpdateDisplayDate(Calendar c, DateTime addedDate, DateTime removedDate)
         {
-            Contract.Requires<ArgumentNullException>(c != null);
+            _ = c ?? throw new ArgumentNullException(nameof(c));
 
             // If DisplayDate < DisplayDateStart, DisplayDate = DisplayDateStart
             if (DateTime.Compare(addedDate, c.DisplayDateRangeStart) < 0)
@@ -871,7 +887,7 @@ namespace Avalonia.Controls
             if (cal.SelectedDates.Count > 0)
             {
                 selectedDateMin = cal.SelectedDates[0];
-                Debug.Assert(DateTime.Compare(cal.SelectedDate.Value, selectedDateMin) == 0, "The SelectedDate should be the minimum selected date!");
+                Debug.Assert(DateTime.Compare(cal.SelectedDate!.Value, selectedDateMin) == 0, "The SelectedDate should be the minimum selected date!");
             }
             else
             {
@@ -959,7 +975,7 @@ namespace Avalonia.Controls
             if (cal.SelectedDates.Count > 0)
             {
                 selectedDateMax = cal.SelectedDates[0];
-                Debug.Assert(DateTime.Compare(cal.SelectedDate.Value, selectedDateMax) == 0, "The SelectedDate should be the maximum SelectedDate!");
+                Debug.Assert(DateTime.Compare(cal.SelectedDate!.Value, selectedDateMax) == 0, "The SelectedDate should be the maximum SelectedDate!");
             }
             else
             {
@@ -1003,9 +1019,9 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool CalendarDatePickerDisplayDateFlag { get; set; }
 
-        internal CalendarDayButton FindDayButtonFromDay(DateTime day)
+        internal CalendarDayButton? FindDayButtonFromDay(DateTime day)
         {
-            CalendarItem monthControl = MonthControl;
+            CalendarItem? monthControl = MonthControl;
 
             // REMOVE_RTM: should be updated if we support MultiCalendar
             int count = RowsPerMonth * ColumnsPerMonth;
@@ -1054,7 +1070,7 @@ namespace Avalonia.Controls
         internal void OnHeaderClick()
         {
             Debug.Assert(DisplayMode == CalendarMode.Year || DisplayMode == CalendarMode.Decade, "The DisplayMode should be Year or Decade");
-            CalendarItem monthControl = MonthControl;
+            CalendarItem? monthControl = MonthControl;
             if (monthControl != null && monthControl.MonthView != null && monthControl.YearView != null)
             {
                 monthControl.MonthView.IsVisible = false;
@@ -1065,7 +1081,7 @@ namespace Avalonia.Controls
 
         internal void ResetStates()
         {
-            CalendarItem monthControl = MonthControl;
+            CalendarItem? monthControl = MonthControl;
             int count = RowsPerMonth * ColumnsPerMonth;
             if (monthControl != null)
             {
@@ -1083,7 +1099,7 @@ namespace Avalonia.Controls
 
         internal void UpdateMonths()
         {
-            CalendarItem monthControl = MonthControl;
+            CalendarItem? monthControl = MonthControl;
             if (monthControl != null)
             {
                 switch (DisplayMode)
@@ -1163,6 +1179,8 @@ namespace Avalonia.Controls
         {
             if (HoverEnd != null && HoverStart != null)
             {
+                Debug.Assert(MonthControl is not null);
+
                 int startIndex, endIndex, i;
                 CalendarItem monthControl = MonthControl;
 
@@ -1173,7 +1191,7 @@ namespace Avalonia.Controls
 
                     for (i = startIndex; i <= endIndex; i++)
                     {
-                        if (monthControl.MonthView.Children[i] is CalendarDayButton b)
+                        if (monthControl.MonthView!.Children[i] is CalendarDayButton b)
                         {
                             b.IsSelected = true;
                             var d = b.DataContext as DateTime?;
@@ -1201,6 +1219,8 @@ namespace Avalonia.Controls
         {
             if (HoverEnd != null && HoverStart != null)
             {
+                Debug.Assert(MonthControl is not null);
+
                 CalendarItem monthControl = MonthControl;
 
                 if (HoverEndIndex != null && HoverStartIndex != null)
@@ -1212,7 +1232,7 @@ namespace Avalonia.Controls
                     {
                         for (i = startIndex; i <= endIndex; i++)
                         {
-                            if (monthControl.MonthView.Children[i] is CalendarDayButton b)
+                            if (monthControl.MonthView!.Children[i] is CalendarDayButton b)
                             {
                                 var d = b.DataContext as DateTime?;
 
@@ -1231,7 +1251,7 @@ namespace Avalonia.Controls
                         // It is SingleRange
                         for (i = startIndex; i <= endIndex; i++)
                         {
-                            ((CalendarDayButton)monthControl.MonthView.Children[i]).IsSelected = false;
+                            ((CalendarDayButton)monthControl.MonthView!.Children[i]).IsSelected = false;
                         }
                     }
                 }
@@ -1239,6 +1259,11 @@ namespace Avalonia.Controls
         }
         internal void SortHoverIndexes(out int startIndex, out int endIndex)
         {
+            Debug.Assert(HoverStart.HasValue);
+            Debug.Assert(HoverEnd.HasValue);
+            Debug.Assert(HoverStartIndex.HasValue);
+            Debug.Assert(HoverEndIndex.HasValue);
+
             if (DateTimeHelper.CompareDays(HoverEnd.Value, HoverStart.Value) > 0)
             {
                 startIndex = HoverStartIndex.Value;
@@ -1373,6 +1398,8 @@ namespace Avalonia.Controls
         }
         private void OnMonthClick()
         {
+            Debug.Assert(MonthControl is not null);
+
             CalendarItem monthControl = MonthControl;
             if (monthControl != null && monthControl.YearView != null && monthControl.MonthView != null)
             {
@@ -1400,7 +1427,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public event EventHandler<SelectionChangedEventArgs> SelectedDatesChanged;
+        public event EventHandler<SelectionChangedEventArgs>? SelectedDatesChanged;
 
         /// <summary>
         /// Occurs when the
@@ -1410,19 +1437,19 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This event occurs after DisplayDate is assigned its new value.
         /// </remarks>
-        public event EventHandler<CalendarDateChangedEventArgs> DisplayDateChanged;
+        public event EventHandler<CalendarDateChangedEventArgs>? DisplayDateChanged;
 
         /// <summary>
         /// Occurs when the
         /// <see cref="P:System.Windows.Controls.Calendar.DisplayMode" />
         /// property is changed.
         /// </summary>
-        public event EventHandler<CalendarModeChangedEventArgs> DisplayModeChanged;
+        public event EventHandler<CalendarModeChangedEventArgs>? DisplayModeChanged;
 
         /// <summary>
         /// Inherited code: Requires comment.
         /// </summary>
-        internal event EventHandler<PointerReleasedEventArgs> DayButtonMouseUp;
+        internal event EventHandler<PointerReleasedEventArgs>? DayButtonMouseUp;
 
         /// <summary>
         /// This method adds the days that were selected by Keyboard to the
@@ -1461,7 +1488,7 @@ namespace Avalonia.Controls
                     SelectedDates.ClearInternal();
                     if (shift)
                     {
-                        CalendarDayButton b;
+                        CalendarDayButton? b;
                         _isShiftPressed = true;
                         if (HoverStart == null)
                         {
@@ -1513,6 +1540,8 @@ namespace Avalonia.Controls
                             }
                             else
                             {
+                                Debug.Assert(HoverEndInternal is not null);
+
                                 // For Home, End, PageUp and PageDown Keys there
                                 // is no easy way to predict the index value
                                 b = FindDayButtonFromDay(HoverEndInternal.Value);
@@ -1524,6 +1553,7 @@ namespace Avalonia.Controls
                             }
                         }
 
+                        Debug.Assert(HoverEnd is not null);
                         OnDayClick(HoverEnd.Value);
                         HighlightDays();
                     }
@@ -1557,7 +1587,7 @@ namespace Avalonia.Controls
             base.OnPointerReleased(e);
             if (!HasFocusInternal && e.InitialPressMouseButton == MouseButton.Left)
             {
-                FocusManager.Instance.Focus(this);
+                FocusManager.Instance?.Focus(this);
             }
         }
 
@@ -1876,8 +1906,8 @@ namespace Avalonia.Controls
                                 // since DisplayDate is not equal to
                                 // DateTime.MaxValue we are sure selectedDate is\
                                 // not null
-                                selectedDate = DateTimeHelper.AddMonths(selectedDate.Value, 1).Value;
-                                selectedDate = DateTimeHelper.AddDays(selectedDate.Value, -1).Value;
+                                selectedDate = DateTimeHelper.AddMonths(selectedDate.Value, 1)!.Value;
+                                selectedDate = DateTimeHelper.AddDays(selectedDate.Value, -1)!.Value;
                             }
                             else
                             {
@@ -1959,6 +1989,7 @@ namespace Avalonia.Controls
                     }
             }
         }
+
         private void Calendar_KeyUp(KeyEventArgs e)
         {
             if (!e.Handled && (e.Key == Key.LeftShift || e.Key == Key.RightShift))
@@ -1966,6 +1997,7 @@ namespace Avalonia.Controls
                 ProcessShiftKeyUp();
             }
         }
+
         internal void ProcessShiftKeyUp()
         {
             if (_isShiftPressed && (SelectionMode == CalendarSelectionMode.SingleRange || SelectionMode == CalendarSelectionMode.MultipleRange))
@@ -2014,6 +2046,7 @@ namespace Avalonia.Controls
                     }
             }
         }
+
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
@@ -2040,6 +2073,7 @@ namespace Avalonia.Controls
                     }
             }
         }
+
         /// <summary>
         ///  Called when the IsEnabled property changes.
         /// </summary>
@@ -2084,6 +2118,7 @@ namespace Avalonia.Controls
 
         private const string PART_ElementRoot = "Root";
         private const string PART_ElementMonth = "CalendarItem";
+
         /// <summary>
         /// Builds the visual tree for the
         /// <see cref="T:System.Windows.Controls.Calendar" /> when a new
@@ -2098,7 +2133,7 @@ namespace Avalonia.Controls
 
             if (Root != null)
             {
-                CalendarItem month = e.NameScope.Find<CalendarItem>(PART_ElementMonth);
+                CalendarItem? month = e.NameScope.Find<CalendarItem>(PART_ElementMonth);
 
                 if (month != null)
                 {

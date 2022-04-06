@@ -2,12 +2,15 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Remote;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -19,6 +22,7 @@ namespace Avalonia.Win32
         protected virtual unsafe IntPtr AppWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             const double wheelDelta = 120.0;
+            const long UiaRootObjectId = -25;
             uint timestamp = unchecked((uint)GetMessageTime());
             RawInputEventArgs e = null;
             var shouldTakeFocus = false;
@@ -77,6 +81,8 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
+                        UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
+
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
@@ -151,8 +157,8 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_CHAR:
                     {
-                        // Ignore control chars
-                        if (ToInt32(wParam) >= 32)
+                        // Ignore control chars and chars that were handled in WM_KEYDOWN.
+                        if (ToInt32(wParam) >= 32 && !_ignoreWmChar)
                         {
                             e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _owner,
                                 new string((char)ToInt32(wParam), 1));
@@ -503,6 +509,15 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     Imm32InputMethod.Current.IsComposing = false;
                     break;
+
+                case WindowsMessage.WM_GETOBJECT:
+                    if ((long)lParam == UiaRootObjectId)
+                    {
+                        var peer = ControlAutomationPeer.CreatePeerForElement((Control)_owner);
+                        var node = AutomationNode.GetOrCreate(peer);
+                        return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
+                    }
+                    break;
             }
 
 #if USE_MANAGED_DRAG
@@ -518,6 +533,15 @@ namespace Avalonia.Win32
             if (e != null && Input != null)
             {
                 Input(e);
+
+                if ((WindowsMessage)msg == WindowsMessage.WM_KEYDOWN)
+                {
+                    // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
+                    // be ignored. This should be safe to do as WM_CHAR should only be produced in
+                    // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
+                    // is handled.
+                    _ignoreWmChar = e.Handled;
+                }
 
                 if (e.Handled)
                 {

@@ -3,8 +3,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -86,7 +84,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="presenter">The presenter.</param>
         /// <param name="child">The new logical child.</param>
-        protected override void RegisterLogicalChild(IContentPresenter presenter, ILogical child)
+        protected override void RegisterLogicalChild(IContentPresenter presenter, ILogical? child)
         {
             base.RegisterLogicalChild(presenter, child);
             if (presenter == HeaderPresenter)

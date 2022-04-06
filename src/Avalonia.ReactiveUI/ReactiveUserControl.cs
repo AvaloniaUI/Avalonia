@@ -48,6 +48,7 @@ namespace Avalonia.ReactiveUI
 
         protected override void OnDataContextChanged(EventArgs e)
         {
+            base.OnDataContextChanged(e);
             ViewModel = DataContext as TViewModel;
         }
 
