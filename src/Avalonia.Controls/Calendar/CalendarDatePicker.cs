@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -116,6 +117,10 @@ namespace Avalonia.Controls
         Custom = 2
     }
 
+    [TemplatePart(ElementButton,   typeof(Button))]
+    [TemplatePart(ElementCalendar, typeof(Calendar))]
+    [TemplatePart(ElementPopup,    typeof(Popup))]
+    [TemplatePart(ElementTextBox,  typeof(TextBox))]
     public class CalendarDatePicker : TemplatedControl
     {
         private const string ElementTextBox = "PART_TextBox";
