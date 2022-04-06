@@ -11,7 +11,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls;
 
-public class MediaStyles : MediaStyles.MediaStylesBase
+public class MediaStyles : MediaStylesBase
 {
     private IVisual? _currentVisual;
     private CompositeDisposable? _subscriptions;
@@ -86,8 +86,9 @@ public class MediaStyles : MediaStyles.MediaStylesBase
             SetIsActive(false);
         }
     }
-        
-    public abstract class MediaStylesBase : AvaloniaObject,
+}
+
+public abstract class MediaStylesBase : AvaloniaObject,
         IAvaloniaList<IStyle>,
         IStyle,
         IResourceProvider
@@ -435,4 +436,3 @@ public class MediaStyles : MediaStyles.MediaStylesBase
             CollectionChanged?.Invoke(this, e);
         }
     }
-}
