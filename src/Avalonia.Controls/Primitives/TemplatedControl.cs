@@ -356,6 +356,11 @@ namespace Avalonia.Controls.Primitives
             base.OnDetachedFromLogicalTree(e);
         }
 
+        /// <summary>
+        /// Called when the control's template is applied.
+        /// In simple terms, this means the method is called just before the control is displayed.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         protected virtual void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
         }

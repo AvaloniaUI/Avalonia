@@ -4,7 +4,7 @@
       <StackPanel Spacing="20">
         <Button Content="Click Me!" />
         <Button Classes="accent" Content="Click Me!" />
-      </StackPanel>      
+      </StackPanel>
     </Border>
   </Design.PreviewWith>
   <Styles.Resources>
@@ -19,9 +19,7 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
-    <Setter Property="VerticalAlignment" Value="Center" />    
-    <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
     <!--<Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
     <Setter Property="FocusVisualMargin" Value="-3" />-->
     <Setter Property="Template">
@@ -47,13 +45,13 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
   </Style>
-  
+
   <Style Selector="Button:pressed  /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
   </Style>
-  
+
   <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
@@ -78,7 +76,7 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
   </Style>
 
-  <Style Selector="Button, RepeatButton, ToggleButton">
+  <Style Selector="Button, RepeatButton, ToggleButton, DropDownButton">
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
@@ -87,7 +85,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="Button:pressed, RepeatButton:pressed, ToggleButton:pressed">
+  <Style Selector="Button:pressed, RepeatButton:pressed, ToggleButton:pressed, DropDownButton:pressed">
     <Setter Property="RenderTransform" Value="scale(0.98)" />    
   </Style>
 
