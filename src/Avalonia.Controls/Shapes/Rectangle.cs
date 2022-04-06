@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Shapes
 
         /// <summary>
         /// Gets or sets the radius on the X-axis used to round the corners of the rectangle.
-        /// Corner radii are represented by an ellipse so this is the X-axis width of the ellipse.
+        /// Corner radii are represented by an ellipse so this is 1/2 the X-axis width of the ellipse.
         /// </summary>
         public double RadiusX
         {
@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Shapes
 
         /// <summary>
         /// Gets or sets the radius on the Y-axis used to round the corners of the rectangle.
-        /// Corner radii are represented by an ellipse so this is the Y-axis height of the ellipse.
+        /// Corner radii are represented by an ellipse so this is 1/2 the Y-axis height of the ellipse.
         /// </summary>
         public double RadiusY
         {
