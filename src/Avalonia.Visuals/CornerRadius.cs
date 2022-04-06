@@ -28,27 +28,27 @@ namespace Avalonia
         {
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;
 
-            TopLeftSize     = new Size(TopLeft, TopLeft);
-            TopRightSize    = new Size(TopRight, TopRight);
-            BottomRightSize = new Size(BottomRight, BottomRight);
-            BottomLeftSize  = new Size(BottomLeft, BottomLeft);
+            TopLeftComponents     = new EllipticalRadius(TopLeft, TopLeft);
+            TopRightComponents    = new EllipticalRadius(TopRight, TopRight);
+            BottomRightComponents = new EllipticalRadius(BottomRight, BottomRight);
+            BottomLeftComponents  = new EllipticalRadius(BottomLeft, BottomLeft);
 
             _isCircular = true;
         }
 
-        public CornerRadius(Size ellipticalRadius)
+        public CornerRadius(EllipticalRadius ellipticalRadius)
         {
-            TopLeftSize     = ellipticalRadius;
-            TopRightSize    = ellipticalRadius;
-            BottomRightSize = ellipticalRadius;
-            BottomLeftSize  = ellipticalRadius;
+            TopLeftComponents     = ellipticalRadius;
+            TopRightComponents    = ellipticalRadius;
+            BottomRightComponents = ellipticalRadius;
+            BottomLeftComponents  = ellipticalRadius;
 
-            TopLeft     = (TopLeftSize.Width     + TopLeftSize.Height)     / 2.0;
-            TopRight    = (TopRightSize.Width    + TopRightSize.Height)    / 2.0;
-            BottomRight = (BottomRightSize.Width + BottomRightSize.Height) / 2.0;
-            BottomLeft  = (BottomLeftSize.Width  + BottomLeftSize.Height)  / 2.0;
+            TopLeft     = TopLeftComponents.Average;
+            TopRight    = TopRightComponents.Average;
+            BottomRight = BottomRightComponents.Average;
+            BottomLeft  = BottomLeftComponents.Average;
 
-            _isCircular = (ellipticalRadius.Width == ellipticalRadius.Height);
+            _isCircular = ellipticalRadius.IsCircular;
         }
 
         public CornerRadius(double top, double bottom)
@@ -56,10 +56,10 @@ namespace Avalonia
             TopLeft    = TopRight    = top;
             BottomLeft = BottomRight = bottom;
 
-            TopLeftSize     = new Size(TopLeft, TopLeft);
-            TopRightSize    = new Size(TopRight, TopRight);
-            BottomRightSize = new Size(BottomRight, BottomRight);
-            BottomLeftSize  = new Size(BottomLeft, BottomLeft);
+            TopLeftComponents     = new EllipticalRadius(TopLeft, TopLeft);
+            TopRightComponents    = new EllipticalRadius(TopRight, TopRight);
+            BottomRightComponents = new EllipticalRadius(BottomRight, BottomRight);
+            BottomLeftComponents  = new EllipticalRadius(BottomLeft, BottomLeft);
 
             _isCircular = true;
         }
@@ -75,34 +75,34 @@ namespace Avalonia
             BottomRight = bottomRight;
             BottomLeft  = bottomLeft;
 
-            TopLeftSize     = new Size(TopLeft, TopLeft);
-            TopRightSize    = new Size(TopRight, TopRight);
-            BottomRightSize = new Size(BottomRight, BottomRight);
-            BottomLeftSize  = new Size(BottomLeft, BottomLeft);
+            TopLeftComponents     = new EllipticalRadius(TopLeft, TopLeft);
+            TopRightComponents    = new EllipticalRadius(TopRight, TopRight);
+            BottomRightComponents = new EllipticalRadius(BottomRight, BottomRight);
+            BottomLeftComponents  = new EllipticalRadius(BottomLeft, BottomLeft);
 
             _isCircular = true;
         }
 
         public CornerRadius(
-            Size topLeft,
-            Size topRight,
-            Size bottomRight,
-            Size bottomLeft)
+            EllipticalRadius topLeft,
+            EllipticalRadius topRight,
+            EllipticalRadius bottomRight,
+            EllipticalRadius bottomLeft)
         {
-            TopLeftSize     = topLeft;
-            TopRightSize    = topRight;
-            BottomRightSize = bottomRight;
-            BottomLeftSize  = bottomLeft;
+            TopLeftComponents     = topLeft;
+            TopRightComponents    = topRight;
+            BottomRightComponents = bottomRight;
+            BottomLeftComponents  = bottomLeft;
 
-            TopLeft     = (TopLeftSize.Width     + TopLeftSize.Height)     / 2.0;
-            TopRight    = (TopRightSize.Width    + TopRightSize.Height)    / 2.0;
-            BottomRight = (BottomRightSize.Width + BottomRightSize.Height) / 2.0;
-            BottomLeft  = (BottomLeftSize.Width  + BottomLeftSize.Height)  / 2.0;
+            TopLeft     = TopLeftComponents.Average;
+            TopRight    = TopRightComponents.Average;
+            BottomRight = BottomRightComponents.Average;
+            BottomLeft  = BottomLeftComponents.Average;
 
-            _isCircular = (TopLeftSize.Width     == TopLeftSize.Height &&
-                           TopRightSize.Width    == TopRightSize.Height &&
-                           BottomRightSize.Width == BottomRightSize.Height &&
-                           BottomLeftSize.Width  == BottomLeftSize.Height);
+            _isCircular = (TopLeftComponents.IsCircular &&
+                           TopRightComponents.IsCircular &&
+                           BottomRightComponents.IsCircular &&
+                           BottomLeftComponents.IsCircular);
         }
 
         public CornerRadius(
@@ -115,20 +115,20 @@ namespace Avalonia
             double bottomLeftRadiusX,
             double bottomLeftRadiusY)
         {
-            TopLeftSize     = new Size(topLeftRadiusX, topLeftRadiusY);
-            TopRightSize    = new Size(topRightRadiusX, topRightRadiusY);
-            BottomRightSize = new Size(bottomRightRadiusX, bottomRightRadiusY);
-            BottomLeftSize  = new Size(bottomLeftRadiusX, bottomLeftRadiusY);
+            TopLeftComponents     = new EllipticalRadius(topLeftRadiusX, topLeftRadiusY);
+            TopRightComponents    = new EllipticalRadius(topRightRadiusX, topRightRadiusY);
+            BottomRightComponents = new EllipticalRadius(bottomRightRadiusX, bottomRightRadiusY);
+            BottomLeftComponents  = new EllipticalRadius(bottomLeftRadiusX, bottomLeftRadiusY);
 
-            TopLeft     = (TopLeftSize.Width     + TopLeftSize.Height)     / 2.0;
-            TopRight    = (TopRightSize.Width    + TopRightSize.Height)    / 2.0;
-            BottomRight = (BottomRightSize.Width + BottomRightSize.Height) / 2.0;
-            BottomLeft  = (BottomLeftSize.Width  + BottomLeftSize.Height)  / 2.0;
+            TopLeft     = TopLeftComponents.Average;
+            TopRight    = TopRightComponents.Average;
+            BottomRight = BottomRightComponents.Average;
+            BottomLeft  = BottomLeftComponents.Average;
 
-            _isCircular = (TopLeftSize.Width     == TopLeftSize.Height &&
-                           TopRightSize.Width    == TopRightSize.Height &&
-                           BottomRightSize.Width == BottomRightSize.Height &&
-                           BottomLeftSize.Width  == BottomLeftSize.Height);
+            _isCircular = (TopLeftComponents.IsCircular &&
+                           TopRightComponents.IsCircular &&
+                           BottomRightComponents.IsCircular &&
+                           BottomLeftComponents.IsCircular);
         }
 
         /// <summary>
@@ -136,47 +136,47 @@ namespace Avalonia
         /// </summary>
         public double TopLeft { get; }
 
-        public Size TopLeftSize { get; }
+        public EllipticalRadius TopLeftComponents { get; }
 
         /// <summary>
         /// Gets the circular radius of the top right corner.
         /// </summary>
         /// <remarks>
         /// This is only valid when <see cref="IsCircular"/> is true; otherwise,
-        /// the elliptical radii in <see cref="TopRightSize"/> should be used.
+        /// the elliptical radii in <see cref="TopRightComponents"/> should be used.
         /// When the corner radius is elliptical this is set to the average of the
         /// width and height components.
         /// </remarks>
         public double TopRight { get; }
 
         /// <summary>
-        /// Gets the elliptical components of the top right corner radius.
+        /// Gets the elliptical radius components of the top right corner.
         /// </summary>
-        public Size TopRightSize { get; }
+        public EllipticalRadius TopRightComponents { get; }
 
         /// <summary>
         /// Gets the circular radius of the bottom right corner.
         /// </summary>
         public double BottomRight { get; }
 
-        public Size BottomRightSize { get; }
+        public EllipticalRadius BottomRightComponents { get; }
 
         /// <summary>
         /// Gets the circular radius of the bottom left corner.
         /// </summary>
         public double BottomLeft { get; }
 
-        public Size BottomLeftSize { get; }
+        public EllipticalRadius BottomLeftComponents { get; }
 
         /// <summary>
         /// Gets a value indicating whether all corner radii are set to 0.
         /// </summary>
         public bool IsEmpty
         {
-            get => TopLeftSize.IsDefault &&
-                   TopRightSize.IsDefault &&
-                   BottomRightSize.IsDefault &&
-                   BottomLeftSize.IsDefault;
+            get => TopLeftComponents.IsEmpty &&
+                   TopRightComponents.IsEmpty &&
+                   BottomRightComponents.IsEmpty &&
+                   BottomLeftComponents.IsEmpty;
         }
 
         /// <summary>
@@ -208,12 +208,10 @@ namespace Avalonia
         /// <returns>True if this corner radius is equal to other; False otherwise.</returns>
         public bool Equals(CornerRadius other)
         {
-            // ReSharper disable CompareOfFloatsByEqualityOperator
-            return TopLeftSize == other.TopLeftSize &&
-                   TopRightSize == other.TopRightSize &&
-                   BottomRightSize == other.BottomRightSize &&
-                   BottomLeftSize == other.BottomLeftSize;
-            // ReSharper restore CompareOfFloatsByEqualityOperator
+            return TopLeftComponents == other.TopLeftComponents &&
+                   TopRightComponents == other.TopRightComponents &&
+                   BottomRightComponents == other.BottomRightComponents &&
+                   BottomLeftComponents == other.BottomLeftComponents;
         }
 
         /// <summary>
