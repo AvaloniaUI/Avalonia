@@ -36,7 +36,8 @@ namespace Avalonia.Controls
         IStyleHost,
         ILogicalRoot,
         ITextInputMethodRoot,
-        IWeakEventSubscriber<ResourcesChangedEventArgs>
+        IWeakEventSubscriber<ResourcesChangedEventArgs>,
+        IScreenSizeProvider
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -529,7 +530,35 @@ namespace Avalonia.Controls
                 KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == BoundsProperty)
+            {
+                var oldValue = change.OldValue.GetValueOrDefault<Rect>();
+                var newValue = change.NewValue.GetValueOrDefault<Rect>();
+
+                if (oldValue.Size != newValue.Size)
+                {
+                    ScreenSizeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
             (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
+
+        public double GetScreenWidth()
+        {
+            return Bounds.Size.Width;
+        }
+
+        public double GetScreenHeight()
+        {
+            return Bounds.Size.Height;
+        }
+
+        public event EventHandler? ScreenSizeChanged;
     }
 }

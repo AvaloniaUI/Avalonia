@@ -169,6 +169,7 @@ namespace Avalonia.Markup.Parsers
 
             const string IsKeyword = "is";
             const string NotKeyword = "not";
+            const string ScreenKeyword = "screen";
             const string NthChildKeyword = "nth-child";
             const string NthLastChildKeyword = "nth-last-child";
 
@@ -185,6 +186,14 @@ namespace Avalonia.Markup.Parsers
                 Expect(ref r, ')');
 
                 var syntax = new NotSyntax { Argument = argument };
+                return (State.Middle, syntax);
+            }
+            if(identifier.SequenceEqual(ScreenKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = Parse(ref r, ')');
+                Expect(ref r, ')');
+
+                var syntax = new ScreenSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
             if (identifier.SequenceEqual(NthChildKeyword.AsSpan()) && r.TakeIf('('))
@@ -603,6 +612,16 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object? obj)
             {
                 return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
+            }
+        }
+        
+        public class ScreenSyntax : ISyntax
+        {
+            public IEnumerable<ISyntax> Argument { get; set; } = Enumerable.Empty<ISyntax>();
+            
+            public override bool Equals(object? obj)
+            {
+                return (obj is ScreenSyntax screen) && Argument.SequenceEqual(screen.Argument);
             }
         }
 

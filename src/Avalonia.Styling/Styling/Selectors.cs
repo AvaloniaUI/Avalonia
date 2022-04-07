@@ -131,6 +131,11 @@ namespace Avalonia.Styling
             return new NotSelector(previous, argument);
         }
 
+        public static Selector Screen(this Selector? previous)
+        {
+            return new ScreenSelector(previous);
+        }
+
         /// <inheritdoc cref="NthChildSelector"/>
         /// <inheritdoc cref="NthChildSelector(Selector?, int, int)"/>
         /// <returns>The selector.</returns>

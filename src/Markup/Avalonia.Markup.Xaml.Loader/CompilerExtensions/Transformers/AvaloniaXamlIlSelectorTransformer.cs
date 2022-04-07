@@ -139,6 +139,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
                             break;
+                        case SelectorGrammar.ScreenSyntax screen:
+                            result = new XamlIlScreenSelector(result);
+                            break;
                         case SelectorGrammar.NthChildSyntax nth:
                             result = new XamlIlNthChildSelector(result, nth.Step, nth.Offset, XamlIlNthChildSelector.SelectorType.NthChild);
                             break;
@@ -347,6 +350,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldc_I4(_offset);
             EmitCall(context, codeGen,
                 m => m.Name == _type.ToString() && m.Parameters.Count == 3);
+        }
+    }
+    
+    class XamlIlScreenSelector : XamlIlSelectorNode
+    {
+
+        public XamlIlScreenSelector(XamlIlSelectorNode previous) : base(previous)
+        {
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            EmitCall(context, codeGen,
+                m => m.Name == "Screen" && m.Parameters.Count == 1);
         }
     }
 

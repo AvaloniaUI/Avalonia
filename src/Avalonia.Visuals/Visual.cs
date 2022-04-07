@@ -25,7 +25,7 @@ namespace Avalonia
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
     [UsableDuringInitialization]
-    public class Visual : StyledElement, IVisual
+    public class Visual : StyledElement, IVisual, ITopLevelScreenSizeProvider
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -418,6 +418,8 @@ namespace Avalonia
                     }
                 }
             }
+            
+            ScreenSizeProviderChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -645,5 +647,12 @@ namespace Avalonia
                 visual.SetVisualParent(parent);
             }
         }
+
+        public IScreenSizeProvider? GetScreenSizeProvider()
+        {
+            return VisualRoot as IScreenSizeProvider;
+        }
+
+        public event EventHandler? ScreenSizeProviderChanged;
     }
 }
