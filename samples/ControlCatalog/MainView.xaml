@@ -6,17 +6,8 @@
              xmlns:models="clr-namespace:ControlCatalog.Models">
   <Grid>
     <Grid.Styles>
-      
-      <MediaStyles>
-        <Style Selector="TextBlock.h2">
-          <Setter Property="Foreground" Value="Red" />
-        </Style>
-      </MediaStyles>
-      
-      <Style Selector="TextBlock.h2">
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="MaxWidth" Value="400" />
-        <Setter Property="HorizontalAlignment" Value="Left" />
+      <Style Selector=":screen(test) TextBlock.h2">
+        <Setter Property="Foreground" Value="Red" />
       </Style>
     </Grid.Styles>
     <TextBlock Classes="h2" Text="Testing" />
