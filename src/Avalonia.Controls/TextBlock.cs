@@ -318,6 +318,8 @@ namespace Avalonia.Controls
             set => SetValue(TextDecorationsProperty, value);
         }
         
+        protected override bool BypassFlowDirectionPolicies => true;
+
         /// <summary>
         /// The BaselineOffset property provides an adjustment to baseline offset
         /// </summary>
