@@ -49,5 +49,10 @@ namespace Avalonia.Vulkan
         /// Sets the device to use if available and suitable.
         /// </summary>
         public uint? PreferredDevice { get; set; }
+
+        /// <summary>
+        /// Sets the presentation mode the swapchain uses if available.
+        /// </summary>
+        public PresentMode PresentMode { get; set; } = PresentMode.Mailbox;
     }
 }

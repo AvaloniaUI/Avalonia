@@ -125,16 +125,20 @@ namespace Avalonia.Vulkan
 
                 swapchainExtent = new Extent2D(width, height);
             }
-
-            PresentModeKHR presentMode;
+            
             var modes = presentModes.ToList();
 
-            if (modes.Contains(PresentModeKHR.PresentModeMailboxKhr))
-                presentMode = PresentModeKHR.PresentModeMailboxKhr;
-            else if (modes.Contains(PresentModeKHR.PresentModeFifoKhr))
-                presentMode = PresentModeKHR.PresentModeFifoKhr;
-            else
-                presentMode = PresentModeKHR.PresentModeImmediateKhr;
+            var presentMode = (PresentModeKHR)(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new VulkanOptions()).PresentMode;
+
+            if (!modes.Contains(presentMode))
+            {
+                if (modes.Contains(PresentModeKHR.PresentModeMailboxKhr))
+                    presentMode = PresentModeKHR.PresentModeMailboxKhr;
+                else if (modes.Contains(PresentModeKHR.PresentModeFifoKhr))
+                    presentMode = PresentModeKHR.PresentModeFifoKhr;
+                else
+                    presentMode = PresentModeKHR.PresentModeImmediateKhr;
+            }
 
             var compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
 
@@ -167,7 +171,6 @@ namespace Avalonia.Vulkan
 
             return swapchain;
         }
-
 
         internal static VulkanDisplay CreateDisplay(VulkanInstance instance, VulkanDevice device,
             VulkanPhysicalDevice physicalDevice, VulkanSurface surface)
