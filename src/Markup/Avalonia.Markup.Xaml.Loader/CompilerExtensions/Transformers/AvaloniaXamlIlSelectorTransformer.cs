@@ -142,6 +142,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         case SelectorGrammar.MinWidthSyntax minWidth:
                             result = new XamlIlMinWidthSelector(result, minWidth.Argument);
                             break;
+                        case SelectorGrammar.MaxWidthSyntax maxWidth:
+                            result = new XamlIlMaxWidthSelector(result, maxWidth.Argument);
+                            break;
+                        case SelectorGrammar.MinHeightSyntax minHeight:
+                            result = new XamlIlMinHeightSelector(result, minHeight.Argument);
+                            break;
+                        case SelectorGrammar.MaxHeightSyntax maxHeight:
+                            result = new XamlIlMaxHeightSelector(result, maxHeight.Argument);
+                            break;
                         case SelectorGrammar.NthChildSyntax nth:
                             result = new XamlIlNthChildSelector(result, nth.Step, nth.Offset, XamlIlNthChildSelector.SelectorType.NthChild);
                             break;
@@ -368,6 +377,61 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldc_R8(_argument);
             EmitCall(context, codeGen,
                 m => m.Name == "MinWidth" && m.Parameters.Count == 2);
+        }
+    }
+    
+    class XamlIlMaxWidthSelector : XamlIlSelectorNode
+    {
+        private double _argument;
+        
+        public XamlIlMaxWidthSelector(XamlIlSelectorNode previous, double argument) : base(previous)
+        {
+            _argument = argument;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldc_R8(_argument);
+            EmitCall(context, codeGen,
+                m => m.Name == "MaxWidth" && m.Parameters.Count == 2);
+        }
+    }
+    
+    class XamlIlMinHeightSelector : XamlIlSelectorNode
+    {
+        private double _argument;
+        
+        public XamlIlMinHeightSelector(XamlIlSelectorNode previous, double argument) : base(previous)
+        {
+            _argument = argument;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldc_R8(_argument);
+            EmitCall(context, codeGen,
+                m => m.Name == "MinHeight" && m.Parameters.Count == 2);
+        }
+    }
+    
+    class XamlIlMaxHeightSelector : XamlIlSelectorNode
+    {
+        private double _argument;
+        
+        public XamlIlMaxHeightSelector(XamlIlSelectorNode previous, double argument) : base(previous)
+        {
+            _argument = argument;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldc_R8(_argument);
+            EmitCall(context, codeGen,
+                m => m.Name == "MaxHeight" && m.Parameters.Count == 2);
         }
     }
 

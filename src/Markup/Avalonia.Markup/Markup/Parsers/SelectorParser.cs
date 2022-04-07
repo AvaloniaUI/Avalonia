@@ -152,6 +152,15 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.MinWidthSyntax minWidth:
                         result = result.MinWidth(minWidth.Argument);
                         break;
+                    case SelectorGrammar.MaxWidthSyntax maxWidth:
+                        result = result.MaxWidth(maxWidth.Argument);
+                        break;
+                    case SelectorGrammar.MinHeightSyntax minHeight:
+                        result = result.MinHeight(minHeight.Argument);
+                        break;
+                    case SelectorGrammar.MaxHeightSyntax maxHeight:
+                        result = result.MaxHeight(maxHeight.Argument);
+                        break;
                     case SelectorGrammar.NthChildSyntax nth:
                         result = result.NthChild(nth.Step, nth.Offset);
                         break;

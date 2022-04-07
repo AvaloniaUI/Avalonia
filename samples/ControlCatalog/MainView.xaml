@@ -6,10 +6,24 @@
              xmlns:models="clr-namespace:ControlCatalog.Models">
   <Grid>
     <Grid.Styles>
-      <Style Selector=":screen(test) TextBlock.h2">
+      <Style Selector=":min-width(600) TextBlock#MinWidth">
+        <Setter Property="Foreground" Value="Red" />
+      </Style>
+      <Style Selector=":max-width(800) TextBlock#MaxWidth">
+        <Setter Property="Foreground" Value="Red" />
+      </Style>
+      <Style Selector=":min-height(600) TextBlock#MinHeight">
+        <Setter Property="Foreground" Value="Red" />
+      </Style>
+      <Style Selector=":max-height(800) TextBlock#MaxHeight">
         <Setter Property="Foreground" Value="Red" />
       </Style>
     </Grid.Styles>
-    <TextBlock Classes="h2" Text="Testing" />
+    <StackPanel Spacing="10">
+      <TextBlock Name="MinWidth" Classes="h2" Text="min-width" />
+      <TextBlock Name="MaxWidth" Classes="h2" Text="max-width" />
+      <TextBlock Name="MinHeight" Classes="h2" Text="min-height" />
+      <TextBlock Name="MaxHeight" Classes="h2" Text="max-height" />
+    </StackPanel>
   </Grid>
 </UserControl>

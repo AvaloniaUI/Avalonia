@@ -135,6 +135,21 @@ namespace Avalonia.Styling
         {
             return new MinWidthMediaSelector(previous, argument);
         }
+        
+        public static Selector MaxWidth(this Selector? previous, double argument)
+        {
+            return new MaxWidthMediaSelector(previous, argument);
+        }
+        
+        public static Selector MinHeight(this Selector? previous, double argument)
+        {
+            return new MinHeightMediaSelector(previous, argument);
+        }
+        
+        public static Selector MaxHeight(this Selector? previous, double argument)
+        {
+            return new MaxHeightMediaSelector(previous, argument);
+        }
 
         /// <inheritdoc cref="NthChildSelector"/>
         /// <inheritdoc cref="NthChildSelector(Selector?, int, int)"/>

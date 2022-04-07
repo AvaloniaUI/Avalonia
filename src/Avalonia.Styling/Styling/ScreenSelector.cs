@@ -32,9 +32,108 @@ public sealed class MinWidthMediaSelector : MediaSelector<double>
 
     internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
     {
-        return screenSizeProvider.GetScreenWidth() >  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+        return screenSizeProvider.GetScreenWidth() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
     }
     public override string ToString() => "min-width";
+}
+
+public sealed class MaxWidthMediaSelector : MediaSelector<double>
+{
+    public MaxWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
+    {
+    }
+    
+    protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+    {
+        if (!(control is ITopLevelScreenSizeProvider logical))
+        {
+            return SelectorMatch.NeverThisType;
+        }
+
+        if (subscribe)
+        {
+            return new SelectorMatch(new MaxWidthActivator(logical, Argument));
+        }
+
+        if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
+        {
+            return Evaluate(screenSizeProvider, Argument);
+        }
+            
+        return SelectorMatch.NeverThisInstance;
+    }
+
+    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
+    {
+        return screenSizeProvider.GetScreenWidth() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+    }
+    public override string ToString() => "max-width";
+}
+
+public sealed class MinHeightMediaSelector : MediaSelector<double>
+{
+    public MinHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
+    {
+    }
+    
+    protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+    {
+        if (!(control is ITopLevelScreenSizeProvider logical))
+        {
+            return SelectorMatch.NeverThisType;
+        }
+
+        if (subscribe)
+        {
+            return new SelectorMatch(new MinHeightActivator(logical, Argument));
+        }
+
+        if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
+        {
+            return Evaluate(screenSizeProvider, Argument);
+        }
+            
+        return SelectorMatch.NeverThisInstance;
+    }
+
+    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
+    {
+        return screenSizeProvider.GetScreenHeight() >=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+    }
+    public override string ToString() => "min-height";
+}
+
+public sealed class MaxHeightMediaSelector : MediaSelector<double>
+{
+    public MaxHeightMediaSelector(Selector? previous, double argument) : base(previous, argument)
+    {
+    }
+    
+    protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+    {
+        if (!(control is ITopLevelScreenSizeProvider logical))
+        {
+            return SelectorMatch.NeverThisType;
+        }
+
+        if (subscribe)
+        {
+            return new SelectorMatch(new MaxHeightActivator(logical, Argument));
+        }
+
+        if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
+        {
+            return Evaluate(screenSizeProvider, Argument);
+        }
+            
+        return SelectorMatch.NeverThisInstance;
+    }
+
+    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
+    {
+        return screenSizeProvider.GetScreenHeight() <=  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+    }
+    public override string ToString() => "max-height";
 }
 
 public abstract class MediaSelector<T> : Selector

@@ -15,6 +15,42 @@ internal sealed class MinWidthActivator : MediaQueryActivatorBase
     protected override bool IsMatching() => CurrentMediaInfoProvider != null && MinWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
 }
 
+internal sealed class MaxWidthActivator : MediaQueryActivatorBase
+{
+    private readonly double _argument;
+    
+    public MaxWidthActivator(ITopLevelScreenSizeProvider provider, double argument) : base(provider)
+    {
+        _argument = argument;
+    }
+    
+    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MaxWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+}
+
+internal sealed class MinHeightActivator : MediaQueryActivatorBase
+{
+    private readonly double _argument;
+    
+    public MinHeightActivator(ITopLevelScreenSizeProvider provider, double argument) : base(provider)
+    {
+        _argument = argument;
+    }
+    
+    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MinHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+}
+
+internal sealed class MaxHeightActivator : MediaQueryActivatorBase
+{
+    private readonly double _argument;
+    
+    public MaxHeightActivator(ITopLevelScreenSizeProvider provider, double argument) : base(provider)
+    {
+        _argument = argument;
+    }
+    
+    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MaxHeightMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+}
+
 internal abstract class MediaQueryActivatorBase : StyleActivatorBase
 {
     private readonly ITopLevelScreenSizeProvider _provider;

@@ -171,6 +171,9 @@ namespace Avalonia.Markup.Parsers
             const string IsKeyword = "is";
             const string NotKeyword = "not";
             const string MinWidthKeyword = "min-width";
+            const string MaxWidthKeyword = "max-width";
+            const string MinHeightKeyword = "min-height";
+            const string MaxHeightKeyword = "max-height";
             const string NthChildKeyword = "nth-child";
             const string NthLastChildKeyword = "nth-last-child";
 
@@ -195,6 +198,30 @@ namespace Avalonia.Markup.Parsers
                 Expect(ref r, ')');
 
                 var syntax = new MinWidthSyntax { Argument = argument };
+                return (State.Middle, syntax);
+            }
+            if(identifier.SequenceEqual(MaxWidthKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = ParseDecimal(ref r);
+                Expect(ref r, ')');
+
+                var syntax = new MaxWidthSyntax { Argument = argument };
+                return (State.Middle, syntax);
+            }
+            if(identifier.SequenceEqual(MinHeightKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = ParseDecimal(ref r);
+                Expect(ref r, ')');
+
+                var syntax = new MinHeightSyntax { Argument = argument };
+                return (State.Middle, syntax);
+            }
+            if(identifier.SequenceEqual(MaxHeightKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = ParseDecimal(ref r);
+                Expect(ref r, ')');
+
+                var syntax = new MaxHeightSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
             if (identifier.SequenceEqual(NthChildKeyword.AsSpan()) && r.TakeIf('('))
