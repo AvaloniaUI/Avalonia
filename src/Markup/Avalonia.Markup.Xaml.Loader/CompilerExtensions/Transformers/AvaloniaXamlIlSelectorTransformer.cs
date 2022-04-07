@@ -139,8 +139,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
                             break;
-                        case SelectorGrammar.ScreenSyntax screen:
-                            result = new XamlIlScreenSelector(result);
+                        case SelectorGrammar.MinWidthSyntax minWidth:
+                            result = new XamlIlMinWidthSelector(result, minWidth.Argument);
                             break;
                         case SelectorGrammar.NthChildSyntax nth:
                             result = new XamlIlNthChildSelector(result, nth.Step, nth.Offset, XamlIlNthChildSelector.SelectorType.NthChild);
@@ -352,19 +352,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 m => m.Name == _type.ToString() && m.Parameters.Count == 3);
         }
     }
-    
-    class XamlIlScreenSelector : XamlIlSelectorNode
-    {
 
-        public XamlIlScreenSelector(XamlIlSelectorNode previous) : base(previous)
+    class XamlIlMinWidthSelector : XamlIlSelectorNode
+    {
+        private double _argument;
+        
+        public XamlIlMinWidthSelector(XamlIlSelectorNode previous, double argument) : base(previous)
         {
+            _argument = argument;
         }
 
         public override IXamlType TargetType => Previous?.TargetType;
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
+            codeGen.Ldc_R8(_argument);
             EmitCall(context, codeGen,
-                m => m.Name == "Screen" && m.Parameters.Count == 1);
+                m => m.Name == "MinWidth" && m.Parameters.Count == 2);
         }
     }
 

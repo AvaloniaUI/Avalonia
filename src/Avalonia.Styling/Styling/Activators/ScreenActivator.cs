@@ -3,16 +3,30 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Styling.Activators;
 
-internal sealed class ScreenActivator : StyleActivatorBase
+internal sealed class MinWidthActivator : MediaQueryActivatorBase
+{
+    private readonly double _argument;
+    
+    public MinWidthActivator(ITopLevelScreenSizeProvider provider, double argument) : base(provider)
+    {
+        _argument = argument;
+    }
+    
+    protected override bool IsMatching() => CurrentMediaInfoProvider != null && MinWidthMediaSelector.Evaluate(CurrentMediaInfoProvider, _argument).IsMatch;
+}
+
+internal abstract class MediaQueryActivatorBase : StyleActivatorBase
 {
     private readonly ITopLevelScreenSizeProvider _provider;
     private IScreenSizeProvider? _currentScreenSizeProvider;
 
-    public ScreenActivator(
+    public MediaQueryActivatorBase(
         ITopLevelScreenSizeProvider provider)
     {
         _provider = provider;
     }
+
+    protected IScreenSizeProvider? CurrentMediaInfoProvider => _currentScreenSizeProvider;
 
     protected override void Initialize()
     {
@@ -60,5 +74,5 @@ internal sealed class ScreenActivator : StyleActivatorBase
         PublishNext(IsMatching());
     }
 
-    private bool IsMatching() => _currentScreenSizeProvider != null && ScreenSelector.Evaluate(_currentScreenSizeProvider).IsMatch;
+    protected abstract bool IsMatching();
 }

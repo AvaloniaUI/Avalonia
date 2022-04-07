@@ -149,8 +149,8 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.NotSyntax not:
                         result = result.Not(x => Create(not.Argument)!);
                         break;
-                    case SelectorGrammar.ScreenSyntax screen:
-                        result = result.Screen();
+                    case SelectorGrammar.MinWidthSyntax minWidth:
+                        result = result.MinWidth(minWidth.Argument);
                         break;
                     case SelectorGrammar.NthChildSyntax nth:
                         result = result.NthChild(nth.Step, nth.Offset);

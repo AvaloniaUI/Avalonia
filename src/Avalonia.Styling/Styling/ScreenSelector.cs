@@ -4,20 +4,12 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling;
 
-public class ScreenSelector : Selector
+public sealed class MinWidthMediaSelector : MediaSelector<double>
 {
-    private readonly Selector? _previous;
-
-    public ScreenSelector(Selector? previous)
+    public MinWidthMediaSelector(Selector? previous, double argument) : base(previous, argument)
     {
-        _previous = previous;
     }
-    public override bool InTemplate => _previous?.InTemplate ?? false;
-
-    public override bool IsCombinator => false;
-
-    public override Type? TargetType => _previous?.TargetType;
-        
+    
     protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
     {
         if (!(control is ITopLevelScreenSizeProvider logical))
@@ -27,25 +19,42 @@ public class ScreenSelector : Selector
 
         if (subscribe)
         {
-            return new SelectorMatch(new ScreenActivator(logical));
+            return new SelectorMatch(new MinWidthActivator(logical, Argument));
         }
 
         if (logical.GetScreenSizeProvider() is { } screenSizeProvider)
         {
-            return Evaluate(screenSizeProvider);
+            return Evaluate(screenSizeProvider, Argument);
         }
             
         return SelectorMatch.NeverThisInstance;
     }
 
-    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider)
+    internal static SelectorMatch Evaluate(IScreenSizeProvider screenSizeProvider, double argument)
     {
-        var match = screenSizeProvider.GetScreenWidth() > 600 && screenSizeProvider.GetScreenHeight() > 600;
+        return screenSizeProvider.GetScreenWidth() >  argument ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+    }
+    public override string ToString() => "min-width";
+}
 
-        return match ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+public abstract class MediaSelector<T> : Selector
+{
+    private readonly Selector? _previous;
+    private T _argument;
+
+    public MediaSelector(Selector? previous, T argument)
+    {
+        _previous = previous;
+        _argument = argument;
     }
 
-    protected override Selector? MovePrevious() => _previous;
+    protected T Argument => _argument;
+    
+    public override bool InTemplate => _previous?.InTemplate ?? false;
 
-    public override string ToString() => "screen";
+    public override bool IsCombinator => false;
+
+    public override Type? TargetType => _previous?.TargetType;
+
+    protected override Selector? MovePrevious() => _previous;
 }

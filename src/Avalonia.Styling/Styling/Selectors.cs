@@ -131,9 +131,9 @@ namespace Avalonia.Styling
             return new NotSelector(previous, argument);
         }
 
-        public static Selector Screen(this Selector? previous)
+        public static Selector MinWidth(this Selector? previous, double argument)
         {
-            return new ScreenSelector(previous);
+            return new MinWidthMediaSelector(previous, argument);
         }
 
         /// <inheritdoc cref="NthChildSelector"/>

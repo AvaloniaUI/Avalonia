@@ -113,6 +113,7 @@ namespace Avalonia.Markup.Parsers
             {
                 return State.Name;
             }
+            
             return State.TypeName;
         }
 
@@ -169,7 +170,7 @@ namespace Avalonia.Markup.Parsers
 
             const string IsKeyword = "is";
             const string NotKeyword = "not";
-            const string ScreenKeyword = "screen";
+            const string MinWidthKeyword = "min-width";
             const string NthChildKeyword = "nth-child";
             const string NthLastChildKeyword = "nth-last-child";
 
@@ -188,12 +189,12 @@ namespace Avalonia.Markup.Parsers
                 var syntax = new NotSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
-            if(identifier.SequenceEqual(ScreenKeyword.AsSpan()) && r.TakeIf('('))
+            if(identifier.SequenceEqual(MinWidthKeyword.AsSpan()) && r.TakeIf('('))
             {
-                var argument = Parse(ref r, ')');
+                var argument = ParseDecimal(ref r);
                 Expect(ref r, ')');
 
-                var syntax = new ScreenSyntax { Argument = argument };
+                var syntax = new MinWidthSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
             if (identifier.SequenceEqual(NthChildKeyword.AsSpan()) && r.TakeIf('('))
@@ -276,6 +277,17 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, $"Expected a name after '#'.");
             }
             return (State.CanHaveType, new NameSyntax { Name = name.ToString() });
+        }
+        
+        private static double ParseDecimal(ref CharacterReader r)
+        {
+            var number = r.ParseNumber();
+            if (number.IsEmpty)
+            {
+                throw new ExpressionParseException(r.Position, $"Expected a number after.");
+            }
+
+            return double.Parse(number.ToString());
         }
 
         private static (State, ISyntax) ParseTypeName(ref CharacterReader r)
@@ -566,6 +578,16 @@ namespace Avalonia.Markup.Parsers
                 return obj is NameSyntax && ((NameSyntax)obj).Name == Name;
             }
         }
+        
+        public class DecimalSyntax : ISyntax
+        {
+            public decimal Number { get; set; }
+            
+            public override bool Equals(object? obj)
+            {
+                return obj is DecimalSyntax dec && dec.Number == Number;
+            }
+        }
 
         public class PropertySyntax : ISyntax
         {
@@ -614,14 +636,44 @@ namespace Avalonia.Markup.Parsers
                 return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
             }
         }
-        
-        public class ScreenSyntax : ISyntax
+
+        public class MinWidthSyntax : ISyntax
         {
-            public IEnumerable<ISyntax> Argument { get; set; } = Enumerable.Empty<ISyntax>();
+            public double Argument { get; set; }
             
             public override bool Equals(object? obj)
             {
-                return (obj is ScreenSyntax screen) && Argument.SequenceEqual(screen.Argument);
+                return (obj is MinWidthSyntax minwidth) && minwidth.Argument == Argument;
+            }
+        }
+
+        public class MinHeightSyntax : ISyntax
+        {
+            public double Argument { get; set; }
+            
+            public override bool Equals(object? obj)
+            {
+                return (obj is MinHeightSyntax minwidth) && minwidth.Argument == Argument;
+            }
+        }
+
+        public class MaxWidthSyntax : ISyntax
+        {
+            public double Argument { get; set; }
+            
+            public override bool Equals(object? obj)
+            {
+                return (obj is MaxWidthSyntax maxwidth) && maxwidth.Argument == Argument;
+            }
+        }
+
+        public class MaxHeightSyntax : ISyntax
+        {
+            public double Argument { get; set; }
+            
+            public override bool Equals(object? obj)
+            {
+                return (obj is MaxHeightSyntax maxHeight) && maxHeight.Argument == Argument;
             }
         }
 
