@@ -41,7 +41,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="point">The destination point.</param>
         /// <param name="size">The radii of an oval whose perimeter is used to draw the angle.</param>
-        /// <param name="rotationAngle">The rotation angle of the oval that specifies the curve.</param>
+        /// <param name="rotationAngle">The rotation angle (in radians) of the oval that specifies the curve.</param>
         /// <param name="isLargeArc">true to draw the arc greater than 180 degrees; otherwise, false.</param>
         /// <param name="sweepDirection">
         /// A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
@@ -59,7 +59,7 @@ namespace Avalonia.Media
         /// </summary>         
         /// <param name="point">The destination point.</param>
         /// <param name="size">The radii of an oval whose perimeter is used to draw the angle.</param>
-        /// <param name="rotationAngle">The rotation angle of the oval that specifies the curve.</param>
+        /// <param name="rotationAngle">The rotation angle (in radians) of the oval that specifies the curve.</param>
         /// <param name="isLargeArc">true to draw the arc greater than 180 degrees; otherwise, false.</param>
         /// <param name="sweepDirection">
         /// A value that indicates whether the arc is drawn in the Clockwise or Counterclockwise direction.
