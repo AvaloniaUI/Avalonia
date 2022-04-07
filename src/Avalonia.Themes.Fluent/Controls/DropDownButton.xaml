@@ -80,21 +80,21 @@
   <Style Selector="DropDownButton:pointerover /template/ Border#RootBorder">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
   </Style>
 
   <!--  Pressed State  -->
   <Style Selector="DropDownButton:pressed  /template/ Border#RootBorder">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
   </Style>
 
   <!--  Disabled State  -->
   <Style Selector="DropDownButton:disabled /template/ Border#RootBorder">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
   </Style>
   <Style Selector="DropDownButton:disabled /template/ PathIcon#DropDownGlyph">
     <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
