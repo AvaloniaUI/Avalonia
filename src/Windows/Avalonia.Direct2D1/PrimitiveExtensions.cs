@@ -16,8 +16,6 @@ namespace Avalonia.Direct2D1
         /// </summary>
         public const float ZeroTolerance = 1e-6f; // Value a 8x higher than 1.19209290E-07F
 
-        public static readonly RawRectF RectangleInfinite = new(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
-
         public static Rect ToAvalonia(this RawRectF r)
         {
             return new Rect(new Point(r.Left, r.Top), new Point(r.Right, r.Bottom));

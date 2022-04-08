@@ -547,9 +547,10 @@ namespace Avalonia.Direct2D1.Media
 
         public void PushGeometryClip(IGeometryImpl clip)
         {
+            var layerRect = new RawRectF(0, 0, _renderTarget.Size.Width, _renderTarget.Size.Height);
             var parameters = new LayerParameters
             {
-                ContentBounds = PrimitiveExtensions.RectangleInfinite,
+                ContentBounds = layerRect,
                 MaskTransform = Matrix3x2.Identity,
                 Opacity = 1,
                 GeometricMask = ((GeometryImpl)clip).Geometry,
@@ -578,9 +579,10 @@ namespace Avalonia.Direct2D1.Media
 
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
+            var layerRect = new RawRectF(0, 0, _renderTarget.Size.Width, _renderTarget.Size.Height);
             var parameters = new LayerParameters
             {
-                ContentBounds = PrimitiveExtensions.RectangleInfinite,
+                ContentBounds = layerRect,
                 MaskTransform = Matrix3x2.Identity,
                 Opacity = 1,
                 OpacityBrush = CreateBrush(mask, bounds.Size).PlatformBrush
