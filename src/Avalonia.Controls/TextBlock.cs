@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    public class TextBlock : Control
+    public class TextBlock : Control, IInlinesHost
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -400,38 +400,41 @@ namespace Avalonia.Controls
         /// <returns>A <see cref="TextLayout"/> object.</returns>
         protected virtual TextLayout CreateTextLayout(Size constraint, string? text)
         {
-            List<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+            var defaultProperties = new GenericTextRunProperties(
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                TextDecorations,
+                Foreground);
+
+            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
+                defaultProperties, TextWrapping, LineHeight, 0);
+
+            ITextSource textSource;
 
             if (Inlines.HasComplexContent)
             {
-                textStyleOverrides = new List<ValueSpan<TextRunProperties>>(Inlines.Count);
-
-                var textPosition = 0;
-                var stringBuilder = new StringBuilder();
+                var textRuns = new List<TextRun>();
 
                 foreach (var inline in Inlines)
                 {
-                    textPosition += inline.BuildRun(stringBuilder, textStyleOverrides, textPosition);
+                    inline.BuildTextRun(textRuns, this);
                 }
 
-                text = stringBuilder.ToString();
+                textSource = new InlinesTextSource(textRuns);
+            }
+            else
+            {
+                textSource = new SimpleTextSource((text ?? "").AsMemory(), defaultProperties);
             }
 
             return new TextLayout(
-                text ?? string.Empty,
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-                FontSize,
-                Foreground ?? Brushes.Transparent,
-                TextAlignment,
-                TextWrapping,
+                textSource,
+                paragraphProperties,
                 TextTrimming,
-                TextDecorations,
-                FlowDirection,
                 constraint.Width,
                 constraint.Height,
                 maxLines: MaxLines,
-                lineHeight: LineHeight,
-                textStyleOverrides: textStyleOverrides);
+                lineHeight: LineHeight);
         }
 
         /// <summary>
@@ -440,7 +443,7 @@ namespace Avalonia.Controls
         protected void InvalidateTextLayout()
         {
             _textLayout = null;
-            
+
             InvalidateMeasure();
         }
 
@@ -452,9 +455,9 @@ namespace Avalonia.Controls
             }
 
             var padding = Padding;
-            
+
             _constraint = availableSize.Deflate(padding);
-            
+
             _textLayout = null;
 
             InvalidateArrange();
@@ -470,9 +473,13 @@ namespace Avalonia.Controls
             {
                 return finalSize;
             }
-            
-            _constraint = new Size(finalSize.Width, Math.Ceiling(finalSize.Height));
-            
+
+            var padding = Padding;
+
+            var textSize = finalSize.Deflate(padding);
+
+            _constraint = new Size(textSize.Width, Math.Ceiling(textSize.Height));
+
             _textLayout = null;
 
             return finalSize;
@@ -521,9 +528,78 @@ namespace Avalonia.Controls
             }
         }
 
- 		private void InlinesChanged(object? sender, EventArgs e)
+        private void InlinesChanged(object? sender, EventArgs e)
         {
             InvalidateTextLayout();
+        }
+
+        void IInlinesHost.AddVisualChild(IControl child)
+        {
+            if (child.VisualParent == null)
+            {
+                VisualChildren.Add(child);
+            }            
+        }
+
+        private readonly struct InlinesTextSource : ITextSource
+        {
+            private readonly IReadOnlyList<TextRun> _textRuns;
+
+            public InlinesTextSource(IReadOnlyList<TextRun> textRuns)
+            {
+                _textRuns = textRuns;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                var currentPosition = 0;
+
+                foreach (var textRun in _textRuns)
+                {
+                    if(textRun.TextSourceLength == 0)
+                    {
+                        continue;
+                    }
+
+                    if(currentPosition >= textSourceIndex)
+                    {
+                        return textRun;
+                    }
+
+                    currentPosition += textRun.TextSourceLength;
+                }
+
+                return null;
+            }
+        }
+
+        private readonly struct SimpleTextSource : ITextSource
+        {
+            private readonly ReadOnlySlice<char> _text;
+            private readonly TextRunProperties _defaultProperties;
+
+            public SimpleTextSource(ReadOnlySlice<char> text, TextRunProperties defaultProperties)
+            {
+                _text = text;
+                _defaultProperties = defaultProperties;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                if (textSourceIndex > _text.Length)
+                {
+                    return null;
+                }
+
+                var runText = _text.Skip(textSourceIndex);
+
+                if (runText.IsEmpty)
+                {
+                    return null;
+                }
+
+                return new TextCharacters(runText, _defaultProperties);
+            }
         }
     }
 }

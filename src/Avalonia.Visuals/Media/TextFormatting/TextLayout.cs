@@ -12,10 +12,11 @@ namespace Avalonia.Media.TextFormatting
     {
         private static readonly char[] s_empty = { ' ' };
 
-        private readonly ReadOnlySlice<char> _text;
+        private readonly ITextSource _textSource;
         private readonly TextParagraphProperties _paragraphProperties;
-        private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textStyleOverrides;
         private readonly TextTrimming _textTrimming;
+
+        private int _textSourceLength;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextLayout" /> class.
@@ -50,17 +51,49 @@ namespace Avalonia.Media.TextFormatting
             int maxLines = 0,
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
         {
-            _text = string.IsNullOrEmpty(text) ?
-                new ReadOnlySlice<char>() :
-                new ReadOnlySlice<char>(text.AsMemory());
-
             _paragraphProperties =
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
                     textDecorations, flowDirection, lineHeight);
 
+            _textSource = new FormattedTextSource(text.AsMemory(), _paragraphProperties.DefaultTextRunProperties, textStyleOverrides);
+
             _textTrimming = textTrimming ?? TextTrimming.None;
 
-            _textStyleOverrides = textStyleOverrides;
+            LineHeight = lineHeight;
+
+            MaxWidth = maxWidth;
+
+            MaxHeight = maxHeight;
+
+            MaxLines = maxLines;      
+
+            TextLines = CreateTextLines();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextLayout" /> class.
+        /// </summary>
+        /// <param name="textSource">The text source.</param>
+        /// <param name="paragraphProperties">The default text paragraph properties.</param>
+        /// <param name="textTrimming">The text trimming.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="lineHeight">The height of each line of text.</param>
+        /// <param name="maxLines">The maximum number of text lines.</param>
+        public TextLayout(
+            ITextSource textSource,
+            TextParagraphProperties paragraphProperties, 
+            TextTrimming? textTrimming = null,
+            double maxWidth = double.PositiveInfinity,
+            double maxHeight = double.PositiveInfinity,
+            double lineHeight = double.NaN,
+            int maxLines = 0)
+        {
+            _textSource = textSource;
+
+            _paragraphProperties = paragraphProperties;
+
+            _textTrimming = textTrimming ?? TextTrimming.None;
 
             LineHeight = lineHeight;
 
@@ -147,7 +180,7 @@ namespace Avalonia.Media.TextFormatting
                 return new Rect();
             }
 
-            if (textPosition < 0 || textPosition >= _text.Length)
+            if (textPosition < 0 || textPosition >= _textSourceLength)
             {
                 var lastLine = TextLines[TextLines.Count - 1];
 
@@ -273,7 +306,7 @@ namespace Avalonia.Media.TextFormatting
                 return 0;
             }
 
-            if (charIndex > _text.Length)
+            if (charIndex > _textSourceLength)
             {
                 return TextLines.Count - 1;
             }
@@ -398,7 +431,7 @@ namespace Avalonia.Media.TextFormatting
 
         private IReadOnlyList<TextLine> CreateTextLines()
         {
-            if (_text.IsEmpty || MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
+            if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
                 var textLine = CreateEmptyTextLine(0);
 
@@ -411,26 +444,30 @@ namespace Avalonia.Media.TextFormatting
 
             double left = double.PositiveInfinity, width = 0.0, height = 0.0;
 
-            var currentPosition = 0;
-
-            var textSource = new FormattedTextSource(_text,
-                _paragraphProperties.DefaultTextRunProperties, _textStyleOverrides);
+            _textSourceLength = 0;
 
             TextLine? previousLine = null;
 
-            while (currentPosition < _text.Length)
+            while (true)
             {
-                var textLine = TextFormatter.Current.FormatLine(textSource, currentPosition, MaxWidth,
+                var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-#if DEBUG
-                if (textLine.Length == 0)
+                if(textLine == null || textLine.Length == 0)
                 {
-                    throw new InvalidOperationException($"{nameof(textLine)} should not be empty.");
-                }
-#endif
+                    if(previousLine != null && previousLine.NewLineLength  > 0)
+                    {
+                        var emptyTextLine = CreateEmptyTextLine(_textSourceLength);
 
-                currentPosition += textLine.Length;
+                        textLines.Add(emptyTextLine);
+
+                        UpdateBounds(emptyTextLine, ref left, ref width, ref height);
+                    }
+
+                    break;
+                }
+
+                _textSourceLength += textLine.Length;
                 
                 //Fulfill max height constraint
                 if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight) && height + textLine.Height > MaxHeight)
@@ -464,17 +501,16 @@ namespace Avalonia.Media.TextFormatting
                 {
                     break;
                 }
-                
-                if (currentPosition != _text.Length || textLine.NewLineLength <= 0)
-                {
-                    continue;
-                }
+            }
 
-                var emptyTextLine = CreateEmptyTextLine(currentPosition);
+            //Make sure the TextLayout always contains at least on empty line
+            if(textLines.Count == 0)
+            {
+                var textLine = CreateEmptyTextLine(0);
 
-                textLines.Add(emptyTextLine);
+                textLines.Add(textLine);
 
-                UpdateBounds(emptyTextLine,ref left, ref width, ref height);
+                UpdateBounds(textLine, ref left, ref width, ref height);
             }
 
             Bounds = new Rect(left, 0, width, height);

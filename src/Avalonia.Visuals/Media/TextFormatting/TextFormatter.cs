@@ -1,6 +1,4 @@
-﻿using Avalonia.Media.TextFormatting.Unicode;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Represents a base class for text formatting.
@@ -40,7 +38,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="previousLineBreak">A <see cref="TextLineBreak"/> value that specifies the text formatter state,
         /// in terms of where the previous line in the paragraph was broken by the text formatting process.</param>
         /// <returns>The formatted line.</returns>
-        public abstract TextLine FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
+        public abstract TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null);
     }
 }

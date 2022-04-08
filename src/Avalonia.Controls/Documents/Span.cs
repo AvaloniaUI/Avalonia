@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.LogicalTree;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
@@ -35,61 +37,42 @@ namespace Avalonia.Controls.Documents
         [Content]
         public InlineCollection Inlines { get; }
 
-        internal override int BuildRun(StringBuilder stringBuilder, IList<ValueSpan<TextRunProperties>> textStyleOverrides, int firstCharacterIndex)
+        internal override void BuildTextRun(IList<TextRun> textRuns, IInlinesHost parent)
         {
-            var length = 0;
-
             if (Inlines.HasComplexContent)
             {
                 foreach (var inline in Inlines)
                 {
-                    var inlineLength = inline.BuildRun(stringBuilder, textStyleOverrides, firstCharacterIndex);
-
-                    firstCharacterIndex += inlineLength;
-
-                    length += inlineLength;
+                    inline.BuildTextRun(textRuns, parent);
                 }
             }
             else
             {
-                if (Inlines.Text == null)
+                if (Inlines.Text is string text)
                 {
-                    return length;
-                }
-                
-                stringBuilder.Append(Inlines.Text);
+                    var textRunProperties = CreateTextRunProperties();
 
-                length = Inlines.Text.Length;
+                    var textCharacters = new TextCharacters(text.AsMemory(), textRunProperties);
 
-                textStyleOverrides.Add(new ValueSpan<TextRunProperties>(firstCharacterIndex, length,
-                    CreateTextRunProperties()));
+                    textRuns.Add(textCharacters);
+                }          
             }
-
-            return length;
         }
 
-        internal override int AppendText(StringBuilder stringBuilder)
+        internal override void AppendText(StringBuilder stringBuilder)
         {
             if (Inlines.HasComplexContent)
             {
-                var length = 0;
-
                 foreach (var inline in Inlines)
                 {
-                    length += inline.AppendText(stringBuilder);
+                    inline.AppendText(stringBuilder);
                 }
-
-                return length;
             }
 
-            if (Inlines.Text == null)
+            if (Inlines.Text is string text)
             {
-                return 0;
+                stringBuilder.Append(text);
             }
-         
-            stringBuilder.Append(Inlines.Text);
-
-            return Inlines.Text.Length;
         }
     }
 }

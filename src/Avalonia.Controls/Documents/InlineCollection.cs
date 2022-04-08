@@ -96,6 +96,18 @@ namespace Avalonia.Controls.Documents
             }
         }
 
+        public void Add(IControl child)
+        {
+            if (!HasComplexContent && !string.IsNullOrEmpty(_text))
+            {
+                base.Add(new Run(_text));
+
+                _text = string.Empty;
+            }
+
+            base.Add(new InlineUIContainer(child));
+        }
+
         public override void Add(Inline item)
         {
             if (!HasComplexContent)
