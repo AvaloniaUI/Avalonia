@@ -87,7 +87,10 @@
               </MenuItem>
             </MenuItem>
           </Menu>
-          <TextBlock Name="ClickedMenuItem">None</TextBlock>
+          <StackPanel>
+            <TextBlock Name="ClickedMenuItem">None</TextBlock>
+            <TextBox Name="MenuFocusTest"/>
+          </StackPanel>
         </DockPanel>
       </TabItem>
     </TabControl>

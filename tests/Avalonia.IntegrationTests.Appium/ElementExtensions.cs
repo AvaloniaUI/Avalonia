@@ -29,6 +29,12 @@ namespace Avalonia.IntegrationTests.Appium
                 _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
             };
 
+        public static bool GetIsFocused(this AppiumWebElement element)
+        {
+            var active = element.WrappedDriver.SwitchTo().ActiveElement() as AppiumWebElement;
+            return element.Id == active?.Id;
+        }
+
         public static void SendClick(this AppiumWebElement element)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -42,6 +48,11 @@ namespace Avalonia.IntegrationTests.Appium
                 // does.
                 new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
             }
+        }
+
+        public static void MovePointerOver(this AppiumWebElement element)
+        {
+            new Actions(element.WrappedDriver).MoveToElement(element).Perform();
         }
 
         public static string GetAttribute(AppiumWebElement element, string windows, string macOS)

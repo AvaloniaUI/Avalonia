@@ -59,5 +59,20 @@ namespace Avalonia.IntegrationTests.Appium
 
             Assert.Equal("Ctrl+O", childMenuItem.GetAttribute("AcceleratorKey"));
         }
+
+        [Fact]
+        public void PointerOver_Does_Not_Steal_Focus()
+        {
+            // Issue #7906
+            var textBox = _session.FindElementByAccessibilityId("MenuFocusTest");
+            textBox.Click();
+
+            Assert.True(textBox.GetIsFocused());
+
+            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
+            rootMenuItem.MovePointerOver();
+
+            Assert.True(textBox.GetIsFocused());
+        }
     }
 }
