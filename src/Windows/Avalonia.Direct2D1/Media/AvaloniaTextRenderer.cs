@@ -26,7 +26,7 @@ namespace Avalonia.Direct2D1.Media
             _foreground = foreground;
         }
 
-        public override Result DrawGlyphRun(
+        public override void DrawGlyphRun(
             IntPtr clientDrawingContext,
             float baselineOriginX,
             float baselineOriginY,
@@ -53,8 +53,6 @@ namespace Avalonia.Direct2D1.Media
             {
                 brush.Dispose();
             }
-
-            return Result.Ok;
         }
 
         public override Matrix3x2 GetCurrentTransform(IntPtr clientDrawingContext)

@@ -2,7 +2,7 @@
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Platform;
-using SharpDX.DirectWrite;
+using Vortice.DirectWrite;
 using FontFamily = Avalonia.Media.FontFamily;
 using FontStretch = Avalonia.Media.FontStretch;
 using FontStyle = Avalonia.Media.FontStyle;
@@ -41,9 +41,9 @@ namespace Avalonia.Direct2D1.Media
             for (var i = 0; i < familyCount; i++)
             {
                 var font = Direct2D1FontCollectionCache.InstalledFontCollection.GetFontFamily(i)
-                    .GetMatchingFonts((SharpDX.DirectWrite.FontWeight)fontWeight,
-                        (SharpDX.DirectWrite.FontStretch)fontStretch,
-                        (SharpDX.DirectWrite.FontStyle)fontStyle).GetFont(0);
+                    .GetMatchingFonts((Vortice.DirectWrite.FontWeight)fontWeight,
+                        (Vortice.DirectWrite.FontStretch)fontStretch,
+                        (Vortice.DirectWrite.FontStyle)fontStyle).GetFont(0);
 
                 if (!font.HasCharacter(codepoint))
                 {

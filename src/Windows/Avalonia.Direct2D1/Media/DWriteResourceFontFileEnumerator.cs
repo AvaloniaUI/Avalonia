@@ -1,3 +1,4 @@
+using System;
 using SharpGen.Runtime;
 using Vortice;
 using Vortice.DirectWrite;
@@ -19,12 +20,13 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="factory">The factory.</param>
         /// <param name="loader">The loader.</param>
-        /// <param name="key">The key.</param>
-        public DWriteResourceFontFileEnumerator(IDWriteFactory factory, IDWriteFontFileLoader loader, DataPointer key)
+        /// <param name="buffer">The key.</param>
+        /// <param name="bufferSize"></param>
+        public DWriteResourceFontFileEnumerator(IDWriteFactory factory, IDWriteFontFileLoader loader, IntPtr buffer, long bufferSize)
         {
             _factory = factory;
             _loader = loader;
-            _keyStream = new DataStream(key.Pointer, key.Size, true, false);
+            _keyStream = new DataStream(buffer, bufferSize, true, false);
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace Avalonia.Direct2D1.Media
 
             _currentFontFile?.Dispose();
 
-            _currentFontFile = new FontFile(_factory, _keyStream.PositionPointer, 4, _loader);
+            _currentFontFile = _factory.CreateCustomFontFileReference(_keyStream.PositionPointer, 4, _loader);
 
             _keyStream.Position += 4;
 

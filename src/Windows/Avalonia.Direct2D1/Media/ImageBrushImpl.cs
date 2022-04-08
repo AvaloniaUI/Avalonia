@@ -32,8 +32,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 using (var intermediate = RenderIntermediate(target, bitmap, calc))
                 {
-                    PlatformBrush = new BitmapBrush(
-                        target,
+                    PlatformBrush = target.CreateBitmapBrush(
                         intermediate.Bitmap,
                         GetBitmapBrushProperties(brush),
                         GetBrushProperties(brush, calc.DestinationRect));
@@ -90,13 +89,12 @@ namespace Avalonia.Direct2D1.Media
             TileBrushCalculator calc)
         {
             var result = target.CreateCompatibleRenderTarget(
-                calc.IntermediateSize.ToSharpDX(),
-                CompatibleRenderTargetOptions.None
+                calc.IntermediateSize.ToSharpDX()
                 );
 
             using (var context = new RenderTarget(result).CreateDrawingContext(null))
             {
-                var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
+                var dpi = new Vector(target.Dpi.Width, target.Dpi.Height);
                 var rect = new Rect(bitmap.PixelSize.ToSizeWithDpi(dpi));
 
                 context.Clear(Colors.Transparent);

@@ -23,8 +23,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             Size size)
         {
             var bitmapRenderTarget = renderTarget.CreateCompatibleRenderTarget(
-                new Vortice.Mathematics.Size((float)size.Width, (float)size.Height),
-                CompatibleRenderTargetOptions.None
+                new Vortice.Mathematics.Size((float)size.Width, (float)size.Height)
                 );
             return new D2DRenderTargetBitmapImpl(bitmapRenderTarget);
         }

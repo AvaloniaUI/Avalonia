@@ -133,7 +133,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\Rx.props = build\Rx.props
 		build\SampleApp.props = build\SampleApp.props
 		build\SharedVersion.props = build\SharedVersion.props
-		build\SharpDX.props = build\SharpDX.props
+		build\Vortice.props = build\Vortice.props
 		build\SkiaSharp.props = build\SkiaSharp.props
 		build\SourceLink.props = build\SourceLink.props
 		build\System.Drawing.Common.props = build\System.Drawing.Common.props
@@ -233,7 +233,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlSamples", "samples\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.PlatformSupport", "src\Avalonia.PlatformSupport\Avalonia.PlatformSupport.csproj", "{E8A597F0-2AB5-4BDA-A235-41162DAF53CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{70B9F5CC-E2F9-4314-9514-EDE762ACCC4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{70B9F5CC-E2F9-4314-9514-EDE762ACCC4B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.PlatformSupport.UnitTests", "tests\Avalonia.PlatformSupport.UnitTests\Avalonia.PlatformSupport.UnitTests.csproj", "{CE910927-CE5A-456F-BC92-E4C757354A5C}"
 EndProject

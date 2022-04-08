@@ -57,7 +57,9 @@ namespace Avalonia.Direct2D1.Media
 
             var fontLoader = new DWriteResourceFontLoader(Direct2D1Platform.DirectWriteFactory, assets);
 
-            return new FontCollection(Direct2D1Platform.DirectWriteFactory, fontLoader, fontLoader.Key);
+            return Direct2D1Platform.DirectWriteFactory.CreateCustomFontCollection(
+                fontLoader, fontLoader.Key.BasePointer, checked((int)fontLoader.Key.Length)
+            );
         }
     }
 }

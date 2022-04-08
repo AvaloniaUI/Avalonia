@@ -42,7 +42,7 @@ namespace Avalonia.Direct2D1.Media
             var result = Direct2D1Platform.Direct2D1Factory.CreatePathGeometry();
             using (var sink = result.Open())
             {
-                Geometry.Combine(((GeometryImpl)geometry).Geometry, CombineMode.Intersect, sink);
+                Geometry.CombineWithGeometry(((GeometryImpl)geometry).Geometry, CombineMode.Intersect, sink);
                 sink.Close();
             }
             return new StreamGeometryImpl(result);

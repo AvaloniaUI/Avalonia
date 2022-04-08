@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -522,12 +523,10 @@ namespace Avalonia.Direct2D1.Media
                         // We need to ensure the size we're requesting is an integer pixel size, otherwise
                         // D2D alters the DPI of the render target, which messes stuff up. PixelSize.FromSize
                         // will do the rounding for us.
-                        var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
+                        var dpi = new Vector(_deviceContext.Dpi.Width, _deviceContext.Dpi.Height);
                         var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
 
-                        using (var intermediate = new BitmapRenderTarget(
-                            _deviceContext,
-                            CompatibleRenderTargetOptions.None,
+                        using (var intermediate = _deviceContext.CreateCompatibleRenderTarget(
                             pixelSize.ToSizeWithDpi(dpi).ToSharpDX()))
                         {
                             using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
@@ -558,12 +557,12 @@ namespace Avalonia.Direct2D1.Media
             var parameters = new LayerParameters
             {
                 ContentBounds = PrimitiveExtensions.RectangleInfinite,
-                MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
+                MaskTransform = Matrix3x2.Identity,
                 Opacity = 1,
                 GeometricMask = ((GeometryImpl)clip).Geometry,
                 MaskAntialiasMode = AntialiasMode.PerPrimitive
             };
-            var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_deviceContext);
+            var layer = _layerPool.Count != 0 ? _layerPool.Pop() : _deviceContext.CreateLayer();
             _deviceContext.PushLayer(ref parameters, layer);
 
             _layers.Push(layer);
@@ -590,11 +589,11 @@ namespace Avalonia.Direct2D1.Media
             var parameters = new LayerParameters
             {
                 ContentBounds = PrimitiveExtensions.RectangleInfinite,
-                MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
+                MaskTransform = Matrix3x2.Identity,
                 Opacity = 1,
                 OpacityBrush = CreateBrush(mask, bounds.Size).PlatformBrush
             };
-            var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_deviceContext);
+            var layer = _layerPool.Count != 0 ? _layerPool.Pop() : _deviceContext.CreateLayer();
             _deviceContext.PushLayer(ref parameters, layer);
 
             _layers.Push(layer);

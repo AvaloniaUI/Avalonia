@@ -1,4 +1,4 @@
-using SharpDX.Direct2D1;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -12,7 +12,7 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         public LineGeometryImpl(Point p1, Point p2)
         {
-            using (var sink = ((PathGeometry)Geometry).Open())
+            using (var sink = ((ID2D1PathGeometry)Geometry).Open())
             {
                 sink.BeginFigure(p1.ToSharpDX(), FigureBegin.Hollow);
                 sink.AddLine(p2.ToSharpDX());

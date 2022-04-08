@@ -1,5 +1,5 @@
 using Avalonia.Platform;
-using SharpDX.Direct2D1;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -19,8 +19,8 @@ namespace Avalonia.Direct2D1.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.
         /// </summary>
-        /// <param name="geometry">An existing Direct2D <see cref="PathGeometry"/>.</param>
-        public StreamGeometryImpl(PathGeometry geometry)
+        /// <param name="geometry">An existing Direct2D <see cref="ID2D1PathGeometry"/>.</param>
+        public StreamGeometryImpl(ID2D1PathGeometry geometry)
             : base(geometry)
         {
         }
@@ -28,10 +28,10 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public IStreamGeometryImpl Clone()
         {
-            var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
+            var result = Direct2D1Platform.Direct2D1Factory.CreatePathGeometry();
             using (var sink = result.Open())
             {
-                ((PathGeometry)Geometry).Stream(sink);
+                ((ID2D1PathGeometry)Geometry).Stream(sink);
                 sink.Close();
             }
 
@@ -41,12 +41,12 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public IStreamGeometryContextImpl Open()
         {
-            return new StreamGeometryContextImpl(((PathGeometry)Geometry).Open());
+            return new StreamGeometryContextImpl(((ID2D1PathGeometry)Geometry).Open());
         }
 
-        private static Geometry CreateGeometry()
+        private static ID2D1Geometry CreateGeometry()
         {
-            return new PathGeometry(Direct2D1Platform.Direct2D1Factory);
+            return Direct2D1Platform.Direct2D1Factory.CreatePathGeometry();
         }
     }
 }

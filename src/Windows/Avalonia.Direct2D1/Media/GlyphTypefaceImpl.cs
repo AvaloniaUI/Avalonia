@@ -2,7 +2,7 @@
 using Avalonia.Media;
 using Avalonia.Platform;
 using HarfBuzzSharp;
-using SharpDX.DirectWrite;
+using Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -14,7 +14,7 @@ namespace Avalonia.Direct2D1.Media
         {
             DWFont = Direct2D1FontCollectionCache.GetFont(typeface);
 
-            FontFace = new FontFace(DWFont).QueryInterface<FontFace1>();
+            FontFace = DWFont.CreateFontFace().QueryInterface<IDWriteFontFace1>();
 
             Face = new Face(GetTable);
 
@@ -60,13 +60,16 @@ namespace Avalonia.Direct2D1.Media
             IsFixedPitch = FontFace.IsMonospacedFont;
         }
 
-        private Blob GetTable(Face face, Tag tag)
+        private unsafe Blob GetTable(Face face, Tag tag)
         {
             var dwTag = (int)SwapBytes(tag);
 
             if (FontFace.TryGetFontTable(dwTag, out var tableData, out _))
             {
-                return new Blob(tableData.Pointer, tableData.Size, MemoryMode.ReadOnly, () => { });
+                fixed (void* ptr = tableData)
+                {
+                    return new Blob(new IntPtr(ptr), tableData.Length, MemoryMode.Duplicate, () => { });
+                }
             }
 
             return null;
@@ -79,9 +82,9 @@ namespace Avalonia.Direct2D1.Media
             return ((x & 0xFF00FF00) >> 8) | ((x & 0x00FF00FF) << 8);
         }
 
-        public SharpDX.DirectWrite.Font DWFont { get; }
+        public IDWriteFont DWFont { get; }
 
-        public FontFace1 FontFace { get; }
+        public IDWriteFontFace1 FontFace { get; }
 
         public Face Face { get; }
 

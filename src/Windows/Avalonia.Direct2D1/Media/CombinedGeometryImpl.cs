@@ -26,9 +26,9 @@ namespace Avalonia.Direct2D1.Media
         {
             var g1 = ((GeometryImpl)geometry1.PlatformImpl).Geometry;
             var g2 = ((GeometryImpl)geometry2.PlatformImpl).Geometry;
-            var dest = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
+            var dest = Direct2D1Platform.Direct2D1Factory.CreatePathGeometry();
             using var sink = dest.Open();
-            g1.Combine(g2, (CombineMode)combineMode, sink);
+            g1.CombineWithGeometry(g2, (CombineMode)combineMode, sink);
             sink.Close();
             return dest;
         }

@@ -19,7 +19,7 @@ namespace Avalonia.Direct2D1
             return dxgiFactory.CreateSwapChainForHwnd(Direct2D1Platform.DxgiDevice, _window.Handle, swapChainDesc);
         }
 
-        protected override Size2F GetWindowDpi()
+        protected override Vortice.Mathematics.Size GetWindowDpi()
         {
             if (UnmanagedMethods.ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
             {
@@ -35,18 +35,18 @@ namespace Avalonia.Direct2D1
                         out dpix,
                         out dpiy) == 0)
                 {
-                    return new Size2F(dpix, dpiy);
+                    return new Vortice.Mathematics.Size(dpix, dpiy);
                 }
             }
 
-            return new Size2F(96, 96);
+            return new Vortice.Mathematics.Size(96, 96);
         }
 
-        protected override Size2 GetWindowSize()
+        protected override Vortice.Mathematics.SizeI GetWindowSize()
         {
             UnmanagedMethods.RECT rc;
             UnmanagedMethods.GetClientRect(_window.Handle, out rc);
-            return new Size2(rc.right - rc.left, rc.bottom - rc.top);
+            return new Vortice.Mathematics.SizeI(rc.right - rc.left, rc.bottom - rc.top);
         }
     }
 }

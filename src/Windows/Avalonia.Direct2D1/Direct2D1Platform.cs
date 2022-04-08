@@ -34,7 +34,7 @@ namespace Avalonia.Direct2D1
 
         public static Vortice.Direct3D11.ID3D11Device Direct3D11Device { get; private set; }
 
-        public static Vortice.Direct2D1.ID2D1Factory Direct2D1Factory { get; private set; }
+        public static Vortice.Direct2D1.ID2D1Factory1 Direct2D1Factory { get; private set; }
 
         public static Vortice.Direct2D1.ID2D1Device Direct2D1Device { get; private set; }
 
@@ -58,9 +58,12 @@ namespace Avalonia.Direct2D1
 #if DEBUG
                 try
                 {
-                    Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
-                        SharpDX.Direct2D1.FactoryType.MultiThreaded,
-                            SharpDX.Direct2D1.DebugLevel.Error);
+                    Direct2D1Factory = Vortice.Direct2D1.D2D1.D2D1CreateFactory<Vortice.Direct2D1.ID2D1Factory1>(
+                        Vortice.Direct2D1.FactoryType.MultiThreaded,
+                        new Vortice.Direct2D1.FactoryOptions
+                        {
+                            DebugLevel = Vortice.Direct2D1.DebugLevel.Error
+                        });
                 }
                 catch
                 {
@@ -69,37 +72,35 @@ namespace Avalonia.Direct2D1
 #endif
                 if (Direct2D1Factory == null)
                 {
-                    Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
-                        SharpDX.Direct2D1.FactoryType.MultiThreaded,
-                        SharpDX.Direct2D1.DebugLevel.None);
+                    Direct2D1Factory = Vortice.Direct2D1.D2D1.D2D1CreateFactory<Vortice.Direct2D1.ID2D1Factory1>(Vortice.Direct2D1.FactoryType.MultiThreaded);
                 }
 
-                using (var factory = new SharpDX.DirectWrite.Factory())
-                {
-                    DirectWriteFactory = factory.QueryInterface<SharpDX.DirectWrite.Factory1>();
-                }
+                DirectWriteFactory = DWrite.DWriteCreateFactory<IDWriteFactory1>();
 
-                ImagingFactory = new SharpDX.WIC.ImagingFactory();
+                ImagingFactory = new Vortice.WIC.IWICImagingFactory();
 
                 var featureLevels = new[]
                 {
-                    SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                    SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                    SharpDX.Direct3D.FeatureLevel.Level_10_1,
-                    SharpDX.Direct3D.FeatureLevel.Level_10_0,
-                    SharpDX.Direct3D.FeatureLevel.Level_9_3,
-                    SharpDX.Direct3D.FeatureLevel.Level_9_2,
-                    SharpDX.Direct3D.FeatureLevel.Level_9_1,
+                    Vortice.Direct3D.FeatureLevel.Level_11_1,
+                    Vortice.Direct3D.FeatureLevel.Level_11_0,
+                    Vortice.Direct3D.FeatureLevel.Level_10_1,
+                    Vortice.Direct3D.FeatureLevel.Level_10_0,
+                    Vortice.Direct3D.FeatureLevel.Level_9_3,
+                    Vortice.Direct3D.FeatureLevel.Level_9_2,
+                    Vortice.Direct3D.FeatureLevel.Level_9_1,
                 };
 
-                Direct3D11Device = new SharpDX.Direct3D11.Device(
-                    SharpDX.Direct3D.DriverType.Hardware,
-                    SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
-                    featureLevels);
+                Vortice.Direct3D11.D3D11.D3D11CreateDevice(
+                    IntPtr.Zero,
+                    Vortice.Direct3D.DriverType.Hardware,
+                    Vortice.Direct3D11.DeviceCreationFlags.BgraSupport | Vortice.Direct3D11.DeviceCreationFlags.VideoSupport,
+                    featureLevels,
+                    out Vortice.Direct3D11.ID3D11Device d3d11Device).CheckError();
+                Direct3D11Device = d3d11Device;
 
-                DxgiDevice = Direct3D11Device.QueryInterface<SharpDX.DXGI.Device1>();
+                DxgiDevice = Direct3D11Device.QueryInterface<Vortice.DXGI.IDXGIDevice1>();
 
-                Direct2D1Device = new SharpDX.Direct2D1.Device(Direct2D1Factory, DxgiDevice);
+                Direct2D1Device = Direct2D1Factory.CreateDevice(DxgiDevice);
 
                 s_initialized = true;
             }
@@ -227,7 +228,7 @@ namespace Avalonia.Direct2D1
             var run = new Vortice.DirectWrite.GlyphRun
             {
                 FontFace = glyphTypeface.FontFace,
-                FontSize = (float)glyphRun.FontRenderingEmSize
+                FontEmSize = (float)glyphRun.FontRenderingEmSize
             };
 
             var indices = new ushort[glyphCount];
