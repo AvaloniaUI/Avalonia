@@ -1,5 +1,6 @@
+using System.Runtime.InteropServices;
 using Avalonia.Media;
-using SharpDX;
+using SharpGen.Runtime;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -8,6 +9,7 @@ namespace Avalonia.Direct2D1.Media
         public BrushWrapper(IBrush brush)
         {
             Brush = brush;
+            NativePointer = Marshal.GetIUnknownForObject(this);
         }
 
         public IBrush Brush { get; private set; }

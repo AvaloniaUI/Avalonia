@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using Avalonia.Platform;
-using SharpDX;
-using SharpDX.DirectWrite;
+using Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
     using System;
+    using SharpGen.Runtime;
+    using Vortice;
 
-    internal class DWriteResourceFontLoader : CallbackBase, FontCollectionLoader, FontFileLoader
+    internal class DWriteResourceFontLoader : CallbackBase, IDWriteFontCollectionLoader, IDWriteFontFileLoader
     {
         private readonly List<DWriteResourceFontFileStream> _fontStreams = new List<DWriteResourceFontFileStream>();
         private readonly List<DWriteResourceFontFileEnumerator> _enumerators = new List<DWriteResourceFontFileEnumerator>();
@@ -18,7 +19,7 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="factory">The factory.</param>
         /// <param name="fontAssets"></param>
-        public DWriteResourceFontLoader(Factory factory, IEnumerable<Uri> fontAssets)
+        public DWriteResourceFontLoader(IDWriteFactory factory, IEnumerable<Uri> fontAssets)
         {
             var factory1 = factory;
 

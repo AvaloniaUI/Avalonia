@@ -3,30 +3,29 @@ using System.IO;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
-using SharpDX;
-using SharpDX.Direct2D1;
-using D2DBitmap = SharpDX.Direct2D1.Bitmap;
+using Vortice;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
     public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IDrawingContextLayerImpl, ILayerFactory
     {
-        private readonly BitmapRenderTarget _renderTarget;
+        private readonly ID2D1BitmapRenderTarget _renderTarget;
 
-        public D2DRenderTargetBitmapImpl(BitmapRenderTarget renderTarget)
+        public D2DRenderTargetBitmapImpl(ID2D1BitmapRenderTarget renderTarget)
             : base(renderTarget.Bitmap)
         {
             _renderTarget = renderTarget;
         }
 
         public static D2DRenderTargetBitmapImpl CreateCompatible(
-            SharpDX.Direct2D1.RenderTarget renderTarget,
+            ID2D1RenderTarget renderTarget,
             Size size)
         {
-            var bitmapRenderTarget = new BitmapRenderTarget(
-                renderTarget,
-                CompatibleRenderTargetOptions.None,
-                new Size2F((float)size.Width, (float)size.Height));
+            var bitmapRenderTarget = renderTarget.CreateCompatibleRenderTarget(
+                new Vortice.Mathematics.Size((float)size.Width, (float)size.Height),
+                CompatibleRenderTargetOptions.None
+                );
             return new D2DRenderTargetBitmapImpl(bitmapRenderTarget);
         }
 
@@ -49,9 +48,9 @@ namespace Avalonia.Direct2D1.Media.Imaging
             _renderTarget.Dispose();
         }
 
-        public override OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target)
+        public override OptionalDispose<ID2D1Bitmap> GetDirect2DBitmap(ID2D1RenderTarget target)
         {
-            return new OptionalDispose<D2DBitmap>(_renderTarget.Bitmap, false);
+            return new OptionalDispose<ID2D1Bitmap>(_renderTarget.Bitmap, false);
         }
 
         public override void Save(Stream stream)

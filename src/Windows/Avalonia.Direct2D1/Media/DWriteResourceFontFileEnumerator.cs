@@ -1,17 +1,18 @@
-using SharpDX;
-using SharpDX.DirectWrite;
+using SharpGen.Runtime;
+using Vortice;
+using Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// Resource FontFileEnumerator.
     /// </summary>
-    public class DWriteResourceFontFileEnumerator : CallbackBase, FontFileEnumerator
+    public class DWriteResourceFontFileEnumerator : CallbackBase, IDWriteFontFileEnumerator
     {
-        private readonly Factory _factory;
-        private readonly FontFileLoader _loader;
+        private readonly IDWriteFactory _factory;
+        private readonly IDWriteFontFileLoader _loader;
         private readonly DataStream _keyStream;
-        private FontFile _currentFontFile;
+        private IDWriteFontFile _currentFontFile;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DWriteResourceFontFileEnumerator"/> class.
@@ -19,7 +20,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="factory">The factory.</param>
         /// <param name="loader">The loader.</param>
         /// <param name="key">The key.</param>
-        public DWriteResourceFontFileEnumerator(Factory factory, FontFileLoader loader, DataPointer key)
+        public DWriteResourceFontFileEnumerator(IDWriteFactory factory, IDWriteFontFileLoader loader, DataPointer key)
         {
             _factory = factory;
             _loader = loader;
@@ -33,11 +34,12 @@ namespace Avalonia.Direct2D1.Media
         /// the value TRUE if the enumerator advances to a file; otherwise, FALSE if the enumerator advances past the last file in the collection.
         /// </returns>
         /// <unmanaged>HRESULT IDWriteFontFileEnumerator::MoveNext([Out] BOOL* hasCurrentFile)</unmanaged>
-        bool FontFileEnumerator.MoveNext()
+        RawBool IDWriteFontFileEnumerator.MoveNext()
         {
             bool moveNext = _keyStream.RemainingLength != 0;
 
-            if (!moveNext) return false;
+            if (!moveNext)
+                return false;
 
             _currentFontFile?.Dispose();
 
@@ -52,16 +54,13 @@ namespace Avalonia.Direct2D1.Media
         /// Gets a reference to the current font file.
         /// </summary>
         /// <value></value>
-        /// <returns>a reference to the newly created <see cref="SharpDX.DirectWrite.FontFile"/> object.</returns>
+        /// <returns>a reference to the newly created <see cref="IDWriteFontFile"/> object.</returns>
         /// <unmanaged>HRESULT IDWriteFontFileEnumerator::GetCurrentFontFile([Out] IDWriteFontFile** fontFile)</unmanaged>
-        FontFile FontFileEnumerator.CurrentFontFile
+        IDWriteFontFile IDWriteFontFileEnumerator.GetCurrentFontFile()
         {
-            get
-            {
-                ((IUnknown)_currentFontFile).AddReference();
+            _currentFontFile.AddRef();
 
-                return _currentFontFile;
-            }
+            return _currentFontFile;
         }
     }
 }

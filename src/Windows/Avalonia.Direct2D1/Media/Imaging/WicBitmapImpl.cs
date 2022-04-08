@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using Avalonia.Win32.Interop;
-using SharpDX.WIC;
+using Vortice.WIC;
+using BitmapInterpolationMode = Vortice.WIC.BitmapInterpolationMode;
 using APixelFormat = Avalonia.Platform.PixelFormat;
 using AlphaFormat = Avalonia.Platform.AlphaFormat;
-using D2DBitmap = SharpDX.Direct2D1.Bitmap;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -13,7 +14,7 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class WicBitmapImpl : BitmapImpl
     {
-        private readonly BitmapDecoder _decoder;
+        private readonly IWICBitmapDecoder _decoder;
 
         private static BitmapInterpolationMode ConvertInterpolationMode(Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
         {
@@ -44,12 +45,13 @@ namespace Avalonia.Direct2D1.Media
             using (var decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
             using (var frame = decoder.GetFrame(0))
             {
+                Direct2D1Platform.ImagingFactory.createb
                 WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnDemand);
                 Dpi = new Vector(96, 96);
             }
         }
 
-        private WicBitmapImpl(Bitmap bmp)
+        private WicBitmapImpl(IWICBitmap bmp)
         {
             WicImpl = bmp;
             Dpi = new Vector(96, 96);
@@ -170,14 +172,14 @@ namespace Avalonia.Direct2D1.Media
         /// <summary>
         /// Gets the WIC implementation of the bitmap.
         /// </summary>
-        public Bitmap WicImpl { get; }
+        public IWICBitmap WicImpl { get; }
 
         /// <summary>
         /// Gets a Direct2D bitmap to use on the specified render target.
         /// </summary>
         /// <param name="renderTarget">The render target.</param>
         /// <returns>The Direct2D bitmap.</returns>
-        public override OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
+        public override OptionalDispose<ID2D1Bitmap> GetDirect2DBitmap(ID2D1RenderTarget renderTarget)
         {
             using var converter = new FormatConverter(Direct2D1Platform.ImagingFactory);
             converter.Initialize(WicImpl, SharpDX.WIC.PixelFormat.Format32bppPBGRA);

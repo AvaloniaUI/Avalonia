@@ -1,30 +1,29 @@
 using Avalonia.Media;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
-using SharpDX.Direct2D1;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
     public sealed class ImageBrushImpl : BrushImpl
     {
-        private readonly OptionalDispose<Bitmap> _bitmap;
+        private readonly OptionalDispose<ID2D1Bitmap> _bitmap;
 
         private readonly Visuals.Media.Imaging.BitmapInterpolationMode _bitmapInterpolationMode;
 
         public ImageBrushImpl(
             ITileBrush brush,
-            SharpDX.Direct2D1.RenderTarget target,
+            ID2D1RenderTarget target,
             BitmapImpl bitmap,
             Size targetSize)
         {
-            var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
+            var dpi = new Vector(target.Dpi.Width, target.Dpi.Height);
             var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSizeWithDpi(dpi), targetSize);
 
             if (!calc.NeedsIntermediate)
             {
                 _bitmap = bitmap.GetDirect2DBitmap(target);
-                PlatformBrush = new BitmapBrush(
-                    target,
+                PlatformBrush = target.CreateBitmapBrush(
                     _bitmap.Value,
                     GetBitmapBrushProperties(brush),
                     GetBrushProperties(brush, calc.DestinationRect));
@@ -85,15 +84,15 @@ namespace Avalonia.Direct2D1.Media
             return (tileMode & TileMode.FlipY) != 0 ? ExtendMode.Mirror : ExtendMode.Wrap;
         }
 
-        private BitmapRenderTarget RenderIntermediate(
-            SharpDX.Direct2D1.RenderTarget target,
+        private ID2D1BitmapRenderTarget RenderIntermediate(
+            ID2D1RenderTarget target,
             BitmapImpl bitmap,
             TileBrushCalculator calc)
         {
-            var result = new BitmapRenderTarget(
-                target,
-                CompatibleRenderTargetOptions.None,
-                calc.IntermediateSize.ToSharpDX());
+            var result = target.CreateCompatibleRenderTarget(
+                calc.IntermediateSize.ToSharpDX(),
+                CompatibleRenderTargetOptions.None
+                );
 
             using (var context = new RenderTarget(result).CreateDrawingContext(null))
             {

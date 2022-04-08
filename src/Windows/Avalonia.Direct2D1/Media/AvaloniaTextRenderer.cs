@@ -1,7 +1,10 @@
-using SharpDX;
-using SharpDX.Direct2D1;
-using SharpDX.DirectWrite;
-using SharpDX.Mathematics.Interop;
+using System;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using SharpGen.Runtime;
+using Vortice.DCommon;
+using Vortice.Direct2D1;
+using Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -9,14 +12,14 @@ namespace Avalonia.Direct2D1.Media
     {
         private readonly DrawingContextImpl _context;
 
-        private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
+        private readonly ID2D1RenderTarget _renderTarget;
 
-        private readonly Brush _foreground;
+        private readonly ID2D1Brush _foreground;
 
         public AvaloniaTextRenderer(
             DrawingContextImpl context,
-            SharpDX.Direct2D1.RenderTarget target,
-            Brush foreground)
+            ID2D1RenderTarget target,
+            ID2D1Brush foreground)
         {
             _context = context;
             _renderTarget = target;
@@ -24,15 +27,16 @@ namespace Avalonia.Direct2D1.Media
         }
 
         public override Result DrawGlyphRun(
-            object clientDrawingContext,
+            IntPtr clientDrawingContext,
             float baselineOriginX,
             float baselineOriginY,
             MeasuringMode measuringMode,
             GlyphRun glyphRun,
             GlyphRunDescription glyphRunDescription,
-            ComObject clientDrawingEffect)
+            IUnknown clientDrawingEffect)
         {
-            var wrapper = clientDrawingEffect as BrushWrapper;
+            var comObject = (ComObject)clientDrawingEffect;
+            var wrapper = (BrushWrapper)Marshal.GetObjectForIUnknown(comObject.NativePointer); 
 
             // TODO: Work out how to get the size below rather than passing new Size().
             var brush = (wrapper == null) ?
@@ -40,7 +44,7 @@ namespace Avalonia.Direct2D1.Media
                 _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
 
             _renderTarget.DrawGlyphRun(
-                new RawVector2 { X = baselineOriginX, Y = baselineOriginY },
+                new System.Numerics.Vector2(baselineOriginX, baselineOriginY),
                 glyphRun,
                 brush,
                 measuringMode);
@@ -53,14 +57,14 @@ namespace Avalonia.Direct2D1.Media
             return Result.Ok;
         }
 
-        public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
+        public override Matrix3x2 GetCurrentTransform(IntPtr clientDrawingContext)
         {
             return _renderTarget.Transform;
         }
 
-        public override float GetPixelsPerDip(object clientDrawingContext)
+        public override float GetPixelsPerDip(IntPtr clientDrawingContext)
         {
-            return _renderTarget.DotsPerInch.Width / 96;
+            return _renderTarget.Dpi.Width / 96;
         }
     }
 }

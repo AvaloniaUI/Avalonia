@@ -10,7 +10,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Visuals.Media.Imaging;
-using SharpDX.DirectWrite;
+using Vortice.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
 using TextAlignment = Avalonia.Media.TextAlignment;
 
@@ -32,17 +32,17 @@ namespace Avalonia.Direct2D1
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
-        public static SharpDX.Direct3D11.Device Direct3D11Device { get; private set; }
+        public static Vortice.Direct3D11.ID3D11Device Direct3D11Device { get; private set; }
 
-        public static SharpDX.Direct2D1.Factory1 Direct2D1Factory { get; private set; }
+        public static Vortice.Direct2D1.ID2D1Factory Direct2D1Factory { get; private set; }
 
-        public static SharpDX.Direct2D1.Device Direct2D1Device { get; private set; }
+        public static Vortice.Direct2D1.ID2D1Device Direct2D1Device { get; private set; }
 
-        public static SharpDX.DirectWrite.Factory1 DirectWriteFactory { get; private set; }
+        public static Vortice.DirectWrite.IDWriteFactory1 DirectWriteFactory { get; private set; }
 
-        public static SharpDX.WIC.ImagingFactory ImagingFactory { get; private set; }
+        public static Vortice.WIC.IWICImagingFactory ImagingFactory { get; private set; }
 
-        public static SharpDX.DXGI.Device1 DxgiDevice { get; private set; }
+        public static Vortice.DXGI.IDXGIDevice1 DxgiDevice { get; private set; }
 
         private static readonly object s_initLock = new object();
         private static bool s_initialized = false;
@@ -112,7 +112,7 @@ namespace Avalonia.Direct2D1
                 .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
                 .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
                 .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
-            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+            SharpGen.Runtime.Configuration.EnableReleaseOnFinalizer = true;
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -224,17 +224,17 @@ namespace Avalonia.Direct2D1
 
             var glyphCount = glyphRun.GlyphIndices.Count;
 
-            var run = new SharpDX.DirectWrite.GlyphRun
+            var run = new Vortice.DirectWrite.GlyphRun
             {
                 FontFace = glyphTypeface.FontFace,
                 FontSize = (float)glyphRun.FontRenderingEmSize
             };
 
-            var indices = new short[glyphCount];
+            var indices = new ushort[glyphCount];
 
             for (var i = 0; i < glyphCount; i++)
             {
-                indices[i] = (short)glyphRun.GlyphIndices[i];
+                indices[i] = glyphRun.GlyphIndices[i];
             }
 
             run.Indices = indices;

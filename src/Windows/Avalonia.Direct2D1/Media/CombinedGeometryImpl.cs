@@ -1,4 +1,4 @@
-using SharpDX.Direct2D1;
+using Vortice.Direct2D1;
 using AM = Avalonia.Media;
 
 namespace Avalonia.Direct2D1.Media
@@ -19,7 +19,7 @@ namespace Avalonia.Direct2D1.Media
         {
         }
 
-        private static Geometry CreateGeometry(
+        private static ID2D1Geometry CreateGeometry(
             AM.GeometryCombineMode combineMode,
             AM.Geometry geometry1,
             AM.Geometry geometry2)
