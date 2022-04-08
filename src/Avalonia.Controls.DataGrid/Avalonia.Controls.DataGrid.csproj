@@ -23,4 +23,5 @@
   <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\DevAnalyzers.props" />
 </Project>

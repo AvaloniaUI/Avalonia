@@ -19,4 +19,6 @@
       <BuiltProjectOutputGroupOutput Remove="$(ProjectDir)$(OutDir)$(_DeploymentTargetApplicationManifestFileName)" />
     </ItemGroup>
   </Target>
+
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>

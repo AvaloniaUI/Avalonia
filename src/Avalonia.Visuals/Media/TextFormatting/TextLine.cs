@@ -16,13 +16,9 @@ namespace Avalonia.Media.TextFormatting
         /// </value>
         public abstract IReadOnlyList<TextRun> TextRuns { get; }
         
-        /// <summary>
-        /// Gets the text range that is covered by the line.
-        /// </summary>
-        /// <value>
-        /// The text range that is covered by the line.
-        /// </value>
-        public abstract TextRange TextRange { get; }
+        public abstract int FirstTextSourceIndex { get; }
+
+        public abstract int Length { get; }
 
         /// <summary>
         /// Gets the state of the line when broken by line breaking process.
@@ -189,6 +185,14 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The <see cref="CharacterHit"/> after backspacing.</returns>
         public abstract CharacterHit GetBackspaceCaretCharacterHit(CharacterHit characterHit);
 
+        /// <summary>
+        /// Get an array of bounding rectangles of a range of characters within a text line.
+        /// </summary>
+        /// <param name="firstTextSourceCharacterIndex">index of first character of specified range</param>
+        /// <param name="textLength">number of characters of the specified range</param>
+        /// <returns>an array of bounding rectangles.</returns>
+        public abstract IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceCharacterIndex, int textLength);
+        
         /// <summary>
         /// Gets the text line offset x.
         /// </summary>
