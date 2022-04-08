@@ -5,13 +5,13 @@ namespace Avalonia.Direct2D1.Media
 {
     public class SolidColorBrushImpl : BrushImpl
     {
-        public SolidColorBrushImpl(ISolidColorBrush brush, ID2D1RenderTarget target)
+        public SolidColorBrushImpl(ISolidColorBrush brush, ID2D1RenderTarget target, float opacity)
         {
             PlatformBrush = target.CreateSolidColorBrush(
                 brush?.Color.ToDirect2D() ?? default,
                 new BrushProperties
                 {
-                    Opacity = brush != null ? (float)brush.Opacity : 1.0f,
+                    Opacity = brush != null ? (float)brush.Opacity * opacity : opacity,
                     Transform = target.Transform
                 }
             );
@@ -21,13 +21,13 @@ namespace Avalonia.Direct2D1.Media
         /// Direct2D has no ConicGradient implementation so fall back to a solid colour brush based on 
         /// the first gradient stop.
         /// </summary>
-        public SolidColorBrushImpl(IConicGradientBrush brush, ID2D1DeviceContext target)
+        public SolidColorBrushImpl(IConicGradientBrush brush, ID2D1DeviceContext target, float opacity)
         {
             PlatformBrush = target.CreateSolidColorBrush(
                 brush?.GradientStops[0].Color.ToDirect2D() ?? default,
                 new BrushProperties
                 {
-                    Opacity = brush != null ? (float)brush.Opacity : 1.0f,
+                    Opacity = brush != null ? (float)brush.Opacity * opacity : opacity,
                     Transform = target.Transform
                 }
             );

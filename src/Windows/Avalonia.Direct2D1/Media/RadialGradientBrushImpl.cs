@@ -10,7 +10,8 @@ namespace Avalonia.Direct2D1.Media
         public RadialGradientBrushImpl(
             IRadialGradientBrush brush,
             ID2D1RenderTarget target,
-            Size destinationSize)
+            Size destinationSize,
+            float opacity)
         {
             if (brush.GradientStops.Count == 0)
             {
@@ -44,7 +45,7 @@ namespace Avalonia.Direct2D1.Media
                     },
                     new BrushProperties
                     {
-                        Opacity = (float)brush.Opacity,
+                        Opacity = (float)brush.Opacity * opacity,
                         Transform = Matrix3x2.Identity,
                     },
                     stops);

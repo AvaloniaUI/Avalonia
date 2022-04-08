@@ -27,6 +27,10 @@ namespace Avalonia.Direct2D1.Media
         private readonly bool _ownsDeviceContext;
         private readonly IDXGISwapChain1 _swapChain;
         private readonly Action _finishedCallback;
+        private  readonly Stack<ID2D1Layer> _layers = new Stack<ID2D1Layer>();
+        private readonly Stack<ID2D1Layer> _layerPool = new Stack<ID2D1Layer>();
+        private double _currentOpacity = 1.0f;
+        private readonly Stack<double> _opacityStack = new Stack<double>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
@@ -432,9 +436,7 @@ namespace Avalonia.Direct2D1.Media
         {
             _deviceContext.PopAxisAlignedClip();
         }
-
-        readonly Stack<ID2D1Layer> _layers = new Stack<ID2D1Layer>();
-        private readonly Stack<ID2D1Layer> _layerPool = new Stack<ID2D1Layer>();
+        
         /// <summary>
         /// Pushes an opacity value.
         /// </summary>
@@ -442,27 +444,13 @@ namespace Avalonia.Direct2D1.Media
         /// <returns>A disposable used to undo the opacity.</returns>
         public void PushOpacity(double opacity)
         {
-            if (opacity < 1)
-            {
-                var parameters = new LayerParameters
-                {
-                    ContentBounds = PrimitiveExtensions.RectangleInfinite,
-                    MaskTransform = Matrix3x2.Identity,
-                    Opacity = (float)opacity,
-                };
-
-                var layer = _layerPool.Count != 0 ? _layerPool.Pop() : _deviceContext.CreateLayer();
-                _deviceContext.PushLayer(ref parameters, layer);
-
-                _layers.Push(layer);
-            }
-            else
-                _layers.Push(null);
+            _opacityStack.Push(_currentOpacity);
+            _currentOpacity *= opacity;
         }
 
         public void PopOpacity()
         {
-            PopLayer();
+            _currentOpacity = _opacityStack.Pop();
         }
 
         private void PopLayer()
@@ -492,20 +480,20 @@ namespace Avalonia.Direct2D1.Media
 
             if (solidColorBrush != null)
             {
-                return new SolidColorBrushImpl(solidColorBrush, _deviceContext);
+                return new SolidColorBrushImpl(solidColorBrush, _deviceContext, (float)_currentOpacity);
             }
             else if (linearGradientBrush != null)
             {
-                return new LinearGradientBrushImpl(linearGradientBrush, _deviceContext, destinationSize);
+                return new LinearGradientBrushImpl(linearGradientBrush, _deviceContext, destinationSize, (float)_currentOpacity);
             }
             else if (radialGradientBrush != null)
             {
-                return new RadialGradientBrushImpl(radialGradientBrush, _deviceContext, destinationSize);
+                return new RadialGradientBrushImpl(radialGradientBrush, _deviceContext, destinationSize, (float)_currentOpacity);
             }
             else if (conicGradientBrush != null)
             {
                 // there is no Direct2D implementation of Conic Gradients so use Radial as a stand-in
-                return new SolidColorBrushImpl(conicGradientBrush, _deviceContext);
+                return new SolidColorBrushImpl(conicGradientBrush, _deviceContext, (float)_currentOpacity);
             }
             else if (imageBrush?.Source != null)
             {
@@ -513,7 +501,8 @@ namespace Avalonia.Direct2D1.Media
                     imageBrush,
                     _deviceContext,
                     (BitmapImpl)imageBrush.Source.PlatformImpl.Item,
-                    destinationSize);
+                    destinationSize
+                    , (float)_currentOpacity);
             }
             else if (visualBrush != null)
             {
@@ -542,7 +531,8 @@ namespace Avalonia.Direct2D1.Media
                                 visualBrush,
                                 _deviceContext,
                                 new D2DBitmapImpl(intermediate.Bitmap),
-                                destinationSize);
+                                destinationSize, 
+                                (float)_currentOpacity);
                         }
                     }
                 }
@@ -552,7 +542,7 @@ namespace Avalonia.Direct2D1.Media
                 }
             }
 
-            return new SolidColorBrushImpl(null, _deviceContext);
+            return new SolidColorBrushImpl(null, _deviceContext, (float)_currentOpacity);
         }
 
         public void PushGeometryClip(IGeometryImpl clip)
@@ -569,7 +559,6 @@ namespace Avalonia.Direct2D1.Media
             _deviceContext.PushLayer(ref parameters, layer);
 
             _layers.Push(layer);
-
         }
 
         public void PopGeometryClip()

@@ -15,7 +15,8 @@ namespace Avalonia.Direct2D1.Media
             ITileBrush brush,
             ID2D1RenderTarget target,
             BitmapImpl bitmap,
-            Size targetSize)
+            Size targetSize,
+            float opacity)
         {
             var dpi = new Vector(target.Dpi.Width, target.Dpi.Height);
             var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSizeWithDpi(dpi), targetSize);
@@ -26,7 +27,7 @@ namespace Avalonia.Direct2D1.Media
                 PlatformBrush = target.CreateBitmapBrush(
                     _bitmap.Value,
                     GetBitmapBrushProperties(brush),
-                    GetBrushProperties(brush, calc.DestinationRect));
+                    GetBrushProperties(brush, calc.DestinationRect, opacity));
             }
             else
             {
@@ -35,7 +36,7 @@ namespace Avalonia.Direct2D1.Media
                     PlatformBrush = target.CreateBitmapBrush(
                         intermediate.Bitmap,
                         GetBitmapBrushProperties(brush),
-                        GetBrushProperties(brush, calc.DestinationRect));
+                        GetBrushProperties(brush, calc.DestinationRect, opacity));
                 }
             }
 
@@ -59,7 +60,7 @@ namespace Avalonia.Direct2D1.Media
             };
         }
 
-        private static BrushProperties GetBrushProperties(ITileBrush brush, Rect destinationRect)
+        private static BrushProperties GetBrushProperties(ITileBrush brush, Rect destinationRect, float opacity)
         {
             var tileTransform =
                 brush.TileMode != TileMode.None ?
@@ -68,7 +69,7 @@ namespace Avalonia.Direct2D1.Media
 
             return new BrushProperties
             {
-                Opacity = (float)brush.Opacity,
+                Opacity = (float)brush.Opacity * opacity,
                 Transform = tileTransform.ToDirect2D(),
             };
         }
