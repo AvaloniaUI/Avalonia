@@ -82,13 +82,14 @@
           <Menu DockPanel.Dock="Top">
             <MenuItem Name="RootMenuItem" Header="_Root">
               <MenuItem Name="Child1MenuItem" Header="_Child 1" InputGesture="Ctrl+O" Click="MenuClicked"/>
-              <MenuItem Name="Child2MenuItem" Header="_Child 1">
+              <MenuItem Name="Child2MenuItem" Header="C_hild 2">
                 <MenuItem Name="GrandchildMenuItem" Header="_Grandchild" Click="MenuClicked"/>
               </MenuItem>
             </MenuItem>
           </Menu>
           <StackPanel>
             <TextBlock Name="ClickedMenuItem">None</TextBlock>
+            <Button Name="MenuClickedMenuItemReset">Reset</Button>
             <TextBox Name="MenuFocusTest"/>
           </StackPanel>
         </DockPanel>
