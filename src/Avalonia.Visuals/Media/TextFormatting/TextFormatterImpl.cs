@@ -9,7 +9,7 @@ namespace Avalonia.Media.TextFormatting
     internal class TextFormatterImpl : TextFormatter
     {
         /// <inheritdoc cref="TextFormatter.FormatLine"/>
-        public override TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
+        public override TextLine FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
         {
             var textWrapping = paragraphProperties.TextWrapping;
@@ -19,11 +19,6 @@ namespace Avalonia.Media.TextFormatting
 
             var textRuns = FetchTextRuns(textSource, firstTextSourceIndex,
                 out var textEndOfLine, out var textSourceLength);
-
-            if(textRuns.Count == 0)
-            {
-                return null;
-            }
 
             if (previousLineBreak?.RemainingRuns != null)
             {
@@ -272,7 +267,6 @@ namespace Avalonia.Media.TextFormatting
             IReadOnlyList<ShapeableTextCharacters> textRuns, ReadOnlySlice<char> text, TextShaperOptions options)
         {
             var shapedRuns = new List<ShapedTextCharacters>(textRuns.Count);
-            var firstRun = textRuns[0];
 
             var shapedBuffer = TextShaper.Current.ShapeText(text, options);
 
@@ -544,6 +538,12 @@ namespace Avalonia.Media.TextFormatting
             double paragraphWidth, TextParagraphProperties paragraphProperties, FlowDirection flowDirection,
             TextLineBreak? currentLineBreak)
         {
+            if(textRuns.Count == 0)
+            {
+                return new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
+
+            }
+
             if (!TryMeasureLength(textRuns, paragraphWidth, out var measuredLength))
             {
                 measuredLength = 1;
