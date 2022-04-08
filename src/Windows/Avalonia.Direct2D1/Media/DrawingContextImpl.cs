@@ -272,19 +272,22 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rrect, BoxShadows boxShadow = default)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadow = default)
         {
-            var rc = rrect.Rect.ToDirect2D();
-            var rect = rrect.Rect;
-            var radiusX = Math.Max(rrect.RadiiTopLeft.X,
-                Math.Max(rrect.RadiiTopRight.X, Math.Max(rrect.RadiiBottomRight.X, rrect.RadiiBottomLeft.X)));
-            var radiusY = Math.Max(rrect.RadiiTopLeft.Y,
-                Math.Max(rrect.RadiiTopRight.Y, Math.Max(rrect.RadiiBottomRight.Y, rrect.RadiiBottomLeft.Y)));
-            var isRounded = !MathUtilities.IsZero(radiusX) || !MathUtilities.IsZero(radiusY);
+            if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
+                return;
+
+            var rc = rect.Rect.ToDirect2D();
+            var isRounded = rect.IsRounded;
+
+            var radiusX = Math.Max(rect.RadiiTopLeft.X,
+                Math.Max(rect.RadiiTopRight.X, Math.Max(rect.RadiiBottomRight.X, rect.RadiiBottomLeft.X)));
+            var radiusY = Math.Max(rect.RadiiTopLeft.Y,
+                Math.Max(rect.RadiiTopRight.Y, Math.Max(rect.RadiiBottomRight.Y, rect.RadiiBottomLeft.Y)));
 
             if (brush != null)
             {
-                using (var b = CreateBrush(brush, rect.Size))
+                using (var b = CreateBrush(brush, rect.Rect.Size))
                 {
                     if (b.PlatformBrush != null)
                     {
@@ -294,10 +297,10 @@ namespace Avalonia.Direct2D1.Media
                                 new RoundedRectangle
                                 {
                                     Rect = new RawRectF(
-                                        (float)rect.X,
-                                        (float)rect.Y,
-                                        (float)rect.Right,
-                                        (float)rect.Bottom),
+                                        (float)rect.Rect.X,
+                                        (float)rect.Rect.Y,
+                                        (float)rect.Rect.Right,
+                                        (float)rect.Rect.Bottom),
                                     RadiusX = (float)radiusX,
                                     RadiusY = (float)radiusY
                                 },
@@ -313,7 +316,7 @@ namespace Avalonia.Direct2D1.Media
 
             if (pen?.Brush != null)
             {
-                using (var wrapper = CreateBrush(pen.Brush, rect.Size))
+                using (var wrapper = CreateBrush(pen.Brush, rect.Rect.Size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
                 {
                     if (wrapper.PlatformBrush != null)
@@ -444,7 +447,7 @@ namespace Avalonia.Direct2D1.Media
                 var parameters = new LayerParameters
                 {
                     ContentBounds = PrimitiveExtensions.RectangleInfinite,
-                    MaskTransform = System.Numerics.Matrix3x2.Identity,
+                    MaskTransform = Matrix3x2.Identity,
                     Opacity = (float)opacity,
                 };
 

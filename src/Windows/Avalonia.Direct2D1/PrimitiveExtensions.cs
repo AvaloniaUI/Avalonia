@@ -16,12 +16,7 @@ namespace Avalonia.Direct2D1
         /// </summary>
         public const float ZeroTolerance = 1e-6f; // Value a 8x higher than 1.19209290E-07F
 
-        public static readonly RawRectF RectangleInfinite;
-
-        static PrimitiveExtensions()
-        {
-            RectangleInfinite = new RawRectF(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
-        }
+        public static readonly RawRectF RectangleInfinite = new(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
 
         public static Rect ToAvalonia(this RawRectF r)
         {
@@ -39,7 +34,7 @@ namespace Avalonia.Direct2D1
 
         public static Vector2 ToSharpDX(this Point p)
         {
-            return new Vector2 { X = (float)p.X, Y = (float)p.Y };
+            return new Vector2((float)p.X, (float)p.Y);
         }
 
         public static Vortice.Mathematics.Size ToSharpDX(this Size p)
@@ -66,7 +61,7 @@ namespace Avalonia.Direct2D1
             else
                 return LineJoin.Bevel;
         }
-        
+
         public static CapStyle ToDirect2D(this Avalonia.Media.PenLineCap lineCap)
         {
             if (lineCap == Avalonia.Media.PenLineCap.Flat)

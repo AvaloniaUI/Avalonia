@@ -108,12 +108,12 @@ namespace Avalonia.Direct2D1
 
         public static void Initialize()
         {
+            SharpGen.Runtime.Configuration.EnableReleaseOnFinalizer = true;
             InitializeDirect2D();
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
                 .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
                 .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
-            SharpGen.Runtime.Configuration.EnableReleaseOnFinalizer = true;
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
