@@ -161,13 +161,13 @@ namespace Avalonia.Vulkan
                 OldSwapchain = oldDisplay?._swapchain ?? new SwapchainKHR()
             };
 
+            s_swapchainExtension.CreateSwapchain(device.InternalHandle, swapchainCreateInfo, null, out var swapchain)
+                .ThrowOnError();
+
             if (oldDisplay != null)
             {
                 s_swapchainExtension.DestroySwapchain(device.InternalHandle, oldDisplay._swapchain, null);
             }
-
-            s_swapchainExtension.CreateSwapchain(device.InternalHandle, swapchainCreateInfo, null, out var swapchain)
-                .ThrowOnError();
 
             return swapchain;
         }
