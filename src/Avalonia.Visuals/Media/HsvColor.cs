@@ -411,10 +411,10 @@ namespace Avalonia.Media
             if (chroma == 0)
             {
                 return Color.FromArgb(
-                    (byte)Math.Round(alpha * 255),
-                    (byte)Math.Round(min * 255),
-                    (byte)Math.Round(min * 255),
-                    (byte)Math.Round(min * 255));
+                    (byte)(alpha * 255),
+                    (byte)(min * 255),
+                    (byte)(min * 255),
+                    (byte)(min * 255));
             }
 
             // If the chroma is not zero, then we need to continue.  The first step is to figure out

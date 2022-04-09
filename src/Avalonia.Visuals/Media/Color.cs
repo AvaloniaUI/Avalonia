@@ -1,4 +1,4 @@
-// Color conversion portions of this source file are adapted from the WinUI project.
+// Color conversion portions of this source file are adapted from the WinUI project
 // (https://github.com/microsoft/microsoft-ui-xaml)
 // and the Windows Community Toolkit project.
 // (https://github.com/CommunityToolkit/WindowsCommunityToolkit)
@@ -160,8 +160,38 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (s[0] == '#' && TryParseInternal(s.AsSpan(), out color))
+            if (s[0] == '#' &&
+                TryParseHexFormat(s.AsSpan(), out color))
             {
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'r' || s[0] == 'R') &&
+                (s[1] == 'g' || s[1] == 'G') &&
+                (s[2] == 'b' || s[2] == 'B') &&
+                TryParseCssFormat(s, out color))
+            {
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'l' || s[2] == 'L') &&
+                HslColor.TryParse(s, out HslColor hslColor))
+            {
+                color = hslColor.ToRgb();
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'v' || s[2] == 'V') &&
+                HsvColor.TryParse(s, out HsvColor hsvColor))
+            {
+                color = hsvColor.ToRgb();
                 return true;
             }
 
@@ -170,7 +200,6 @@ namespace Avalonia.Media
             if (knownColor != KnownColor.None)
             {
                 color = knownColor.ToColor();
-
                 return true;
             }
 
@@ -188,21 +217,52 @@ namespace Avalonia.Media
             if (s.Length == 0)
             {
                 color = default;
-
                 return false;
             }
 
-            if (s[0] == '#')
+            if (s[0] == '#' &&
+                TryParseHexFormat(s, out color))
             {
-                return TryParseInternal(s, out color);
+                return true;
             }
 
-            var knownColor = KnownColors.GetKnownColor(s.ToString());
+            // At this point all parsing uses strings
+            var str = s.ToString();
+
+            if (s.Length > 5 &&
+                (s[0] == 'r' || s[0] == 'R') &&
+                (s[1] == 'g' || s[1] == 'G') &&
+                (s[2] == 'b' || s[2] == 'B') &&
+                TryParseCssFormat(str, out color))
+            {
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'l' || s[2] == 'L') &&
+                HslColor.TryParse(str, out HslColor hslColor))
+            {
+                color = hslColor.ToRgb();
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'v' || s[2] == 'V') &&
+                HsvColor.TryParse(str, out HsvColor hsvColor))
+            {
+                color = hsvColor.ToRgb();
+                return true;
+            }
+
+            var knownColor = KnownColors.GetKnownColor(str);
 
             if (knownColor != KnownColor.None)
             {
                 color = knownColor.ToColor();
-
                 return true;
             }
 
@@ -211,7 +271,7 @@ namespace Avalonia.Media
             return false;
         }
 
-        private static bool TryParseInternal(ReadOnlySpan<char> s, out Color color)
+        private static bool TryParseHexFormat(ReadOnlySpan<char> s, out Color color)
         {
             static bool TryParseCore(ReadOnlySpan<char> input, ref Color color)
             {
@@ -263,6 +323,91 @@ namespace Avalonia.Media
             }
 
             return TryParseCore(input, ref color);
+        }
+
+        private static bool TryParseCssFormat(string s, out Color color)
+        {
+            color = default;
+
+            if (s is null)
+            {
+                return false;
+            }
+
+            string workingString = s.Trim();
+
+            if (workingString.Length == 0 ||
+                workingString.IndexOf(",", StringComparison.Ordinal) < 0)
+            {
+                return false;
+            }
+
+            if (workingString.Length > 6 &&
+                workingString.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(5, workingString.Length - 6);
+            }
+
+            if (workingString.Length > 5 &&
+                workingString.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(4, workingString.Length - 5);
+            }
+
+            string[] components = workingString.Split(',');
+
+            if (components.Length == 3) // RGB
+            {
+                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
+                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
+                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue))
+                {
+                    color = new Color(0xFF, red, green, blue);
+                    return true;
+                }
+            }
+            else if (components.Length == 4) // RGBA
+            {
+                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
+                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
+                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue) &&
+                    TryInternalParse(components[3], out double alpha))
+                {
+                    color = new Color((byte)(alpha * 255), red, green, blue);
+                    return true;
+                }
+            }
+
+            // Local function to specially parse a double value with an optional percentage sign
+            bool TryInternalParse(string inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+
+                if (percentIndex >= 0)
+                {
+                    var result = double.TryParse(
+                        inString.Substring(0, percentIndex),
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out double percentage);
+
+                    outDouble = percentage / 100.0;
+                    return result;
+                }
+                else
+                {
+                    return double.TryParse(
+                        inString,
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out outDouble);
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -392,9 +537,9 @@ namespace Avalonia.Media
             // https://github.com/CommunityToolkit/WindowsCommunityToolkit/blob/main/Microsoft.Toolkit.Uwp/Helpers/ColorHelper.cs
             // It has been modified.
 
-            var max = Math.Max(Math.Max(r, g), b);
-            var min = Math.Min(Math.Min(r, g), b);
-            var chroma = max - min;
+            double max = r >= g ? (r >= b ? r : b) : (g >= b ? g : b);
+            double min = r <= g ? (r <= b ? r : b) : (g <= b ? g : b);
+            double chroma = max - min;
             double h1;
 
             if (chroma == 0)
