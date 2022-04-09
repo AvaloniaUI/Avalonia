@@ -29,32 +29,32 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact]
         public void Click_Child()
         {
-            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
+            var fileMenu = _session.FindElementByAccessibilityId("FileMenu");
             
-            rootMenuItem.SendClick();
+            fileMenu.SendClick();
 
-            var childMenuItem = _session.FindElementByAccessibilityId("Child1MenuItem");
-            childMenuItem.SendClick();
+            var openMenu = _session.FindElementByAccessibilityId("OpenMenu");
+            openMenu.SendClick();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Child 1", clickedMenuItem.Text);
+            Assert.Equal("_Open...", clickedMenuItem.Text);
         }
 
         [Fact]
         public void Click_Grandchild()
         {
-            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
+            var fileMenu = _session.FindElementByAccessibilityId("FileMenu");
             
-            rootMenuItem.SendClick();
+            fileMenu.SendClick();
 
-            var childMenuItem = _session.FindElementByAccessibilityId("Child2MenuItem");
-            childMenuItem.SendClick();
+            var openRecentMenu = _session.FindElementByAccessibilityId("OpenRecentMenu");
+            openRecentMenu.SendClick();
 
-            var grandchildMenuItem = _session.FindElementByAccessibilityId("GrandchildMenuItem");
-            grandchildMenuItem.SendClick();
+            var file1Menu = _session.FindElementByAccessibilityId("OpenRecentFile1Menu");
+            file1Menu.SendClick();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Grandchild", clickedMenuItem.Text);
+            Assert.Equal("File_1.txt", clickedMenuItem.Text);
         }
 
         [PlatformFact(SkipOnOSX = true)]
@@ -66,7 +66,7 @@ namespace Avalonia.IntegrationTests.Appium
                 .Perform();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Child 1", clickedMenuItem.Text);
+            Assert.Equal("_Open...", clickedMenuItem.Text);
         }
 
         [PlatformFact(SkipOnOSX = true)]
@@ -78,7 +78,7 @@ namespace Avalonia.IntegrationTests.Appium
                 .Perform();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Grandchild", clickedMenuItem.Text);
+            Assert.Equal("File_1.txt", clickedMenuItem.Text);
         }
 
         [PlatformFact(SkipOnOSX = true)]
@@ -86,11 +86,11 @@ namespace Avalonia.IntegrationTests.Appium
         {
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys("rc")
+                .SendKeys("fo")
                 .Perform();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Child 1", clickedMenuItem.Text);
+            Assert.Equal("_Open...", clickedMenuItem.Text);
         }
 
         [PlatformFact(SkipOnOSX = true)]
@@ -98,51 +98,51 @@ namespace Avalonia.IntegrationTests.Appium
         {
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys("rhg")
+                .SendKeys("fr1")
                 .Perform();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Grandchild", clickedMenuItem.Text);
+            Assert.Equal("File_1.txt", clickedMenuItem.Text);
         }
 
         [PlatformFact(SkipOnOSX = true)]
         public void Select_Child_With_Click_Arrow_Keys()
         {
-            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
-            rootMenuItem.SendClick();
+            var fileMenu = _session.FindElementByAccessibilityId("FileMenu");
+            fileMenu.SendClick();
 
             new Actions(_session)
                 .SendKeys(Keys.Down + Keys.Enter)
                 .Perform();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Child 1", clickedMenuItem.Text);
+            Assert.Equal("_Open...", clickedMenuItem.Text);
         }
 
         [PlatformFact(SkipOnOSX = true)]
         public void Select_Grandchild_With_Click_Arrow_Keys()
         {
-            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
-            rootMenuItem.SendClick();
+            var fileMenu = _session.FindElementByAccessibilityId("FileMenu");
+            fileMenu.SendClick();
 
             new Actions(_session)
                 .SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter)
                 .Perform();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
-            Assert.Equal("_Grandchild", clickedMenuItem.Text);
+            Assert.Equal("File_1.txt", clickedMenuItem.Text);
         }
 
         [PlatformFact(SkipOnOSX = true)]
         public void Child_AcceleratorKey()
         {
-            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
+            var fileMenu = _session.FindElementByAccessibilityId("FileMenu");
 
-            rootMenuItem.SendClick();
+            fileMenu.SendClick();
 
-            var childMenuItem = _session.FindElementByAccessibilityId("Child1MenuItem");
+            var openMenu = _session.FindElementByAccessibilityId("OpenMenu");
 
-            Assert.Equal("Ctrl+O", childMenuItem.GetAttribute("AcceleratorKey"));
+            Assert.Equal("Ctrl+O", openMenu.GetAttribute("AcceleratorKey"));
         }
 
         [PlatformFact(SkipOnOSX = true)]
@@ -154,8 +154,8 @@ namespace Avalonia.IntegrationTests.Appium
 
             Assert.True(textBox.GetIsFocused());
 
-            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
-            rootMenuItem.MovePointerOver();
+            var FileMenu = _session.FindElementByAccessibilityId("FileMenu");
+            FileMenu.MovePointerOver();
 
             Assert.True(textBox.GetIsFocused());
         }

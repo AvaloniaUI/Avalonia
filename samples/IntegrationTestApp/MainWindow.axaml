@@ -18,8 +18,6 @@
     </NativeMenu>
   </NativeMenu.Menu>
   <DockPanel>
-    <NativeMenuBar DockPanel.Dock="Top"/>
-    
     <TabControl TabStripPlacement="Left" Name="MainTabs">
       <TabItem Header="Automation">
         <StackPanel>
@@ -80,10 +78,10 @@
       <TabItem Header="Menu">
         <DockPanel>
           <Menu DockPanel.Dock="Top">
-            <MenuItem Name="RootMenuItem" Header="_Root">
-              <MenuItem Name="Child1MenuItem" Header="_Child 1" InputGesture="Ctrl+O" Click="MenuClicked"/>
-              <MenuItem Name="Child2MenuItem" Header="C_hild 2">
-                <MenuItem Name="GrandchildMenuItem" Header="_Grandchild" Click="MenuClicked"/>
+            <MenuItem Name="FileMenu" Header="_File">
+              <MenuItem Name="OpenMenu" Header="_Open..." InputGesture="Ctrl+O"/>
+              <MenuItem Name="OpenRecentMenu" Header="Open _Recent">
+                <MenuItem Name="OpenRecentFile1Menu" Header="File_1.txt"/>
               </MenuItem>
             </MenuItem>
           </Menu>

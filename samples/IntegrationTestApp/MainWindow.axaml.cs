@@ -16,6 +16,7 @@ namespace IntegrationTestApp
             InitializeViewMenu();
             this.AttachDevTools();
             AddHandler(Button.ClickEvent, OnButtonClick);
+            AddHandler(MenuItem.ClickEvent, OnMenuItemClick);
             ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
             DataContext = this;
         }
@@ -46,10 +47,10 @@ namespace IntegrationTestApp
             }
         }
 
-        private void MenuClicked(object? sender, RoutedEventArgs e)
+        private void OnMenuItemClick(object? sender, RoutedEventArgs e)
         {
             var clickedMenuItemTextBlock = this.FindControl<TextBlock>("ClickedMenuItem");
-            clickedMenuItemTextBlock.Text = ((MenuItem)sender!).Header.ToString();
+            clickedMenuItemTextBlock.Text = ((MenuItem)e.Source!).Header.ToString();
         }
 
         private void OnButtonClick(object? sender, RoutedEventArgs e)
