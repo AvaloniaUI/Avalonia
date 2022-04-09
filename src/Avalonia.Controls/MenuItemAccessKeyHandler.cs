@@ -84,7 +84,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnTextInput(object? sender, TextInputEventArgs e)
+        protected internal virtual void OnTextInput(object? sender, TextInputEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.Text))
             {

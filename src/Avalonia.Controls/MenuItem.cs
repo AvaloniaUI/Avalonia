@@ -433,7 +433,14 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            // Don't handle here: let event bubble up to menu.
+            // HACK: Fix for #7777 - Menu keyboard focus incorrect when handling menu mnemonics.
+            // If we implement something like UWP's access key scopes then this code should be removed.
+            if (IsSubMenuOpen &&
+                _popup?.Host is IInputRoot popupRoot &&
+                popupRoot.AccessKeyHandler is MenuItemAccessKeyHandler handler)
+            {
+                handler.OnTextInput(this, new TextInputEventArgs { Text = e.Key.ToString() });
+            }
         }
 
         /// <inheritdoc/>
