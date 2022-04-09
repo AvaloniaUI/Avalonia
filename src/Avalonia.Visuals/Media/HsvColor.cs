@@ -338,10 +338,10 @@ namespace Avalonia.Media
         /// <summary>
         /// Converts the given HSVA color component values to it's RGB color equivalent.
         /// </summary>
-        /// <param name="hue">The hue component in the HSV color model in the range from 0..360.</param>
-        /// <param name="saturation">The saturation component in the HSV color model in the range from 0..1.</param>
-        /// <param name="value">The value component in the HSV color model in the range from 0..1.</param>
-        /// <param name="alpha">The alpha component in the range from 0..1.</param>
+        /// <param name="hue">The Hue component in the HSV color model in the range from 0..360.</param>
+        /// <param name="saturation">The Saturation component in the HSV color model in the range from 0..1.</param>
+        /// <param name="value">The Value component in the HSV color model in the range from 0..1.</param>
+        /// <param name="alpha">The Alpha component in the range from 0..1.</param>
         /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSVA values.</returns>
         public static Color ToRgb(
             double hue,
@@ -467,10 +467,10 @@ namespace Avalonia.Media
             }
 
             return Color.FromArgb(
-                (byte)Math.Round(alpha * 255),
-                (byte)Math.Round(r * 255),
-                (byte)Math.Round(g * 255),
-                (byte)Math.Round(b * 255));
+                (byte)(alpha * 255),
+                (byte)(r * 255),
+                (byte)(g * 255),
+                (byte)(b * 255));
         }
 
         /// <summary>

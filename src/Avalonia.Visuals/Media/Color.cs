@@ -308,11 +308,23 @@ namespace Avalonia.Media
             }
         }
 
+        /// <summary>
+        /// Indicates whether the values of two specified <see cref="Color"/> objects are equal.
+        /// </summary>
+        /// <param name="left">The first object to compare.</param>
+        /// <param name="right">The second object to compare.</param>
+        /// <returns>True if left and right are equal; otherwise, false.</returns>
         public static bool operator ==(Color left, Color right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Indicates whether the values of two specified <see cref="Color"/> objects are not equal.
+        /// </summary>
+        /// <param name="left">The first object to compare.</param>
+        /// <param name="right">The second object to compare.</param>
+        /// <returns>True if left and right are not equal; otherwise, false.</returns>
         public static bool operator !=(Color left, Color right)
         {
             return !left.Equals(right);
