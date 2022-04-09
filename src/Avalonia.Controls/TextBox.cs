@@ -1057,7 +1057,7 @@ namespace Avalonia.Controls
 
                                 SetTextInternal(editedText);
 
-                                CaretIndex = end;
+                                CaretIndex = start;
                             } 
                         }
                         
