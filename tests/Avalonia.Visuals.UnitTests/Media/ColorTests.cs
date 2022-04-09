@@ -291,5 +291,37 @@ namespace Avalonia.Visuals.UnitTests.Media
                 Assert.True(dataPoint.Item2 == parsedHsvColor);
             }
         }
+
+        [Fact]
+        public void Try_Parse_All_Formats_With_Conversion()
+        {
+            // Inline data requires constants, so the data is handled internally here
+            var data = new Tuple<string, Color>[]
+            {
+                // RGB
+                Tuple.Create("White",   new Color(0xff, 0xff, 0xff, 0xff)),
+                Tuple.Create("#123456", new Color(0xff, 0x12, 0x34, 0x56)),
+
+                Tuple.Create("rgb(100, 30, 45)",       new Color(255, 100, 30, 45)),
+                Tuple.Create("rgba(100, 30, 45, 0.9)", new Color(229, 100, 30, 45)),
+                Tuple.Create("rgba(100, 30, 45, 90%)", new Color(229, 100, 30, 45)),
+
+                // HSL
+                Tuple.Create("hsl(296, 85%, 12%)",         new Color(255, 53, 5, 57)),
+                Tuple.Create("hsla(296, 0.85, 0.12, 0.9)", new Color(230, 53, 5, 57)),
+                Tuple.Create("hsla(296, 85%, 12%, 90%)",   new Color(230, 53, 5, 57)),
+
+                // HSV
+                Tuple.Create("hsv(240, 83%, 78%)",         new Color(255, 34, 34, 199)),
+                Tuple.Create("hsva(240, 0.83, 0.78, 0.9)", new Color(230, 34, 34, 199)),
+                Tuple.Create("hsva(240, 83%, 78%, 90%)",   new Color(230, 34, 34, 199)),
+            };
+
+            foreach (var dataPoint in data)
+            {
+                Assert.True(Color.TryParse(dataPoint.Item1, out Color parsedColor));
+                Assert.True(dataPoint.Item2 == parsedColor);
+            }
+        }
     }
 }
