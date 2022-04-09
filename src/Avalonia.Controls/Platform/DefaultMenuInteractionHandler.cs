@@ -149,13 +149,18 @@ namespace Avalonia.Controls.Platform
                 case Key.Up:
                 case Key.Down:
                 {
-                    if (item?.IsTopLevel == true)
+                    if (item?.IsTopLevel == true && item.HasSubMenu)
                     {
-                        if (item.HasSubMenu && !item.IsSubMenuOpen)
+                        if (!item.IsSubMenuOpen)
                         {
                             Open(item, true);
-                            e.Handled = true;
                         }
+                        else
+                        {
+                            item.MoveSelection(NavigationDirection.First, true);
+                        }
+
+                        e.Handled = true;
                     }
                     else
                     {
