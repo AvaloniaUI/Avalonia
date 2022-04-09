@@ -199,5 +199,97 @@ namespace Avalonia.Visuals.UnitTests.Media
         {
             Assert.False(Color.TryParse(input, out _));
         }
+
+        [Fact]
+        public void Try_Parse_HslColor()
+        {
+            // Inline data requires constants, so the data is handled internally here
+            var data = new Tuple<string, HslColor>[]
+            {
+                // HSV
+                Tuple.Create("hsl(0, 0, 0)",         new HslColor(1, 0, 0, 0)),
+                Tuple.Create("hsl(0, 0%, 0%)",       new HslColor(1, 0, 0, 0)),
+                Tuple.Create("hsl(180, 0.5, 0.5)",   new HslColor(1, 180, 0.5, 0.5)),
+                Tuple.Create("hsl(180, 50%, 50%)",   new HslColor(1, 180, 0.5, 0.5)),
+                Tuple.Create("hsl(360, 1.0, 1.0)",   new HslColor(1, 0, 1, 1)),         // Wraps Hue to zero
+                Tuple.Create("hsl(360, 100%, 100%)", new HslColor(1, 0, 1, 1)),         // Wraps Hue to zero
+
+                Tuple.Create("hsl(-1000, -1000, -1000)",   new HslColor(1, 0, 0, 0)),   // Clamps to min
+                Tuple.Create("hsl(-1000, -1000%, -1000%)", new HslColor(1, 0, 0, 0)),   // Clamps to min
+                Tuple.Create("hsl(1000, 1000, 1000)",      new HslColor(1, 0, 1, 1)),   // Clamps to max
+                Tuple.Create("hsl(1000, 1000%, 1000%)",    new HslColor(1, 0, 1, 1)),   // Clamps to max
+
+                Tuple.Create("hsl(300, 0.8, 0.2)", new HslColor(1.0, 300, 0.8, 0.2)),
+                Tuple.Create("hsl(300, 80%, 20%)", new HslColor(1.0, 300, 0.8, 0.2)),
+
+                // HSVA
+                Tuple.Create("hsla(0, 0, 0, 0)",            new HslColor(0, 0, 0, 0)),
+                Tuple.Create("hsla(0, 0%, 0%, 0%)",         new HslColor(0, 0, 0, 0)),
+                Tuple.Create("hsla(180, 0.5, 0.5, 0.5)",    new HslColor(0.5, 180, 0.5, 0.5)),
+                Tuple.Create("hsla(180, 50%, 50%, 50%)",    new HslColor(0.5, 180, 0.5, 0.5)),
+                Tuple.Create("hsla(360, 1.0, 1.0, 1.0)",    new HslColor(1, 0, 1, 1)),          // Wraps Hue to zero
+                Tuple.Create("hsla(360, 100%, 100%, 100%)", new HslColor(1, 0, 1, 1)),          // Wraps Hue to zero
+
+                Tuple.Create("hsla(-1000, -1000, -1000, -1000)",    new HslColor(0, 0, 0, 0)),  // Clamps to min
+                Tuple.Create("hsla(-1000, -1000%, -1000%, -1000%)", new HslColor(0, 0, 0, 0)),  // Clamps to min
+                Tuple.Create("hsla(1000, 1000, 1000, 1000)",        new HslColor(1, 0, 1, 1)),  // Clamps to max (Hue wraps to zero)
+                Tuple.Create("hsla(1000, 1000%, 1000%, 1000%)",     new HslColor(1, 0, 1, 1)),  // Clamps to max (Hue wraps to zero)
+
+                Tuple.Create("hsla(300, 0.9, 0.2, 0.8)", new HslColor(0.8, 300, 0.9, 0.2)),
+                Tuple.Create("hsla(300, 90%, 20%, 0.8)", new HslColor(0.8, 300, 0.9, 0.2)),
+            };
+
+            foreach (var dataPoint in data)
+            {
+                Assert.True(HslColor.TryParse(dataPoint.Item1, out HslColor parsedHslColor));
+                Assert.True(dataPoint.Item2 == parsedHslColor);
+            }
+        }
+
+        [Fact]
+        public void Try_Parse_HsvColor()
+        {
+            // Inline data requires constants, so the data is handled internally here
+            var data = new Tuple<string, HsvColor>[]
+            {
+                // HSV
+                Tuple.Create("hsv(0, 0, 0)",         new HsvColor(1, 0, 0, 0)),
+                Tuple.Create("hsv(0, 0%, 0%)",       new HsvColor(1, 0, 0, 0)),
+                Tuple.Create("hsv(180, 0.5, 0.5)",   new HsvColor(1, 180, 0.5, 0.5)),
+                Tuple.Create("hsv(180, 50%, 50%)",   new HsvColor(1, 180, 0.5, 0.5)),
+                Tuple.Create("hsv(360, 1.0, 1.0)",   new HsvColor(1, 0, 1, 1)),         // Wraps Hue to zero
+                Tuple.Create("hsv(360, 100%, 100%)", new HsvColor(1, 0, 1, 1)),         // Wraps Hue to zero
+
+                Tuple.Create("hsv(-1000, -1000, -1000)",   new HsvColor(1, 0, 0, 0)),   // Clamps to min
+                Tuple.Create("hsv(-1000, -1000%, -1000%)", new HsvColor(1, 0, 0, 0)),   // Clamps to min
+                Tuple.Create("hsv(1000, 1000, 1000)",      new HsvColor(1, 0, 1, 1)),   // Clamps to max
+                Tuple.Create("hsv(1000, 1000%, 1000%)",    new HsvColor(1, 0, 1, 1)),   // Clamps to max
+
+                Tuple.Create("hsv(300, 0.8, 0.2)", new HsvColor(1.0, 300, 0.8, 0.2)),
+                Tuple.Create("hsv(300, 80%, 20%)", new HsvColor(1.0, 300, 0.8, 0.2)),
+
+                // HSVA
+                Tuple.Create("hsva(0, 0, 0, 0)",            new HsvColor(0, 0, 0, 0)),
+                Tuple.Create("hsva(0, 0%, 0%, 0%)",         new HsvColor(0, 0, 0, 0)),
+                Tuple.Create("hsva(180, 0.5, 0.5, 0.5)",    new HsvColor(0.5, 180, 0.5, 0.5)),
+                Tuple.Create("hsva(180, 50%, 50%, 50%)",    new HsvColor(0.5, 180, 0.5, 0.5)),
+                Tuple.Create("hsva(360, 1.0, 1.0, 1.0)",    new HsvColor(1, 0, 1, 1)),          // Wraps Hue to zero
+                Tuple.Create("hsva(360, 100%, 100%, 100%)", new HsvColor(1, 0, 1, 1)),          // Wraps Hue to zero
+
+                Tuple.Create("hsva(-1000, -1000, -1000, -1000)",    new HsvColor(0, 0, 0, 0)),  // Clamps to min
+                Tuple.Create("hsva(-1000, -1000%, -1000%, -1000%)", new HsvColor(0, 0, 0, 0)),  // Clamps to min
+                Tuple.Create("hsva(1000, 1000, 1000, 1000)",        new HsvColor(1, 0, 1, 1)),  // Clamps to max (Hue wraps to zero)
+                Tuple.Create("hsva(1000, 1000%, 1000%, 1000%)",     new HsvColor(1, 0, 1, 1)),  // Clamps to max (Hue wraps to zero)
+
+                Tuple.Create("hsva(300, 0.9, 0.2, 0.8)", new HsvColor(0.8, 300, 0.9, 0.2)),
+                Tuple.Create("hsva(300, 90%, 20%, 0.8)", new HsvColor(0.8, 300, 0.9, 0.2)),
+            };
+
+            foreach (var dataPoint in data)
+            {
+                Assert.True(HsvColor.TryParse(dataPoint.Item1, out HsvColor parsedHsvColor));
+                Assert.True(dataPoint.Item2 == parsedHsvColor);
+            }
+        }
     }
 }
