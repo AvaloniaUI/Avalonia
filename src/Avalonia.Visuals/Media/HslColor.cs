@@ -436,10 +436,10 @@ namespace Avalonia.Media
             }
 
             return Color.FromArgb(
-                (byte)(255 * alpha),
-                (byte)(255 * (r1 + m)),
-                (byte)(255 * (g1 + m)),
-                (byte)(255 * (b1 + m)));
+                (byte)Math.Round(255 * alpha),
+                (byte)Math.Round(255 * (r1 + m)),
+                (byte)Math.Round(255 * (g1 + m)),
+                (byte)Math.Round(255 * (b1 + m)));
         }
 
         /// <summary>
