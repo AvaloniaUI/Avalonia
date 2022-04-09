@@ -50,6 +50,13 @@ namespace Avalonia.Media
         /// </summary>
         public byte B { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Color"/> struct.
+        /// </summary>
+        /// <param name="a">The alpha component.</param>
+        /// <param name="r">The red component.</param>
+        /// <param name="g">The green component.</param>
+        /// <param name="b">The blue component.</param>
         public Color(byte a, byte r, byte g, byte b)
         {
             A = a;
