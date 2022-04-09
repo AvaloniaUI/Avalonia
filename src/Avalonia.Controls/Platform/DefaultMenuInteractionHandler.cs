@@ -252,7 +252,8 @@ namespace Avalonia.Controls.Platform
                             // new menu.
                             if (item.IsSubMenuOpen &&
                                 item.Parent is IMenu &&
-                                item.Parent.SelectedItem is object)
+                                item.Parent.SelectedItem is object &&
+                                item.Parent.SelectedItem != item)
                             {
                                 item.Close();
                                 Open(item.Parent.SelectedItem, true);
