@@ -106,6 +106,18 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(SkipOnOSX = true)]
+        public void Select_Child_With_Alt_Access_Keys_When_TopLevel_Menu_Has_Same_AccessKey()
+        {
+            new Actions(_session)
+                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
+                .SendKeys("fh")
+                .Perform();
+
+            var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
+            Assert.Equal("_Hamburger", clickedMenuItem.Text);
+        }
+
+        [PlatformFact(SkipOnOSX = true)]
         public void Select_Child_With_Click_Arrow_Keys()
         {
             var fileMenu = _session.FindElementByAccessibilityId("FileMenu");

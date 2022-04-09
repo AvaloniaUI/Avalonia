@@ -83,6 +83,14 @@
               <MenuItem Name="OpenRecentMenu" Header="Open _Recent">
                 <MenuItem Name="OpenRecentFile1Menu" Header="File_1.txt"/>
               </MenuItem>
+              <Separator/>
+
+              <!-- Tests #7777 - must have the same access key as another toplevel menu -->
+              <MenuItem Header="_Hamburger"/>
+              
+            </MenuItem>
+            <MenuItem Header="_Help">
+              <MenuItem Header="_About"/>
             </MenuItem>
           </Menu>
           <StackPanel>
