@@ -58,7 +58,7 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(SkipOnOSX = true)]
-        public void Select_Child_With_Arrow_Keys()
+        public void Select_Child_With_Alt_Arrow_Keys()
         {
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
@@ -70,7 +70,7 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(SkipOnOSX = true)]
-        public void Select_Grandchild_With_Arrow_Keys()
+        public void Select_Grandchild_With_Alt_Arrow_Keys()
         {
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
@@ -82,7 +82,7 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(SkipOnOSX = true)]
-        public void Select_Child_With_Access_Keys()
+        public void Select_Child_With_Alt_Access_Keys()
         {
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
@@ -94,11 +94,39 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(SkipOnOSX = true)]
-        public void Select_Grandchild_With_Access_Keys()
+        public void Select_Grandchild_With_Alt_Access_Keys()
         {
             new Actions(_session)
                 .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
                 .SendKeys("rhg")
+                .Perform();
+
+            var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
+            Assert.Equal("_Grandchild", clickedMenuItem.Text);
+        }
+
+        [PlatformFact(SkipOnOSX = true)]
+        public void Select_Child_With_Click_Arrow_Keys()
+        {
+            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
+            rootMenuItem.SendClick();
+
+            new Actions(_session)
+                .SendKeys(Keys.Down + Keys.Enter)
+                .Perform();
+
+            var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
+            Assert.Equal("_Child 1", clickedMenuItem.Text);
+        }
+
+        [PlatformFact(SkipOnOSX = true)]
+        public void Select_Grandchild_With_Click_Arrow_Keys()
+        {
+            var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
+            rootMenuItem.SendClick();
+
+            new Actions(_session)
+                .SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter)
                 .Perform();
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
