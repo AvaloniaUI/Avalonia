@@ -169,6 +169,146 @@ namespace Avalonia.Media
             return HslColor.ToRgb(H, S, L, A);
         }
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            // Use a format similar to CSS. However:
+            //   - To ensure precision is never lost, allow decimal places.
+            //     This is especially important for round-trip serialization.
+            //   - To maintain numerical consistency, do not use percent.
+            //
+            // Example:
+            //
+            // hsla(hue, saturation, lightness, alpha)
+            // hsla(230, 1.0, 0.5, 1.0)
+            //
+
+            sb.Append("hsva(");
+            sb.Append(H.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(S.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(L.ToString(CultureInfo.InvariantCulture));
+            sb.Append(", ");
+            sb.Append(A.ToString(CultureInfo.InvariantCulture));
+            sb.Append(')');
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Parses an HSL color string.
+        /// </summary>
+        /// <param name="s">The HSL color string to parse.</param>
+        /// <returns>The parsed <see cref="HslColor"/>.</returns>
+        public static HslColor Parse(string s)
+        {
+            if (s is null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (TryParse(s, out HslColor hslColor))
+            {
+                return hslColor;
+            }
+
+            throw new FormatException($"Invalid HSL color string: '{s}'.");
+        }
+
+        /// <summary>
+        /// Parses an HSL color string.
+        /// </summary>
+        /// <param name="s">The HSL color string to parse.</param>
+        /// <param name="hslColor">The parsed <see cref="HslColor"/>.</param>
+        /// <returns>True if parsing was successful; otherwise, false.</returns>
+        public static bool TryParse(string s, out HslColor hslColor)
+        {
+            hslColor = default;
+
+            if (s is null)
+            {
+                return false;
+            }
+
+            string workingString = s.Trim();
+
+            if (workingString.Length == 0 ||
+                workingString.IndexOf(",", StringComparison.Ordinal) < 0)
+            {
+                return false;
+            }
+
+            if (workingString.Length > 6 &&
+                workingString.StartsWith("hsla(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(5, workingString.Length - 6);
+            }
+
+            if (workingString.Length > 5 &&
+                workingString.StartsWith("hsl(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(4, workingString.Length - 5);
+            }
+
+            string[] components = workingString.Split(',');
+
+            if (components.Length == 3) // HSL
+            {
+                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    TryInternalParse(components[1], out double saturation) &&
+                    TryInternalParse(components[2], out double lightness))
+                {
+                    hslColor = new HslColor(1.0, hue, saturation, lightness);
+                    return true;
+                }
+            }
+            else if (components.Length == 4) // HSLA
+            {
+                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    TryInternalParse(components[1], out double saturation) &&
+                    TryInternalParse(components[2], out double lightness) &&
+                    TryInternalParse(components[3], out double alpha))
+                {
+                    hslColor = new HslColor(alpha, hue, saturation, lightness);
+                    return true;
+                }
+            }
+
+            // Local function to specially parse a double value with an optional percentage sign
+            bool TryInternalParse(string inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+
+                if (percentIndex >= 0)
+                {
+                    var result = double.TryParse(
+                        inString.Substring(0, percentIndex),
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out double percentage);
+
+                    outDouble = percentage / 100.0;
+                    return result;
+                }
+                else
+                {
+                    return double.TryParse(
+                        inString,
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out outDouble);
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Creates a new <see cref="HslColor"/> from individual color component values.
         /// </summary>
