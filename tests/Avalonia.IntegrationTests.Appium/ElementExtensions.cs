@@ -31,8 +31,16 @@ namespace Avalonia.IntegrationTests.Appium
 
         public static bool GetIsFocused(this AppiumWebElement element)
         {
-            var active = element.WrappedDriver.SwitchTo().ActiveElement() as AppiumWebElement;
-            return element.Id == active?.Id;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var active = element.WrappedDriver.SwitchTo().ActiveElement() as AppiumWebElement;
+                return element.Id == active?.Id;
+            }
+            else
+            {
+                // https://stackoverflow.com/questions/71807788/check-if-element-is-focused-in-appium
+                throw new NotSupportedException("Couldn't work out how to check if an element is focused on mac.");
+            }
         }
 
         public static void SendClick(this AppiumWebElement element)

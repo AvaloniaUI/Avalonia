@@ -145,7 +145,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Ctrl+O", childMenuItem.GetAttribute("AcceleratorKey"));
         }
 
-        [Fact]
+        [PlatformFact(SkipOnOSX = true)]
         public void PointerOver_Does_Not_Steal_Focus()
         {
             // Issue #7906
