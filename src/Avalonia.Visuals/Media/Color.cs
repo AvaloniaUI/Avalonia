@@ -278,7 +278,7 @@ namespace Avalonia.Media
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
         {
-            // Use the by-channel conversion method directly for performance
+            // Use the by-component conversion method directly for performance
             // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
             return HsvColor.FromRgb(R, G, B, A);
         }
@@ -289,11 +289,13 @@ namespace Avalonia.Media
             return A == other.A && R == other.R && G == other.G && B == other.B;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is Color other && Equals(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked

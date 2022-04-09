@@ -310,6 +310,22 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Creates a new <see cref="HsvColor"/> from individual color component values.
+        /// </summary>
+        /// <remarks>
+        /// This exists for symmetry with the <see cref="Color"/> struct; however, the
+        /// appropriate constructor should commonly be used instead.
+        /// </remarks>
+        /// <param name="h">The Hue component in the range from 0..360.</param>
+        /// <param name="s">The Saturation component in the range from 0..1.</param>
+        /// <param name="v">The Value component in the range from 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> built from the individual color component values.</returns>
+        public static HsvColor FromHsv(double h, double s, double v)
+        {
+            return new HsvColor(1.0, h, s, v);
+        }
+
+        /// <summary>
         /// Converts the given HSV color to it's RGB color equivalent.
         /// </summary>
         /// <param name="hsvColor">The color in the HSV color model.</param>
