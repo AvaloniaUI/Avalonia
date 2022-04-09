@@ -326,7 +326,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSV color to it's RGB color equivalent.
+        /// Converts the given HSV color to its RGB color equivalent.
         /// </summary>
         /// <param name="hsvColor">The color in the HSV color model.</param>
         /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSVA values.</returns>
@@ -336,7 +336,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSVA color component values to it's RGB color equivalent.
+        /// Converts the given HSVA color component values to their RGB color equivalent.
         /// </summary>
         /// <param name="hue">The Hue component in the HSV color model in the range from 0..360.</param>
         /// <param name="saturation">The Saturation component in the HSV color model in the range from 0..1.</param>

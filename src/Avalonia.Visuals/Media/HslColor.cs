@@ -84,6 +84,20 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="HslColor"/> struct.
+        /// </summary>
+        /// <param name="color">The RGB color to convert to HSL.</param>
+        public HslColor(Color color)
+        {
+            var hsl = Color.ToHsl(color);
+
+            A = hsl.A;
+            H = hsl.H;
+            S = hsl.S;
+            L = hsl.L;
+        }
+
+        /// <summary>
         /// Gets the Alpha (transparency) component in the range from 0..1.
         /// </summary>
         public double A { get; }
@@ -189,7 +203,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSL color to it's RGB color equivalent.
+        /// Converts the given HSL color to its RGB color equivalent.
         /// </summary>
         /// <param name="hslColor">The color in the HSL color model.</param>
         /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSLA values.</returns>
@@ -199,7 +213,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSLA color component values to it's RGB color equivalent.
+        /// Converts the given HSLA color component values to their RGB color equivalent.
         /// </summary>
         /// <param name="hue">The Hue component in the HSL color model in the range from 0..360.</param>
         /// <param name="saturation">The Saturation component in the HSL color model in the range from 0..1.</param>

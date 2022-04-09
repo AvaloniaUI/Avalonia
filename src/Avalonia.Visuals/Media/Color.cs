@@ -21,6 +21,8 @@ namespace Avalonia.Media
 #endif
     readonly struct Color : IEquatable<Color>
     {
+        private const double byteToDouble = 1.0 / 255;
+
         static Color()
         {
 #if !BUILDTASK
@@ -280,12 +282,21 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Returns the HSL color model equivalent of this RGB color.
+        /// </summary>
+        /// <returns>The HSL equivalent color.</returns>
+        public HslColor ToHsl()
+        {
+            // Don't use the HslColor(Color) constructor to avoid an extra HslColor
+            return Color.ToHsl(R, G, B, A);
+        }
+
+        /// <summary>
         /// Returns the HSV color model equivalent of this RGB color.
         /// </summary>
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
         {
-            // Use the by-component conversion method directly for performance
             // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
             return Color.ToHsv(R, G, B, A);
         }
@@ -316,22 +327,116 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given RGB color to it's HSV color equivalent.
+        /// Converts the given RGB color to its HSL color equivalent.
+        /// </summary>
+        /// <param name="color">The color in the RGB color model.</param>
+        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
+        public static HslColor ToHsl(Color color)
+        {
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsl(
+                (byteToDouble * color.R),
+                (byteToDouble * color.G),
+                (byteToDouble * color.B),
+                (byteToDouble * color.A));
+        }
+
+        /// <summary>
+        /// Converts the given RGBA color component values to their HSL color equivalent.
+        /// </summary>
+        /// <param name="red">The Red component in the RGB color model.</param>
+        /// <param name="green">The Green component in the RGB color model.</param>
+        /// <param name="blue">The Blue component in the RGB color model.</param>
+        /// <param name="alpha">The Alpha component.</param>
+        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
+        public static HslColor ToHsl(
+            byte red,
+            byte green,
+            byte blue,
+            byte alpha = 0xFF)
+        {
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsl(
+                (byteToDouble * red),
+                (byteToDouble * green),
+                (byteToDouble * blue),
+                (byteToDouble * alpha));
+        }
+
+        /// <summary>
+        /// Converts the given RGBA color component values to their HSL color equivalent.
+        /// </summary>
+        /// <remarks>
+        /// Warning: No bounds checks or clamping is done on the input component values.
+        /// This method is for internal-use only and the caller must ensure bounds.
+        /// </remarks>
+        /// <param name="r">The Red component in the RGB color model within the range 0..1.</param>
+        /// <param name="g">The Green component in the RGB color model within the range 0..1.</param>
+        /// <param name="b">The Blue component in the RGB color model within the range 0..1.</param>
+        /// <param name="a">The Alpha component in the RGB color model within the range 0..1.</param>
+        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
+        internal static HslColor ToHsl(
+            double r,
+            double g,
+            double b,
+            double a = 1.0)
+        {
+            // Note: Conversion code is originally based on ColorHelper in the Windows Community Toolkit (licensed MIT)
+            // https://github.com/CommunityToolkit/WindowsCommunityToolkit/blob/main/Microsoft.Toolkit.Uwp/Helpers/ColorHelper.cs
+            // It has been modified.
+
+            var max = Math.Max(Math.Max(r, g), b);
+            var min = Math.Min(Math.Min(r, g), b);
+            var chroma = max - min;
+            double h1;
+
+            if (chroma == 0)
+            {
+                h1 = 0;
+            }
+            else if (max == r)
+            {
+                // The % operator doesn't do proper modulo on negative
+                // numbers, so we'll add 6 before using it
+                h1 = (((g - b) / chroma) + 6) % 6;
+            }
+            else if (max == g)
+            {
+                h1 = 2 + ((b - r) / chroma);
+            }
+            else
+            {
+                h1 = 4 + ((r - g) / chroma);
+            }
+
+            double lightness = 0.5 * (max + min);
+            double saturation = chroma == 0 ? 0 : chroma / (1 - Math.Abs((2 * lightness) - 1));
+
+            return new HslColor(a, 60 * h1, saturation, lightness, clampValues: false);
+        }
+
+        /// <summary>
+        /// Converts the given RGB color to its HSV color equivalent.
         /// </summary>
         /// <param name="color">The color in the RGB color model.</param>
         /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
         public static HsvColor ToHsv(Color color)
         {
-            return Color.ToHsv(color.R, color.G, color.B, color.A);
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsv(
+                (byteToDouble * color.R),
+                (byteToDouble * color.G),
+                (byteToDouble * color.B),
+                (byteToDouble * color.A));
         }
 
         /// <summary>
-        /// Converts the given RGBA color component values to its HSV color equivalent.
+        /// Converts the given RGBA color component values to their HSV color equivalent.
         /// </summary>
-        /// <param name="red">The red component in the RGB color model.</param>
-        /// <param name="green">The green component in the RGB color model.</param>
-        /// <param name="blue">The blue component in the RGB color model.</param>
-        /// <param name="alpha">The alpha component.</param>
+        /// <param name="red">The Red component in the RGB color model.</param>
+        /// <param name="green">The Green component in the RGB color model.</param>
+        /// <param name="blue">The Blue component in the RGB color model.</param>
+        /// <param name="alpha">The Alpha component.</param>
         /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
         public static HsvColor ToHsv(
             byte red,
@@ -339,16 +444,36 @@ namespace Avalonia.Media
             byte blue,
             byte alpha = 0xFF)
         {
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsv(
+                (byteToDouble * red),
+                (byteToDouble * green),
+                (byteToDouble * blue),
+                (byteToDouble * alpha));
+        }
+
+        /// <summary>
+        /// Converts the given RGBA color component values to their HSV color equivalent.
+        /// </summary>
+        /// <remarks>
+        /// Warning: No bounds checks or clamping is done on the input component values.
+        /// This method is for internal-use only and the caller must ensure bounds.
+        /// </remarks>
+        /// <param name="r">The Red component in the RGB color model within the range 0..1.</param>
+        /// <param name="g">The Green component in the RGB color model within the range 0..1.</param>
+        /// <param name="b">The Blue component in the RGB color model within the range 0..1.</param>
+        /// <param name="a">The Alpha component in the RGB color model within the range 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
+        internal static HsvColor ToHsv(
+            double r,
+            double g,
+            double b,
+            double a = 1.0)
+        {
             // Note: Conversion code is originally based on the C++ in WinUI (licensed MIT)
             // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/Common/ColorConversion.cpp
             // This was used because it is the best documented and likely most optimized for performance
             // Alpha support was added
-
-            // Normalize RGBA components into the 0..1 range used by this algorithm
-            double r = red / 255.0;
-            double g = green / 255.0;
-            double b = blue / 255.0;
-            double a = alpha / 255.0;
 
             double hue;
             double saturation;
@@ -436,7 +561,7 @@ namespace Avalonia.Media
                 saturation = chroma / value;
             }
 
-            return new HsvColor(a, hue, saturation, value, false);
+            return new HsvColor(a, hue, saturation, value, clampValues: false);
         }
 
         /// <summary>
