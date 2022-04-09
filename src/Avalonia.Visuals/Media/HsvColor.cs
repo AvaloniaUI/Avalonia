@@ -174,26 +174,16 @@ namespace Avalonia.Media
         {
             var sb = new StringBuilder();
 
-            // Use a format similar to HSL in HTML/CSS "hsla(0, 100%, 50%, 0.5)"
-            //
-            // However:
-            //   - To ensure precision is never lost, allow decimal places
-            //   - To maintain numerical consistency do not use percent
+            // Use a format similar to CSS. However:
+            //   - To ensure precision is never lost, allow decimal places.
+            //     This is especially important for round-trip serialization.
+            //   - To maintain numerical consistency, do not use percent.
             //
             // Example:
             //
             // hsva(hue, saturation, value, alpha)
             // hsva(230, 1.0, 0.5, 1.0)
             //
-            //   Where:
-            //
-            //          hue : double from 0 to 360
-            //   saturation : double from 0 to 1
-            //                (HTML uses a percentage)
-            //        value : double from 0 to 1
-            //                (HTML uses a percentage)
-            //        alpha : double from 0 to 1
-            //                (HTML does not use a percentage for alpha)
 
             sb.Append("hsva(");
             sb.Append(H.ToString(CultureInfo.InvariantCulture));
@@ -270,8 +260,8 @@ namespace Avalonia.Media
             if (components.Length == 3) // HSV
             {
                 if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
-                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value))
+                    TryInternalParse(components[1], out double saturation) &&
+                    TryInternalParse(components[2], out double value))
                 {
                     hsvColor = new HsvColor(1.0, hue, saturation, value);
                     return true;
@@ -280,12 +270,39 @@ namespace Avalonia.Media
             else if (components.Length == 4) // HSVA
             {
                 if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
-                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value) &&
-                    double.TryParse(components[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double alpha))
+                    TryInternalParse(components[1], out double saturation) &&
+                    TryInternalParse(components[2], out double value) &&
+                    TryInternalParse(components[3], out double alpha))
                 {
                     hsvColor = new HsvColor(alpha, hue, saturation, value);
                     return true;
+                }
+            }
+
+            // Local function to specially parse a double value with an optional percentage sign
+            bool TryInternalParse(string inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+
+                if (percentIndex >= 0)
+                {
+                    var result = double.TryParse(
+                        inString.Substring(0, percentIndex),
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out double percentage);
+
+                    outDouble = percentage / 100.0;
+                    return result;
+                }
+                else
+                {
+                    return double.TryParse(
+                        inString,
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out outDouble);
                 }
             }
 
