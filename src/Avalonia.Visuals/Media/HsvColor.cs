@@ -21,11 +21,11 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
-        /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// <param name="alpha">The Alpha (transparency) component in the range from 0..1.</param>
+        /// <param name="hue">The Hue component in the range from 0..360.
         /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
-        /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="value">The Value channel value in the range from 0..1.</param>
+        /// <param name="saturation">The Saturation component in the range from 0..1.</param>
+        /// <param name="value">The Value component in the range from 0..1.</param>
         public HsvColor(
             double alpha,
             double hue,
@@ -49,14 +49,14 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>
         /// This constructor exists only for internal use where performance is critical.
-        /// Whether or not the channel values are in the correct ranges must be known.
+        /// Whether or not the component values are in the correct ranges must be known.
         /// </remarks>
-        /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// <param name="alpha">The Alpha (transparency) component in the range from 0..1.</param>
+        /// <param name="hue">The Hue component in the range from 0..360.
         /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
-        /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="value">The Value channel value in the range from 0..1.</param>
-        /// <param name="clampValues">Whether to clamp channel values to their required ranges.</param>
+        /// <param name="saturation">The Saturation component in the range from 0..1.</param>
+        /// <param name="value">The Value component in the range from 0..1.</param>
+        /// <param name="clampValues">Whether to clamp component values to their required ranges.</param>
         internal HsvColor(
             double alpha,
             double hue,
@@ -98,23 +98,23 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the Alpha (transparency) channel value in the range from 0..1.
+        /// Gets the Alpha (transparency) component in the range from 0..1.
         /// </summary>
         public double A { get; }
 
         /// <summary>
-        /// Gets the Hue channel value in the range from 0..360.
+        /// Gets the Hue component in the range from 0..360.
         /// Note that 360 is equivalent to 0 and will be adjusted automatically.
         /// </summary>
         public double H { get; }
 
         /// <summary>
-        /// Gets the Saturation channel value in the range from 0..1.
+        /// Gets the Saturation component in the range from 0..1.
         /// </summary>
         public double S { get; }
 
         /// <summary>
-        /// Gets the Value channel value in the range from 0..1.
+        /// Gets the Value component in the range from 0..1.
         /// </summary>
         public double V { get; }
 
@@ -165,7 +165,7 @@ namespace Avalonia.Media
         /// <returns>The RGB equivalent color.</returns>
         public Color ToRgb()
         {
-            // Use the by-channel conversion method directly for performance
+            // Use the by-component conversion method directly for performance
             return HsvColor.ToRgb(H, S, V, A);
         }
 
@@ -293,17 +293,17 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Creates a new <see cref="HsvColor"/> from individual color channel values.
+        /// Creates a new <see cref="HsvColor"/> from individual color component values.
         /// </summary>
         /// <remarks>
         /// This exists for symmetry with the <see cref="Color"/> struct; however, the
         /// appropriate constructor should commonly be used instead.
         /// </remarks>
-        /// <param name="a">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="h">The Hue channel value in the range from 0..360.</param>
-        /// <param name="s">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="v">The Value channel value in the range from 0..1.</param>
-        /// <returns>A new <see cref="HsvColor"/> built from the individual color channel values.</returns>
+        /// <param name="a">The Alpha (transparency) component in the range from 0..1.</param>
+        /// <param name="h">The Hue component in the range from 0..360.</param>
+        /// <param name="s">The Saturation component in the range from 0..1.</param>
+        /// <param name="v">The Value component in the range from 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> built from the individual color component values.</returns>
         public static HsvColor FromAhsv(double a, double h, double s, double v)
         {
             return new HsvColor(a, h, s, v);
@@ -320,12 +320,12 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSVA color channel values to it's RGB color equivalent.
+        /// Converts the given HSVA color component values to it's RGB color equivalent.
         /// </summary>
-        /// <param name="hue">The hue channel value in the HSV color model in the range from 0..360.</param>
-        /// <param name="saturation">The saturation channel value in the HSV color model in the range from 0..1.</param>
-        /// <param name="value">The value channel value in the HSV color model in the range from 0..1.</param>
-        /// <param name="alpha">The alpha channel value in the range from 0..1.</param>
+        /// <param name="hue">The hue component in the HSV color model in the range from 0..360.</param>
+        /// <param name="saturation">The saturation component in the HSV color model in the range from 0..1.</param>
+        /// <param name="value">The value component in the HSV color model in the range from 0..1.</param>
+        /// <param name="alpha">The alpha component in the range from 0..1.</param>
         /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSVA values.</returns>
         public static Color ToRgb(
             double hue,
@@ -336,7 +336,7 @@ namespace Avalonia.Media
             // Note: Conversion code is originally based on the C++ in WinUI (licensed MIT)
             // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/Common/ColorConversion.cpp
             // This was used because it is the best documented and likely most optimized for performance
-            // Alpha channel support was added
+            // Alpha support was added
 
             // We want the hue to be between 0 and 359,
             // so we first ensure that that's the case.
@@ -468,12 +468,12 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given RGBA color channel values to it's HSV color equivalent.
+        /// Converts the given RGBA color component values to its HSV color equivalent.
         /// </summary>
-        /// <param name="red">The red channel value in the RGB color model.</param>
-        /// <param name="green">The green channel value in the RGB color model.</param>
-        /// <param name="blue">The blue channel value in the RGB color model.</param>
-        /// <param name="alpha">The alpha channel value.</param>
+        /// <param name="red">The red component in the RGB color model.</param>
+        /// <param name="green">The green component in the RGB color model.</param>
+        /// <param name="blue">The blue component in the RGB color model.</param>
+        /// <param name="alpha">The alpha component.</param>
         /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
         public static HsvColor FromRgb(
             byte red,
@@ -484,9 +484,9 @@ namespace Avalonia.Media
             // Note: Conversion code is originally based on the C++ in WinUI (licensed MIT)
             // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/Common/ColorConversion.cpp
             // This was used because it is the best documented and likely most optimized for performance
-            // Alpha channel support was added
+            // Alpha support was added
 
-            // Normalize RGBA channel values into the 0..1 range used by this algorithm
+            // Normalize RGBA components into the 0..1 range used by this algorithm
             double r = red / 255.0;
             double g = green / 255.0;
             double b = blue / 255.0;
