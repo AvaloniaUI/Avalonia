@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reactive.Disposables;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -15,12 +16,19 @@ using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// A date selection control that allows the user to select dates from a drop down calendar.
+    /// </summary>
     [TemplatePart(ElementButton,   typeof(Button))]
     [TemplatePart(ElementCalendar, typeof(Calendar))]
     [TemplatePart(ElementPopup,    typeof(Popup))]
     [TemplatePart(ElementTextBox,  typeof(TextBox))]
+    [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public partial class CalendarDatePicker : TemplatedControl
     {
+        protected const string pcPressed    = ":pressed";
+        protected const string pcFlyoutOpen = ":flyout-open";
+
         private const string ElementTextBox = "PART_TextBox";
         private const string ElementButton = "PART_Button";
         private const string ElementPopup = "PART_Popup";
@@ -29,8 +37,6 @@ namespace Avalonia.Controls
         private Calendar? _calendar;
         private string _defaultText;
         private Button? _dropDownButton;
-        //private Canvas _outsideCanvas;
-        //private Canvas _outsidePopupCanvas;
         private Popup? _popUp;
         private TextBox? _textBox;
         private IDisposable? _textBoxTextChangedSubscription;
@@ -48,6 +54,8 @@ namespace Avalonia.Controls
         private bool _suspendTextChangeHandler = false;
         private bool _isPopupClosing = false;
         private bool _ignoreButtonClick = false;
+        private bool _isFlyoutOpen = false;
+        private bool _isPressed = false;
 
         /// <summary>
         /// Occurs when the drop-down
@@ -80,14 +88,22 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the
-        /// <see cref="T:Avalonia.Controls.DatePicker" /> class.
+        /// Initializes a new instance of the <see cref="CalendarDatePicker" /> class.
         /// </summary>
         public CalendarDatePicker()
         {
             FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
             _defaultText = string.Empty;
             DisplayDate = DateTime.Today;
+        }
+
+        /// <summary>
+        /// Updates the visual state of the control by applying latest PseudoClasses.
+        /// </summary>
+        protected void UpdatePseudoClasses()
+        {
+            PseudoClasses.Set(pcFlyoutOpen, _isFlyoutOpen);
+            PseudoClasses.Set(pcPressed, _isPressed);
         }
 
         /// <inheritdoc/>
@@ -147,8 +163,9 @@ namespace Avalonia.Controls
             if(_dropDownButton != null)
             {
                 _dropDownButton.Click += DropDownButton_Click;
-                _buttonPointerPressedSubscription =
-                    _dropDownButton.AddDisposableHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true);
+                _buttonPointerPressedSubscription = new CompositeDisposable(
+                    _dropDownButton.AddDisposableHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true),
+                    _dropDownButton.AddDisposableHandler(PointerReleasedEvent, DropDownButton_PointerReleased, handledEventsToo: true));
             }
 
             if (_textBox != null)
@@ -180,6 +197,8 @@ namespace Avalonia.Controls
                     SetSelectedDate();
                 }
             }
+
+            UpdatePseudoClasses();
         }
 
         /// <inheritdoc/>
@@ -215,6 +234,10 @@ namespace Avalonia.Controls
                         else
                         {
                             _popUp.IsOpen = false;
+                            _isFlyoutOpen = _popUp.IsOpen;
+                            _isPressed = false;
+
+                            UpdatePseudoClasses();
                             OnCalendarClosed(new RoutedEventArgs());
                         }
                     }
@@ -516,6 +539,15 @@ namespace Avalonia.Controls
         private void DropDownButton_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             _ignoreButtonClick = _isPopupClosing;
+
+            _isPressed = true;
+            UpdatePseudoClasses();
+        }
+
+        private void DropDownButton_PointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            _isPressed = false;
+            UpdatePseudoClasses();
         }
 
         private void DropDownButton_Click(object? sender, RoutedEventArgs e)
@@ -559,16 +591,16 @@ namespace Avalonia.Controls
             if (_calendar != null)
             {
                 _calendar.Focus();
-                OpenPopUp();
+
+                // Open the PopUp
+                _onOpenSelectedDate = SelectedDate;
+                _popUp!.IsOpen = true;
+                _isFlyoutOpen = _popUp!.IsOpen;
+
+                UpdatePseudoClasses();
                 _calendar.ResetStates();
                 OnCalendarOpened(new RoutedEventArgs());
             }
-        }
-
-        private void OpenPopUp()
-        {
-            _onOpenSelectedDate = SelectedDate;
-            _popUp!.IsOpen = true;
         }
 
         /// <summary>
