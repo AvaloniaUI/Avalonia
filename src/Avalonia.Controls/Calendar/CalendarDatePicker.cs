@@ -331,6 +331,7 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
         }
 
+        /// <inheritdoc/>
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
             if (property == SelectedDateProperty)
@@ -339,6 +340,55 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                e.Handled = true;
+
+                _ignoreButtonClick = _isPopupClosing;
+
+                _isPressed = true;
+                UpdatePseudoClasses();
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (_isPressed && e.InitialPressMouseButton == MouseButton.Left)
+            {
+                e.Handled = true;
+
+                if (!_ignoreButtonClick)
+                {
+                    HandlePopUp();
+                }
+                else
+                {
+                    _ignoreButtonClick = false;
+                }
+
+                _isPressed = false;
+                UpdatePseudoClasses();
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            base.OnPointerCaptureLost(e);
+
+            _isPressed = false;
+            UpdatePseudoClasses();
+        }
+
+        /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnPointerWheelChanged(e);
@@ -354,6 +404,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
@@ -369,9 +420,13 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
+
+            _isPressed = false;
+            UpdatePseudoClasses();
 
             SetSelectedDate();
         }
@@ -671,7 +726,6 @@ namespace Avalonia.Controls
 
         private bool ProcessDatePickerKey(KeyEventArgs e)
         {
-            
             switch (e.Key)
             {
                 case Key.Enter:
