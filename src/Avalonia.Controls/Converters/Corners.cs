@@ -3,10 +3,10 @@
 namespace Avalonia.Controls.Converters
 {
     /// <summary>
-    /// Defines constants that specify the corner of a <see cref="CornerRadius"/>.
+    /// Defines constants that specify one or more corners of a <see cref="CornerRadius"/>.
     /// </summary>
     [Flags]
-    public enum CornerRadiusCorner
+    public enum Corners
     {
         /// <summary>
         /// No corner.

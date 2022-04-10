@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Converters
         /// Gets or sets the corners to filter by.
         /// Only the specified corners will be included in the converted <see cref="CornerRadius"/>.
         /// </summary>
-        public CornerRadiusCorner Filter { get; set; }
+        public Corners Filter { get; set; }
 
         /// <summary>
         /// Gets or sets the scale multiplier applied uniformly to each corner.
@@ -30,10 +30,10 @@ namespace Avalonia.Controls.Converters
             }
 
             return new CornerRadius(
-                Filter.HasAllFlags(CornerRadiusCorner.TopLeft) ? radius.TopLeft * Scale : 0,
-                Filter.HasAllFlags(CornerRadiusCorner.TopRight) ? radius.TopRight * Scale : 0,
-                Filter.HasAllFlags(CornerRadiusCorner.BottomRight) ? radius.BottomRight * Scale : 0,
-                Filter.HasAllFlags(CornerRadiusCorner.BottomLeft) ? radius.BottomLeft * Scale : 0);
+                Filter.HasAllFlags(Corners.TopLeft) ? radius.TopLeft * Scale : 0,
+                Filter.HasAllFlags(Corners.TopRight) ? radius.TopRight * Scale : 0,
+                Filter.HasAllFlags(Corners.BottomRight) ? radius.BottomRight * Scale : 0,
+                Filter.HasAllFlags(Corners.BottomLeft) ? radius.BottomLeft * Scale : 0);
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

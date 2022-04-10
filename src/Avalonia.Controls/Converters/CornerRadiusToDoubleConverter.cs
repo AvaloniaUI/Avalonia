@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Converters
         /// <summary>
         /// Gets or sets the specific corner of the <see cref="CornerRadius"/> to convert to double.
         /// </summary>
-        public CornerRadiusCorner Corner { get; set; }
+        public Corners Corner { get; set; }
 
         /// <inheritdoc/>
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -24,13 +24,13 @@ namespace Avalonia.Controls.Converters
 
             switch (Corner)
             {
-                case CornerRadiusCorner.TopLeft:
+                case Corners.TopLeft:
                     return cornerRadius.TopLeft;
-                case CornerRadiusCorner.TopRight:
+                case Corners.TopRight:
                     return cornerRadius.TopRight;
-                case CornerRadiusCorner.BottomRight:
+                case Corners.BottomRight:
                     return cornerRadius.BottomRight;
-                case CornerRadiusCorner.BottomLeft:
+                case Corners.BottomLeft:
                     return cornerRadius.BottomLeft;
                 default:
                     return 0.0;
