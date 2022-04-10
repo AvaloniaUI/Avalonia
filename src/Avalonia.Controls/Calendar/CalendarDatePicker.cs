@@ -179,12 +179,6 @@ namespace Avalonia.Controls
         static CalendarDatePicker()
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
-
-            IsDropDownOpenProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnIsDropDownOpenChanged(e));
-            SelectedDateProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateChanged(e));
-            SelectedDateFormatProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateFormatChanged(e));
-            CustomDateFormatStringProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnCustomDateFormatStringChanged(e));
-            TextProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnTextChanged(e));
         }
 
         /// <summary>
@@ -288,6 +282,33 @@ namespace Avalonia.Controls
                     SetSelectedDate();
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.Property == CustomDateFormatStringProperty)
+            {
+                OnCustomDateFormatStringChanged(change);
+            }
+            else if (change.Property == IsDropDownOpenProperty)
+            {
+                OnIsDropDownOpenChanged(change);
+            }
+            else if (change.Property == SelectedDateProperty)
+            {
+                OnSelectedDateChanged(change);
+            }
+            else if (change.Property == SelectedDateFormatProperty)
+            {
+                OnSelectedDateFormatChanged(change);
+            }
+            else if (change.Property == TextProperty)
+            {
+                OnTextChanged(change);
+            }
+
+            base.OnPropertyChanged(change);
         }
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
