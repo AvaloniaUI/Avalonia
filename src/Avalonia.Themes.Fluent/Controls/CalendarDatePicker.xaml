@@ -19,6 +19,7 @@
 
   <Styles.Resources>
     <sys:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</sys:Double>
+    <x:Double x:Key="CalendarDatePickerMinHeight">32</x:Double>
   </Styles.Resources>
   
   <Style Selector="CalendarDatePicker">
@@ -28,6 +29,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource CalendarDatePickerBorderThemeThickness}"/>
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="MinHeight" Value="{DynamicResource CalendarDatePickerMinHeight}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -41,7 +43,8 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   Background="{TemplateBinding Background}"
                   CornerRadius="{TemplateBinding CornerRadius}"
-                  MinHeight="32">
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
             <Grid ColumnDefinitions="*,Auto">
               <TextBox Name="PART_TextBox"
                        Foreground="{TemplateBinding Foreground}"
