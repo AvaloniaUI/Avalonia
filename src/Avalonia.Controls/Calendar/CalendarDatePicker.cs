@@ -899,30 +899,5 @@ namespace Avalonia.Controls
         {
             return !string.IsNullOrWhiteSpace(formatString);
         }
-
-        private static DateTime DiscardDayTime(DateTime d)
-        {
-            int year = d.Year;
-            int month = d.Month;
-            DateTime newD = new DateTime(year, month, 1, 0, 0, 0);
-            return newD;
-        }
-
-        private static DateTime? DiscardTime(DateTime? d)
-        {
-            if (d == null)
-            {
-                return null;
-            }
-            else
-            {
-                DateTime discarded = (DateTime) d;
-                int year = discarded.Year;
-                int month = discarded.Month;
-                int day = discarded.Day;
-                DateTime newD = new DateTime(year, month, day, 0, 0, 0);
-                return newD;
-            }
-        }
     }
 }
