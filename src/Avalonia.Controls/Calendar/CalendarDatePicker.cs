@@ -287,25 +287,124 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
+            // CustomDateFormatString
             if (change.Property == CustomDateFormatStringProperty)
             {
-                OnCustomDateFormatStringChanged(change);
+                if (SelectedDateFormat == CalendarDatePickerFormat.Custom)
+                {
+                    OnDateFormatChanged();
+                }
             }
+            // IsDropDownOpen
             else if (change.Property == IsDropDownOpenProperty)
             {
-                OnIsDropDownOpenChanged(change);
+                var oldValue = change.OldValue.GetValueOrDefault<bool>();
+                var value = change.NewValue.GetValueOrDefault<bool>();
+
+                if (_popUp != null && _popUp.Child != null)
+                {
+                    if (value != oldValue)
+                    {
+                        if (_calendar!.DisplayMode != CalendarMode.Month)
+                        {
+                            _calendar.DisplayMode = CalendarMode.Month;
+                        }
+
+                        if (value)
+                        {
+                            OpenDropDown();
+                        }
+                        else
+                        {
+                            _popUp.IsOpen = false;
+                            OnCalendarClosed(new RoutedEventArgs());
+                        }
+                    }
+                }
             }
+            // SelectedDate
             else if (change.Property == SelectedDateProperty)
             {
-                OnSelectedDateChanged(change);
+                var addedDate = change.NewValue.GetValueOrDefault() as DateTime?;
+                var removedDate = change.OldValue.GetValueOrDefault() as DateTime?;
+
+                if (SelectedDate != null)
+                {
+                    DateTime day = SelectedDate.Value;
+
+                    // When the SelectedDateProperty change is done from
+                    // OnTextPropertyChanged method, two-way binding breaks if
+                    // BeginInvoke is not used:
+                    Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        _settingSelectedDate = true;
+                        Text = DateTimeToString(day);
+                        _settingSelectedDate = false;
+                        OnDateSelected(addedDate, removedDate);
+                    });
+
+                    // When DatePickerDisplayDateFlag is TRUE, the SelectedDate
+                    // change is coming from the Calendar UI itself, so, we
+                    // shouldn't change the DisplayDate since it will automatically
+                    // be changed by the Calendar
+                    if ((day.Month != DisplayDate.Month || day.Year != DisplayDate.Year) && (_calendar == null || !_calendar.CalendarDatePickerDisplayDateFlag))
+                    {
+                        DisplayDate = day;
+                    }
+                    if(_calendar != null)
+                        _calendar.CalendarDatePickerDisplayDateFlag = false;
+                }
+                else
+                {
+                    _settingSelectedDate = true;
+                    SetWaterMarkText();
+                    _settingSelectedDate = false;
+                    OnDateSelected(addedDate, removedDate);
+                }
             }
+            // SelectedDateFormat
             else if (change.Property == SelectedDateFormatProperty)
             {
-                OnSelectedDateFormatChanged(change);
+                OnDateFormatChanged();
             }
+            // Text
             else if (change.Property == TextProperty)
             {
-                OnTextChanged(change);
+                var oldValue = change.OldValue.GetValueOrDefault() as string;
+                var value = change.NewValue.GetValueOrDefault() as string;
+
+                if (!_suspendTextChangeHandler)
+                {
+                    if (value != null)
+                    {
+                        if (_textBox != null)
+                        {
+                            _textBox.Text = value;
+                        }
+                        else
+                        {
+                            _defaultText = value;
+                        }
+
+                        if (!_settingSelectedDate)
+                        {
+                            SetSelectedDate();
+                        }
+                    }
+                    else
+                    {
+                        if (!_settingSelectedDate)
+                        {
+                            _settingSelectedDate = true;
+                            SelectedDate = null;
+                            _settingSelectedDate = false;
+                        }
+                    }
+                }
+                else
+                {
+                    SetWaterMarkText();
+                }
             }
 
             base.OnPropertyChanged(change);
@@ -355,73 +454,6 @@ namespace Avalonia.Controls
 
             SetSelectedDate();
         }
-        
-        private void OnIsDropDownOpenChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var oldValue = (bool)e.OldValue!;
-            var value = (bool)e.NewValue!;
-
-            if (_popUp != null && _popUp.Child != null)
-            {
-                if (value != oldValue)
-                {
-                    if (_calendar!.DisplayMode != CalendarMode.Month)
-                    {
-                        _calendar.DisplayMode = CalendarMode.Month;
-                    }
-
-                    if (value)
-                    {
-                        OpenDropDown();
-                    }
-                    else
-                    {
-                        _popUp.IsOpen = false;
-                        OnCalendarClosed(new RoutedEventArgs());
-                    }
-                }
-            }
-        }
-
-        private void OnSelectedDateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var addedDate = (DateTime?)e.NewValue;
-            var removedDate = (DateTime?)e.OldValue;
-
-            if (SelectedDate != null)
-            {
-                DateTime day = SelectedDate.Value;
-
-                // When the SelectedDateProperty change is done from
-                // OnTextPropertyChanged method, two-way binding breaks if
-                // BeginInvoke is not used:
-                Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    _settingSelectedDate = true;
-                    Text = DateTimeToString(day);
-                    _settingSelectedDate = false;
-                    OnDateSelected(addedDate, removedDate);
-                });
-
-                // When DatePickerDisplayDateFlag is TRUE, the SelectedDate
-                // change is coming from the Calendar UI itself, so, we
-                // shouldn't change the DisplayDate since it will automatically
-                // be changed by the Calendar
-                if ((day.Month != DisplayDate.Month || day.Year != DisplayDate.Year) && (_calendar == null || !_calendar.CalendarDatePickerDisplayDateFlag))
-                {
-                    DisplayDate = day;
-                }
-                if(_calendar != null)
-                    _calendar.CalendarDatePickerDisplayDateFlag = false;
-            }
-            else
-            {
-                _settingSelectedDate = true;
-                SetWaterMarkText();
-                _settingSelectedDate = false;
-                OnDateSelected(addedDate, removedDate);
-            }
-        }
 
         private void OnDateFormatChanged()
         {
@@ -445,57 +477,6 @@ namespace Avalonia.Controls
                         Text = s;
                     }
                 }
-            }
-        }
-
-        private void OnSelectedDateFormatChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            OnDateFormatChanged();
-        }
-
-        private void OnCustomDateFormatStringChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if(SelectedDateFormat == CalendarDatePickerFormat.Custom)
-            {
-                OnDateFormatChanged();
-            }
-        }
-
-        private void OnTextChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var oldValue = (string?)e.OldValue;
-            var value = (string?)e.NewValue;
-
-            if (!_suspendTextChangeHandler)
-            {
-                if (value != null)
-                {
-                    if (_textBox != null)
-                    {
-                        _textBox.Text = value;
-                    }
-                    else
-                    {
-                        _defaultText = value;
-                    }
-                    if (!_settingSelectedDate)
-                    {
-                        SetSelectedDate();
-                    }
-                }
-                else
-                {
-                    if (!_settingSelectedDate)
-                    {
-                        _settingSelectedDate = true;
-                        SelectedDate = null;
-                        _settingSelectedDate = false;
-                    }
-                }
-            }
-            else
-            {
-                SetWaterMarkText();
             }
         }
 
@@ -737,6 +718,7 @@ namespace Avalonia.Controls
                     throw textParseError.Exception;
                 }
             }
+
             return null;
         }
 
@@ -753,6 +735,7 @@ namespace Avalonia.Controls
                 case CalendarDatePickerFormat.Custom:
                     return string.Format(CultureInfo.CurrentCulture, d.ToString(CustomDateFormatString, dtfi));
             }
+
             return null;
         }
 
@@ -776,6 +759,7 @@ namespace Avalonia.Controls
                         break;
                     }
             }
+
             return false;
         }
 
