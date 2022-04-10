@@ -83,6 +83,36 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly AttachedProperty<FontStretch> FontStretchProperty =
             TextElement.FontStretchProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="TextAlignment"/> property
+        /// </summary>
+        public static readonly AttachedProperty<TextAlignment> TextAlignmentProperty =
+            TextBlock.TextAlignmentProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="TextWrapping"/> property
+        /// </summary>
+        public static readonly AttachedProperty<TextWrapping> TextWrappingProperty =
+            TextBlock.TextWrappingProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="TextTrimming"/> property
+        /// </summary>
+        public static readonly AttachedProperty<TextTrimming> TextTrimmingProperty =
+            TextBlock.TextTrimmingProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="LineHeight"/> property
+        /// </summary>
+        public static readonly AttachedProperty<double> LineHeightProperty =
+            TextBlock.LineHeightProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="MaxLines"/> property
+        /// </summary>
+        public static readonly AttachedProperty<int> MaxLinesProperty =
+            TextBlock.MaxLinesProperty.AddOwner<ContentPresenter>();
                 
         /// <summary>
         /// Defines the <see cref="Child"/> property.
@@ -248,6 +278,51 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(FontStretchProperty);
             set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text alignment
+        /// </summary>
+        public TextAlignment TextAlignment
+        {
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text wrapping
+        /// </summary>
+        public TextWrapping TextWrapping
+        {
+            get => GetValue(TextWrappingProperty);
+            set => SetValue(TextWrappingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text trimming
+        /// </summary>
+        public TextTrimming TextTrimming
+        {
+            get => GetValue(TextTrimmingProperty);
+            set => SetValue(TextTrimmingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the line height
+        /// </summary>
+        public double LineHeight
+        {
+            get => GetValue(LineHeightProperty);
+            set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the max lines
+        /// </summary>
+        public int MaxLines
+        {
+            get => GetValue(MaxLinesProperty);
+            set => SetValue(MaxLinesProperty, value);
         }
 
         /// <summary>
