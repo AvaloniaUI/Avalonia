@@ -131,14 +131,13 @@ namespace Avalonia.Controls
         /// Gets or sets the date to display.
         /// </summary>
         /// <value>
-        /// The date to display. The default 
-        /// <see cref="P:System.DateTime.Today" />.
+        /// The date to display. The default is <see cref="DateTime.Today" />.
         /// </value>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        /// <exception cref="System.ArgumentOutOfRangeException">
         /// The specified date is not in the range defined by
-        /// <see cref="P:Avalonia.Controls.CalendarDatePicker.DisplayDateStart" />
+        /// <see cref="CalendarDatePicker.DisplayDateStart" />
         /// and
-        /// <see cref="P:Avalonia.Controls.CalendarDatePicker.DisplayDateEnd" />.
+        /// <see cref="CalendarDatePicker.DisplayDateEnd" />.
         /// </exception>
         public DateTime DisplayDate
         {
@@ -215,11 +214,11 @@ namespace Avalonia.Controls
         /// </value>
         /// <exception cref="T:System.ArgumentOutOfRangeException">
         /// The specified date is not in the range defined by
-        /// <see cref="P:Avalonia.Controls.DatePicker.DisplayDateStart" />
+        /// <see cref="CalendarDatePicker.DisplayDateStart" />
         /// and
-        /// <see cref="P:Avalonia.Controls.DatePicker.DisplayDateEnd" />,
+        /// <see cref="CalendarDatePicker.DisplayDateEnd" />,
         /// or the specified date is in the
-        /// <see cref="P:Avalonia.Controls.DatePicker.BlackoutDates" />
+        /// <see cref="CalendarDatePicker.BlackoutDates" />
         /// collection.
         /// </exception>
         public DateTime? SelectedDate
@@ -233,9 +232,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <value>
         /// The format that is used to display the selected date. The default is
-        /// <see cref="F:Avalonia.Controls.DatePickerFormat.Short" />.
+        /// <see cref="CalendarDatePickerFormat.Short" />.
         /// </value>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentOutOfRangeException">
         /// An specified format is not valid.
         /// </exception>
         public CalendarDatePickerFormat SelectedDateFormat
@@ -251,18 +250,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the text that is displayed by the
-        /// <see cref="T:Avalonia.Controls.DatePicker" />.
+        /// Gets or sets the text that is displayed by the <see cref="CalendarDatePicker" />.
         /// </summary>
         /// <value>
-        /// The text displayed by the
-        /// <see cref="T:Avalonia.Controls.DatePicker" />.
+        /// The text displayed by the <see cref="CalendarDatePicker" />.
         /// </value>
-        /// <exception cref="T:System.FormatException">
+        /// <exception cref="FormatException">
         /// The text entered cannot be parsed to a valid date, and the exception
         /// is not suppressed.
         /// </exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentOutOfRangeException">
         /// The text entered parses to a date that is not selectable.
         /// </exception>
         public string? Text
