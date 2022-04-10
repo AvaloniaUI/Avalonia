@@ -38,13 +38,15 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Border x:Name="Background"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  Background="{TemplateBinding Background}"
-                  CornerRadius="{TemplateBinding CornerRadius}"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch">
+          <Panel x:Name="LayoutRoot"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch">
+            <Border x:Name="Background"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    Background="{TemplateBinding Background}">
+            </Border>
             <Grid ColumnDefinitions="*,Auto">
               <TextBox Name="PART_TextBox"
                        Foreground="{TemplateBinding Foreground}"
@@ -52,6 +54,7 @@
                        BorderBrush="Transparent"
                        BorderThickness="0"
                        CornerRadius="{TemplateBinding CornerRadius}"
+                       Margin="{TemplateBinding BorderThickness}"
                        Padding="{TemplateBinding Padding}"
                        Watermark="{TemplateBinding Watermark}"
                        UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
@@ -66,7 +69,7 @@
                       Foreground="{TemplateBinding Foreground}"
                       Background="Transparent"
                       BorderThickness="0"
-                      Margin="2,0,2,0"
+                      Margin="2,0,4,0"
                       Padding="0"
                       ClipToBounds="False"
                       Focusable="False"/>
@@ -82,7 +85,7 @@
                           DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
               </Popup>
             </Grid>
-          </Border>
+          </Panel>
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
@@ -173,7 +176,21 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerTextForegroundDisabled}" />
   </Style>
 
-    <!-- Error State -->
+  <!-- Focused State -->
+  <Style Selector="CalendarDatePicker:focus-within:not(CalendarDatePicker:focus) /template/ Border#Background">
+    <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
+  </Style>
+
+  <Style Selector="CalendarDatePicker /template/ TextBox#PART_TextBox:focus /template/ Border#PART_BorderElement">
+    <!-- By default the TextBox has its own focused state, override this to disable it here -->
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <!-- Error State -->
   <Style Selector="CalendarDatePicker:error /template/ Border#Background">
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
   </Style>
