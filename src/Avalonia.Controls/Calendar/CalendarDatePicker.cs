@@ -15,30 +15,6 @@ using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
-    /// <summary>
-    /// Specifies date formats for a
-    /// <see cref="T:Avalonia.Controls.CalendarDatePicker" />.
-    /// </summary>
-    public enum CalendarDatePickerFormat
-    {
-        /// <summary>
-        /// Specifies that the date should be displayed using unabbreviated days
-        /// of the week and month names.
-        /// </summary>
-        Long = 0,
-
-        /// <summary>
-        /// Specifies that the date should be displayed using abbreviated days
-        /// of the week and month names.
-        /// </summary>
-        Short = 1,
-
-        /// <summary>
-        /// Specifies that the date should be displayed using a custom format string.
-        /// </summary>
-        Custom = 2
-    }
-
     [TemplatePart(ElementButton,   typeof(Button))]
     [TemplatePart(ElementCalendar, typeof(Calendar))]
     [TemplatePart(ElementPopup,    typeof(Popup))]
