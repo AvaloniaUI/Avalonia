@@ -4,7 +4,7 @@
     <Setter Property="MaxHeight" Value="30" />
     <Setter Property="Template">
       <ControlTemplate>
-        <StackPanel Spacing="2" VerticalAlignment="Stretch" TextBlock.FontSize="10" Orientation="Horizontal">
+        <StackPanel Spacing="2" VerticalAlignment="Stretch" TextElement.FontSize="10" Orientation="Horizontal">
           <StackPanel.Styles>
             <Style Selector="Panel">
               <Setter Property="Width" Value="45" />

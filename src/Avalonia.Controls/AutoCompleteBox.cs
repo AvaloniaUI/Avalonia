@@ -252,6 +252,10 @@ namespace Avalonia.Controls
     /// drop-down that contains possible matches based on the input in the text
     /// box.
     /// </summary>
+    [TemplatePart(ElementPopup,            typeof(Popup))]
+    [TemplatePart(ElementSelector,         typeof(SelectingItemsControl))]
+    [TemplatePart(ElementSelectionAdapter, typeof(ISelectionAdapter))]
+    [TemplatePart(ElementTextBox,          typeof(TextBox))]
     [PseudoClasses(":dropdownopen")]
     public class AutoCompleteBox : TemplatedControl
     {
@@ -2180,7 +2184,7 @@ namespace Avalonia.Controls
             }
 
             // Store a local cached copy of the data
-            _items = newValue == null ? null : new List<object>(newValue.Cast<object>().ToList());
+            _items = newValue == null ? null : new List<object>(newValue.Cast<object>());
 
             // Clear and set the view on the selection adapter
             ClearView();
@@ -2239,7 +2243,7 @@ namespace Avalonia.Controls
                 ClearView();
                 if (Items != null)
                 {
-                    _items = new List<object>(Items.Cast<object>().ToList());
+                    _items = new List<object>(Items.Cast<object>());
                 }
             }
 
