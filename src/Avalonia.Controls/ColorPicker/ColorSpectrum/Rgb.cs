@@ -82,7 +82,8 @@ namespace Avalonia.Controls.Primitives
         public Hsv ToHsv()
         {
             // Instantiating an HsvColor is unfortunately necessary to use existing conversions
-            HsvColor hsvColor = HsvColor.FromRgb(
+            // Clamping must be done here as it isn't done in the conversion method (internal-use only)
+            HsvColor hsvColor = Color.ToHsv(
                 MathUtilities.Clamp(R, 0.0, 1.0),
                 MathUtilities.Clamp(G, 0.0, 1.0),
                 MathUtilities.Clamp(B, 0.0, 1.0));
