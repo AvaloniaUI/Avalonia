@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -60,6 +62,7 @@ namespace Avalonia.Controls.Primitives
         private Vector _offset;
         private bool _hasInit;
         private bool _suppressUpdateOffset;
+        private ScrollContentPresenter? _parentScroller;
 
         public DateTimePickerPanel()
         {
@@ -255,6 +258,8 @@ namespace Avalonia.Controls.Primitives
                 _suppressUpdateOffset = true;
                 SelectedValue = (int)newSel * Increment + MinimumValue;
                 _suppressUpdateOffset = false;
+
+                System.Diagnostics.Debug.WriteLine($"Offset: {_offset} ItemHeight: {ItemHeight}");
             }
         }
 
@@ -339,6 +344,20 @@ namespace Avalonia.Controls.Primitives
             }
 
             return finalSize;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _parentScroller = this.GetVisualParent() as ScrollContentPresenter;
+            _parentScroller?.AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            _parentScroller?.RemoveHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            _parentScroller = null;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -553,6 +572,16 @@ namespace Avalonia.Controls.Primitives
         public void RaiseScrollInvalidated(EventArgs e)
         {
             ScrollInvalidated?.Invoke(this, e);
+        }
+
+        private void OnScrollGestureEnded(object? sender, ScrollGestureEndedEventArgs e)
+        {
+            var snapY = Math.Round(Offset.Y / ItemHeight) * ItemHeight;
+
+            if (snapY != Offset.Y)
+            {
+                Offset = Offset.WithY(snapY);
+            }
         }
     }
 }
