@@ -43,7 +43,7 @@ namespace Avalonia.Direct2D1.Media
                         RadiusX = (float)radiusX,
                         RadiusY = (float)radiusY
                     },
-                    new BrushProperties
+                    new BrushProperties((float)brush.Opacity * opacity)
                     {
                         Opacity = (float)brush.Opacity * opacity,
                         Transform = Matrix3x2.Identity,

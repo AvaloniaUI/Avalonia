@@ -557,7 +557,7 @@ namespace Avalonia.Direct2D1.Media
                 MaskAntialiasMode = AntialiasMode.PerPrimitive
             };
             var layer = _layerPool.Count != 0 ? _layerPool.Pop() : _deviceContext.CreateLayer();
-            _deviceContext.PushLayer(ref parameters, layer);
+            _deviceContext.PushLayer(parameters, layer);
 
             _layers.Push(layer);
         }
@@ -588,7 +588,7 @@ namespace Avalonia.Direct2D1.Media
                 OpacityBrush = CreateBrush(mask, bounds.Size).PlatformBrush
             };
             var layer = _layerPool.Count != 0 ? _layerPool.Pop() : _deviceContext.CreateLayer();
-            _deviceContext.PushLayer(ref parameters, layer);
+            _deviceContext.PushLayer(parameters, layer);
 
             _layers.Push(layer);
         }
