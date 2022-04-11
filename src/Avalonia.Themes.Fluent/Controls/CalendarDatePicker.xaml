@@ -23,7 +23,6 @@
   </Styles.Resources>
   
   <Style Selector="CalendarDatePicker">
-
     <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackground}"/>
     <Setter Property="Foreground" Value="{DynamicResource CalendarDatePickerForeground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrush}"/>
@@ -45,8 +44,7 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     BorderBrush="{TemplateBinding BorderBrush}"
-                    Background="{TemplateBinding Background}">
-            </Border>
+                    Background="{TemplateBinding Background}" />
             <Grid ColumnDefinitions="*,Auto">
               <TextBox Name="PART_TextBox"
                        Foreground="{TemplateBinding Foreground}"
@@ -62,17 +60,10 @@
                        VerticalAlignment="Stretch"
                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                       Grid.Column="0"/>
+                       Grid.Column="0" />
               <Button Name="PART_Button"
                       Grid.Column="1"
-                      Width="20"
-                      Foreground="{TemplateBinding Foreground}"
-                      Background="Transparent"
-                      BorderThickness="0"
-                      Margin="2,0,4,0"
-                      Padding="0"
-                      ClipToBounds="False"
-                      Focusable="False"/>
+                      Focusable="False" />
               <Popup Name="PART_Popup"
                      PlacementTarget="{TemplateBinding}"
                      IsLightDismissEnabled="True">
@@ -93,6 +84,12 @@
 
   <!-- Normal State -->
   <Style Selector="CalendarDatePicker /template/ Button#PART_Button">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerCalendarGlyphForeground}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Margin" Value="2,0,4,0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Width" Value="20" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Height="24"
@@ -108,15 +105,14 @@
                   Grid.ColumnSpan="4"
                   Grid.Row="1"
                   Grid.RowSpan="3"
-                  BorderThickness="0.5"
+                  BorderThickness="0.5,0,0.5,0.5"
                   BorderBrush="{TemplateBinding Foreground}"
                   CornerRadius="0,0,2,2" />
           <Border Grid.ColumnSpan="4"
                   Grid.RowSpan="1"
                   BorderBrush="{TemplateBinding Foreground}"
                   BorderThickness="0.5"
-                  CornerRadius="2,2,0,0">
-          </Border>
+                  CornerRadius="2,2,0,0" />
           <TextBlock Margin="0,-1,0,0"
                      VerticalAlignment="Center"
                      HorizontalAlignment="Center"
@@ -126,14 +122,14 @@
                      Grid.RowSpan="3"
                      Foreground="{TemplateBinding Foreground}"
                      FontSize="{DynamicResource CalendarDatePickerCurrentDayFontSize}"
-                     Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}"/>
+                     Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}" />
           <Ellipse HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Fill="{TemplateBinding Foreground}"
                    StrokeThickness="0"
                    Grid.ColumnSpan="4"
                    Width="3"
-                   Height="3"/>
+                   Height="3" />
         </Grid>
       </ControlTemplate>
     </Setter>
@@ -150,21 +146,17 @@
     <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackgroundPointerOver}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrushPointerOver}" />
   </Style>
-  
-  <Style Selector="CalendarDatePicker:pointerover /template/ Button#PART_Button">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerBorderBrushPointerOver}" />
-  </Style>
 
   <!-- Disabled State -->
   <Style Selector="CalendarDatePicker:disabled /template/ Border#Background">
     <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrushDisabled}" />
   </Style>
-  
+
   <Style Selector="CalendarDatePicker:disabled /template/ Button#PART_Button">
     <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerCalendarGlyphForegroundDisabled}" />
   </Style>
-  
+
   <Style Selector="CalendarDatePicker:disabled /template/ TextBox#PART_TextBox:disabled /template/ Border#PART_BorderElement">
     <!-- By default the TextBox has its own disabled state, override this to make the border background show through -->
     <Setter Property="Background" Value="Transparent" />
