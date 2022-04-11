@@ -1,6 +1,6 @@
-﻿// Color conversion portions of this source file are adapted from the WinUI project. 
-// (https://github.com/microsoft/microsoft-ui-xaml) 
-// 
+﻿// Color conversion portions of this source file are adapted from the WinUI project.
+// (https://github.com/microsoft/microsoft-ui-xaml)
+//
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
@@ -21,11 +21,11 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
         /// </summary>
-        /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// <param name="alpha">The Alpha (transparency) component in the range from 0..1.</param>
+        /// <param name="hue">The Hue component in the range from 0..360.
         /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
-        /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="value">The Value channel value in the range from 0..1.</param>
+        /// <param name="saturation">The Saturation component in the range from 0..1.</param>
+        /// <param name="value">The Value component in the range from 0..1.</param>
         public HsvColor(
             double alpha,
             double hue,
@@ -49,14 +49,14 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>
         /// This constructor exists only for internal use where performance is critical.
-        /// Whether or not the channel values are in the correct ranges must be known.
+        /// Whether or not the component values are in the correct ranges must be known.
         /// </remarks>
-        /// <param name="alpha">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="hue">The Hue channel value in the range from 0..360.
+        /// <param name="alpha">The Alpha (transparency) component in the range from 0..1.</param>
+        /// <param name="hue">The Hue component in the range from 0..360.
         /// Note that 360 is equivalent to 0 and will be adjusted automatically.</param>
-        /// <param name="saturation">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="value">The Value channel value in the range from 0..1.</param>
-        /// <param name="clampValues">Whether to clamp channel values to their required ranges.</param>
+        /// <param name="saturation">The Saturation component in the range from 0..1.</param>
+        /// <param name="value">The Value component in the range from 0..1.</param>
+        /// <param name="clampValues">Whether to clamp component values to their required ranges.</param>
         internal HsvColor(
             double alpha,
             double hue,
@@ -89,7 +89,7 @@ namespace Avalonia.Media
         /// <param name="color">The RGB color to convert to HSV.</param>
         public HsvColor(Color color)
         {
-            var hsv = HsvColor.FromRgb(color);
+            var hsv = Color.ToHsv(color);
 
             A = hsv.A;
             H = hsv.H;
@@ -98,23 +98,23 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the Alpha (transparency) channel value in the range from 0..1.
+        /// Gets the Alpha (transparency) component in the range from 0..1.
         /// </summary>
         public double A { get; }
 
         /// <summary>
-        /// Gets the Hue channel value in the range from 0..360.
+        /// Gets the Hue component in the range from 0..360.
         /// Note that 360 is equivalent to 0 and will be adjusted automatically.
         /// </summary>
         public double H { get; }
 
         /// <summary>
-        /// Gets the Saturation channel value in the range from 0..1.
+        /// Gets the Saturation component in the range from 0..1.
         /// </summary>
         public double S { get; }
 
         /// <summary>
-        /// Gets the Value channel value in the range from 0..1.
+        /// Gets the Value component in the range from 0..1.
         /// </summary>
         public double V { get; }
 
@@ -165,7 +165,7 @@ namespace Avalonia.Media
         /// <returns>The RGB equivalent color.</returns>
         public Color ToRgb()
         {
-            // Use the by-channel conversion method directly for performance
+            // Use the by-component conversion method directly for performance
             return HsvColor.ToRgb(H, S, V, A);
         }
 
@@ -174,26 +174,16 @@ namespace Avalonia.Media
         {
             var sb = new StringBuilder();
 
-            // Use a format similar to HSL in HTML/CSS "hsla(0, 100%, 50%, 0.5)"
-            //
-            // However:
-            //   - To ensure precision is never lost, allow decimal places
-            //   - To maintain numerical consistency do not use percent
+            // Use a format similar to CSS. However:
+            //   - To ensure precision is never lost, allow decimal places.
+            //     This is especially important for round-trip serialization.
+            //   - To maintain numerical consistency, do not use percent.
             //
             // Example:
             //
             // hsva(hue, saturation, value, alpha)
             // hsva(230, 1.0, 0.5, 1.0)
             //
-            //   Where:
-            //
-            //          hue : double from 0 to 360
-            //   saturation : double from 0 to 1
-            //                (HTML uses a percentage)
-            //        value : double from 0 to 1
-            //                (HTML uses a percentage)
-            //        alpha : double from 0 to 1
-            //                (HTML does not use a percentage for alpha)
 
             sb.Append("hsva(");
             sb.Append(H.ToString(CultureInfo.InvariantCulture));
@@ -270,8 +260,8 @@ namespace Avalonia.Media
             if (components.Length == 3) // HSV
             {
                 if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
-                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value))
+                    TryInternalParse(components[1], out double saturation) &&
+                    TryInternalParse(components[2], out double value))
                 {
                     hsvColor = new HsvColor(1.0, hue, saturation, value);
                     return true;
@@ -280,12 +270,39 @@ namespace Avalonia.Media
             else if (components.Length == 4) // HSVA
             {
                 if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    double.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double saturation) &&
-                    double.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double value) &&
-                    double.TryParse(components[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double alpha))
+                    TryInternalParse(components[1], out double saturation) &&
+                    TryInternalParse(components[2], out double value) &&
+                    TryInternalParse(components[3], out double alpha))
                 {
                     hsvColor = new HsvColor(alpha, hue, saturation, value);
                     return true;
+                }
+            }
+
+            // Local function to specially parse a double value with an optional percentage sign
+            bool TryInternalParse(string inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+
+                if (percentIndex >= 0)
+                {
+                    var result = double.TryParse(
+                        inString.Substring(0, percentIndex),
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out double percentage);
+
+                    outDouble = percentage / 100.0;
+                    return result;
+                }
+                else
+                {
+                    return double.TryParse(
+                        inString,
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out outDouble);
                 }
             }
 
@@ -293,24 +310,40 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Creates a new <see cref="HsvColor"/> from individual color channel values.
+        /// Creates a new <see cref="HsvColor"/> from individual color component values.
         /// </summary>
         /// <remarks>
         /// This exists for symmetry with the <see cref="Color"/> struct; however, the
         /// appropriate constructor should commonly be used instead.
         /// </remarks>
-        /// <param name="a">The Alpha (transparency) channel value in the range from 0..1.</param>
-        /// <param name="h">The Hue channel value in the range from 0..360.</param>
-        /// <param name="s">The Saturation channel value in the range from 0..1.</param>
-        /// <param name="v">The Value channel value in the range from 0..1.</param>
-        /// <returns>A new <see cref="HsvColor"/> built from the individual color channel values.</returns>
+        /// <param name="a">The Alpha (transparency) component in the range from 0..1.</param>
+        /// <param name="h">The Hue component in the range from 0..360.</param>
+        /// <param name="s">The Saturation component in the range from 0..1.</param>
+        /// <param name="v">The Value component in the range from 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> built from the individual color component values.</returns>
         public static HsvColor FromAhsv(double a, double h, double s, double v)
         {
             return new HsvColor(a, h, s, v);
         }
 
         /// <summary>
-        /// Converts the given HSV color to it's RGB color equivalent.
+        /// Creates a new <see cref="HsvColor"/> from individual color component values.
+        /// </summary>
+        /// <remarks>
+        /// This exists for symmetry with the <see cref="Color"/> struct; however, the
+        /// appropriate constructor should commonly be used instead.
+        /// </remarks>
+        /// <param name="h">The Hue component in the range from 0..360.</param>
+        /// <param name="s">The Saturation component in the range from 0..1.</param>
+        /// <param name="v">The Value component in the range from 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> built from the individual color component values.</returns>
+        public static HsvColor FromHsv(double h, double s, double v)
+        {
+            return new HsvColor(1.0, h, s, v);
+        }
+
+        /// <summary>
+        /// Converts the given HSV color to its RGB color equivalent.
         /// </summary>
         /// <param name="hsvColor">The color in the HSV color model.</param>
         /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSVA values.</returns>
@@ -320,12 +353,12 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts the given HSVA color channel values to it's RGB color equivalent.
+        /// Converts the given HSVA color component values to their RGB color equivalent.
         /// </summary>
-        /// <param name="hue">The hue channel value in the HSV color model in the range from 0..360.</param>
-        /// <param name="saturation">The saturation channel value in the HSV color model in the range from 0..1.</param>
-        /// <param name="value">The value channel value in the HSV color model in the range from 0..1.</param>
-        /// <param name="alpha">The alpha channel value in the range from 0..1.</param>
+        /// <param name="hue">The Hue component in the HSV color model in the range from 0..360.</param>
+        /// <param name="saturation">The Saturation component in the HSV color model in the range from 0..1.</param>
+        /// <param name="value">The Value component in the HSV color model in the range from 0..1.</param>
+        /// <param name="alpha">The Alpha component in the range from 0..1.</param>
         /// <returns>A new RGB <see cref="Color"/> equivalent to the given HSVA values.</returns>
         public static Color ToRgb(
             double hue,
@@ -336,7 +369,7 @@ namespace Avalonia.Media
             // Note: Conversion code is originally based on the C++ in WinUI (licensed MIT)
             // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/Common/ColorConversion.cpp
             // This was used because it is the best documented and likely most optimized for performance
-            // Alpha channel support was added
+            // Alpha support was added
 
             // We want the hue to be between 0 and 359,
             // so we first ensure that that's the case.
@@ -455,130 +488,6 @@ namespace Avalonia.Media
                 (byte)Math.Round(r * 255),
                 (byte)Math.Round(g * 255),
                 (byte)Math.Round(b * 255));
-        }
-
-        /// <summary>
-        /// Converts the given RGB color to it's HSV color equivalent.
-        /// </summary>
-        /// <param name="color">The color in the RGB color model.</param>
-        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
-        public static HsvColor FromRgb(Color color)
-        {
-            return HsvColor.FromRgb(color.R, color.G, color.B, color.A);
-        }
-
-        /// <summary>
-        /// Converts the given RGBA color channel values to it's HSV color equivalent.
-        /// </summary>
-        /// <param name="red">The red channel value in the RGB color model.</param>
-        /// <param name="green">The green channel value in the RGB color model.</param>
-        /// <param name="blue">The blue channel value in the RGB color model.</param>
-        /// <param name="alpha">The alpha channel value.</param>
-        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
-        public static HsvColor FromRgb(
-            byte red,
-            byte green,
-            byte blue,
-            byte alpha = 0xFF)
-        {
-            // Note: Conversion code is originally based on the C++ in WinUI (licensed MIT)
-            // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/Common/ColorConversion.cpp
-            // This was used because it is the best documented and likely most optimized for performance
-            // Alpha channel support was added
-
-            // Normalize RGBA channel values into the 0..1 range used by this algorithm
-            double r = red / 255.0;
-            double g = green / 255.0;
-            double b = blue / 255.0;
-            double a = alpha / 255.0;
-
-            double hue;
-            double saturation;
-            double value;
-
-            double max = r >= g ? (r >= b ? r : b) : (g >= b ? g : b);
-            double min = r <= g ? (r <= b ? r : b) : (g <= b ? g : b);
-
-            // The value, a number between 0 and 1, is the largest of R, G, and B (divided by 255).
-            // Conceptually speaking, it represents how much color is present.
-            // If at least one of R, G, B is 255, then there exists as much color as there can be.
-            // If RGB = (0, 0, 0), then there exists no color at all - a value of zero corresponds
-            // to black (i.e., the absence of any color).
-            value = max;
-
-            // The "chroma" of the color is a value directly proportional to the extent to which
-            // the color diverges from greyscale.  If, for example, we have RGB = (255, 255, 0),
-            // then the chroma is maximized - this is a pure yellow, no gray of any kind.
-            // On the other hand, if we have RGB = (128, 128, 128), then the chroma being zero
-            // implies that this color is pure greyscale, with no actual hue to be found.
-            var chroma = max - min;
-
-            // If the chrome is zero, then hue is technically undefined - a greyscale color
-            // has no hue.  For the sake of convenience, we'll just set hue to zero, since
-            // it will be unused in this circumstance.  Since the color is purely gray,
-            // saturation is also equal to zero - you can think of saturation as basically
-            // a measure of hue intensity, such that no hue at all corresponds to a
-            // nonexistent intensity.
-            if (chroma == 0)
-            {
-                hue = 0.0;
-                saturation = 0.0;
-            }
-            else
-            {
-                // In this block, hue is properly defined, so we'll extract both hue
-                // and saturation information from the RGB color.
-
-                // Hue can be thought of as a cyclical thing, between 0 degrees and 360 degrees.
-                // A hue of 0 degrees is red; 120 degrees is green; 240 degrees is blue; and 360 is back to red.
-                // Every other hue is somewhere between either red and green, green and blue, and blue and red,
-                // so every other hue can be thought of as an angle on this color wheel.
-                // These if/else statements determines where on this color wheel our color lies.
-                if (r == max)
-                {
-                    // If the red channel is the most pronounced channel, then we exist
-                    // somewhere between (-60, 60) on the color wheel - i.e., the section around 0 degrees
-                    // where red dominates.  We figure out where in that section we are exactly
-                    // by considering whether the green or the blue channel is greater - by subtracting green from blue,
-                    // then if green is greater, we'll nudge ourselves closer to 60, whereas if blue is greater, then
-                    // we'll nudge ourselves closer to -60.  We then divide by chroma (which will actually make the result larger,
-                    // since chroma is a value between 0 and 1) to normalize the value to ensure that we get the right hue
-                    // even if we're very close to greyscale.
-                    hue = 60 * (g - b) / chroma;
-                }
-                else if (g == max)
-                {
-                    // We do the exact same for the case where the green channel is the most pronounced channel,
-                    // only this time we want to see if we should tilt towards the blue direction or the red direction.
-                    // We add 120 to center our value in the green third of the color wheel.
-                    hue = 120 + (60 * (b - r) / chroma);
-                }
-                else // blue == max
-                {
-                    // And we also do the exact same for the case where the blue channel is the most pronounced channel,
-                    // only this time we want to see if we should tilt towards the red direction or the green direction.
-                    // We add 240 to center our value in the blue third of the color wheel.
-                    hue = 240 + (60 * (r - g) / chroma);
-                }
-
-                // Since we want to work within the range [0, 360), we'll add 360 to any value less than zero -
-                // this will bump red values from within -60 to -1 to 300 to 359.  The hue is the same at both values.
-                if (hue < 0.0)
-                {
-                    hue += 360.0;
-                }
-
-                // The saturation, our final HSV axis, can be thought of as a value between 0 and 1 indicating how intense our color is.
-                // To find it, we divide the chroma - the distance between the minimum and the maximum RGB channels - by the maximum channel (i.e., the value).
-                // This effectively normalizes the chroma - if the maximum is 0.5 and the minimum is 0, the saturation will be (0.5 - 0) / 0.5 = 1,
-                // meaning that although this color is not as bright as it can be, the dark color is as intense as it possibly could be.
-                // If, on the other hand, the maximum is 0.5 and the minimum is 0.25, then the saturation will be (0.5 - 0.25) / 0.5 = 0.5,
-                // meaning that this color is partially washed out.
-                // A saturation value of 0 corresponds to a greyscale color, one in which the color is *completely* washed out and there is no actual hue.
-                saturation = chroma / value;
-            }
-
-            return new HsvColor(a, hue, saturation, value, false);
         }
 
         /// <summary>

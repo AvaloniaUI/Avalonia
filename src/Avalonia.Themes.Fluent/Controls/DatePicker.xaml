@@ -43,7 +43,7 @@
   </Style>
   <Style Selector="ListBoxItem.DateTimePickerItem:selected /template/ ContentPresenter">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
   </Style>
   <Style Selector="ListBoxItem.DateTimePickerItem.MonthItem">
     <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterMonthPadding}"/>
@@ -70,7 +70,7 @@
                   BorderBrush="{DynamicResource DateTimePickerFlyoutButtonBorderBrush}"
                   BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
                   Content="{TemplateBinding Content}"
-                  TextElement.Foreground="{DynamicResource SystemControlHighlightAltBaseHighBrush}"
+                  Foreground="{DynamicResource SystemControlHighlightAltBaseHighBrush}"
                   ContentTemplate="{TemplateBinding ContentTemplate}"
                   Padding="{TemplateBinding Padding}"
                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -84,13 +84,13 @@
   <Style Selector=":is(Button).DateTimeFlyoutButtonStyle:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPointerOver}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPointerOver}"/>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPointerOver}"/>
+    <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPointerOver}"/>
   </Style>
 
   <Style Selector=":is(Button).DateTimeFlyoutButtonStyle:pressed /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPressed}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPressed}"/>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPressed}"/>
+    <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPressed}"/>
   </Style>
 
 
@@ -165,7 +165,7 @@
                                     Background="{TemplateBinding Background}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     Content="{TemplateBinding Content}"
-                                    TextElement.Foreground="{TemplateBinding Foreground}"
+                                    Foreground="{TemplateBinding Foreground}"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch"
                                     CornerRadius="{TemplateBinding CornerRadius}"/>
@@ -212,7 +212,7 @@
     </Setter>
   </Style>
   <Style Selector="DatePicker /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource DatePickerHeaderForeground}"/>
+    <Setter Property="Foreground" Value="{DynamicResource DatePickerHeaderForeground}"/>
   </Style>
   <Style Selector="DatePicker:disabled /template/ Rectangle">
     <Setter Property="Fill" Value="{DynamicResource DatePickerSpacerFillDisabled}"/>
@@ -221,19 +221,19 @@
   <Style Selector="DatePicker /template/ Button#FlyoutButton:pointerover /template/ ContentPresenter">
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushPointerOver}"/>
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundPointerOver}"/>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource DatePickerButtonForegroundPointerOver}"/>
+    <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundPointerOver}"/>
   </Style>
 
   <Style Selector="DatePicker /template/ Button#FlyoutButton:pressed /template/ ContentPresenter">
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushPressed}"/>
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundPressed}"/>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource DatePickerButtonForegroundPressed}"/>
+    <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundPressed}"/>
   </Style>
 
   <Style Selector="DatePicker /template/ Button#FlyoutButton:disabled /template/ ContentPresenter">
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushDisabled}"/>
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundDisabled}"/>
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource DatePickerButtonForegroundDisabled}"/>
+    <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundDisabled}"/>
   </Style>
 
   <!-- Changes foreground for watermark text when SelectedDate is null-->
