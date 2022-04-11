@@ -36,9 +36,9 @@
                               Content="{TemplateBinding Content}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                              TextElement.FontFamily="{TemplateBinding FontFamily}"
-                              TextElement.FontSize="{TemplateBinding FontSize}"
-                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+                              FontFamily="{TemplateBinding FontFamily}"
+                              FontSize="{TemplateBinding FontSize}"
+                              FontWeight="{TemplateBinding FontWeight}" />
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}" />
           </Panel>
