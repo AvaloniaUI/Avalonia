@@ -76,6 +76,15 @@ namespace ControlCatalog
                 }
             };
 
+            var flowDirections = this.Find<ComboBox>("FlowDirection");
+            flowDirections.SelectionChanged += (sender, e) =>
+            {
+                if (flowDirections.SelectedItem is FlowDirection flowDirection)
+                {
+                    this.FlowDirection = flowDirection;
+                }
+            };
+
             var decorations = this.Find<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {

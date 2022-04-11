@@ -193,6 +193,14 @@
                 <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
               </ComboBox.Items>
             </ComboBox>
+            <ComboBox x:Name="FlowDirection"
+                      HorizontalAlignment="Stretch"
+                      SelectedIndex="0">
+              <ComboBox.Items>
+                <FlowDirection>LeftToRight</FlowDirection>
+                <FlowDirection>RightToLeft</FlowDirection>
+              </ComboBox.Items>
+            </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       Items="{Binding WindowStates}"
                       SelectedItem="{Binding WindowState}" />

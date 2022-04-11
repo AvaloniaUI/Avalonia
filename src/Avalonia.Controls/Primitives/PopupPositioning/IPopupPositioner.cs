@@ -46,6 +46,7 @@ Copyright © 2019 Nikita Tsukanov
 
 using System;
 using Avalonia.VisualTree;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives.PopupPositioning
 {
@@ -444,7 +445,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             TopLevel topLevel,
             IVisual target, PlacementMode placement, Point offset,
             PopupAnchor anchor, PopupGravity gravity,
-            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect)
+            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect,
+            FlowDirection flowDirection)
         {
             // We need a better way for tracking the last pointer position
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -502,6 +504,32 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 }
                 else
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
+            }
+
+            // Invert coordinate system if FlowDirection is RTL
+            if (flowDirection == FlowDirection.RightToLeft)
+            {
+                if ((positionerParameters.Anchor & PopupAnchor.Right) == PopupAnchor.Right)
+                {
+                    positionerParameters.Anchor ^= PopupAnchor.Right;
+                    positionerParameters.Anchor |= PopupAnchor.Left;
+                }
+                else if ((positionerParameters.Anchor & PopupAnchor.Left) == PopupAnchor.Left)
+                {
+                    positionerParameters.Anchor ^= PopupAnchor.Left;
+                    positionerParameters.Anchor |= PopupAnchor.Right;
+                }
+
+                if ((positionerParameters.Gravity & PopupGravity.Right) == PopupGravity.Right)
+                {
+                    positionerParameters.Gravity ^= PopupGravity.Right;
+                    positionerParameters.Gravity |= PopupGravity.Left;
+                }
+                else if ((positionerParameters.Gravity & PopupGravity.Left) == PopupGravity.Left)
+                {
+                    positionerParameters.Gravity ^= PopupGravity.Left;
+                    positionerParameters.Gravity |= PopupGravity.Right;
+                }
             }
         }
     }

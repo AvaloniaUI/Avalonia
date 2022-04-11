@@ -37,6 +37,7 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="MinHeight" Value="{DynamicResource ComboBoxMinHeight}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="HorizontalAlignment" Value="Left" />
@@ -53,7 +54,7 @@
                               Grid.Column="0"
                               Grid.ColumnSpan="2"
                               IsVisible="False"
-                              TextElement.FontWeight="{DynamicResource ComboBoxHeaderThemeFontWeight}"
+                              FontWeight="{DynamicResource ComboBoxHeaderThemeFontWeight}"
                               Margin="{DynamicResource ComboBoxTopHeaderMargin}"
                               VerticalAlignment="Top" />
             <Border x:Name="Background"
@@ -177,11 +178,11 @@
   </Style>
 
   <Style Selector="ComboBox:disabled /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
   </Style>
 
   <Style Selector="ComboBox:disabled /template/ ContentControl#ContentPresenter">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
   </Style>
 
   <Style Selector="ComboBox:disabled /template/ TextBlock#PlaceholderTextBlock">
@@ -199,7 +200,7 @@
   </Style>
 
   <Style Selector="ComboBox:focus-visible /template/ ContentControl#ContentPresenter">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
   </Style>
 
   <Style Selector="ComboBox:focus-visible /template/ TextBlock#PlaceholderTextBlock">
@@ -212,7 +213,7 @@
 
   <!--  Focus Pressed State  -->
   <Style Selector="ComboBox:focused:pressed /template/ ContentControl#ContentPresenter">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource ComboBoxForegroundFocusedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocusedPressed}" />
   </Style>
 
   <Style Selector="ComboBox:focused:pressed /template/ TextBlock#PlaceholderTextBlock">

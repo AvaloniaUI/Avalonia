@@ -282,6 +282,8 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        protected override bool BypassFlowDirectionPolicies => true;
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
