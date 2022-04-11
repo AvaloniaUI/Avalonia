@@ -453,42 +453,35 @@ namespace Avalonia.Controls
 
         private void SelectNext()
         {
-            int next = SelectedIndex + 1;
-
-            if (next >= ItemCount)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
+                if (SelectedIndex == -1)
                 {
-                    next = 0;
+                    if (MoveSelection(NavigationDirection.First, WrapSelection) == false)
+                    {
+                        // MoveSelection works only with indexes starting from 0
+                        // so to make it search further than the first item we need to set SelectedIndex to 0.
+                        SelectedIndex = 0;
+                        var isSelectionMoved = MoveSelection(NavigationDirection.Next, WrapSelection);
+                        if (isSelectionMoved == false)
+                        {
+                            SelectedIndex = -1;
+                        }
+                    }
                 }
                 else
                 {
-                    return;
+                    MoveSelection(NavigationDirection.Next, WrapSelection);
                 }
             }
-
-
-
-            SelectedIndex = next;
         }
 
         private void SelectPrev()
         {
-            int prev = SelectedIndex - 1;
-
-            if (prev < 0)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
-                {
-                    prev = ItemCount - 1;
-                }
-                else
-                {
-                    return;
-                }
+                MoveSelection(NavigationDirection.Previous, WrapSelection);
             }
-
-            SelectedIndex = prev;
         }
     }
 }
