@@ -14,7 +14,7 @@
           </LinearGradientBrush>
         </Rectangle.OpacityMask>
       </Rectangle>
-      <Rectangle Fill="Green" Stroke="Black" StrokeThickness="2" Width="40" Height="20" Canvas.Left="150" Canvas.Top="10" RadiusX="10" RadiusY="5" />
+      <Rectangle Fill="hsva(240, 83%, 73%, 90%)" Stroke="hsl(5, 85%, 85%)" StrokeThickness="2" Width="40" Height="20" Canvas.Left="150" Canvas.Top="10" RadiusX="10" RadiusY="5" />
       <Ellipse Fill="Green" Width="58" Height="58" Canvas.Left="88" Canvas.Top="100"/>
       <Path Fill="Orange" Data="M 0,0 c 0,0 50,0 50,-50 c 0,0 50,0 50,50 h -50 v 50 l -50,-50 Z" Canvas.Left="30" Canvas.Top="250"/>
       <Path Fill="OrangeRed" Canvas.Left="180" Canvas.Top="250">

@@ -36,6 +36,11 @@ MembersMustExist : Member 'public Avalonia.AttachedProperty<Avalonia.Media.FontS
 MembersMustExist : Member 'public Avalonia.AttachedProperty<Avalonia.Media.FontWeight> Avalonia.AttachedProperty<Avalonia.Media.FontWeight> Avalonia.Controls.TextBlock.FontWeightProperty' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.AttachedProperty<Avalonia.Media.IBrush> Avalonia.AttachedProperty<Avalonia.Media.IBrush> Avalonia.Controls.TextBlock.ForegroundProperty' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.AttachedProperty<System.Double> Avalonia.AttachedProperty<System.Double> Avalonia.Controls.TextBlock.FontSizeProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<Avalonia.Media.TextAlignment> Avalonia.StyledProperty<Avalonia.Media.TextAlignment> Avalonia.Controls.TextBlock.TextAlignmentProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<Avalonia.Media.TextTrimming> Avalonia.StyledProperty<Avalonia.Media.TextTrimming> Avalonia.Controls.TextBlock.TextTrimmingProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<Avalonia.Media.TextWrapping> Avalonia.StyledProperty<Avalonia.Media.TextWrapping> Avalonia.Controls.TextBlock.TextWrappingProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<System.Double> Avalonia.StyledProperty<System.Double> Avalonia.Controls.TextBlock.LineHeightProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<System.Int32> Avalonia.StyledProperty<System.Int32> Avalonia.Controls.TextBlock.MaxLinesProperty' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.Media.FontFamily Avalonia.Controls.TextBlock.GetFontFamily(Avalonia.Controls.Control)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.Double Avalonia.Controls.TextBlock.GetFontSize(Avalonia.Controls.Control)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.Media.FontStyle Avalonia.Controls.TextBlock.GetFontStyle(Avalonia.Controls.Control)' does not exist in the implementation but it does exist in the contract.
@@ -89,4 +94,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.ITrayIconImpl Avalonia.Platform.IWindowingPlatform.CreateTrayIcon()' is present in the implementation but not in the contract.
-Total Issues: 90
+Total Issues: 95

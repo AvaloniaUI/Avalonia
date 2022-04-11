@@ -61,17 +61,17 @@
             </Style>
             <Style Selector="Button.CalendarHeader:pointerover /template/ ContentPresenter#Text">
               <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
-              <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}"/>
+              <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}"/>
               <!-- Prevent base button template:pointerover from overriding background here -->
               <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}"/>
             </Style>
             <Style Selector="Button.CalendarHeader:pressed /template/ ContentPresenter#Text">
-              <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}"/>
+              <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}"/>
               <!-- Prevent base button template:pointerover from overriding background here -->
               <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}"/>
             </Style>
             <Style Selector="Button.CalendarHeader:disabled /template/ ContentPresenter">
-              <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}"/>
+              <Setter Property="Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}"/>
             </Style>
           </Border.Styles>
           <!--  To keep calendar from resizing when switching DisplayMode

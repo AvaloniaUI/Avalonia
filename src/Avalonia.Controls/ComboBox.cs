@@ -184,6 +184,25 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(SelectedItem);
         }
 
+        // Because the SelectedItem isn't connected to the visual tree
+        public override void InvalidateMirrorTransform()
+        {
+            base.InvalidateMirrorTransform();
+
+            if (SelectedItem is Control selectedControl)
+            {
+                selectedControl.InvalidateMirrorTransform();
+
+                foreach (var visual in selectedControl.GetVisualDescendants())
+                {
+                    if (visual is Control childControl)
+                    {
+                        childControl.InvalidateMirrorTransform();
+                    }
+                }
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
