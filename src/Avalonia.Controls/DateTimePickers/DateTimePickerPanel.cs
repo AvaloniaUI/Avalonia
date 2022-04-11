@@ -270,7 +270,7 @@ namespace Avalonia.Controls.Primitives
 
         public Size Extent => _extent;
 
-        public Size Viewport => new Size(0, ItemHeight);
+        public Size Viewport => Bounds.Size;
 
         public event EventHandler? ScrollInvalidated;
 
