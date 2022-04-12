@@ -256,7 +256,7 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         public event EventHandler? Invalidated;
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 

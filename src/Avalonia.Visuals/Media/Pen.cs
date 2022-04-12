@@ -192,7 +192,7 @@ namespace Avalonia.Media
                 MiterLimit);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             _invalidated?.Invoke(this, EventArgs.Empty);
             if(change.Property == BrushProperty)

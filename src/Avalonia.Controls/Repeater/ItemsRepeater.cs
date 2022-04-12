@@ -424,12 +424,11 @@ namespace Avalonia.Controls
             _viewportManager.ResetScrollers();
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == ItemsProperty)
             {
-                var oldEnumerable = change.OldValue.GetValueOrDefault<IEnumerable>();
-                var newEnumerable = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var (oldEnumerable, newEnumerable) = change.GetOldAndNewValue<IEnumerable?>();
 
                 if (oldEnumerable != newEnumerable)
                 {
@@ -444,23 +443,21 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ItemTemplateProperty)
             {
-                OnItemTemplateChanged(
-                    change.OldValue.GetValueOrDefault<IDataTemplate>(),
-                    change.NewValue.GetValueOrDefault<IDataTemplate>());
+                var (oldvalue, newValue) = change.GetOldAndNewValue<IDataTemplate?>();
+                OnItemTemplateChanged(oldvalue, newValue);
             }
             else if (change.Property == LayoutProperty)
             {
-                OnLayoutChanged(
-                    change.OldValue.GetValueOrDefault<AttachedLayout>(),
-                    change.NewValue.GetValueOrDefault<AttachedLayout>());
+                var (oldvalue, newValue) = change.GetOldAndNewValue<AttachedLayout>();
+                OnLayoutChanged(oldvalue, newValue);
             }
             else if (change.Property == HorizontalCacheLengthProperty)
             {
-                _viewportManager.HorizontalCacheLength = change.NewValue.GetValueOrDefault<double>();
+                _viewportManager.HorizontalCacheLength = change.GetNewValue<double>();
             }
             else if (change.Property == VerticalCacheLengthProperty)
             {
-                _viewportManager.VerticalCacheLength = change.NewValue.GetValueOrDefault<double>();
+                _viewportManager.VerticalCacheLength = change.GetNewValue<double>();
             }
 
             base.OnPropertyChanged(change);

@@ -210,13 +210,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ButtonSpinnerLocationProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Location>());
+                UpdatePseudoClasses(change.GetNewValue<Location>());
             }
         }
 
