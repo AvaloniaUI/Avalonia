@@ -1,3 +1,10 @@
+// Color conversion portions of this source file are adapted from the WinUI project
+// (https://github.com/microsoft/microsoft-ui-xaml)
+// and the Windows Community Toolkit project.
+// (https://github.com/CommunityToolkit/WindowsCommunityToolkit)
+//
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
+
 using System;
 using System.Globalization;
 #if !BUILDTASK
@@ -14,6 +21,8 @@ namespace Avalonia.Media
 #endif
     readonly struct Color : IEquatable<Color>
     {
+        private const double byteToDouble = 1.0 / 255;
+
         static Color()
         {
 #if !BUILDTASK
@@ -41,6 +50,13 @@ namespace Avalonia.Media
         /// </summary>
         public byte B { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Color"/> struct.
+        /// </summary>
+        /// <param name="a">The alpha component.</param>
+        /// <param name="r">The red component.</param>
+        /// <param name="g">The green component.</param>
+        /// <param name="b">The blue component.</param>
         public Color(byte a, byte r, byte g, byte b)
         {
             A = a;
@@ -144,8 +160,38 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (s[0] == '#' && TryParseInternal(s.AsSpan(), out color))
+            if (s[0] == '#' &&
+                TryParseHexFormat(s.AsSpan(), out color))
             {
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'r' || s[0] == 'R') &&
+                (s[1] == 'g' || s[1] == 'G') &&
+                (s[2] == 'b' || s[2] == 'B') &&
+                TryParseCssFormat(s, out color))
+            {
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'l' || s[2] == 'L') &&
+                HslColor.TryParse(s, out HslColor hslColor))
+            {
+                color = hslColor.ToRgb();
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'v' || s[2] == 'V') &&
+                HsvColor.TryParse(s, out HsvColor hsvColor))
+            {
+                color = hsvColor.ToRgb();
                 return true;
             }
 
@@ -154,7 +200,6 @@ namespace Avalonia.Media
             if (knownColor != KnownColor.None)
             {
                 color = knownColor.ToColor();
-
                 return true;
             }
 
@@ -172,21 +217,52 @@ namespace Avalonia.Media
             if (s.Length == 0)
             {
                 color = default;
-
                 return false;
             }
 
-            if (s[0] == '#')
+            if (s[0] == '#' &&
+                TryParseHexFormat(s, out color))
             {
-                return TryParseInternal(s, out color);
+                return true;
             }
 
-            var knownColor = KnownColors.GetKnownColor(s.ToString());
+            // At this point all parsing uses strings
+            var str = s.ToString();
+
+            if (s.Length > 5 &&
+                (s[0] == 'r' || s[0] == 'R') &&
+                (s[1] == 'g' || s[1] == 'G') &&
+                (s[2] == 'b' || s[2] == 'B') &&
+                TryParseCssFormat(str, out color))
+            {
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'l' || s[2] == 'L') &&
+                HslColor.TryParse(str, out HslColor hslColor))
+            {
+                color = hslColor.ToRgb();
+                return true;
+            }
+
+            if (s.Length > 5 &&
+                (s[0] == 'h' || s[0] == 'H') &&
+                (s[1] == 's' || s[1] == 'S') &&
+                (s[2] == 'v' || s[2] == 'V') &&
+                HsvColor.TryParse(str, out HsvColor hsvColor))
+            {
+                color = hsvColor.ToRgb();
+                return true;
+            }
+
+            var knownColor = KnownColors.GetKnownColor(str);
 
             if (knownColor != KnownColor.None)
             {
                 color = knownColor.ToColor();
-
                 return true;
             }
 
@@ -195,7 +271,7 @@ namespace Avalonia.Media
             return false;
         }
 
-        private static bool TryParseInternal(ReadOnlySpan<char> s, out Color color)
+        private static bool TryParseHexFormat(ReadOnlySpan<char> s, out Color color)
         {
             static bool TryParseCore(ReadOnlySpan<char> input, ref Color color)
             {
@@ -249,6 +325,91 @@ namespace Avalonia.Media
             return TryParseCore(input, ref color);
         }
 
+        private static bool TryParseCssFormat(string s, out Color color)
+        {
+            color = default;
+
+            if (s is null)
+            {
+                return false;
+            }
+
+            string workingString = s.Trim();
+
+            if (workingString.Length == 0 ||
+                workingString.IndexOf(",", StringComparison.Ordinal) < 0)
+            {
+                return false;
+            }
+
+            if (workingString.Length > 6 &&
+                workingString.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(5, workingString.Length - 6);
+            }
+
+            if (workingString.Length > 5 &&
+                workingString.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) &&
+                workingString.EndsWith(")", StringComparison.Ordinal))
+            {
+                workingString = workingString.Substring(4, workingString.Length - 5);
+            }
+
+            string[] components = workingString.Split(',');
+
+            if (components.Length == 3) // RGB
+            {
+                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
+                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
+                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue))
+                {
+                    color = new Color(0xFF, red, green, blue);
+                    return true;
+                }
+            }
+            else if (components.Length == 4) // RGBA
+            {
+                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
+                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
+                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue) &&
+                    TryInternalParse(components[3], out double alpha))
+                {
+                    color = new Color((byte)(alpha * 255), red, green, blue);
+                    return true;
+                }
+            }
+
+            // Local function to specially parse a double value with an optional percentage sign
+            bool TryInternalParse(string inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+
+                if (percentIndex >= 0)
+                {
+                    var result = double.TryParse(
+                        inString.Substring(0, percentIndex),
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out double percentage);
+
+                    outDouble = percentage / 100.0;
+                    return result;
+                }
+                else
+                {
+                    return double.TryParse(
+                        inString,
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out outDouble);
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Returns the string representation of the color.
         /// </summary>
@@ -258,7 +419,7 @@ namespace Avalonia.Media
         public override string ToString()
         {
             uint rgb = ToUint32();
-            return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb:x8}";
+            return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb.ToString("x8", CultureInfo.InvariantCulture)}";
         }
 
         /// <summary>
@@ -273,14 +434,23 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Returns the HSL color model equivalent of this RGB color.
+        /// </summary>
+        /// <returns>The HSL equivalent color.</returns>
+        public HslColor ToHsl()
+        {
+            // Don't use the HslColor(Color) constructor to avoid an extra HslColor
+            return Color.ToHsl(R, G, B, A);
+        }
+
+        /// <summary>
         /// Returns the HSV color model equivalent of this RGB color.
         /// </summary>
         /// <returns>The HSV equivalent color.</returns>
         public HsvColor ToHsv()
         {
-            // Use the by-channel conversion method directly for performance
             // Don't use the HsvColor(Color) constructor to avoid an extra HsvColor
-            return HsvColor.FromRgb(R, G, B, A);
+            return Color.ToHsv(R, G, B, A);
         }
 
         /// <inheritdoc/>
@@ -289,11 +459,13 @@ namespace Avalonia.Media
             return A == other.A && R == other.R && G == other.G && B == other.B;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is Color other && Equals(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked
@@ -306,11 +478,261 @@ namespace Avalonia.Media
             }
         }
 
+        /// <summary>
+        /// Converts the given RGB color to its HSL color equivalent.
+        /// </summary>
+        /// <param name="color">The color in the RGB color model.</param>
+        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
+        public static HslColor ToHsl(Color color)
+        {
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsl(
+                (byteToDouble * color.R),
+                (byteToDouble * color.G),
+                (byteToDouble * color.B),
+                (byteToDouble * color.A));
+        }
+
+        /// <summary>
+        /// Converts the given RGBA color component values to their HSL color equivalent.
+        /// </summary>
+        /// <param name="red">The Red component in the RGB color model.</param>
+        /// <param name="green">The Green component in the RGB color model.</param>
+        /// <param name="blue">The Blue component in the RGB color model.</param>
+        /// <param name="alpha">The Alpha component.</param>
+        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
+        public static HslColor ToHsl(
+            byte red,
+            byte green,
+            byte blue,
+            byte alpha = 0xFF)
+        {
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsl(
+                (byteToDouble * red),
+                (byteToDouble * green),
+                (byteToDouble * blue),
+                (byteToDouble * alpha));
+        }
+
+        /// <summary>
+        /// Converts the given RGBA color component values to their HSL color equivalent.
+        /// </summary>
+        /// <remarks>
+        /// Warning: No bounds checks or clamping is done on the input component values.
+        /// This method is for internal-use only and the caller must ensure bounds.
+        /// </remarks>
+        /// <param name="r">The Red component in the RGB color model within the range 0..1.</param>
+        /// <param name="g">The Green component in the RGB color model within the range 0..1.</param>
+        /// <param name="b">The Blue component in the RGB color model within the range 0..1.</param>
+        /// <param name="a">The Alpha component in the RGB color model within the range 0..1.</param>
+        /// <returns>A new <see cref="HslColor"/> equivalent to the given RGBA values.</returns>
+        internal static HslColor ToHsl(
+            double r,
+            double g,
+            double b,
+            double a = 1.0)
+        {
+            // Note: Conversion code is originally based on ColorHelper in the Windows Community Toolkit (licensed MIT)
+            // https://github.com/CommunityToolkit/WindowsCommunityToolkit/blob/main/Microsoft.Toolkit.Uwp/Helpers/ColorHelper.cs
+            // It has been modified.
+
+            double max = r >= g ? (r >= b ? r : b) : (g >= b ? g : b);
+            double min = r <= g ? (r <= b ? r : b) : (g <= b ? g : b);
+            double chroma = max - min;
+            double h1;
+
+            if (chroma == 0)
+            {
+                h1 = 0;
+            }
+            else if (max == r)
+            {
+                // The % operator doesn't do proper modulo on negative
+                // numbers, so we'll add 6 before using it
+                h1 = (((g - b) / chroma) + 6) % 6;
+            }
+            else if (max == g)
+            {
+                h1 = 2 + ((b - r) / chroma);
+            }
+            else
+            {
+                h1 = 4 + ((r - g) / chroma);
+            }
+
+            double lightness = 0.5 * (max + min);
+            double saturation = chroma == 0 ? 0 : chroma / (1 - Math.Abs((2 * lightness) - 1));
+
+            return new HslColor(a, 60 * h1, saturation, lightness, clampValues: false);
+        }
+
+        /// <summary>
+        /// Converts the given RGB color to its HSV color equivalent.
+        /// </summary>
+        /// <param name="color">The color in the RGB color model.</param>
+        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
+        public static HsvColor ToHsv(Color color)
+        {
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsv(
+                (byteToDouble * color.R),
+                (byteToDouble * color.G),
+                (byteToDouble * color.B),
+                (byteToDouble * color.A));
+        }
+
+        /// <summary>
+        /// Converts the given RGBA color component values to their HSV color equivalent.
+        /// </summary>
+        /// <param name="red">The Red component in the RGB color model.</param>
+        /// <param name="green">The Green component in the RGB color model.</param>
+        /// <param name="blue">The Blue component in the RGB color model.</param>
+        /// <param name="alpha">The Alpha component.</param>
+        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
+        public static HsvColor ToHsv(
+            byte red,
+            byte green,
+            byte blue,
+            byte alpha = 0xFF)
+        {
+            // Normalize RGBA components into the 0..1 range
+            return Color.ToHsv(
+                (byteToDouble * red),
+                (byteToDouble * green),
+                (byteToDouble * blue),
+                (byteToDouble * alpha));
+        }
+
+        /// <summary>
+        /// Converts the given RGBA color component values to their HSV color equivalent.
+        /// </summary>
+        /// <remarks>
+        /// Warning: No bounds checks or clamping is done on the input component values.
+        /// This method is for internal-use only and the caller must ensure bounds.
+        /// </remarks>
+        /// <param name="r">The Red component in the RGB color model within the range 0..1.</param>
+        /// <param name="g">The Green component in the RGB color model within the range 0..1.</param>
+        /// <param name="b">The Blue component in the RGB color model within the range 0..1.</param>
+        /// <param name="a">The Alpha component in the RGB color model within the range 0..1.</param>
+        /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
+        internal static HsvColor ToHsv(
+            double r,
+            double g,
+            double b,
+            double a = 1.0)
+        {
+            // Note: Conversion code is originally based on the C++ in WinUI (licensed MIT)
+            // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/Common/ColorConversion.cpp
+            // This was used because it is the best documented and likely most optimized for performance
+            // Alpha support was added
+
+            double hue;
+            double saturation;
+            double value;
+
+            double max = r >= g ? (r >= b ? r : b) : (g >= b ? g : b);
+            double min = r <= g ? (r <= b ? r : b) : (g <= b ? g : b);
+
+            // The value, a number between 0 and 1, is the largest of R, G, and B (divided by 255).
+            // Conceptually speaking, it represents how much color is present.
+            // If at least one of R, G, B is 255, then there exists as much color as there can be.
+            // If RGB = (0, 0, 0), then there exists no color at all - a value of zero corresponds
+            // to black (i.e., the absence of any color).
+            value = max;
+
+            // The "chroma" of the color is a value directly proportional to the extent to which
+            // the color diverges from greyscale.  If, for example, we have RGB = (255, 255, 0),
+            // then the chroma is maximized - this is a pure yellow, no gray of any kind.
+            // On the other hand, if we have RGB = (128, 128, 128), then the chroma being zero
+            // implies that this color is pure greyscale, with no actual hue to be found.
+            var chroma = max - min;
+
+            // If the chrome is zero, then hue is technically undefined - a greyscale color
+            // has no hue.  For the sake of convenience, we'll just set hue to zero, since
+            // it will be unused in this circumstance.  Since the color is purely gray,
+            // saturation is also equal to zero - you can think of saturation as basically
+            // a measure of hue intensity, such that no hue at all corresponds to a
+            // nonexistent intensity.
+            if (chroma == 0)
+            {
+                hue = 0.0;
+                saturation = 0.0;
+            }
+            else
+            {
+                // In this block, hue is properly defined, so we'll extract both hue
+                // and saturation information from the RGB color.
+
+                // Hue can be thought of as a cyclical thing, between 0 degrees and 360 degrees.
+                // A hue of 0 degrees is red; 120 degrees is green; 240 degrees is blue; and 360 is back to red.
+                // Every other hue is somewhere between either red and green, green and blue, and blue and red,
+                // so every other hue can be thought of as an angle on this color wheel.
+                // These if/else statements determines where on this color wheel our color lies.
+                if (r == max)
+                {
+                    // If the red channel is the most pronounced channel, then we exist
+                    // somewhere between (-60, 60) on the color wheel - i.e., the section around 0 degrees
+                    // where red dominates.  We figure out where in that section we are exactly
+                    // by considering whether the green or the blue channel is greater - by subtracting green from blue,
+                    // then if green is greater, we'll nudge ourselves closer to 60, whereas if blue is greater, then
+                    // we'll nudge ourselves closer to -60.  We then divide by chroma (which will actually make the result larger,
+                    // since chroma is a value between 0 and 1) to normalize the value to ensure that we get the right hue
+                    // even if we're very close to greyscale.
+                    hue = 60 * (g - b) / chroma;
+                }
+                else if (g == max)
+                {
+                    // We do the exact same for the case where the green channel is the most pronounced channel,
+                    // only this time we want to see if we should tilt towards the blue direction or the red direction.
+                    // We add 120 to center our value in the green third of the color wheel.
+                    hue = 120 + (60 * (b - r) / chroma);
+                }
+                else // blue == max
+                {
+                    // And we also do the exact same for the case where the blue channel is the most pronounced channel,
+                    // only this time we want to see if we should tilt towards the red direction or the green direction.
+                    // We add 240 to center our value in the blue third of the color wheel.
+                    hue = 240 + (60 * (r - g) / chroma);
+                }
+
+                // Since we want to work within the range [0, 360), we'll add 360 to any value less than zero -
+                // this will bump red values from within -60 to -1 to 300 to 359.  The hue is the same at both values.
+                if (hue < 0.0)
+                {
+                    hue += 360.0;
+                }
+
+                // The saturation, our final HSV axis, can be thought of as a value between 0 and 1 indicating how intense our color is.
+                // To find it, we divide the chroma - the distance between the minimum and the maximum RGB channels - by the maximum channel (i.e., the value).
+                // This effectively normalizes the chroma - if the maximum is 0.5 and the minimum is 0, the saturation will be (0.5 - 0) / 0.5 = 1,
+                // meaning that although this color is not as bright as it can be, the dark color is as intense as it possibly could be.
+                // If, on the other hand, the maximum is 0.5 and the minimum is 0.25, then the saturation will be (0.5 - 0.25) / 0.5 = 0.5,
+                // meaning that this color is partially washed out.
+                // A saturation value of 0 corresponds to a greyscale color, one in which the color is *completely* washed out and there is no actual hue.
+                saturation = chroma / value;
+            }
+
+            return new HsvColor(a, hue, saturation, value, clampValues: false);
+        }
+
+        /// <summary>
+        /// Indicates whether the values of two specified <see cref="Color"/> objects are equal.
+        /// </summary>
+        /// <param name="left">The first object to compare.</param>
+        /// <param name="right">The second object to compare.</param>
+        /// <returns>True if left and right are equal; otherwise, false.</returns>
         public static bool operator ==(Color left, Color right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Indicates whether the values of two specified <see cref="Color"/> objects are not equal.
+        /// </summary>
+        /// <param name="left">The first object to compare.</param>
+        /// <param name="right">The second object to compare.</param>
+        /// <returns>True if left and right are not equal; otherwise, false.</returns>
         public static bool operator !=(Color left, Color right)
         {
             return !left.Equals(right);

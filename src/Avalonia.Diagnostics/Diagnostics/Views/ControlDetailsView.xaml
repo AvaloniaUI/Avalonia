@@ -44,7 +44,9 @@
                               UseWholeWordFilter="{Binding UseWholeWordFilter}"
                               UseRegexFilter="{Binding UseRegexFilter}"/>
       
-      <DataGrid Items="{Binding PropertiesView}"
+      <DataGrid 
+                x:Name="DataGrid"
+                Items="{Binding PropertiesView}"
                 Grid.Row="2"
                 BorderThickness="0"
                 RowBackground="Transparent"
@@ -129,6 +131,26 @@
                     </Expander.Header>
 
                     <ItemsControl Margin="20,0,0,0" Grid.Row="1" Items="{Binding Setters}">
+                      
+                      <ItemsControl.Styles>
+                        <Style Selector="TextBlock.property-name">
+                          <Setter Property="FontWeight" Value="SemiBold" />
+                          <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        
+                        <Style Selector="TextBlock.property-name:pointerover">
+                          <Setter Property="TextDecorations" Value="Underline" />
+                        </Style>
+                        
+                        <Style Selector="Rectangle.property-inactive">
+                          <Setter Property="IsHitTestVisible" Value="False" />
+                          <Setter Property="Height" Value="1" />
+                          <Setter Property="Fill" Value="#6C6C6C" />
+                          <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                        
+                      </ItemsControl.Styles>
+                      
                       <ItemsControl.DataTemplates>
 
                         <DataTemplate DataType="IBrush">
@@ -136,26 +158,6 @@
                             <Border BorderThickness="1" BorderBrush="Black" Background="{Binding}" Width="8" Height="8"/>
                             <TextBlock Text="{Binding}" />
                           </StackPanel>
-                        </DataTemplate>
-
-                        <DataTemplate DataType="vm:BindingSetterViewModel">
-                          <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
-                            <Panel.ContextMenu>
-                              <ContextMenu>
-                                <MenuItem Header="Copy property name" Command="{Binding CopyPropertyName} "/>
-                                <MenuItem Header="Copy value" Command="{Binding CopyValue} "/>
-                              </ContextMenu>
-                            </Panel.ContextMenu>
-                            <StackPanel Orientation="Horizontal" Spacing="2">
-                              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                              <TextBlock Text=":" />
-                              <TextBlock>{</TextBlock>
-                              <Rectangle Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}"/>
-                              <TextBlock Text="{Binding Path}" />
-                              <TextBlock>}</TextBlock>
-                            </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" VerticalAlignment="Center" IsVisible="{Binding !IsActive}" />
-                          </Panel>
                         </DataTemplate>
 
                         <DataTemplate DataType="Color">
@@ -168,6 +170,26 @@
                             <TextBlock Text="{Binding}" />
                           </StackPanel>
                         </DataTemplate>
+                        
+                        <DataTemplate DataType="vm:BindingSetterViewModel">
+                          <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
+                            <Panel.ContextMenu>
+                              <ContextMenu>
+                                <MenuItem Header="Copy property name" Command="{Binding CopyPropertyName} "/>
+                                <MenuItem Header="Copy value" Command="{Binding CopyValue} "/>
+                              </ContextMenu>
+                            </Panel.ContextMenu>
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                              <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
+                              <TextBlock Text=":" />
+                              <TextBlock>{</TextBlock>
+                              <Rectangle Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}" ToolTip.Tip="{Binding ValueTypeTooltip}"/>
+                              <TextBlock Text="{Binding Path}" />
+                              <TextBlock>}</TextBlock>
+                            </StackPanel>
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
+                          </Panel>
+                        </DataTemplate>
 
                         <DataTemplate DataType="vm:ResourceSetterViewModel">
                           <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
@@ -179,15 +201,15 @@
                               </ContextMenu>
                             </Panel.ContextMenu>
                             <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Left">
-                              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                              <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
                               <ContentControl Content="{Binding Value}"/>
                               <TextBlock>(</TextBlock>
-                              <Ellipse Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}"/>
+                              <Ellipse Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}" ToolTip.Tip="{Binding ValueTypeTooltip}"/>
                               <TextBlock FontStyle="Italic" Text="{Binding Key}" />
                               <TextBlock>)</TextBlock>
                             </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" IsVisible="{Binding !IsActive}" />
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>
                         </DataTemplate>
 
@@ -200,11 +222,11 @@
                               </ContextMenu>
                             </Panel.ContextMenu>
                             <StackPanel Orientation="Horizontal" Spacing="2">
-                              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                              <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
                               <ContentControl Content="{Binding Value}"/>
                             </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" VerticalAlignment="Center" IsVisible="{Binding !IsActive}" />
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>
                         </DataTemplate>
 

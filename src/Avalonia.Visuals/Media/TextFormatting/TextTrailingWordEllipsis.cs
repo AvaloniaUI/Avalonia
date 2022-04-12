@@ -14,7 +14,7 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="ellipsis">Text used as collapsing symbol.</param>
         /// <param name="width">width in which collapsing is constrained to.</param>
-        /// <param name="textRunProperties">text run properties of ellispis symbol.</param>
+        /// <param name="textRunProperties">text run properties of ellipsis symbol.</param>
         public TextTrailingWordEllipsis(
             ReadOnlySlice<char> ellipsis,
             double width,
@@ -26,12 +26,12 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc/>
-        public sealed override double Width { get; }
+        public override double Width { get; }
 
         /// <inheritdoc/>
-        public sealed override TextRun Symbol { get; }
+        public override TextRun Symbol { get; }
 
-        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine)
+        public override List<DrawableTextRun>? Collapse(TextLine textLine)
         {
             return TextEllipsisHelper.Collapse(textLine, this, true);
         }
