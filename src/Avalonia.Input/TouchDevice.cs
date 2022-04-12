@@ -32,7 +32,7 @@ namespace Avalonia.Input
 
         public void ProcessRawEvent(RawInputEventArgs ev)
         {
-            if (_disposed)
+            if (ev.Handled || _disposed)
                 return;
             var args = (RawTouchEventArgs)ev;
             if (!_pointers.TryGetValue(args.TouchPointId, out var pointer))
