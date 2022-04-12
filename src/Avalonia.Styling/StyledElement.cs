@@ -467,7 +467,12 @@ namespace Avalonia
         /// <param name="parent">The parent.</param>
         void ISetInheritanceParent.SetParent(IAvaloniaObject? parent)
         {
-            InheritanceParent = parent;
+            InheritanceParent = parent switch
+            {
+                AvaloniaObject ao => ao,
+                null => null,
+                _ => throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.")
+            };
         }
 
         void IStyleable.StyleApplied(IStyleInstance instance)

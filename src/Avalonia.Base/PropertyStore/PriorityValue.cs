@@ -1,10 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
+    /// <summary>
+    /// Represents an untyped interface to <see cref="PriorityValue{T}"/>.
+    /// </summary>
+    interface IPriorityValue : IValue
+    {
+        void UpdateEffectiveValue();
+    }
+
     /// <summary>
     /// Stores a set of prioritized values and bindings in a <see cref="ValueStore"/>.
     /// </summary>
@@ -16,7 +23,7 @@ namespace Avalonia.PropertyStore
     /// <see cref="IPriorityValueEntry{T}"/> entries (sorted first by priority and then in the order
     /// they were added) plus a local value.
     /// </remarks>
-    internal class PriorityValue<T> : IValue<T>, IValueSink, IBatchUpdate
+    internal class PriorityValue<T> : IPriorityValue, IValue<T>, IValueSink, IBatchUpdate
     {
         private readonly IAvaloniaObject _owner;
         private readonly IValueSink _sink;

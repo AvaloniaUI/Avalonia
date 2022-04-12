@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Diagnostics;
 using Moq;
 using Xunit;
 
@@ -104,51 +105,51 @@ namespace Avalonia.Styling.UnitTests
         [Fact]
         public void Setter_Should_Apply_Value_With_Activator_As_Binding_With_StyleTrigger_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
+            var control = new Canvas();
             var setter = new Setter(TextBlock.TagProperty, "foo");
-            var activator = new Subject<bool>();
 
-            var instance = setter.Instance(control.Object);
+            var instance = setter.Instance(control);
             instance.Start(true);
             instance.Activate();
 
-            control.Verify(x => x.Bind(
-                TextBlock.TagProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.StyleTrigger));
+            Assert.Equal("foo", control.Tag);
+            Assert.Equal(BindingPriority.StyleTrigger, control.GetDiagnostic(TextBlock.TagProperty).Priority);
         }
 
         [Fact]
         public void Setter_Should_Apply_Binding_Without_Activator_With_Style_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
+            var control = new Canvas();
+            var source = new { Foo = "foo" };
+            var setter = new Setter(TextBlock.TagProperty, new Binding
+            {
+                Source = source,
+                Path = nameof(source.Foo),
+            });
 
-            setter.Instance(control.Object).Start(false);
+            setter.Instance(control).Start(false);
 
-            control.Verify(x => x.Bind(
-                TextBlock.TagProperty,
-                It.IsAny<PropertySetterBindingInstance<object>>(),
-                BindingPriority.Style));
+            Assert.Equal("foo", control.Tag);
+            Assert.Equal(BindingPriority.Style, control.GetDiagnostic(TextBlock.TagProperty).Priority);
         }
 
         [Fact]
         public void Setter_Should_Apply_Binding_With_Activator_With_StyleTrigger_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
+            var control = new Canvas();
+            var source = new { Foo = "foo" };
+            var setter = new Setter(TextBlock.TagProperty, new Binding
+            {
+                Source = source,
+                Path = nameof(source.Foo),
+            });
 
-            var instance = setter.Instance(control.Object);
+            var instance = setter.Instance(control);
             instance.Start(true);
             instance.Activate();
 
-            control.Verify(x => x.Bind(
-                TextBlock.TagProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.StyleTrigger));
+            Assert.Equal("foo", control.Tag);
+            Assert.Equal(BindingPriority.StyleTrigger, control.GetDiagnostic(TextBlock.TagProperty).Priority);
         }
 
         private IBinding CreateMockBinding(AvaloniaProperty property)

@@ -196,11 +196,11 @@ namespace Avalonia
             }
         }
 
-        public void CoerceValue<T>(StyledPropertyBase<T> property)
+        public void CoerceValue(AvaloniaProperty property)
         {
             if (TryGetValue(property, out var slot))
             {
-                if (slot is PriorityValue<T> p)
+                if (slot is IPriorityValue p)
                 {
                     p.UpdateEffectiveValue();
                 }

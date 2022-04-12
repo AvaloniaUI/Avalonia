@@ -467,20 +467,20 @@ namespace Avalonia
         /// Routes an untyped ClearValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        internal abstract void RouteClearValue(IAvaloniaObject o);
+        internal abstract void RouteClearValue(AvaloniaObject o);
 
         /// <summary>
         /// Routes an untyped GetValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        internal abstract object? RouteGetValue(IAvaloniaObject o);
+        internal abstract object? RouteGetValue(AvaloniaObject o);
 
         /// <summary>
         /// Routes an untyped GetBaseValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
         /// <param name="maxPriority">The maximum priority for the value.</param>
-        internal abstract object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority);
+        internal abstract object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority);
 
         /// <summary>
         /// Routes an untyped SetValue call to a typed call.
@@ -492,7 +492,7 @@ namespace Avalonia
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
         internal abstract IDisposable? RouteSetValue(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             object? value,
             BindingPriority priority);
 
@@ -503,11 +503,11 @@ namespace Avalonia
         /// <param name="source">The binding source.</param>
         /// <param name="priority">The priority.</param>
         internal abstract IDisposable RouteBind(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             IObservable<BindingValue<object?>> source,
             BindingPriority priority);
 
-        internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject? oldParent);
+        internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.

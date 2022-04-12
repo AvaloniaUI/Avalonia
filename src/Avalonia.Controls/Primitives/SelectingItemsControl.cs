@@ -533,9 +533,9 @@ namespace Avalonia.Controls.Primitives
 
                 bool Match(ItemContainerInfo info)
                 {
-                    if (info.ContainerControl.IsSet(TextSearch.TextProperty))
+                    if (info.ContainerControl is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
                     {
-                        var searchText = info.ContainerControl.GetValue(TextSearch.TextProperty);
+                        var searchText = ao.GetValue(TextSearch.TextProperty);
 
                         if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
                         {

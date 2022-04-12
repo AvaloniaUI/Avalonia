@@ -5,6 +5,7 @@ using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia
@@ -17,11 +18,11 @@ namespace Avalonia
     /// </remarks>
     public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged, IValueSink
     {
-        private IAvaloniaObject? _inheritanceParent;
+        private AvaloniaObject? _inheritanceParent;
         private List<IDisposable>? _directBindings;
         private PropertyChangedEventHandler? _inpcChanged;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChanged;
-        private List<IAvaloniaObject>? _inheritanceChildren;
+        private List<AvaloniaObject>? _inheritanceChildren;
         private ValueStore? _values;
         private bool _batchUpdate;
 
@@ -58,7 +59,7 @@ namespace Avalonia
         /// <value>
         /// The inheritance parent.
         /// </value>
-        protected IAvaloniaObject? InheritanceParent
+        protected AvaloniaObject? InheritanceParent
         {
             get
             {
@@ -320,14 +321,14 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public void SetValue(
+        public IDisposable? SetValue(
             AvaloniaProperty property,
             object? value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
 
-            property.RouteSetValue(this, value, priority);
+            return property.RouteSetValue(this, value, priority);
         }
 
         /// <summary>
@@ -383,6 +384,26 @@ namespace Avalonia
 
             LogPropertySet(property, value, BindingPriority.LocalValue);
             SetDirectValueUnchecked(property, value);
+        }
+
+        /// <summary>
+        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="source">The observable.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        public IDisposable Bind(
+            AvaloniaProperty property,
+            IObservable<object?> source,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+            source = source ?? throw new ArgumentNullException(nameof(source));
+
+            return property.RouteBind(this, source.ToBindingValue(), priority);
         }
 
         /// <summary>
@@ -445,9 +466,8 @@ namespace Avalonia
         /// <summary>
         /// Coerces the specified <see cref="AvaloniaProperty"/>.
         /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
-        public void CoerceValue<T>(StyledPropertyBase<T> property)
+        public void CoerceValue(AvaloniaProperty property)
         {
             _values?.CoerceValue(property);
         }
@@ -475,19 +495,19 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        void IAvaloniaObject.AddInheritanceChild(IAvaloniaObject child)
+        internal void AddInheritanceChild(AvaloniaObject child)
         {
-            _inheritanceChildren ??= new List<IAvaloniaObject>();
+            _inheritanceChildren ??= new List<AvaloniaObject>();
             _inheritanceChildren.Add(child);
         }
         
         /// <inheritdoc/>
-        void IAvaloniaObject.RemoveInheritanceChild(IAvaloniaObject child)
+        internal void RemoveInheritanceChild(AvaloniaObject child)
         {
             _inheritanceChildren?.Remove(child);
         }
 
-        void IAvaloniaObject.InheritedPropertyChanged<T>(
+        internal void InheritedPropertyChanged<T>(
             AvaloniaProperty<T> property,
             Optional<T> oldValue,
             Optional<T> newValue)
@@ -565,14 +585,11 @@ namespace Avalonia
         /// <param name="oldParent">The old inheritance parent.</param>
         internal void InheritanceParentChanged<T>(
             StyledPropertyBase<T> property,
-            IAvaloniaObject? oldParent)
+            AvaloniaObject? oldParent)
         {
-            var oldValue = oldParent switch
-            {
-                AvaloniaObject o => o.GetValueOrInheritedOrDefault(property),
-                null => property.GetDefaultValue(GetType()),
-                _ => oldParent.GetValue(property)
-            };
+            var oldValue = oldParent is not null ?
+                oldParent.GetValueOrInheritedOrDefault(property) :
+                property.GetDefaultValue(GetType());
 
             var newValue = GetInheritedOrDefault(property);
 
