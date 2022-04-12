@@ -38,14 +38,17 @@ namespace Avalonia.Benchmarks.Styling
         {
             AssetLoader.RegisterResUriParsers();
             
-            var hostStyle = new Style();
+            var preHost = new Style();
+            preHost.Resources.Add("preTheme", null);
             
-            hostStyle.Resources.Add("test", null);
+            var postHost = new Style();
+            postHost.Resources.Add("postTheme", null);
             
             return new Styles
             {
-                hostStyle,
-                new FluentTheme(new Uri("avares://Avalonia.Benchmarks"))
+                preHost,
+                new FluentTheme(new Uri("avares://Avalonia.Benchmarks")),
+                postHost
             };
         }
 
@@ -79,12 +82,30 @@ namespace Avalonia.Benchmarks.Styling
             current.Child = _searchStart;
         }
         
-        [Benchmark(Baseline = true)]
-        public void FindResource()
+        [Benchmark]
+        public void FindPreResource()
         {
             for (int i = 0; i < 100; ++i)
             {
-                _searchStart.FindResource("test");
+                _searchStart.FindResource("preTheme");
+            }
+        }
+        
+        [Benchmark]
+        public void FindPostResource()
+        {
+            for (int i = 0; i < 100; ++i)
+            {
+                _searchStart.FindResource("postTheme");
+            }
+        }
+        
+        [Benchmark]
+        public void FindNotExistingResource()
+        {
+            for (int i = 0; i < 100; ++i)
+            {
+                _searchStart.FindResource("notPresent");
             }
         }
     }
