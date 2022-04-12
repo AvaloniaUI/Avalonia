@@ -56,6 +56,11 @@ namespace Avalonia
         /// GPU rendering will not be enabled if this is set to false.
         /// </remarks>
         public bool? AllowEglInitialization { get; set; }
+        
+        public IList<string> EglRendererBlacklist { get; set; } = new List<string>
+        {
+            "Microsoft Basic Renderer"
+        };
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
