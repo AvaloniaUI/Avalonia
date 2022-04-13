@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using Avalonia.Base.UnitTests.Media.TextFormatting;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
