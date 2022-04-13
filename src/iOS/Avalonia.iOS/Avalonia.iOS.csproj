@@ -9,13 +9,5 @@
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
   
-  <!-- Workaround for https://github.com/dotnet/msbuild/issues/4584 -->
-  <Target Name="_RemoveNativeReferencesManifest" AfterTargets="BuiltProjectOutputGroup">
-    <ItemGroup>
-      <_BuiltProjectOutputGroupOutputIntermediate Remove="$(OutDir)$(_DeploymentTargetApplicationManifestFileName)" />
-      <BuiltProjectOutputGroupOutput Remove="$(ProjectDir)$(OutDir)$(_DeploymentTargetApplicationManifestFileName)" />
-    </ItemGroup>
-  </Target>
-
   <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>
