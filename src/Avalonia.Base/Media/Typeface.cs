@@ -16,18 +16,26 @@ namespace Avalonia.Media
         /// <param name="fontFamily">The font family.</param>
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weight.</param>
+        /// <param name="stretch">The font stretch.</param>
         public Typeface([NotNull] FontFamily fontFamily,
             FontStyle style = FontStyle.Normal,
-            FontWeight weight = FontWeight.Normal)
+            FontWeight weight = FontWeight.Normal,
+            FontStretch stretch = FontStretch.Normal)
         {
             if (weight <= 0)
             {
                 throw new ArgumentException("Font weight must be > 0.");
             }
+            
+            if ((int)stretch < 1)
+            {
+                throw new ArgumentException("Font stretch must be > 1.");
+            }
 
             FontFamily = fontFamily;
             Style = style;
             Weight = weight;
+            Stretch = stretch;
         }
 
         /// <summary>
@@ -36,10 +44,12 @@ namespace Avalonia.Media
         /// <param name="fontFamilyName">The name of the font family.</param>
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weight.</param>
+        /// <param name="stretch">The font stretch.</param>
         public Typeface(string fontFamilyName,
             FontStyle style = FontStyle.Normal,
-            FontWeight weight = FontWeight.Normal)
-            : this(new FontFamily(fontFamilyName), style, weight)
+            FontWeight weight = FontWeight.Normal,
+            FontStretch stretch = FontStretch.Normal)
+            : this(new FontFamily(fontFamilyName), style, weight, stretch)
         {
         }
 
@@ -59,6 +69,11 @@ namespace Avalonia.Media
         /// Gets the font weight.
         /// </summary>
         public FontWeight Weight { get; }
+        
+        /// <summary>
+        /// Gets the font stretch.
+        /// </summary>
+        public FontStretch Stretch { get; }
 
         /// <summary>
         /// Gets the glyph typeface.
@@ -78,14 +93,15 @@ namespace Avalonia.Media
             return  a.Equals(b);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Typeface typeface && Equals(typeface);
         }
 
         public bool Equals(Typeface other)
         {
-            return FontFamily == other.FontFamily && Style == other.Style && Weight == other.Weight;
+            return FontFamily == other.FontFamily && Style == other.Style && 
+                   Weight == other.Weight && Stretch == other.Stretch;
         }
 
         public override int GetHashCode()
@@ -95,6 +111,7 @@ namespace Avalonia.Media
                 var hashCode = (FontFamily != null ? FontFamily.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (int)Style;
                 hashCode = (hashCode * 397) ^ (int)Weight;
+                hashCode = (hashCode * 397) ^ (int)Stretch;
                 return hashCode;
             }
         }

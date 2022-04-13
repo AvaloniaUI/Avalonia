@@ -1,8 +1,10 @@
 ﻿using System;
+using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Utils
 {
@@ -10,16 +12,17 @@ namespace Avalonia.Controls.Utils
     {
         private bool _useComplexRendering;
         private bool? _backendSupportsIndividualCorners;
-        private StreamGeometry _backgroundGeometryCache;
-        private StreamGeometry _borderGeometryCache;
+        private StreamGeometry? _backgroundGeometryCache;
+        private StreamGeometry? _borderGeometryCache;
         private Size _size;
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
         private bool _initialized;
 
+
         void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
         {
-            _backendSupportsIndividualCorners ??= AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
+            _backendSupportsIndividualCorners ??= AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>()
                 .SupportsIndividualRoundRects;
             _size = finalSize;
             _borderThickness = borderThickness;
@@ -38,8 +41,8 @@ namespace Avalonia.Controls.Utils
 
                 var boundRect = new Rect(finalSize);
                 var innerRect = boundRect.Deflate(borderThickness);
-                BorderGeometryKeypoints backgroundKeypoints = null;
-                StreamGeometry backgroundGeometry = null;
+                BorderGeometryKeypoints? backgroundKeypoints = null;
+                StreamGeometry? backgroundGeometry = null;
 
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
@@ -60,7 +63,8 @@ namespace Avalonia.Controls.Utils
 
                 if (boundRect.Width != 0 && innerRect.Height != 0)
                 {
-                    var borderGeometryKeypoints = new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
+                    var borderGeometryKeypoints =
+                        new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
                     var borderGeometry = new StreamGeometry();
 
                     using (var ctx = borderGeometry.Open())
@@ -69,7 +73,7 @@ namespace Avalonia.Controls.Utils
 
                         if (backgroundGeometry != null)
                         {
-                            CreateGeometry(ctx, innerRect, backgroundKeypoints);
+                            CreateGeometry(ctx, innerRect, backgroundKeypoints!);
                         }
                     }
 
@@ -84,17 +88,22 @@ namespace Avalonia.Controls.Utils
 
         public void Render(DrawingContext context,
             Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-            IBrush background, IBrush borderBrush, BoxShadows boxShadows)
+            IBrush? background, IBrush? borderBrush, BoxShadows boxShadows, double borderDashOffset = 0,
+            PenLineCap borderLineCap = PenLineCap.Flat, PenLineJoin borderLineJoin = PenLineJoin.Miter,
+            AvaloniaList<double>? borderDashArray = null)
         {
             if (_size != finalSize
                 || _borderThickness != borderThickness
                 || _cornerRadius != cornerRadius
                 || !_initialized)
                 Update(finalSize, borderThickness, cornerRadius);
-            RenderCore(context, background, borderBrush, boxShadows);
+            RenderCore(context, background, borderBrush, boxShadows, borderDashOffset, borderLineCap, borderLineJoin,
+                borderDashArray);
         }
 
-        void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadows boxShadows)
+        void RenderCore(DrawingContext context, IBrush? background, IBrush? borderBrush, BoxShadows boxShadows,
+            double borderDashOffset, PenLineCap borderLineCap, PenLineJoin borderLineJoin,
+            AvaloniaList<double>? borderDashArray)
         {
             if (_useComplexRendering)
             {
@@ -113,12 +122,26 @@ namespace Avalonia.Controls.Utils
             else
             {
                 var borderThickness = _borderThickness.Top;
-                IPen pen = null;
+                IPen? pen = null;
+
+
+                ImmutableDashStyle? dashStyle = null;
+
+                if (borderDashArray != null && borderDashArray.Count > 0)
+                {
+                    dashStyle = new ImmutableDashStyle(borderDashArray, borderDashOffset);
+                }
 
                 if (borderBrush != null && borderThickness > 0)
                 {
-                    pen = new ImmutablePen(borderBrush.ToImmutable(), borderThickness);
+                    pen = new ImmutablePen(
+                        borderBrush.ToImmutable(),
+                        borderThickness,
+                        dashStyle,
+                        borderLineCap,
+                        borderLineJoin);
                 }
+
 
                 var rect = new Rect(_size);
                 if (!MathUtilities.IsZero(borderThickness))
@@ -130,7 +153,8 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderGeometryKeypoints keypoints)
+        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect,
+            BorderGeometryKeypoints keypoints)
         {
             context.BeginFigure(keypoints.TopLeft, true);
 
@@ -184,7 +208,8 @@ namespace Avalonia.Controls.Utils
 
         private class BorderGeometryKeypoints
         {
-            internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius, bool inner)
+            internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius,
+                bool inner)
             {
                 var left = 0.5 * borderThickness.Left;
                 var top = 0.5 * borderThickness.Top;
@@ -206,10 +231,13 @@ namespace Avalonia.Controls.Utils
                     topLeftX = Math.Max(0, cornerRadius.TopLeft - left) + boundRect.TopLeft.X;
                     topRightX = boundRect.Width - Math.Max(0, cornerRadius.TopRight - top) + boundRect.TopLeft.X;
                     rightTopY = Math.Max(0, cornerRadius.TopRight - right) + boundRect.TopLeft.Y;
-                    rightBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomRight - bottom) + boundRect.TopLeft.Y;
-                    bottomRightX = boundRect.Width - Math.Max(0, cornerRadius.BottomRight - right) + boundRect.TopLeft.X;
+                    rightBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomRight - bottom) +
+                                   boundRect.TopLeft.Y;
+                    bottomRightX = boundRect.Width - Math.Max(0, cornerRadius.BottomRight - right) +
+                                   boundRect.TopLeft.X;
                     bottomLeftX = Math.Max(0, cornerRadius.BottomLeft - left) + boundRect.TopLeft.X;
-                    leftBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomLeft - bottom) + boundRect.TopLeft.Y;
+                    leftBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomLeft - bottom) +
+                                  boundRect.TopLeft.Y;
                 }
                 else
                 {

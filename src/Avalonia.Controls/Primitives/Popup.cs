@@ -2,18 +2,18 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
@@ -397,7 +397,7 @@ namespace Avalonia.Controls.Primitives
             _isOpenRequested = false;
             var popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver);
 
-            var handlerCleanup = new CompositeDisposable(5);
+            var handlerCleanup = new CompositeDisposable(7);
 
             popupHost.BindConstraints(this, WidthProperty, MinWidthProperty, MaxWidthProperty,
                 HeightProperty, MinHeightProperty, MaxHeightProperty, TopmostProperty).DisposeWith(handlerCleanup);
@@ -418,21 +418,39 @@ namespace Avalonia.Controls.Primitives
                 (x, handler) => x.TemplateApplied += handler,
                 (x, handler) => x.TemplateApplied -= handler).DisposeWith(handlerCleanup);
 
-            if (topLevel is Window window)
+            if (topLevel is Window window && window.PlatformImpl != null)
             {
                 SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
                     (x, handler) => x.Deactivated += handler,
                     (x, handler) => x.Deactivated -= handler).DisposeWith(handlerCleanup);
                 
                 SubscribeToEventHandler<IWindowImpl, Action>(window.PlatformImpl, WindowLostFocus,
-                        (x, handler) => x.LostFocus += handler,
-                        (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
-            }
-            else
-            {
-                var parentPopupRoot = topLevel as PopupRoot;
+                    (x, handler) => x.LostFocus += handler,
+                    (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
 
-                if (parentPopupRoot?.Parent is Popup popup)
+                // Recalculate popup position on parent moved/resized, but not if placement was on pointer
+                if (PlacementMode != PlacementMode.Pointer)
+                {
+                    SubscribeToEventHandler<IWindowImpl, Action<PixelPoint>>(window.PlatformImpl, WindowPositionChanged,
+                        (x, handler) => x.PositionChanged += handler,
+                        (x, handler) => x.PositionChanged -= handler).DisposeWith(handlerCleanup);
+
+                    if (placementTarget is Layoutable layoutTarget)
+                    {
+                        // If the placement target is moved, update the popup position
+                        SubscribeToEventHandler<Layoutable, EventHandler>(layoutTarget, PlacementTargetLayoutUpdated,
+                            (x, handler) => x.LayoutUpdated += handler,
+                            (x, handler) => x.LayoutUpdated -= handler).DisposeWith(handlerCleanup);
+                    }
+                }
+            }
+            else if (topLevel is PopupRoot parentPopupRoot)
+            {
+                SubscribeToEventHandler<PopupRoot, EventHandler<PixelPointEventArgs>>(parentPopupRoot, ParentPopupPositionChanged,
+                    (x, handler) => x.PositionChanged += handler,
+                    (x, handler) => x.PositionChanged -= handler).DisposeWith(handlerCleanup);
+
+                if (parentPopupRoot.Parent is Popup popup)
                 {
                     SubscribeToEventHandler<Popup, EventHandler<EventArgs>>(popup, ParentClosed,
                         (x, handler) => x.Closed += handler,
@@ -543,6 +561,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new PopupAutomationPeer(this);
+        }
+
         private static IDisposable SubscribeToEventHandler<T, TEventHandler>(T target, TEventHandler handler, Action<T, TEventHandler> subscribe, Action<T, TEventHandler> unsubscribe)
         {
             subscribe(target, handler);
@@ -552,7 +575,7 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
         {
-            if(host is PopupRoot pr)
+            if(host is PopupRoot pr && pr.PlatformImpl is not null)
             {
                 pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
             }
@@ -634,7 +657,17 @@ namespace Avalonia.Controls.Primitives
             {
                 if (PlacementTarget != null)
                 {
-                    FocusManager.Instance?.Focus(PlacementTarget);
+                    var e = (IControl?)PlacementTarget;
+
+                    while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
+                    {
+                        e = e.Parent;
+                    }
+
+                    if (e is object)
+                    {
+                        FocusManager.Instance?.Focus(e);
+                    }
                 }
                 else
                 {
@@ -657,7 +690,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void PointerPressedDismissOverlay(object sender, PointerPressedEventArgs e)
+        private void PointerPressedDismissOverlay(object? sender, PointerPressedEventArgs e)
         {
             if (IsLightDismissEnabled && e.Source is IVisual v && !IsChildOrThis(v))
             {
@@ -687,7 +720,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void RootTemplateApplied(object sender, TemplateAppliedEventArgs e)
+        private void RootTemplateApplied(object? sender, TemplateAppliedEventArgs e)
         {
             if (_openState is null)
             {
@@ -714,7 +747,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
+        private void SetTemplatedParentAndApplyChildTemplates(IControl? control)
         {
             if (control != null)
             {
@@ -775,7 +808,7 @@ namespace Avalonia.Controls.Primitives
 
         public bool IsPointerOverPopup => ((IInputElement?)_openState?.PopupHost)?.IsPointerOver ?? false;
 
-        private void WindowDeactivated(object sender, EventArgs e)
+        private void WindowDeactivated(object? sender, EventArgs e)
         {
             if (IsLightDismissEnabled)
             {
@@ -783,7 +816,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void ParentClosed(object sender, EventArgs e)
+        private void ParentClosed(object? sender, EventArgs e)
         {
             if (IsLightDismissEnabled)
             {
@@ -796,6 +829,12 @@ namespace Avalonia.Controls.Primitives
             if (IsLightDismissEnabled)
                 Close();
         }
+
+        private void WindowPositionChanged(PixelPoint pp) => HandlePositionChange();
+
+        private void PlacementTargetLayoutUpdated(object? src, EventArgs e) => HandlePositionChange();
+
+        private void ParentPopupPositionChanged(object? src, PixelPointEventArgs e) => HandlePositionChange();
 
         private IgnoreIsOpenScope BeginIgnoringIsOpen()
         {

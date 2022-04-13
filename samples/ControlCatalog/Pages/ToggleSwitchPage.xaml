@@ -1,7 +1,8 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ToggleSwitchPage" Margin="5">
-  <StackPanel Width="500" HorizontalAlignment="Center">
+  <StackPanel MaxWidth="500"
+              HorizontalAlignment="Stretch">
     <TextBlock Text="Simple ToggleSwitch" Classes="header"/>
     <Border Classes="Thin">
       <StackPanel>
@@ -10,7 +11,7 @@
       </StackPanel>
     </Border>
 
-    <TextBlock Text="headered ToggleSwitch" Classes="header"/>
+    <TextBlock Text="Headered ToggleSwitch" Classes="header"/>
 
     <Border Classes="Thin">
       <StackPanel>

@@ -27,7 +27,7 @@ namespace Avalonia.Media
         /// <param name="baseUri">Specifies the base uri that is used to resolve font family assets.</param>
         /// <param name="name">The name of the <see cref="T:Avalonia.Media.FontFamily" />.</param>
         /// <exception cref="T:System.ArgumentException">Base uri must be an absolute uri.</exception>
-        public FontFamily(Uri baseUri, string name)
+        public FontFamily(Uri? baseUri, string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -77,7 +77,7 @@ namespace Avalonia.Media
         /// The family key.
         /// </value>
         /// <remarks>Key is only used for custom fonts.</remarks>
-        public FontFamilyKey Key { get; }
+        public FontFamilyKey? Key { get; }
 
         /// <summary>
         /// Returns <c>True</c> if this instance is the system's default.
@@ -95,7 +95,7 @@ namespace Avalonia.Media
 
         private struct FontFamilyIdentifier
         {
-            public FontFamilyIdentifier(string name, Uri source)
+            public FontFamilyIdentifier(string name, Uri? source)
             {
                 Name = name;
                 Source = source;
@@ -103,7 +103,7 @@ namespace Avalonia.Media
 
             public string Name { get; }
 
-            public Uri Source { get; }
+            public Uri? Source { get; }
         }
 
         private static FontFamilyIdentifier GetFontFamilyIdentifier(string name)
@@ -152,7 +152,7 @@ namespace Avalonia.Media
         /// <exception cref="ArgumentException">
         /// Specified family is not supported.
         /// </exception>
-        public static FontFamily Parse(string s, Uri baseUri)
+        public static FontFamily Parse(string s, Uri? baseUri)
         {
             if (string.IsNullOrEmpty(s))
             {
@@ -192,12 +192,12 @@ namespace Avalonia.Media
             }
         }
 
-        public static bool operator !=(FontFamily a, FontFamily b)
+        public static bool operator !=(FontFamily? a, FontFamily? b)
         {
             return !(a == b);
         }
 
-        public static bool operator ==(FontFamily a, FontFamily b)
+        public static bool operator ==(FontFamily? a, FontFamily? b)
         {
             if (ReferenceEquals(a, b))
             {
@@ -207,7 +207,7 @@ namespace Avalonia.Media
             return !(a is null) && a.Equals(b);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(this, obj))
             {

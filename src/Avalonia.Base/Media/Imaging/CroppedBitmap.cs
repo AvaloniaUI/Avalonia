@@ -11,8 +11,8 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Defines the <see cref="Source"/> property.
         /// </summary>
-        public static readonly StyledProperty<IImage> SourceProperty =
-            AvaloniaProperty.Register<CroppedBitmap, IImage>(nameof(Source));
+        public static readonly StyledProperty<IImage?> SourceProperty =
+            AvaloniaProperty.Register<CroppedBitmap, IImage?>(nameof(Source));
 
         /// <summary>
         /// Defines the <see cref="SourceRect"/> property.
@@ -20,7 +20,7 @@ namespace Avalonia.Media.Imaging
         public static readonly StyledProperty<PixelRect> SourceRectProperty =
             AvaloniaProperty.Register<CroppedBitmap, PixelRect>(nameof(SourceRect));
 
-        public event EventHandler Invalidated;
+        public event EventHandler? Invalidated;
 
         static CroppedBitmap()
         {
@@ -31,7 +31,7 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Gets or sets the source for the bitmap.
         /// </summary>
-        public IImage Source
+        public IImage? Source
         {
             get => GetValue(SourceProperty);
             set => SetValue(SourceProperty, value);
@@ -77,19 +77,19 @@ namespace Avalonia.Media.Imaging
         public Size Size {
             get
             {
-                if (Source == null)
+                if (Source is not IBitmap bmp)
                     return Size.Empty;
                 if (SourceRect.IsEmpty)
                     return Source.Size;
-                return SourceRect.Size.ToSizeWithDpi((Source as IBitmap).Dpi);
+                return SourceRect.Size.ToSizeWithDpi(bmp.Dpi);
             }
         }
 
         public void Draw(DrawingContext context, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
-            if (Source == null)
+            if (Source is not IBitmap bmp)
                 return;
-            var topLeft = SourceRect.TopLeft.ToPointWithDpi((Source as IBitmap).Dpi);
+            var topLeft = SourceRect.TopLeft.ToPointWithDpi(bmp.Dpi);
             Source.Draw(context, sourceRect.Translate(new Vector(topLeft.X, topLeft.Y)), destRect, bitmapInterpolationMode);           
         }
     }

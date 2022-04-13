@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
+using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media
@@ -19,7 +20,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Raised when the transform changes.
         /// </summary>
-        public event EventHandler Changed;
+        public event EventHandler? Changed;
 
         /// <summary>
         /// Gets the transform's <see cref="Matrix"/>.
@@ -42,6 +43,15 @@ namespace Avalonia.Media
         protected void RaiseChanged()
         {
             Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Converts a transform to an immutable transform.
+        /// </summary>
+        /// <returns>The immutable transform</returns>
+        public ImmutableTransform ToImmutable()
+        {
+            return new ImmutableTransform(this.Value);
         }
 
         /// <summary>

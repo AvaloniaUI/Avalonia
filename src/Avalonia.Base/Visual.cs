@@ -69,6 +69,12 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, IBrush?>(nameof(OpacityMask));
 
         /// <summary>
+        /// Defines the <see cref="HasMirrorTransform"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Visual, bool> HasMirrorTransformProperty =
+            AvaloniaProperty.RegisterDirect<Visual, bool>(nameof(HasMirrorTransform), o => o.HasMirrorTransform);
+
+        /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
         public static readonly StyledProperty<ITransform?> RenderTransformProperty =
@@ -96,6 +102,7 @@ namespace Avalonia
         private TransformedBounds? _transformedBounds;
         private IRenderRoot? _visualRoot;
         private IVisual? _visualParent;
+        private bool _hasMirrorTransform;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -107,7 +114,8 @@ namespace Avalonia
                 ClipProperty,
                 ClipToBoundsProperty,
                 IsVisibleProperty,
-                OpacityProperty);
+                OpacityProperty,
+                HasMirrorTransformProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
@@ -217,6 +225,15 @@ namespace Avalonia
         {
             get { return GetValue(OpacityMaskProperty); }
             set { SetValue(OpacityMaskProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to apply mirror transform on this control.
+        /// </summary>
+        public bool HasMirrorTransform 
+        { 
+            get { return _hasMirrorTransform; }
+            protected set { SetAndRaise(HasMirrorTransformProperty, ref _hasMirrorTransform, value); }
         }
 
         /// <summary>
@@ -377,7 +394,7 @@ namespace Avalonia
             }
         }
 
-        protected override void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
             VisualRoot?.Renderer?.RecalculateChildren(this);
@@ -572,7 +589,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void RenderTransformChanged(object sender, EventArgs e)
+        private void RenderTransformChanged(object? sender, EventArgs e)
         {
             InvalidateVisual();
         }
@@ -593,13 +610,14 @@ namespace Avalonia
 
             if (_visualRoot != null)
             {
-                var e = new VisualTreeAttachmentEventArgs(old, VisualRoot);
+                var e = new VisualTreeAttachmentEventArgs(old!, _visualRoot);
                 OnDetachedFromVisualTreeCore(e);
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.FindAncestorOfType<IRenderRoot>();
+                var root = this.FindAncestorOfType<IRenderRoot>() ??
+                    throw new AvaloniaInternalException("Visual is atached to visual tree but root could not be found.");
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
@@ -607,28 +625,28 @@ namespace Avalonia
             OnVisualParentChanged(old, value);
         }
 
-        private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
+        private void AffectsRenderInvalidated(object? sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void VisualChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void VisualChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    SetVisualParent(e.NewItems, this);
+                    SetVisualParent(e.NewItems!, this);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    SetVisualParent(e.OldItems, null);
+                    SetVisualParent(e.OldItems!, null);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    SetVisualParent(e.OldItems, null);
-                    SetVisualParent(e.NewItems, this);
+                    SetVisualParent(e.OldItems!, null);
+                    SetVisualParent(e.NewItems!, this);
                     break;
             }
         }
@@ -639,7 +657,7 @@ namespace Avalonia
 
             for (var i = 0; i < count; i++)
             {
-                var visual = (Visual) children[i];
+                var visual = (Visual) children[i]!;
                 
                 visual.SetVisualParent(parent);
             }

@@ -11,21 +11,22 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Themes.Default;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
-        private readonly IDisposable _keySubscription;
+        private readonly IDisposable? _keySubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
-        private TopLevel? _root;
+        private AvaloniaObject? _root;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _keySubscription = InputManager.Instance.Process
+            _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
                 .Where(x => x.Type == RawKeyEventType.KeyDown)
                 .Subscribe(RawKeyDown);
@@ -50,23 +51,23 @@ namespace Avalonia.Diagnostics.Views
             this.Opened += lh;
         }
 
-        public TopLevel? Root
+        public AvaloniaObject? Root
         {
             get => _root;
             set
             {
                 if (_root != value)
                 {
-                    if (_root != null)
+                    if (_root is ICloseable oldClosable)
                     {
-                        _root.Closed -= RootClosed;
+                        oldClosable.Closed -= RootClosed;
                     }
 
                     _root = value;
 
-                    if (_root != null)
+                    if (_root is  ICloseable newClosable)
                     {
-                        _root.Closed += RootClosed;
+                        newClosable.Closed += RootClosed;
                         DataContext = new MainViewModel(_root);
                     }
                     else
@@ -82,7 +83,7 @@ namespace Avalonia.Diagnostics.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _keySubscription.Dispose();
+            _keySubscription?.Dispose();
 
             foreach (var state in _frozenPopupStates)
             {
@@ -91,9 +92,9 @@ namespace Avalonia.Diagnostics.Views
 
             _frozenPopupStates.Clear();
 
-            if (_root != null)
+            if (_root is ICloseable cloneable)
             {
-                _root.Closed -= RootClosed;
+                cloneable.Closed -= RootClosed;
                 _root = null;
             }
 
@@ -109,7 +110,7 @@ namespace Avalonia.Diagnostics.Views
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
-#pragma warning restore CS0618 // Type or member is obsolete                
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return (IControl?)topLevel.GetVisualsAt(point, x =>
                 {
@@ -123,7 +124,7 @@ namespace Avalonia.Diagnostics.Views
                 .FirstOrDefault();
         }
 
-        private static List<PopupRoot> GetPopupRoots(IVisual root)
+        private static List<PopupRoot> GetPopupRoots(TopLevel root)
         {
             var popupRoots = new List<PopupRoot>();
 
@@ -147,6 +148,7 @@ namespace Avalonia.Diagnostics.Views
                 ProcessProperty(control, ContextMenuProperty);
                 ProcessProperty(control, FlyoutBase.AttachedFlyoutProperty);
                 ProcessProperty(control, ToolTipDiagnostics.ToolTipProperty);
+                ProcessProperty(control, Button.FlyoutProperty);
             }
 
             return popupRoots;
@@ -160,15 +162,23 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var root = Root;
+            var root = vm.PointerOverRoot as TopLevel;
+
             if (root is null)
             {
                 return;
             }
 
+            if (root is PopupRoot pr && pr.ParentTopLevel != null)
+            {
+                root = pr.ParentTopLevel;
+            }
+
             switch (e.Modifiers)
             {
-                case RawInputModifiers.Control | RawInputModifiers.Shift:
+                case RawInputModifiers.Control when (e.Key == Key.LeftShift || e.Key == Key.RightShift):
+                case RawInputModifiers.Shift when (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl):
+                case RawInputModifiers.Shift | RawInputModifiers.Control:
                 {
                     IControl? control = null;
 
@@ -238,7 +248,25 @@ namespace Avalonia.Diagnostics.Views
 
         private void RootClosed(object? sender, EventArgs e) => Close();
 
-        public void SetOptions(DevToolsOptions options) =>
+        public void SetOptions(DevToolsOptions options)
+        {
             (DataContext as MainViewModel)?.SetOptions(options);
+
+            if (options.UseDarkMode)
+            {
+                if (Styles[0] is SimpleTheme st)
+                {
+                    st.Mode = SimpleThemeMode.Dark;
+                }                
+            }
+        }
+
+        internal void SelectedControl(IControl? control)
+        {
+            if (control is { })
+            {
+                (DataContext as MainViewModel)?.SelectControl(control);
+            }
+        }
     }
 }

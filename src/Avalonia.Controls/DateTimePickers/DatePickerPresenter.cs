@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,6 +13,23 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a date for a 
     /// <see cref="DatePicker"/>
     /// </summary>
+    [TemplatePart("AcceptButton",    typeof(Button))]
+    [TemplatePart("DayDownButton",   typeof(RepeatButton))]
+    [TemplatePart("DayHost",         typeof(Panel))]
+    [TemplatePart("DaySelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("DayUpButton",     typeof(RepeatButton))]
+    [TemplatePart("DismissButton",   typeof(Button))]
+    [TemplatePart("FirstSpacer",     typeof(Rectangle))]
+    [TemplatePart("MonthDownButton", typeof(RepeatButton))]
+    [TemplatePart("MonthHost",       typeof(Panel))]
+    [TemplatePart("MonthSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("MonthUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PickerContainer", typeof(Grid))]
+    [TemplatePart("SecondSpacer",    typeof(Rectangle))]
+    [TemplatePart("YearDownButton",  typeof(RepeatButton))]
+    [TemplatePart("YearHost",        typeof(Panel))]
+    [TemplatePart("YearSelector",    typeof(DateTimePickerPanel))]
+    [TemplatePart("YearUpButton",    typeof(RepeatButton))]
     public class DatePickerPresenter : PickerPresenterBase
     {
         /// <summary>
@@ -78,23 +96,23 @@ namespace Avalonia.Controls
             x.YearVisible, (x, v) => x.YearVisible = v);
 
         // Template Items
-        private Grid _pickerContainer;
-        private Button _acceptButton;
-        private Button _dismissButton;
-        private Rectangle _spacer1;
-        private Rectangle _spacer2;
-        private Panel _monthHost;
-        private Panel _yearHost;
-        private Panel _dayHost;
-        private DateTimePickerPanel _monthSelector;
-        private DateTimePickerPanel _yearSelector;
-        private DateTimePickerPanel _daySelector;
-        private Button _monthUpButton;
-        private Button _dayUpButton;
-        private Button _yearUpButton;
-        private Button _monthDownButton;
-        private Button _dayDownButton;
-        private Button _yearDownButton;
+        private Grid? _pickerContainer;
+        private Button? _acceptButton;
+        private Button? _dismissButton;
+        private Rectangle? _spacer1;
+        private Rectangle? _spacer2;
+        private Panel? _monthHost;
+        private Panel? _yearHost;
+        private Panel? _dayHost;
+        private DateTimePickerPanel? _monthSelector;
+        private DateTimePickerPanel? _yearSelector;
+        private DateTimePickerPanel? _daySelector;
+        private Button? _monthUpButton;
+        private Button? _dayUpButton;
+        private Button? _yearUpButton;
+        private Button? _monthDownButton;
+        private Button? _dayDownButton;
+        private Button? _yearDownButton;
 
         private DateTimeOffset _date;
         private string _dayFormat = "%d";
@@ -308,9 +326,12 @@ namespace Avalonia.Controls
                     e.Handled = true;
                     break;
                 case Key.Tab:
-                    var nextFocus = KeyboardNavigationHandler.GetNext(FocusManager.Instance.Current, NavigationDirection.Next);
-                    KeyboardDevice.Instance?.SetFocusedElement(nextFocus, NavigationMethod.Tab, KeyModifiers.None);
-                    e.Handled = true;
+                    if (FocusManager.Instance?.Current is IInputElement focus)
+                    {
+                        var nextFocus = KeyboardNavigationHandler.GetNext(focus, NavigationDirection.Next);
+                        KeyboardDevice.Instance?.SetFocusedElement(nextFocus, NavigationMethod.Tab, KeyModifiers.None);
+                        e.Handled = true;
+                    }
                     break;
                 case Key.Enter:
                     Date = _syncDate;
@@ -332,13 +353,13 @@ namespace Avalonia.Controls
 
             _suppressUpdateSelection = true;
 
-            _monthSelector.MaximumValue = 12;
+            _monthSelector!.MaximumValue = 12;
             _monthSelector.MinimumValue = 1;
             _monthSelector.ItemFormat = MonthFormat;
 
-            _daySelector.ItemFormat = DayFormat;
+            _daySelector!.ItemFormat = DayFormat;
 
-            _yearSelector.MaximumValue = MaxYear.Year;
+            _yearSelector!.MaximumValue = MaxYear.Year;
             _yearSelector.MinimumValue = MinYear.Year;
             _yearSelector.ItemFormat = YearFormat;
 
@@ -375,7 +396,7 @@ namespace Avalonia.Controls
         private void SetGrid()
         {
             var fmt = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
-            var columns = new List<(Panel, int)>
+            var columns = new List<(Panel?, int)>
             {
                 (_monthHost, MonthVisible ? fmt.IndexOf("m", StringComparison.OrdinalIgnoreCase) : -1),
                 (_yearHost, YearVisible ? fmt.IndexOf("y", StringComparison.OrdinalIgnoreCase) : -1),
@@ -383,7 +404,7 @@ namespace Avalonia.Controls
             };
 
             columns.Sort((x, y) => x.Item2 - y.Item2);
-            _pickerContainer.ColumnDefinitions.Clear();
+            _pickerContainer!.ColumnDefinitions.Clear();
 
             var columnIndex = 0;
 
@@ -416,18 +437,18 @@ namespace Avalonia.Controls
             var isSpacer1Visible = columnIndex > 1;
             var isSpacer2Visible = columnIndex > 2;
             // ternary conditional operator is used to make sure grid cells will be validated
-            Grid.SetColumn(_spacer1, isSpacer1Visible ? 1 : 0);
-            Grid.SetColumn(_spacer2, isSpacer2Visible ? 3 : 0);
+            Grid.SetColumn(_spacer1!, isSpacer1Visible ? 1 : 0);
+            Grid.SetColumn(_spacer2!, isSpacer2Visible ? 3 : 0);
 
-            _spacer1.IsVisible = isSpacer1Visible;
-            _spacer2.IsVisible = isSpacer2Visible;
+            _spacer1!.IsVisible = isSpacer1Visible;
+            _spacer2!.IsVisible = isSpacer2Visible;
         }
 
         private void SetInitialFocus()
         {
-            int monthCol = MonthVisible ? Grid.GetColumn(_monthHost) : int.MaxValue;
-            int dayCol = DayVisible ? Grid.GetColumn(_dayHost) : int.MaxValue;
-            int yearCol = YearVisible ? Grid.GetColumn(_yearHost) : int.MaxValue;
+            int monthCol = MonthVisible ? Grid.GetColumn(_monthHost!) : int.MaxValue;
+            int dayCol = DayVisible ? Grid.GetColumn(_dayHost!) : int.MaxValue;
+            int yearCol = YearVisible ? Grid.GetColumn(_yearHost!) : int.MaxValue;
 
             if (monthCol < dayCol && monthCol < yearCol)
             {
@@ -443,39 +464,39 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnDismissButtonClicked(object sender, RoutedEventArgs e)
+        private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)
         {
             OnDismiss();
         }
 
-        private void OnAcceptButtonClicked(object sender, RoutedEventArgs e)
+        private void OnAcceptButtonClicked(object? sender, RoutedEventArgs e)
         {
             Date = _syncDate;
             OnConfirmed();
         }
 
-        private void OnSelectorButtonClick(object sender, RoutedEventArgs e)
+        private void OnSelectorButtonClick(object? sender, RoutedEventArgs e)
         {
             if (sender == _monthUpButton)
-                _monthSelector.ScrollUp();
+                _monthSelector!.ScrollUp();
             else if (sender == _monthDownButton)
-                _monthSelector.ScrollDown();
+                _monthSelector!.ScrollDown();
             else if (sender == _yearUpButton)
-                _yearSelector.ScrollUp();
+                _yearSelector!.ScrollUp();
             else if (sender == _yearDownButton)
-                _yearSelector.ScrollDown();
+                _yearSelector!.ScrollDown();
             else if (sender == _dayUpButton)
-                _daySelector.ScrollUp();
+                _daySelector!.ScrollUp();
             else if (sender == _dayDownButton)
-                _daySelector.ScrollDown();
+                _daySelector!.ScrollDown();
         }
 
-        private void OnYearChanged(object sender, EventArgs e)
+        private void OnYearChanged(object? sender, EventArgs e)
         {
             if (_suppressUpdateSelection)
                 return;
 
-            int maxDays = _calendar.GetDaysInMonth(_yearSelector.SelectedValue, _syncDate.Month);
+            int maxDays = _calendar.GetDaysInMonth(_yearSelector!.SelectedValue, _syncDate.Month);
             var newDate = new DateTimeOffset(_yearSelector.SelectedValue, _syncDate.Month,
                 _syncDate.Day > maxDays ? maxDays : _syncDate.Day, 0, 0, 0, _syncDate.Offset);
 
@@ -487,7 +508,7 @@ namespace Avalonia.Controls
 
             _suppressUpdateSelection = true;
 
-            _daySelector.FormatDate = newDate.Date;
+            _daySelector!.FormatDate = newDate.Date;
 
             if (_daySelector.MaximumValue != maxDays)
                 _daySelector.MaximumValue = maxDays;
@@ -497,19 +518,19 @@ namespace Avalonia.Controls
             _suppressUpdateSelection = false;
         }
 
-        private void OnDayChanged(object sender, EventArgs e)
+        private void OnDayChanged(object? sender, EventArgs e)
         {
             if (_suppressUpdateSelection)
                 return;
-            _syncDate = new DateTimeOffset(_syncDate.Year, _syncDate.Month, _daySelector.SelectedValue, 0, 0, 0, _syncDate.Offset);
+            _syncDate = new DateTimeOffset(_syncDate.Year, _syncDate.Month, _daySelector!.SelectedValue, 0, 0, 0, _syncDate.Offset);
         }
 
-        private void OnMonthChanged(object sender, EventArgs e)
+        private void OnMonthChanged(object? sender, EventArgs e)
         {
             if (_suppressUpdateSelection)
                 return;
 
-            int maxDays = _calendar.GetDaysInMonth(_syncDate.Year, _monthSelector.SelectedValue);
+            int maxDays = _calendar.GetDaysInMonth(_syncDate.Year, _monthSelector!.SelectedValue);
             var newDate = new DateTimeOffset(_syncDate.Year, _monthSelector.SelectedValue,
                 _syncDate.Day > maxDays ? maxDays : _syncDate.Day, 0, 0, 0, _syncDate.Offset);
 
@@ -521,7 +542,7 @@ namespace Avalonia.Controls
 
             _suppressUpdateSelection = true;
 
-            _daySelector.FormatDate = newDate.Date;
+            _daySelector!.FormatDate = newDate.Date;
             _syncDate = newDate;
 
             if (_daySelector.MaximumValue != maxDays)
@@ -534,6 +555,9 @@ namespace Avalonia.Controls
 
         internal double GetOffsetForPopup()
         {
+            if (_monthSelector is null)
+                return 0;
+
             var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
             return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_monthSelector.ItemHeight / 2);
         }

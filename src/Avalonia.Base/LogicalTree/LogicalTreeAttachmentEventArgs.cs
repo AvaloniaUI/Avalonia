@@ -17,13 +17,10 @@ namespace Avalonia.LogicalTree
         public LogicalTreeAttachmentEventArgs(
             ILogicalRoot root,
             ILogical source,
-            ILogical parent)
+            ILogical? parent)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
-            Contract.Requires<ArgumentNullException>(source != null);
-
-            Root = root;
-            Source = source;
+            Root = root ?? throw new ArgumentNullException(nameof(root));
+            Source = source ?? throw new ArgumentNullException(nameof(source));
             Parent = parent;
         }
 
@@ -50,6 +47,6 @@ namespace Avalonia.LogicalTree
         /// detachment, holds the old logical parent of <see cref="Source"/>. If the detachment event
         /// was caused by a top-level control being closed, then this property will be null.
         /// </remarks>
-        public ILogical Parent { get; }
+        public ILogical? Parent { get; }
     }
 }

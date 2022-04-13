@@ -32,7 +32,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the instance of the <see cref="IFocusManager"/>.
         /// </summary>
-        public static IFocusManager Instance => AvaloniaLocator.Current.GetService<IFocusManager>();
+        public static IFocusManager? Instance => AvaloniaLocator.Current.GetService<IFocusManager>();
 
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
@@ -73,7 +73,7 @@ namespace Avalonia.Input
             else if (Current != null)
             {
                 // If control is null, set focus to the topmost focus scope.
-                foreach (var scope in GetFocusScopeAncestors(Current).Reverse().ToList())
+                foreach (var scope in GetFocusScopeAncestors(Current).Reverse().ToArray())
                 {
                     if (scope != Scope &&
                         _focusScopes.TryGetValue(scope, out var element) &&
@@ -215,8 +215,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private static void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
+        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
         {
+            if (sender is null)
+                return;
+
             var ev = (PointerPressedEventArgs)e;
             var visual = (IVisual)sender;
 

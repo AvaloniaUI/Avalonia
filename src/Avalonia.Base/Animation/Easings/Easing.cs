@@ -15,7 +15,7 @@ namespace Avalonia.Animation.Easings
         /// <inheritdoc/>
         public abstract double Ease(double progress);
 
-        static Dictionary<string, Type> _easingTypes;
+        static Dictionary<string, Type>? _easingTypes;
 
         static readonly Type s_thisType = typeof(Easing);
 
@@ -39,7 +39,7 @@ namespace Avalonia.Animation.Easings
                 var derivedTypes = typeof(Easing).Assembly.GetTypes()
                                       .Where(p => p.Namespace == s_thisType.Namespace)
                                       .Where(p => p.IsSubclassOf(s_thisType))
-                                      .Select(p => p).ToList();
+                                      .Select(p => p);
 
                 foreach (var easingType in derivedTypes)
                     _easingTypes.Add(easingType.Name, easingType);
@@ -48,7 +48,7 @@ namespace Avalonia.Animation.Easings
             if (_easingTypes.ContainsKey(e))
             {
                 var type = _easingTypes[e];
-                return (Easing)Activator.CreateInstance(type);
+                return (Easing)Activator.CreateInstance(type)!;
             }
             else
             {

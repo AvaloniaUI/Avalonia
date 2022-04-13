@@ -4,12 +4,11 @@
              x:Class="ControlCatalog.Pages.NumericUpDownPage">
   <StackPanel Orientation="Vertical" Spacing="4"
               MaxWidth="800">
-    <TextBlock Margin="2" Classes="h1">Numeric up-down control</TextBlock>
     <TextBlock Margin="2" Classes="h2" TextWrapping="Wrap">Numeric up-down control provides a TextBox with button spinners that allow incrementing and decrementing numeric values by using the spinner buttons, keyboard up/down arrows, or mouse wheel.</TextBlock>
 
     <TextBlock Margin="2,5,2,2" FontSize="14" FontWeight="Bold">Features:</TextBlock>
-    <Grid Margin="2" ColumnDefinitions="Auto,Auto,Auto,Auto" RowDefinitions="Auto,Auto">
-      <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+    <WrapPanel Margin="-8,0">
+      <Grid Grid.Row="0" Grid.Column="0" Margin="8" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">ShowButtonSpinner:</TextBlock>
         <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding #upDown.ShowButtonSpinner}" VerticalAlignment="Center" Margin="2"/>
 
@@ -23,7 +22,7 @@
         <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding #upDown.ClipValueToMinMax}" VerticalAlignment="Center" Margin="2"/>
 
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+      <Grid Grid.Row="0" Grid.Column="1" Margin="8" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">FormatString:</TextBlock>
         <ComboBox Grid.Row="0" Grid.Column="1" Items="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
                   VerticalAlignment="Center" Margin="2">
@@ -52,7 +51,7 @@
         <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">Text:</TextBlock>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding #upDown.Text}" VerticalAlignment="Center" Margin="2" />
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="2" Margin="10,2,2,2" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
+      <Grid Grid.Row="0" Grid.Column="2" Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Minimum:</TextBlock>
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding #upDown.Minimum}"
                        CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
@@ -71,7 +70,7 @@
 
 
       </Grid>
-    </Grid>
+    </WrapPanel>
 
     <WrapPanel Margin="2,10,2,2">
       <StackPanel Orientation="Vertical" Margin="10">

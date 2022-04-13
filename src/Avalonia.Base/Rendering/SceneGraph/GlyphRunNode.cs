@@ -23,11 +23,11 @@ namespace Avalonia.Rendering.SceneGraph
             Matrix transform,
             IBrush foreground,
             GlyphRun glyphRun,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene>? childScenes = null)
             : base(new Rect(glyphRun.Size), transform)
         {
             Transform = transform;
-            Foreground = foreground?.ToImmutable();
+            Foreground = foreground.ToImmutable();
             GlyphRun = glyphRun;
             ChildScenes = childScenes;
         }
@@ -48,7 +48,7 @@ namespace Avalonia.Rendering.SceneGraph
         public GlyphRun GlyphRun { get; }
 
         /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene> ChildScenes { get; }
+        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)

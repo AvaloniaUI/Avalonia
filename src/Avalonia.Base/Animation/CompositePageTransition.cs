@@ -37,11 +37,11 @@ namespace Avalonia.Animation
         public List<IPageTransition> PageTransitions { get; set; } = new List<IPageTransition>();
 
         /// <inheritdoc />
-        public Task Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken)
+        public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
             var transitionTasks = PageTransitions
                 .Select(transition => transition.Start(from, to, forward, cancellationToken))
-                .ToList();
+                .ToArray();
             return Task.WhenAll(transitionTasks);
         }
     }

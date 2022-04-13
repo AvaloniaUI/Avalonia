@@ -60,6 +60,7 @@
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
       <Name>Avalonia.Win32</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32.Interop\Avalonia.Win32.Interop.csproj" />
     <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj">
       <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>

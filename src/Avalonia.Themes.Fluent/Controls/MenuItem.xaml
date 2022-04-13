@@ -1,7 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
-        xmlns:sys="clr-namespace:System;assembly=netstandard">
+        xmlns:sys="clr-namespace:System;assembly=netstandard"
+        x:DataType="MenuItem"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20"
             Width="400"
@@ -158,7 +160,7 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
-                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                   MinWidth="{ReflectionBinding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}">
@@ -216,7 +218,7 @@
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPointerOver}" />
   </Style>
   <Style Selector="MenuItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPointerOver}" />
   </Style>
   <Style Selector="MenuItem:selected /template/ TextBlock#PART_InputGestureText">
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
@@ -230,7 +232,7 @@
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
   </Style>
   <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPressed}" />
   </Style>
   <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover TextBlock#PART_InputGestureText">
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
@@ -243,7 +245,7 @@
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundDisabled}" />
   </Style>
   <Style Selector="MenuItem:disabled /template/ ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
   </Style>
   <Style Selector="MenuItem:disabled /template/ TextBlock#PART_InputGestureText">
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />

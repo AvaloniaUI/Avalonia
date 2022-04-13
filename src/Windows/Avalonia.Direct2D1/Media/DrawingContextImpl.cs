@@ -337,24 +337,40 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        /// <summary>
-        /// Draws text.
-        /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
-        /// <param name="origin">The upper-left corner of the text.</param>
-        /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
+        /// <inheritdoc />
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
         {
-            if (!string.IsNullOrEmpty(text.Text))
-            {
-                var impl = (FormattedTextImpl)text;
+            var rc = rect.ToDirect2D();
 
-                using (var brush = CreateBrush(foreground, impl.Bounds.Size))
-                using (var renderer = new AvaloniaTextRenderer(this, _deviceContext, brush.PlatformBrush))
+            if (brush != null)
+            {
+                using (var b = CreateBrush(brush, rect.Size))
                 {
-                    if (brush.PlatformBrush != null)
+                    if (b.PlatformBrush != null)
                     {
-                        impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
+                        _deviceContext.FillEllipse(new Ellipse
+                        {
+                            Point = rect.Center.ToSharpDX(),
+                            RadiusX = (float)(rect.Width / 2),
+                            RadiusY = (float)(rect.Height / 2)
+                        }, b.PlatformBrush);
+                    }
+                }
+            }
+
+            if (pen?.Brush != null)
+            {
+                using (var wrapper = CreateBrush(pen.Brush, rect.Size))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
+                {
+                    if (wrapper.PlatformBrush != null)
+                    {
+                        _deviceContext.DrawEllipse(new Ellipse
+                        {
+                            Point = rect.Center.ToSharpDX(),
+                            RadiusX = (float)(rect.Width / 2),
+                            RadiusY = (float)(rect.Height / 2)
+                        }, wrapper.PlatformBrush, (float)pen.Thickness, d2dStroke);
                     }
                 }
             }

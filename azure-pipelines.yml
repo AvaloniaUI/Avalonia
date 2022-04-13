@@ -1,7 +1,31 @@
-variables:
-    MSBuildEnableWorkloadResolver: 'false'
-
 jobs:
+
+- job: GetPRNumber
+  pool:
+    vmImage: 'windows-2022'
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
+  steps:
+    
+  - task: PowerShell@2
+    displayName: Get PR Number
+    inputs:
+      targetType: 'inline'
+      script: |
+        $prId = $env:System_PullRequest_PullRequestNumber
+        Write-Host "PR Number  is:-" $env:System_PullRequest_PullRequestNumber
+
+        if (!([string]::IsNullOrWhiteSpace($prId)))
+        {
+          Set-Content -Path $env:Build_ArtifactStagingDirectory\prId.txt -Value $prId
+        }
+      
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'PRNumber'
+      publishLocation: 'Container'
+      
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
@@ -14,7 +38,7 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -45,7 +69,7 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
       
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -58,8 +82,10 @@ jobs:
     displayName: 'Generate avalonia-native'
     inputs:
       script: |
-        export PATH="`pwd`/sdk:$PATH"
-        cd src/tools/MicroComGenerator; dotnet run -f net6.0 -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
+        export COREHOST_TRACE=0
+        export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+        export DOTNET_CLI_TELEMETRY_OPTOUT=1
+        ./build.sh --target GenerateCppHeaders --configuration Release 
 
   - task: Xcode@5
     inputs:
@@ -115,7 +141,13 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install --no-cache --disable-parallel android ios --skip-manifest-update --source "https://api.nuget.org/v3/index.json"
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

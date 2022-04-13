@@ -45,10 +45,9 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc cref="ITextShaperImpl.ShapeText"/>
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize,
-            CultureInfo culture)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
-            return _platformImpl.ShapeText(text, typeface, fontRenderingEmSize, culture);
+            return _platformImpl.ShapeText(text, options);
         }
     }
 }

@@ -45,7 +45,7 @@
         <DataValidationErrors>
           <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}"
+              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextElement.Foreground="{DynamicResource SliderHeaderForeground}"
               Margin="{DynamicResource SliderTopHeaderMargin}" />
               <Grid x:Name="SliderContainer" Grid.Row="1">
                 <Grid.Styles>
@@ -107,7 +107,7 @@
         <DataValidationErrors>
           <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}"
+              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextElement.Foreground="{DynamicResource SliderHeaderForeground}"
               Margin="{DynamicResource SliderTopHeaderMargin}" />
               <Grid x:Name="SliderContainer" Grid.Row="1">
                 <Grid.Styles>
@@ -208,7 +208,7 @@
   <!-- Disabled State -->
 
   <Style Selector="Slider:disabled /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
   </Style>
   
   <Style Selector="Slider:disabled /template/ RepeatButton#PART_DecreaseButton">

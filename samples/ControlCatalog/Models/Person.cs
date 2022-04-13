@@ -16,6 +16,7 @@ namespace ControlCatalog.Models
         string _firstName;
         string _lastName;
         bool _isBanned;
+        private int _age;
 
         public string FirstName
         {
@@ -56,6 +57,20 @@ namespace ControlCatalog.Models
                 _isBanned = value;
 
                 OnPropertyChanged(nameof(_isBanned));
+            }
+        }
+
+        
+        /// <summary>
+        ///    Gets or sets the age of the person
+        /// </summary>
+        public int Age
+        {
+            get => _age;
+            set
+            {
+                _age = value;
+                OnPropertyChanged(nameof(Age));
             }
         }
 

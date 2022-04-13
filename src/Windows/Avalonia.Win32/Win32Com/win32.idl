@@ -1,0 +1,314 @@
+﻿@clr-namespace Avalonia.Win32.Win32Com
+@clr-access internal
+@clr-map FLOAT float
+@clr-map HSTRING IntPtr
+@clr-map Vector2 System.Numerics.Vector2
+@clr-map Vector3 System.Numerics.Vector3
+@clr-map Quaternion System.Numerics.Quaternion
+@clr-map Matrix4x4 System.Numerics.Matrix4x4
+@clr-map RECT Avalonia.Win32.Interop.UnmanagedMethods.RECT
+@clr-map SIZE Avalonia.Win32.Interop.UnmanagedMethods.SIZE
+@clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
+@clr-map HWND IntPtr
+@clr-map BOOL int
+@clr-map DWORD int
+@clr-map boolean int
+@clr-map BYTE byte
+@clr-map INT16 short
+@clr-map INT32 int
+@clr-map INT64 long
+@clr-map UINT ushort
+@clr-map UINT16 ushort
+@clr-map ULONG uint
+@clr-map UINT32 uint
+@clr-map UINT64 ulong
+@clr-map DOUBLE double
+@clr-map GUID System.Guid
+@clr-map REFGUID System.Guid*
+@clr-map REFIID System.Guid*
+@clr-map WCHAR System.Char
+@clr-map STGMEDIUM Avalonia.Win32.Interop.STGMEDIUM
+@clr-map FORMATETC Avalonia.Win32.Interop.FORMATETC
+
+[flags]
+enum FILEOPENDIALOGOPTIONS
+{
+    FOS_OVERWRITEPROMPT = 0x00000002,
+    FOS_STRICTFILETYPES = 0x00000004,
+    FOS_NOCHANGEDIR = 0x00000008,
+    FOS_PICKFOLDERS = 0x00000020,
+    FOS_FORCEFILESYSTEM = 0x00000040, // Ensure that items returned are filesystem items.
+    FOS_ALLNONSTORAGEITEMS = 0x00000080, // Allow choosing items that have no storage.
+    FOS_NOVALIDATE = 0x00000100,
+    FOS_ALLOWMULTISELECT = 0x00000200,
+    FOS_PATHMUSTEXIST = 0x00000800,
+    FOS_FILEMUSTEXIST = 0x00001000,
+    FOS_CREATEPROMPT = 0x00002000,
+    FOS_SHAREAWARE = 0x00004000,
+    FOS_NOREADONLYRETURN = 0x00008000,
+    FOS_NOTESTFILECREATE = 0x00010000,
+    FOS_HIDEMRUPLACES = 0x00020000,
+    FOS_HIDEPINNEDPLACES = 0x00040000,
+    FOS_NODEREFERENCELINKS = 0x00100000,
+    FOS_DONTADDTORECENT = 0x02000000,
+    FOS_FORCESHOWHIDDEN = 0x10000000,
+    FOS_DEFAULTNOMINIMODE = 0x20000000
+}
+
+[flags]
+enum DropEffect
+{
+    None = 0,
+    Copy = 1,
+    Move = 2,
+    Link = 4,
+    Scroll = -2147483648,
+}
+
+[
+    object,
+    uuid(43826d1e-e718-42ee-bc55-a1e261c37bfe),
+    pointer_default(unique)
+]
+interface IShellItem : IUnknown
+{
+    HRESULT BindToHandler(
+        [in, unique] void* pbc,
+        [in] REFGUID bhid,
+        [in] REFIID riid,
+        [out, iid_is(riid)] void** ppv);
+
+    HRESULT GetParent([out] IShellItem** ppsi);
+
+    HRESULT GetDisplayName(
+        [in] uint sigdnName,
+        [out, string, annotation("_Outptr_result_nullonfailure_")] WCHAR** ppszName);
+
+    HRESULT GetAttributes(
+        [in] ULONG sfgaoMask,
+        [out] ULONG* psfgaoAttribs);
+
+    HRESULT Compare(
+        [in] IShellItem* psi,
+        [in] ULONG hint,
+        [out] int* piOrder);
+}
+
+[
+    object,
+    uuid(B63EA76D-1F85-456F-A19C-48159EFA858B),
+    pointer_default(unique)
+]
+interface IShellItemArray : IUnknown
+{
+    HRESULT BindToHandler([in, unique] void* pbc, [in] REFGUID bhid, [in] REFIID riid, [out, iid_is(riid)] void** ppvOut);
+
+    HRESULT GetPropertyStore([in] UINT flags, [in] REFIID riid, [out, iid_is(riid)] void** ppv);
+
+    HRESULT GetPropertyDescriptionList([in] void* keyType, [in] REFIID riid, [out, iid_is(riid)] void** ppv);
+
+    HRESULT GetAttributes([in] int AttribFlags, [in] UINT sfgaoMask, [out] UINT* psfgaoAttribs);
+
+    HRESULT GetCount([out] DWORD* pdwNumItems);
+
+    HRESULT GetItemAt([in] DWORD dwIndex, [out] IShellItem** ppsi);
+
+    HRESULT EnumItems([out] void** ppenumShellItems);
+}
+
+[
+    object,
+    uuid(B4DB1657-70D7-485E-8E3E-6FCB5A5C1802),
+    pointer_default(unique)
+]
+interface IModalWindow : IUnknown
+{
+    [local]
+    int Show(
+        [in, unique] HWND hwndOwner);
+}
+
+[
+    object,
+    uuid(42F85136-DB7E-439C-85F1-E4075D135FC8),
+    pointer_default(unique)
+]
+interface IFileDialog : IModalWindow
+{
+    HRESULT SetFileTypes(
+        [in] UINT cFileTypes,
+        [in, size_is(cFileTypes)] void* rgFilterSpec);
+
+    HRESULT SetFileTypeIndex([in] UINT iFileType);
+
+    HRESULT GetFileTypeIndex([out] UINT* piFileType);
+
+    HRESULT Advise(
+        [in] void* pfde,
+        [out] DWORD* pdwCookie);
+
+    HRESULT Unadvise([in] DWORD dwCookie);
+
+    HRESULT SetOptions([in] FILEOPENDIALOGOPTIONS fos);
+
+    HRESULT GetOptions([out] FILEOPENDIALOGOPTIONS* pfos);
+
+    HRESULT SetDefaultFolder([in] IShellItem* psi);
+
+    HRESULT SetFolder([in] IShellItem* psi);
+
+    HRESULT GetFolder([out] IShellItem** ppsi);
+
+    HRESULT GetCurrentSelection([out] IShellItem** ppsi);
+
+    HRESULT SetFileName([in, string] WCHAR* pszName);
+
+    HRESULT GetFileName([out, string] WCHAR** pszName);
+
+    HRESULT SetTitle([in, string] WCHAR* pszTitle);
+
+    HRESULT SetOkButtonLabel([in, string] WCHAR* pszText);
+
+    HRESULT SetFileNameLabel([in, string] WCHAR* pszLabel);
+
+    HRESULT GetResult([out] IShellItem** ppsi);
+
+    HRESULT AddPlace(
+        [in] IShellItem* psi,
+        [in] INT32 fdap);
+
+    HRESULT SetDefaultExtension([in, string] WCHAR* pszDefaultExtension);
+
+    HRESULT Close([in] HRESULT hr);
+
+    HRESULT SetClientGuid([in] REFGUID guid);
+
+    HRESULT ClearClientData();
+
+    HRESULT SetFilter([in] void* pFilter);
+}
+
+[
+    object,
+    uuid(D57C7288-D4AD-4768-BE02-9D969532D960),
+    pointer_default(unique)
+]
+interface IFileOpenDialog : IFileDialog
+{
+    HRESULT GetResults(
+        [out] IShellItemArray** ppenum);
+
+    HRESULT GetSelectedItems(
+        [out] IShellItemArray** ppsai);
+}
+
+[
+    object,
+    uuid(00000103-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IEnumFORMATETC : IUnknown
+{
+    UINT32 Next(
+        [in] ULONG celt,
+        [out] FORMATETC* rgelt,
+        ULONG* pceltFetched);
+
+    UINT32 Skip(
+        [in] ULONG celt);
+
+    HRESULT Reset();
+
+    HRESULT Clone(
+        [out] IEnumFORMATETC** ppenum);
+}
+
+[
+    object,
+    uuid(0000010e-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IDataObject : IUnknown
+{
+    UINT32 GetData(
+        [in, unique] FORMATETC* pformatetcIn,
+        [out] STGMEDIUM* pmedium);
+
+    UINT32 GetDataHere(
+        [in, unique] FORMATETC* pformatetc,
+        [in] STGMEDIUM* pmedium);
+
+    UINT32 QueryGetData(
+        [in, unique] FORMATETC* pformatetc);
+
+    HRESULT GetCanonicalFormatEtc(
+        [in, unique] FORMATETC* pformatectIn,
+        [out] FORMATETC* pformatetcOut);
+
+    UINT32 SetData(
+        [in, unique] FORMATETC* pformatetc,
+        [in, unique] STGMEDIUM* pmedium,
+        [in] BOOL fRelease);
+
+    HRESULT EnumFormatEtc(
+        [in] DWORD dwDirection,
+        [out] IEnumFORMATETC** ppenumFormatEtc);
+
+    HRESULT DAdvise(
+        [in] FORMATETC* pformatetc,
+        [in] DWORD advf,
+        [in, unique] void* pAdvSink,
+        [out] DWORD* pdwConnection);
+
+    HRESULT DUnadvise(
+        [in] DWORD dwConnection);
+
+    HRESULT EnumDAdvise(
+        [out] void** ppenumAdvise);
+}
+
+[
+    local,
+    object,
+    uuid(00000121-0000-0000-C000-000000000046)
+]
+
+interface IDropSource : IUnknown
+{
+    INT32 QueryContinueDrag([in] BOOL fEscapePressed, [in] DWORD grfKeyState);
+
+    INT32 GiveFeedback([in] DropEffect dwEffect);
+}
+
+[
+    object,
+    uuid(00000122-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IDropTarget : IUnknown
+{
+    HRESULT DragEnter
+    (
+        [in, unique] IDataObject* pDataObj,
+        [in] DWORD grfKeyState,
+        [in] POINT pt,
+        [in] DropEffect* pdwEffect
+    );
+
+    HRESULT DragOver
+    (
+        [in] DWORD grfKeyState,
+        [in] POINT pt,
+        [in] DropEffect* pdwEffect
+    );
+
+    HRESULT DragLeave();
+
+    HRESULT Drop
+    (
+        [in, unique] IDataObject* pDataObj,
+        [in] DWORD grfKeyState,
+        [in] POINT pt,
+        [in] DropEffect* pdwEffect
+    );
+}

@@ -13,7 +13,6 @@
       </Style>
     </DockPanel.Styles>
     <StackPanel DockPanel.Dock="Top" Margin="4">
-      <TextBlock Classes="h1">ListBox</TextBlock>
       <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
       <TextBlock Classes="h2">Each 5th item is highlighted with nth-child(5n+3) and nth-last-child(5n+4) rules.</TextBlock>
     </StackPanel>
@@ -22,6 +21,7 @@
       <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
       <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
       <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
+      <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
       <Button Command="{Binding AddItemCommand}">Add</Button>
@@ -31,6 +31,7 @@
     <ListBox Items="{Binding Items}"
              Selection="{Binding Selection}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode^}"/>
+             SelectionMode="{Binding SelectionMode^}"
+             WrapSelection="{Binding WrapSelection}"/>
   </DockPanel>
 </UserControl>

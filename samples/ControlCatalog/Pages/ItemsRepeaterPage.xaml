@@ -43,7 +43,6 @@
   
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0 0 0 16">
-      <TextBlock Classes="h1">ItemsRepeater</TextBlock>
       <TextBlock Classes="h2">A data-driven collection control that incorporates a flexible layout system, custom views, and virtualization.</TextBlock>
     </StackPanel>
     <StackPanel DockPanel.Dock="Right" Margin="8 0" Spacing="4">

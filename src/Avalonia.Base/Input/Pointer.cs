@@ -54,12 +54,12 @@ namespace Avalonia.Input
                 Captured.DetachedFromVisualTree += OnCaptureDetached;
         }
 
-        IInputElement GetNextCapture(IVisual parent)
+        IInputElement? GetNextCapture(IVisual parent)
         {
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }
 
-        private void OnCaptureDetached(object sender, VisualTreeAttachmentEventArgs e)
+        private void OnCaptureDetached(object? sender, VisualTreeAttachmentEventArgs e)
         {
             Capture(GetNextCapture(e.Parent));
         }

@@ -18,13 +18,19 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<Brush, double>(nameof(Opacity), 1.0);
 
+        /// <summary>
+        /// Defines the <see cref="Transform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ITransform?> TransformProperty =
+            AvaloniaProperty.Register<Brush, ITransform?>(nameof(Transform));
+
         /// <inheritdoc/>
-        public event EventHandler Invalidated;
+        public event EventHandler? Invalidated;
 
         static Brush()
         {
             Animation.Animation.RegisterAnimator<BaseBrushAnimator>(prop => typeof(IBrush).IsAssignableFrom(prop.PropertyType));
-            AffectsRender<Brush>(OpacityProperty);
+            AffectsRender<Brush>(OpacityProperty, TransformProperty);
         }
 
         /// <summary>
@@ -37,24 +43,35 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets or sets the transform of the brush.
+        /// </summary>
+        public ITransform? Transform
+        {
+            get { return GetValue(TransformProperty); }
+            set { SetValue(TransformProperty, value); }
+        }
+
+        /// <summary>
         /// Parses a brush string.
         /// </summary>
         /// <param name="s">The brush string.</param>
         /// <returns>The <see cref="Color"/>.</returns>
         public static IBrush Parse(string s)
         {
-            Contract.Requires<ArgumentNullException>(s != null);
-            Contract.Requires<FormatException>(s.Length > 0);
+            _ = s ?? throw new ArgumentNullException(nameof(s));
 
-            if (s[0] == '#')
+            if (s.Length > 0)
             {
-                return new ImmutableSolidColorBrush(Color.Parse(s));
-            }
+                if (s[0] == '#')
+                {
+                    return new ImmutableSolidColorBrush(Color.Parse(s));
+                }
 
-            var brush = KnownColors.GetKnownBrush(s);
-            if (brush != null)
-            {
-                return brush;
+                var brush = KnownColors.GetKnownBrush(s);
+                if (brush != null)
+                {
+                    return brush;
+                }
             }
 
             throw new FormatException($"Invalid brush string: '{s}'.");

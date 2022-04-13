@@ -23,7 +23,7 @@ namespace Avalonia.Logging
         void Log(
             LogEventLevel level,
             string area,
-            object source,
+            object? source,
             string messageTemplate);
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Avalonia.Logging
         void Log<T0>(
             LogEventLevel level,
             string area,
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0);
 
@@ -53,7 +53,7 @@ namespace Avalonia.Logging
         void Log<T0, T1>(
             LogEventLevel level,
             string area,
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0,
             T1 propertyValue1);
@@ -71,7 +71,7 @@ namespace Avalonia.Logging
         void Log<T0, T1, T2>(
             LogEventLevel level,
             string area,
-            object source,
+            object? source,
             string messageTemplate,
             T0 propertyValue0,
             T1 propertyValue1,
@@ -88,8 +88,8 @@ namespace Avalonia.Logging
         void Log(
             LogEventLevel level,
             string area,
-            object source,
+            object? source,
             string messageTemplate, 
-            params object[] propertyValues);
+            params object?[] propertyValues);
     }
 }

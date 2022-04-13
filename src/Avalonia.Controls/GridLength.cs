@@ -135,7 +135,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="o">The object with which to test equality.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
-        public override bool Equals(object o)
+        public override bool Equals(object? o)
         {
             if (o == null)
             {

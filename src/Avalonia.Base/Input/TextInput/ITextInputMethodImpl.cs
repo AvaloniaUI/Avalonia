@@ -2,14 +2,14 @@ namespace Avalonia.Input.TextInput
 {
     public interface ITextInputMethodImpl
     {
-        void SetActive(bool active);
+        void SetClient(ITextInputMethodClient? client);
         void SetCursorRect(Rect rect);
-        void SetOptions(TextInputOptionsQueryEventArgs options);
+        void SetOptions(TextInputOptions options);
         void Reset();
     }
     
     public interface ITextInputMethodRoot : IInputRoot
     {
-        ITextInputMethodImpl InputMethod { get; }
+        ITextInputMethodImpl? InputMethod { get; }
     }
 }

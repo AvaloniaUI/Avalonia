@@ -12,6 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An item in a <see cref="TreeView"/>.
     /// </summary>
+    [TemplatePart("PART_Header", typeof(IControl))]
     [PseudoClasses(":pressed", ":selected")]
     public class TreeViewItem : HeaderedItemsControl, ISelectable
     {
@@ -40,8 +41,8 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
-        private TreeView _treeView;
-        private IControl _header;
+        private TreeView? _treeView;
+        private IControl? _header;
         private bool _isExpanded;
         private int _level;
 
@@ -92,9 +93,13 @@ namespace Avalonia.Controls
             (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateItemContainerGenerator() => CreateTreeItemContainerGenerator<TreeViewItem>();
+
+        /// <inheritdoc/>
+        protected virtual ITreeItemContainerGenerator CreateTreeItemContainerGenerator<TVItem>()
+            where TVItem: TreeViewItem, new()
         {
-            return new TreeItemContainerGenerator<TreeViewItem>(
+            return new TreeItemContainerGenerator<TVItem>(
                 this,
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemTemplateProperty,
@@ -170,7 +175,7 @@ namespace Avalonia.Controls
             _header = e.NameScope.Find<IControl>("PART_Header");
         }
 
-        private static int CalculateDistanceFromLogicalParent<T>(ILogical logical, int @default = -1) where T : class
+        private static int CalculateDistanceFromLogicalParent<T>(ILogical? logical, int @default = -1) where T : class
         {
             var result = 0;
 

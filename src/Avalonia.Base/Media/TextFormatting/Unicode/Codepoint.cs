@@ -1,4 +1,5 @@
-﻿using Avalonia.Utilities;
+﻿using System.Runtime.CompilerServices;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -30,10 +31,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public Script Script => UnicodeData.GetScript(Value);
 
         /// <summary>
-        /// Gets the <see cref="Unicode.BiDiClass"/>.
+        /// Gets the <see cref="Unicode.BidiClass"/>.
         /// </summary>
-        public BiDiClass BiDiClass => UnicodeData.GetBiDiClass(Value);
+        public BidiClass BiDiClass => UnicodeData.GetBiDiClass(Value);
 
+        /// <summary>
+        /// Gets the <see cref="Unicode.BidiPairedBracketType"/>.
+        /// </summary>
+        public BidiPairedBracketType PairedBracketType => UnicodeData.GetBiDiPairedBracketType(Value);
+        
         /// <summary>
         /// Gets the <see cref="Unicode.LineBreakClass"/>.
         /// </summary>
@@ -92,6 +98,52 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 return false;
             }
+        }
+        
+        /// <summary>
+        /// Gets the canonical representation of a given codepoint.
+        /// <see href="http://www.unicode.org/L2/L2013/13123-norm-and-bpa.pdf"/>
+        /// </summary>
+        /// <param name="codePoint">The code point to be mapped.</param>
+        /// <returns>The mapped canonical code point, or the passed <paramref name="codePoint"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Codepoint GetCanonicalType(Codepoint codePoint)
+        {
+            if (codePoint.Value == 0x3008)
+            {
+                return new Codepoint(0x2329);
+            }
+
+            if (codePoint.Value == 0x3009)
+            {
+                return new Codepoint(0x232A);
+            }
+
+            return codePoint;
+        }
+        
+        /// <summary>
+        /// Gets the codepoint representing the bracket pairing for this instance.
+        /// </summary>
+        /// <param name="codepoint">
+        /// When this method returns, contains the codepoint representing the bracket pairing for this instance;
+        /// otherwise, the default value for the type of the <paramref name="codepoint"/> parameter.
+        /// This parameter is passed uninitialized.
+        /// .</param>
+        /// <returns><see langword="true"/> if this instance has a bracket pairing; otherwise, <see langword="false"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetPairedBracket(out Codepoint codepoint)
+        {
+            if (PairedBracketType == BidiPairedBracketType.None)
+            {
+                codepoint = default;
+                
+                return false;
+            }
+
+            codepoint = UnicodeData.GetBiDiPairedBracket(Value);
+
+            return true;
         }
 
         public static implicit operator int(Codepoint codepoint)

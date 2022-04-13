@@ -1,10 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:collections="clr-namespace:System.Collections;assembly=netstandard"
              x:Class="ControlCatalog.Pages.ViewboxPage">
 
     <Grid RowDefinitions="Auto,*,*">
         <StackPanel Orientation="Vertical" Spacing="4">
-            <TextBlock Classes="h1">Viewbox</TextBlock>
             <TextBlock Classes="h2">A control used to scale single child.</TextBlock>
         </StackPanel>
 
@@ -13,8 +13,8 @@
           <Border HorizontalAlignment="Center" Grid.Column="0" BorderThickness="1" BorderBrush="Orange" Width="200" Height="200">
             <Border VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="0" BorderThickness="1" BorderBrush="CornflowerBlue" Width="{Binding #WidthSlider.Value}" Height="{Binding #HeightSlider.Value}" >
               <Viewbox
-                  Stretch="{Binding #StretchSelector.SelectedItem}"
-                  StretchDirection="{Binding #StretchDirectionSelector.SelectedItem}">
+                  Stretch="{Binding #StretchSelector.SelectedItem, FallbackValue={x:Static Stretch.Uniform}}"
+                  StretchDirection="{Binding #StretchDirectionSelector.SelectedItem, FallbackValue={x:Static StretchDirection.Both}}">
                 <Ellipse Width="50" Height="50" Fill="CornflowerBlue" />
               </Viewbox>
             </Border>
@@ -26,9 +26,22 @@
             <TextBlock Text="Height" />
             <Slider Minimum="10" Maximum="200" Value="100" x:Name="HeightSlider" TickFrequency="25" TickPlacement="TopLeft" />
             <TextBlock Text="Stretch" />
-            <ComboBox x:Name="StretchSelector" HorizontalAlignment="Stretch" Margin="0,0,0,2" />
+            <ComboBox x:Name="StretchSelector" HorizontalAlignment="Stretch" SelectedIndex="0" Margin="0,0,0,2">
+              <collections:ArrayList>
+                <Stretch>Uniform</Stretch>
+                <Stretch>UniformToFill</Stretch>
+                <Stretch>Fill</Stretch>
+                <Stretch>None</Stretch>
+              </collections:ArrayList>
+            </ComboBox>
             <TextBlock Text="Stretch Direction" />
-            <ComboBox x:Name="StretchDirectionSelector" HorizontalAlignment="Stretch" />
+            <ComboBox x:Name="StretchDirectionSelector" SelectedIndex="0" HorizontalAlignment="Stretch">
+              <collections:ArrayList>
+                <StretchDirection>Both</StretchDirection>
+                <StretchDirection>DownOnly</StretchDirection>
+                <StretchDirection>UpOnly</StretchDirection>
+              </collections:ArrayList>
+            </ComboBox>
           </StackPanel>
         </Grid>
 

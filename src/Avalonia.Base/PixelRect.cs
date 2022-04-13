@@ -168,6 +168,18 @@ namespace Avalonia
         {
             return p.X >= X && p.X <= Right && p.Y >= Y && p.Y <= Bottom;
         }
+        
+        /// <summary>
+        /// Determines whether a point is in the bounds of the rectangle, exclusive of the
+        /// rectangle's bottom/right edge.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>    
+        public bool ContainsExclusive(PixelPoint p)
+        {
+            return p.X >= X && p.X < X + Width &&
+                   p.Y >= Y && p.Y < Y + Height;
+        }
 
         /// <summary>
         /// Determines whether the rectangle fully contains another rectangle.
@@ -208,7 +220,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The object to compare against.</param>
         /// <returns>True if the object is equal to this rectangle; false otherwise.</returns>
-        public override bool Equals(object obj) => obj is PixelRect other && Equals(other);
+        public override bool Equals(object? obj) => obj is PixelRect other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.

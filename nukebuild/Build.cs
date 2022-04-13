@@ -87,7 +87,8 @@ partial class Build : NukeBuild
             Console.WriteLine(preamble);
             Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
         }
-        ExecWait("dotnet version:", "dotnet", "--version");
+        ExecWait("dotnet version:", "dotnet", "--info");
+        ExecWait("dotnet workloads:", "dotnet", "workload list");
     }
 
     IReadOnlyCollection<Output> MsBuildCommon(
@@ -99,7 +100,7 @@ partial class Build : NukeBuild
             // This is required for VS2019 image on Azure Pipelines
             .When(Parameters.IsRunningOnWindows &&
                   Parameters.IsRunningOnAzure, _ => _
-                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
+                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
             .SetProcessToolPath(MsBuildExe.Value)
@@ -253,10 +254,14 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-            DotMemoryUnit(
-                $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
-                timeout: 120_000);
+            void DoMemoryTest()
+            {
+                var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
+                DotMemoryUnit(
+                    $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
+                    timeout: 120_000);
+            }
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, waitInSeconds: 3);
         });
 
     Target ZipFiles => _ => _

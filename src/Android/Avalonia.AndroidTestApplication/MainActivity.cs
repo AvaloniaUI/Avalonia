@@ -1,9 +1,10 @@
 using System;
 using Android.App;
 using Android.Content.PM;
-using Android.OS;
 using Avalonia.Android;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.TextInput;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -14,20 +15,15 @@ namespace Avalonia.AndroidTestApplication
     [Activity(Label = "Main",
         MainLauncher = true,
         Icon = "@drawable/icon",
+        Theme = "@style/Theme.AppCompat.NoActionBar",
+        ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize,
         LaunchMode = LaunchMode.SingleInstance/*,
         ScreenOrientation = ScreenOrientation.Landscape*/)]
-    public class MainBaseActivity : AvaloniaActivity
+    public class MainActivity : AvaloniaActivity<App>
     {
-        protected override void OnCreate(Bundle savedInstanceState)
+        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
-            if (Avalonia.Application.Current == null)
-            {
-                AppBuilder.Configure<App>()
-                    .UseAndroid()
-                    .SetupWithoutStarting();
-            }
-            base.OnCreate(savedInstanceState);
-            Content = App.CreateSimpleWindow();
+            return base.CustomizeAppBuilder(builder);
         }
     }
 
@@ -35,13 +31,17 @@ namespace Avalonia.AndroidTestApplication
     {
         public override void Initialize()
         {
-            Styles.Add(new DefaultTheme());
+            Styles.Add(new SimpleTheme(new Uri("avares://Avalonia.AndroidTestApplication")));
+        }
 
-            var baseLight = (IStyle)AvaloniaXamlLoader.Load(
-                new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
-            Styles.Add(baseLight);
+        public override void OnFrameworkInitializationCompleted()
+        {
+            if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
+            {
+                singleViewLifetime.MainView = CreateSimpleWindow();
+            }
 
-
+            base.OnFrameworkInitializationCompleted();
         }
 
         // This provides a simple UI tree for testing input handling, drawing, etc
@@ -74,12 +74,12 @@ namespace Avalonia.AndroidTestApplication
                             Foreground = Brushes.Black
                         },
 
-                        CreateTextBox(Input.TextInput.TextInputContentType.Normal),
-                        CreateTextBox(Input.TextInput.TextInputContentType.Password),
-                        CreateTextBox(Input.TextInput.TextInputContentType.Email),
-                        CreateTextBox(Input.TextInput.TextInputContentType.Url),
-                        CreateTextBox(Input.TextInput.TextInputContentType.Phone),
-                        CreateTextBox(Input.TextInput.TextInputContentType.Number),
+                        CreateTextBox(TextInputContentType.Normal),
+                        CreateTextBox(TextInputContentType.Password),
+                        CreateTextBox(TextInputContentType.Email),
+                        CreateTextBox(TextInputContentType.Url),
+                        CreateTextBox(TextInputContentType.Digits),
+                        CreateTextBox(TextInputContentType.Number),
                     }
                 }
             };
@@ -87,16 +87,16 @@ namespace Avalonia.AndroidTestApplication
             return window;
         }
 
-        private static TextBox CreateTextBox(Input.TextInput.TextInputContentType contentType)
+        private static TextBox CreateTextBox(TextInputContentType contentType)
         {
             var textBox = new TextBox()
             {
                 Margin = new Thickness(20, 10),
                 Watermark = contentType.ToString(),
                 BorderThickness = new Thickness(3),
-                FontSize = 20
+                FontSize = 20,
+                [TextInputOptions.ContentTypeProperty] = contentType
             };
-            textBox.TextInputOptionsQuery += (s, e) => { e.ContentType = contentType; };
 
             return textBox;
         }
