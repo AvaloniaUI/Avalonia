@@ -10,6 +10,7 @@ MembersMustExist : Member 'public Avalonia.Interactivity.RoutedEvent<Avalonia.In
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.add_DoubleTapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.add_Tapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.add_TextInputOptionsQuery(System.EventHandler<Avalonia.Input.TextInput.TextInputOptionsQueryEventArgs>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Input.InputElement.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.remove_DoubleTapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.remove_Tapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.InputElement.remove_TextInputOptionsQuery(System.EventHandler<Avalonia.Input.TextInput.TextInputOptionsQueryEventArgs>)' does not exist in the implementation but it does exist in the contract.
@@ -26,4 +27,4 @@ MembersMustExist : Member 'public Avalonia.Input.TextInput.TextInputContentType 
 EnumValuesMustMatch : Enum value 'Avalonia.Input.TextInput.TextInputContentType Avalonia.Input.TextInput.TextInputContentType.Url' is (System.Int32)6 in the implementation but (System.Int32)4 in the contract.
 TypesMustExist : Type 'Avalonia.Input.TextInput.TextInputOptionsQueryEventArgs' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Platform.IStandardCursorFactory' does not exist in the implementation but it does exist in the contract.
-Total Issues: 27
+Total Issues: 28

@@ -5,7 +5,9 @@ InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Task
 MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean, System.Threading.CancellationToken)' is present in the implementation but not in the contract.
 MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.PageSlide.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Media.DashStyle.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.DrawingContext.DrawText(Avalonia.Media.IBrush, Avalonia.Point, Avalonia.Media.FormattedText)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Media.DrawingImage.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.Boolean Avalonia.Media.FontManager.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Typeface)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.FormattedText..ctor()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.FormattedText..ctor(Avalonia.Platform.IPlatformRenderInterface)' does not exist in the implementation but it does exist in the contract.
@@ -182,7 +184,7 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Media.TextFo
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Media.GlyphRun Avalonia.Platform.ITextShaperImpl.ShapeText(Avalonia.Utilities.ReadOnlySlice<System.Char>, Avalonia.Media.Typeface, System.Double, System.Globalization.CultureInfo)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public Avalonia.Media.GlyphRun Avalonia.Platform.ITextShaperImpl.ShapeText(Avalonia.Utilities.ReadOnlySlice<System.Char>, Avalonia.Media.Typeface, System.Double, System.Globalization.CultureInfo)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'protected void Avalonia.Rendering.RendererBase.RenderFps(Avalonia.Platform.IDrawingContextImpl, Avalonia.Rect, System.Nullable<System.Int32>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Utilities.ReadOnlySlice<T>..ctor(System.ReadOnlyMemory<T>, System.Int32, System.Int32)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.VisualTree.IVisual.HasMirrorTransform' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.VisualTree.IVisual.HasMirrorTransform.get()' is present in the implementation but not in the contract.
-MembersMustExist : Member 'public void Avalonia.Utilities.ReadOnlySlice<T>..ctor(System.ReadOnlyMemory<T>, System.Int32, System.Int32)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 186
+Total Issues: 188

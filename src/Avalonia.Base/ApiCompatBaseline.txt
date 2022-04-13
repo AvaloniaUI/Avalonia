@@ -2,6 +2,8 @@ Compat issues with assembly Avalonia.Base:
 MembersMustExist : Member 'public void Avalonia.AvaloniaObject.CoerceValue<T>(Avalonia.StyledPropertyBase<T>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'protected Avalonia.IAvaloniaObject Avalonia.AvaloniaObject.InheritanceParent.get()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'protected void Avalonia.AvaloniaObject.InheritanceParent.set(Avalonia.IAvaloniaObject)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.AvaloniaObject.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.AvaloniaObject.OnPropertyChangedCore<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.AvaloniaObject.SetValue(Avalonia.AvaloniaProperty, System.Object, Avalonia.Data.BindingPriority)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.IDisposable Avalonia.AvaloniaObjectExtensions.Bind(Avalonia.IAvaloniaObject, Avalonia.AvaloniaProperty, System.IObservable<Avalonia.Data.BindingValue<System.Object>>, Avalonia.Data.BindingPriority)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.IDisposable Avalonia.AvaloniaObjectExtensions.Bind(Avalonia.IAvaloniaObject, Avalonia.AvaloniaProperty, System.IObservable<System.Object>, Avalonia.Data.BindingPriority)' does not exist in the implementation but it does exist in the contract.
@@ -54,4 +56,4 @@ MembersMustExist : Member 'public void Avalonia.IAvaloniaObject.SetValue<T>(Aval
 InterfacesShouldHaveSameMembers : Interface member 'public System.IDisposable Avalonia.IAvaloniaObject.SetValue<T>(Avalonia.StyledPropertyBase<T>, T, Avalonia.Data.BindingPriority)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public System.IDisposable Avalonia.IAvaloniaObject.SetValue<T>(Avalonia.StyledPropertyBase<T>, T, Avalonia.Data.BindingPriority)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Threading.IDispatcher.Post<T>(System.Action<T>, T, Avalonia.Threading.DispatcherPriority)' is present in the implementation but not in the contract.
-Total Issues: 55
+Total Issues: 57
