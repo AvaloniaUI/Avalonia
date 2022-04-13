@@ -59,7 +59,7 @@ namespace Avalonia
         
         public IList<string> EglRendererBlacklist { get; set; } = new List<string>
         {
-            "Microsoft Basic Renderer"
+            "Microsoft Basic Render"
         };
 
         /// <summary>
