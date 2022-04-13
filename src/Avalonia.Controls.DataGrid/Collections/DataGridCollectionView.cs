@@ -3946,7 +3946,7 @@ namespace Avalonia.Collections
             {
                 sort.Initialize(itemType); 
 
-                if(seq is IOrderedEnumerable<object> orderedEnum)
+                if (seq is IOrderedEnumerable<object> orderedEnum)
                 {
                     seq = sort.ThenBy(orderedEnum);
                 }

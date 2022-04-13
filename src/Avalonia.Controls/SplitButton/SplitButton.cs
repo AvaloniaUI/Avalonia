@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Input;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -13,6 +12,8 @@ namespace Avalonia.Controls
     /// A button with primary and secondary parts that can each be pressed separately.
     /// The primary part behaves like a <see cref="Button"/> and the secondary part opens a flyout.
     /// </summary>
+    [TemplatePart("PART_PrimaryButton",   typeof(Button))]
+    [TemplatePart("PART_SecondaryButton", typeof(Button))]
     [PseudoClasses(pcFlyoutOpen, pcPressed)]
     public class SplitButton : ContentControl, ICommandSource
     {
@@ -314,16 +315,9 @@ namespace Avalonia.Controls
                 }
 
                 // Must unregister events here while a reference to the old flyout still exists
-                if (oldFlyout != null)
-                {
-                    UnregisterFlyoutEvents(oldFlyout);
-                }
+                UnregisterFlyoutEvents(oldFlyout);
 
-                if (newFlyout != null)
-                {
-                    RegisterFlyoutEvents(newFlyout);
-                }
-
+                RegisterFlyoutEvents(newFlyout);
                 UpdatePseudoClasses();
             }
 
@@ -415,6 +409,22 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Invoked when the split button's flyout is opened.
+        /// </summary>
+        protected virtual void OnFlyoutOpened()
+        {
+            // Available for derived types
+        }
+
+        /// <summary>
+        /// Invoked when the split button's flyout is closed.
+        /// </summary>
+        protected virtual void OnFlyoutClosed()
+        {
+            // Available for derived types
+        }
+
         ////////////////////////////////////////////////////////////////////////
         // Event Handling
         ////////////////////////////////////////////////////////////////////////
@@ -464,6 +474,8 @@ namespace Avalonia.Controls
             {
                 _isFlyoutOpen = true;
                 UpdatePseudoClasses();
+
+                OnFlyoutOpened();
             }
         }
 
@@ -479,6 +491,8 @@ namespace Avalonia.Controls
             {
                 _isFlyoutOpen = false;
                 UpdatePseudoClasses();
+
+                OnFlyoutClosed();
             }
         }
     }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -222,6 +223,8 @@ namespace Avalonia.Controls
     /// element in XAML.
     /// </para>
     /// </remarks>
+    [TemplatePart(PART_ElementMonth, typeof(CalendarItem))]
+    [TemplatePart(PART_ElementRoot,  typeof(Panel))]
     public class Calendar : TemplatedControl
     {
         internal const int RowsPerMonth = 7;
@@ -261,6 +264,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Calendar, DayOfWeek>(
                     nameof(FirstDayOfWeek),
                     defaultValue: DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek);
+
         /// <summary>
         /// Gets or sets the day that is considered the beginning of the week.
         /// </summary>
@@ -273,6 +277,7 @@ namespace Avalonia.Controls
             get { return GetValue(FirstDayOfWeekProperty); }
             set { SetValue(FirstDayOfWeekProperty, value); }
         }
+
         /// <summary>
         /// FirstDayOfWeekProperty property changed handler.
         /// </summary>
@@ -289,6 +294,7 @@ namespace Avalonia.Controls
                 throw new ArgumentOutOfRangeException("d", "Invalid DayOfWeek");
             }
         }
+
         /// <summary>
         /// Inherited code: Requires comment.
         /// </summary>
@@ -311,6 +317,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Calendar, bool>(
                 nameof(IsTodayHighlighted),
                 defaultValue: true);
+
         /// <summary>
         /// Gets or sets a value indicating whether the current date is
         /// highlighted.
@@ -324,6 +331,7 @@ namespace Avalonia.Controls
             get { return GetValue(IsTodayHighlightedProperty); }
             set { SetValue(IsTodayHighlightedProperty, value); }
         }
+
         /// <summary>
         /// IsTodayHighlightedProperty property changed handler.
         /// </summary>
@@ -343,6 +351,7 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<IBrush> HeaderBackgroundProperty =
             AvaloniaProperty.Register<Calendar, IBrush>(nameof(HeaderBackground));
+
         public IBrush HeaderBackground
         {
             get { return GetValue(HeaderBackgroundProperty); }
@@ -367,6 +376,7 @@ namespace Avalonia.Controls
             get { return GetValue(DisplayModeProperty); }
             set { SetValue(DisplayModeProperty, value); }
         }
+
         /// <summary>
         /// DisplayModeProperty property changed handler.
         /// </summary>
@@ -424,6 +434,7 @@ namespace Avalonia.Controls
                 || mode == CalendarMode.Year
                 || mode == CalendarMode.Decade;
         }
+
         private void OnDisplayModeChanged(CalendarModeChangedEventArgs args)
         {
             DisplayModeChanged?.Invoke(this, args);
@@ -433,6 +444,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Calendar, CalendarSelectionMode>(
                 nameof(SelectionMode),
                 defaultValue: CalendarSelectionMode.SingleDate);
+
         /// <summary>
         /// Gets or sets a value that indicates what kind of selections are
         /// allowed.
@@ -457,6 +469,7 @@ namespace Avalonia.Controls
             get { return GetValue(SelectionModeProperty); }
             set { SetValue(SelectionModeProperty, value); }
         }
+
         private void OnSelectionModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (IsValidSelectionMode(e.NewValue!))
@@ -471,6 +484,7 @@ namespace Avalonia.Controls
                 throw new ArgumentOutOfRangeException("d", "Invalid SelectionMode");
             }
         }
+
         /// <summary>
         /// Inherited code: Requires comment.
         /// </summary>
@@ -492,6 +506,7 @@ namespace Avalonia.Controls
                 o => o.SelectedDate,
                 (o, v) => o.SelectedDate = v,
                 defaultBindingMode: BindingMode.TwoWay);
+
         /// <summary>
         /// Gets or sets the currently selected date.
         /// </summary>
@@ -720,6 +735,7 @@ namespace Avalonia.Controls
                 o => o.DisplayDate,
                 (o, v) => o.DisplayDate = v,
                 defaultBindingMode: BindingMode.TwoWay);
+
         /// <summary>
         /// Gets or sets the date to display.
         /// </summary>
@@ -1973,6 +1989,7 @@ namespace Avalonia.Controls
                     }
             }
         }
+
         private void Calendar_KeyUp(KeyEventArgs e)
         {
             if (!e.Handled && (e.Key == Key.LeftShift || e.Key == Key.RightShift))
@@ -1980,6 +1997,7 @@ namespace Avalonia.Controls
                 ProcessShiftKeyUp();
             }
         }
+
         internal void ProcessShiftKeyUp()
         {
             if (_isShiftPressed && (SelectionMode == CalendarSelectionMode.SingleRange || SelectionMode == CalendarSelectionMode.MultipleRange))
@@ -2028,6 +2046,7 @@ namespace Avalonia.Controls
                     }
             }
         }
+
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
@@ -2054,6 +2073,7 @@ namespace Avalonia.Controls
                     }
             }
         }
+
         /// <summary>
         ///  Called when the IsEnabled property changes.
         /// </summary>
@@ -2098,6 +2118,7 @@ namespace Avalonia.Controls
 
         private const string PART_ElementRoot = "Root";
         private const string PART_ElementMonth = "CalendarItem";
+
         /// <summary>
         /// Builds the visual tree for the
         /// <see cref="T:System.Windows.Controls.Calendar" /> when a new

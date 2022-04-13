@@ -110,6 +110,12 @@ namespace Avalonia
                     result *= renderTransform;
                 }
 
+                if (v.HasMirrorTransform)
+                {
+                    var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, v.Bounds.Width, 0);
+                    result *= mirrorMatrix;
+                }
+
                 var topLeft = v.Bounds.TopLeft;
 
                 if (topLeft != default)

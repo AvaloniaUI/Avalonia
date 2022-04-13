@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Controls.Documents;
 
 namespace Avalonia.Controls
 {
@@ -32,7 +33,7 @@ namespace Avalonia.Controls
         /// Identifies the FontFamily dependency property.
         /// </summary>
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
-            TextBlock.FontFamilyProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontFamilyProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font name.
@@ -47,7 +48,7 @@ namespace Avalonia.Controls
         /// Identifies the FontSize dependency property.
         /// </summary>
         public static readonly AttachedProperty<double> FontSizeProperty =
-            TextBlock.FontSizeProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontSizeProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font size.
@@ -64,7 +65,7 @@ namespace Avalonia.Controls
         /// Identifies the FontStyle dependency property.
         /// </summary>
         public static readonly AttachedProperty<FontStyle> FontStyleProperty =
-            TextBlock.FontStyleProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontStyleProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font style.
@@ -79,7 +80,7 @@ namespace Avalonia.Controls
         /// Identifies the FontWeight dependency property.
         /// </summary>
         public static readonly AttachedProperty<FontWeight> FontWeightProperty =
-            TextBlock.FontWeightProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontWeightProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font weight or thickness.
@@ -91,10 +92,25 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Identifies the FontStretch dependency property.
+        /// </summary>
+        public static readonly AttachedProperty<FontStretch> FontStretchProperty =
+            TextElement.FontStretchProperty.AddOwner<DataGridTextColumn>();
+
+        /// <summary>
+        /// Gets or sets the font weight or thickness.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get => GetValue(FontStretchProperty);
+            set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
         /// Identifies the Foreground dependency property.
         /// </summary>
         public static readonly AttachedProperty<IBrush> ForegroundProperty =
-            TextBlock.ForegroundProperty.AddOwner<DataGridTextColumn>();
+            TextElement.ForegroundProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets a brush that describes the foreground of the column cells.

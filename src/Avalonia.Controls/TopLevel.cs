@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -26,6 +27,7 @@ namespace Avalonia.Controls
     /// It handles scheduling layout, styling and rendering as well as
     /// tracking the widget's <see cref="ClientSize"/>.
     /// </remarks>
+    [TemplatePart("PART_TransparencyFallback", typeof(Border))]
     public abstract class TopLevel : ContentControl,
         IInputRoot,
         ILayoutRoot,
@@ -348,6 +350,12 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
+        public override void InvalidateMirrorTransform()
+        {
+        }
+        
+        protected override bool BypassFlowDirectionPolicies => true;
+        
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>

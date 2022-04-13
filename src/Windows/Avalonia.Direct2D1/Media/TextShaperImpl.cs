@@ -14,9 +14,13 @@ namespace Avalonia.Direct2D1.Media
 
 internal class TextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
-            CultureInfo culture, sbyte bidiLevel)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidLevel;
+            var culture = options.Culture;
+
             using (var buffer = new Buffer())
             {
                 buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
@@ -61,6 +65,15 @@ internal class TextShaperImpl : ITextShaperImpl
                     var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
+
+                    if (glyphIndex == 0 && text[glyphCluster] == '\t')
+                    {
+                        glyphIndex = typeface.GetGlyph(' ');
+
+                        glyphAdvance = options.IncrementalTabWidth > 0 ?
+                            options.IncrementalTabWidth :
+                            4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
+                    }
 
                     var targetInfo =
                         new Avalonia.Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance,
