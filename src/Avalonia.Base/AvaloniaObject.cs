@@ -16,7 +16,7 @@ namespace Avalonia
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged, IValueSink
+    public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged
     {
         private AvaloniaObject? _inheritanceParent;
         private List<IDisposable>? _directBindings;
@@ -524,7 +524,7 @@ namespace Avalonia
             return _propertyChanged?.GetInvocationList();
         }
 
-        void IValueSink.ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        internal void ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             var property = (StyledPropertyBase<T>)change.Property;
 
@@ -563,7 +563,7 @@ namespace Avalonia
             }
         }
 
-        void IValueSink.Completed<T>(
+        internal void Completed<T>(
             StyledPropertyBase<T> property,
             IPriorityValueEntry entry,
             Optional<T> oldValue) 
@@ -574,7 +574,7 @@ namespace Avalonia
                 oldValue,
                 default,
                 BindingPriority.Unset);
-            ((IValueSink)this).ValueChanged(change);
+            ValueChanged(change);
         }
 
         /// <summary>

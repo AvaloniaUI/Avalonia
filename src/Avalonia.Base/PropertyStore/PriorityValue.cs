@@ -23,10 +23,10 @@ namespace Avalonia.PropertyStore
     /// <see cref="IPriorityValueEntry{T}"/> entries (sorted first by priority and then in the order
     /// they were added) plus a local value.
     /// </remarks>
-    internal class PriorityValue<T> : IPriorityValue, IValue<T>, IValueSink, IBatchUpdate
+    internal class PriorityValue<T> : IPriorityValue, IValue<T>, IBatchUpdate
     {
-        private readonly IAvaloniaObject _owner;
-        private readonly IValueSink _sink;
+        private readonly AvaloniaObject _owner;
+        private readonly ValueStore _store;
         private readonly List<IPriorityValueEntry<T>> _entries = new List<IPriorityValueEntry<T>>();
         private readonly Func<IAvaloniaObject, T, T>? _coerceValue;
         private Optional<T> _localValue;
@@ -35,13 +35,13 @@ namespace Avalonia.PropertyStore
         private bool _batchUpdate;
 
         public PriorityValue(
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             StyledPropertyBase<T> property,
-            IValueSink sink)
+            ValueStore store)
         {
             _owner = owner;
             Property = property;
-            _sink = sink;
+            _store = store;
 
             if (property.HasCoercion)
             {
@@ -51,11 +51,11 @@ namespace Avalonia.PropertyStore
         }
 
         public PriorityValue(
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             StyledPropertyBase<T> property,
-            IValueSink sink,
+            ValueStore store,
             IPriorityValueEntry<T> existing)
-            : this(owner, property, sink)
+            : this(owner, property, store)
         {
             existing.Reparent(this);
             _entries.Add(existing);
@@ -82,9 +82,9 @@ namespace Avalonia.PropertyStore
         }
 
         public PriorityValue(
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             StyledPropertyBase<T> property,
-            IValueSink sink,
+            ValueStore sink,
             LocalValueEntry<T> existing)
             : this(owner, property, sink)
         {
@@ -155,7 +155,7 @@ namespace Avalonia.PropertyStore
             else
             {
                 var insert = FindInsertPoint(priority);
-                var entry = new ConstantValueEntry<T>(Property, value, priority, this);
+                var entry = new ConstantValueEntry<T>(Property, value, priority, new ValueOwner<T>(this));
                 _entries.Insert(insert, entry);
                 result = entry;
             }
@@ -172,7 +172,7 @@ namespace Avalonia.PropertyStore
 
         public BindingEntry<T> AddBinding(IObservable<BindingValue<T>> source, BindingPriority priority)
         {
-            var binding = new BindingEntry<T>(_owner, Property, source, priority, this);
+            var binding = new BindingEntry<T>(_owner, Property, source, priority, new(this));
             var insert = FindInsertPoint(binding.Priority);
             _entries.Insert(insert, binding);
 
@@ -193,13 +193,12 @@ namespace Avalonia.PropertyStore
         public void Start() => UpdateEffectiveValue(null);
 
         public void RaiseValueChanged(
-            IValueSink sink,
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             AvaloniaProperty property,
             Optional<object?> oldValue,
             Optional<object?> newValue)
         {
-            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+            owner.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
                 oldValue.Cast<T>(),
@@ -207,7 +206,7 @@ namespace Avalonia.PropertyStore
                 Priority));
         }
 
-        void IValueSink.ValueChanged<TValue>(AvaloniaPropertyChangedEventArgs<TValue> change)
+        public void ValueChanged<TValue>(AvaloniaPropertyChangedEventArgs<TValue> change)
         {
             if (change.Priority == BindingPriority.LocalValue)
             {
@@ -220,22 +219,15 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        void IValueSink.Completed<TValue>(
-            StyledPropertyBase<TValue> property,
-            IPriorityValueEntry entry,
-            Optional<TValue> oldValue)
+        public void Completed(IPriorityValueEntry entry, Optional<T> oldValue)
         {
             _entries.Remove((IPriorityValueEntry<T>)entry);
-
-            if (oldValue is Optional<T> o)
-            {
-                UpdateEffectiveValue(new AvaloniaPropertyChangedEventArgs<T>(
-                    _owner,
-                    Property,
-                    o,
-                    default,
-                    entry.Priority));
-            }
+            UpdateEffectiveValue(new AvaloniaPropertyChangedEventArgs<T>(
+                _owner,
+                Property,
+                oldValue,
+                default,
+                entry.Priority));
         }
 
         private int FindInsertPoint(BindingPriority priority)
@@ -315,7 +307,7 @@ namespace Avalonia.PropertyStore
                 var old = _value;
                 _value = value;
 
-                _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                _store.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                     _owner,
                     Property,
                     old,
@@ -326,7 +318,7 @@ namespace Avalonia.PropertyStore
             {
                 change.MarkNonEffectiveValue();
                 change.SetOldValue(default);
-                _sink.ValueChanged(change);
+                _store.ValueChanged(change);
             }
         }
     }
