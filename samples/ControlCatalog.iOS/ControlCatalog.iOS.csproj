@@ -63,4 +63,3 @@
   <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\HarfBuzzSharp.props" />
 </Project>
-</Project>

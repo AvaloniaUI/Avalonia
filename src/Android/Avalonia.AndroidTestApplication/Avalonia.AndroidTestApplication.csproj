@@ -77,4 +77,3 @@
   <Import Project="..\..\..\build\AndroidWorkarounds.props" />
   <Import Project="..\..\..\build\LegacyProject.targets" />
 </Project>
-</Project>
