@@ -208,7 +208,7 @@
   <!-- Disabled State -->
 
   <Style Selector="Slider:disabled /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="TextElement.Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
   </Style>
   
   <Style Selector="Slider:disabled /template/ RepeatButton#PART_DecreaseButton">
