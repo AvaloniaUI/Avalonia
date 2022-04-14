@@ -108,7 +108,7 @@ namespace Avalonia
         private IRenderRoot? _visualRoot;
         private IVisual? _visualParent;
         private bool _hasMirrorTransform;
-        private WeakEventSubscriber<EventArgs>? _affectsRenderWeakSubscriber;
+        private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -383,11 +383,11 @@ namespace Avalonia
                     {
                         if (sender._affectsRenderWeakSubscriber == null)
                         {
-                            sender._affectsRenderWeakSubscriber = new WeakEventSubscriber<EventArgs>();
-                            sender._affectsRenderWeakSubscriber.Event += delegate
-                            {
-                                sender.InvalidateVisual();
-                            };
+                            sender._affectsRenderWeakSubscriber = new TargetWeakEventSubscriber<Visual, EventArgs>(
+                                sender, static (target, _, _, _) =>
+                                {
+                                    target.InvalidateVisual();
+                                });
                         }
                         InvalidatedWeakEvent.Subscribe(newValue, sender._affectsRenderWeakSubscriber);
                     }
