@@ -1,5 +1,0 @@
-Compat issues with assembly Avalonia.Layout:
-MembersMustExist : Member 'protected void Avalonia.Layout.StackLayout.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
-MembersMustExist : Member 'protected void Avalonia.Layout.UniformGridLayout.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
-MembersMustExist : Member 'protected void Avalonia.Layout.WrapLayout.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 3
