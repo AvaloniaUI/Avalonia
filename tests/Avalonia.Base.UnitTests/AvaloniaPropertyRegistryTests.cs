@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Xunit;
@@ -56,7 +57,7 @@ namespace Avalonia.Base.UnitTests
                 .Select(x => x.Name)
                 .ToArray();
 
-            Assert.Equal(new[] { "Attached" }, names);
+            Assert.Contains("Attached", names);
         }
 
         [Fact]
@@ -66,7 +67,7 @@ namespace Avalonia.Base.UnitTests
                 .Select(x => x.Name)
                 .ToArray();
 
-            Assert.Equal(new[] { "Attached" }, names);
+            Assert.Contains("Attached", names);
         }
 
         [Fact]
