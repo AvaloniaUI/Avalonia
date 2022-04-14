@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
         <OutputType>exe</OutputType>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
@@ -93,6 +93,9 @@
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Controls/GridLength.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/RelativePoint.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />

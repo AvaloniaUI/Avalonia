@@ -1,7 +1,8 @@
 using System;
 using System.Globalization;
-
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -10,7 +11,10 @@ namespace Avalonia
     /// Defines the reference point units of an <see cref="RelativePoint"/> or 
     /// <see cref="RelativeRect"/>.
     /// </summary>
-    public enum RelativeUnit
+#if !BUILDTASK
+    public
+#endif
+    enum RelativeUnit
     {
         /// <summary>
         /// The point is expressed as a fraction of the containing element's size.
@@ -26,7 +30,10 @@ namespace Avalonia
     /// <summary>
     /// Defines a point that may be defined relative to a containing element.
     /// </summary>
-    public readonly struct RelativePoint : IEquatable<RelativePoint>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct RelativePoint : IEquatable<RelativePoint>
     {
         /// <summary>
         /// A point at the top left of the containing element.
@@ -49,7 +56,9 @@ namespace Avalonia
 
         static RelativePoint()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<RelativePointAnimator>(prop => typeof(RelativePoint).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>
