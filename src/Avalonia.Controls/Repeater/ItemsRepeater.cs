@@ -87,7 +87,6 @@ namespace Avalonia.Controls
             _viewManager = new ViewManager(this);
             _viewportManager = new ViewportManager(this);
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Once);
-
             OnLayoutChanged(null, Layout);
         }
 
