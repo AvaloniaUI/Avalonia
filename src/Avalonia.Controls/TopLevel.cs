@@ -91,7 +91,7 @@ namespace Avalonia.Controls
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
-        private WeakEventSubscriber<ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
+        private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -191,11 +191,12 @@ namespace Avalonia.Controls
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
-                _resourcesChangesSubscriber = new();
-                _resourcesChangesSubscriber.Event += (_, __, e) =>
-                {
-                    ((ILogical)this).NotifyResourcesChanged(e);
-                };
+                _resourcesChangesSubscriber = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>(
+                    this, static (target, _, _, e) =>
+                    {
+                        ((ILogical)target).NotifyResourcesChanged(e);
+                    });
+
                 ResourcesChangedWeakEvent.Subscribe(applicationResources, _resourcesChangesSubscriber);
             }
 

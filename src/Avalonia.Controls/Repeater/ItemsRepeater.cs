@@ -60,6 +60,7 @@ namespace Avalonia.Controls
 
         private readonly ViewManager _viewManager;
         private readonly ViewportManager _viewportManager;
+        private readonly TargetWeakEventSubscriber<ItemsRepeater, EventArgs> _layoutWeakSubscriber;
         private IEnumerable? _items;
         private VirtualizingLayoutContext? _layoutContext;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
@@ -68,25 +69,25 @@ namespace Avalonia.Controls
         private ItemsRepeaterElementPreparedEventArgs? _elementPreparedArgs;
         private ItemsRepeaterElementClearingEventArgs? _elementClearingArgs;
         private ItemsRepeaterElementIndexChangedEventArgs? _elementIndexChangedArgs;
-        private WeakEventSubscriber<EventArgs> _layoutWeakSubscriber = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsRepeater"/> class.
         /// </summary>
         public ItemsRepeater()
         {
+            _layoutWeakSubscriber = new TargetWeakEventSubscriber<ItemsRepeater, EventArgs>(
+                this, static (target, _, ev, _) =>
+                {
+                    if (ev == AttachedLayout.ArrangeInvalidatedWeakEvent)
+                        target.InvalidateArrange();
+                    else if (ev == AttachedLayout.MeasureInvalidatedWeakEvent)
+                        target.InvalidateMeasure();
+                });
+
             _viewManager = new ViewManager(this);
             _viewportManager = new ViewportManager(this);
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Once);
-            
-            _layoutWeakSubscriber.Event += (_, ev, e) =>
-            {
-                if (ev == AttachedLayout.ArrangeInvalidatedWeakEvent)
-                    InvalidateArrange();
-                else if (ev == AttachedLayout.MeasureInvalidatedWeakEvent)
-                    InvalidateMeasure();
-            };
-            
+
             OnLayoutChanged(null, Layout);
         }
 
