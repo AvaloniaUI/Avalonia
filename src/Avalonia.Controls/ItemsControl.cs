@@ -166,7 +166,7 @@ namespace Avalonia.Controls
             if (Presenter is IChildIndexProvider innerProvider)
             {
                 innerProvider.ChildIndexChanged += PresenterChildIndexChanged;
-                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
             }
         }
 
