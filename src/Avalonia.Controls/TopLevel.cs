@@ -91,7 +91,7 @@ namespace Avalonia.Controls
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
-        private WeakEventSubscriber<ResourcesChangedEventArgs> _resourcesChangesSubscriber;
+        private WeakEventSubscriber<ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -299,11 +299,6 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IMouseDevice? IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
-
-        void IWeakEventSubscriber<ResourcesChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, ResourcesChangedEventArgs e)
-        {
-            ((ILogical)this).NotifyResourcesChanged(e);
-        }
 
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
