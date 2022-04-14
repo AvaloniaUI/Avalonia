@@ -26,8 +26,8 @@ namespace Avalonia.Input
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
-        public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEndedEvent =
-            RoutedEvent.Register<ScrollGestureEventArgs>(
+        public static readonly RoutedEvent<ScrollGestureEndedEventArgs> ScrollGestureEndedEvent =
+            RoutedEvent.Register<ScrollGestureEndedEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
         
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =

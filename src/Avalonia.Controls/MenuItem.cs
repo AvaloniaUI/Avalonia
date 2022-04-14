@@ -644,7 +644,9 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue!)
+            var parentMenu = Parent as Menu;
+
+            if ((bool)e.NewValue! && (parentMenu is null || parentMenu.IsOpen))
             {
                 Focus();
             }
