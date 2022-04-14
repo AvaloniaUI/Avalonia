@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Platform;
 using Avalonia.PlatformSupport;
 using Avalonia.Styling;
-using Avalonia.Themes.Fluent;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 using Moq;
@@ -25,7 +24,7 @@ namespace Avalonia.Benchmarks.Styling
                 renderInterface: new MockPlatformRenderInterface(),
                 standardCursorFactory: Mock.Of<ICursorFactory>(),
                 styler: new Styler(),
-                theme: () => LoadTheme(),
+                theme: () => CreateTheme(),
                 threadingInterface: new NullThreadingPlatform(),
                 fontManagerImpl: new MockFontManagerImpl(),
                 textShaperImpl: new MockTextShaperImpl(),
@@ -34,7 +33,7 @@ namespace Avalonia.Benchmarks.Styling
             return UnitTestApplication.Start(services);
         }
     
-        private static Styles LoadTheme()
+        private static Styles CreateTheme()
         {
             AssetLoader.RegisterResUriParsers();
             
@@ -43,11 +42,11 @@ namespace Avalonia.Benchmarks.Styling
             
             var postHost = new Style();
             postHost.Resources.Add("postTheme", null);
-            
+
             return new Styles
             {
                 preHost,
-                new FluentTheme(new Uri("avares://Avalonia.Benchmarks")),
+                new TestStyles(50, 3, 5),
                 postHost
             };
         }
@@ -81,11 +80,13 @@ namespace Avalonia.Benchmarks.Styling
 
             current.Child = _searchStart;
         }
+
+        private const int LookupCount = 100;
         
         [Benchmark]
         public void FindPreResource()
         {
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < LookupCount; ++i)
             {
                 _searchStart.FindResource("preTheme");
             }
@@ -94,7 +95,7 @@ namespace Avalonia.Benchmarks.Styling
         [Benchmark]
         public void FindPostResource()
         {
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < LookupCount; ++i)
             {
                 _searchStart.FindResource("postTheme");
             }
@@ -103,7 +104,7 @@ namespace Avalonia.Benchmarks.Styling
         [Benchmark]
         public void FindNotExistingResource()
         {
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < LookupCount; ++i)
             {
                 _searchStart.FindResource("notPresent");
             }
