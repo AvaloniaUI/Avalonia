@@ -33,8 +33,8 @@ public class VisualAffectsRenderBenchmarks
             
         public IPen Pen
         {
-            get { return GetValue(PenProperty); }
-            set { SetValue(PenProperty, value); }
+            get => GetValue(PenProperty);
+            set => SetValue(PenProperty, value);
         }
 
         static TestVisual()

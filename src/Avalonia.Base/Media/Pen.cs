@@ -48,7 +48,7 @@ namespace Avalonia.Media
         private EventHandler? _invalidated;
         private IAffectsRender? _subscribedToBrush;
         private IAffectsRender? _subscribedToDashes;
-        private WeakEventSubscriber<EventArgs>? _weakSubscriber;
+        private TargetWeakEventSubscriber<Pen, EventArgs>? _weakSubscriber;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Pen"/> class.
@@ -217,13 +217,14 @@ namespace Avalonia.Media
             {
                 if (_weakSubscriber == null)
                 {
-                    _weakSubscriber = new WeakEventSubscriber<EventArgs>();
-                    _weakSubscriber.Event += (_, ev, __) =>
-                    {
-                        if (ev == InvalidatedWeakEvent)
-                            _invalidated?.Invoke(this, EventArgs.Empty);
-                    };
+                    _weakSubscriber = new TargetWeakEventSubscriber<Pen, EventArgs>(
+                        this, static (target, _, ev, _) =>
+                        {
+                            if (ev == InvalidatedWeakEvent)
+                                target._invalidated?.Invoke(target, EventArgs.Empty);
+                        });
                 }
+
                 InvalidatedWeakEvent.Subscribe(affectsRender, _weakSubscriber);
                 field = affectsRender;
             }
