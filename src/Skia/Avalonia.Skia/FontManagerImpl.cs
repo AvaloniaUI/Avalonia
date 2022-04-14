@@ -122,9 +122,7 @@ namespace Avalonia.Skia
 
                     skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
-                    if (skTypeface is null
-                        || (!skTypeface.FamilyName.Equals(familyName, StringComparison.Ordinal)
-                            && defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal)))
+                    if (skTypeface is null || defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal))
                     {
                         continue;
                     }

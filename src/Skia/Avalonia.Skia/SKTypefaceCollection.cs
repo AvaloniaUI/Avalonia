@@ -59,15 +59,30 @@ namespace Avalonia.Skia
                 return typeface;
             }
 
-            //Nothing was found so we try some regular cases.
+            if (TryFindStretchFallback(key, out typeface))
+            {
+                return typeface;
+            }
+
+            //Nothing was found so we try some regular typeface.
             if (_typefaces.TryGetValue(new Typeface(key.FontFamily), out typeface))
             {
                 return typeface;
             }
 
-            return _typefaces.TryGetValue(new Typeface(key.FontFamily, FontStyle.Italic), out typeface) ?
-                typeface :
-                null;
+            SKTypeface skTypeface = null;
+
+            foreach(var pair in _typefaces)
+            {
+                skTypeface = pair.Value;
+
+                if (skTypeface.FamilyName.Contains(key.FontFamily.Name))
+                {
+                    return skTypeface;
+                }
+            }
+
+            return skTypeface;
         }
 
         private bool TryFindStretchFallback(Typeface key, out SKTypeface typeface)

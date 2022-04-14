@@ -389,7 +389,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.Y / logicalScrollItemSize.Y;
                         delta = delta.WithY(delta.Y - logicalUnits * logicalScrollItemSize.Y);
-                        dy = logicalUnits * scrollable!.ScrollSize.Height;
+                        dy = logicalUnits;
                     }
                     else
                         dy = delta.Y;
@@ -407,7 +407,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.X / logicalScrollItemSize.X;
                         delta = delta.WithX(delta.X - logicalUnits * logicalScrollItemSize.X);
-                        dx = logicalUnits * scrollable!.ScrollSize.Width;
+                        dx = logicalUnits;
                     }
                     else
                         dx = delta.X;

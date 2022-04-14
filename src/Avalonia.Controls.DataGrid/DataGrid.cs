@@ -2060,6 +2060,25 @@ namespace Avalonia.Controls
                     forceHorizontalScroll: true);
             }
         }
+        
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (DataConnection.DataSource != null && !DataConnection.EventsWired)
+            {
+                DataConnection.WireEvents(DataConnection.DataSource);
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            // When wired to INotifyCollectionChanged, the DataGrid will be cleaned up by GC
+            if (DataConnection.DataSource != null && DataConnection.EventsWired)
+            {
+                DataConnection.UnWireEvents(DataConnection.DataSource);
+            }
+        }
 
         /// <summary>
         /// Arranges the content of the <see cref="T:Avalonia.Controls.DataGridRow" />.

@@ -76,19 +76,21 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="LineHeight"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> LineHeightProperty =
-            AvaloniaProperty.Register<TextBlock, double>(
+        public static readonly AttachedProperty<double> LineHeightProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
                 nameof(LineHeight),
                 double.NaN,
-                validate: IsValidLineHeight);
+                validate: IsValidLineHeight,
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="MaxLines"/> property.
         /// </summary>
-        public static readonly StyledProperty<int> MaxLinesProperty =
-            AvaloniaProperty.Register<TextBlock, int>(
+        public static readonly AttachedProperty<int> MaxLinesProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, int>(
                 nameof(MaxLines),
-                validate: IsValidMaxLines);
+                validate: IsValidMaxLines,
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
@@ -110,20 +112,24 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
-        public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
-            AvaloniaProperty.Register<TextBlock, TextAlignment>(nameof(TextAlignment));
+        public static readonly AttachedProperty<TextAlignment> TextAlignmentProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, TextAlignment>(nameof(TextAlignment), 
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="TextWrapping"/> property.
         /// </summary>
-        public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
-            AvaloniaProperty.Register<TextBlock, TextWrapping>(nameof(TextWrapping));
+        public static readonly AttachedProperty<TextWrapping> TextWrappingProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, TextWrapping>(nameof(TextWrapping), 
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="TextTrimming"/> property.
         /// </summary>
-        public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
-            AvaloniaProperty.Register<TextBlock, TextTrimming>(nameof(TextTrimming), defaultValue: TextTrimming.None);
+        public static readonly AttachedProperty<TextTrimming> TextTrimmingProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, TextTrimming>(nameof(TextTrimming), 
+                defaultValue: TextTrimming.None,
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="TextDecorations"/> property.
@@ -357,6 +363,152 @@ namespace Avalonia.Controls
 
             control.SetValue(BaselineOffsetProperty, value);
         }
+
+        /// <summary>
+        /// Reads the attached property from the given element
+        /// </summary>
+        /// <param name="control">The element to which to read the attached property.</param>
+        public static TextAlignment GetTextAlignment(Control control)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            return control.GetValue(TextAlignmentProperty);
+        }
+
+        /// <summary>
+        /// Writes the attached property BaselineOffset to the given element.
+        /// </summary>
+        /// <param name="control">The element to which to write the attached property.</param>
+        /// <param name="alignment">The property value to set</param>
+        public static void SetTextAlignment(Control control, TextAlignment alignment)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            control.SetValue(TextAlignmentProperty, alignment);
+        }
+
+        /// <summary>
+        /// Reads the attached property from the given element
+        /// </summary>
+        /// <param name="control">The element to which to read the attached property.</param>
+        public static TextWrapping GetTextWrapping(Control control)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            return control.GetValue(TextWrappingProperty);
+        }
+
+        /// <summary>
+        /// Writes the attached property BaselineOffset to the given element.
+        /// </summary>
+        /// <param name="control">The element to which to write the attached property.</param>
+        /// <param name="wrapping">The property value to set</param>
+        public static void SetTextWrapping(Control control, TextWrapping wrapping)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            control.SetValue(TextWrappingProperty, wrapping);
+        }
+
+        /// <summary>
+        /// Reads the attached property from the given element
+        /// </summary>
+        /// <param name="control">The element to which to read the attached property.</param>
+        public static TextTrimming GetTextTrimming(Control control)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            return control.GetValue(TextTrimmingProperty);
+        }
+
+        /// <summary>
+        /// Writes the attached property BaselineOffset to the given element.
+        /// </summary>
+        /// <param name="control">The element to which to write the attached property.</param>
+        /// <param name="trimming">The property value to set</param>
+        public static void SetTextTrimming(Control control, TextTrimming trimming)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            control.SetValue(TextTrimmingProperty, trimming);
+        }
+
+        /// <summary>
+        /// Reads the attached property from the given element
+        /// </summary>
+        /// <param name="control">The element to which to read the attached property.</param>
+        public static double GetLineHeight(Control control)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            return control.GetValue(LineHeightProperty);
+        }
+
+        /// <summary>
+        /// Writes the attached property BaselineOffset to the given element.
+        /// </summary>
+        /// <param name="control">The element to which to write the attached property.</param>
+        /// <param name="height">The property value to set</param>
+        public static void SetLineHeight(Control control, double height)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            control.SetValue(LineHeightProperty, height);
+        }
+
+        /// <summary>
+        /// Reads the attached property from the given element
+        /// </summary>
+        /// <param name="control">The element to which to read the attached property.</param>
+        public static int GetMaxLines(Control control)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            return control.GetValue(MaxLinesProperty);
+        }
+
+        /// <summary>
+        /// Writes the attached property BaselineOffset to the given element.
+        /// </summary>
+        /// <param name="control">The element to which to write the attached property.</param>
+        /// <param name="maxLines">The property value to set</param>
+        public static void SetMaxLines(Control control, int maxLines)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            control.SetValue(MaxLinesProperty, maxLines);
+        }
+
 
         /// <summary>
         /// Renders the <see cref="TextBlock"/> to a drawing context.
