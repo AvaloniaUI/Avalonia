@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Xunit;
