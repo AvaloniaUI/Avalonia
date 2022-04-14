@@ -68,10 +68,7 @@ namespace Avalonia.Controls
 
         public static DateTime DiscardDayTime(DateTime d)
         {
-            int year = d.Year;
-            int month = d.Month;
-            DateTime newD = new DateTime(year, month, 1, 0, 0, 0);
-            return newD;
+            return new DateTime(d.Year, d.Month, 1, 0, 0, 0);
         }
 
         [return: NotNullIfNotNull("d")]
