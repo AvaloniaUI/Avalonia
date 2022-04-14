@@ -60,11 +60,17 @@
     <TabItem Header="FormattedText">
       <pages:FormattedTextPage />
     </TabItem>
+    <TabItem Header="TextFormatter">
+      <pages:TextFormatterPage />
+    </TabItem>
     <TabItem Header="LineBounds">
       <pages:LineBoundsPage />
     </TabItem>
     <TabItem Header="Path Measurement">
       <pages:PathMeasurementPage />
+    </TabItem>
+    <TabItem Header="Brushes">
+      <pages:BrushesPage />
     </TabItem>
   </controls:HamburgerMenu>
 </Window>

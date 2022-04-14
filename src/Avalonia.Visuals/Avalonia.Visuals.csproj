@@ -12,8 +12,12 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Media\TextFormatting\TextRunCache.cs" />
+  </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\System.Memory.props" />
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <Import Project="..\..\build\DevAnalyzers.props" />
 </Project>

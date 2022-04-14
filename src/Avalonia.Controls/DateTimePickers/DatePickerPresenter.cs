@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,6 +13,23 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a date for a 
     /// <see cref="DatePicker"/>
     /// </summary>
+    [TemplatePart("AcceptButton",    typeof(Button))]
+    [TemplatePart("DayDownButton",   typeof(RepeatButton))]
+    [TemplatePart("DayHost",         typeof(Panel))]
+    [TemplatePart("DaySelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("DayUpButton",     typeof(RepeatButton))]
+    [TemplatePart("DismissButton",   typeof(Button))]
+    [TemplatePart("FirstSpacer",     typeof(Rectangle))]
+    [TemplatePart("MonthDownButton", typeof(RepeatButton))]
+    [TemplatePart("MonthHost",       typeof(Panel))]
+    [TemplatePart("MonthSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("MonthUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PickerContainer", typeof(Grid))]
+    [TemplatePart("SecondSpacer",    typeof(Rectangle))]
+    [TemplatePart("YearDownButton",  typeof(RepeatButton))]
+    [TemplatePart("YearHost",        typeof(Panel))]
+    [TemplatePart("YearSelector",    typeof(DateTimePickerPanel))]
+    [TemplatePart("YearUpButton",    typeof(RepeatButton))]
     public class DatePickerPresenter : PickerPresenterBase
     {
         /// <summary>
@@ -537,8 +555,11 @@ namespace Avalonia.Controls
 
         internal double GetOffsetForPopup()
         {
+            if (_monthSelector is null)
+                return 0;
+
             var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
-            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_monthSelector!.ItemHeight / 2);
+            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_monthSelector.ItemHeight / 2);
         }
     }
 }

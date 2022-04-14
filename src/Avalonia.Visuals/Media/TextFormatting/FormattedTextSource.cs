@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
@@ -30,10 +29,10 @@ namespace Avalonia.Media.TextFormatting
 
             if (runText.IsEmpty)
             {
-                return new TextEndOfParagraph();
+                return null;
             }
 
-            var textStyleRun = CreateTextStyleRun(runText, _defaultProperties, _textModifier);
+            var textStyleRun = CreateTextStyleRun(runText, textSourceIndex, _defaultProperties, _textModifier);
 
             return new TextCharacters(runText.Take(textStyleRun.Length), textStyleRun.Value);
         }
@@ -42,17 +41,18 @@ namespace Avalonia.Media.TextFormatting
         /// Creates a span of text run properties that has modifier applied.
         /// </summary>
         /// <param name="text">The text to create the properties for.</param>
+        /// <param name="firstTextSourceIndex">The first text source index.</param>
         /// <param name="defaultProperties">The default text properties.</param>
         /// <param name="textModifier">The text properties modifier.</param>
         /// <returns>
         /// The created text style run.
         /// </returns>
-        private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySlice<char> text,
+        private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySlice<char> text, int firstTextSourceIndex,
             TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
             if (textModifier == null || textModifier.Count == 0)
             {
-                return new ValueSpan<TextRunProperties>(text.Start, text.Length, defaultProperties);
+                return new ValueSpan<TextRunProperties>(firstTextSourceIndex, text.Length, defaultProperties);
             }
 
             var currentProperties = defaultProperties;
@@ -69,28 +69,28 @@ namespace Avalonia.Media.TextFormatting
 
                 var textRange = new TextRange(propertiesOverride.Start, propertiesOverride.Length);
 
-                if (textRange.Start + textRange.Length < text.Start)
+                if (textRange.Start + textRange.Length <= firstTextSourceIndex)
                 {
                     continue;
                 }
 
-                if (textRange.Start > text.End)
+                if (textRange.Start > firstTextSourceIndex + text.Length)
                 {
                     length = text.Length;
                     break;
                 }
 
-                if (textRange.Start > text.Start)
+                if (textRange.Start > firstTextSourceIndex)
                 {
                     if (propertiesOverride.Value != currentProperties)
                     {
-                        length = Math.Min(Math.Abs(textRange.Start - text.Start), text.Length);
+                        length = Math.Min(Math.Abs(textRange.Start - firstTextSourceIndex), text.Length);
 
                         break;
                     }
                 }
 
-                length += Math.Max(0, textRange.Start + textRange.Length - text.Start);
+                length = Math.Max(0, textRange.Start + textRange.Length - firstTextSourceIndex);
 
                 if (hasOverride)
                 {
@@ -116,12 +116,7 @@ namespace Avalonia.Media.TextFormatting
                 length = text.Length;
             }
 
-            if (length != text.Length)
-            {
-                text = text.Take(length);
-            }
-
-            return new ValueSpan<TextRunProperties>(text.Start, length, currentProperties);
+            return new ValueSpan<TextRunProperties>(firstTextSourceIndex, length, currentProperties);
         }
     }
 }

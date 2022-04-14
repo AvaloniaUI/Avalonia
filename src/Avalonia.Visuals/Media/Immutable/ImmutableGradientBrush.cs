@@ -12,14 +12,17 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="gradientStops">The gradient stops.</param>
         /// <param name="opacity">The opacity of the brush.</param>
+        /// <param name="transform">The transform of the brush.</param>
         /// <param name="spreadMethod">The spread method.</param>
         protected ImmutableGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity,
+            ImmutableTransform? transform,
             GradientSpreadMethod spreadMethod)
         {
             GradientStops = gradientStops;
             Opacity = opacity;
+            Transform = transform;
             SpreadMethod = spreadMethod;
         }
 
@@ -28,7 +31,7 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="source">The brush from which this brush's properties should be copied.</param>
         protected ImmutableGradientBrush(GradientBrush source)
-            : this(source.GradientStops.ToImmutable(), source.Opacity, source.SpreadMethod)
+            : this(source.GradientStops.ToImmutable(), source.Opacity, source.Transform?.ToImmutable(), source.SpreadMethod)
         {
 
         }
@@ -38,6 +41,11 @@ namespace Avalonia.Media.Immutable
 
         /// <inheritdoc/>
         public double Opacity { get; }
+
+        /// <summary>
+        /// Gets the transform of the brush.
+        /// </summary>
+        public ITransform? Transform { get; }
 
         /// <inheritdoc/>
         public GradientSpreadMethod SpreadMethod { get; }

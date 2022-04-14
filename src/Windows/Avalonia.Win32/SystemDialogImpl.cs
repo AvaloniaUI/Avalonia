@@ -89,7 +89,16 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    frm.Show(hWnd);
+                    var showResult = frm.Show(hWnd);
+
+                    if ((uint)showResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
+                    {
+                        return result;
+                    } 
+                    else if ((uint)showResult != (uint)UnmanagedMethods.HRESULT.S_OK)
+                    {
+                        throw new Win32Exception(showResult);
+                    }
 
                     if (openDialog?.AllowMultiple == true)
                     {
@@ -118,10 +127,6 @@ namespace Avalonia.Win32
                 }
                 catch (COMException ex)
                 {
-                    if ((uint)ex.HResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
-                    {
-                        return result;
-                    }
                     throw new Win32Exception(ex.HResult);
                 }
             })!;
@@ -161,7 +166,17 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    frm.Show(hWnd);
+                    var showResult = frm.Show(hWnd);
+
+                    if ((uint)showResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
+                    {
+                        return result;
+                    }
+                    else if ((uint)showResult != (uint)UnmanagedMethods.HRESULT.S_OK)
+                    {
+                        throw new Win32Exception(showResult);
+                    }
+
                     if (frm.Result is not null)
                     {
                         result = GetAbsoluteFilePath(frm.Result);
@@ -171,10 +186,6 @@ namespace Avalonia.Win32
                 }
                 catch (COMException ex)
                 {
-                    if ((uint)ex.HResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
-                    {
-                        return result;
-                    }
                     throw new Win32Exception(ex.HResult);
                 }
             });

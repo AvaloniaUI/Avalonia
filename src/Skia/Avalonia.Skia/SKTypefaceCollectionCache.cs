@@ -51,13 +51,13 @@ namespace Avalonia.Skia
                 if (typeface == null)
                     throw new InvalidOperationException("Typeface could not be loaded.");
 
-                if (typeface.FamilyName != fontFamily.Name)
+                if (!typeface.FamilyName.Contains(fontFamily.Name))
                 {
                     continue;
                 }
 
                 var key = new Typeface(fontFamily, typeface.FontSlant.ToAvalonia(),
-                    (FontWeight)typeface.FontWeight);
+                    (FontWeight)typeface.FontWeight, (FontStretch)typeface.FontWidth);
 
                 typeFaceCollection.AddTypeface(key, typeface);
             }

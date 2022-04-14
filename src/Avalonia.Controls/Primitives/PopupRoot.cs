@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -16,7 +17,6 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
-        private readonly TopLevel _parent;
         private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
@@ -44,9 +44,9 @@ namespace Avalonia.Controls.Primitives
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
         public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver? dependencyResolver)
-            : base(ValidatingPopupImpl.Wrap(impl), dependencyResolver)
+            : base(impl, dependencyResolver)
         {
-            _parent = parent;
+            ParentTopLevel = parent;
         }
 
         /// <summary>
@@ -72,6 +72,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IStyleHost? IStyleHost.StylingParent => Parent;
 
+        public TopLevel ParentTopLevel { get; }
+
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -90,8 +92,8 @@ namespace Avalonia.Controls.Primitives
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
-            _positionerParameters.ConfigurePosition(_parent, target,
-                placement, offset, anchor, gravity, constraintAdjustment, rect);
+            _positionerParameters.ConfigurePosition(ParentTopLevel, target,
+                placement, offset, anchor, gravity, constraintAdjustment, rect, FlowDirection);
 
             if (_positionerParameters.Size != default)
                 UpdatePosition();
@@ -167,6 +169,11 @@ namespace Avalonia.Controls.Primitives
             _positionerParameters.Size = size;
             UpdatePosition();
             return ClientSize;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new PopupRootAutomationPeer(this);
         }
     }
 }

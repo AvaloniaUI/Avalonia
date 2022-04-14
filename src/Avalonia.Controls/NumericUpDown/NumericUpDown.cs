@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -15,6 +16,8 @@ namespace Avalonia.Controls
     /// <summary>
     /// Control that represents a TextBox with button spinners that allow incrementing and decrementing numeric values.
     /// </summary>
+    [TemplatePart("PART_Spinner", typeof(Spinner))]
+    [TemplatePart("PART_TextBox", typeof(TextBox))]
     public class NumericUpDown : TemplatedControl
     {
         /// <summary>
@@ -1051,7 +1054,7 @@ namespace Avalonia.Controls
                         var currentValueTextSpecialCharacters = currentValueText.Where(c => !char.IsDigit(c));
                         var textSpecialCharacters = text.Where(c => !char.IsDigit(c));
                         // same non-digit characters on currentValueText and new text => remove them on new Text to parse it again.
-                        if (currentValueTextSpecialCharacters.Except(textSpecialCharacters).ToList().Count == 0)
+                        if (!currentValueTextSpecialCharacters.Except(textSpecialCharacters).Any())
                         {
                             foreach (var character in textSpecialCharacters)
                             {

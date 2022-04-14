@@ -5,14 +5,22 @@
 #include "menu.h"
 #include <OpenGL/gl.h>
 #include "rendertarget.h"
+#include "AvnString.h"
+#include "automation.h"
 
-class WindowBaseImpl : public virtual ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
+class WindowBaseImpl : public virtual ComObject,
+    public virtual IAvnWindowBase,
+    public INSWindowHolder
 {
 private:
     NSCursor* cursor;
 
 public:
     FORWARD_IUNKNOWN()
+    BEGIN_INTERFACE_MAP()
+    INTERFACE_MAP_ENTRY(IAvnWindowBase, IID_IAvnWindowBase)
+    END_INTERFACE_MAP()
+
     virtual ~WindowBaseImpl()
     {
         View = NULL;
@@ -115,7 +123,12 @@ public:
     {
         return Window;
     }
-    
+
+    virtual AvnView* GetNSView() override
+    {
+        return View;
+    }
+
     virtual HRESULT Show(bool activate, bool isDialog) override
     {
         START_COM_CALL;
@@ -444,7 +457,8 @@ public:
             }
             
             point = ConvertPointY(point);
-            auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
+            NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
+            auto viewPoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
             
             *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
             
@@ -464,7 +478,8 @@ public:
             }
             
             auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
-            auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
+            NSRect convertRect = [Window convertRectToScreen:NSMakeRect(cocoaViewPoint.x, cocoaViewPoint.y, 0.0, 0.0)];
+            auto cocoaScreenPoint = NSPointFromCGPoint(NSMakePoint(convertRect.origin.x, convertRect.origin.y));
             *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
             
             return S_OK;
@@ -560,7 +575,8 @@ public:
         if(!((nseventType >= NSEventTypeLeftMouseDown && nseventType <= NSEventTypeMouseExited)
            || (nseventType >= NSEventTypeOtherMouseDown && nseventType <= NSEventTypeOtherMouseDragged)))
         {
-            auto nspoint = [Window convertBaseToScreen: ToNSPoint(point)];
+            NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
+            auto nspoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);            
             CGPoint cgpoint = NSPointToCGPoint(nspoint);
             auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
             nsevent = [NSEvent eventWithCGEvent: cgevent];
@@ -722,7 +738,7 @@ private:
                 return E_INVALIDARG;
             
             // If one tries to show a child window with a minimized parent window, then the parent window will be
-            // restored but MacOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
             // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
             if (cparent->WindowState() == Minimized)
                 cparent->SetWindowState(Normal);
@@ -1396,6 +1412,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     AvnPixelSize _lastPixelSize;
     NSObject<IRenderTarget>* _renderTarget;
     AvnPlatformResizeReason _resizeReason;
+    AvnAccessibilityElement* _accessibilityChild;
 }
 
 - (void)onClosed
@@ -2050,6 +2067,37 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _resizeReason = reason;
 }
 
+- (AvnAccessibilityElement *) accessibilityChild
+{
+    if (_accessibilityChild == nil)
+    {
+        auto peer = _parent->BaseEvents->GetAutomationPeer();
+        
+        if (peer == nil)
+            return nil;
+
+        _accessibilityChild = [AvnAccessibilityElement acquire:peer];
+    }
+    
+    return _accessibilityChild;
+}
+
+- (NSArray *)accessibilityChildren
+{
+    auto child = [self accessibilityChild];
+    return NSAccessibilityUnignoredChildrenForOnlyChild(child);
+}
+
+- (id)accessibilityHitTest:(NSPoint)point
+{
+    return [[self accessibilityChild] accessibilityHitTest:point];
+}
+
+- (id)accessibilityFocusedUIElement
+{
+    return [[self accessibilityChild] accessibilityFocusedUIElement];
+}
+
 @end
 
 
@@ -2062,6 +2110,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _isExtended;
     AvnMenu* _menu;
     double _lastScaling;
+    IAvnAutomationPeer* _automationPeer;
+    NSMutableArray* _automationChildren;
 }
 
 -(void) setIsExtended:(bool)value;
@@ -2411,6 +2461,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     if(_parent != nullptr)
     {
+        auto cparent = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        
+        if(cparent != nullptr)
+        {
+            if(cparent->WindowState() == Maximized)
+            {
+                cparent->SetWindowState(Normal);
+            }
+        }
+        
         _parent->GetPosition(&position);
         _parent->BaseEvents->PositionChanged(position);
     }
@@ -2465,6 +2525,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         }
     }
 }
+
 @end
 
 class PopupImpl : public virtual WindowBaseImpl, public IAvnPopup
