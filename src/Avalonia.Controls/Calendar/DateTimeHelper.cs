@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Avalonia.Controls
@@ -73,6 +74,7 @@ namespace Avalonia.Controls
             return newD;
         }
 
+        [return: NotNullIfNotNull("d")]
         public static DateTime? DiscardTime(DateTime? d)
         {
             if (d == null)

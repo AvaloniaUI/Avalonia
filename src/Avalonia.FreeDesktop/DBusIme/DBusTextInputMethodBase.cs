@@ -198,9 +198,9 @@ namespace Avalonia.FreeDesktop.DBusIme
             UpdateActive();
         }
         
-        void ITextInputMethodImpl.SetActive(bool active)
+        void ITextInputMethodImpl.SetClient(ITextInputMethodClient client)
         {
-            _controlActive = active;
+            _controlActive = client is { };
             UpdateActive();
         }
 
@@ -272,7 +272,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             UpdateCursorRect();
         }
 
-        public abstract void SetOptions(TextInputOptionsQueryEventArgs options);
+        public abstract void SetOptions(TextInputOptions options);
 
         void ITextInputMethodImpl.Reset()
         {

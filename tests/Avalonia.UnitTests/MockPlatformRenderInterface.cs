@@ -3,25 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return Mock.Of<IFormattedTextImpl>();
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
             return Mock.Of<IGeometryImpl>();

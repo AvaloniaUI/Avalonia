@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Controls
+﻿namespace Avalonia.Controls
 {
     /// <summary>
     /// Specifies a contract for a scrolling control that supports scroll anchoring.

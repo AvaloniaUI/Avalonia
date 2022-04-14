@@ -23,7 +23,7 @@ namespace Avalonia.Platform
         /// Sets the title of the window.
         /// </summary>
         /// <param name="title">The title.</param>
-        void SetTitle(string title);
+        void SetTitle(string? title);
 
         /// <summary>
         /// Sets the parent of the window.
@@ -50,7 +50,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Sets the icon of this window.
         /// </summary>
-        void SetIcon(IWindowIconImpl icon);
+        void SetIcon(IWindowIconImpl? icon);
 
         /// <summary>
         /// Enables or disables the taskbar icon

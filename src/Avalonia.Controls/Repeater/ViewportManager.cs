@@ -24,8 +24,8 @@ namespace Avalonia.Controls
         private const double CacheBufferPerSideInflationPixelDelta = 40.0;
         private readonly ItemsRepeater _owner;
         private bool _ensuredScroller;
-        private IScrollAnchorProvider _scroller;
-        private IControl _makeAnchorElement;
+        private IScrollAnchorProvider? _scroller;
+        private IControl? _makeAnchorElement;
         private bool _isAnchorOutsideRealizedRange;
         private Rect _visibleWindow;
         private Rect _layoutExtent;
@@ -57,7 +57,7 @@ namespace Avalonia.Controls
             _owner = owner;
         }
 
-        public IControl SuggestedAnchor
+        public IControl? SuggestedAnchor
         {
             get
             {
@@ -97,7 +97,7 @@ namespace Avalonia.Controls
 
         public bool HasScroller => _scroller != null;
 
-        public IControl MadeAnchor => _makeAnchorElement;
+        public IControl? MadeAnchor => _makeAnchorElement;
 
         public double HorizontalCacheLength
         {
@@ -213,7 +213,7 @@ namespace Avalonia.Controls
 
             // We just finished a measure pass and have a new extent.
             // Let's make sure the scrollers will run its arrange so that they track the anchor.
-            ((IControl)_scroller)?.InvalidateArrange();
+            ((IControl?)_scroller)?.InvalidateArrange();
         }
 
         public Point GetOrigin() => _layoutExtent.TopLeft;
@@ -294,7 +294,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnLayoutUpdated(object sender, EventArgs args)
+        private void OnLayoutUpdated(object? sender, EventArgs args)
         {
             _owner.LayoutUpdated -= OnLayoutUpdated;
             _layoutUpdatedSubscribed = false;
@@ -324,7 +324,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public void OnMakeAnchor(IControl anchor, bool isAnchorOutsideRealizedRange)
+        public void OnMakeAnchor(IControl? anchor, bool isAnchorOutsideRealizedRange)
         {
             if (_makeAnchorElement != anchor)
             {
@@ -346,7 +346,7 @@ namespace Avalonia.Controls
 
                 // get the targetChild - i.e the immediate child of this repeater that is being brought into view.
                 // Note that the element being brought into view could be a descendant.
-                var targetChild = GetImmediateChildOfRepeater((IControl)args.TargetObject);
+                var targetChild = GetImmediateChildOfRepeater((IControl)args.TargetObject!);
 
                 if (targetChild is null)
                 {
@@ -382,14 +382,14 @@ namespace Avalonia.Controls
             _scroller?.RegisterAnchorCandidate(element);
         }
 
-        private IControl GetImmediateChildOfRepeater(IControl descendant)
+        private IControl? GetImmediateChildOfRepeater(IControl descendant)
         {
             var targetChild = descendant;
-            var parent = (IControl)descendant.VisualParent;
+            var parent = (IControl?)descendant.VisualParent;
             while (parent != null && parent != _owner)
             {
                 targetChild = parent;
-                parent = (IControl)parent.VisualParent;
+                parent = (IControl?)parent.VisualParent;
             }
 
             if (parent == null)
@@ -441,7 +441,7 @@ namespace Avalonia.Controls
             _ensuredScroller = false;
         }
 
-        private void OnEffectiveViewportChanged(object sender, EffectiveViewportChangedEventArgs e)
+        private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
             Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: EffectiveViewportChanged event callback", _owner.Layout.LayoutId);
             UpdateViewport(e.EffectiveViewport);

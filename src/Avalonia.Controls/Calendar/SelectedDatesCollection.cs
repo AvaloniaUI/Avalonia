@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Primitives
 
         private void InvokeCollectionChanged(System.Collections.IList removedItems, System.Collections.IList addedItems)
         {
-            _owner.OnSelectedDatesCollectionChanged(new SelectionChangedEventArgs(null, removedItems, addedItems));
+            _owner.OnSelectedDatesCollectionChanged(new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, removedItems, addedItems));
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            _owner.OnSelectedDatesCollectionChanged(new SelectionChangedEventArgs(null, _owner.RemovedItems, _addedItems));
+            _owner.OnSelectedDatesCollectionChanged(new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, _owner.RemovedItems, _addedItems));
             _owner.RemovedItems.Clear();
             _owner.UpdateMonths();
             _isRangeAdded = false;

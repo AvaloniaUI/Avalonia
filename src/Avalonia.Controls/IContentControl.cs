@@ -12,12 +12,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the content to display.
         /// </summary>
-        object Content { get; set; }
+        object? Content { get; set; }
 
         /// <summary>
         /// Gets or sets the data template used to display the content of the control.
         /// </summary>
-        IDataTemplate ContentTemplate { get; set; }
+        IDataTemplate? ContentTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the horizontal alignment of the content within the control.

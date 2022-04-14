@@ -8,7 +8,9 @@
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" >
         <PrivateAssets>all</PrivateAssets>
-      </ProjectReference>  
+        <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+        <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
+      </ProjectReference>
   </ItemGroup>
 
   <PropertyGroup>

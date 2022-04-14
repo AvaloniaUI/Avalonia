@@ -62,7 +62,7 @@ namespace Avalonia.ReactiveUI
         /// <see cref="AvaloniaProperty"/> for the <see cref="ViewContract"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> ViewContractProperty =
-            AvaloniaProperty.Register<ViewModelViewHost, string?>(nameof(ViewContract));
+            AvaloniaProperty.Register<RoutedViewHost, string?>(nameof(ViewContract));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RoutedViewHost"/> class.

@@ -1,5 +1,7 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -8,8 +10,10 @@ using Avalonia.Interactivity;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A control scrolls its content if the content is bigger than the space available.
+    /// A control which scrolls its content if the content is bigger than the space available.
     /// </summary>
+    [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
+    [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
@@ -199,8 +203,8 @@ namespace Avalonia.Controls
 
         internal const double DefaultSmallChange = 16;
 
-        private IDisposable _childSubscription;
-        private ILogicalScrollable _logicalScrollable;
+        private IDisposable? _childSubscription;
+        private ILogicalScrollable? _logicalScrollable;
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
@@ -210,7 +214,7 @@ namespace Avalonia.Controls
         private Size _largeChange;
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
-        private IDisposable _scrollBarExpandSubscription;
+        private IDisposable? _scrollBarExpandSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -232,7 +236,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when changes are detected to the scroll position, extent, or viewport size.
         /// </summary>
-        public event EventHandler<ScrollChangedEventArgs> ScrollChanged
+        public event EventHandler<ScrollChangedEventArgs>? ScrollChanged
         {
             add => AddHandler(ScrollChangedEvent, value);
             remove => RemoveHandler(ScrollChangedEvent, value);
@@ -340,7 +344,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public IControl CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
+        public IControl? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
 
         /// <summary>
         /// Gets the maximum horizontal scrollbar value.
@@ -656,7 +660,7 @@ namespace Avalonia.Controls
             return double.IsNaN(result) ? 0 : result;
         }
 
-        private void ChildChanged(IControl child)
+        private void ChildChanged(IControl? child)
         {
             if (_logicalScrollable is object)
             {
@@ -673,7 +677,7 @@ namespace Avalonia.Controls
             CalculatedPropertiesChanged();
         }
 
-        private void LogicalScrollInvalidated(object sender, EventArgs e)
+        private void LogicalScrollInvalidated(object? sender, EventArgs e)
         {
             CalculatedPropertiesChanged();
         }
@@ -762,9 +766,14 @@ namespace Avalonia.Controls
             _scrollBarExpandSubscription = SubscribeToScrollBars(e);
         }
 
-        private IDisposable SubscribeToScrollBars(TemplateAppliedEventArgs e)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            static IObservable<bool> GetExpandedObservable(ScrollBar scrollBar)
+            return new ScrollViewerAutomationPeer(this);
+        }
+
+        private IDisposable? SubscribeToScrollBars(TemplateAppliedEventArgs e)
+        {
+            static IObservable<bool>? GetExpandedObservable(ScrollBar? scrollBar)
             {
                 return scrollBar?.GetObservable(ScrollBar.IsExpandedProperty);
             }
@@ -775,7 +784,7 @@ namespace Avalonia.Controls
             var horizontalExpanded = GetExpandedObservable(horizontalScrollBar);
             var verticalExpanded = GetExpandedObservable(verticalScrollBar);
 
-            IObservable<bool> actualExpanded = null;
+            IObservable<bool>? actualExpanded = null;
 
             if (horizontalExpanded != null && verticalExpanded != null)
             {
@@ -801,7 +810,7 @@ namespace Avalonia.Controls
             IsExpanded = isExpanded;
         }
 
-        private void OnLayoutUpdated(object sender, EventArgs e) => RaiseScrollChanged();
+        private void OnLayoutUpdated(object? sender, EventArgs e) => RaiseScrollChanged();
 
         private void RaiseScrollChanged()
         {

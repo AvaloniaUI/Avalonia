@@ -135,7 +135,7 @@ namespace Avalonia.Web.Blazor
 
         public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
             var val = (cursor as CssCursor)?.Value ?? CssCursor.Default;
             if (_currentCursor != val)

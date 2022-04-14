@@ -9,7 +9,7 @@ using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
 using TextAlignment = Avalonia.Media.TextAlignment;
@@ -113,25 +113,6 @@ namespace Avalonia.Direct2D1
                 .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
                 .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
-        }
-
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new FormattedTextImpl(
-                text,
-                typeface,
-                fontSize,
-                textAlignment,
-                wrapping,
-                constraint,
-                spans);
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -241,7 +222,7 @@ namespace Avalonia.Direct2D1
         {
             var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
 
-            var glyphCount = glyphRun.GlyphIndices.Length;
+            var glyphCount = glyphRun.GlyphIndices.Count;
 
             var run = new SharpDX.DirectWrite.GlyphRun
             {
@@ -262,7 +243,7 @@ namespace Avalonia.Direct2D1
 
             var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
-            if (glyphRun.GlyphAdvances.IsEmpty)
+            if (glyphRun.GlyphAdvances == null)
             {
                 for (var i = 0; i < glyphCount; i++)
                 {
@@ -281,7 +262,7 @@ namespace Avalonia.Direct2D1
                 }
             }
 
-            if (glyphRun.GlyphOffsets.IsEmpty)
+            if (glyphRun.GlyphOffsets == null)
             {
                 return new GlyphRunImpl(run);
             }

@@ -6,7 +6,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    internal class AvaloniaNativeApplicationPlatform : CallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
+    internal class AvaloniaNativeApplicationPlatform : NativeCallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
     {
         public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
         

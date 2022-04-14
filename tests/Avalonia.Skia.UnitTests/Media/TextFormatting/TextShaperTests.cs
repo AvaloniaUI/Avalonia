@@ -15,21 +15,31 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var text = "\n\r\n".AsMemory();
-
-                var glyphRun = TextShaper.Current.ShapeText(
-                    text,
-                    Typeface.Default,
-                    12,
-                    CultureInfo.CurrentCulture);
+                var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12,0, CultureInfo.CurrentCulture);
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
                 
-                Assert.Equal(glyphRun.Characters.Length, text.Length);
-                Assert.Equal(glyphRun.GlyphClusters.Length, text.Length);
-                Assert.Equal(0, glyphRun.GlyphClusters[0]);
-                Assert.Equal(1, glyphRun.GlyphClusters[1]);
-                Assert.Equal(1, glyphRun.GlyphClusters[2]);
+                Assert.Equal(shapedBuffer.Text.Length, text.Length);
+                Assert.Equal(shapedBuffer.GlyphClusters.Count, text.Length);
+                Assert.Equal(0, shapedBuffer.GlyphClusters[0]);
+                Assert.Equal(1, shapedBuffer.GlyphClusters[1]);
+                Assert.Equal(1, shapedBuffer.GlyphClusters[2]);
             }
         }
-        
+
+        [Fact]
+        public void Should_Apply_IncrementalTabWidth()
+        {
+            using (Start())
+            {
+                var text = "\t".AsMemory();
+                var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12, 0, CultureInfo.CurrentCulture, 100);
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+
+                Assert.Equal(shapedBuffer.Length, text.Length);
+                Assert.Equal(100, shapedBuffer.GlyphAdvances[0]);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

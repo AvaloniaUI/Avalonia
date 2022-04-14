@@ -14,10 +14,11 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
+    [TemplatePart("PART_Items", typeof(Panel))]
     [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright")]
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
     {
-        private IList _items;
+        private IList? _items;
 
         /// <summary>
         /// Defines the <see cref="Position"/> property.
@@ -107,7 +108,7 @@ namespace Avalonia.Controls.Notifications
                 {
                     notification.OnClose?.Invoke();
 
-                    _items.Remove(sender);
+                    _items?.Remove(sender);
                 };
             }
 
@@ -121,9 +122,9 @@ namespace Avalonia.Controls.Notifications
                 (sender as NotificationCard)?.Close();
             };
 
-            _items.Add(notificationControl);
+            _items?.Add(notificationControl);
 
-            if (_items.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
+            if (_items?.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
             {
                 _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
             }

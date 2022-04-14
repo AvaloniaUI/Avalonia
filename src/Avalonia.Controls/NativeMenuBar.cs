@@ -27,9 +27,9 @@ namespace Avalonia.Controls
             menuItem.SetValue(EnableMenuItemClickForwardingProperty, enable);
         }
 
-        private static void OnMenuItemClick(object sender, RoutedEventArgs e)
+        private static void OnMenuItemClick(object? sender, RoutedEventArgs e)
         {
-            (((MenuItem)sender).DataContext as INativeMenuItemExporterEventsImplBridge)?.RaiseClicked();
+            (((MenuItem)sender!).DataContext as INativeMenuItemExporterEventsImplBridge)?.RaiseClicked();
         }
     }
 }

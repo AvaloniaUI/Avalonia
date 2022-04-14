@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<Panel>();
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Avalonia.Controls
             AffectsRender<Panel>(BackgroundProperty);
         }
 
-        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+        private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
@@ -51,13 +51,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or Sets Panel background brush.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
         }
 
-        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
@@ -110,34 +110,34 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             List<Control> controls;
 
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    controls = e.NewItems.OfType<Control>().ToList();
+                    controls = e.NewItems!.OfType<Control>().ToList();
                     LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems.OfType<Visual>());
+                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems!.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Move:
-                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
                     VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    controls = e.OldItems.OfType<Control>().ToList();
+                    controls = e.OldItems!.OfType<Control>().ToList();
                     LogicalChildren.RemoveAll(controls);
-                    VisualChildren.RemoveAll(e.OldItems.OfType<Visual>());
+                    VisualChildren.RemoveAll(e.OldItems!.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    for (var i = 0; i < e.OldItems.Count; ++i)
+                    for (var i = 0; i < e.OldItems!.Count; ++i)
                     {
                         var index = i + e.OldStartingIndex;
-                        var child = (IControl)e.NewItems[i];
+                        var child = (IControl)e.NewItems![i]!;
                         LogicalChildren[index] = child;
                         VisualChildren[index] = child;
                     }

@@ -58,7 +58,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(5, textLine.TextRuns.Count);
 
-                Assert.Equal(50, textLine.TextRange.Length);
+                Assert.Equal(50, textLine.Length);
             }
         }
 
@@ -89,7 +89,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                     new GenericTextParagraphProperties(defaultProperties));
 
-                Assert.Equal(text.Length, textLine.TextRange.Length);
+                Assert.Equal(text.Length, textLine.Length);
 
                 for (var i = 0; i < GenericTextRunPropertiesRuns.Length; i++)
                 {
@@ -163,8 +163,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
-
-                Assert.Equal(4, textLine.TextRuns[0].Text.Length);
+                
+                var firstRun = textLine.TextRuns[0];
+                
+                Assert.Equal(4, firstRun.Text.Length);
             }
         }
 
@@ -193,49 +195,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (text.Length - currentPosition > expectedCharactersPerLine)
                     {
-                        Assert.Equal(expectedCharactersPerLine, textLine.TextRange.Length);
+                        Assert.Equal(expectedCharactersPerLine, textLine.Length);
                     }
 
-                    currentPosition += textLine.TextRange.Length;
+                    currentPosition += textLine.Length;
 
                     numberOfLines++;
                 }
 
                 Assert.Equal(expectedNumberOfLines, numberOfLines);
-            }
-        }
-        
-        [Fact]
-        public void Should_Wrap_RightToLeft()
-        {
-            using (Start())
-            {
-                const string text =
-                    "قطاعات الصناعة على الشبكة العالمية انترنيت ويونيكود، حيث ستتم، على الصعيدين الدولي والمحلي على حد سواء";
-                
-                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
-
-                var textSource = new SingleBufferTextSource(text, defaultProperties);
-
-                var formatter = new TextFormatterImpl();
-
-                var currentTextSourceIndex = 0;
-
-                while (currentTextSourceIndex < text.Length)
-                {
-                    var textLine =
-                        formatter.FormatLine(textSource, currentTextSourceIndex, 50,
-                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap));
-
-                    var glyphClusters = textLine.TextRuns.Cast<ShapedTextCharacters>()
-                        .SelectMany(x => x.GlyphRun.GlyphClusters).ToArray();
-                
-                    Assert.True(glyphClusters[0] >= glyphClusters[^1]);
-                    
-                    Assert.Equal(currentTextSourceIndex, glyphClusters[^1]);
-
-                    currentTextSourceIndex += textLine.TextRange.Length;
-                }
             }
         }
 
@@ -281,16 +249,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         formatter.FormatLine(textSource, currentPosition, paragraphWidth,
                             new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap));
 
-                    Assert.True(expected.Contains(textLine.TextRange.End));
+                    var end = textLine.FirstTextSourceIndex + textLine.Length - 1;
 
-                    var index = expected.IndexOf(textLine.TextRange.End);
+                    Assert.True(expected.Contains(end));
+
+                    var index = expected.IndexOf(end);
 
                     for (var i = 0; i <= index; i++)
                     {
                         expected.RemoveAt(0);
                     }
 
-                    currentPosition += textLine.TextRange.Length;
+                    currentPosition += textLine.Length;
                 }
             }
         }
@@ -344,7 +314,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     Assert.True(textLine.Width <= 200);
 
-                    textSourceIndex += textLine.TextRange.Length;
+                    textSourceIndex += textLine.Length;
                 }
             }
         }
@@ -368,9 +338,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     var textLine =
                         formatter.FormatLine(textSource, textSourceIndex, 3, paragraphProperties);
 
-                    Assert.NotEqual(0, textLine.TextRange.Length);
+                    Assert.NotEqual(0, textLine.Length);
 
-                    textSourceIndex += textLine.TextRange.Length;
+                    textSourceIndex += textLine.Length;
                 }
 
                 Assert.Equal(text.Length, textSourceIndex);
@@ -415,16 +385,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         formatter.FormatLine(textSource, currentPosition, 300,
                             new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow));
 
-                    currentPosition += textLine.TextRange.Length;
+                    currentPosition += textLine.Length;
 
                     if (textLine.Width > 300 || currentHeight + textLine.Height > 240)
                     {
-                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(300, defaultProperties));
+                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] {TextTrimming.s_defaultEllipsisChar}), 300, defaultProperties));
                     }
                     
                     currentHeight += textLine.Height;
 
-                    var currentText = text.Substring(textLine.TextRange.Start, textLine.TextRange.Length);
+                    var currentText = text.Substring(textLine.FirstTextSourceIndex, textLine.Length);
                     
                     Assert.Equal(expectedLines[currentLineIndex], currentText);
 
@@ -435,26 +405,94 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [InlineData(TextAlignment.Left)]
-        [InlineData(TextAlignment.Center)]
-        [InlineData(TextAlignment.Right)]
+        [InlineData("0123456789", TextAlignment.Left, FlowDirection.LeftToRight)]
+        [InlineData("0123456789", TextAlignment.Center, FlowDirection.LeftToRight)]
+        [InlineData("0123456789", TextAlignment.Right, FlowDirection.LeftToRight)]
+
+        [InlineData("0123456789", TextAlignment.Left, FlowDirection.RightToLeft)]
+        [InlineData("0123456789", TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData("0123456789", TextAlignment.Right, FlowDirection.RightToLeft)]
+        
+        [InlineData("שנבגק", TextAlignment.Left, FlowDirection.RightToLeft)]
+        [InlineData("שנבגק", TextAlignment.Center, FlowDirection.RightToLeft)]
+        [InlineData("שנבגק", TextAlignment.Right, FlowDirection.RightToLeft)]
+        
         [Theory]
-        public void Should_Align_TextLine(TextAlignment textAlignment)
+        public void Should_Align_TextLine(string text, TextAlignment textAlignment, FlowDirection flowDirection)
         {
             using (Start())
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textAlignment);
+
+                var paragraphProperties = new GenericTextParagraphProperties(flowDirection, textAlignment, true, true,
+                    defaultProperties, TextWrapping.NoWrap, 0, 0);
                 
-                var textSource = new SingleBufferTextSource("0123456789", defaultProperties);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
                 
                 var textLine =
                     formatter.FormatLine(textSource, 0, 100, paragraphProperties);
 
-                var expectedOffset = TextLine.GetParagraphOffsetX(textLine.Width, 100, textAlignment);
-                
+                var expectedOffset = 0d;
+
+                if (flowDirection == FlowDirection.LeftToRight)
+                {
+                    switch (textAlignment)
+                    {
+                        case TextAlignment.Center:
+                            expectedOffset = 50 - textLine.Width / 2;
+                            break;
+                        case TextAlignment.Right:
+                            expectedOffset = 100 - textLine.WidthIncludingTrailingWhitespace;
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (textAlignment)
+                    {
+                        case TextAlignment.Left:
+                            expectedOffset = 100 - textLine.WidthIncludingTrailingWhitespace;
+                            break;
+                        case TextAlignment.Center:
+                            expectedOffset = 50 - textLine.Width / 2;
+                            break;
+                    }
+                }
+
                 Assert.Equal(expectedOffset, textLine.Start);
+            }
+        }
+        
+        [Fact]
+        public void Should_Wrap_Syriac()
+        {
+            using (Start())
+            {
+                const string text =
+                    "܀ ܁ ܂ ܃ ܄ ܅ ܆ ܇ ܈ ܉ ܊ ܋ ܌ ܍ ܏ ܐ ܑ ܒ ܓ ܔ ܕ ܖ ܗ ܘ ܙ ܚ ܛ ܜ ܝ ܞ ܟ ܠ ܡ ܢ ܣ ܤ ܥ ܦ ܧ ܨ ܩ ܪ ܫ ܬ ܰ ܱ ܲ ܳ ܴ ܵ ܶ ܷ ܸ ܹ ܺ ܻ ܼ ܽ ܾ ܿ ݀ ݁ ݂ ݃ ݄ ݅ ݆ ݇ ݈ ݉ ݊";
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties =
+                    new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textPosition = 87;
+                TextLineBreak lastBreak = null;
+
+                while (textPosition < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, textPosition, 50, paragraphProperties, lastBreak);
+
+                    Assert.Equal(textLine.Length, textLine.TextRuns.Sum(x => x.TextSourceLength));
+                    
+                    textPosition += textLine.Length;
+
+                    lastBreak = textLine.TextLineBreak;
+                }
             }
         }
 
@@ -472,10 +510,152 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, 33, paragraphProperties);
                 
-                Assert.NotNull(textLine.TextLineBreak?.RemainingCharacters);
+                Assert.NotNull(textLine.TextLineBreak?.RemainingRuns);
             }
         }
-        
+
+        [InlineData("פעילות הבינאום, W3C!")]
+        [InlineData("abcABC")]
+        [InlineData("זה כיף סתם לשמוע איך תנצח קרפד עץ טוב בגן")]
+        [InlineData("טטטט abcDEF טטטט")]
+        [Theory]
+        public void Should_Not_Alter_TextRuns_After_TextStyles_Were_Applied(string text)
+        {
+            using (Start())
+            {
+                var formatter = new TextFormatterImpl();
+                
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties =
+                    new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.NoWrap);
+                
+                var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
+
+                var expectedTextLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties),
+                    0, double.PositiveInfinity, paragraphProperties);
+
+                var expectedRuns = expectedTextLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+
+                var expectedGlyphs = expectedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
+
+                for (var i = 0; i < text.Length; i++)
+                {
+                    for (var j = 1; i + j < text.Length; j++)
+                    {
+                        var spans = new[]
+                        {
+                            new ValueSpan<TextRunProperties>(i, j,
+                                new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
+                        };
+                        
+                        var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, spans);
+                
+                        var textLine =
+                            formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+                        
+                        var shapedRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+
+                        var actualGlyphs = shapedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
+                        
+                        Assert.Equal(expectedGlyphs, actualGlyphs);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_FormatLine_With_DrawableRuns()
+        {
+            var defaultRunProperties = new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black);
+            var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+            var textSource = new CustomTextSource("Hello World ->");
+
+            using (Start())
+            {
+                var textLine =
+                    TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+                
+                Assert.Equal(3, textLine.TextRuns.Count);
+                
+                Assert.True(textLine.TextRuns[1] is RectangleRun);
+            }
+        }
+
+        [Fact]
+        public void Should_Format_With_EndOfLineRun()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+                var textSource = new EndOfLineTextSource();
+                
+                var textLine =
+                    TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+                
+                Assert.NotNull(textLine.TextLineBreak);
+                
+                Assert.Equal(TextRun.DefaultTextSourceLength, textLine.Length);
+            }
+        }
+
+        private class EndOfLineTextSource : ITextSource
+        {
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                return new TextEndOfLine();
+            }
+        }
+
+        private class CustomTextSource : ITextSource
+        {
+            private readonly string _text;
+
+            public CustomTextSource(string text)
+            {
+                _text = text;
+            }
+            
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                if (textSourceIndex >= _text.Length + TextRun.DefaultTextSourceLength + _text.Length)
+                {
+                    return null;
+                }
+
+                if (textSourceIndex == _text.Length)
+                {
+                    return new RectangleRun(new Rect(0, 0, 50, 50), Brushes.Green);
+                }
+
+                return new TextCharacters(_text.AsMemory(),
+                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+            }
+        }
+
+        private class RectangleRun : DrawableTextRun
+        {
+            private readonly Rect _rect;
+            private readonly IBrush _fill;
+
+            public RectangleRun(Rect rect, IBrush fill)
+            {
+                _rect = rect;
+                _fill = fill;
+            }
+
+            public override Size Size => _rect.Size;
+            public override double Baseline => 0;
+            public override void Draw(DrawingContext drawingContext, Point origin)
+            {
+                using (drawingContext.PushPreTransform(Matrix.CreateTranslation(new Vector(origin.X, 0))))
+                {
+                    drawingContext.FillRectangle(_fill, _rect);
+                }
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

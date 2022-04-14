@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -8,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Utilities;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -40,6 +42,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that lets the user select from a range of values by moving a Thumb control along a Track.
     /// </summary>
+    [TemplatePart("PART_DecreaseButton", typeof(Button))]
+    [TemplatePart("PART_IncreaseButton", typeof(Button))]
+    [TemplatePart("PART_Track",          typeof(Track))]
     [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {
@@ -81,14 +86,14 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private bool _isDragging = false;
-        private Track _track;
-        private Button _decreaseButton;
-        private Button _increaseButton;
-        private IDisposable _decreaseButtonPressDispose;
-        private IDisposable _decreaseButtonReleaseDispose;
-        private IDisposable _increaseButtonSubscription;
-        private IDisposable _increaseButtonReleaseDispose;
-        private IDisposable _pointerMovedDispose;
+        private Track? _track;
+        private Button? _decreaseButton;
+        private Button? _increaseButton;
+        private IDisposable? _decreaseButtonPressDispose;
+        private IDisposable? _decreaseButtonReleaseDispose;
+        private IDisposable? _increaseButtonSubscription;
+        private IDisposable? _increaseButtonReleaseDispose;
+        private IDisposable? _pointerMovedDispose;
 
         private const double Tolerance = 0.0001;
 
@@ -105,6 +110,7 @@ namespace Avalonia.Controls
                 RoutingStrategies.Bubble);
 
             ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Slider>(AutomationControlType.Slider);
         }
 
         /// <summary>
@@ -309,7 +315,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackMoved(object sender, PointerEventArgs e)
+        private void TrackMoved(object? sender, PointerEventArgs e)
         {
             if (_isDragging)
             {
@@ -317,12 +323,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackReleased(object sender, PointerReleasedEventArgs e)
+        private void TrackReleased(object? sender, PointerReleasedEventArgs e)
         {
             _isDragging = false;
         }
 
-        private void TrackPressed(object sender, PointerPressedEventArgs e)
+        private void TrackPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -333,6 +339,9 @@ namespace Avalonia.Controls
 
         private void MoveToPoint(PointerPoint posOnTrack)
         {
+            if (_track is null)
+                return;
+
             var orient = Orientation == Orientation.Horizontal;
             var thumbLength = (orient 
                 ? _track.Thumb.Bounds.Width 

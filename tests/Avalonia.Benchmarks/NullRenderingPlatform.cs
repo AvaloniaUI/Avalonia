@@ -4,18 +4,12 @@ using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Benchmarks
 {
     internal class NullRenderingPlatform : IPlatformRenderInterface
     {
-        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
-            TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new NullFormattedTextImpl();
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
             return new MockStreamGeometryImpl();

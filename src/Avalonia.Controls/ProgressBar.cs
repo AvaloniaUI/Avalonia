@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -9,6 +10,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control used to indicate the progress of an operation.
     /// </summary>
+    [TemplatePart("PART_Indicator", typeof(Border))]
     [PseudoClasses(":vertical", ":horizontal", ":indeterminate")]
     public class ProgressBar : RangeBase
     {
@@ -96,7 +98,7 @@ namespace Avalonia.Controls
 
         private double _indeterminateStartingOffset;
         private double _indeterminateEndingOffset;
-        private Border _indicator;
+        private Border? _indicator;
 
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));
@@ -137,6 +139,7 @@ namespace Avalonia.Controls
 
         static ProgressBar()
         {
+            ValueProperty.OverrideMetadata<ProgressBar>(new DirectPropertyMetadata<double>(defaultBindingMode: BindingMode.OneWay));
             ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));

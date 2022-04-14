@@ -3,6 +3,8 @@
         x:Class="Avalonia.Themes.Fluent.Controls.FluentControls">
   <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->  
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml"/>
+  <!-- PathIcon also needs to be defined early so it can be overriden by other styles (e.g. ComboBox) -->
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Button.xaml"/>
@@ -12,6 +14,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DropDownButton.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml"/>
@@ -21,7 +24,6 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ProgressBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RadioButton.xaml"/>
@@ -37,6 +39,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TransitioningContentControl.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Expander.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml"/>
@@ -56,6 +59,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml"/>  
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml"/>  
