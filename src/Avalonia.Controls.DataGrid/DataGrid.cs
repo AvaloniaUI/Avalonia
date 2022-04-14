@@ -669,8 +669,6 @@ namespace Avalonia.Controls
             ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
             ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnColumnWidthChanged(e));
-            RowBackgroundProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowBackgroundChanged(e));
-            AlternatingRowBackgroundProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowBackgroundChanged(e));
             FrozenColumnCountProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnFrozenColumnCountChanged(e));
             GridLinesVisibilityProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnGridLinesVisibilityChanged(e));
             HeadersVisibilityProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnHeadersVisibilityChanged(e));
@@ -1142,14 +1140,6 @@ namespace Avalonia.Controls
 
             InvalidateColumnHeadersArrange();
             InvalidateCellsArrange();
-        }
-
-        private void OnRowBackgroundChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            foreach (DataGridRow row in GetAllRows())
-            {
-                row.EnsureBackground();
-            }
         }
 
         private void OnColumnWidthChanged(AvaloniaPropertyChangedEventArgs e)
