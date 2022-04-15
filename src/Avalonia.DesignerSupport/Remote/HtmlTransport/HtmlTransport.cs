@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
+using Avalonia.Utilities;
 using InputProtocol = Avalonia.Remote.Protocol.Input;
 
 namespace Avalonia.DesignerSupport.Remote.HtmlTransport

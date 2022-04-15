@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Avalonia
+namespace Avalonia.Utilities
 {
     internal class EnumHelper
     {
