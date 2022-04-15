@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace Avalonia.Input
 {
     /// <summary>
@@ -30,7 +28,6 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets associated mouse device
         /// </summary>
-        [CanBeNull]
         IMouseDevice? MouseDevice { get; }
     }
 }

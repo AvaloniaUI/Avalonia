@@ -50,12 +50,6 @@ namespace Avalonia.Input
         KeyboardMask = Alt | Control | Shift | Meta
     }
 
-    internal static class KeyModifiersUtils
-    {
-        public static KeyModifiers ConvertToKey(RawInputModifiers modifiers) =>
-            (KeyModifiers)(modifiers & RawInputModifiers.KeyboardMask);
-    }
-
     public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
     {
         IInputElement? FocusedElement { get; }
