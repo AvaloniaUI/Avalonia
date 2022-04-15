@@ -199,7 +199,7 @@ namespace Avalonia.Controls
             if (change.Property == IsVisibleProperty)
             {
                 OwningGrid?.OnColumnVisibleStateChanging(this);
-                var isVisible = (change as AvaloniaPropertyChangedEventArgs<bool>).NewValue.Value;
+                var isVisible = change.NewValue.GetValueOrDefault<bool>();
 
                 if (_headerCell != null)
                 {
