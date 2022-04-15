@@ -573,7 +573,6 @@ namespace Avalonia.Markup.UnitTests.Parsers
                 result);
         }
 
-
         [Fact]
         public void Nesting_NthChild()
         {

@@ -120,6 +120,14 @@ namespace Avalonia.Styling
                 instance.Start();
             }
 
+            if (_children is not null)
+            {
+                foreach (var child in _children)
+                {
+                    child.TryAttach(target, host);
+                }
+            }
+
             return match.Result;
         }
 
