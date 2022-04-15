@@ -241,18 +241,25 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (workingString.Length > 6 &&
+            // Note: The length checks are also an important optimization.
+            // The shortest possible format is "hsl(0,0,0)", Length = 10.
+
+            if (workingString.Length >= 11 &&
                 workingString.StartsWith("hsla(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
             }
 
-            if (workingString.Length > 5 &&
+            if (workingString.Length >= 10 &&
                 workingString.StartsWith("hsl(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
+            }
+            else
+            {
+                return false;
             }
 
             string[] components = workingString.Split(',');

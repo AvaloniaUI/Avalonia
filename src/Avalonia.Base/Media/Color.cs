@@ -166,7 +166,10 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            // Note: The length checks are also an important optimization.
+            // The shortest possible CSS format is "rbg(0,0,0)", Length = 10.
+
+            if (s.Length >= 10 &&
                 (s[0] == 'r' || s[0] == 'R') &&
                 (s[1] == 'g' || s[1] == 'G') &&
                 (s[2] == 'b' || s[2] == 'B') &&
@@ -175,7 +178,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'l' || s[2] == 'L') &&
@@ -185,7 +188,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'v' || s[2] == 'V') &&
@@ -229,7 +232,10 @@ namespace Avalonia.Media
             // At this point all parsing uses strings
             var str = s.ToString();
 
-            if (s.Length > 5 &&
+            // Note: The length checks are also an important optimization.
+            // The shortest possible CSS format is "rbg(0,0,0)", Length = 10.
+
+            if (s.Length >= 10 &&
                 (s[0] == 'r' || s[0] == 'R') &&
                 (s[1] == 'g' || s[1] == 'G') &&
                 (s[2] == 'b' || s[2] == 'B') &&
@@ -238,7 +244,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'l' || s[2] == 'L') &&
@@ -248,7 +254,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'v' || s[2] == 'V') &&
@@ -342,14 +348,14 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (workingString.Length > 6 &&
+            if (workingString.Length >= 11 &&
                 workingString.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
             }
 
-            if (workingString.Length > 5 &&
+            if (workingString.Length >= 10 &&
                 workingString.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
