@@ -60,7 +60,6 @@ namespace Avalonia.Input
 
         public void SceneInvalidated(Rect dirtyRect)
         {
-            // Pointer is outside of the target area
             if (_lastPointer is (var pointer, var position))
             {
                 var clientPoint = _inputRoot.PointToClient(position);
