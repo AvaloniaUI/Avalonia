@@ -277,6 +277,9 @@ namespace Avalonia.Media
             return false;
         }
 
+        /// <summary>
+        /// Parses the given span of characters representing a hex color value into a new <see cref="Color"/>.
+        /// </summary>
         private static bool TryParseHexFormat(ReadOnlySpan<char> s, out Color color)
         {
             static bool TryParseCore(ReadOnlySpan<char> input, ref Color color)
@@ -331,6 +334,9 @@ namespace Avalonia.Media
             return TryParseCore(input, ref color);
         }
 
+        /// <summary>
+        /// Parses the given string representing a CSS color value into a new <see cref="Color"/>.
+        /// </summary>
         private static bool TryParseCssFormat(string s, out Color color)
         {
             color = default;
