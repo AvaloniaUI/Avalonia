@@ -256,6 +256,8 @@ namespace Avalonia.Media
         /// <returns>True if parsing was successful; otherwise, false.</returns>
         public static bool TryParse(string s, out HsvColor hsvColor)
         {
+            bool prefixMatched = false;
+
             hsvColor = default;
 
             if (s is null)
@@ -279,15 +281,19 @@ namespace Avalonia.Media
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
+                prefixMatched = true;
             }
 
-            if (workingString.Length >= 10 &&
+            if (prefixMatched == false &&
+                workingString.Length >= 10 &&
                 workingString.StartsWith("hsv(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
+                prefixMatched = true;
             }
-            else
+
+            if (prefixMatched == false)
             {
                 return false;
             }

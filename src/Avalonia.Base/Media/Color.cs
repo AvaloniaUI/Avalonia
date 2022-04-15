@@ -339,6 +339,8 @@ namespace Avalonia.Media
         /// </summary>
         private static bool TryParseCssFormat(string s, out Color color)
         {
+            bool prefixMatched = false;
+
             color = default;
 
             if (s is null)
@@ -359,13 +361,21 @@ namespace Avalonia.Media
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
+                prefixMatched = true;
             }
 
-            if (workingString.Length >= 10 &&
+            if (prefixMatched == false &&
+                workingString.Length >= 10 &&
                 workingString.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
+                prefixMatched = true;
+            }
+
+            if (prefixMatched == false)
+            {
+                return false;
             }
 
             string[] components = workingString.Split(',');
