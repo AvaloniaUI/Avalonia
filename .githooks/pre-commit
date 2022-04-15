@@ -1,31 +1,87 @@
 #!/bin/bash
 
 # Check dotnet-format is installed
-commandExist=$(dotnet-format --version)
-if [[ -z $commandExist ]]
+formatCommandExist=$(dotnet-format --version)
+xstylerCommandExist=$(xstyler --version)
+declare error=0
+
+if [[ -z $formatCommandExist ]]
 then
     echo "dotnet-format doesn't exist. Install with dotnet tool install -g dotnet-format"
+    error = 1
+fi
+if [[ -z $xstylerCommandExist ]]
+then
+    echo "XamlStyler doesn't exist. Install with dotnet tool install --global XamlStyler.Console"
+    error = 1
+fi
+
+if [ $error -ne  0 ]
+then
     exit 1
 else
     #Get staged c# files
-    declare files=$(git diff --name-only --cached "**/*.cs" )
+    declare csfiles=$(git diff --name-only --cached "**/*.cs" )
     #Get number of c# files
-    declare nfiles=$(echo "$files" | grep -vc ^$)
+    declare ncsfiles=$(echo "$csfiles" | grep -vc ^$)
+
+    #Get staged xaml and axaml files
+    declare xamlfiles=$(git diff --name-only --cached "**/*.xaml" "**/*.axaml")
+    
+    declare nxamlfiles=$(echo "$xamlfiles" | grep -vc ^$)
+    declare nfiles=ncsfiles+nxamlfiles
+
+
+
     #if any files
     if [[ $nfiles == 0 ]]
     then
        exit 0
     else
-        #Run format only files
-        echo "$files" | dotnet-format --include - --folder
-        if [[ $? == 0 ]]
+
+        #echo "cs files $ncsfiles"
+        #echo "xaml files $nxamlfiles"
+        echo "Run format cs files"
+        if [[ $ncsfiles -gt 0 ]]
+        then
+            echo "$csfiles" | dotnet-format --include - --folder
+            if [[ $? != 0 ]]
+            then
+            exit 1
+            fi
+        fi
+
+
+        echo "Run format xaml and axaml files"
+        #xstyler -f "$xamlfiles" 
+        ##echo "$xamlfiles" | $(xstyler -f $0)
+        for xamlfile in ${xamlfiles[@]}; do
+            $( echo xstyler --ignore -f $xamlfile  )
+            if [[ $? != 0 ]]
+            then
+            exit 1
+            fi
+        done
+
+        if [[  $ncsfiles -gt 0  ]]
         then
             #Update files changed
-            git add $(echo "$files")
-            exit 0
-        else
-            exit 1
+            git add -u $(echo "$csfiles")
+            if [[ $? != 0 ]]
+            then
+                exit 1
+            fi 
         fi
+        if [[  $nxamlfiles -gt 0  ]]
+        then
+            #Update files changed
+            git add -u $(echo "$xamlfiles")
+            if [[ $? != 0 ]]
+            then
+                exit 1
+            fi             
+        fi
+
     fi
 fi
 
