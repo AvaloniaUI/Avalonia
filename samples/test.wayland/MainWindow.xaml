@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        x:Class="BindingDemo.MainWindow"
+        xmlns:vm="clr-namespace:BindingDemo.ViewModels" 
+        xmlns:local="clr-namespace:BindingDemo"
+        Title="AvaloniaUI Bindings Test"
+        Width="800"
+        Height="600"
+        x:DataType="vm:MainWindowViewModel">
+  <Window.Styles>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="FontSize" Value="18"/>
+    </Style>
+  </Window.Styles>
+  <Window.Resources>
+    <vm:TestItem x:Key="SharedItem" StringValue="shared" />
+  </Window.Resources>
+  
+</Window>
