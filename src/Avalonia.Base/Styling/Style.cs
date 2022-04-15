@@ -169,6 +169,16 @@ namespace Avalonia.Styling
             }
         }
 
-        internal void SetParent(Style? parent) => Parent = parent;
+        internal void SetParent(Style? parent)
+        {
+            if (parent?.Selector is not null)
+            {
+                if (Selector is null)
+                    throw new InvalidOperationException("Nested styles must have a selector.");
+                // TODO: Validate that selector contains & in the right place.
+            }
+
+            Parent = parent;
+        }
     }
 }

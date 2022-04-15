@@ -96,11 +96,7 @@ namespace Avalonia.Styling
             combinator = null;
 
             var activators = new AndActivatorBuilder();
-            var foundNested = false;
-            var result = Match(control, start, parent, subscribe, ref activators, ref combinator, ref foundNested);
-
-            if (parent is not null && !foundNested)
-                throw new InvalidOperationException("Nesting selector '&' must appear in child selector.");
+            var result = Match(control, start, parent, subscribe, ref activators, ref combinator);
 
             return result == SelectorMatchResult.Sometimes ?
                 new SelectorMatch(activators.Get()) :
@@ -113,8 +109,7 @@ namespace Avalonia.Styling
             IStyle? parent,
             bool subscribe,
             ref AndActivatorBuilder activators,
-            ref Selector? combinator,
-            ref bool foundNested)
+            ref Selector? combinator)
         {
             var previous = selector.MovePrevious();
 
@@ -123,15 +118,13 @@ namespace Avalonia.Styling
             // opportunity to exit early.
             if (previous != null && !previous.IsCombinator)
             {
-                var previousMatch = Match(control, previous, parent, subscribe, ref activators, ref combinator, ref foundNested);
+                var previousMatch = Match(control, previous, parent, subscribe, ref activators, ref combinator);
 
                 if (previousMatch < SelectorMatchResult.Sometimes)
                 {
                     return previousMatch;
                 }
             }
-
-            foundNested |= selector is NestingSelector;
 
             // Match this selector.
             var match = selector.Evaluate(control, parent, subscribe);

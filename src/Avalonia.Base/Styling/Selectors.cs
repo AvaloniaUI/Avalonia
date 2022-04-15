@@ -111,10 +111,6 @@ namespace Avalonia.Styling
 
         public static Selector Nesting(this Selector? previous)
         {
-            if (previous is not null)
-                throw new InvalidOperationException(
-                    "Nesting selector '&' must appear at the start of the style selector.");
-
             return new NestingSelector();
         }
 
