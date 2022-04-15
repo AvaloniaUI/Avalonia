@@ -375,7 +375,7 @@ namespace Avalonia.Media
                     byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue) &&
                     TryInternalParse(components[3], out double alpha))
                 {
-                    color = new Color((byte)(alpha * 255), red, green, blue);
+                    color = new Color((byte)Math.Round(alpha * 255.0), red, green, blue);
                     return true;
                 }
             }
