@@ -155,7 +155,7 @@ namespace Avalonia.Input
             if (s_keySynonyms.TryGetValue(key.ToLower(), out Key rv))
                 return rv;
 
-            return EnumParserHelper.ParseEnum<Key>(key, true);
+            return EnumHelper.Parse<Key>(key, true);
         }
 
         private static KeyModifiers ParseModifier(ReadOnlySpan<char> modifier)
@@ -172,7 +172,7 @@ namespace Avalonia.Input
                 return KeyModifiers.Meta;
             }
 
-            return EnumParserHelper.ParseEnum<KeyModifiers>(modifier.ToString(), true);
+            return EnumHelper.Parse<KeyModifiers>(modifier.ToString(), true);
         }
 
         private Key ResolveNumPadOperationKey(Key key)
