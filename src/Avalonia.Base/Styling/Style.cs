@@ -4,8 +4,6 @@ using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 
-#nullable enable
-
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -14,6 +12,7 @@ namespace Avalonia.Styling
     public class Style : AvaloniaObject, IStyle, IResourceProvider
     {
         private IResourceHost? _owner;
+        private StyleChildren? _children;
         private IResourceDictionary? _resources;
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
@@ -34,6 +33,14 @@ namespace Avalonia.Styling
             Selector = selector(null);
         }
 
+        /// <summary>
+        /// Gets the children of the style.
+        /// </summary>
+        public IList<IStyle> Children => _children ??= new(this);
+
+        /// <summary>
+        /// Gets the <see cref="StyledElement"/> or Application that hosts the style.
+        /// </summary>
         public IResourceHost? Owner
         {
             get => _owner;
@@ -46,6 +53,11 @@ namespace Avalonia.Styling
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the parent style if this style is hosted in a <see cref="Style.Children"/> collection.
+        /// </summary>
+        public Style? Parent { get; private set; }
 
         /// <summary>
         /// Gets or sets a dictionary of style resources.
@@ -90,7 +102,7 @@ namespace Avalonia.Styling
         public IList<IAnimation> Animations => _animations ??= new List<IAnimation>();
 
         bool IResourceNode.HasResources => _resources?.Count > 0;
-        IReadOnlyList<IStyle> IStyle.Children => Array.Empty<IStyle>();
+        IReadOnlyList<IStyle> IStyle.Children => (IReadOnlyList<IStyle>?)_children ?? Array.Empty<IStyle>();
 
         public event EventHandler? OwnerChanged;
 
@@ -98,7 +110,7 @@ namespace Avalonia.Styling
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
 
-            var match = Selector is object ? Selector.Match(target) :
+            var match = Selector is object ? Selector.Match(target, Parent) :
                 target == host ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
 
             if (match.IsMatch && (_setters is object || _animations is object))
@@ -156,5 +168,7 @@ namespace Avalonia.Styling
                 _resources?.RemoveOwner(owner);
             }
         }
+
+        internal void SetParent(Style? parent) => Parent = parent;
     }
 }

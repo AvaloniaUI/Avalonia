@@ -65,14 +65,14 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             var activators = new OrActivatorBuilder();
             var neverThisInstance = false;
 
             foreach (var selector in _selectors)
             {
-                var match = selector.Match(control, subscribe);
+                var match = selector.Match(control, parent, subscribe);
 
                 switch (match.Result)
                 {
