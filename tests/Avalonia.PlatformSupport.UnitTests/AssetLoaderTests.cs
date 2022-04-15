@@ -16,7 +16,7 @@ public class AssetLoaderTests
 
     static AssetLoaderTests()
     {
-        var resolver = Mock.Of<AssemblyDescriptorResolver>();
+        var resolver = Mock.Of<IAssemblyDescriptorResolver>();
 
         var descriptor = CreateAssemblyDescriptor(AssemblyNameWithWhitespace);
         Mock.Get(resolver).Setup(x => x.GetAssembly(AssemblyNameWithWhitespace)).Returns(descriptor);
@@ -49,13 +49,13 @@ public class AssetLoaderTests
         Assert.Equal(AssemblyNameWithNonAscii, assemblyActual?.FullName);
     }
 
-    private static AssemblyDescriptor CreateAssemblyDescriptor(string assemblyName)
+    private static IAssemblyDescriptor CreateAssemblyDescriptor(string assemblyName)
     {
         var assembly = Mock.Of<MockAssembly>();
         Mock.Get(assembly).Setup(x => x.GetName()).Returns(new AssemblyName(assemblyName));
         Mock.Get(assembly).Setup(x => x.FullName).Returns(assemblyName);
 
-        var descriptor = Mock.Of<AssemblyDescriptor>();
+        var descriptor = Mock.Of<IAssemblyDescriptor>();
         Mock.Get(descriptor).Setup(x => x.Assembly).Returns(assembly);
         return descriptor;
     }
