@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Avalonia.Controls;
 
 namespace Avalonia.Styling
 {
@@ -16,7 +17,10 @@ namespace Avalonia.Styling
 
         protected override void RemoveItem(int index)
         {
-            (Items[index] as Style)?.SetParent(null);
+            var item = Items[index];
+            if (_owner.Owner is IResourceHost host)
+                (item as IResourceProvider)?.RemoveOwner(host);
+            (item as Style)?.SetParent(null);
             base.RemoveItem(index);
         }
 
@@ -24,6 +28,8 @@ namespace Avalonia.Styling
         {
             base.SetItem(index, item);
             (item as Style)?.SetParent(_owner);
+            if (_owner.Owner is IResourceHost host)
+                (item as IResourceProvider)?.AddOwner(host);
         }
     }
 }
