@@ -360,9 +360,9 @@ namespace Avalonia.Media
 
             if (components.Length == 3) // RGB
             {
-                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
-                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
-                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue))
+                if (InternalTryParseByte(components[0], out byte red) &&
+                    InternalTryParseByte(components[1], out byte green) &&
+                    InternalTryParseByte(components[2], out byte blue))
                 {
                     color = new Color(0xFF, red, green, blue);
                     return true;
@@ -370,18 +370,45 @@ namespace Avalonia.Media
             }
             else if (components.Length == 4) // RGBA
             {
-                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
-                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
-                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue) &&
-                    TryInternalParse(components[3], out double alpha))
+                if (InternalTryParseByte(components[0], out byte red) &&
+                    InternalTryParseByte(components[1], out byte green) &&
+                    InternalTryParseByte(components[2], out byte blue) &&
+                    InternalTryParseDouble(components[3], out double alpha))
                 {
                     color = new Color((byte)Math.Round(alpha * 255.0), red, green, blue);
                     return true;
                 }
             }
 
+            // Local function to specially parse a byte value with an optional percentage sign
+            bool InternalTryParseByte(string inString, out byte outByte)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+
+                if (percentIndex >= 0)
+                {
+                    var result = double.TryParse(
+                        inString.Substring(0, percentIndex),
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out double percentage);
+
+                    outByte = (byte)Math.Round((percentage / 100.0) * 255.0);
+                    return result;
+                }
+                else
+                {
+                    return byte.TryParse(
+                        inString,
+                        NumberStyles.Number,
+                        CultureInfo.InvariantCulture,
+                        out outByte);
+                }
+            }
+
             // Local function to specially parse a double value with an optional percentage sign
-            bool TryInternalParse(string inString, out double outDouble)
+            bool InternalTryParseDouble(string inString, out double outDouble)
             {
                 // The percent sign, if it exists, must be at the end of the number
                 int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
