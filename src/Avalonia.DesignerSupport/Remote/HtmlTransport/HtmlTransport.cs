@@ -320,23 +320,13 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             ? null
             : modifiersText
                 .Split(',')
-#if NETSTANDARD2_0
-                .Select(x => (InputProtocol.InputModifiers)Enum.Parse(
-                    typeof(InputProtocol.InputModifiers), x, true))
-#else
-                .Select(x => Enum.Parse<InputProtocol.InputModifiers>(x, true))
-#endif
+                .Select(x => EnumParserHelper.ParseEnum<InputProtocol.InputModifiers>(x, true))
                 .ToArray();
 
         private static InputProtocol.MouseButton ParseMouseButton(string buttonText) =>
             string.IsNullOrWhiteSpace(buttonText)
             ? InputProtocol.MouseButton.None
-#if NETSTANDARD2_0
-            : (InputProtocol.MouseButton)Enum.Parse(
-                typeof(InputProtocol.MouseButton), buttonText, true);
-#else
-            : Enum.Parse<InputProtocol.MouseButton>(buttonText, true);
-#endif
+            : EnumParserHelper.ParseEnum<InputProtocol.MouseButton>(buttonText, true);
 
         private static double ParseDouble(string text) =>
             double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture);

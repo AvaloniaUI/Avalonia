@@ -155,11 +155,7 @@ namespace Avalonia.Input
             if (s_keySynonyms.TryGetValue(key.ToLower(), out Key rv))
                 return rv;
 
-#if NETSTANDARD2_0
-            return (Key)Enum.Parse(typeof(Key), key, true);
-#else
-            return Enum.Parse<Key>(key, true);
-#endif
+            return EnumParserHelper.ParseEnum<Key>(key, true);
         }
 
         private static KeyModifiers ParseModifier(ReadOnlySpan<char> modifier)
@@ -176,11 +172,7 @@ namespace Avalonia.Input
                 return KeyModifiers.Meta;
             }
 
-#if NETSTANDARD2_0
-            return (KeyModifiers)Enum.Parse(typeof(KeyModifiers), modifier.ToString(), true);
-#else
-            return Enum.Parse<KeyModifiers>(modifier.ToString(), true);
-#endif
+            return EnumParserHelper.ParseEnum<KeyModifiers>(modifier.ToString(), true);
         }
 
         private Key ResolveNumPadOperationKey(Key key)

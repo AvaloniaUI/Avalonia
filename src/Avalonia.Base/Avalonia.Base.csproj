@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\*.trie" />
+    <Compile Include="..\Shared\EnumParserHelper.cs" />
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\Binding.props" />
