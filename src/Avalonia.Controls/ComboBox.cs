@@ -455,24 +455,7 @@ namespace Avalonia.Controls
         {
             if (ItemCount >= 1)
             {
-                if (SelectedIndex == -1)
-                {
-                    if (MoveSelection(NavigationDirection.First, WrapSelection) == false)
-                    {
-                        // MoveSelection works only with indexes starting from 0
-                        // so to make it search further than the first item we need to set SelectedIndex to 0.
-                        SelectedIndex = 0;
-                        var isSelectionMoved = MoveSelection(NavigationDirection.Next, WrapSelection);
-                        if (isSelectionMoved == false)
-                        {
-                            SelectedIndex = -1;
-                        }
-                    }
-                }
-                else
-                {
-                    MoveSelection(NavigationDirection.Next, WrapSelection);
-                }
+                MoveSelection(NavigationDirection.Next, WrapSelection);
             }
         }
 
