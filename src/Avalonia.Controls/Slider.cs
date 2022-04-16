@@ -42,6 +42,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that lets the user select from a range of values by moving a Thumb control along a Track.
     /// </summary>
+    [TemplatePart("PART_DecreaseButton", typeof(Button))]
+    [TemplatePart("PART_IncreaseButton", typeof(Button))]
+    [TemplatePart("PART_Track",          typeof(Track))]
     [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {

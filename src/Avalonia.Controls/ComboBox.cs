@@ -13,12 +13,14 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A drop-down list control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
     public class ComboBox : SelectingItemsControl
     {
         /// <summary>
@@ -180,6 +182,25 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             this.UpdateSelectionBoxItem(SelectedItem);
+        }
+
+        // Because the SelectedItem isn't connected to the visual tree
+        public override void InvalidateMirrorTransform()
+        {
+            base.InvalidateMirrorTransform();
+
+            if (SelectedItem is Control selectedControl)
+            {
+                selectedControl.InvalidateMirrorTransform();
+
+                foreach (var visual in selectedControl.GetVisualDescendants())
+                {
+                    if (visual is Control childControl)
+                    {
+                        childControl.InvalidateMirrorTransform();
+                    }
+                }
+            }
         }
 
         /// <inheritdoc/>

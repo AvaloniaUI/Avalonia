@@ -162,11 +162,16 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var root = Root as TopLevel
-                ?? vm.PointerOverRoot as TopLevel;
+            var root = vm.PointerOverRoot as TopLevel;
+
             if (root is null)
             {
                 return;
+            }
+
+            if (root is PopupRoot pr && pr.ParentTopLevel != null)
+            {
+                root = pr.ParentTopLevel;
             }
 
             switch (e.Modifiers)

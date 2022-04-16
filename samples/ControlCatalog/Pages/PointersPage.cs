@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -133,7 +134,7 @@ public class PointersPage : Decorator
     {
         public PointerIntermediatePointsTab()
         {
-            this[TextBlock.ForegroundProperty] = Brushes.Black;
+            this[TextElement.ForegroundProperty] = Brushes.Black;
             var slider = new Slider
             {
                 Margin = new Thickness(5),

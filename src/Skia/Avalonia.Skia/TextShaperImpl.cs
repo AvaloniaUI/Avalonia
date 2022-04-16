@@ -13,12 +13,16 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
-            CultureInfo culture, sbyte bidiLevel)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidLevel;
+            var culture = options.Culture;
+
             using (var buffer = new Buffer())
             {
-                buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
+                buffer.AddUtf16(text.Buffer.Span, text.BufferOffset, text.Length);
 
                 MergeBreakPair(buffer);
                 
@@ -60,6 +64,15 @@ namespace Avalonia.Skia
                     var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
+
+                    if(glyphIndex == 0 && text.Buffer.Span[glyphCluster] == '\t')
+                    {
+                        glyphIndex = typeface.GetGlyph(' ');
+
+                        glyphAdvance = options.IncrementalTabWidth > 0 ? 
+                            options.IncrementalTabWidth : 
+                            4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
+                    }
 
                     var targetInfo = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
 

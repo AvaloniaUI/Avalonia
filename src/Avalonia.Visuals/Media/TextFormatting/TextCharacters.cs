@@ -38,7 +38,7 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a list of <see cref="ShapeableTextCharacters"/>.
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
-        internal IList<ShapeableTextCharacters> GetShapeableCharacters(ReadOnlySlice<char> runText, sbyte biDiLevel, 
+        internal IReadOnlyList<ShapeableTextCharacters> GetShapeableCharacters(ReadOnlySlice<char> runText, sbyte biDiLevel, 
             ref TextRunProperties? previousProperties)
         {
             var shapeableCharacters = new List<ShapeableTextCharacters>(2);
@@ -72,11 +72,11 @@ namespace Avalonia.Media.TextFormatting
             var currentTypeface = defaultTypeface;
             var previousTypeface = previousProperties?.Typeface;
 
-            if (TryGetShapeableLength(text, currentTypeface, out var count, out var script))
+            if (TryGetShapeableLength(text, currentTypeface, null, out var count, out var script))
             {
                 if (script == Script.Common && previousTypeface is not null)
                 {
-                    if(TryGetShapeableLength(text, previousTypeface.Value, out var fallbackCount, out _))
+                    if(TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out var fallbackCount, out _))
                     {
                         return new ShapeableTextCharacters(text.Take(fallbackCount),
                             defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
@@ -89,7 +89,7 @@ namespace Avalonia.Media.TextFormatting
             
             if (previousTypeface is not null)
             {
-                if(TryGetShapeableLength(text, previousTypeface.Value, out count, out _))
+                if(TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out count, out _))
                 {
                     return new ShapeableTextCharacters(text.Take(count),
                         defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
@@ -118,7 +118,7 @@ namespace Avalonia.Media.TextFormatting
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
                     out currentTypeface);
 
-            if (matchFound && TryGetShapeableLength(text, currentTypeface, out count, out _))
+            if (matchFound && TryGetShapeableLength(text, currentTypeface, defaultTypeface, out count, out _))
             {
                 //Fallback found
                 return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
@@ -152,14 +152,19 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="typeface">The typeface that is used to find matching characters.</param>
+        /// <param name="defaultTypeface"></param>
         /// <param name="length">The shapeable length.</param>
         /// <param name="script"></param>
         /// <returns></returns>
-        protected static bool TryGetShapeableLength(ReadOnlySlice<char> text, Typeface typeface, out int length,
+        protected static bool TryGetShapeableLength(
+            ReadOnlySlice<char> text, 
+            Typeface typeface, 
+            Typeface? defaultTypeface,
+            out int length,
             out Script script)
         {
             length = 0;
-            script = Script.Unknown;
+            script = Script.Unknown;         
 
             if (text.Length == 0)
             {
@@ -167,6 +172,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var font = typeface.GlyphTypeface;
+            var defaultFont = defaultTypeface?.GlyphTypeface;
 
             var enumerator = new GraphemeEnumerator(text);
 
@@ -175,6 +181,11 @@ namespace Avalonia.Media.TextFormatting
                 var currentGrapheme = enumerator.Current;
 
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
+
+                if (currentScript != Script.Common && defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                {
+                    break;
+                }
 
                 //Stop at the first missing glyph
                 if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))

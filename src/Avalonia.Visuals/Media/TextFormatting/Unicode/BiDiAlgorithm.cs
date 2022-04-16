@@ -302,7 +302,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         /// <param name="data">The data to be evaluated</param>
         /// <returns>The resolved embedding level</returns>
-        public sbyte ResolveEmbeddingLevel(ReadOnlySlice<BidiClass> data)
+        public sbyte ResolveEmbeddingLevel(ArraySlice<BidiClass> data)
         {
             // P2
             for (var i = 0; i < data.Length; ++i)
