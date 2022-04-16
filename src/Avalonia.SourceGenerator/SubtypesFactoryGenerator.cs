@@ -11,7 +11,7 @@ namespace Avalonia.SourceGenerator
     [Generator(LanguageNames.CSharp)]
     public class SubtypesFactoryGenerator : IIncrementalGenerator
     {
-        private record struct MethodTarget(IMethodSymbol Method, ITypeSymbol BaseType, string Namespace);
+        private record struct MethodTarget(IMethodSymbol Method, string MethodDecl, ITypeSymbol BaseType, string Namespace);
         private static readonly string s_attributeName = typeof(SubtypesFactoryAttribute).FullName;
 
         private static bool IsSubtypeOf(ITypeSymbol type, ITypeSymbol baseType)
@@ -21,25 +21,11 @@ namespace Avalonia.SourceGenerator
 
         private static void GenerateSubTypes(SourceProductionContext context, MethodTarget methodTarget, ImmutableArray<ITypeSymbol> types)
         {
-            var (method, baseType, @namespace) = methodTarget;
+            var (method, methodDecl, baseType, @namespace) = methodTarget;
             var candidateTypes = types.Where(i => IsSubtypeOf(i, baseType)).Where(i => $"{i.ContainingNamespace}.".StartsWith($"{@namespace}.")).ToArray();
             var type = method.ContainingType;
             var isGeneric = type.TypeParameters.Length > 0;
             var isClass = type.TypeKind == TypeKind.Class;
-
-            if (method.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is not MethodDeclarationSyntax methodDecl)
-            {
-                return;
-            }
-
-            var parameters = new SeparatedSyntaxList<ParameterSyntax>().AddRange(methodDecl.ParameterList.Parameters.Select(i => i.WithAttributeLists(new SyntaxList<AttributeListSyntax>())));
-
-            var methodDeclText = methodDecl
-                .WithAttributeLists(new SyntaxList<AttributeListSyntax>())
-                .WithParameterList(methodDecl.ParameterList.WithParameters(parameters))
-                .WithBody(null)
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None))
-                .WithoutTrivia().ToString();
 
             var typeDecl = $"partial {(isClass ? "class" : "struct")} {type.Name}{(isGeneric ? $"<{string.Join(", ", type.TypeParameters)}>" : "")}";
             var source = $@"using System;
@@ -49,7 +35,7 @@ namespace {method.ContainingNamespace}
 {{
     {typeDecl}
     {{
-        {methodDeclText}
+        {methodDecl}
         {{
             var hasMatch = false;
             (hasMatch, {method.Parameters[1].Name}) = {method.Parameters[0].Name} switch
@@ -109,7 +95,15 @@ namespace {method.ContainingNamespace}
                         continue;
                     }
 
-                    return new MethodTarget(methodSymbol, baseType, nsValue);
+                    var parameters = new SeparatedSyntaxList<ParameterSyntax>().AddRange(method.ParameterList.Parameters.Select(i => i.WithAttributeLists(new SyntaxList<AttributeListSyntax>())));
+                    var methodDecl = method
+                        .WithAttributeLists(new SyntaxList<AttributeListSyntax>())
+                        .WithParameterList(method.ParameterList.WithParameters(parameters))
+                        .WithBody(null)
+                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None))
+                        .WithoutTrivia().ToString();
+
+                    return new MethodTarget(methodSymbol, methodDecl, baseType, nsValue);
                 }
             }
 
