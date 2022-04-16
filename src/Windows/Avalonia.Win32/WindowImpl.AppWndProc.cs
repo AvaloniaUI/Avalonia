@@ -714,8 +714,6 @@ namespace Avalonia.Win32
 
         private unsafe Lazy<IReadOnlyList<RawPointerPoint>> CreateLazyIntermediatePoints(POINTER_INFO info)
         {
-            // Limit history size with reasonable value.
-            // With sizeof(POINTER_TOUCH_INFO) * 100 we can get maximum 14400 bytes.
             var historyCount = Math.Min((int)info.historyCount, MaxPointerHistorySize);
             if (historyCount > 1)
             {
@@ -723,12 +721,15 @@ namespace Avalonia.Win32
                 {
                     s_intermediatePointsPooledList.Clear();
                     s_intermediatePointsPooledList.Capacity = historyCount;
+
+                    // Pointers in history are ordered from newest to oldest, so we need to reverse iteration.
+                    // Also we skip the newest pointer, because original event arguments already contains it.
+
                     if (info.pointerType == PointerInputType.PT_TOUCH)
                     {
                         if (GetPointerTouchInfoHistory(info.pointerId, ref historyCount, s_historyTouchInfos))
                         {
-                            //last info is the same as the current so skip it
-                            for (int i = 0; i < historyCount - 1; i++)
+                            for (int i = historyCount - 1; i >= 1; i--)
                             {
                                 var historyTouchInfo = s_historyTouchInfos[i];
                                 s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyTouchInfo));
@@ -739,8 +740,8 @@ namespace Avalonia.Win32
                     {
                         if (GetPointerPenInfoHistory(info.pointerId, ref historyCount, s_historyPenInfos))
                         {
-                            //last info is the same as the current so skip it
-                            for (int i = 0; i < historyCount - 1; i++)
+                            uint timestamp = 0;
+                            for (int i = historyCount - 1; i >= 1; i--)
                             {
                                 var historyPenInfo = s_historyPenInfos[i];
                                 s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyPenInfo));
@@ -752,8 +753,7 @@ namespace Avalonia.Win32
                         // Currently Windows does not return history info for mouse input, but we handle it just for case.
                         if (GetPointerInfoHistory(info.pointerId, ref historyCount, s_historyInfos))
                         {
-                            //last info is the same as the current so skip it
-                            for (int i = 0; i < historyCount - 1; i++)
+                            for (int i = historyCount - 1; i >= 1; i--)
                             {
                                 var historyInfo = s_historyInfos[i];
                                 s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyInfo));
