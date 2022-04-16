@@ -88,6 +88,11 @@ namespace Avalonia.Input.Raw
         }
 
         /// <summary>
+        /// Gets the raw pointer identifier.
+        /// </summary>
+        public long RawPointerId { get; set; }
+
+        /// <summary>
         /// Gets the pointer properties and position, in client DIPs.
         /// </summary>
         public RawPointerPoint Point
