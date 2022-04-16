@@ -37,14 +37,9 @@ namespace Avalonia.Animation.Easings
                 return new SplineEasing(KeySpline.Parse(e, CultureInfo.InvariantCulture));
             }
 
-            if (TryCreateEasingInstance(e, out var easing))
-            {
-                return easing;
-            }
-            else
-            {
-                throw new FormatException($"Easing \"{e}\" was not found in {Namespace} namespace.");
-            }
+            return TryCreateEasingInstance(e, out var easing)
+                ? easing
+                : throw new FormatException($"Easing \"{e}\" was not found in {Namespace} namespace.");
         }
     }
 }
