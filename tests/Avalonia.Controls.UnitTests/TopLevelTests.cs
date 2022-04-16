@@ -193,6 +193,9 @@ namespace Avalonia.Controls.UnitTests
         public void Impl_Input_Should_Pass_Input_To_InputManager()
         {
             var inputManagerMock = new Mock<IInputManager>();
+            inputManagerMock.DefaultValue = DefaultValue.Mock;
+            inputManagerMock.SetupAllProperties();
+
             var services = TestServices.StyledWindow.With(inputManager: inputManagerMock.Object);
 
             using (UnitTestApplication.Start(services))
@@ -246,24 +249,6 @@ namespace Avalonia.Controls.UnitTests
                 Application.Current.Resources.Add("foo", "bar");
 
                 Assert.True(raised);
-            }
-        }
-
-        [Fact]
-        public void Close_Should_Notify_MouseDevice()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = new Mock<ITopLevelImpl>();
-                var mouseDevice = new Mock<IMouseDevice>();
-                impl.SetupAllProperties();
-                impl.Setup(x => x.MouseDevice).Returns(mouseDevice.Object);
-
-                var target = new TestTopLevel(impl.Object);
-
-                impl.Object.Closed();
-
-                mouseDevice.Verify(x => x.TopLevelClosed(target));
             }
         }
 

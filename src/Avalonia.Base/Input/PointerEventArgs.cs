@@ -63,6 +63,8 @@ namespace Avalonia.Input
             }
 
             public Point GetPosition(IVisual relativeTo) => _ev.GetPosition(relativeTo);
+
+            public IPointer? TryGetPointer(RawPointerEventArgs ev) => _ev.Pointer;
         }
 
         public IPointer Pointer { get; }

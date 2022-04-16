@@ -6,7 +6,15 @@ using Avalonia.Utilities;
 
 namespace Avalonia.PlatformSupport.Internal;
 
-internal class AssemblyDescriptor
+internal interface IAssemblyDescriptor
+{
+    Assembly Assembly { get; }
+    Dictionary<string, IAssetDescriptor>? Resources { get; }
+    Dictionary<string, IAssetDescriptor>? AvaloniaResources { get; }
+    string? Name { get; }
+}
+
+internal class AssemblyDescriptor : IAssemblyDescriptor
 {
     public AssemblyDescriptor(Assembly assembly)
     {

@@ -20,7 +20,7 @@ namespace Avalonia.Input.Raw
             Location = location;
             Data = data;
             Effects = effects;
-            KeyModifiers = KeyModifiersUtils.ConvertToKey(modifiers);
+            KeyModifiers = modifiers.ToKeyModifiers();
 #pragma warning disable CS0618 // Type or member is obsolete
             Modifiers = (InputModifiers)modifiers;
 #pragma warning restore CS0618 // Type or member is obsolete
