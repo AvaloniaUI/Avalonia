@@ -114,7 +114,7 @@ namespace ControlCatalog.NetCore
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true
+                    EnableWmPointerEvents = true
                 })
                 .UseSkia()
                 .UseManagedSystemDialogs()
