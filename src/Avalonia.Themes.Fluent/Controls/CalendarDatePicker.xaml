@@ -18,7 +18,7 @@
   </Design.PreviewWith>
 
   <Styles.Resources>
-    <sys:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</sys:Double>
+    <x:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</x:Double>
     <x:Double x:Key="CalendarDatePickerMinHeight">32</x:Double>
   </Styles.Resources>
   
