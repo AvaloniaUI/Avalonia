@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <TextBox Text="Sample"
@@ -121,7 +123,7 @@
   </Style>
 
   <!-- PointerOver State-->
-  <Style Selector="TextBox:disabled">
+  <Style Selector="TextBox:pointerover">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPointerOver}" />
   </Style>
 
@@ -168,7 +170,7 @@
     <Setter Property="InnerRightContent">
       <Template>
         <ToggleButton Classes="passwordBoxRevealButton"
-                      IsChecked="{CompiledBinding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
+                      IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
       </Template>
     </Setter>
   </Style>

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -28,11 +29,14 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
-    /// A button control.
+    /// A standard button control.
     /// </summary>
-    [PseudoClasses(":pressed")]
-    public class Button : ContentControl, ICommandSource
+    [PseudoClasses(pcFlyoutOpen, pcPressed)]
+    public class Button : ContentControl, ICommandSource, IClickableControl
     {
+        protected const string pcPressed    = ":pressed";
+        protected const string pcFlyoutOpen = ":flyout-open";
+
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
         /// </summary>
@@ -85,12 +89,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Flyout"/> property
         /// </summary>
-        public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
-            AvaloniaProperty.Register<Button, FlyoutBase>(nameof(Flyout));
+        public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
+            AvaloniaProperty.Register<Button, FlyoutBase?>(nameof(Flyout));
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
         private KeyGesture? _hotkey;
+        private bool _isFlyoutOpen = false;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -106,7 +111,6 @@ namespace Avalonia.Controls
         /// </summary>
         public Button()
         {
-            UpdatePseudoClasses(IsPressed);
         }
 
         /// <summary>
@@ -186,7 +190,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the Flyout that should be shown with this button.
         /// </summary>
-        public FlyoutBase Flyout
+        public FlyoutBase? Flyout
         {
             get => GetValue(FlyoutProperty);
             set => SetValue(FlyoutProperty, value);
@@ -237,7 +241,7 @@ namespace Avalonia.Controls
             {
                 HotKey = _hotkey;
             }
-            
+
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
@@ -327,9 +331,28 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Opens the button's flyout.
+        /// </summary>
         protected virtual void OpenFlyout()
         {
             Flyout?.ShowAt(this);
+        }
+
+        /// <summary>
+        /// Invoked when the button's flyout is opened.
+        /// </summary>
+        protected virtual void OnFlyoutOpened()
+        {
+            // Available for derived types
+        }
+
+        /// <summary>
+        /// Invoked when the button's flyout is closed.
+        /// </summary>
+        protected virtual void OnFlyoutClosed()
+        {
+            // Available for derived types
         }
 
         /// <inheritdoc/>
@@ -379,6 +402,14 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
 
             IsPressed = false;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            UnregisterFlyoutEvents(Flyout);
+            RegisterFlyoutEvents(Flyout);
+            UpdatePseudoClasses();
         }
 
         /// <inheritdoc/>
@@ -441,19 +472,30 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsPressedProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
+                UpdatePseudoClasses();
             }
             else if (change.Property == FlyoutProperty)
             {
+                var oldFlyout = change.OldValue.GetValueOrDefault() as FlyoutBase;
+                var newFlyout = change.NewValue.GetValueOrDefault() as FlyoutBase;
+
                 // If flyout is changed while one is already open, make sure we 
                 // close the old one first
-                if (change.OldValue.GetValueOrDefault() is FlyoutBase oldFlyout &&
+                if (oldFlyout != null &&
                     oldFlyout.IsOpen)
                 {
                     oldFlyout.Hide();
                 }
+
+                // Must unregister events here while a reference to the old flyout still exists
+                UnregisterFlyoutEvents(oldFlyout);
+
+                RegisterFlyoutEvents(newFlyout);
+                UpdatePseudoClasses();
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new ButtonAutomationPeer(this);
 
         /// <inheritdoc/>
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
@@ -472,6 +514,8 @@ namespace Avalonia.Controls
             }
         }
 
+        internal void PerformClick() => OnClick();
+
         /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
         /// </summary>
@@ -486,6 +530,32 @@ namespace Avalonia.Controls
                 _commandCanExecute = canExecute;
                 UpdateIsEffectivelyEnabled();
             }
+        }
+
+        /// <summary>
+        /// Registers all flyout events.
+        /// </summary>
+        /// <param name="flyout">The flyout to connect events to.</param>
+        private void RegisterFlyoutEvents(FlyoutBase? flyout)
+        {
+            if (flyout != null)
+            {
+                flyout.Opened += Flyout_Opened;
+                flyout.Closed += Flyout_Closed;
+            }
+        }
+
+        /// <summary>
+        /// Explicitly unregisters all flyout events.
+        /// </summary>
+        /// <param name="flyout">The flyout to disconnect events from.</param>
+        private void UnregisterFlyoutEvents(FlyoutBase? flyout)
+        {
+            if (flyout != null)
+            {
+                flyout.Opened -= Flyout_Opened;
+                flyout.Closed -= Flyout_Closed;
+             }
         }
 
         /// <summary>
@@ -534,6 +604,7 @@ namespace Avalonia.Controls
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
                 OnClick();
+                e.Handled = true;
             }
         }
 
@@ -547,17 +618,60 @@ namespace Avalonia.Controls
             if (e.Key == Key.Escape && IsVisible && IsEnabled)
             {
                 OnClick();
+                e.Handled = true;
             }
         }
 
         /// <summary>
         /// Updates the visual state of the control by applying latest PseudoClasses.
         /// </summary>
-        private void UpdatePseudoClasses(bool isPressed)
+        private void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(":pressed", isPressed);
+            PseudoClasses.Set(pcFlyoutOpen, _isFlyoutOpen);
+            PseudoClasses.Set(pcPressed, IsPressed);
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
+
+        void IClickableControl.RaiseClick() => OnClick();
+        
+        /// <summary>
+        /// Event handler for when the button's flyout is opened.
+        /// </summary>
+        private void Flyout_Opened(object? sender, EventArgs e)
+        {
+            var flyout = sender as FlyoutBase;
+
+            // It is possible to share flyouts among multiple controls including Button.
+            // This can cause a problem here since all controls that share a flyout receive
+            // the same Opened/Closed events at the same time.
+            // For Button that means they all would be updating their pseudoclasses accordingly.
+            // In other words, all Buttons with a shared Flyout would have the backgrounds changed together.
+            // To fix this, only continue here if the Flyout target matches this Button instance.
+            if (object.ReferenceEquals(flyout?.Target, this))
+            {
+                _isFlyoutOpen = true;
+                UpdatePseudoClasses();
+
+                OnFlyoutOpened();
+            }
+        }
+
+        /// <summary>
+        /// Event handler for when the button's flyout is closed.
+        /// </summary>
+        private void Flyout_Closed(object? sender, EventArgs e)
+        {
+            var flyout = sender as FlyoutBase;
+
+            // See comments in Flyout_Opened
+            if (object.ReferenceEquals(flyout?.Target, this))
+            {
+                _isFlyoutOpen = false;
+                UpdatePseudoClasses();
+
+                OnFlyoutClosed();
+            }
+        }
     }
 }

@@ -2,11 +2,8 @@
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace ControlCatalog.Pages
 {
@@ -24,6 +21,7 @@ namespace ControlCatalog.Pages
                 $"Text was dragged {++textCount} times"), DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
 
             SetupDnd("Custom", d => d.Set(CustomFormat, "Test123"), DragDropEffects.Move);
+            SetupDnd("Files", d => d.Set(DataFormats.FileNames, new[] { Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName }), DragDropEffects.Copy);
         }
 
         void SetupDnd(string suffix, Action<DataObject> factory, DragDropEffects effects)

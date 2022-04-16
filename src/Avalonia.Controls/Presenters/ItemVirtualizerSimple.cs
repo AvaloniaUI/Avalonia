@@ -226,17 +226,12 @@ namespace Avalonia.Controls.Presenters
             InvalidateScroll();
         }
 
-        public override IControl? GetControlInDirection(NavigationDirection direction, IControl from)
+        public override IControl? GetControlInDirection(NavigationDirection direction, IControl? from)
         {
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
             var itemIndex = generator.IndexFromContainer(from);
             var vertical = VirtualizingPanel.ScrollDirection == Orientation.Vertical;
-
-            if (itemIndex == -1)
-            {
-                return null;
-            }
 
             var newItemIndex = -1;
 
@@ -250,6 +245,16 @@ namespace Avalonia.Controls.Presenters
                     newItemIndex = ItemCount - 1;
                     break;
 
+                default:
+                    if (itemIndex == -1)
+                    {
+                        return null;
+                    }
+                    break;
+            }
+
+            switch (direction)
+            {
                 case NavigationDirection.Up:
                     if (vertical)
                     {

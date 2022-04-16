@@ -12,6 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An item in a <see cref="TreeView"/>.
     /// </summary>
+    [TemplatePart("PART_Header", typeof(IControl))]
     [PseudoClasses(":pressed", ":selected")]
     public class TreeViewItem : HeaderedItemsControl, ISelectable
     {
@@ -89,7 +90,7 @@ namespace Avalonia.Controls
         /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
         /// </summary>
         public new ITreeItemContainerGenerator ItemContainerGenerator =>
-            (ITreeItemContainerGenerator)base.ItemContainerGenerator!;
+            (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator() => CreateTreeItemContainerGenerator<TreeViewItem>();

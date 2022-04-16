@@ -11,7 +11,7 @@
       </StackPanel>
     </Border>
 
-    <TextBlock Text="headered ToggleSwitch" Classes="header"/>
+    <TextBlock Text="Headered ToggleSwitch" Classes="header"/>
 
     <Border Classes="Thin">
       <StackPanel>

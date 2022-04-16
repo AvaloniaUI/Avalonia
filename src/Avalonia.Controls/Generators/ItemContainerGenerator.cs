@@ -82,7 +82,7 @@ namespace Avalonia.Controls.Generators
             {
                 var toMove = _containers.Where(x => x.Key >= index)
                     .OrderByDescending(x => x.Key)
-                    .ToList();
+                    .ToArray();
 
                 foreach (var i in toMove)
                 {
@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Generators
                 }
 
                 var toMove = _containers.Where(x => x.Key >= startingIndex)
-                                        .OrderBy(x => x.Key).ToList();
+                                        .OrderBy(x => x.Key).ToArray();
 
                 foreach (var i in toMove)
                 {
@@ -122,9 +122,9 @@ namespace Avalonia.Controls.Generators
 
                 Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
 
-                if (toMove.Count > 0)
+                if (toMove.Length > 0)
                 {
-                    var containers = toMove.Select(x => x.Value).ToList();
+                    var containers = toMove.Select(x => x.Value).ToArray();
                     Recycled?.Invoke(this, new ItemContainerEventArgs(containers[0].Index, containers));
                 }
             }
@@ -138,10 +138,10 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public virtual IEnumerable<ItemContainerInfo> Clear()
         {
-            var result = Containers.ToList();
+            var result = Containers.ToArray();
             _containers.Clear();
 
-            if (result.Count > 0)
+            if (result.Length > 0)
             {
                 Dematerialized?.Invoke(this, new ItemContainerEventArgs(0, result));
             }
@@ -158,7 +158,7 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public int IndexFromContainer(IControl container)
+        public int IndexFromContainer(IControl? container)
         {
             foreach (var i in _containers)
             {

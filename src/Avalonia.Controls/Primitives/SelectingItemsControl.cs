@@ -114,6 +114,12 @@ namespace Avalonia.Controls.Primitives
                 "SelectionChanged",
                 RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="WrapSelection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WrapSelectionProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+
         private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;
         private DispatcherTimer? _textSearchTimer;
@@ -286,11 +292,11 @@ namespace Avalonia.Controls.Primitives
                             "collection is different to the Items on the control.");
                     }
 
-                    var oldSelection = _selection?.SelectedItems.ToList();
+                    var oldSelection = _selection?.SelectedItems.ToArray();
                     DeinitializeSelectionModel(_selection);
                     _selection = value;
 
-                    if (oldSelection?.Count > 0)
+                    if (oldSelection?.Length > 0)
                     {
                         RaiseEvent(new SelectionChangedEventArgs(
                             SelectionChangedEvent,
@@ -319,6 +325,16 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(IsTextSearchEnabledProperty); }
             set { SetValue(IsTextSearchEnabledProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value which indicates whether to wrap around when the first
+        /// or last item is reached.
+        /// </summary>
+        public bool WrapSelection
+        {
+            get { return GetValue(WrapSelectionProperty); }
+            set { SetValue(WrapSelectionProperty, value); }
         }
 
         /// <summary>
@@ -515,11 +531,23 @@ namespace Avalonia.Controls.Primitives
 
                 _textSearchTerm += e.Text;
 
-                bool match(ItemContainerInfo info) =>
-                    info.ContainerControl is IContentControl control &&
-                    control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                bool Match(ItemContainerInfo info)
+                {
+                    if (info.ContainerControl.IsSet(TextSearch.TextProperty))
+                    {
+                        var searchText = info.ContainerControl.GetValue(TextSearch.TextProperty);
 
-                var info = ItemContainerGenerator?.Containers.FirstOrDefault(match);
+                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return info.ContainerControl is IContentControl control &&
+                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                }
+                
+                var info = ItemContainerGenerator?.Containers.FirstOrDefault(Match);
 
                 if (info != null)
                 {
@@ -579,6 +607,10 @@ namespace Avalonia.Controls.Primitives
             {
                 var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
                 _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
+            }
+            else if (change.Property == WrapSelectionProperty)
+            {
+                WrapFocus = WrapSelection;
             }
         }
 
@@ -813,8 +845,8 @@ namespace Avalonia.Controls.Primitives
             {
                 var ev = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    e.DeselectedItems.ToList(),
-                    e.SelectedItems.ToList());
+                    e.DeselectedItems.ToArray(),
+                    e.SelectedItems.ToArray());
                 RaiseEvent(ev);
             }
         }
@@ -908,7 +940,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     MarkContainerSelected(
                         container,
-                        Selection.IsSelected(ItemContainerGenerator!.IndexFromContainer(container)));
+                        Selection.IsSelected(ItemContainerGenerator.IndexFromContainer(container)));
                 }
             }
         }
@@ -956,7 +988,7 @@ namespace Avalonia.Controls.Primitives
                 RaiseEvent(new SelectionChangedEventArgs(
                     SelectionChangedEvent,
                     Array.Empty<object>(),
-                    Selection.SelectedItems.ToList()));
+                    Selection.SelectedItems.ToArray()));
             }
         }
 

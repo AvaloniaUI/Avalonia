@@ -35,13 +35,13 @@
   </Style>
 
   <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="TextBlock.FontWeight" Value="Normal" />
-    <Setter Property="TextBlock.FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
   </Style>
 
   <!--  Disabled State  -->
   <Style Selector="ListBoxItem:disabled /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlDisabledBaseMediumLowBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlDisabledBaseMediumLowBrush}" />
   </Style>
 
   <!--  PointerOver State  -->
@@ -49,7 +49,7 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
   </Style>
   <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
   </Style>
 
   <!--  Pressed State  -->
@@ -57,7 +57,7 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
   </Style>
   <Style Selector="ListBoxItem:pressed /template/ ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
   </Style>
 
   <!--  Selected State  -->
@@ -65,7 +65,7 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
   </Style>
   <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
   </Style>
 
   <!--  Selected Unfocused State  -->
@@ -73,7 +73,7 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
   </Style>
   <Style Selector="ListBoxItem:selected:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
   </Style>
 
   <!--  Selected PointerOver State  -->
@@ -81,7 +81,7 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentMediumBrush}" />
   </Style>
   <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
   </Style>
 
   <!--  Selected Pressed State  -->
@@ -89,6 +89,6 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
   </Style>
   <Style Selector="ListBoxItem:selected:pressed /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
   </Style>
 </Styles>

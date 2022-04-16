@@ -10,7 +10,7 @@ using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -35,6 +35,9 @@ namespace Avalonia.Skia
             var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
             if (gl != null) 
                 _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
+
+            //TODO: SKFont crashes when disposed in finalizer so we keep it alive
+            GC.SuppressFinalize(s_font);
         }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);

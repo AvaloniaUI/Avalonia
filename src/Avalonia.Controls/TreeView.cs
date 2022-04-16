@@ -79,7 +79,7 @@ namespace Avalonia.Controls
         /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
         /// </summary>
         public new ITreeItemContainerGenerator ItemContainerGenerator =>
-            (ITreeItemContainerGenerator)base.ItemContainerGenerator!;
+            (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically scroll to newly selected items.
@@ -849,7 +849,7 @@ namespace Avalonia.Controls
         /// <param name="desired">The desired items.</param>
         private static void SynchronizeItems(IList items, IEnumerable<object> desired)
         {
-            var list = items.Cast<object>().ToList();
+            var list = items.Cast<object>();
             var toRemove = list.Except(desired).ToList();
             var toAdd = desired.Except(list).ToList();
 

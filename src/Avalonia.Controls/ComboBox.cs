@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
@@ -10,16 +11,16 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A drop-down list control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
     public class ComboBox : SelectingItemsControl
     {
         /// <summary>
@@ -91,7 +92,7 @@ namespace Avalonia.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
-            SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x,e) => x.SelectedItemChanged(e));
+            SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.SelectedItemChanged(e));
             KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
         }
@@ -183,6 +184,25 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(SelectedItem);
         }
 
+        // Because the SelectedItem isn't connected to the visual tree
+        public override void InvalidateMirrorTransform()
+        {
+            base.InvalidateMirrorTransform();
+
+            if (SelectedItem is Control selectedControl)
+            {
+                selectedControl.InvalidateMirrorTransform();
+
+                foreach (var visual in selectedControl.GetVisualDescendants())
+                {
+                    if (visual is Control childControl)
+                    {
+                        childControl.InvalidateMirrorTransform();
+                    }
+                }
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -221,8 +241,9 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
+            // This part of code is needed just to acquire initial focus, subsequent focus navigation will be done by ItemsControl.
             else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
-                      (e.Key == Key.Up || e.Key == Key.Down))
+                      (e.Key == Key.Up || e.Key == Key.Down) && IsFocused == true)
             {
                 var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
@@ -296,6 +317,11 @@ namespace Avalonia.Controls
             _popup.Closed += PopupClosed;
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ComboBoxAutomationPeer(this);
+        }
+
         internal void ItemFocused(ComboBoxItem dropDownItem)
         {
             if (IsDropDownOpen && dropDownItem.IsFocused && dropDownItem.IsArrangeValid)
@@ -360,12 +386,12 @@ namespace Avalonia.Controls
             var selectedIndex = SelectedIndex;
             if (IsDropDownOpen && selectedIndex != -1)
             {
-                var container = ItemContainerGenerator!.ContainerFromIndex(selectedIndex);
+                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
 
                 if (container == null && SelectedIndex != -1)
                 {
                     ScrollIntoView(Selection.SelectedIndex);
-                    container = ItemContainerGenerator!.ContainerFromIndex(selectedIndex);
+                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 
                 if (container != null && CanFocus(container))
@@ -415,7 +441,7 @@ namespace Avalonia.Controls
 
         private void SelectFocusedItem()
         {
-            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator!.Containers)
+            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
             {
                 if (dropdownItem.ContainerControl.IsFocused)
                 {
@@ -427,22 +453,18 @@ namespace Avalonia.Controls
 
         private void SelectNext()
         {
-            int next = SelectedIndex + 1;
-
-            if (next >= ItemCount)
-                next = 0;
-
-            SelectedIndex = next;
+            if (ItemCount >= 1)
+            {
+                MoveSelection(NavigationDirection.Next, WrapSelection);
+            }
         }
 
         private void SelectPrev()
         {
-            int prev = SelectedIndex - 1;
-
-            if (prev < 0)
-                prev = ItemCount - 1;
-
-            SelectedIndex = prev;
+            if (ItemCount >= 1)
+            {
+                MoveSelection(NavigationDirection.Previous, WrapSelection);
+            }
         }
     }
 }
