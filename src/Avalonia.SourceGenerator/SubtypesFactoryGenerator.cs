@@ -11,7 +11,7 @@ namespace Avalonia.SourceGenerator
     [Generator(LanguageNames.CSharp)]
     public class SubtypesFactoryGenerator : IIncrementalGenerator
     {
-        private record MethodTarget(IMethodSymbol Method, ITypeSymbol BaseType, string Namespace);
+        private record struct MethodTarget(IMethodSymbol Method, ITypeSymbol BaseType, string Namespace);
         private static readonly string s_attributeName = typeof(SubtypesFactoryAttribute).FullName;
 
         private static bool IsSubtypeOf(ITypeSymbol type, ITypeSymbol baseType)
@@ -146,7 +146,7 @@ namespace {method.ContainingNamespace}
                 .SelectMany((method, token) =>
                 {
                     token.ThrowIfCancellationRequested();
-                    return method is null ? Array.Empty<MethodTarget>() : new MethodTarget[] { method };
+                    return method is null ? Array.Empty<MethodTarget>() : new MethodTarget[] { method.Value };
                 });
 
             var generateContext = methodsProvider.Combine(typesProvider.Collect());
