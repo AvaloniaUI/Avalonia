@@ -29,8 +29,7 @@ namespace Avalonia.Skia
         [ThreadStatic] private static string[] t_languageTagBuffer;
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
+            FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
         {
             SKFontStyle skFontStyle;
 
@@ -109,15 +108,20 @@ namespace Avalonia.Skia
             if (typeface.FontFamily.Key == null)
             {
                 var defaultName = SKTypeface.Default.FamilyName;
-                var fontStyle = new SKFontStyle((SKFontStyleWeight)typeface.Weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
+
+                var fontStyle = new SKFontStyle((SKFontStyleWeight)typeface.Weight, SKFontStyleWidth.Normal,
+                    (SKFontStyleSlant)typeface.Style);
 
                 foreach (var familyName in typeface.FontFamily.FamilyNames)
                 {
+                    if(familyName == FontFamily.DefaultFontFamilyName)
+                    {
+                        continue;
+                    }
+
                     skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
-                    if (skTypeface is null
-                        || (!skTypeface.FamilyName.Equals(familyName, StringComparison.Ordinal)
-                            && defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal)))
+                    if (skTypeface is null || defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal))
                     {
                         continue;
                     }
@@ -125,7 +129,10 @@ namespace Avalonia.Skia
                     break;
                 }
 
-                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle);
+                // MatchTypeface can return "null" if matched typeface wasn't found for the style
+                // Fallback to the default typeface and styles instead.
+                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
+                    ?? SKTypeface.Default;
             }
             else
             {

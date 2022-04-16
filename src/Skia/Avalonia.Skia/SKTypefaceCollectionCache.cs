@@ -51,7 +51,7 @@ namespace Avalonia.Skia
                 if (typeface == null)
                     throw new InvalidOperationException("Typeface could not be loaded.");
 
-                if (typeface.FamilyName != fontFamily.Name)
+                if (!typeface.FamilyName.Contains(fontFamily.Name))
                 {
                     continue;
                 }
