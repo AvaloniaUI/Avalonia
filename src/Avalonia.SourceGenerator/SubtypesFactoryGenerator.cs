@@ -141,7 +141,7 @@ namespace {method.ContainingNamespace}
                 static (syntaxNode, token) =>
                 {
                     token.ThrowIfCancellationRequested();
-                    return syntaxNode is ClassDeclarationSyntax or StructDeclarationSyntax or MethodDeclarationSyntax { AttributeLists.Count: > 0 };
+                    return syntaxNode is MethodDeclarationSyntax { AttributeLists.Count: > 0 };
                 }, PopulateMethodTargets)
                 .SelectMany((method, token) =>
                 {
