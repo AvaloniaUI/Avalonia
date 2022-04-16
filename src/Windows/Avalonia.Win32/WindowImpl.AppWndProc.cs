@@ -382,14 +382,52 @@ namespace Avalonia.Win32
 
                         break;
                     }
-                case WindowsMessage.WM_POINTERDEVICECHANGE:
+                case WindowsMessage.WM_NCPOINTERDOWN:
+                case WindowsMessage.WM_NCPOINTERUP:
+                case WindowsMessage.WM_POINTERDOWN:
+                case WindowsMessage.WM_POINTERUP:
+                case WindowsMessage.WM_POINTERUPDATE:
                     {
                         if (!_wmPointerEnabled)
                         {
                             break;
                         }
-                        //notifies about changes in the settings of a monitor that has a digitizer attached to it.
-                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdevicechange
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        var eventType = GetEventType(message, info);
+
+                        var args = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
+                        args.IntermediatePoints = CreateLazyIntermediatePoints(info);
+                        e = args;
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
+                case WindowsMessage.WM_POINTERLEAVE:
+                case WindowsMessage.WM_POINTERCAPTURECHANGED:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+                        e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERWHEEL:
+                case WindowsMessage.WM_POINTERHWHEEL:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+
+                        var val = (ToInt32(wParam) >> 16) / wheelDelta;
+                        var delta = message == WindowsMessage.WM_POINTERWHEEL ? new Vector(0, val) : new Vector(val, 0);
+                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point.Position, delta, modifiers)
+                        {
+                            RawPointerId = info.pointerId
+                        };
                         break;
                     }
                 case WindowsMessage.WM_POINTERDEVICEINRANGE:
@@ -398,226 +436,44 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
-                        _mouseDevice.Capture(null);
-                        //notifies about proximity of pointer device to the digitizer.
-                        //contains pointer id and proximity.
-                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdeviceinrange
+
+                        // Do not generate events, but release mouse capture on any other device input.
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        if (device != _mouseDevice)
+                        {
+                            _mouseDevice.Capture(null);
+                            return IntPtr.Zero;
+                        }
                         break;
                     }
-                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
+                case WindowsMessage.WM_POINTERACTIVATE:
                     {
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-                        _penDevice.Capture(null);
+                        //occurs when a pointer activates an inactive window.
+                        //we should handle this and return PA_ACTIVATE or PA_NOACTIVATE
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointeractivate
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERDEVICECHANGE:
+                    {
+                        //notifies about changes in the settings of a monitor that has a digitizer attached to it.
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdevicechange
                         break;
                     }
                 case WindowsMessage.WM_NCPOINTERUPDATE:
                     {
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
                         //NC stands for non-client area - window header and window border
                         //As I found above in an old message handling - we dont need to handle NC pointer move/updates.
                         //All we need is pointer down and up. So this is skipped for now.
                         break;
                     }
-                case WindowsMessage.WM_NCPOINTERDOWN:
-                case WindowsMessage.WM_NCPOINTERUP:
-                case WindowsMessage.WM_POINTERDOWN:
-                case WindowsMessage.WM_POINTERUP:
-                case WindowsMessage.WM_POINTERUPDATE:
-                    {
-                        GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-
-                        var historyCount = (int)info.historyCount;
-                        Lazy<IReadOnlyList<RawPointerPoint>> intermediatePoints = null;
-                        if (info.historyCount > 1)
-                        {
-                            intermediatePoints = new Lazy<IReadOnlyList<RawPointerPoint>>(() =>
-                            {
-                                var list = new List<RawPointerPoint>(historyCount - 1);
-                                if (info.pointerType == PointerInputType.PT_TOUCH)
-                                {
-                                    var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                                    var historyTouchInfos = ArrayPool<POINTER_TOUCH_INFO>.Shared.Rent(historyCount);
-                                    try
-                                    {
-                                        if (GetPointerTouchInfoHistory(pointerId, ref historyCount, historyTouchInfos))
-                                        {
-                                            //last info is the same as the current so skip it
-                                            for (int i = 0; i < historyCount - 1; i++)
-                                            {
-                                                var historyTouchInfo = historyTouchInfos[i];
-                                                var historyInfo = historyTouchInfo.pointerInfo;
-                                                var historyPoint = PointToClient(new PixelPoint(
-                                                    historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
-                                                list.Add(new RawPointerPoint
-                                                {
-                                                    Position = historyPoint,
-                                                });
-                                            }
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        ArrayPool<POINTER_TOUCH_INFO>.Shared.Return(historyTouchInfos);
-                                    }
-                                }
-                                else if (info.pointerType == PointerInputType.PT_PEN)
-                                {
-                                    var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                                    var historyPenInfos = ArrayPool<POINTER_PEN_INFO>.Shared.Rent(historyCount);
-                                    try
-                                    {
-                                        if (GetPointerPenInfoHistory(pointerId, ref historyCount, historyPenInfos))
-                                        {
-                                            //last info is the same as the current so skip it
-                                            for (int i = 0; i < historyCount - 1; i++)
-                                            {
-                                                var historyPenInfo = historyPenInfos[i];
-                                                var historyInfo = historyPenInfo.pointerInfo;
-                                                var historyPoint = PointToClient(new PixelPoint(
-                                                    historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
-                                                list.Add(new RawPointerPoint
-                                                {
-                                                    Position = historyPoint,
-                                                    Pressure = historyPenInfo.pressure,
-                                                    Twist = historyPenInfo.rotation,
-                                                    XTilt = historyPenInfo.tiltX,
-                                                    YTilt = historyPenInfo.tiltX
-                                                });
-                                            }
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        ArrayPool<POINTER_PEN_INFO>.Shared.Return(historyPenInfos);
-                                    }
-                                }
-                                else
-                                {
-                                    var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
-                                    var historyInfos = ArrayPool<POINTER_INFO>.Shared.Rent(historyCount);
-                                    try
-                                    {
-                                        if (GetPointerInfoHistory(pointerId, ref historyCount, historyInfos))
-                                        {
-                                            //last info is the same as the current so skip it
-                                            for (int i = 0; i < historyCount - 1; i++)
-                                            {
-                                                var historyInfo = historyInfos[i];
-                                                var historyPoint = PointToClient(new PixelPoint(
-                                                    historyInfo.ptPixelLocationX, historyInfo.ptPixelLocationY));
-                                                list.Add(new RawPointerPoint
-                                                {
-                                                    Position = historyPoint
-                                                });
-                                            }
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        ArrayPool<POINTER_INFO>.Shared.Return(historyInfos);
-                                    }
-                                }
-                                return list;
-                            });
-                        }
-
-                        var eventType = GetEventType(message, info);
-                        var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
-                        var modifiers = GetInputModifiers(info.dwKeyStates);
-
-                        if (device is TouchDevice)
-                        {
-                            e = new RawTouchEventArgs(_touchDevice, timestamp, _owner, eventType, point, modifiers, info.pointerId)
-                            {
-                                IntermediatePoints = intermediatePoints
-                            };
-                        }
-                        else
-                        {
-                            e = new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers)
-                            {
-                                IntermediatePoints = intermediatePoints
-                            };
-                        }
-                        break;
-                    }
                 case WindowsMessage.WM_POINTERENTER:
                     {
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
                         //this is not handled by WM_MOUSEENTER so I think there is no need to handle this too.
                         //but we can detect a new pointer by this message and calling IS_POINTER_NEW_WPARAM
 
                         //note: by using a pen there can be a pointer leave or enter inside a window coords
                         //when you are just lift up the pen above the display
                         break;
-                    }
-                case WindowsMessage.WM_POINTERLEAVE:
-                    {
-                        GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-                        if (device is TouchDevice)
-                        {
-                            break;
-                        }
-                        var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
-                        var modifiers = GetInputModifiers(info.dwKeyStates);
-
-                        e = new RawPointerEventArgs(
-                            device, timestamp, _owner, RawPointerEventType.LeaveWindow, point, modifiers);
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERWHEEL:
-                case WindowsMessage.WM_POINTERHWHEEL:
-                    {
-                        GetDevicePointerInfo(wParam, out var device, out var info, ref timestamp);
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-
-                        var point = PointToClient(new PixelPoint(info.ptPixelLocationX, info.ptPixelLocationY));
-                        var modifiers = GetInputModifiers(info.dwKeyStates);
-                        var val = (ToInt32(wParam) >> 16) / wheelDelta;
-                        var delta = message == WindowsMessage.WM_POINTERWHEEL ? new Vector(0, val) : new Vector(val, 0);
-                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point, delta, modifiers);
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERACTIVATE:
-                    {
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-                        //occurs when a pointer activates an inactive window.
-                        //we should handle this and return PA_ACTIVATE or PA_NOACTIVATE
-                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointeractivate
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERCAPTURECHANGED:
-                    {
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-                        _mouseDevice.Capture(null);
-                        _penDevice.Capture(null);
-                        return IntPtr.Zero;
                     }
                 case WindowsMessage.DM_POINTERHITTEST:
                     {
@@ -839,6 +695,11 @@ namespace Avalonia.Win32
                     _ignoreWmChar = e.Handled;
                 }
 
+                if (s_intermediatePointsPooledList.Count > 0)
+                {
+                    s_intermediatePointsPooledList.Dispose();
+                }
+
                 if (e.Handled)
                 {
                     return IntPtr.Zero;
@@ -851,40 +712,110 @@ namespace Avalonia.Win32
             }
         }
 
-        private unsafe void ApplyPenInfo(POINTER_PEN_INFO penInfo)
+        private unsafe Lazy<IReadOnlyList<RawPointerPoint>> CreateLazyIntermediatePoints(POINTER_INFO info)
         {
-            _penDevice.IsBarrel = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_BARREL);
-            _penDevice.IsEraser = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_ERASER);
-            _penDevice.IsInverted = penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_INVERTED);
+            // Limit history size with reasonable value.
+            // With sizeof(POINTER_TOUCH_INFO) * 100 we can get maximum 14400 bytes.
+            var historyCount = Math.Min((int)info.historyCount, MaxPointerHistorySize);
+            if (historyCount > 1)
+            {
+                return new Lazy<IReadOnlyList<RawPointerPoint>>(() =>
+                {
+                    s_intermediatePointsPooledList.Clear();
+                    s_intermediatePointsPooledList.Capacity = historyCount;
+                    if (info.pointerType == PointerInputType.PT_TOUCH)
+                    {
+                        if (GetPointerTouchInfoHistory(info.pointerId, ref historyCount, s_historyTouchInfos))
+                        {
+                            //last info is the same as the current so skip it
+                            for (int i = 0; i < historyCount - 1; i++)
+                            {
+                                var historyTouchInfo = s_historyTouchInfos[i];
+                                s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyTouchInfo));
+                            }
+                        }
+                    }
+                    else if (info.pointerType == PointerInputType.PT_PEN)
+                    {
+                        if (GetPointerPenInfoHistory(info.pointerId, ref historyCount, s_historyPenInfos))
+                        {
+                            //last info is the same as the current so skip it
+                            for (int i = 0; i < historyCount - 1; i++)
+                            {
+                                var historyPenInfo = s_historyPenInfos[i];
+                                s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyPenInfo));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Currently Windows does not return history info for mouse input, but we handle it just for case.
+                        if (GetPointerInfoHistory(info.pointerId, ref historyCount, s_historyInfos))
+                        {
+                            //last info is the same as the current so skip it
+                            for (int i = 0; i < historyCount - 1; i++)
+                            {
+                                var historyInfo = s_historyInfos[i];
+                                s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyInfo));
+                            }
+                        }
+                    }
+                    return s_intermediatePointsPooledList;
+                });
+            }
 
-            _penDevice.XTilt = penInfo.tiltX;
-            _penDevice.YTilt = penInfo.tiltY;
-            _penDevice.Pressure = penInfo.pressure;
-            _penDevice.Twist = penInfo.rotation;
+            return null;
         }
 
-        private void GetDevicePointerInfo(IntPtr wParam, out IInputDevice device, out POINTER_INFO info, ref uint timestamp)
+        private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)
+        {
+            return device is TouchDevice
+                ? new RawTouchEventArgs(device, timestamp, _owner, eventType, point, modifiers, rawPointerId)
+                : new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers)
+                {
+                    RawPointerId = rawPointerId
+                };
+        }
+
+        private void GetDevicePointerInfo(IntPtr wParam,
+            out IPointerDevice device, out POINTER_INFO info, out RawPointerPoint point,
+            out RawInputModifiers modifiers, ref uint timestamp)
         {
             var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
             GetPointerType(pointerId, out var type);
-            //GetPointerCursorId(pointerId, out var cursorId);
+
+            modifiers = default;
+
             switch (type)
             {
                 case PointerInputType.PT_PEN:
                     device = _penDevice;
                     GetPointerPenInfo(pointerId, out var penInfo);
                     info = penInfo.pointerInfo;
-
-                    ApplyPenInfo(penInfo);
+                    point = CreateRawPointerPoint(penInfo);
+                    if (penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_BARREL))
+                    {
+                        modifiers |= RawInputModifiers.PenBarrelButton;
+                    }
+                    if (penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_ERASER))
+                    {
+                        modifiers |= RawInputModifiers.PenEraser;
+                    }
+                    if (penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_INVERTED))
+                    {
+                        modifiers |= RawInputModifiers.PenInverted;
+                    }
                     break;
                 case PointerInputType.PT_TOUCH:
                     device = _touchDevice;
                     GetPointerTouchInfo(pointerId, out var touchInfo);
                     info = touchInfo.pointerInfo;
+                    point = CreateRawPointerPoint(touchInfo);
                     break;
                 default:
                     device = _mouseDevice;
                     GetPointerInfo(pointerId, out info);
+                    point = CreateRawPointerPoint(info);
                     break;
             }
 
@@ -892,6 +823,44 @@ namespace Avalonia.Win32
             {
                 timestamp = info.dwTime;
             }
+
+            modifiers |= GetInputModifiers(info.dwKeyStates);
+        }
+
+        private RawPointerPoint CreateRawPointerPoint(POINTER_INFO pointerInfo)
+        {
+            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            return new RawPointerPoint
+            {
+                Position = point
+            };
+        }
+        private RawPointerPoint CreateRawPointerPoint(POINTER_TOUCH_INFO info)
+        {
+            var pointerInfo = info.pointerInfo;
+            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            return new RawPointerPoint
+            {
+                Position = point,
+                // POINTER_PEN_INFO.pressure is normalized to a range between 0 and 1024, with 512 as a default.
+                // But in our API we use range from 0.0 to 1.0.
+                Pressure = info.pressure / 1024f
+            };
+        }
+        private RawPointerPoint CreateRawPointerPoint(POINTER_PEN_INFO info)
+        {
+            var pointerInfo = info.pointerInfo;
+            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            return new RawPointerPoint
+            {
+                Position = point,
+                // POINTER_PEN_INFO.pressure is normalized to a range between 0 and 1024, with 512 as a default.
+                // But in our API we use range from 0.0 to 1.0.
+                Pressure = info.pressure / 1024f,
+                Twist = info.rotation,
+                XTilt = info.tiltX,
+                YTilt = info.tiltX
+            };
         }
 
         private static RawPointerEventType GetEventType(WindowsMessage message, POINTER_INFO info)
@@ -904,8 +873,6 @@ namespace Avalonia.Win32
             }
             switch (info.pointerType)
             {
-                case PointerInputType.PT_PEN:
-                    return ToEventType(info.ButtonChangeType);
                 case PointerInputType.PT_TOUCH:
                     if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED))
                     {

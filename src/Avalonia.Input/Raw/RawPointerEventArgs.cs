@@ -56,11 +56,12 @@ namespace Avalonia.Input.Raw
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
+            Point = new RawPointerPoint();
             Position = position;
             Type = type;
             InputModifiers = inputModifiers;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RawPointerEventArgs"/> class.
         /// </summary>
@@ -145,6 +146,7 @@ namespace Avalonia.Input.Raw
         public RawPointerPoint()
         {
             this = default;
+            Pressure = 0.5f;
         }
     }
 }

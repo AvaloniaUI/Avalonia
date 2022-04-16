@@ -1,3 +1,5 @@
+using Avalonia.Input.Raw;
+
 namespace Avalonia.Input
 {
     public sealed class PointerPoint
@@ -45,6 +47,9 @@ namespace Avalonia.Input
             IsRightButtonPressed = modifiers.HasAllFlags(RawInputModifiers.RightMouseButton);
             IsXButton1Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton1MouseButton);
             IsXButton2Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton2MouseButton);
+            IsInverted = modifiers.HasAllFlags(RawInputModifiers.PenInverted);
+            IsEraser = modifiers.HasAllFlags(RawInputModifiers.PenEraser);
+            IsBarrelButtonPressed = modifiers.HasAllFlags(RawInputModifiers.PenBarrelButton);
 
             // The underlying input source might be reporting the previous state,
             // so make sure that we reflect the current state
@@ -72,19 +77,16 @@ namespace Avalonia.Input
         }
 
         public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind,
-            float twist, float pressure, float xTilt, float yTilt, bool isEraser, bool isInverted, bool isBarrel
+            float twist, float pressure, float xTilt, float yTilt
             ) : this (modifiers, kind)
         {
             Twist = twist;
             Pressure = pressure;
             XTilt = xTilt;
             YTilt = yTilt;
-            IsEraser = isEraser;
-            IsInverted = isInverted;
-            IsBarrelButtonPressed = isBarrel;
         }
 
-        internal PointerPointProperties(PointerPointProperties basedOn, Raw.RawPointerPoint rawPoint)
+        internal PointerPointProperties(PointerPointProperties basedOn, RawPointerPoint rawPoint)
         {
             IsLeftButtonPressed = basedOn.IsLeftButtonPressed;
             IsMiddleButtonPressed = basedOn.IsMiddleButtonPressed;

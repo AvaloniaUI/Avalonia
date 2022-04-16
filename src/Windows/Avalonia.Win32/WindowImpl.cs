@@ -21,6 +21,7 @@ using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.WinRT;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Collections.Pooled;
 
 namespace Avalonia.Win32
 {
@@ -94,6 +95,12 @@ namespace Avalonia.Win32
         private bool _hiddenWindowIsParent;
         private uint _langid;
         private bool _ignoreWmChar;
+
+        private const int MaxPointerHistorySize = 512;
+        private readonly static PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
+        private readonly static POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
+        private readonly static POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
+        private readonly static POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
 
         public WindowImpl()
         {
