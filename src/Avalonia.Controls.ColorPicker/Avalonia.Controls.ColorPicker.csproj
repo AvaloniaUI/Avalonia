@@ -4,6 +4,9 @@
     <!--<PackageId>Avalonia.Controls.ColorPicker</PackageId>-->
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
@@ -16,6 +19,7 @@
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\build\ApiDiff.props" />
+  <!--<Import Project="..\..\build\ApiDiff.props" />-->
+  <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
 </Project>
