@@ -7,9 +7,13 @@ namespace Avalonia.Diagnostics.Views
 {
     internal class ControlDetailsView : UserControl
     {
+        private DataGrid _dataGrid;
+
         public ControlDetailsView()
         {
             InitializeComponent();
+
+            _dataGrid = this.GetControl<DataGrid>("DataGrid");
         }
 
         private void InitializeComponent()
@@ -24,6 +28,26 @@ namespace Avalonia.Diagnostics.Views
                 controlDetails.ApplySelectedProperty();
             }
             
+        }
+
+        private void PropertyNamePressed(object sender, PointerPressedEventArgs e)
+        {
+            var mainVm = (ControlDetailsViewModel?) DataContext;
+
+            if (mainVm is null)
+            {
+                return;
+            }
+            
+            if (sender is Control control && control.DataContext is SetterViewModel setterVm)
+            {
+                mainVm.SelectProperty(setterVm.Property);
+
+                if (mainVm.SelectedProperty is not null)
+                {
+                    _dataGrid.ScrollIntoView(mainVm.SelectedProperty, null);   
+                }
+            }
         }
     }
 }
