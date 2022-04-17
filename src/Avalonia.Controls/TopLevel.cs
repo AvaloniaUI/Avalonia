@@ -15,7 +15,6 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -87,6 +86,8 @@ namespace Avalonia.Controls
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface? _renderInterface;
         private readonly IGlobalStyles? _globalStyles;
+        private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
+        private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -195,6 +196,9 @@ namespace Avalonia.Controls
             }
 
             impl.LostFocus += PlatformImpl_LostFocus;
+
+            _pointerOverPreProcessor = new PointerOverPreProcessor(this);
+            _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
         }
 
         /// <summary>
@@ -283,9 +287,7 @@ namespace Avalonia.Controls
         /// </summary>
         IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler!;
 
-        /// <summary>
-        /// Gets or sets the input element that the pointer is currently over.
-        /// </summary>
+        /// <inheritdoc/>
         IInputElement? IInputRoot.PointerOverElement
         {
             get { return GetValue(PointerOverElementProperty); }
@@ -378,10 +380,12 @@ namespace Avalonia.Controls
 
             Renderer?.Dispose();
             Renderer = null!;
-            
-            (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
+
+            _pointerOverPreProcessor?.OnCompleted();
+            _pointerOverPreProcessorSubscription?.Dispose();
+
             PlatformImpl = null;
-            
+
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
@@ -515,12 +519,17 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
+            if (e is RawPointerEventArgs pointerArgs)
+            {
+                pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
+            }
+
             _inputManager?.ProcessInput(e);
         }
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
         {
-            (this as IInputRoot).MouseDevice?.SceneInvalidated(this, e.DirtyRect);
+            _pointerOverPreProcessor?.SceneInvalidated(e.DirtyRect);
         }
 
         void PlatformImpl_LostFocus()

@@ -19,8 +19,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridTextColumn : DataGridBoundColumn
     {
-        private const string DATAGRID_TextColumnCellTextBlockMarginKey = "DataGridTextColumnCellTextBlockMargin";
-
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridTextColumn" /> class.
         /// </summary>
@@ -178,8 +176,7 @@ namespace Avalonia.Controls
         {
             TextBlock textBlockElement = new TextBlock
             {
-                [!Layoutable.MarginProperty] = new DynamicResourceExtension(DATAGRID_TextColumnCellTextBlockMarginKey),
-                VerticalAlignment = VerticalAlignment.Center
+                Name = "CellTextBlock"
             };
 
             SyncProperties(textBlockElement);

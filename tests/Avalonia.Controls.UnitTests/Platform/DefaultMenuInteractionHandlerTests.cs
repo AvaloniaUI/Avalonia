@@ -54,6 +54,19 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
+            public void Down_Selects_First_Item_Of_Already_Opened_Submenu()
+            {
+                var target = new DefaultMenuInteractionHandler(false);
+                var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.IsSubMenuOpen);
+                var e = new KeyEventArgs { Key = Key.Down, Source = item };
+
+                target.KeyDown(item, e);
+
+                Mock.Get(item).Verify(x => x.MoveSelection(NavigationDirection.First, true));
+                Assert.True(e.Handled);
+            }
+
+            [Fact]
             public void Right_Selects_Next_MenuItem()
             {
                 var target = new DefaultMenuInteractionHandler(false);
