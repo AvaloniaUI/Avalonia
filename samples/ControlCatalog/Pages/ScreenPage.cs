@@ -13,6 +13,8 @@ namespace ControlCatalog.Pages
     {
         private double _leftMost;
 
+        protected override bool BypassFlowDirectionPolicies => true;
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);

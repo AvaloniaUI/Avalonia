@@ -7,7 +7,6 @@ using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Threading;
-using System.Reactive.Linq;
 using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -59,8 +58,8 @@ namespace Avalonia.Diagnostics.ViewModels
                     .Subscribe(e =>
                         {
                             PointerOverRoot = e.Root;
-                            PointerOverElement = e.Root.GetInputElementsAt(e.Position).FirstOrDefault();
-                        });                                     
+                            PointerOverElement = e.Root.InputHitTest(e.Position);
+                        });
 #nullable restore
             }
             Console = new ConsoleViewModel(UpdateConsoleContext);
@@ -163,8 +162,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             }
                             catch { }
                         },
-                        TimeSpan.FromMilliseconds(0),
-                        DispatcherPriority.ApplicationIdle);
+                        TimeSpan.FromMilliseconds(0));
                 }
 
                 RaiseAndSetIfChanged(ref _content, value);

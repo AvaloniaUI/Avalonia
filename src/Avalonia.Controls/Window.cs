@@ -12,7 +12,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -258,7 +257,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets a collection of child windows owned by this window.
         /// </summary>
-        public IReadOnlyList<Window> OwnedWindows => _children.Select(x => x.child).ToList();
+        public IReadOnlyList<Window> OwnedWindows => _children.Select(x => x.child).ToArray();
 
         /// <summary>
         /// Gets or sets a value indicating how the window will size itself to fit its content.
@@ -527,7 +526,7 @@ namespace Avalonia.Controls
 
         private void CloseInternal()
         {
-            foreach (var (child, _) in _children.ToList())
+            foreach (var (child, _) in _children.ToArray())
             {
                 child.CloseInternal();
             }
@@ -551,7 +550,7 @@ namespace Avalonia.Controls
             
             bool canClose = true;
 
-            foreach (var (child, _) in _children.ToList())
+            foreach (var (child, _) in _children.ToArray())
             {
                 if (child.ShouldCancelClose(args))
                 {

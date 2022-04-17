@@ -18,7 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
         private readonly IAvaloniaObject _avaloniaObject;
-        private IDictionary<object, List<PropertyViewModel>>? _propertyIndex;
+        private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
         private bool _snapshotStyles;
@@ -472,9 +472,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 .Concat(GetClrProperties(o, _showImplementedInterfaces))
                 .OrderBy(x => x, PropertyComparer.Instance)
                 .ThenBy(x => x.Name)
-                .ToList();
+                .ToArray();
 
-            _propertyIndex = properties.GroupBy(x => x.Key).ToDictionary(x => x.Key, x => x.ToList());
+            _propertyIndex = properties.GroupBy(x => x.Key).ToDictionary(x => x.Key, x => x.ToArray());
 
             var view = new DataGridCollectionView(properties);
             view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));

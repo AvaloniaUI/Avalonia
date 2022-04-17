@@ -160,6 +160,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return true;
             }
 
+            if (type.Equals(types.RelativePoint))
+            {
+                try
+                {
+                    var relativePoint = RelativePoint.Parse(text);
+                
+                    var relativePointTypeRef = new XamlAstClrTypeReference(node, types.RelativePoint, false);
+                    
+                    result = new XamlAstNewClrObjectNode(node, relativePointTypeRef, types.RelativePointFullConstructor, new List<IXamlAstValueNode>
+                    {
+                        new XamlConstantNode(node, types.XamlIlTypes.Double, relativePoint.Point.X),
+                        new XamlConstantNode(node, types.XamlIlTypes.Double, relativePoint.Point.Y),
+                        new XamlConstantNode(node, types.RelativeUnit, (int) relativePoint.Unit),
+                    });
+
+                    return true;
+                }
+                catch
+                {
+                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a relative point", node);
+                }
+            }
+
             if (type.Equals(types.GridLength))
             {
                 try

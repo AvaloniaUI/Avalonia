@@ -14,6 +14,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DropDownButton.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml"/>
