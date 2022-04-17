@@ -1,7 +1,8 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:CompileBindings="True"
-        xmlns:converters="using:Avalonia.Controls.Converters">
+        xmlns:converters="using:Avalonia.Controls.Converters"
+        xmlns:primitive="using:Avalonia.Controls.Primitives">
 
   <Styles.Resources>
     <converters:EnumValueEqualsConverter x:Key="EnumValueEquals" />
@@ -9,7 +10,7 @@
     <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadius" Corner="BottomRight" />
   </Styles.Resources>
 
-  <Style Selector="ColorSpectrum">
+  <Style Selector="primitive|ColorSpectrum">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -89,44 +90,44 @@
 
   <!-- Normal -->
   <!-- Separating this allows easier customization in applications -->
-  <Style Selector="ColorSpectrum /template/ Ellipse#BorderEllipse,
-                   ColorSpectrum /template/ Rectangle#BorderRectangle">
+  <Style Selector="primitive|ColorSpectrum /template/ Ellipse#BorderEllipse,
+                   primitive|ColorSpectrum /template/ Rectangle#BorderRectangle">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundListLowBrush}" />
     <Setter Property="StrokeThickness" Value="1" />
   </Style>
 
   <!-- Focus -->
-  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
+  <Style Selector="primitive|ColorSpectrum /template/ Ellipse#FocusEllipse">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="ColorSpectrum:focus-visible /template/ Ellipse#FocusEllipse">
+  <Style Selector="primitive|ColorSpectrum:focus-visible /template/ Ellipse#FocusEllipse">
     <Setter Property="IsVisible" Value="True" />
   </Style>
 
   <!-- Selector Color -->
-  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
+  <Style Selector="primitive|ColorSpectrum /template/ Ellipse#FocusEllipse">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
-  <Style Selector="ColorSpectrum /template/ Ellipse#SelectionEllipse">
+  <Style Selector="primitive|ColorSpectrum /template/ Ellipse#SelectionEllipse">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
   </Style>
-  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#FocusEllipse">
+  <Style Selector="primitive|ColorSpectrum:light-selector /template/ Ellipse#FocusEllipse">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
   </Style>
-  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#SelectionEllipse">
+  <Style Selector="primitive|ColorSpectrum:light-selector /template/ Ellipse#SelectionEllipse">
     <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
 
-  <Style Selector="ColorSpectrum:pointerover /template/ Ellipse#SelectionEllipse">
+  <Style Selector="primitive|ColorSpectrum:pointerover /template/ Ellipse#SelectionEllipse">
     <Setter Property="Opacity" Value="0.8" />
   </Style>
 
   <!-- Selector Size -->
-  <Style Selector="ColorSpectrum /template/ Panel#PART_SelectionEllipsePanel">
+  <Style Selector="primitive|ColorSpectrum /template/ Panel#PART_SelectionEllipsePanel">
     <Setter Property="Width" Value="16" />
     <Setter Property="Height" Value="16" />
   </Style>
-  <Style Selector="ColorSpectrum:large-selector /template/ Panel#PART_SelectionEllipsePanel">
+  <Style Selector="primitive|ColorSpectrum:large-selector /template/ Panel#PART_SelectionEllipsePanel">
     <Setter Property="Width" Value="48" />
     <Setter Property="Height" Value="48" />
   </Style>
