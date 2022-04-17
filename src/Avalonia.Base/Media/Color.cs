@@ -653,9 +653,6 @@ namespace Avalonia.Media
                 (byteToDouble * alpha));
         }
 
-        // TODO: Mark the below .ToHsv(double...) method internal and make internals visible to Avalonia.Controls
-        // It is needed for the ColorPicker which works in normalized values directly
-
         /// <summary>
         /// Converts the given RGBA color component values to their HSV color equivalent.
         /// </summary>
@@ -668,7 +665,7 @@ namespace Avalonia.Media
         /// <param name="b">The Blue component in the RGB color model within the range 0..1.</param>
         /// <param name="a">The Alpha component in the RGB color model within the range 0..1.</param>
         /// <returns>A new <see cref="HsvColor"/> equivalent to the given RGBA values.</returns>
-        public static HsvColor ToHsv(
+        internal static HsvColor ToHsv(
             double r,
             double g,
             double b,
