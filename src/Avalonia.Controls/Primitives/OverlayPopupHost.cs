@@ -76,7 +76,7 @@ namespace Avalonia.Controls.Primitives
             Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot()!, target, placement, offset, anchor,
-                gravity, constraintAdjustment, rect);
+                gravity, constraintAdjustment, rect, FlowDirection);
             UpdatePosition();
         }
 

@@ -73,6 +73,11 @@ ComPtr<IAvnApplicationEvents> _events;
     _isHandlingSendEvent = true;
     @try {
         [super sendEvent: event];
+        if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
+        {
+            [[self keyWindow] sendEvent:event];
+        }
+        
     } @finally {
         _isHandlingSendEvent = oldHandling;
     }

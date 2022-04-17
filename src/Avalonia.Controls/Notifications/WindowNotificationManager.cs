@@ -14,6 +14,7 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
+    [TemplatePart("PART_Items", typeof(Panel))]
     [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright")]
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
     {
