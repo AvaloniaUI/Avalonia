@@ -1,13 +1,7 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
+<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:CompileBindings="True"
         xmlns:converters="using:Avalonia.Controls.Converters">
-
-  <Design.PreviewWith>
-    <Border Padding="20">
-      <ColorSpectrum Width="256" Height="256" />
-    </Border>
-  </Design.PreviewWith>
 
   <Styles.Resources>
     <converters:EnumValueEqualsConverter x:Key="EnumValueEquals" />
@@ -97,7 +91,7 @@
   <!-- Separating this allows easier customization in applications -->
   <Style Selector="ColorSpectrum /template/ Ellipse#BorderEllipse,
                    ColorSpectrum /template/ Rectangle#BorderRectangle">
-    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderLowBrush}" />
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundListLowBrush}" />
     <Setter Property="StrokeThickness" Value="1" />
   </Style>
 
@@ -111,16 +105,16 @@
 
   <!-- Selector Color -->
   <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
-    <Setter Property="Stroke" Value="White" />
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
   <Style Selector="ColorSpectrum /template/ Ellipse#SelectionEllipse">
-    <Setter Property="Stroke" Value="Black" />
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
   </Style>
   <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#FocusEllipse">
-    <Setter Property="Stroke" Value="Black" />
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
   </Style>
   <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#SelectionEllipse">
-    <Setter Property="Stroke" Value="White" />
+    <Setter Property="Stroke" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
 
   <Style Selector="ColorSpectrum:pointerover /template/ Ellipse#SelectionEllipse">
@@ -136,5 +130,5 @@
     <Setter Property="Width" Value="48" />
     <Setter Property="Height" Value="48" />
   </Style>
-  
+
 </Styles>

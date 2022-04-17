@@ -11,7 +11,6 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/Carousel.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CheckBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/CaptionButtons.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ColorSpectrum.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ComboBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ComboBoxItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ContentControl.xaml"/>
