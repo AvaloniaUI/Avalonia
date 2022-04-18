@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -249,6 +250,10 @@ namespace Avalonia.Controls.Presenters
                 case nameof(TemplatedParent):
                     TemplatedParentChanged(change);
                     break;
+                case nameof(UseLayoutRounding):
+                case nameof(BorderThickness):
+                    _layoutThickness = null;
+                    break;
             }
         }
 
@@ -329,27 +334,37 @@ namespace Avalonia.Controls.Presenters
             InvalidateMeasure();
         }
 
-        private Thickness _layoutThickness = default;
+        private Thickness? _layoutThickness;
+        private double _scale;
 
         private Thickness LayoutThickness
         {
             get
             {
-                if (_layoutThickness == default)
+                VerifyScale();
+
+                if (_layoutThickness == null)
                 {
                     var borderThickness = BorderThickness;
 
                     if (UseLayoutRounding)
-                    {
-                        var scale = LayoutHelper.GetLayoutScale(this);
-                        borderThickness = LayoutHelper.RoundLayoutThickness(BorderThickness, scale, scale);
-                    }
+                        borderThickness = LayoutHelper.RoundLayoutThickness(BorderThickness, _scale, _scale);
 
                     _layoutThickness = borderThickness;
                 }
 
-                return _layoutThickness;
+                return _layoutThickness.Value;
             }
+        }
+
+        private void VerifyScale()
+        {
+            var currentScale = LayoutHelper.GetLayoutScale(this);
+            if (MathUtilities.AreClose(currentScale, _scale))
+                return;
+
+            _scale = currentScale;
+            _layoutThickness = null;
         }
 
         /// <inheritdoc/>

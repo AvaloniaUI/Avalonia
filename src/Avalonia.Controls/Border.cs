@@ -1,8 +1,10 @@
+using System;
 using Avalonia.Collections;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -88,6 +90,18 @@ namespace Avalonia.Controls
             AffectsMeasure<Border>(BorderThicknessProperty);
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            switch (change.Property.Name)
+            {
+                case nameof(UseLayoutRounding):
+                case nameof(BorderThickness):
+                    _layoutThickness = null;
+                    break;
+            }
+        }
+
         /// <summary>
         /// Gets or sets a brush with which to paint the background.
         /// </summary>
@@ -169,27 +183,37 @@ namespace Avalonia.Controls
             set => SetValue(BoxShadowProperty, value);
         }
 
-        private Thickness _layoutThickness = default;
+        private Thickness? _layoutThickness;
+        private double _scale;
 
         private Thickness LayoutThickness
         {
             get
             {
-                if (_layoutThickness == default)
+                VerifyScale();
+
+                if (_layoutThickness == null)
                 {
                     var borderThickness = BorderThickness;
 
                     if (UseLayoutRounding)
-                    {
-                        var scale = LayoutHelper.GetLayoutScale(this);
-                        borderThickness = LayoutHelper.RoundLayoutThickness(BorderThickness, scale, scale);
-                    }
+                        borderThickness = LayoutHelper.RoundLayoutThickness(BorderThickness, _scale, _scale);
 
                     _layoutThickness = borderThickness;
                 }
 
-                return _layoutThickness;
+                return _layoutThickness.Value;
             }
+        }
+
+        private void VerifyScale()
+        {
+            var currentScale = LayoutHelper.GetLayoutScale(this);
+            if (MathUtilities.AreClose(currentScale, _scale))
+                return;
+
+            _scale = currentScale;
+            _layoutThickness = null;
         }
 
         /// <summary>

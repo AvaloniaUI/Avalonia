@@ -653,7 +653,7 @@ namespace Avalonia.Layout
                 // Margin has to be treated separately because the layout rounding function is not linear
                 // f(a + b) != f(a) + f(b)
                 // If the margin isn't pre-rounded some sizes will be offset by 1 pixel in certain scales.
-                if (UseLayoutRounding)
+                if (useLayoutRounding)
                 {
                     margin = LayoutHelper.RoundLayoutThickness(margin, scale, scale);
                 }
