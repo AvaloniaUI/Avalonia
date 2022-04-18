@@ -142,52 +142,6 @@ namespace Avalonia.Media
 
         Color IExperimentalAcrylicMaterial.TintColor => _effectiveTintColor;
 
-        private struct HsvColor
-        {
-            public float Hue { get; set; }
-            public float Saturation { get; set; }
-            public float Value { get; set; }
-        }
-
-        private static HsvColor RgbToHsv(Color color)
-        {
-            var r = color.R / 255.0f;
-            var g = color.G / 255.0f;
-            var b = color.B / 255.0f;
-            var max = Math.Max(r, Math.Max(g, b));
-            var min = Math.Min(r, Math.Min(g, b));
-
-            float h, s, v;
-            h = v = max;
-
-            var d = max - min;
-            s = max == 0 ? 0 : d / max;
-
-            if (max == min)
-            {
-                h = 0; // achromatic
-            }
-            else
-            {
-                if (max == r)
-                {
-                    h = (g - b) / d + (g < b ? 6 : 0);
-                }
-                else if (max == g)
-                {
-                    h = (b - r) / d + 2;
-                }
-                else if (max == b)
-                {
-                    h = (r - g) / d + 4;
-                }
-
-                h /= 6;
-            }
-
-            return new HsvColor { Hue = h, Saturation = s, Value = v };
-        }
-
         private static Color GetEffectiveTintColor(Color tintColor, double tintOpacity)
         {
             // Update tintColor's alpha with the combined opacity value
@@ -198,7 +152,7 @@ namespace Avalonia.Media
 
         private static double GetTintOpacityModifier(Color tintColor)
         {
-            // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by 
+            // This method suppresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by 
             // compressing the range of allowable values - for example, a user-defined value of 100% will be mapped to 45% for pure 
             // white (100% luminosity), 85% for pure black (0% luminosity), and 90% for pure gray (50% luminosity).  The intensity of 
             // the effect increases linearly as luminosity deviates from 50%.  After this effect is calculated, we cancel it out
@@ -210,22 +164,22 @@ namespace Avalonia.Media
             const double midPointMaxOpacity = 0.45; // 50% luminosity
             const double blackMaxOpacity = 0.45; // 0% luminosity
 
-            var hsv = RgbToHsv(tintColor);
+            var hsv = tintColor.ToHsv();
 
             double opacityModifier = midPointMaxOpacity;
 
-            if (hsv.Value != midPoint)
+            if (hsv.V != midPoint)
             {
                 // Determine maximum suppression amount
                 double lowestMaxOpacity = midPointMaxOpacity;
                 double maxDeviation = midPoint;
 
-                if (hsv.Value > midPoint)
+                if (hsv.V > midPoint)
                 {
                     lowestMaxOpacity = whiteMaxOpacity; // At white (100% hsvV)
                     maxDeviation = 1 - maxDeviation;
                 }
-                else if (hsv.Value < midPoint)
+                else if (hsv.V < midPoint)
                 {
                     lowestMaxOpacity = blackMaxOpacity; // At black (0% hsvV)
                 }
@@ -233,14 +187,14 @@ namespace Avalonia.Media
                 double maxOpacitySuppression = midPointMaxOpacity - lowestMaxOpacity;
 
                 // Determine normalized deviation from the midpoint
-                double deviation = Math.Abs(hsv.Value - midPoint);
+                double deviation = Math.Abs(hsv.V - midPoint);
                 double normalizedDeviation = deviation / maxDeviation;
 
                 // If we have saturation, reduce opacity suppression to allow that color to come through more
-                if (hsv.Saturation > 0)
+                if (hsv.S > 0)
                 {
                     // Dampen opacity suppression based on how much saturation there is
-                    maxOpacitySuppression *= Math.Max(1 - (hsv.Saturation * 2), 0.0);
+                    maxOpacitySuppression *= Math.Max(1 - (hsv.S * 2), 0.0);
                 }
 
                 double opacitySuppression = maxOpacitySuppression * normalizedDeviation;

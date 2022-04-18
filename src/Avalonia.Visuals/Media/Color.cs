@@ -258,7 +258,7 @@ namespace Avalonia.Media
         public override string ToString()
         {
             uint rgb = ToUint32();
-            return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb:x8}";
+            return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb.ToString("x8", CultureInfo.InvariantCulture)}";
         }
 
         /// <summary>

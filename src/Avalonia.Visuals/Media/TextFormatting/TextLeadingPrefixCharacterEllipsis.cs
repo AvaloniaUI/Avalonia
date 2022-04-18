@@ -17,7 +17,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="ellipsis">Text used as collapsing symbol.</param>
         /// <param name="prefixLength">Length of leading prefix.</param>
         /// <param name="width">width in which collapsing is constrained to</param>
-        /// <param name="textRunProperties">text run properties of ellispis symbol</param>
+        /// <param name="textRunProperties">text run properties of ellipsis symbol</param>
         public TextLeadingPrefixCharacterEllipsis(
             ReadOnlySlice<char> ellipsis,
             int prefixLength,
@@ -35,16 +35,14 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc/>
-        public sealed override double Width { get; }
+        public override double Width { get; }
 
         /// <inheritdoc/>
-        public sealed override TextRun Symbol { get; }
+        public override TextRun Symbol { get; }
 
-        public override IReadOnlyList<TextRun>? Collapse(TextLine textLine)
+        public override List<DrawableTextRun>? Collapse(TextLine textLine)
         {
-            var shapedTextRuns = textLine.TextRuns as List<ShapedTextCharacters>;
-
-            if (shapedTextRuns is null)
+            if (textLine.TextRuns is not List<DrawableTextRun> textRuns || textRuns.Count == 0)
             {
                 return null;
             }
@@ -55,84 +53,103 @@ namespace Avalonia.Media.TextFormatting
 
             if (Width < shapedSymbol.GlyphRun.Size.Width)
             {
-                return new List<ShapedTextCharacters>(0);
+                return new List<DrawableTextRun>(0);
             }
 
             // Overview of ellipsis structure
             // Prefix length run | Ellipsis symbol | Post split run growing from the end |
             var availableWidth = Width - shapedSymbol.Size.Width;
 
-            while (runIndex < shapedTextRuns.Count)
+            while (runIndex < textRuns.Count)
             {
-                var currentRun = shapedTextRuns[runIndex];
+                var currentRun = textRuns[runIndex];
 
-                currentWidth += currentRun.Size.Width;
-
-                if (currentWidth > availableWidth)
+                switch (currentRun)
                 {
-                    currentRun.TryMeasureCharacters(availableWidth, out var measuredLength);
-
-                    var shapedTextCharacters = new List<ShapedTextCharacters>(shapedTextRuns.Count);
-
-                    if (measuredLength > 0)
+                    case ShapedTextCharacters shapedRun:
                     {
-                        List<ShapedTextCharacters>? preSplitRuns = null;
-                        List<ShapedTextCharacters>? postSplitRuns = null;
+                        currentWidth += currentRun.Size.Width;
 
-                        if (_prefixLength > 0)
+                        if (currentWidth > availableWidth)
                         {
-                            var splitResult = TextFormatterImpl.SplitShapedRuns(shapedTextRuns, Math.Min(_prefixLength, measuredLength));
+                            shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength);
 
-                            shapedTextCharacters.AddRange(splitResult.First);
+                            var collapsedRuns = new List<DrawableTextRun>(textRuns.Count);
 
-                            TextLineImpl.SortRuns(shapedTextCharacters);
-
-                            preSplitRuns = splitResult.First;
-                            postSplitRuns = splitResult.Second;
-                        }
-                        else
-                        {
-                            postSplitRuns = shapedTextRuns;
-                        }
-
-                        shapedTextCharacters.Add(shapedSymbol);
-
-                        if (measuredLength > _prefixLength && postSplitRuns is not null)
-                        {
-                            var availableSuffixWidth = availableWidth;
-
-                            if (preSplitRuns is not null)
+                            if (measuredLength > 0)
                             {
-                                foreach (var run in preSplitRuns)
+                                List<DrawableTextRun>? preSplitRuns = null;
+                                List<DrawableTextRun>? postSplitRuns;
+
+                                if (_prefixLength > 0)
                                 {
-                                    availableSuffixWidth -= run.Size.Width;
+                                    var splitResult = TextFormatterImpl.SplitDrawableRuns(textRuns,
+                                        Math.Min(_prefixLength, measuredLength));
+
+                                    collapsedRuns.AddRange(splitResult.First);
+
+                                    preSplitRuns = splitResult.First;
+                                    postSplitRuns = splitResult.Second;
                                 }
-                            }
-
-                            for (int i = postSplitRuns.Count - 1; i >= 0; i--)
-                            {
-                                var run = postSplitRuns[i];
-
-                                if (run.TryMeasureCharactersBackwards(availableSuffixWidth, out int suffixCount, out double suffixWidth))
+                                else
                                 {
-                                    availableSuffixWidth -= suffixWidth;
+                                    postSplitRuns = textRuns;
+                                }
 
-                                    if (suffixCount > 0)
+                                collapsedRuns.Add(shapedSymbol);
+
+                                if (measuredLength <= _prefixLength || postSplitRuns is null)
+                                {
+                                    return collapsedRuns;
+                                }
+
+                                var availableSuffixWidth = availableWidth;
+
+                                if (preSplitRuns is not null)
+                                {
+                                    foreach (var run in preSplitRuns)
                                     {
-                                        var splitSuffix = run.Split(run.TextSourceLength - suffixCount);
+                                        availableSuffixWidth -= run.Size.Width;
+                                    }
+                                }
 
-                                        shapedTextCharacters.Add(splitSuffix.Second!);
+                                for (var i = postSplitRuns.Count - 1; i >= 0; i--)
+                                {
+                                    var run = postSplitRuns[i];
+
+                                    switch (run)
+                                    {
+                                        case ShapedTextCharacters endShapedRun:
+                                        {
+                                            if (endShapedRun.TryMeasureCharactersBackwards(availableSuffixWidth,
+                                                    out var suffixCount, out var suffixWidth))
+                                            {
+                                                availableSuffixWidth -= suffixWidth;
+
+                                                if (suffixCount > 0)
+                                                {
+                                                    var splitSuffix =
+                                                        endShapedRun.Split(run.TextSourceLength - suffixCount);
+
+                                                    collapsedRuns.Add(splitSuffix.Second!);
+                                                }
+                                            }
+
+                                            break;
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }
-                    else
-                    {
-                        shapedTextCharacters.Add(shapedSymbol);
-                    }
+                            else
+                            {
+                                collapsedRuns.Add(shapedSymbol);
+                            }
 
-                    return shapedTextCharacters;
+                            return collapsedRuns;
+                        }
+
+                        break;
+                    }
                 }
 
                 availableWidth -= currentRun.Size.Width;
