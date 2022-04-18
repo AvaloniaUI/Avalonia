@@ -9,40 +9,40 @@ using Avalonia.Utilities;
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Contains and allows modification of Red, Green and Blue channel values.
+    /// Contains and allows modification of Red, Green and Blue components.
     /// </summary>
     /// <remarks>
     ///   The is a specialized struct optimized for permanence and memory:
     ///   <list type="bullet">
     ///     <item>This is not a read-only struct like <see cref="Color"/> and allows editing the fields</item>
     ///     <item>Removes the alpha component unnecessary in core calculations</item>
-    ///     <item>Normalizes RGB channel values in the range of 0..1 to simplify calculations.</item>
-    ///     <item>No channel value bounds checks or clamping is done.</item>
+    ///     <item>Normalizes RGB components in the range of 0..1 to simplify calculations.</item>
+    ///     <item>No component bounds checks or clamping is done.</item>
     ///   </list>
     /// </remarks>
     internal struct Rgb
     {
         /// <summary>
-        /// The Red channel value in the range from 0..1.
+        /// The Red component in the range from 0..1.
         /// </summary>
         public double R;
 
         /// <summary>
-        /// The Green channel value in the range from 0..1.
+        /// The Green component in the range from 0..1.
         /// </summary>
         public double G;
 
         /// <summary>
-        /// The Blue channel value in the range from 0..1.
+        /// The Blue component in the range from 0..1.
         /// </summary>
         public double B;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Rgb"/> struct.
         /// </summary>
-        /// <param name="r">The Red channel value in the range from 0..1.</param>
-        /// <param name="g">The Green channel value in the range from 0..1.</param>
-        /// <param name="b">The Blue channel value in the range from 0..1.</param>
+        /// <param name="r">The Red component in the range from 0..1.</param>
+        /// <param name="g">The Green component in the range from 0..1.</param>
+        /// <param name="b">The Blue component in the range from 0..1.</param>
         public Rgb(double r, double g, double b)
         {
             R = r;
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Converts this <see cref="Rgb"/> struct into a standard <see cref="Color"/>.
         /// </summary>
-        /// <param name="alpha">The Alpha channel value in the range from 0..1.</param>
+        /// <param name="alpha">The Alpha component in the range from 0..1.</param>
         /// <returns>A new <see cref="Color"/> representing this <see cref="Rgb"/> struct.</returns>
         public Color ToColor(double alpha = 1.0)
         {

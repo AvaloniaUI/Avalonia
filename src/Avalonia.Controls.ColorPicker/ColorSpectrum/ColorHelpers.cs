@@ -26,9 +26,9 @@ namespace Avalonia.Controls.Primitives
             return string.Empty;
         }
 
-        public static Hsv IncrementColorChannel(
+        public static Hsv IncrementColorComponent(
             Hsv originalHsv,
-            HsvChannel channel,
+            HsvComponent component,
             IncrementDirection direction,
             IncrementAmount amount,
             bool shouldWrap,
@@ -52,25 +52,25 @@ namespace Avalonia.Controls.Primitives
                 // If we're adding a large increment, then we want to snap to the next
                 // or previous major value - for hue, this is every increment of 30;
                 // for saturation and value, this is every increment of 10.
-                switch (channel)
+                switch (component)
                 {
-                    case HsvChannel.Hue:
+                    case HsvComponent.Hue:
                         valueToIncrement = ref newHsv.H;
                         incrementAmount = amount == IncrementAmount.Small ? 1 : 30;
                         break;
 
-                    case HsvChannel.Saturation:
+                    case HsvComponent.Saturation:
                         valueToIncrement = ref newHsv.S;
                         incrementAmount = amount == IncrementAmount.Small ? 1 : 10;
                         break;
 
-                    case HsvChannel.Value:
+                    case HsvComponent.Value:
                         valueToIncrement = ref newHsv.V;
                         incrementAmount = amount == IncrementAmount.Small ? 1 : 10;
                         break;
 
                     default:
-                        throw new InvalidOperationException("Invalid HsvChannel.");
+                        throw new InvalidOperationException("Invalid HsvComponent.");
                 }
 
                 double previousValue = valueToIncrement;
@@ -99,14 +99,14 @@ namespace Avalonia.Controls.Primitives
                 // While working with named colors, we're going to need to be working in actual HSV units,
                 // so we'll divide the min bound and max bound by 100 in the case of saturation or value,
                 // since we'll have received units between 0-100 and we need them within 0-1.
-                if (channel == HsvChannel.Saturation ||
-                    channel == HsvChannel.Value)
+                if (component == HsvComponent.Saturation ||
+                    component == HsvComponent.Value)
                 {
                     minBound /= 100;
                     maxBound /= 100;
                 }
 
-                newHsv = FindNextNamedColor(originalHsv, channel, direction, shouldWrap, minBound, maxBound);
+                newHsv = FindNextNamedColor(originalHsv, component, direction, shouldWrap, minBound, maxBound);
             }
 
             return newHsv;
@@ -114,7 +114,7 @@ namespace Avalonia.Controls.Primitives
 
         public static Hsv FindNextNamedColor(
             Hsv originalHsv,
-            HsvChannel channel,
+            HsvComponent component,
             IncrementDirection direction,
             bool shouldWrap,
             double minBound,
@@ -136,28 +136,28 @@ namespace Avalonia.Controls.Primitives
             ref double newValue = ref newHsv.H;
             double incrementAmount = 0.0;
 
-            switch (channel)
+            switch (component)
             {
-                case HsvChannel.Hue:
+                case HsvComponent.Hue:
                     originalValue = originalHsv.H;
                     newValue = ref newHsv.H;
                     incrementAmount = 1;
                     break;
 
-                case HsvChannel.Saturation:
+                case HsvComponent.Saturation:
                     originalValue = originalHsv.S;
                     newValue = ref newHsv.S;
                     incrementAmount = 0.01;
                     break;
 
-                case HsvChannel.Value:
+                case HsvComponent.Value:
                     originalValue = originalHsv.V;
                     newValue = ref newHsv.V;
                     incrementAmount = 0.01;
                     break;
 
                 default:
-                    throw new InvalidOperationException("Invalid HsvChannel.");
+                    throw new InvalidOperationException("Invalid HsvComponent.");
             }
 
             bool shouldFindMidPoint = true;
@@ -228,28 +228,28 @@ namespace Avalonia.Controls.Primitives
                 ref double currentValue = ref currentHsv.H;
                 double wrapIncrement = 0;
 
-                switch (channel)
+                switch (component)
                 {
-                    case HsvChannel.Hue:
+                    case HsvComponent.Hue:
                         startValue = ref startHsv.H;
                         currentValue = ref currentHsv.H;
                         wrapIncrement = 360.0;
                         break;
 
-                    case HsvChannel.Saturation:
+                    case HsvComponent.Saturation:
                         startValue = ref startHsv.S;
                         currentValue = ref currentHsv.S;
                         wrapIncrement = 1.0;
                         break;
 
-                    case HsvChannel.Value:
+                    case HsvComponent.Value:
                         startValue = ref startHsv.V;
                         currentValue = ref currentHsv.V;
                         wrapIncrement = 1.0;
                         break;
 
                     default:
-                        throw new InvalidOperationException("Invalid HsvChannel.");
+                        throw new InvalidOperationException("Invalid HsvComponent.");
                 }
 
                 while (newColorName == currentColorName)
@@ -316,7 +316,7 @@ namespace Avalonia.Controls.Primitives
             return newHsv;
         }
 
-        public static double IncrementAlphaChannel(
+        public static double IncrementAlphaComponent(
             double originalAlpha,
             IncrementDirection direction,
             IncrementAmount amount,

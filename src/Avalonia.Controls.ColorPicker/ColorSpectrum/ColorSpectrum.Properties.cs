@@ -32,24 +32,24 @@ namespace Avalonia.Controls.Primitives
                 Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF));
 
         /// <summary>
-        /// Gets or sets the two HSV color channels displayed by the spectrum.
+        /// Gets or sets the two HSV color components displayed by the spectrum.
         /// </summary>
         /// <remarks>
         /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
         /// </remarks>
-        public ColorSpectrumChannels Channels
+        public ColorSpectrumComponents Components
         {
-            get => GetValue(ChannelsProperty);
-            set => SetValue(ChannelsProperty, value);
+            get => GetValue(ComponentsProperty);
+            set => SetValue(ComponentsProperty, value);
         }
 
         /// <summary>
-        /// Defines the <see cref="Channels"/> property.
+        /// Defines the <see cref="Components"/> property.
         /// </summary>
-        public static readonly StyledProperty<ColorSpectrumChannels> ChannelsProperty =
-            AvaloniaProperty.Register<ColorSpectrum, ColorSpectrumChannels>(
-                nameof(Channels),
-                ColorSpectrumChannels.HueSaturation);
+        public static readonly StyledProperty<ColorSpectrumComponents> ComponentsProperty =
+            AvaloniaProperty.Register<ColorSpectrum, ColorSpectrumComponents>(
+                nameof(Components),
+                ColorSpectrumComponents.HueSaturation);
 
         /// <summary>
         /// Gets or sets the currently selected color in the HSV color model.
@@ -74,7 +74,7 @@ namespace Avalonia.Controls.Primitives
                 new HsvColor(1, 0, 0, 1));
 
         /// <summary>
-        /// Gets or sets the maximum value of the Hue channel in the range from 0..359.
+        /// Gets or sets the maximum value of the Hue component in the range from 0..359.
         /// This property must be greater than <see cref="MinHue"/>.
         /// </summary>
         /// <remarks>
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MaxHue), 359);
 
         /// <summary>
-        /// Gets or sets the maximum value of the Saturation channel in the range from 0..100.
+        /// Gets or sets the maximum value of the Saturation component in the range from 0..100.
         /// This property must be greater than <see cref="MinSaturation"/>.
         /// </summary>
         /// <remarks>
@@ -112,7 +112,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MaxSaturation), 100);
 
         /// <summary>
-        /// Gets or sets the maximum value of the Value channel in the range from 0..100.
+        /// Gets or sets the maximum value of the Value component in the range from 0..100.
         /// This property must be greater than <see cref="MinValue"/>.
         /// </summary>
         /// <remarks>
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MaxValue), 100);
 
         /// <summary>
-        /// Gets or sets the minimum value of the Hue channel in the range from 0..359.
+        /// Gets or sets the minimum value of the Hue component in the range from 0..359.
         /// This property must be less than <see cref="MaxHue"/>.
         /// </summary>
         /// <remarks>
@@ -150,7 +150,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MinHue), 0);
 
         /// <summary>
-        /// Gets or sets the minimum value of the Saturation channel in the range from 0..100.
+        /// Gets or sets the minimum value of the Saturation component in the range from 0..100.
         /// This property must be less than <see cref="MaxSaturation"/>.
         /// </summary>
         /// <remarks>
@@ -169,7 +169,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MinSaturation), 0);
 
         /// <summary>
-        /// Gets or sets the minimum value of the Value channel in the range from 0..100.
+        /// Gets or sets the minimum value of the Value component in the range from 0..100.
         /// This property must be less than <see cref="MaxValue"/>.
         /// </summary>
         /// <remarks>

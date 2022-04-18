@@ -8,16 +8,16 @@ using Avalonia.Controls.Primitives;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Defines the two HSV color channels displayed by a <see cref="ColorSpectrum"/>.
+    /// Defines the two HSV color components displayed by a <see cref="ColorSpectrum"/>.
     /// </summary>
     /// <remarks>
-    /// Order of the color channels is important and correspond with an X/Y axis in Box
+    /// Order of the color components is important and correspond with an X/Y axis in Box
     /// shape or a degree/radius in Ring shape.
     /// </remarks>
-    public enum ColorSpectrumChannels
+    public enum ColorSpectrumComponents
     {
         /// <summary>
-        /// The Hue and Value channels.
+        /// The Hue and Value components.
         /// </summary>
         /// <remarks>
         /// In Box shape, Hue is mapped to the X-axis and Value is mapped to the Y-axis.
@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         HueValue,
 
         /// <summary>
-        /// The Value and Hue channels.
+        /// The Value and Hue components.
         /// </summary>
         /// <remarks>
         /// In Box shape, Value is mapped to the X-axis and Hue is mapped to the Y-axis.
@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         ValueHue,
 
         /// <summary>
-        /// The Hue and Saturation channels.
+        /// The Hue and Saturation components.
         /// </summary>
         /// <remarks>
         /// In Box shape, Hue is mapped to the X-axis and Saturation is mapped to the Y-axis.
@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         HueSaturation,
 
         /// <summary>
-        /// The Saturation and Hue channels.
+        /// The Saturation and Hue components.
         /// </summary>
         /// <remarks>
         /// In Box shape, Saturation is mapped to the X-axis and Hue is mapped to the Y-axis.
@@ -53,7 +53,7 @@ namespace Avalonia.Controls
         SaturationHue,
 
         /// <summary>
-        /// The Saturation and Value channels.
+        /// The Saturation and Value components.
         /// </summary>
         /// <remarks>
         /// In Box shape, Saturation is mapped to the X-axis and Value is mapped to the Y-axis.
@@ -62,7 +62,7 @@ namespace Avalonia.Controls
         SaturationValue,
 
         /// <summary>
-        /// The Value and Saturation channels.
+        /// The Value and Saturation components.
         /// </summary>
         /// <remarks>
         /// In Box shape, Value is mapped to the X-axis and Saturation is mapped to the Y-axis.

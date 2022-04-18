@@ -6,7 +6,7 @@
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Defines a relative amount that a color channel should be incremented.
+    /// Defines a relative amount that a color component should be incremented.
     /// </summary>
     internal enum IncrementAmount
     {

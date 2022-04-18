@@ -6,7 +6,7 @@
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Defines the direction a color channel should be incremented.
+    /// Defines the direction a color component should be incremented.
     /// </summary>
     internal enum IncrementDirection
     {

@@ -80,7 +80,7 @@ namespace Avalonia.Controls.Primitives
         // in order to function properly while the asynchronous bitmap creation
         // is in progress.
         private ColorSpectrumShape _shapeFromLastBitmapCreation = ColorSpectrumShape.Box;
-        private ColorSpectrumChannels _componentsFromLastBitmapCreation = ColorSpectrumChannels.HueSaturation;
+        private ColorSpectrumComponents _componentsFromLastBitmapCreation = ColorSpectrumComponents.HueSaturation;
         private double _imageWidthFromLastBitmapCreation = 0.0;
         private double _imageHeightFromLastBitmapCreation = 0.0;
         private int _minHueFromLastBitmapCreation = 0;
@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Primitives
         public ColorSpectrum()
         {
             _shapeFromLastBitmapCreation = Shape;
-            _componentsFromLastBitmapCreation = Channels;
+            _componentsFromLastBitmapCreation = Components;
             _imageWidthFromLastBitmapCreation = 0;
             _imageHeightFromLastBitmapCreation = 0;
             _minHueFromLastBitmapCreation = MinHue;
@@ -219,53 +219,53 @@ namespace Avalonia.Controls.Primitives
 
             bool isControlDown = e.KeyModifiers.HasFlag(KeyModifiers.Control);
 
-            HsvChannel incrementChannel = HsvChannel.Hue;
+            HsvComponent incrementComponent = HsvComponent.Hue;
 
             bool isSaturationValue = false;
 
             if (key == Key.Left ||
                 key == Key.Right)
             {
-                switch (Channels)
+                switch (Components)
                 {
-                    case ColorSpectrumChannels.HueSaturation:
-                    case ColorSpectrumChannels.HueValue:
-                        incrementChannel = HsvChannel.Hue;
+                    case ColorSpectrumComponents.HueSaturation:
+                    case ColorSpectrumComponents.HueValue:
+                        incrementComponent = HsvComponent.Hue;
                         break;
 
-                    case ColorSpectrumChannels.SaturationValue:
+                    case ColorSpectrumComponents.SaturationValue:
                         isSaturationValue = true;
-                        goto case ColorSpectrumChannels.SaturationHue;
-                    case ColorSpectrumChannels.SaturationHue:
-                        incrementChannel = HsvChannel.Saturation;
+                        goto case ColorSpectrumComponents.SaturationHue;
+                    case ColorSpectrumComponents.SaturationHue:
+                        incrementComponent = HsvComponent.Saturation;
                         break;
 
-                    case ColorSpectrumChannels.ValueHue:
-                    case ColorSpectrumChannels.ValueSaturation:
-                        incrementChannel = HsvChannel.Value;
+                    case ColorSpectrumComponents.ValueHue:
+                    case ColorSpectrumComponents.ValueSaturation:
+                        incrementComponent = HsvComponent.Value;
                         break;
                 }
             }
             else if (key == Key.Up ||
                      key == Key.Down)
             {
-                switch (Channels)
+                switch (Components)
                 {
-                    case ColorSpectrumChannels.SaturationHue:
-                    case ColorSpectrumChannels.ValueHue:
-                        incrementChannel = HsvChannel.Hue;
+                    case ColorSpectrumComponents.SaturationHue:
+                    case ColorSpectrumComponents.ValueHue:
+                        incrementComponent = HsvComponent.Hue;
                         break;
 
-                    case ColorSpectrumChannels.HueSaturation:
-                    case ColorSpectrumChannels.ValueSaturation:
-                        incrementChannel = HsvChannel.Saturation;
+                    case ColorSpectrumComponents.HueSaturation:
+                    case ColorSpectrumComponents.ValueSaturation:
+                        incrementComponent = HsvComponent.Saturation;
                         break;
 
-                    case ColorSpectrumChannels.SaturationValue:
+                    case ColorSpectrumComponents.SaturationValue:
                         isSaturationValue = true;
-                        goto case ColorSpectrumChannels.HueValue;
-                    case ColorSpectrumChannels.HueValue:
-                        incrementChannel = HsvChannel.Value;
+                        goto case ColorSpectrumComponents.HueValue;
+                    case ColorSpectrumComponents.HueValue:
+                        incrementComponent = HsvComponent.Value;
                         break;
                 }
             }
@@ -273,19 +273,19 @@ namespace Avalonia.Controls.Primitives
             double minBound = 0.0;
             double maxBound = 0.0;
 
-            switch (incrementChannel)
+            switch (incrementComponent)
             {
-                case HsvChannel.Hue:
+                case HsvComponent.Hue:
                     minBound = MinHue;
                     maxBound = MaxHue;
                     break;
 
-                case HsvChannel.Saturation:
+                case HsvComponent.Saturation:
                     minBound = MinSaturation;
                     maxBound = MaxSaturation;
                     break;
 
-                case HsvChannel.Value:
+                case HsvComponent.Value:
                     minBound = MinValue;
                     maxBound = MaxValue;
                     break;
@@ -295,8 +295,8 @@ namespace Avalonia.Controls.Primitives
             // so we want left and up to be lower for hue, but higher for saturation and value.
             // This will ensure that the icon always moves in the direction of the key press.
             IncrementDirection direction =
-                (incrementChannel == HsvChannel.Hue && (key == Key.Left || key == Key.Up)) ||
-                (incrementChannel != HsvChannel.Hue && (key == Key.Right || key == Key.Down)) ?
+                (incrementComponent == HsvComponent.Hue && (key == Key.Left || key == Key.Up)) ||
+                (incrementComponent != HsvComponent.Hue && (key == Key.Right || key == Key.Down)) ?
                 IncrementDirection.Lower :
                 IncrementDirection.Higher;
 
@@ -320,9 +320,9 @@ namespace Avalonia.Controls.Primitives
             IncrementAmount amount = isControlDown ? IncrementAmount.Large : IncrementAmount.Small;
 
             HsvColor hsvColor = HsvColor;
-            UpdateColor(ColorHelpers.IncrementColorChannel(
+            UpdateColor(ColorHelpers.IncrementColorComponent(
                 new Hsv(hsvColor),
-                incrementChannel,
+                incrementComponent,
                 direction,
                 amount,
                 shouldWrap: true,
@@ -408,12 +408,12 @@ namespace Avalonia.Controls.Primitives
                     throw new ArgumentException("MaxHue must be between 0 and 359.");
                 }
 
-                ColorSpectrumChannels channels = Channels;
+                ColorSpectrumComponents components = Components;
 
                 // If hue is one of the axes in the spectrum bitmap, then we'll need to regenerate it
                 // if the maximum or minimum value has changed.
-                if (channels != ColorSpectrumChannels.SaturationValue &&
-                    channels != ColorSpectrumChannels.ValueSaturation)
+                if (components != ColorSpectrumComponents.SaturationValue &&
+                    components != ColorSpectrumComponents.ValueSaturation)
                 {
                     CreateBitmapsAndColorMap();
                 }
@@ -433,12 +433,12 @@ namespace Avalonia.Controls.Primitives
                     throw new ArgumentException("MaxSaturation must be between 0 and 100.");
                 }
 
-                ColorSpectrumChannels channels = Channels;
+                ColorSpectrumComponents components = Components;
 
                 // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
                 // if the maximum or minimum value has changed.
-                if (channels != ColorSpectrumChannels.HueValue &&
-                    channels != ColorSpectrumChannels.ValueHue)
+                if (components != ColorSpectrumComponents.HueValue &&
+                    components != ColorSpectrumComponents.ValueHue)
                 {
                     CreateBitmapsAndColorMap();
                 }
@@ -458,12 +458,12 @@ namespace Avalonia.Controls.Primitives
                     throw new ArgumentException("MaxValue must be between 0 and 100.");
                 }
 
-                ColorSpectrumChannels channels = Channels;
+                ColorSpectrumComponents components = Components;
 
                 // If value is one of the axes in the spectrum bitmap, then we'll need to regenerate it
                 // if the maximum or minimum value has changed.
-                if (channels != ColorSpectrumChannels.HueSaturation &&
-                    channels != ColorSpectrumChannels.SaturationHue)
+                if (components != ColorSpectrumComponents.HueSaturation &&
+                    components != ColorSpectrumComponents.SaturationHue)
                 {
                     CreateBitmapsAndColorMap();
                 }
@@ -472,7 +472,7 @@ namespace Avalonia.Controls.Primitives
             {
                 CreateBitmapsAndColorMap();
             }
-            else if (change.Property == ChannelsProperty)
+            else if (change.Property == ComponentsProperty)
             {
                 CreateBitmapsAndColorMap();
             }
@@ -617,23 +617,22 @@ namespace Avalonia.Controls.Primitives
             // Note: This can sometimes cause a crash -- possibly due to differences in c# rounding. Therefore, index is now clamped.
             Hsv hsvAtPoint = _hsvValues[MathUtilities.Clamp((y * width + x), 0, _hsvValues.Count - 1)];
 
-            var channels = Channels;
             var hsvColor = HsvColor;
 
-            switch (channels)
+            switch (Components)
             {
-                case ColorSpectrumChannels.HueValue:
-                case ColorSpectrumChannels.ValueHue:
+                case ColorSpectrumComponents.HueValue:
+                case ColorSpectrumComponents.ValueHue:
                     hsvAtPoint.S = hsvColor.S;
                     break;
 
-                case ColorSpectrumChannels.HueSaturation:
-                case ColorSpectrumChannels.SaturationHue:
+                case ColorSpectrumComponents.HueSaturation:
+                case ColorSpectrumComponents.SaturationHue:
                     hsvAtPoint.V = hsvColor.V;
                     break;
 
-                case ColorSpectrumChannels.ValueSaturation:
-                case ColorSpectrumChannels.SaturationValue:
+                case ColorSpectrumComponents.ValueSaturation:
+                case ColorSpectrumComponents.SaturationValue:
                     hsvAtPoint.H = hsvColor.H;
                     break;
             }
@@ -681,8 +680,8 @@ namespace Avalonia.Controls.Primitives
                 // In the case where saturation was an axis in the spectrum with hue, or value is an axis, full stop,
                 // we inverted the direction of that axis in order to put more hue on the outside of the ring,
                 // so we need to do similarly here when positioning the ellipse.
-                if (_componentsFromLastBitmapCreation == ColorSpectrumChannels.HueSaturation ||
-                    _componentsFromLastBitmapCreation == ColorSpectrumChannels.SaturationHue)
+                if (_componentsFromLastBitmapCreation == ColorSpectrumComponents.HueSaturation ||
+                    _componentsFromLastBitmapCreation == ColorSpectrumComponents.SaturationHue)
                 {
                     sPercent = 1 - sPercent;
                 }
@@ -693,32 +692,32 @@ namespace Avalonia.Controls.Primitives
 
                 switch (_componentsFromLastBitmapCreation)
                 {
-                    case ColorSpectrumChannels.HueValue:
+                    case ColorSpectrumComponents.HueValue:
                         xPercent = hPercent;
                         yPercent = vPercent;
                         break;
 
-                    case ColorSpectrumChannels.HueSaturation:
+                    case ColorSpectrumComponents.HueSaturation:
                         xPercent = hPercent;
                         yPercent = sPercent;
                         break;
 
-                    case ColorSpectrumChannels.ValueHue:
+                    case ColorSpectrumComponents.ValueHue:
                         xPercent = vPercent;
                         yPercent = hPercent;
                         break;
 
-                    case ColorSpectrumChannels.ValueSaturation:
+                    case ColorSpectrumComponents.ValueSaturation:
                         xPercent = vPercent;
                         yPercent = sPercent;
                         break;
 
-                    case ColorSpectrumChannels.SaturationHue:
+                    case ColorSpectrumComponents.SaturationHue:
                         xPercent = sPercent;
                         yPercent = hPercent;
                         break;
 
-                    case ColorSpectrumChannels.SaturationValue:
+                    case ColorSpectrumComponents.SaturationValue:
                         xPercent = sPercent;
                         yPercent = vPercent;
                         break;
@@ -757,8 +756,8 @@ namespace Avalonia.Controls.Primitives
                 // In the case where saturation was an axis in the spectrum with hue, or value is an axis, full stop,
                 // we inverted the direction of that axis in order to put more hue on the outside of the ring,
                 // so we need to do similarly here when positioning the ellipse.
-                if (_componentsFromLastBitmapCreation == ColorSpectrumChannels.HueSaturation ||
-                    _componentsFromLastBitmapCreation == ColorSpectrumChannels.SaturationHue)
+                if (_componentsFromLastBitmapCreation == ColorSpectrumComponents.HueSaturation ||
+                    _componentsFromLastBitmapCreation == ColorSpectrumComponents.SaturationHue)
                 {
                     sThetaValue = 360 - sThetaValue;
                     sRValue = -sRValue - 1;
@@ -771,32 +770,32 @@ namespace Avalonia.Controls.Primitives
 
                 switch (_componentsFromLastBitmapCreation)
                 {
-                    case ColorSpectrumChannels.HueValue:
+                    case ColorSpectrumComponents.HueValue:
                         thetaValue = hThetaValue;
                         rValue = vRValue;
                         break;
 
-                    case ColorSpectrumChannels.HueSaturation:
+                    case ColorSpectrumComponents.HueSaturation:
                         thetaValue = hThetaValue;
                         rValue = sRValue;
                         break;
 
-                    case ColorSpectrumChannels.ValueHue:
+                    case ColorSpectrumComponents.ValueHue:
                         thetaValue = vThetaValue;
                         rValue = hRValue;
                         break;
 
-                    case ColorSpectrumChannels.ValueSaturation:
+                    case ColorSpectrumComponents.ValueSaturation:
                         thetaValue = vThetaValue;
                         rValue = sRValue;
                         break;
 
-                    case ColorSpectrumChannels.SaturationHue:
+                    case ColorSpectrumComponents.SaturationHue:
                         thetaValue = sThetaValue;
                         rValue = hRValue;
                         break;
 
-                    case ColorSpectrumChannels.SaturationValue:
+                    case ColorSpectrumComponents.SaturationValue:
                         thetaValue = sThetaValue;
                         rValue = vRValue;
                         break;
@@ -932,7 +931,7 @@ namespace Avalonia.Controls.Primitives
             int minValue = MinValue;
             int maxValue = MaxValue;
             ColorSpectrumShape shape = Shape;
-            ColorSpectrumChannels channels = Channels;
+            ColorSpectrumComponents components = Components;
 
             // If min >= max, then by convention, min is the only number that a property can have.
             if (minHue >= maxHue)
@@ -967,8 +966,8 @@ namespace Avalonia.Controls.Primitives
             bgraMinPixelData.Capacity = pixelDataSize;
 
             // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
-            if (channels == ColorSpectrumChannels.ValueSaturation ||
-                channels == ColorSpectrumChannels.SaturationValue)
+            if (components == ColorSpectrumComponents.ValueSaturation ||
+                components == ColorSpectrumComponents.SaturationValue)
             {
                 bgraMiddle1PixelData.Capacity = pixelDataSize;
                 bgraMiddle2PixelData.Capacity = pixelDataSize;
@@ -1004,7 +1003,7 @@ namespace Avalonia.Controls.Primitives
                         for (int y = minDimensionInt - 1; y >= 0; --y)
                         {
                             FillPixelForBox(
-                                x, y, hsv, minDimensionInt, channels, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                                x, y, hsv, minDimensionInt, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
                                 bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
                                 newHsvValues);
                         }
@@ -1017,7 +1016,7 @@ namespace Avalonia.Controls.Primitives
                         for (int x = 0; x < minDimensionInt; ++x)
                         {
                             FillPixelForRing(
-                                x, y, minDimensionInt / 2.0, hsv, channels, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                                x, y, minDimensionInt / 2.0, hsv, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
                                 bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
                                 newHsvValues);
                         }
@@ -1030,24 +1029,24 @@ namespace Avalonia.Controls.Primitives
                 int pixelWidth = (int)Math.Round(minDimension);
                 int pixelHeight = (int)Math.Round(minDimension);
 
-                ColorSpectrumChannels channels2 = Channels;
+                ColorSpectrumComponents components2 = Components;
 
                 WriteableBitmap minBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMinPixelData);
                 WriteableBitmap maxBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMaxPixelData);
 
-                switch (channels2)
+                switch (components2)
                 {
-                    case ColorSpectrumChannels.HueValue:
-                    case ColorSpectrumChannels.ValueHue:
+                    case ColorSpectrumComponents.HueValue:
+                    case ColorSpectrumComponents.ValueHue:
                         _saturationMinimumBitmap = minBitmap;
                         _saturationMaximumBitmap = maxBitmap;
                         break;
-                    case ColorSpectrumChannels.HueSaturation:
-                    case ColorSpectrumChannels.SaturationHue:
+                    case ColorSpectrumComponents.HueSaturation:
+                    case ColorSpectrumComponents.SaturationHue:
                         _valueBitmap = maxBitmap;
                         break;
-                    case ColorSpectrumChannels.ValueSaturation:
-                    case ColorSpectrumChannels.SaturationValue:
+                    case ColorSpectrumComponents.ValueSaturation:
+                    case ColorSpectrumComponents.SaturationValue:
                         _hueRedBitmap = minBitmap;
                         _hueYellowBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle1PixelData);
                         _hueGreenBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle2PixelData);
@@ -1058,7 +1057,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 _shapeFromLastBitmapCreation = Shape;
-                _componentsFromLastBitmapCreation = Channels;
+                _componentsFromLastBitmapCreation = Components;
                 _imageWidthFromLastBitmapCreation = minDimension;
                 _imageHeightFromLastBitmapCreation = minDimension;
                 _minHueFromLastBitmapCreation = MinHue;
@@ -1080,7 +1079,7 @@ namespace Avalonia.Controls.Primitives
             double y,
             Hsv baseHsv,
             double minDimension,
-            ColorSpectrumChannels channels,
+            ColorSpectrumComponents components,
             double minHue,
             double maxHue,
             double minSaturation,
@@ -1112,30 +1111,30 @@ namespace Avalonia.Controls.Primitives
             double xPercent = (minDimension - 1 - x) / (minDimension - 1);
             double yPercent = (minDimension - 1 - y) / (minDimension - 1);
 
-            switch (channels)
+            switch (components)
             {
-                case ColorSpectrumChannels.HueValue:
+                case ColorSpectrumComponents.HueValue:
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + yPercent * (hMax - hMin);
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + xPercent * (vMax - vMin);
                     hsvMin.S = 0;
                     hsvMax.S = 1;
                     break;
 
-                case ColorSpectrumChannels.HueSaturation:
+                case ColorSpectrumComponents.HueSaturation:
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + yPercent * (hMax - hMin);
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + xPercent * (sMax - sMin);
                     hsvMin.V = 0;
                     hsvMax.V = 1;
                     break;
 
-                case ColorSpectrumChannels.ValueHue:
+                case ColorSpectrumComponents.ValueHue:
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + yPercent * (vMax - vMin);
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + xPercent * (hMax - hMin);
                     hsvMin.S = 0;
                     hsvMax.S = 1;
                     break;
 
-                case ColorSpectrumChannels.ValueSaturation:
+                case ColorSpectrumComponents.ValueSaturation:
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + yPercent * (vMax - vMin);
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + xPercent * (sMax - sMin);
                     hsvMin.H = 0;
@@ -1146,14 +1145,14 @@ namespace Avalonia.Controls.Primitives
                     hsvMax.H = 300;
                     break;
 
-                case ColorSpectrumChannels.SaturationHue:
+                case ColorSpectrumComponents.SaturationHue:
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + yPercent * (sMax - sMin);
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + xPercent * (hMax - hMin);
                     hsvMin.V = 0;
                     hsvMax.V = 1;
                     break;
 
-                case ColorSpectrumChannels.SaturationValue:
+                case ColorSpectrumComponents.SaturationValue:
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + yPercent * (sMax - sMin);
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + xPercent * (vMax - vMin);
                     hsvMin.H = 0;
@@ -1171,8 +1170,8 @@ namespace Avalonia.Controls.Primitives
             // so we'll invert the number before assigning the HSL value to the array.
             // Otherwise, we'll have a very narrow section in the middle that actually has meaningful hue
             // in the case of the ring configuration.
-            if (channels == ColorSpectrumChannels.HueSaturation ||
-                channels == ColorSpectrumChannels.SaturationHue)
+            if (components == ColorSpectrumComponents.HueSaturation ||
+                components == ColorSpectrumComponents.SaturationHue)
             {
                 hsvMin.S = sMax - hsvMin.S + sMin;
                 hsvMiddle1.S = sMax - hsvMiddle1.S + sMin;
@@ -1200,8 +1199,8 @@ namespace Avalonia.Controls.Primitives
             bgraMinPixelData.Add(255); // a - ignored
 
             // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
-            if (channels == ColorSpectrumChannels.ValueSaturation ||
-                channels == ColorSpectrumChannels.SaturationValue)
+            if (components == ColorSpectrumComponents.ValueSaturation ||
+                components == ColorSpectrumComponents.SaturationValue)
             {
                 Rgb rgbMiddle1 = hsvMiddle1.ToRgb();
                 bgraMiddle1PixelData.Add((byte)Math.Round(rgbMiddle1.B * 255.0)); // b
@@ -1240,7 +1239,7 @@ namespace Avalonia.Controls.Primitives
             double y,
             double radius,
             Hsv baseHsv,
-            ColorSpectrumChannels channels,
+            ColorSpectrumComponents components,
             double minHue,
             double maxHue,
             double minSaturation,
@@ -1298,30 +1297,30 @@ namespace Avalonia.Controls.Primitives
 
             double thetaPercent = theta / 360;
 
-            switch (channels)
+            switch (components)
             {
-                case ColorSpectrumChannels.HueValue:
+                case ColorSpectrumComponents.HueValue:
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + thetaPercent * (hMax - hMin);
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + r * (vMax - vMin);
                     hsvMin.S = 0;
                     hsvMax.S = 1;
                     break;
 
-                case ColorSpectrumChannels.HueSaturation:
+                case ColorSpectrumComponents.HueSaturation:
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + thetaPercent * (hMax - hMin);
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + r * (sMax - sMin);
                     hsvMin.V = 0;
                     hsvMax.V = 1;
                     break;
 
-                case ColorSpectrumChannels.ValueHue:
+                case ColorSpectrumComponents.ValueHue:
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + thetaPercent * (vMax - vMin);
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + r * (hMax - hMin);
                     hsvMin.S = 0;
                     hsvMax.S = 1;
                     break;
 
-                case ColorSpectrumChannels.ValueSaturation:
+                case ColorSpectrumComponents.ValueSaturation:
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + thetaPercent * (vMax - vMin);
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + r * (sMax - sMin);
                     hsvMin.H = 0;
@@ -1332,14 +1331,14 @@ namespace Avalonia.Controls.Primitives
                     hsvMax.H = 300;
                     break;
 
-                case ColorSpectrumChannels.SaturationHue:
+                case ColorSpectrumComponents.SaturationHue:
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + thetaPercent * (sMax - sMin);
                     hsvMin.H = hsvMiddle1.H = hsvMiddle2.H = hsvMiddle3.H = hsvMiddle4.H = hsvMax.H = hMin + r * (hMax - hMin);
                     hsvMin.V = 0;
                     hsvMax.V = 1;
                     break;
 
-                case ColorSpectrumChannels.SaturationValue:
+                case ColorSpectrumComponents.SaturationValue:
                     hsvMin.S = hsvMiddle1.S = hsvMiddle2.S = hsvMiddle3.S = hsvMiddle4.S = hsvMax.S = sMin + thetaPercent * (sMax - sMin);
                     hsvMin.V = hsvMiddle1.V = hsvMiddle2.V = hsvMiddle3.V = hsvMiddle4.V = hsvMax.V = vMin + r * (vMax - vMin);
                     hsvMin.H = 0;
@@ -1357,8 +1356,8 @@ namespace Avalonia.Controls.Primitives
             // so we'll invert the number before assigning the HSL value to the array.
             // Otherwise, we'll have a very narrow section in the middle that actually has meaningful hue
             // in the case of the ring configuration.
-            if (channels == ColorSpectrumChannels.HueSaturation ||
-                channels == ColorSpectrumChannels.SaturationHue)
+            if (components == ColorSpectrumComponents.HueSaturation ||
+                components == ColorSpectrumComponents.SaturationHue)
             {
                 hsvMin.S = sMax - hsvMin.S + sMin;
                 hsvMiddle1.S = sMax - hsvMiddle1.S + sMin;
@@ -1386,8 +1385,8 @@ namespace Avalonia.Controls.Primitives
             bgraMinPixelData.Add(255); // a
 
             // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
-            if (channels == ColorSpectrumChannels.ValueSaturation ||
-                channels == ColorSpectrumChannels.SaturationValue)
+            if (components == ColorSpectrumComponents.ValueSaturation ||
+                components == ColorSpectrumComponents.SaturationValue)
             {
                 Rgb rgbMiddle1 = hsvMiddle1.ToRgb();
                 bgraMiddle1PixelData.Add((byte)Math.Round(rgbMiddle1.B * 255)); // b
@@ -1432,7 +1431,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             HsvColor hsvColor = HsvColor;
-            ColorSpectrumChannels channels = Channels;
+            ColorSpectrumComponents components = Components;
 
             // We'll set the base image and the overlay image based on which component is our third dimension.
             // If it's saturation or luminosity, then the base image is that dimension at its minimum value,
@@ -1440,10 +1439,10 @@ namespace Avalonia.Controls.Primitives
             // If it's hue, then we'll figure out where in the color wheel we are, and then use the two
             // colors on either side of our position as our base image and overlay image.
             // For example, if our hue is orange, then the base image would be red and the overlay image yellow.
-            switch (channels)
+            switch (components)
             {
-                case ColorSpectrumChannels.HueValue:
-                case ColorSpectrumChannels.ValueHue:
+                case ColorSpectrumComponents.HueValue:
+                case ColorSpectrumComponents.ValueHue:
                     {
                         if (_saturationMinimumBitmap == null ||
                             _saturationMaximumBitmap == null)
@@ -1463,8 +1462,8 @@ namespace Avalonia.Controls.Primitives
                     }
                     break;
 
-                case ColorSpectrumChannels.HueSaturation:
-                case ColorSpectrumChannels.SaturationHue:
+                case ColorSpectrumComponents.HueSaturation:
+                case ColorSpectrumComponents.SaturationHue:
                     {
                         if (_valueBitmap == null)
                         {
@@ -1483,8 +1482,8 @@ namespace Avalonia.Controls.Primitives
                     }
                     break;
 
-                case ColorSpectrumChannels.ValueSaturation:
-                case ColorSpectrumChannels.SaturationValue:
+                case ColorSpectrumComponents.ValueSaturation:
+                case ColorSpectrumComponents.SaturationValue:
                     {
                         if (_hueRedBitmap == null ||
                             _hueYellowBitmap == null ||
@@ -1554,13 +1553,13 @@ namespace Avalonia.Controls.Primitives
             // To find how much something contrasts with white, we use the equation
             // for relative luminance.
             //
-            // If the third channel is value, then we won't be updating the spectrum's displayed colors,
+            // If the third component is value, then we won't be updating the spectrum's displayed colors,
             // so in that case we should use a value of 1 when considering the backdrop
             // for the selection ellipse.
             Color displayedColor;
 
-            if (Channels == ColorSpectrumChannels.HueSaturation ||
-                Channels == ColorSpectrumChannels.SaturationHue)
+            if (Components == ColorSpectrumComponents.HueSaturation ||
+                Components == ColorSpectrumComponents.SaturationHue)
             {
                 HsvColor hsvColor = HsvColor;
                 Rgb color = (new Hsv(hsvColor.H, hsvColor.S, 1.0)).ToRgb();
