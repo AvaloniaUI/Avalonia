@@ -10,6 +10,7 @@
       <ProjectReference Include="../../src/Avalonia.Native/Avalonia.Native.csproj" />
       <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
       <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
+      <ProjectReference Include="../Avalonia.Wayland/Avalonia.Wayland.csproj" />
   </ItemGroup>
   
   <Import Project="..\..\build\ApiDiff.props" />  

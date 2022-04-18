@@ -57,10 +57,14 @@ namespace Avalonia.OpenGL.Egl
         public EglGetDisplay GetDisplay { get; }
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglGetPlatformDisplayEXT(int platform, IntPtr nativeDisplay, int[] attrs);
+        public delegate IntPtr EglGetPlatformDisplay(int platform, IntPtr nativeDisplay, int[] attrs);
         [GlEntryPoint("eglGetPlatformDisplayEXT")]
         [GlOptionalEntryPoint]
-        public EglGetPlatformDisplayEXT GetPlatformDisplayEXT { get; }
+        public EglGetPlatformDisplay GetPlatformDisplayEXT { get; }
+
+        [GlEntryPoint("eglGetPlatformDisplay")]
+        [GlOptionalEntryPoint]
+        public EglGetPlatformDisplay GetPlatformDisplay { get; }
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate bool EglInitialize(IntPtr display, out int major, out int minor);
