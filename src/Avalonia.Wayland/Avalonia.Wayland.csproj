@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <PackageId>Avalonia.Wayland</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="NWayland\**" />
+    <Compile Remove="NWayland\**" />
+    <EmbeddedResource Remove="NWayland\**" />
+    <None Remove="NWayland\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="NWayland\src\NWayland\NWayland.csproj" />
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
+    <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\Avalonia.Linux\Avalonia.Linux.csproj" />
+    <ProjectReference Include="..\Avalonia.OpenGL\Avalonia.OpenGL.csproj" />
+    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+  </ItemGroup>
+
+</Project>
