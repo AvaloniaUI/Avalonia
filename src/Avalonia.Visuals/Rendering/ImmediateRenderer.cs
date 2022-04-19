@@ -217,10 +217,7 @@ namespace Avalonia.Rendering
 
         private static void ClearTransformedBounds(IVisual visual)
         {
-            foreach (var e in visual.GetSelfAndVisualDescendants())
-            {
-                visual.TransformedBounds = null;
-            }
+            visual.TransformedBounds = null;
         }
 
         private static Rect GetTransformedBounds(IVisual visual)
