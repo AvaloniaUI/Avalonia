@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    public class TextBlock : Control, IInlinesHost
+    public class TextBlock : Control, IInlineHost
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -155,9 +155,7 @@ namespace Avalonia.Controls
         /// </summary>
         public TextBlock()
         {
-            Inlines = new InlineCollection(this);
-
-            Inlines.Invalidated += InlinesChanged;
+            Inlines = new InlineCollection(this, this);
         }
 
         /// <summary>
@@ -211,7 +209,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the inlines.
+        /// Gets the inlines.
         /// </summary>
         [Content]
         public InlineCollection Inlines { get; }
@@ -569,7 +567,7 @@ namespace Avalonia.Controls
 
                 foreach (var inline in Inlines)
                 {
-                    inline.BuildTextRun(textRuns, this);
+                    inline.BuildTextRun(textRuns);
                 }
 
                 textSource = new InlinesTextSource(textRuns);
@@ -667,8 +665,6 @@ namespace Avalonia.Controls
                 case nameof (Padding):
                 case nameof (LineHeight):
                 case nameof (MaxLines):
-                    
-                case nameof (InlinesProperty):
 
                 case nameof (Text):
                 case nameof (TextDecorations):
@@ -685,12 +681,17 @@ namespace Avalonia.Controls
             InvalidateTextLayout();
         }
 
-        void IInlinesHost.AddVisualChild(IControl child)
+        void IInlineHost.AddVisualChild(IControl child)
         {
             if (child.VisualParent == null)
             {
                 VisualChildren.Add(child);
             }            
+        }
+
+        void IInlineHost.Invalidate()
+        {
+            InvalidateTextLayout();
         }
 
         private readonly struct InlinesTextSource : ITextSource

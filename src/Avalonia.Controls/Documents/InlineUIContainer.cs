@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Text;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
@@ -58,11 +57,16 @@ namespace Avalonia.Controls.Documents
             set => SetValue(ChildProperty, value);
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns, IInlinesHost parent)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            ((ISetLogicalParent)Child).SetParent(parent);
+            if(InlineHost == null)
+            {
+                return;
+            }
 
-            parent.AddVisualChild(Child);
+            ((ISetLogicalParent)Child).SetParent(InlineHost);
+
+            InlineHost.AddVisualChild(Child);
 
             textRuns.Add(new InlineRun(Child, CreateTextRunProperties()));
         }

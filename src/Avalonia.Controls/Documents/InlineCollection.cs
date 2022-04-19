@@ -12,29 +12,37 @@ namespace Avalonia.Controls.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>
     {
+        private readonly IInlineHost? _host;
         private string? _text = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InlineCollection"/> class.
         /// </summary>
-        public InlineCollection(ILogical parent) : base(0)
+        public InlineCollection(ILogical parent) : this(parent, null) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InlineCollection"/> class.
+        /// </summary>
+        internal InlineCollection(ILogical parent, IInlineHost? host = null) : base(0)
         {
+            _host = host;
+
             ResetBehavior = ResetBehavior.Remove;
             
             this.ForEachItem(
                 x =>
                 {
                     ((ISetLogicalParent)x).SetParent(parent);
-                    x.Invalidated += Invalidate;
-                    Invalidate();
+                    x.InlineHost = host;
+                    host?.Invalidate();
                 },
                 x =>
                 {
                     ((ISetLogicalParent)x).SetParent(null);
-                    x.Invalidated -= Invalidate;
-                    Invalidate();
+                    x.InlineHost = host;
+                    host?.Invalidate();
                 },
-                () => throw new NotSupportedException());
+                () => throw new NotSupportedException());         
         }
 
         public bool HasComplexContent => Count > 0;
@@ -98,22 +106,20 @@ namespace Avalonia.Controls.Documents
 
         public void Add(IControl child)
         {
-            if (!HasComplexContent && !string.IsNullOrEmpty(_text))
-            {
-                base.Add(new Run(_text));
+            var implicitRun = new InlineUIContainer(child);
 
-                _text = string.Empty;
-            }
-
-            base.Add(new InlineUIContainer(child));
+            Add(implicitRun);
         }
 
         public override void Add(Inline item)
         {
             if (!HasComplexContent)
             {
-                base.Add(new Run(_text));
-                
+                if (!string.IsNullOrEmpty(_text))
+                {
+                    base.Add(new Run(_text));
+                }
+                             
                 _text = string.Empty;
             }
             
@@ -124,11 +130,19 @@ namespace Avalonia.Controls.Documents
         /// Raised when an inline in the collection changes.
         /// </summary>
         public event EventHandler? Invalidated;
-        
+
         /// <summary>
         /// Raises the <see cref="Invalidated"/> event.
         /// </summary>
-        protected void Invalidate() => Invalidated?.Invoke(this, EventArgs.Empty);
+        protected void Invalidate()
+        {
+            if(_host != null)
+            {
+                _host.Invalidate();
+            }
+
+            Invalidated?.Invoke(this, EventArgs.Empty);
+        }
 
         private void Invalidate(object? sender, EventArgs e) => Invalidate();
     }

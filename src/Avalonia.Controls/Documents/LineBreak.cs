@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Documents
         {
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns, IInlinesHost parent)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
             textRuns.Add(new TextEndOfLine());
         }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Data;
-using Avalonia.LogicalTree;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 
@@ -51,7 +50,7 @@ namespace Avalonia.Controls.Documents
             set { SetValue (TextProperty, value); }
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns, IInlinesHost parent)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
             var text = (Text ?? "").AsMemory();
 
@@ -76,7 +75,7 @@ namespace Avalonia.Controls.Documents
             switch (change.Property.Name)
             {
                 case nameof(Text):
-                    Invalidate();
+                    InlineHost?.Invalidate();
                     break;
             }
         }

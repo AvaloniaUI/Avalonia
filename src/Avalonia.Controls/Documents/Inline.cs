@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.Text;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
-namespace Avalonia.Controls.Documents 
+namespace Avalonia.Controls.Documents
 {
     /// <summary>
     /// Inline element.
@@ -45,7 +44,7 @@ namespace Avalonia.Controls.Documents
             set { SetValue(BaselineAlignmentProperty, value); }
         }
 
-        internal abstract void BuildTextRun(IList<TextRun> textRuns, IInlinesHost parent);
+        internal abstract void BuildTextRun(IList<TextRun> textRuns);
 
         internal abstract void AppendText(StringBuilder stringBuilder);
 
@@ -63,14 +62,9 @@ namespace Avalonia.Controls.Documents
             {
                 case nameof(TextDecorations):
                 case nameof(BaselineAlignment):
-                    Invalidate();
+                    InlineHost?.Invalidate();
                     break;
             }
         }
-    }
-
-    public interface IInlinesHost : ILogical
-    {
-        void AddVisualChild(IControl child);
     }
 }

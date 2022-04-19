@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Avalonia.LogicalTree;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -27,8 +25,7 @@ namespace Avalonia.Controls.Documents
         public Span()
         {
             Inlines = new InlineCollection(this);
-
-            Inlines.Invalidated += (s, e) => Invalidate();
+            Inlines.Invalidated += (s, e) => InlineHost?.Invalidate();
         }
 
         /// <summary>
@@ -37,13 +34,13 @@ namespace Avalonia.Controls.Documents
         [Content]
         public InlineCollection Inlines { get; }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns, IInlinesHost parent)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
             if (Inlines.HasComplexContent)
             {
                 foreach (var inline in Inlines)
                 {
-                    inline.BuildTextRun(textRuns, parent);
+                    inline.BuildTextRun(textRuns);
                 }
             }
             else
