@@ -217,7 +217,10 @@ namespace Avalonia.Rendering
 
         private static void ClearTransformedBounds(IVisual visual)
         {
-            visual.TransformedBounds = null;
+            foreach (var e in visual.GetSelfAndVisualDescendants())
+            {
+                visual.TransformedBounds = null;
+            }
         }
 
         private static Rect GetTransformedBounds(IVisual visual)
@@ -278,18 +281,13 @@ namespace Avalonia.Rendering
 
                         _hitTestElements.Sort(start, end - start, ZOrderHitTestComparer.Instance);
 
-                        bool found = false;
-                        IVisual? child = null;
+                        result = null;
                         for (int i = start; i < end; i++)
-                            if (HitTestFirst(_hitTestElements[i].Item2, p, filter, out child))
-                            {
-                                found = true;
+                            if (HitTestFirst(_hitTestElements[i].Item2, p, filter, out result))
                                 break;
-                            }
 
                         _hitTestElements.RemoveRange(start, end - start);
-                        result = child;
-                        return found;
+                        return result != null;
                     }
                     else if (childrenCount == 1)
                     {
