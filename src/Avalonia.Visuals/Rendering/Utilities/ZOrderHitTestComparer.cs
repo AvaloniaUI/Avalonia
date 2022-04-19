@@ -3,22 +3,22 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Utilities
 {
-    internal class ZOrderHitTestComparer : IComparer<KeyValuePair<int, IVisual>>
+    internal class ZOrderHitTestComparer : IComparer<(int, IVisual)>
     {
-        public static readonly ZOrderHitTestComparer Instance = new ZOrderHitTestComparer();
-        public int Compare(KeyValuePair<int, IVisual> x, KeyValuePair<int, IVisual> y)
+        public static readonly ZOrderHitTestComparer Instance = new();
+        public int Compare((int, IVisual) x, (int, IVisual) y)
         {
-            if (y.Value is null)
+            if (y.Item2 is null)
                 return 1;
 
-            var z = y.Value.ZIndex - x.Value.ZIndex;
+            var z = y.Item2.ZIndex - x.Item2.ZIndex;
 
             if (z != 0)
             {
                 return z;
             }
 
-            return y.Key - x.Key;
+            return y.Item1 - x.Item1;
         }
     }
 }

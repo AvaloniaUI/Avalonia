@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
+using Avalonia.Collections.Pooled;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
@@ -23,6 +23,12 @@ namespace Avalonia.Rendering
         private readonly IRenderRoot? _renderRoot;
         private bool _updateTransformedBounds = true;
         private IRenderTarget? _renderTarget;
+
+        // The Render elements are stored along with their original parent hierarchy for stable sorting.
+        // One pooled list is allocated for each of these and the methods that add ranges to it clear them up as they finish.
+        private readonly PooledList<(int, IVisual)> _renderElements = new();
+        private readonly PooledList<(int, IVisual)> _hitTestElements = new();
+        private readonly StabilizingComparer<IVisual> _renderComparer = new(ZIndexComparer.Instance);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
@@ -160,6 +166,8 @@ namespace Avalonia.Rendering
         public void Dispose()
         {
             _renderTarget?.Dispose();
+            _renderElements.Dispose();
+            _hitTestElements.Dispose();
         }
 
         /// <inheritdoc/>
@@ -169,8 +177,9 @@ namespace Avalonia.Rendering
         }
 
         public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
-        {
-            return HitTest(root, p, filter).FirstOrDefault();
+        { 
+            HitTestFirst(root, p, filter, out var result);
+            return result;
         }
 
         /// <inheritdoc/>
@@ -229,6 +238,80 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <summary>
+        /// Searches the hierarchy for the topmost element that contains a point.
+        /// Since this is hot code - it's optimized to not allocate.
+        /// </summary>
+        /// <param name="visual"> The parent being searched. </param>
+        /// <param name="p"> Point to hit test for. </param>
+        /// <param name="filter"> Filter for the search. </param>
+        /// <param name="result"> Output element. Null if not found. </param>
+        /// <returns> true if an element was found, false otherwise. </returns>
+        private bool HitTestFirst(
+            IVisual visual,
+            Point p,
+            Func<IVisual, bool>? filter, out IVisual? result)
+        {
+            _ = visual ?? throw new ArgumentNullException(nameof(visual));
+
+            if (filter?.Invoke(visual) != false)
+            {
+                bool containsPoint;
+
+                if (visual is ICustomSimpleHitTest custom)
+                {
+                    containsPoint = custom.HitTest(p);
+                }
+                else
+                {
+                    containsPoint = visual.TransformedBounds?.Contains(p) == true;
+                }
+
+                if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
+                {
+                    var childrenCount = visual.VisualChildren.Count;
+
+                    if (childrenCount > 1)
+                    {
+                        int start = _hitTestElements.Count;
+                        int end = _hitTestElements.Count + visual.VisualChildren.Count;
+
+                        for (int i = 0; i < visual.VisualChildren.Count; i++)
+                            _hitTestElements.Add((i, visual.VisualChildren[i]));
+
+                        _hitTestElements.Sort(start, end - start, ZOrderHitTestComparer.Instance);
+
+                        bool found = false;
+                        IVisual? child = null;
+                        for (int i = start; i < end; i++)
+                            if (HitTestFirst(_hitTestElements[i].Item2, p, filter, out child))
+                            {
+                                found = true;
+                                break;
+                            }
+
+                        _hitTestElements.RemoveRange(start, end - start);
+                        result = child;
+                        return found;
+                    }
+                    else if (childrenCount == 1)
+                    {
+                        if (HitTestFirst(visual.VisualChildren[0], p, filter, out result))
+                            return true;
+                    }
+                }
+
+                if (containsPoint)
+                {
+                    result = visual;
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
+        }
+
         private static IEnumerable<IVisual> HitTest(
            IVisual visual,
            Point p,
@@ -251,34 +334,12 @@ namespace Avalonia.Rendering
 
                 if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
                 {
-                    var childrenCount = visual.VisualChildren.Count;
-                    
-                    if (childrenCount > 1)
+                    foreach (var child in visual.VisualChildren.SortByZIndex())
                     {
-                        var childrenArray = ArrayPool<IVisual>.Shared.Rent(childrenCount);
-                    
-                        try
+                        foreach (var result in HitTest(child, p, filter))
                         {
-                            for (int i = 0; i < childrenCount; i++)
-                                childrenArray[i] = visual.VisualChildren[i];
-                    
-                            childrenArray.StableHitTestSort(childrenCount);
-                        
-                            for (int i = 0; i < childrenCount; i++)
-                            {
-                                foreach (var result in HitTest(childrenArray[i], p, filter))
-                                    yield return result;
-                            }
-                        }
-                        finally
-                        {
-                            ArrayPool<IVisual>.Shared.Return(childrenArray, true);
-                        }
-                    }
-                    else if (childrenCount == 1)
-                    {
-                        foreach (var result in HitTest(visual.VisualChildren[0], p, filter))
                             yield return result;
+                        }
                     }
                 }
 
@@ -350,21 +411,18 @@ namespace Avalonia.Rendering
                     
                     if (childrenCount > 1)
                     {
-                        var sortingArray = ArrayPool<IVisual>.Shared.Rent(childrenCount);
-                        try
-                        {
-                            for (int i = 0; i < childrenCount; i++)
-                                sortingArray[i] = visual.VisualChildren[i];
-                    
-                            sortingArray.StableSort(childrenCount, ZIndexComparer.Instance);
-                        
-                            for (int i = 0; i < childrenCount; i++)
-                                RenderChildInBounds(sortingArray[i], clipRect, context);
-                        }
-                        finally
-                        {
-                            ArrayPool<IVisual>.Shared.Return(sortingArray, true);
-                        }
+                        int start = _renderElements.Count;
+                        int end = _renderElements.Count + visual.VisualChildren.Count;
+
+                        for(int i = 0; i < visual.VisualChildren.Count; i++)
+                            _renderElements.Add((i, visual.VisualChildren[i]));
+
+                        _renderElements.Sort(start, end - start, _renderComparer);
+
+                        for (int i = start; i < end; i++)
+                            RenderChildInBounds(_renderElements[i].Item2, clipRect, context);
+
+                        _renderElements.RemoveRange(start, end - start);
                     }
                     else if (childrenCount == 1)
                     {

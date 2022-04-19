@@ -444,49 +444,6 @@ namespace Avalonia.VisualTree
             return null;
         }
 
-        /// <summary>
-        /// Sorts the array of IVisual with a comparer while preserving the order on tied results.
-        /// Stores the elements from 0 to specified length.
-        /// </summary>
-        public static void StableSort(this IVisual[] values, int length, IComparer<IVisual> comparer)
-        {
-            var keys = ArrayPool<KeyValuePair<int, IVisual>>.Shared.Rent(length);
-            for (var i = 0; i < length; i++)
-                keys[i] = new KeyValuePair<int, IVisual>(i, values[i]);
-            Array.Sort(keys, values, 0, length, new StabilizingComparer(comparer));
-
-            ArrayPool<KeyValuePair<int, IVisual>>.Shared.Return(keys, true);
-        }
-
-        /// <summary>
-        /// Sorts the visuals for hit testing keeping with a z-order comparer and keeping the top control first.
-        /// </summary>
-        public static void StableHitTestSort(this IVisual[] values, int length)
-        {
-            var keys = ArrayPool<KeyValuePair<int, IVisual>>.Shared.Rent(length);
-            for (var i = 0; i < length; i++)
-                keys[i] = new KeyValuePair<int, IVisual>(i, values[i]);
-            Array.Sort(keys, values, 0, length, ZOrderHitTestComparer.Instance);
-
-            ArrayPool<KeyValuePair<int, IVisual>>.Shared.Return(keys, true);
-        }
-
-        private sealed class StabilizingComparer : IComparer<KeyValuePair<int, IVisual>>
-        {
-            private readonly IComparer<IVisual> _comparer;
-
-            public StabilizingComparer(IComparer<IVisual> comparer)
-            {
-                _comparer = comparer;
-            }
-
-            public int Compare(KeyValuePair<int, IVisual> x, KeyValuePair<int, IVisual> y)
-            {
-                var result = _comparer.Compare(x.Value, y.Value);
-                return result != 0 ? result : x.Key.CompareTo(y.Key);
-            }
-        }
-
         private class ZOrderElement : IComparable<ZOrderElement>
         {
             public IVisual? Element { get; set; }
