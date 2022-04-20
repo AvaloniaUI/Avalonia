@@ -401,11 +401,7 @@ namespace Avalonia.Controls
                         var newBounds = element.Bounds;
                         virtInfo.ArrangeBounds = newBounds;
 
-                        if (!virtInfo.IsRegisteredAsAnchorCandidate)
-                        {
-                            _viewportManager.RegisterScrollAnchorCandidate(element);
-                            virtInfo.IsRegisteredAsAnchorCandidate = true;
-                        }
+                        _viewportManager.RegisterScrollAnchorCandidate(element, virtInfo);
                     }
                 }
 
@@ -490,7 +486,7 @@ namespace Avalonia.Controls
                     _processingItemsSourceChange.Action == NotifyCollectionChangedAction.Reset);
 
             _viewManager.ClearElement(element, isClearedDueToCollectionChange);
-            _viewportManager.OnElementCleared(element);
+            _viewportManager.OnElementCleared(element, GetVirtualizationInfo(element));
         }
 
         private int GetElementIndexImpl(IControl element)

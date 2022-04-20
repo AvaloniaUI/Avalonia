@@ -249,9 +249,10 @@ namespace Avalonia.Controls
             virtInfo.IsRegisteredAsAnchorCandidate = false;
         }
 
-        public void OnElementCleared(IControl element)
+        public void OnElementCleared(IControl element, VirtualizationInfo virtInfo)
         {
             _scroller?.UnregisterAnchorCandidate(element);
+            virtInfo.IsRegisteredAsAnchorCandidate = false;
         }
 
         public void OnOwnerMeasuring()
@@ -358,9 +359,12 @@ namespace Avalonia.Controls
                 {
                     foreach (var child in _owner.Children)
                     {
-                        if (child != targetChild)
+                        var info = ItemsRepeater.GetVirtualizationInfo(child);
+
+                        if (child != targetChild && info.IsRegisteredAsAnchorCandidate)
                         {
                             _scroller.UnregisterAnchorCandidate(child);
+                            info.IsRegisteredAsAnchorCandidate = false;
                         }
                     }
                 }
@@ -377,9 +381,13 @@ namespace Avalonia.Controls
             }
         }
 
-        public void RegisterScrollAnchorCandidate(IControl element)
+        public void RegisterScrollAnchorCandidate(IControl element, VirtualizationInfo virtInfo)
         {
-            _scroller?.RegisterAnchorCandidate(element);
+            if (!virtInfo.IsRegisteredAsAnchorCandidate)
+            {
+                _scroller?.RegisterAnchorCandidate(element);
+                virtInfo.IsRegisteredAsAnchorCandidate = true;
+            }
         }
 
         private IControl? GetImmediateChildOfRepeater(IControl descendant)
@@ -405,15 +413,18 @@ namespace Avalonia.Controls
             _isBringIntoViewInProgress = false;
             _makeAnchorElement = null;
 
+            // Undo the anchor deregistrations done by OnBringIntoViewRequested.
             if (_scroller is object)
             {
                 foreach (var child in _owner.Children)
                 {
                     var info = ItemsRepeater.GetVirtualizationInfo(child);
 
-                    if (info.IsRealized && info.IsHeldByLayout)
+                    // The item brought into view is still registered - don't register it more than once.
+                    if (info.IsRealized && info.IsHeldByLayout && !info.IsRegisteredAsAnchorCandidate)
                     {
                         _scroller.RegisterAnchorCandidate(child);
+                        info.IsRegisteredAsAnchorCandidate = true;
                     }
                 }
             }
@@ -430,7 +441,13 @@ namespace Avalonia.Controls
             {
                 foreach (var child in _owner.Children)
                 {
-                    _scroller.UnregisterAnchorCandidate(child);
+                    var info = ItemsRepeater.GetVirtualizationInfo(child);
+
+                    if (info.IsRegisteredAsAnchorCandidate)
+                    {
+                        _scroller.UnregisterAnchorCandidate(child);
+                        info.IsRegisteredAsAnchorCandidate = false;
+                    }
                 }
 
                 _scroller = null;
