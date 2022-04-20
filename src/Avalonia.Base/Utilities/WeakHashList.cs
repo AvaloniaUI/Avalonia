@@ -104,8 +104,10 @@ internal class WeakHashList<T> where T : class
             if (existing!.TryGetTarget(out var target))
                 Add(target);
         }
-        _arr = null;
         
+        Add(item);
+
+        _arr = null;
     }
 
     public void Remove(T item)
