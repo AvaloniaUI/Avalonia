@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -455,15 +456,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Uses the visitor pattern to resolve an untyped property to a typed property.
-        /// </summary>
-        /// <typeparam name="TData">The type of user data passed.</typeparam>
-        /// <param name="visitor">The visitor which will accept the typed property.</param>
-        /// <param name="data">The user data to pass.</param>
-        public abstract void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
-            where TData : struct;
-
-        /// <summary>
         /// Routes an untyped ClearValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
@@ -508,6 +500,7 @@ namespace Avalonia
             BindingPriority priority);
 
         internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent);
+        internal abstract ISetterInstance CreateSetterInstance(IStyleable target, object? value);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.

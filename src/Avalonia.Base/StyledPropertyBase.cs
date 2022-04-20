@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -158,12 +159,6 @@ namespace Avalonia
             base.OverrideMetadata(type, metadata);
         }
 
-        /// <inheritdoc/>
-        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
-        {
-            visitor.Visit(this, ref data);
-        }
-
         /// <summary>
         /// Gets the string representation of the property.
         /// </summary>
@@ -235,6 +230,31 @@ namespace Avalonia
             AvaloniaObject? oldParent)
         {
             o.InheritanceParentChanged(this, oldParent);
+        }
+
+        internal override ISetterInstance CreateSetterInstance(IStyleable target, object? value)
+        {
+            if (value is IBinding binding)
+            {
+                return new PropertySetterBindingInstance<TValue>(
+                    target,
+                    this,
+                    binding);
+            }
+            else if (value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(PropertyType))
+            {
+                return new PropertySetterLazyInstance<TValue>(
+                    target,
+                    this,
+                    () => (TValue)template.Build());
+            }
+            else
+            {
+                return new PropertySetterInstance<TValue>(
+                    target,
+                    this,
+                    (TValue)value!);
+            }
         }
 
         private object? GetDefaultBoxedValue(Type type)

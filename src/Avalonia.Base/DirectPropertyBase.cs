@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -121,12 +122,6 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
-        {
-            visitor.Visit(this, ref data);
-        }
-
-        /// <inheritdoc/>
         internal override void RouteClearValue(AvaloniaObject o)
         {
             o.ClearValue<TValue>(this);
@@ -180,6 +175,31 @@ namespace Avalonia
         internal override void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent)
         {
             throw new NotSupportedException("Direct properties do not support inheritance.");
+        }
+
+        internal override ISetterInstance CreateSetterInstance(IStyleable target, object? value)
+        {
+            if (value is IBinding binding)
+            {
+                return new PropertySetterBindingInstance<TValue>(
+                    target,
+                    this,
+                    binding);
+            }
+            else if (value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(PropertyType))
+            {
+                return new PropertySetterLazyInstance<TValue>(
+                    target,
+                    this,
+                    () => (TValue)template.Build());
+            }
+            else
+            {
+                return new PropertySetterInstance<TValue>(
+                    target,
+                    this,
+                    (TValue)value!);
+            }
         }
     }
 }

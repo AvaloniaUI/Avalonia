@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 using Xunit;
 
@@ -146,11 +147,6 @@ namespace Avalonia.Base.UnitTests
                 OverrideMetadata(typeof(T), metadata);
             }
 
-            public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
-            {
-                throw new NotImplementedException();
-            }
-
             internal override IDisposable RouteBind(
                 AvaloniaObject o,
                 IObservable<BindingValue<object>> source,
@@ -183,6 +179,11 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaObject o,
                 object value,
                 BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override ISetterInstance CreateSetterInstance(IStyleable target, object value)
             {
                 throw new NotImplementedException();
             }
