@@ -10,8 +10,6 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public class TextLayout
     {
-        private static readonly char[] s_empty = { ' ' };
-
         private readonly ITextSource _textSource;
         private readonly TextParagraphProperties _paragraphProperties;
         private readonly TextTrimming _textTrimming;
@@ -408,32 +406,11 @@ namespace Avalonia.Media.TextFormatting
             height += textLine.Height;
         }
 
-        /// <summary>
-        /// Creates an empty text line.
-        /// </summary>
-        /// <returns>The empty text line.</returns>
-        private TextLine CreateEmptyTextLine(int firstTextSourceIndex)
-        {
-            var flowDirection = _paragraphProperties.FlowDirection;
-            var properties = _paragraphProperties.DefaultTextRunProperties;
-            var glyphTypeface = properties.Typeface.GlyphTypeface;
-            var text = new ReadOnlySlice<char>(s_empty, firstTextSourceIndex, 1);
-            var glyph = glyphTypeface.GetGlyph(s_empty[0]);
-            var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex) };
-
-            var shapedBuffer = new ShapedBuffer(text, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
-                (sbyte)flowDirection);
-
-            var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
-
-            return new TextLineImpl(textRuns, firstTextSourceIndex, 1, MaxWidth, _paragraphProperties, flowDirection).FinalizeLine();
-        }
-
         private IReadOnlyList<TextLine> CreateTextLines()
         {
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
-                var textLine = CreateEmptyTextLine(0);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, _paragraphProperties);
 
                 Bounds = new Rect(0,0,0, textLine.Height);
 
@@ -457,7 +434,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     if(previousLine != null && previousLine.NewLineLength  > 0)
                     {
-                        var emptyTextLine = CreateEmptyTextLine(_textSourceLength);
+                        var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, _paragraphProperties);
 
                         textLines.Add(emptyTextLine);
 
@@ -506,7 +483,7 @@ namespace Avalonia.Media.TextFormatting
             //Make sure the TextLayout always contains at least on empty line
             if(textLines.Count == 0)
             {
-                var textLine = CreateEmptyTextLine(0);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, _paragraphProperties);
 
                 textLines.Add(textLine);
 

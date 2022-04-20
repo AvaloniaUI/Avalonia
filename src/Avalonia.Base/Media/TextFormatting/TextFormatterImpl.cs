@@ -8,6 +8,8 @@ namespace Avalonia.Media.TextFormatting
 {
     internal class TextFormatterImpl : TextFormatter
     {
+        private static readonly char[] s_empty = { ' ' };
+
         /// <inheritdoc cref="TextFormatter.FormatLine"/>
         public override TextLine FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
@@ -525,6 +527,27 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Creates an empty text line.
+        /// </summary>
+        /// <returns>The empty text line.</returns>
+        public static TextLineImpl CreateEmptyTextLine(int firstTextSourceIndex, TextParagraphProperties paragraphProperties)
+        {
+            var flowDirection = paragraphProperties.FlowDirection;
+            var properties = paragraphProperties.DefaultTextRunProperties;
+            var glyphTypeface = properties.Typeface.GlyphTypeface;
+            var text = new ReadOnlySlice<char>(s_empty, firstTextSourceIndex, 1);
+            var glyph = glyphTypeface.GetGlyph(s_empty[0]);
+            var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex) };
+
+            var shapedBuffer = new ShapedBuffer(text, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
+                (sbyte)flowDirection);
+
+            var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
+
+            return new TextLineImpl(textRuns, firstTextSourceIndex, 1, double.PositiveInfinity, paragraphProperties, flowDirection).FinalizeLine();
+        }
+
+        /// <summary>
         /// Performs text wrapping returns a list of text lines.
         /// </summary>
         /// <param name="textRuns"></param>
@@ -540,8 +563,7 @@ namespace Avalonia.Media.TextFormatting
         {
             if(textRuns.Count == 0)
             {
-                return new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection);
-
+                return CreateEmptyTextLine(firstTextSourceIndex, paragraphProperties);
             }
 
             if (!TryMeasureLength(textRuns, paragraphWidth, out var measuredLength))
