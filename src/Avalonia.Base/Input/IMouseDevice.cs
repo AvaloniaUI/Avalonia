@@ -13,8 +13,10 @@ namespace Avalonia.Input
         [Obsolete("Use PointerEventArgs.GetPosition")]
         PixelPoint Position { get; }
 
+        [Obsolete]
         void TopLevelClosed(IInputRoot root);
 
+        [Obsolete]
         void SceneInvalidated(IInputRoot root, Rect rect);
     }
 }

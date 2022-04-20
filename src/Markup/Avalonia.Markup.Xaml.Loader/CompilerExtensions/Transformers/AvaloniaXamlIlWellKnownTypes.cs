@@ -71,6 +71,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlConstructor MatrixFullConstructor { get; }
         public IXamlType CornerRadius { get; }
         public IXamlConstructor CornerRadiusFullConstructor { get; }
+        public IXamlType RelativeUnit { get; }
+        public IXamlType RelativePoint { get; }
+        public IXamlConstructor RelativePointFullConstructor { get; }
         public IXamlType GridLength { get; }
         public IXamlConstructor GridLengthConstructorValueType { get; }
         public IXamlType Color { get; }
@@ -174,6 +177,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             (Size, SizeFullConstructor) = GetNumericTypeInfo("Avalonia.Size", XamlIlTypes.Double, 2);
             (Matrix, MatrixFullConstructor) = GetNumericTypeInfo("Avalonia.Matrix", XamlIlTypes.Double, 6);
             (CornerRadius, CornerRadiusFullConstructor) = GetNumericTypeInfo("Avalonia.CornerRadius", XamlIlTypes.Double, 4);
+
+            RelativeUnit = cfg.TypeSystem.GetType("Avalonia.RelativeUnit");
+            RelativePoint = cfg.TypeSystem.GetType("Avalonia.RelativePoint");
+            RelativePointFullConstructor = RelativePoint.GetConstructor(new List<IXamlType> { XamlIlTypes.Double, XamlIlTypes.Double, RelativeUnit });
 
             GridLength = cfg.TypeSystem.GetType("Avalonia.Controls.GridLength");
             GridLengthConstructorValueType = GridLength.GetConstructor(new List<IXamlType> { XamlIlTypes.Double, cfg.TypeSystem.GetType("Avalonia.Controls.GridUnitType") });

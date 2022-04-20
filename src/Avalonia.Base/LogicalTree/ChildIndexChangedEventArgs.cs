@@ -8,7 +8,9 @@ namespace Avalonia.LogicalTree
     /// </summary>
     public class ChildIndexChangedEventArgs : EventArgs
     {
-        public ChildIndexChangedEventArgs()
+        public static new ChildIndexChangedEventArgs Empty { get; } = new ChildIndexChangedEventArgs();
+
+        private ChildIndexChangedEventArgs()
         {
         }
 

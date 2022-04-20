@@ -14,6 +14,12 @@ using System.Reactive.Linq;
 
 namespace Avalonia.Controls
 {
+    [TemplatePart(DATAGRIDROWGROUPHEADER_expanderButton,      typeof(ToggleButton))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_indentSpacer,        typeof(Control))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_itemCountElement,    typeof(TextBlock))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_propertyNameElement, typeof(TextBlock))]
+    [TemplatePart(DataGridRow.DATAGRIDROW_elementRoot,        typeof(Panel))]
+    [TemplatePart(DataGridRow.DATAGRIDROW_elementRowHeader,   typeof(DataGridRowHeader))]
     [PseudoClasses(":pressed", ":current", ":expanded")]
     public class DataGridRowGroupHeader : TemplatedControl
     {
