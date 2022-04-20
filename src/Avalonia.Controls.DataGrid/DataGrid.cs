@@ -32,6 +32,14 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays data in a customizable grid.
     /// </summary>
+    [TemplatePart(DATAGRID_elementBottomRightCornerHeaderName,     typeof(IVisual))]
+    [TemplatePart(DATAGRID_elementColumnHeadersPresenterName,      typeof(DataGridColumnHeadersPresenter))]
+    [TemplatePart(DATAGRID_elementFrozenColumnScrollBarSpacerName, typeof(Control))]
+    [TemplatePart(DATAGRID_elementHorizontalScrollbarName,         typeof(ScrollBar))]
+    [TemplatePart(DATAGRID_elementRowsPresenterName,               typeof(DataGridRowsPresenter))]
+    [TemplatePart(DATAGRID_elementTopLeftCornerHeaderName,         typeof(ContentControl))]
+    [TemplatePart(DATAGRID_elementTopRightCornerHeaderName,        typeof(ContentControl))]
+    [TemplatePart(DATAGRID_elementVerticalScrollbarName,           typeof(ScrollBar))]
     [PseudoClasses(":invalid", ":empty-rows", ":empty-columns")]
     public partial class DataGrid : TemplatedControl
     {
