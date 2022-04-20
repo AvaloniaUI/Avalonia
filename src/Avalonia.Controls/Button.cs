@@ -413,7 +413,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -421,12 +421,13 @@ namespace Avalonia.Controls
             {
                 if (((ILogical)this).IsAttachedToLogicalTree)
                 {
-                    if (change.OldValue.GetValueOrDefault() is ICommand oldCommand)
+                    var (oldValue, newValue) = change.GetOldAndNewValue<ICommand?>();
+                    if (oldValue is ICommand oldCommand)
                     {
                         oldCommand.CanExecuteChanged -= CanExecuteChanged;
                     }
 
-                    if (change.NewValue.GetValueOrDefault() is ICommand newCommand)
+                    if (newValue is ICommand newCommand)
                     {
                         newCommand.CanExecuteChanged += CanExecuteChanged;
                     }
@@ -440,7 +441,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsCancelProperty)
             {
-                var isCancel = change.NewValue.GetValueOrDefault<bool>();
+                var isCancel = change.GetNewValue<bool>();
 
                 if (VisualRoot is IInputElement inputRoot)
                 {
@@ -456,7 +457,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsDefaultProperty)
             {
-                var isDefault = change.NewValue.GetValueOrDefault<bool>();
+                var isDefault = change.GetNewValue<bool>();
 
                 if (VisualRoot is IInputElement inputRoot)
                 {
@@ -476,8 +477,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == FlyoutProperty)
             {
-                var oldFlyout = change.OldValue.GetValueOrDefault() as FlyoutBase;
-                var newFlyout = change.NewValue.GetValueOrDefault() as FlyoutBase;
+                var (oldFlyout, newFlyout) = change.GetOldAndNewValue<FlyoutBase?>();
 
                 // If flyout is changed while one is already open, make sure we 
                 // close the old one first

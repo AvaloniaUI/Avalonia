@@ -127,25 +127,25 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override void RouteClearValue(IAvaloniaObject o)
+        internal override void RouteClearValue(AvaloniaObject o)
         {
             o.ClearValue<TValue>(this);
         }
 
         /// <inheritdoc/>
-        internal override object? RouteGetValue(IAvaloniaObject o)
+        internal override object? RouteGetValue(AvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
         }
 
-        internal override object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        internal override object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority)
         {
             return o.GetValue<TValue>(this);
         }
 
         /// <inheritdoc/>
         internal override IDisposable? RouteSetValue(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             object? value,
             BindingPriority priority)
         {
@@ -169,7 +169,7 @@ namespace Avalonia
 
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             IObservable<BindingValue<object?>> source,
             BindingPriority priority)
         {
@@ -177,7 +177,7 @@ namespace Avalonia
             return o.Bind<TValue>(this, adapter);
         }
 
-        internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject? oldParent)
+        internal override void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent)
         {
             throw new NotSupportedException("Direct properties do not support inheritance.");
         }

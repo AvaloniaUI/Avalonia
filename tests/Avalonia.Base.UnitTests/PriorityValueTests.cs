@@ -10,8 +10,8 @@ namespace Avalonia.Base.UnitTests
 {
     public class PriorityValueTests
     {
-        private static readonly IValueSink NullSink = new MockSink();
-        private static readonly IAvaloniaObject Owner = Mock.Of<IAvaloniaObject>();
+        private static readonly AvaloniaObject Owner = new AvaloniaObject();
+        private static readonly ValueStore ValueStore = new ValueStore(Owner);
         private static readonly StyledProperty<string> TestProperty = new StyledProperty<string>(
             "Test",
             typeof(PriorityValueTests),
@@ -23,12 +23,12 @@ namespace Avalonia.Base.UnitTests
             var target = new PriorityValue<string>(
                 Owner,
                 TestProperty,
-                NullSink,
+                ValueStore,
                 new ConstantValueEntry<string>(
                     TestProperty,
                     "1",
                     BindingPriority.StyleTrigger,
-                    NullSink));
+                    new(ValueStore)));
 
             Assert.Equal("1", target.GetValue().Value);
             Assert.Equal(BindingPriority.StyleTrigger, target.Priority);
@@ -40,7 +40,7 @@ namespace Avalonia.Base.UnitTests
             var target = new PriorityValue<string>(
                 Owner,
                 TestProperty,
-                NullSink);
+                ValueStore);
 
             target.SetValue("animation", BindingPriority.Animation);
             target.SetValue("local", BindingPriority.LocalValue);
@@ -60,7 +60,7 @@ namespace Avalonia.Base.UnitTests
             var target = new PriorityValue<string>(
                 Owner,
                 TestProperty,
-                NullSink);
+                ValueStore);
 
             target.SetValue("1", BindingPriority.LocalValue);
             target.SetValue("2", BindingPriority.LocalValue);
@@ -74,7 +74,7 @@ namespace Avalonia.Base.UnitTests
             var target = new PriorityValue<string>(
                 Owner,
                 TestProperty,
-                NullSink);
+                ValueStore);
 
             target.SetValue("1", BindingPriority.Style);
             target.SetValue("2", BindingPriority.Animation);
@@ -93,7 +93,7 @@ namespace Avalonia.Base.UnitTests
             var target = new PriorityValue<string>(
                 Owner,
                 TestProperty,
-                NullSink);
+                ValueStore);
 
             Assert.Equal(BindingPriority.Unset, target.Priority);
             target.SetValue("style", BindingPriority.Style);
@@ -109,7 +109,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Binding_With_Same_Priority_Should_Be_Appended()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
 
@@ -129,7 +129,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Binding_With_Higher_Priority_Should_Be_Appended()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
 
@@ -149,7 +149,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Binding_With_Lower_Priority_Should_Be_Prepended()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
 
@@ -169,7 +169,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Second_Binding_With_Lower_Priority_Should_Be_Inserted_In_Middle()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -191,7 +191,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Competed_Binding_Should_Be_Removed()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -214,7 +214,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Value_Should_Come_From_Last_Entry()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -229,7 +229,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void LocalValue_Should_Override_LocalValue_Binding()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
 
             target.AddBinding(source1, BindingPriority.LocalValue).Start();
@@ -241,7 +241,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void LocalValue_Should_Override_Style_Binding()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
 
             target.AddBinding(source1, BindingPriority.Style).Start();
@@ -253,7 +253,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void LocalValue_Should_Not_Override_Animation_Binding()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
 
             target.AddBinding(source1, BindingPriority.Animation).Start();
@@ -265,7 +265,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void NonAnimated_Value_Should_Be_Correct_1()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -281,7 +281,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void NonAnimated_Value_Should_Be_Correct_2()
         {
-            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, ValueStore);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -309,17 +309,6 @@ namespace Avalonia.Base.UnitTests
             }
 
             public void OnCompleted() => _observer.OnCompleted();
-        }
-
-        private class MockSink : IValueSink
-        {
-            public void Completed<T>(StyledPropertyBase<T> property, IPriorityValueEntry entry, Optional<T> oldValue)
-            {
-            }
-
-            public void ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-            {
-            }
         }
     }
 }

@@ -267,10 +267,9 @@ namespace Avalonia.Controls
 
         internal void UnpinElement(IControl element) => _viewManager.UpdatePin(element, false);
 
-        internal static VirtualizationInfo TryGetVirtualizationInfo(IControl element)
+        internal static VirtualizationInfo? TryGetVirtualizationInfo(IControl element)
         {
-            var value = element.GetValue(VirtualizationInfoProperty);
-            return value;
+            return (element as AvaloniaObject)?.GetValue(VirtualizationInfoProperty);
         }
 
         internal static VirtualizationInfo CreateAndInitializeVirtualizationInfo(IControl element)
@@ -287,15 +286,20 @@ namespace Avalonia.Controls
 
         internal static VirtualizationInfo GetVirtualizationInfo(IControl element)
         {
-            var result = element.GetValue(VirtualizationInfoProperty);
-
-            if (result == null)
+            if (element is AvaloniaObject ao)
             {
-                result = new VirtualizationInfo();
-                element.SetValue(VirtualizationInfoProperty, result);
+                var result = ao.GetValue(VirtualizationInfoProperty);
+
+                if (result == null)
+                {
+                    result = new VirtualizationInfo();
+                    ao.SetValue(VirtualizationInfoProperty, result);
+                }
+
+                return result;
             }
 
-            return result;
+            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
         }
 
         private protected override void InvalidateMeasureOnChildrenChanged()
@@ -426,12 +430,11 @@ namespace Avalonia.Controls
             _viewportManager.ResetScrollers();
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == ItemsProperty)
             {
-                var oldEnumerable = change.OldValue.GetValueOrDefault<IEnumerable>();
-                var newEnumerable = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var (oldEnumerable, newEnumerable) = change.GetOldAndNewValue<IEnumerable?>();
 
                 if (oldEnumerable != newEnumerable)
                 {
@@ -446,23 +449,21 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ItemTemplateProperty)
             {
-                OnItemTemplateChanged(
-                    change.OldValue.GetValueOrDefault<IDataTemplate>(),
-                    change.NewValue.GetValueOrDefault<IDataTemplate>());
+                var (oldvalue, newValue) = change.GetOldAndNewValue<IDataTemplate?>();
+                OnItemTemplateChanged(oldvalue, newValue);
             }
             else if (change.Property == LayoutProperty)
             {
-                OnLayoutChanged(
-                    change.OldValue.GetValueOrDefault<AttachedLayout>(),
-                    change.NewValue.GetValueOrDefault<AttachedLayout>());
+                var (oldvalue, newValue) = change.GetOldAndNewValue<AttachedLayout>();
+                OnLayoutChanged(oldvalue, newValue);
             }
             else if (change.Property == HorizontalCacheLengthProperty)
             {
-                _viewportManager.HorizontalCacheLength = change.NewValue.GetValueOrDefault<double>();
+                _viewportManager.HorizontalCacheLength = change.GetNewValue<double>();
             }
             else if (change.Property == VerticalCacheLengthProperty)
             {
-                _viewportManager.VerticalCacheLength = change.NewValue.GetValueOrDefault<double>();
+                _viewportManager.VerticalCacheLength = change.GetNewValue<double>();
             }
 
             base.OnPropertyChanged(change);
@@ -497,7 +498,7 @@ namespace Avalonia.Controls
             if (parent == this)
             {
                 var virtInfo = TryGetVirtualizationInfo(element);
-                return _viewManager.GetElementIndex(virtInfo);
+                return _viewManager.GetElementIndex(virtInfo!);
             }
 
             return -1;

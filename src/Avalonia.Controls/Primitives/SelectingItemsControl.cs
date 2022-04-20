@@ -533,9 +533,9 @@ namespace Avalonia.Controls.Primitives
 
                 bool Match(ItemContainerInfo info)
                 {
-                    if (info.ContainerControl.IsSet(TextSearch.TextProperty))
+                    if (info.ContainerControl is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
                     {
-                        var searchText = info.ContainerControl.GetValue(TextSearch.TextProperty);
+                        var searchText = ao.GetValue(TextSearch.TextProperty);
 
                         if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
                         {
@@ -585,7 +585,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -595,7 +595,7 @@ namespace Avalonia.Controls.Primitives
             }
             if (change.Property == ItemsProperty && _updateState is null && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var newValue = change.GetNewValue<IEnumerable>();
                 _selection.Source = newValue;
 
                 if (newValue is null)
@@ -605,7 +605,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
+                var newValue = change.GetNewValue<SelectionMode>();
                 _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
             }
             else if (change.Property == WrapSelectionProperty)
