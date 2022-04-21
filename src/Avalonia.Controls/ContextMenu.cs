@@ -241,13 +241,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == WindowManagerAddShadowHintProperty && _popup != null)
             {
-                _popup.WindowManagerAddShadowHint = change.NewValue.GetValueOrDefault<bool>();
+                _popup.WindowManagerAddShadowHint = change.GetNewValue<bool>();
             }
         }
 

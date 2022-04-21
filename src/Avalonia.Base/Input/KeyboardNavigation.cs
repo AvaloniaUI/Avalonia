@@ -58,7 +58,7 @@ namespace Avalonia.Input
         /// <returns>The <see cref="KeyboardNavigationMode"/> for the container.</returns>
         public static int GetTabIndex(IInputElement element)
         {
-            return ((IAvaloniaObject)element).GetValue(TabIndexProperty);
+            return ((AvaloniaObject)element).GetValue(TabIndexProperty);
         }
 
         /// <summary>

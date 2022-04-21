@@ -280,7 +280,7 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             void UpdateMaskProvider()
             {
