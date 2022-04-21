@@ -662,7 +662,7 @@ namespace Avalonia.Controls.Presenters
 
                     caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-                    if (textLine.NewLineLength > 0 && caretIndex == textLine.FirstTextSourceIndex + textLine.Length)
+                    if (textLine.TrailingWhitespaceLength > 0 && caretIndex == textLine.FirstTextSourceIndex + textLine.Length)
                     {
                         characterHit = new CharacterHit(caretIndex);
                     }
