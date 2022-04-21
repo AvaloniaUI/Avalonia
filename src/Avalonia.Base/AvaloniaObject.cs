@@ -646,10 +646,12 @@ namespace Avalonia
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="value">The new binding value for the property.</param>
-        protected virtual void UpdateDataValidation<T>(
-            AvaloniaProperty<T> property,
-            BindingValue<T> value)
+        /// <param name="state">The current data binding state.</param>
+        /// <param name="error">The current data binding error, if any.</param>
+        protected virtual void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
         }
 
@@ -860,7 +862,7 @@ namespace Avalonia
 
             if (metadata.EnableDataValidation == true)
             {
-                UpdateDataValidation(property, value);
+                UpdateDataValidation(property, value.Type, value.Error);
             }
         }
 
