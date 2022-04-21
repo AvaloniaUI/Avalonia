@@ -139,13 +139,13 @@ namespace Avalonia.Controls.Notifications
             notificationControl.Close();
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == PositionProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<NotificationPosition>());
+                UpdatePseudoClasses(change.GetNewValue<NotificationPosition>());
             }
         }
 

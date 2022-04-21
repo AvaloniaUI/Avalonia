@@ -55,7 +55,7 @@ namespace Avalonia.Controls.Documents
                 TextDecorations, Foreground, Background, BaselineAlignment);
         }
         
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 

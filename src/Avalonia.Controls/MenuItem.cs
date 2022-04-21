@@ -22,7 +22,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_Popup", typeof(Popup))]
     [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource, IClickableControl
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -501,12 +501,15 @@ namespace Avalonia.Controls
             return new MenuItemAutomationPeer(this);
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
-            base.UpdateDataValidation(property, value);
+            base.UpdateDataValidation(property, state, error);
             if (property == CommandProperty)
             {
-                _commandBindingError = value.Type == BindingValueType.BindingError;
+                _commandBindingError = state == BindingValueType.BindingError;
                 if (_commandBindingError && _commandCanExecute)
                 {
                     _commandCanExecute = false;
@@ -644,7 +647,9 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue!)
+            var parentMenu = Parent as Menu;
+
+            if ((bool)e.NewValue! && (parentMenu is null || parentMenu.IsOpen))
             {
                 Focus();
             }
@@ -704,6 +709,14 @@ namespace Avalonia.Controls
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
+
+        void IClickableControl.RaiseClick()
+        {
+            if (IsEffectivelyEnabled)
+            {
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
+            }
+        }
 
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.

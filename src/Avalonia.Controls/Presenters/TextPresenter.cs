@@ -282,6 +282,8 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        protected override bool BypassFlowDirectionPolicies => true;
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -774,7 +776,7 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Tick -= CaretTimerTick;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             

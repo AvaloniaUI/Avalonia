@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Primitives
             Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition(ParentTopLevel, target,
-                placement, offset, anchor, gravity, constraintAdjustment, rect);
+                placement, offset, anchor, gravity, constraintAdjustment, rect, FlowDirection);
 
             if (_positionerParameters.Size != default)
                 UpdatePosition();

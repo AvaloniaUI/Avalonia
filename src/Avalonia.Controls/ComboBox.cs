@@ -184,6 +184,25 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(SelectedItem);
         }
 
+        // Because the SelectedItem isn't connected to the visual tree
+        public override void InvalidateMirrorTransform()
+        {
+            base.InvalidateMirrorTransform();
+
+            if (SelectedItem is Control selectedControl)
+            {
+                selectedControl.InvalidateMirrorTransform();
+
+                foreach (var visual in selectedControl.GetVisualDescendants())
+                {
+                    if (visual is Control childControl)
+                    {
+                        childControl.InvalidateMirrorTransform();
+                    }
+                }
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -434,42 +453,18 @@ namespace Avalonia.Controls
 
         private void SelectNext()
         {
-            int next = SelectedIndex + 1;
-
-            if (next >= ItemCount)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
-                {
-                    next = 0;
-                }
-                else
-                {
-                    return;
-                }
+                MoveSelection(NavigationDirection.Next, WrapSelection);
             }
-
-
-
-            SelectedIndex = next;
         }
 
         private void SelectPrev()
         {
-            int prev = SelectedIndex - 1;
-
-            if (prev < 0)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
-                {
-                    prev = ItemCount - 1;
-                }
-                else
-                {
-                    return;
-                }
+                MoveSelection(NavigationDirection.Previous, WrapSelection);
             }
-
-            SelectedIndex = prev;
         }
     }
 }
