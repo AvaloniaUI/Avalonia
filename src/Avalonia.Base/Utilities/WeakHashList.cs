@@ -6,6 +6,8 @@ namespace Avalonia.Utilities;
 
 internal class WeakHashList<T> where T : class
 {
+    public const int DefaultArraySize = 8;
+    
     private struct Key
     {
         public WeakReference<T>? Weak;
@@ -63,7 +65,8 @@ internal class WeakHashList<T> where T : class
     WeakReference<T>?[]? _arr;
     int _arrCount;
     
-    public bool IsEmpty => _dic == null || _dic.Count == 0;
+    public bool IsEmpty => _dic is not null ? _dic.Count == 0 : _arrCount == 0;
+
     public bool NeedCompact { get; private set; }
     
     public void Add(T item)
@@ -79,7 +82,7 @@ internal class WeakHashList<T> where T : class
         }
 
         if (_arr == null)
-            _arr = new WeakReference<T>[8];
+            _arr = new WeakReference<T>[DefaultArraySize];
 
         if (_arrCount < _arr.Length)
         {
@@ -108,6 +111,7 @@ internal class WeakHashList<T> where T : class
         Add(item);
 
         _arr = null;
+        _arrCount = 0;
     }
 
     public void Remove(T item)
@@ -119,7 +123,7 @@ internal class WeakHashList<T> where T : class
                 if (_arr[c]?.TryGetTarget(out var target) == true && target == item)
                 {
                     _arr[c] = null;
-                    Compact();
+                    ArrCompact();
                     return;
                 }
             }
@@ -219,7 +223,6 @@ internal class WeakHashList<T> where T : class
         }
         if (_dic != null)
         {
-            
             foreach (var kvp in _dic)
             {
                 if (kvp.Key.Weak?.TryGetTarget(out var target) == true)
