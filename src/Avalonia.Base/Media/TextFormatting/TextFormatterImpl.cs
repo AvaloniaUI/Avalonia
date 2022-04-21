@@ -544,7 +544,7 @@ namespace Avalonia.Media.TextFormatting
 
             var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
 
-            return new TextLineImpl(textRuns, firstTextSourceIndex, 1, double.PositiveInfinity, paragraphProperties, flowDirection).FinalizeLine();
+            return new TextLineImpl(textRuns, firstTextSourceIndex, 0, double.PositiveInfinity, paragraphProperties, flowDirection).FinalizeLine();
         }
 
         /// <summary>

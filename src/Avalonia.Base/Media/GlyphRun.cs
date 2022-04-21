@@ -49,7 +49,7 @@ namespace Avalonia.Media
             IReadOnlyList<int>? glyphClusters = null,
             int biDiLevel = 0)
         {
-            _glyphTypeface = glyphTypeface;  
+            _glyphTypeface = glyphTypeface;
 
             FontRenderingEmSize = fontRenderingEmSize;
 
@@ -204,7 +204,7 @@ namespace Avalonia.Media
         public double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
             var characterIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-           
+
             var distance = 0.0;
 
             if (IsLeftToRight)
@@ -223,7 +223,7 @@ namespace Avalonia.Media
                 }
 
                 var glyphIndex = FindGlyphIndex(characterIndex);
-                
+
                 if (GlyphClusters != null)
                 {
                     var currentCluster = GlyphClusters[glyphIndex];
@@ -249,7 +249,7 @@ namespace Avalonia.Media
             {
                 //RightToLeft
                 var glyphIndex = FindGlyphIndex(characterIndex);
-                
+
                 if (GlyphClusters != null)
                 {
                     if (characterIndex > GlyphClusters[0])
@@ -284,13 +284,13 @@ namespace Avalonia.Media
         public CharacterHit GetCharacterHitFromDistance(double distance, out bool isInside)
         {
             var characterIndex = 0;
-            
+
             // Before
             if (distance <= 0)
             {
                 isInside = false;
 
-                if(GlyphClusters != null)
+                if (GlyphClusters != null)
                 {
                     characterIndex = GlyphClusters[characterIndex];
                 }
@@ -307,11 +307,11 @@ namespace Avalonia.Media
 
                 characterIndex = GlyphIndices.Count - 1;
 
-                if(GlyphClusters != null)
+                if (GlyphClusters != null)
                 {
                     characterIndex = GlyphClusters[characterIndex];
                 }
-                
+
                 var lastCharacterHit = FindNearestCharacterHit(characterIndex, out _);
 
                 return IsLeftToRight ? lastCharacterHit : new CharacterHit(lastCharacterHit.FirstCharacterIndex);
@@ -327,7 +327,7 @@ namespace Avalonia.Media
                     var advance = GetGlyphAdvance(index, out var cluster);
 
                     characterIndex = cluster;
-                    
+
                     if (distance > currentX && distance <= currentX + advance)
                     {
                         break;
@@ -345,7 +345,7 @@ namespace Avalonia.Media
                     var advance = GetGlyphAdvance(index, out var cluster);
 
                     characterIndex = cluster;
-                    
+
                     if (currentX - advance < distance)
                     {
                         break;
@@ -554,6 +554,16 @@ namespace Avalonia.Media
                 nextCluster = GlyphClusters[currentIndex];
             }
 
+            if (nextCluster < Characters.Start)
+            {
+                nextCluster = Characters.Start;
+            }
+
+            if (cluster < Characters.Start)
+            {
+                cluster = Characters.Start;
+            }
+
             int trailingLength;
 
             if (nextCluster == cluster)
@@ -577,7 +587,7 @@ namespace Avalonia.Media
         private double GetGlyphAdvance(int index, out int cluster)
         {
             cluster = GlyphClusters != null ? GlyphClusters[index] : index;
-            
+
             if (GlyphAdvances != null)
             {
                 return GlyphAdvances[index];
@@ -603,7 +613,7 @@ namespace Avalonia.Media
             var widthIncludingTrailingWhitespace = 0d;
 
             var trailingWhitespaceLength = GetTrailingWhitespaceLength(out var newLineLength, out var glyphCount);
-            
+
             for (var index = 0; index < GlyphIndices.Count; index++)
             {
                 var advance = GetGlyphAdvance(index, out _);
@@ -615,7 +625,7 @@ namespace Avalonia.Media
 
             if (IsLeftToRight)
             {
-                for (var index = GlyphIndices.Count - glyphCount; index <GlyphIndices.Count; index++)
+                for (var index = GlyphIndices.Count - glyphCount; index < GlyphIndices.Count; index++)
                 {
                     width -= GetGlyphAdvance(index, out _);
                 }
@@ -677,12 +687,12 @@ namespace Avalonia.Media
                     if (codepointIndex < 0)
                     {
                         trailingWhitespaceLength = _characters.Length;
-                        
+
                         glyphCount = GlyphClusters.Count;
-                        
+
                         break;
                     }
-                    
+
                     var codepoint = Codepoint.ReadAt(_characters, codepointIndex, out _);
 
                     if (!codepoint.IsWhiteSpace)
@@ -696,7 +706,7 @@ namespace Avalonia.Media
                     }
 
                     trailingWhitespaceLength++;
-                    
+
                     glyphCount++;
                 }
             }
