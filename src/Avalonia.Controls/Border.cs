@@ -71,6 +71,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Border, PenLineJoin>(nameof(BorderLineJoin), PenLineJoin.Miter);
 
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
+        private Thickness? _layoutThickness;
+        private double _scale;
 
         /// <summary>
         /// Initializes static members of the <see cref="Border"/> class.
@@ -90,7 +92,7 @@ namespace Avalonia.Controls
             AffectsMeasure<Border>(BorderThicknessProperty);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             switch (change.Property.Name)
@@ -182,9 +184,6 @@ namespace Avalonia.Controls
             get => GetValue(BoxShadowProperty);
             set => SetValue(BoxShadowProperty, value);
         }
-
-        private Thickness? _layoutThickness;
-        private double _scale;
 
         private Thickness LayoutThickness
         {
