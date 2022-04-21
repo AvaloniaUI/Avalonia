@@ -105,7 +105,7 @@ namespace Avalonia.Controls.Documents
                 get
                 {
                     double baseline = Size.Height;
-                    double baselineOffsetValue = (double)Control.GetValue(TextBlock.BaselineOffsetProperty);
+                    double baselineOffsetValue = Control.GetValue<double>(TextBlock.BaselineOffsetProperty);
 
                     if (!MathUtilities.IsZero(baselineOffsetValue))
                     {
