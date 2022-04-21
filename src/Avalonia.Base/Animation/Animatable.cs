@@ -87,12 +87,13 @@ namespace Avalonia.Animation
             }
         }
 
-        protected sealed override void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected sealed override void OnPropertyChangedCore(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == TransitionsProperty && change.IsEffectiveValueChange)
             {
-                var oldTransitions = change.OldValue.GetValueOrDefault<Transitions>();
-                var newTransitions = change.NewValue.GetValueOrDefault<Transitions>();
+                var e = (AvaloniaPropertyChangedEventArgs<Transitions?>)change;
+                var oldTransitions = e.OldValue.GetValueOrDefault();
+                var newTransitions = e.NewValue.GetValueOrDefault();
 
                 // When transitions are replaced, we add the new transitions before removing the old
                 // transitions, so that when the old transition being disposed causes the value to

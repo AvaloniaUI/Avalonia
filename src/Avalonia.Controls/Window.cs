@@ -1019,16 +1019,16 @@ namespace Avalonia.Controls
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             if (change.Property == SystemDecorationsProperty)
             {
-                var typedNewValue = change.NewValue.GetValueOrDefault<SystemDecorations>();
+                var (typedOldValue, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
 
-                var o = change.OldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
+                var o = typedOldValue == SystemDecorations.Full;
                 var n = typedNewValue == SystemDecorations.Full;
 
                 if (o != n)

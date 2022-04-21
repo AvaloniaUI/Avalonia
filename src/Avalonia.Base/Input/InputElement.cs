@@ -601,21 +601,21 @@ namespace Avalonia.Input
         {
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == IsFocusedProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(change.GetNewValue<bool>(), null);
             }
             else if (change.Property == IsPointerOverProperty)
             {
-                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
+                UpdatePseudoClasses(null, change.GetNewValue<bool>());
             }
             else if (change.Property == IsKeyboardFocusWithinProperty)
             {
-                PseudoClasses.Set(":focus-within", change.NewValue.GetValueOrDefault<bool>());
+                PseudoClasses.Set(":focus-within", change.GetNewValue<bool>());
             }
         }
 

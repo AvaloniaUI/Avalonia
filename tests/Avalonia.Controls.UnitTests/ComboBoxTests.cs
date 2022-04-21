@@ -37,6 +37,81 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void WrapSelection_Should_Work()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var items = new[]
+                {
+                    new ComboBoxItem() { Content = "bla" },
+                    new ComboBoxItem() { Content = "dd" },
+                    new ComboBoxItem() { Content = "sdf", IsEnabled = false }
+                };
+                var target = new ComboBox
+                {
+                    Items = items,
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.Focus();
+                Assert.Equal(target.SelectedIndex, -1);
+                Assert.True(target.IsFocused);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Up,
+                });
+                Assert.Equal(target.SelectedIndex, 1);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                Assert.Equal(target.SelectedIndex, 0);
+            }
+        }
+
+        [Fact]
+        public void Focuses_Next_Item_On_Key_Down()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var items = new[]
+                {
+                    new ComboBoxItem() { Content = "bla" },
+                    new ComboBoxItem() { Content = "dd", IsEnabled = false },
+                    new ComboBoxItem() { Content = "sdf" }
+                };
+                var target = new ComboBox
+                {
+                    Items = items,
+                    Template = GetTemplate()
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.Focus();
+                Assert.Equal(target.SelectedIndex, -1);
+                Assert.True(target.IsFocused);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                Assert.Equal(target.SelectedIndex, 0);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                Assert.Equal(target.SelectedIndex, 2);
+            }
+        }
+
+        [Fact]
         public void SelectionBoxItem_Is_Rectangle_With_VisualBrush_When_Selection_Is_Control()
         {
             var items = new[] { new Canvas() };
