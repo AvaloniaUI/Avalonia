@@ -17,7 +17,7 @@ namespace Avalonia.Styling
         {
             if (parent is Style s && s.Selector is Selector selector)
             {
-                return selector.Match(control, null, subscribe);
+                return selector.Match(control, (parent as Style)?.Parent, subscribe);
             }
 
             throw new InvalidOperationException(

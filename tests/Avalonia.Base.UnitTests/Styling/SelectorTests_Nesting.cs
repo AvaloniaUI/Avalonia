@@ -9,7 +9,7 @@ namespace Avalonia.Base.UnitTests.Styling
     public class SelectorTests_Nesting
     {
         [Fact]
-        public void Nesting_Class_Doesnt_Match_Parent_Selector()
+        public void Nesting_Class_Doesnt_Match_Parent_OfType_Selector()
         {
             var control = new Control2();
             Style nested;
@@ -26,7 +26,7 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void Or_Nesting_Class_Doesnt_Match_Parent_Selector()
+        public void Or_Nesting_Class_Doesnt_Match_Parent_OfType_Selector()
         {
             var control = new Control2();
             Style nested;
@@ -45,7 +45,7 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void Or_Nesting_Child_OfType_Does_Not_Match_Parent_Selector()
+        public void Or_Nesting_Child_OfType_Doesnt_Match_Parent_OfType_Selector()
         {
             var control = new Control1();
             var panel = new DockPanel { Children = { control } };
@@ -62,6 +62,34 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var match = nested.Selector.Match(control, parent);
             Assert.Equal(SelectorMatchResult.NeverThisInstance, match.Result);
+        }
+
+        [Fact]
+        public void Double_Nesting_Class_Doesnt_Match_Grandparent_OfType_Selector()
+        {
+            var control = new Control2
+            {
+                Classes = { "foo", "bar" },
+            };
+
+            Style parent;
+            Style nested;
+            var grandparent = new Style(x => x.OfType<Control1>())
+            {
+                Children =
+                {
+                    (parent = new Style(x => x.Nesting().Class("foo"))
+                    {
+                        Children =
+                        {
+                            (nested = new Style(x => x.Nesting().Class("bar")))
+                        }
+                    })
+                }
+            };
+
+            var match = nested.Selector.Match(control, parent);
+            Assert.Equal(SelectorMatchResult.NeverThisType, match.Result);
         }
 
         [Fact]
@@ -84,6 +112,40 @@ namespace Avalonia.Base.UnitTests.Styling
 
             Assert.True(sink.Active);
             control.Classes.Clear();
+            Assert.False(sink.Active);
+        }
+
+        [Fact]
+        public void Double_Nesting_Class_Matches()
+        {
+            var control = new Control1
+            {
+                Classes = { "foo", "bar" },
+            };
+
+            Style parent;
+            Style nested;
+            var grandparent = new Style(x => x.OfType<Control1>())
+            {
+                Children =
+                {
+                    (parent = new Style(x => x.Nesting().Class("foo"))
+                    {
+                        Children =
+                        {
+                            (nested = new Style(x => x.Nesting().Class("bar")))
+                        }
+                    })
+                }
+            };
+
+            var match = nested.Selector.Match(control, parent);
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+
+            var sink = new ActivatorSink(match.Activator);
+
+            Assert.True(sink.Active);
+            control.Classes.Remove("foo");
             Assert.False(sink.Active);
         }
 

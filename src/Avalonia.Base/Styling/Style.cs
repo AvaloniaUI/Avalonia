@@ -120,15 +120,19 @@ namespace Avalonia.Styling
                 instance.Start();
             }
 
+            var result = match.Result;
+
             if (_children is not null)
             {
                 foreach (var child in _children)
                 {
-                    child.TryAttach(target, host);
+                    var childResult = child.TryAttach(target, host);
+                    if (childResult > result)
+                        result = childResult;
                 }
             }
 
-            return match.Result;
+            return result;
         }
 
         public bool TryGetResource(object key, out object? result)
