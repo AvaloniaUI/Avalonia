@@ -8,6 +8,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using NWayland.Interop;
 using NWayland.Protocols.Wayland;
 using NWayland.Protocols.XdgDecorationUnstableV1;
@@ -336,6 +337,10 @@ namespace Avalonia.Wayland
                 }
             }
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+
+            _wlSurface.Commit();
+            _platform.WlDisplay.DispatchPending();
             _platform.WlDisplay.Sync().Events = this;
         }
 

@@ -2,6 +2,7 @@ using System;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Threading;
 using NWayland.Protocols.Wayland;
 
 namespace Avalonia.Wayland
@@ -74,18 +75,21 @@ namespace Avalonia.Wayland
         void WlPointer.IEvents.OnLeave(WlPointer eventSender, uint serial, WlSurface surface)
         {
             LastSerial = serial;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             Input?.Invoke(new RawPointerEventArgs(MouseDevice!, 0, InputRoot, RawPointerEventType.LeaveWindow, _pointerPosition, RawInputModifiers.None));
         }
 
         void WlPointer.IEvents.OnMotion(WlPointer eventSender, uint time, int surfaceX, int surfaceY)
         {
             _pointerPosition = new Point(surfaceX / 256, surfaceY / 256);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             Input?.Invoke(new RawPointerEventArgs(MouseDevice!, time, InputRoot, RawPointerEventType.Move, _pointerPosition, RawInputModifiers.None));
         }
 
         void WlPointer.IEvents.OnButton(WlPointer eventSender, uint serial, uint time, uint button, WlPointer.ButtonStateEnum state)
         {
             LastSerial = serial;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             Input?.Invoke(new RawPointerEventArgs(MouseDevice!, time, InputRoot, ProcessButton(button, state), _pointerPosition, RawInputModifiers.None));
         }
 
@@ -148,6 +152,7 @@ namespace Avalonia.Wayland
             var avaloniaKey = XkbKeyTransform.ConvertKey((XkbKey)sym);
             if (state == WlKeyboard.KeyStateEnum.Pressed)
             {
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
                 Input?.Invoke(new RawKeyEventArgs(KeyboardDevice!, time, InputRoot, (RawKeyEventType)state, avaloniaKey, RawInputModifiers.None));
             }
         }
