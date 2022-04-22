@@ -361,7 +361,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == ColorProperty)
             {
@@ -380,7 +380,7 @@ namespace Avalonia.Controls.Primitives
                     UpdateBitmapSources();
                 }
 
-                _oldColor = change.OldValue.GetValueOrDefault<Color>();
+                _oldColor = change.GetOldValue<Color>();
             }
             else if (change.Property == HsvColorProperty)
             {
@@ -391,7 +391,7 @@ namespace Avalonia.Controls.Primitives
                     SetColor();
                 }
 
-                _oldHsvColor = change.OldValue.GetValueOrDefault<HsvColor>();
+                _oldHsvColor = change.GetOldValue<HsvColor>();
             }
             else if (change.Property == MinHueProperty ||
                      change.Property == MaxHueProperty)
