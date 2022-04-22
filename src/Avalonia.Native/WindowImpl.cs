@@ -1,13 +1,12 @@
 ﻿using System;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
-using Avalonia.Platform.Interop;
+
+#nullable enable
 
 namespace Avalonia.Native
 {
@@ -15,14 +14,14 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
+        private readonly AvaloniaNativePlatformOpenGlInterface? _glFeature;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativePlatformOpenGlInterface glFeature) : base(opts, glFeature)
+            AvaloniaNativePlatformOpenGlInterface? glFeature) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
@@ -82,12 +81,12 @@ namespace Avalonia.Native
             _native.SetDecorations((Interop.SystemDecorations)enabled);
         }
 
-        public void SetTitleBarColor(Avalonia.Media.Color color)
+        public void SetTitleBarColor(Media.Color color)
         {
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title)
+        public void SetTitle(string? title)
         {
             _native.SetTitle(title ?? "");
         }
@@ -98,9 +97,9 @@ namespace Avalonia.Native
             set => _native.SetWindowState((AvnWindowState)value);
         }
 
-        public Action<WindowState> WindowStateChanged { get; set; }        
+        public Action<WindowState>? WindowStateChanged { get; set; }        
 
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins { get; private set; }
 
@@ -113,9 +112,9 @@ namespace Avalonia.Native
         {
             if(_isExtended)
             {
-                if(e.Type == RawPointerEventType.LeftButtonDown)
+                if(e.Type == RawPointerEventType.LeftButtonDown && _inputRoot is Window window)
                 {
-                    var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
+                    var visual = window.Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsVisible))
                                 {
@@ -203,16 +202,16 @@ namespace Avalonia.Native
             // NO OP on OSX
         }
 
-        public Func<bool> Closing { get; set; }
+        public Func<bool>? Closing { get; set; }
 
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
 
         public void Move(PixelPoint point) => Position = point;
 
-        public override IPopupImpl CreatePopup() =>
+        public override IPopupImpl? CreatePopup() =>
             _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, _glFeature, this);
 
-        public Action GotInputWhenDisabled { get; set; }
+        public Action? GotInputWhenDisabled { get; set; }
 
         public void SetParent(IWindowImpl parent)
         {

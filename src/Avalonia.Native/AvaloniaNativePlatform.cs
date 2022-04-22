@@ -9,13 +9,15 @@ using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
+#nullable enable
+
 namespace Avalonia.Native
 {
     class AvaloniaNativePlatform : IPlatformSettings, IWindowingPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
-        private AvaloniaNativePlatformOpenGlInterface _platformGl;
+        private AvaloniaNativePlatformOpenGlInterface? _platformGl;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -28,8 +30,8 @@ namespace Avalonia.Native
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result =  new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
-            result.DoInitialize(options);
+            var result =  new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true), options);
+            result.DoInitialize();
 
             return result;
         }
@@ -62,15 +64,20 @@ namespace Avalonia.Native
 
         public void SetupApplicationName ()
         {
-            if(!string.IsNullOrWhiteSpace(Application.Current.Name))
+            if(!string.IsNullOrWhiteSpace(Application.Current?.Name))
             {
-                _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
+                _factory.MacOptions.SetApplicationTitle(Application.Current?.Name);
+            }
+            else
+            {
+                _factory.MacOptions.SetApplicationTitle("");
             }
         }
 
-        private AvaloniaNativePlatform(IAvaloniaNativeFactory factory)
+        private AvaloniaNativePlatform(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions options)
         {
             _factory = factory;
+            _options = options;
         }
 
         class GCHandleDeallocator : CallbackBase, IAvnGCHandleDeallocatorCallback
@@ -81,10 +88,8 @@ namespace Avalonia.Native
             }
         }
         
-        void DoInitialize(AvaloniaNativePlatformOptions options)
+        void DoInitialize()
         {
-            _options = options;
-            
             var applicationPlatform = new AvaloniaNativeApplicationPlatform();
             
             _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
@@ -114,11 +119,17 @@ namespace Avalonia.Native
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
 
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-            hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
-            hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-            hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
-            hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-            
+
+            if (hotkeys != null)
+            {
+                hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left,
+                    hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right,
+                    hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+            }
+
             if (_options.UseGpu)
             {
                 try
