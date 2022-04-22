@@ -138,7 +138,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             NameScopeSetNameScope = NameScope.GetMethod(new FindMethodMethodSignature("SetNameScope",
                 XamlIlTypes.Void, StyledElement, INameScope)
             { IsStatic = true });
-            AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", XamlIlTypes.Void,
+            AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", IDisposable,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
             IPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
             ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
