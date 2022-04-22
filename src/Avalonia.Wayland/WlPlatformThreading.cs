@@ -19,7 +19,10 @@ namespace Avalonia.Wayland
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested && _platform.WlDisplay.Dispatch() >= 0) { }
+            while (!cancellationToken.IsCancellationRequested && _platform.WlDisplay.Dispatch() >= 0)
+            {
+                Dispatcher.UIThread.RunJobs();
+            }
         }
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
