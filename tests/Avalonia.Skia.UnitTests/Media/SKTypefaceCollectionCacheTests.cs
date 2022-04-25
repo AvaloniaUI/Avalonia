@@ -26,20 +26,37 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.Equal("Noto Mono", actual);
             }
         }
-        
+
         [Fact]
-        public void Should_Get_Null_For_Invalid_FamilyName()
+        public void Should_Get_Typeface_For_Invalid_FamilyName()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var notoMono =
                     new FontFamily("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono");
-                
+
                 var notoMonoCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(notoMono);
 
                 var typeface = notoMonoCollection.Get(new Typeface("ABC"));
-                
-                Assert.Null(typeface);
+
+                Assert.NotNull(typeface);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Typeface_For_Partial_FamilyName()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var fontFamily = new FontFamily("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#T");
+
+                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(fontFamily);
+
+                var typeface = fontCollection.Get(new Typeface(fontFamily));
+
+                Assert.NotNull(typeface);
+
+                Assert.Equal("Twitter Color Emoji", typeface.FamilyName);
             }
         }
     }
