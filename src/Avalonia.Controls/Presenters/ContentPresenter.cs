@@ -514,7 +514,7 @@ namespace Avalonia.Controls.Presenters
                     var borderThickness = BorderThickness;
 
                     if (UseLayoutRounding)
-                        borderThickness = LayoutHelper.RoundLayoutThickness(BorderThickness, _scale, _scale);
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
 
                     _layoutThickness = borderThickness;
                 }
