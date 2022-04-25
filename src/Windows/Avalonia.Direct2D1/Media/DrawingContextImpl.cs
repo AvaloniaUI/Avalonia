@@ -5,11 +5,11 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
-using BitmapInterpolationMode = Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode;
+using BitmapInterpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -371,29 +371,6 @@ namespace Avalonia.Direct2D1.Media
                             RadiusX = (float)(rect.Width / 2),
                             RadiusY = (float)(rect.Height / 2)
                         }, wrapper.PlatformBrush, (float)pen.Thickness, d2dStroke);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Draws text.
-        /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
-        /// <param name="origin">The upper-left corner of the text.</param>
-        /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-        {
-            if (!string.IsNullOrEmpty(text.Text))
-            {
-                var impl = (FormattedTextImpl)text;
-
-                using (var brush = CreateBrush(foreground, impl.Bounds.Size))
-                using (var renderer = new AvaloniaTextRenderer(this, _deviceContext, brush.PlatformBrush))
-                {
-                    if (brush.PlatformBrush != null)
-                    {
-                        impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
                     }
                 }
             }

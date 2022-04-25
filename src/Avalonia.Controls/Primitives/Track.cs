@@ -291,13 +291,13 @@ namespace Avalonia.Controls.Primitives
             return arrangeSize;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
         }
 
@@ -403,8 +403,8 @@ namespace Avalonia.Controls.Primitives
 
         private void ThumbChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldThumb = (Thumb)e.OldValue;
-            var newThumb = (Thumb)e.NewValue;
+            var oldThumb = (Thumb?)e.OldValue;
+            var newThumb = (Thumb?)e.NewValue;
 
             if (oldThumb != null)
             {
@@ -424,8 +424,8 @@ namespace Avalonia.Controls.Primitives
 
         private void ButtonChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldButton = (Button)e.OldValue;
-            var newButton = (Button)e.NewValue;
+            var oldButton = (Button?)e.OldValue;
+            var newButton = (Button?)e.NewValue;
 
             if (oldButton != null)
             {
@@ -440,7 +440,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void ThumbDragged(object sender, VectorEventArgs e)
+        private void ThumbDragged(object? sender, VectorEventArgs e)
         {
             if (IsThumbDragHandled)
                 return;

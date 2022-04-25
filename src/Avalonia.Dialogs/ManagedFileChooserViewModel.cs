@@ -17,6 +17,7 @@ namespace Avalonia.Dialogs
         private readonly ManagedFileDialogOptions _options;
         public event Action CancelRequested;
         public event Action<string[]> CompleteRequested;
+        public event Action<string> OverwritePrompt;
 
         public AvaloniaList<ManagedFileChooserItemViewModel> QuickLinks { get; } =
             new AvaloniaList<ManagedFileChooserItemViewModel>();
@@ -39,6 +40,7 @@ namespace Avalonia.Dialogs
         private bool _scheduledSelectionValidation;
         private bool _alreadyCancelled = false;
         private string _defaultExtension;
+        private bool _overwritePrompt;
         private CompositeDisposable _disposables;
 
         public string Location
@@ -167,6 +169,7 @@ namespace Avalonia.Dialogs
             {
                 _savingFile = true;
                 _defaultExtension = sfd.DefaultExtension;
+                _overwritePrompt = sfd.ShowOverwritePrompt ?? true;
                 FileName = sfd.InitialFileName;
             }
 
@@ -360,7 +363,16 @@ namespace Avalonia.Dialogs
                         FileName = Path.ChangeExtension(FileName, _defaultExtension);
                     }
 
-                    CompleteRequested?.Invoke(new[] { Path.Combine(Location, FileName) });
+                    var fullName = Path.Combine(Location, FileName);
+
+                    if (_overwritePrompt && File.Exists(fullName))
+                    {
+                        OverwritePrompt?.Invoke(fullName);
+                    }
+                    else
+                    {
+                        CompleteRequested?.Invoke(new[] { fullName });
+                    }
                 }
             }
             else

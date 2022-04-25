@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly DirectProperty<ItemsPresenterBase, IEnumerable> ItemsProperty =
+        public static readonly DirectProperty<ItemsPresenterBase, IEnumerable?> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<ItemsPresenterBase>(o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
@@ -30,14 +30,14 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
+        public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
             ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenterBase>();
 
-        private IEnumerable _items;
-        private IDisposable _itemsSubscription;
+        private IEnumerable? _items;
+        private IDisposable? _itemsSubscription;
         private bool _createdPanel;
-        private IItemContainerGenerator _generator;
-        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+        private IItemContainerGenerator? _generator;
+        private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the items to be displayed.
         /// </summary>
-        public IEnumerable Items
+        public IEnumerable? Items
         {
             get
             {
@@ -114,7 +114,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
-        public IDataTemplate ItemTemplate
+        public IDataTemplate? ItemTemplate
         {
             get { return GetValue(ItemTemplateProperty); }
             set { SetValue(ItemTemplateProperty, value); }
@@ -123,7 +123,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets the panel used to display the items.
         /// </summary>
-        public IPanel Panel
+        public IPanel? Panel
         {
             get;
             private set;
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.Presenters
 
         protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
 
-        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
@@ -158,7 +158,7 @@ namespace Avalonia.Controls.Presenters
             {
                 ItemsChanged(e);
 
-                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
             }
         }
 
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.Presenters
             return result;
         }
 
-        private void ContainerActionHandler(object sender, ItemContainerEventArgs e)
+        private void ContainerActionHandler(object? sender, ItemContainerEventArgs e)
         {
             for (var i = 0; i < e.Containers.Count; i++)
             {
@@ -197,14 +197,14 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            Panel.Measure(availableSize);
+            Panel!.Measure(availableSize);
             return Panel.DesiredSize;
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Panel.Arrange(new Rect(finalSize));
+            Panel!.Arrange(new Rect(finalSize));
             return finalSize;
         }
 
@@ -258,7 +258,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (_createdPanel)
             {

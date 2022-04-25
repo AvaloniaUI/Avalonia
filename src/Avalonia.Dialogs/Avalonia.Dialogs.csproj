@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\*" />
+    <AvaloniaResource Include="**/*.xaml" />
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />
@@ -14,4 +15,5 @@
   </ItemGroup>
 
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\DevAnalyzers.props" />
 </Project>

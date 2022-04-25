@@ -22,8 +22,8 @@
       <TabItem Header="Border">
         <pages:BorderPage />
       </TabItem>
-      <TabItem Header="Button">
-        <pages:ButtonPage />
+      <TabItem Header="Buttons">
+        <pages:ButtonsPage />
       </TabItem>
       <TabItem Header="ButtonSpinner">
         <pages:ButtonSpinnerPage />
@@ -39,6 +39,12 @@
       </TabItem>
       <TabItem Header="CheckBox">
         <pages:CheckBoxPage />
+      </TabItem>
+      <TabItem Header="Clipboard">
+        <pages:ClipboardPage />
+      </TabItem>
+      <TabItem Header="ColorPicker">
+        <pages:ColorPickerPage />
       </TabItem>
       <TabItem Header="ComboBox">
         <pages:ComboBoxPage />
@@ -142,6 +148,9 @@
       <TabItem Header="ToolTip">
         <pages:ToolTipPage />
       </TabItem>
+      <TabItem Header="TransitioningContentControl">
+        <pages:TransitioningContentControlPage />
+      </TabItem>
       <TabItem Header="TreeView">
         <pages:TreeViewPage />
       </TabItem>
@@ -182,6 +191,14 @@
                 <WindowTransparencyLevel>Blur</WindowTransparencyLevel>
                 <WindowTransparencyLevel>AcrylicBlur</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
+              </ComboBox.Items>
+            </ComboBox>
+            <ComboBox x:Name="FlowDirection"
+                      HorizontalAlignment="Stretch"
+                      SelectedIndex="0">
+              <ComboBox.Items>
+                <FlowDirection>LeftToRight</FlowDirection>
+                <FlowDirection>RightToLeft</FlowDirection>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"

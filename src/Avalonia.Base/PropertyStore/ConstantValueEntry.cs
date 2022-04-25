@@ -18,14 +18,14 @@ namespace Avalonia.PropertyStore
     /// <typeparam name="T">The property type.</typeparam>
     internal class ConstantValueEntry<T> : IPriorityValueEntry<T>, IConstantValueEntry
     {
-        private IValueSink _sink;
+        private ValueOwner<T> _sink;
         private Optional<T> _value;
 
         public ConstantValueEntry(
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority,
-            IValueSink sink)
+            ValueOwner<T> sink)
         {
             Property = property;
             _value = value;
@@ -37,7 +37,7 @@ namespace Avalonia.PropertyStore
             StyledPropertyBase<T> property,
             Optional<T> value,
             BindingPriority priority,
-            IValueSink sink)
+            ValueOwner<T> sink)
         {
             Property = property;
             _value = value;
@@ -62,17 +62,16 @@ namespace Avalonia.PropertyStore
             _sink.Completed(Property, this, oldValue);
         }
 
-        public void Reparent(IValueSink sink) => _sink = sink;
+        public void Reparent(PriorityValue<T> sink) => _sink = new(sink);
         public void Start() { }
 
         public void RaiseValueChanged(
-            IValueSink sink,
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             AvaloniaProperty property,
             Optional<object?> oldValue,
             Optional<object?> newValue)
         {
-            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+            owner.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
                 oldValue.Cast<T>(),

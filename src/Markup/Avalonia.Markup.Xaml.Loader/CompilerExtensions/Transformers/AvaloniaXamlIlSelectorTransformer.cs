@@ -77,7 +77,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 throw new XamlParseException($"Cannot find '{property.Property}' on '{type}", node);
 
                             if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context,
-                                new XamlAstTextNode(node, property.Value, context.Configuration.WellKnownTypes.String),
+                                new XamlAstTextNode(node, property.Value, type: context.Configuration.WellKnownTypes.String),
                                 targetProperty.PropertyType, out var typedValue))
                                 throw new XamlParseException(
                                     $"Cannot convert '{property.Value}' to '{targetProperty.PropertyType.GetFqn()}",
@@ -118,7 +118,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                     .GetAvaloniaPropertyType(targetPropertyField, context.GetAvaloniaTypes(), node);
 
                                 if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context,
-                                    new XamlAstTextNode(node, attachedProperty.Value, context.Configuration.WellKnownTypes.String),
+                                    new XamlAstTextNode(node, attachedProperty.Value, type: context.Configuration.WellKnownTypes.String),
                                     targetPropertyType, out var typedValue))
                                         throw new XamlParseException(
                                             $"Cannot convert '{attachedProperty.Value}' to '{targetPropertyType.GetFqn()}",

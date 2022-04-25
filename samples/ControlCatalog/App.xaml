@@ -3,6 +3,7 @@
              xmlns:vm="using:ControlCatalog.ViewModels"
              x:DataType="vm:ApplicationViewModel"
              x:CompileBindings="True"
+             Name="Avalonia ControlCatalog"
              x:Class="ControlCatalog.App">
   <Application.Styles>
     <Style Selector="TextBlock.h1, TextBlock.h2, TextBlock.h3">

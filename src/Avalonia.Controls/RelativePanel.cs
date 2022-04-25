@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Layout;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

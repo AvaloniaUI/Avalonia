@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Runtime.InteropServices;
 
@@ -7,20 +8,19 @@ namespace Avalonia.X11
     {
         private const string LibSm = "libSM.so.6";
 
-        [DllImport(LibSm, CharSet = CharSet.Ansi)]
+        [DllImport(LibSm, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern IntPtr SmcOpenConnection(
-            [MarshalAs(UnmanagedType.LPWStr)] string networkId,
+            [MarshalAs(UnmanagedType.LPStr)] string? networkId,
             IntPtr content,
             int xsmpMajorRev,
             int xsmpMinorRev,
-            ulong mask,
+            nuint mask,
             ref SmcCallbacks callbacks,
-            [MarshalAs(UnmanagedType.LPWStr)] [Out]
-            out string previousId,
-            [MarshalAs(UnmanagedType.LPWStr)] [Out]
-            out string clientIdRet,
+            [MarshalAs(UnmanagedType.LPStr)] string? previousId,
+            ref IntPtr clientIdRet,
             int errorLength,
-            [Out] char[] errorStringRet);
+            [Out] byte[] errorStringRet
+        );
 
         [DllImport(LibSm, CallingConvention = CallingConvention.StdCall)]
         public static extern int SmcCloseConnection(
@@ -124,7 +124,7 @@ namespace Avalonia.X11
             IntPtr smcConn,
             bool swap,
             int offendingMinorOpcode,
-            ulong offendingSequence,
+            nuint offendingSequence,
             int errorClass,
             int severity,
             IntPtr values

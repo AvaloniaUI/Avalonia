@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="ControlCatalog.Pages.ClipboardPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h2">Example of ClipboardPage capabilities</TextBlock>
+
+    <Button Click="CopyText" Content="Copy text to clipboard" />
+    <Button Click="PasteText" Content="Paste text from clipboard" />
+    <Button Click="CopyTextDataObject" Content="Copy text to clipboard (data object)" />
+    <Button Click="PasteTextDataObject" Content="Paste text from clipboard (data object)" />
+
+    <Button Click="CopyFilesDataObject" Content="Copy files to clipboard (data object)" />
+    <Button Click="PasteFilesDataObject" Content="Paste files from clipboard (data object)" />
+
+    <Button Click="GetFormats" Content="Get clipboard formats" />
+    <Button Click="Clear" Content="Clear clipboard" />
+
+    <TextBox x:Name="ClipboardContent"
+             MinHeight="100"
+             AcceptsReturn="True"
+             Watermark="Text to copy of file names per line" />
+  </StackPanel>
+</UserControl>
