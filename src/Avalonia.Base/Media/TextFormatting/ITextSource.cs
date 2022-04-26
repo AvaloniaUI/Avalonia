@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Media.TextFormatting
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Produces <see cref="TextRun"/> objects that are used by the <see cref="TextFormatter"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface ITextSource
     {
         /// <summary>

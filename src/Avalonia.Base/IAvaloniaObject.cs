@@ -1,11 +1,13 @@
 using System;
 using Avalonia.Data;
+using Avalonia.Metadata;
 
 namespace Avalonia
 {
     /// <summary>
     /// Interface for getting/setting <see cref="AvaloniaProperty"/> values on an object.
     /// </summary>
+    [NotClientImplementable]
     public interface IAvaloniaObject
     {
         /// <summary>

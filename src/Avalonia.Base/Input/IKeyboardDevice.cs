@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
@@ -50,6 +51,7 @@ namespace Avalonia.Input
         KeyboardMask = Alt | Control | Shift | Meta
     }
 
+    [NotClientImplementable]
     public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
     {
         IInputElement? FocusedElement { get; }

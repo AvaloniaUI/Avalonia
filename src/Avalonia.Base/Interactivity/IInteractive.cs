@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 
 #nullable enable
 
@@ -7,6 +8,7 @@ namespace Avalonia.Interactivity
     /// <summary>
     /// Interface for objects that raise routed events.
     /// </summary>
+    [NotClientImplementable]
     public interface IInteractive
     {
         /// <summary>

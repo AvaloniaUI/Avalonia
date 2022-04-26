@@ -1,9 +1,11 @@
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Exposes an interface for setting pseudoclasses on a <see cref="Classes"/> collection.
     /// </summary>
+    [NotClientImplementable]
     public interface IPseudoClasses
     {
         /// <summary>
