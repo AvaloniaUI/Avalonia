@@ -3,14 +3,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:primitives="clr-namespace:Avalonia.Controls.Primitives;assembly=Avalonia.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.ColorPickerPage">
 
   <Grid ColumnDefinitions="Auto,Auto"
         RowDefinitions="Auto,Auto">
-    <ColorSpectrum Grid.Column="0"
+    <ColorSpectrum x:Name="ColorSpectrum1"
+                   Grid.Column="0"
                    Grid.Row="0"
                    Color="Red"
+                   CornerRadius="10"
                    Height="256"
                    Width="256" />
     <ColorSpectrum Grid.Column="1"
@@ -19,11 +23,28 @@
                    Shape="Ring"
                    Height="256"
                    Width="256" />
-    <ColorSpectrum Grid.Column="0"
-                   Grid.Row="1"
-                   CornerRadius="10"
-                   Color="Blue"
-                   Height="256"
-                   Width="256" />
+    <Grid Grid.Column="0"
+          Grid.Row="1"
+          RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+      <ColorSlider Grid.Row="0"
+                   ColorComponent="Component1"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1, Mode=TwoWay}" />
+      <ColorSlider Grid.Row="1"
+                   ColorComponent="Component2"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1, Mode=TwoWay}" />
+      <ColorSlider Grid.Row="2"
+                   ColorComponent="Component3"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1, Mode=TwoWay}" />
+      <ColorSlider Grid.Row="3"
+                   ColorComponent="Alpha"
+                   ColorModel="Hsva"
+                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1, Mode=TwoWay}" />
+      <ColorPreviewer Grid.Row="4"
+                      ShowAccentColors="True"
+                      HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1, Mode=TwoWay}" />
+    </Grid>
   </Grid>
 </UserControl>
