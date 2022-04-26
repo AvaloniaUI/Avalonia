@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Color> ColorProperty =
             AvaloniaProperty.Register<ColorSpectrum, Color>(
                 nameof(Color),
-                Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF));
+                Colors.White);
 
         /// <summary>
         /// Gets or sets the two HSV color components displayed by the spectrum.
@@ -71,7 +71,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
             AvaloniaProperty.Register<ColorSpectrum, HsvColor>(
                 nameof(HsvColor),
-                new HsvColor(1, 0, 0, 1));
+                Colors.White.ToHsv());
 
         /// <summary>
         /// Gets or sets the maximum value of the Hue component in the range from 0..359.
