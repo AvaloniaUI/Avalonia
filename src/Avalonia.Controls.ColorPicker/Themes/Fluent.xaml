@@ -21,6 +21,7 @@
   </Styles.Resources>
 
   <!-- Primitives -->
+  <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPreviewer.xaml" />
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSpectrum.xaml" />
 
 </Styles>
