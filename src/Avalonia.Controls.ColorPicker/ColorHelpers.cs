@@ -6,9 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -24,6 +27,291 @@ namespace Avalonia.Controls.Primitives
         public static string ToDisplayName(Color color)
         {
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Generates a new bitmap of the specified size by changing a specific color component.
+        /// This will produce a gradient representing a sweep of all possible values of the color component.
+        /// </summary>
+        /// <param name="width">The pixel width (X, horizontal) of the resulting bitmap.</param>
+        /// <param name="height">The pixel height (Y, vertical) of the resulting bitmap.</param>
+        /// <param name="orientation">The orientation of the resulting bitmap (gradient direction).</param>
+        /// <param name="colorModel">The color model being used: RGBA or HSVA.</param>
+        /// <param name="component">The specific color component to sweep.</param>
+        /// <param name="baseHsvColor">The base HSV color used for components not being changed.</param>
+        /// <param name="isAlphaMaxForced">Fix the alpha component value to maximum during calculation.
+        /// This will remove any alpha/transparency from the other component backgrounds.</param>
+        /// <param name="isSaturationValueMaxForced">Fix the saturation and value components to maximum
+        /// during calculation with the HSVA color model.
+        /// This will ensure colors are always discernible regardless of saturation/value.</param>
+        /// <returns>A new bitmap representing a gradient of color component values.</returns>
+        internal static async Task<byte[]> CreateComponentBitmapAsync(
+            int width,
+            int height,
+            Orientation orientation,
+            ColorModel colorModel,
+            ColorComponent component,
+            HsvColor baseHsvColor,
+            bool isAlphaMaxForced,
+            bool isSaturationValueMaxForced)
+        {
+            if (width == 0 || height == 0)
+            {
+                return new byte[0];
+            }
+
+            var bitmap = await Task.Run<byte[]>(() =>
+            {
+                int pixelDataIndex = 0;
+                double componentStep;
+                byte[] bgraPixelData;
+                Color baseRgbColor = Colors.White;
+                Color rgbColor;
+                int bgraPixelDataHeight;
+                int bgraPixelDataWidth;
+
+                // Allocate the buffer
+                // BGRA formatted color components 1 byte each (4 bytes in a pixel)
+                bgraPixelData       = new byte[width * height * 4];
+                bgraPixelDataHeight = height * 4;
+                bgraPixelDataWidth  = width * 4;
+
+                // Maximize alpha component value
+                if (isAlphaMaxForced &&
+                    component != ColorComponent.Alpha)
+                {
+                    baseHsvColor = new HsvColor(1.0, baseHsvColor.H, baseHsvColor.S, baseHsvColor.V);
+                }
+
+                // Convert HSV to RGB once
+                if (colorModel == ColorModel.Rgba)
+                {
+                    baseRgbColor = baseHsvColor.ToRgb();
+                }
+
+                // Maximize Saturation and Value components when in HSVA mode
+                if (isSaturationValueMaxForced &&
+                    colorModel == ColorModel.Hsva &&
+                    component != ColorComponent.Alpha)
+                {
+                    switch (component)
+                    {
+                        case ColorComponent.Component1:
+                            baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, 1.0, 1.0);
+                            break;
+                        case ColorComponent.Component2:
+                            baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, baseHsvColor.S, 1.0);
+                            break;
+                        case ColorComponent.Component3:
+                            baseHsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, 1.0, baseHsvColor.V);
+                            break;
+                    }
+                }
+
+                // Create the color component gradient
+                if (orientation == Orientation.Horizontal)
+                {
+                    // Determine the numerical increment of the color steps within the component
+                    if (colorModel == ColorModel.Hsva)
+                    {
+                        if (component == ColorComponent.Component1)
+                        {
+                            componentStep = 360.0 / width;
+                        }
+                        else
+                        {
+                            componentStep = 1.0 / width;
+                        }
+                    }
+                    else
+                    {
+                        componentStep = 255.0 / width;
+                    }
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            if (y == 0)
+                            {
+                                rgbColor = GetColor(x * componentStep);
+
+                                // Get a new color
+                                bgraPixelData[pixelDataIndex + 0] = Convert.ToByte(rgbColor.B * rgbColor.A / 255);
+                                bgraPixelData[pixelDataIndex + 1] = Convert.ToByte(rgbColor.G * rgbColor.A / 255);
+                                bgraPixelData[pixelDataIndex + 2] = Convert.ToByte(rgbColor.R * rgbColor.A / 255);
+                                bgraPixelData[pixelDataIndex + 3] = rgbColor.A;
+                            }
+                            else
+                            {
+                                // Use the color in the row above
+                                // Remember the pixel data is 1 dimensional instead of 2
+                                bgraPixelData[pixelDataIndex + 0] = bgraPixelData[pixelDataIndex + 0 - bgraPixelDataWidth];
+                                bgraPixelData[pixelDataIndex + 1] = bgraPixelData[pixelDataIndex + 1 - bgraPixelDataWidth];
+                                bgraPixelData[pixelDataIndex + 2] = bgraPixelData[pixelDataIndex + 2 - bgraPixelDataWidth];
+                                bgraPixelData[pixelDataIndex + 3] = bgraPixelData[pixelDataIndex + 3 - bgraPixelDataWidth];
+                            }
+
+                            pixelDataIndex += 4;
+                        }
+                    }
+                }
+                else
+                {
+                    // Determine the numerical increment of the color steps within the component
+                    if (colorModel == ColorModel.Hsva)
+                    {
+                        if (component == ColorComponent.Component1)
+                        {
+                            componentStep = 360.0 / height;
+                        }
+                        else
+                        {
+                            componentStep = 1.0 / height;
+                        }
+                    }
+                    else
+                    {
+                        componentStep = 255.0 / height;
+                    }
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            if (x == 0)
+                            {
+                                // The lowest component value should be at the 'bottom' of the bitmap
+                                rgbColor = GetColor((height - 1 - y) * componentStep);
+
+                                // Get a new color
+                                bgraPixelData[pixelDataIndex + 0] = Convert.ToByte(rgbColor.B * rgbColor.A / 255);
+                                bgraPixelData[pixelDataIndex + 1] = Convert.ToByte(rgbColor.G * rgbColor.A / 255);
+                                bgraPixelData[pixelDataIndex + 2] = Convert.ToByte(rgbColor.R * rgbColor.A / 255);
+                                bgraPixelData[pixelDataIndex + 3] = rgbColor.A;
+                            }
+                            else
+                            {
+                                // Use the color in the column to the left
+                                // Remember the pixel data is 1 dimensional instead of 2
+                                bgraPixelData[pixelDataIndex + 0] = bgraPixelData[pixelDataIndex - 4];
+                                bgraPixelData[pixelDataIndex + 1] = bgraPixelData[pixelDataIndex - 3];
+                                bgraPixelData[pixelDataIndex + 2] = bgraPixelData[pixelDataIndex - 2];
+                                bgraPixelData[pixelDataIndex + 3] = bgraPixelData[pixelDataIndex - 1];
+                            }
+
+                            pixelDataIndex += 4;
+                        }
+                    }
+                }
+
+                Color GetColor(double componentValue)
+                {
+                    Color newRgbColor = Colors.White;
+
+                    switch (component)
+                    {
+                        case ColorComponent.Component1:
+                            {
+                                if (colorModel == ColorModel.Hsva)
+                                {
+                                    // Sweep hue
+                                    newRgbColor = HsvColor.ToRgb(
+                                        MathUtilities.Clamp(componentValue, 0.0, 360.0),
+                                        baseHsvColor.S,
+                                        baseHsvColor.V,
+                                        baseHsvColor.A);
+                                }
+                                else
+                                {
+                                    // Sweep red
+                                    newRgbColor = new Color(
+                                        baseRgbColor.A,
+                                        Convert.ToByte(MathUtilities.Clamp(componentValue, 0.0, 255.0)),
+                                        baseRgbColor.G,
+                                        baseRgbColor.B);
+                                }
+
+                                break;
+                            }
+                        case ColorComponent.Component2:
+                            {
+                                if (colorModel == ColorModel.Hsva)
+                                {
+                                    // Sweep saturation
+                                    newRgbColor = HsvColor.ToRgb(
+                                        baseHsvColor.H,
+                                        MathUtilities.Clamp(componentValue, 0.0, 1.0),
+                                        baseHsvColor.V,
+                                        baseHsvColor.A);
+                                }
+                                else
+                                {
+                                    // Sweep green
+                                    newRgbColor = new Color(
+                                        baseRgbColor.A,
+                                        baseRgbColor.R,
+                                        Convert.ToByte(MathUtilities.Clamp(componentValue, 0.0, 255.0)),
+                                        baseRgbColor.B);
+                                }
+
+                                break;
+                            }
+                        case ColorComponent.Component3:
+                            {
+                                if (colorModel == ColorModel.Hsva)
+                                {
+                                    // Sweep value
+                                    newRgbColor = HsvColor.ToRgb(
+                                        baseHsvColor.H,
+                                        baseHsvColor.S,
+                                        MathUtilities.Clamp(componentValue, 0.0, 1.0),
+                                        baseHsvColor.A);
+                                }
+                                else
+                                {
+                                    // Sweep blue
+                                    newRgbColor = new Color(
+                                        baseRgbColor.A,
+                                        baseRgbColor.R,
+                                        baseRgbColor.G,
+                                        Convert.ToByte(MathUtilities.Clamp(componentValue, 0.0, 255.0)));
+                                }
+
+                                break;
+                            }
+                        case ColorComponent.Alpha:
+                            {
+                                if (colorModel == ColorModel.Hsva)
+                                {
+                                    // Sweep alpha
+                                    newRgbColor = HsvColor.ToRgb(
+                                        baseHsvColor.H,
+                                        baseHsvColor.S,
+                                        baseHsvColor.V,
+                                        MathUtilities.Clamp(componentValue, 0.0, 1.0));
+                                }
+                                else
+                                {
+                                    // Sweep alpha
+                                    newRgbColor = new Color(
+                                        Convert.ToByte(MathUtilities.Clamp(componentValue, 0.0, 255.0)),
+                                        baseRgbColor.R,
+                                        baseRgbColor.G,
+                                        baseRgbColor.B);
+                                }
+
+                                break;
+                            }
+                    }
+
+                    return newRgbColor;
+                }
+
+                return bgraPixelData;
+            });
+
+            return bitmap;
         }
 
         public static Hsv IncrementColorComponent(
@@ -363,14 +651,22 @@ namespace Avalonia.Controls.Primitives
             return originalAlpha / 100;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pixelWidth">The pixel width of the bitmap.</param>
+        /// <param name="pixelHeight">The pixel height of the bitmap.</param>
+        /// <param name="bgraPixelData"></param>
+        /// <returns></returns>
         public static WriteableBitmap CreateBitmapFromPixelData(
             int pixelWidth,
             int pixelHeight,
             List<byte> bgraPixelData)
         {
-            Vector dpi = new Vector(96, 96); // Standard may need to change on some devices
+            // Standard may need to change on some devices
+            Vector dpi = new Vector(96, 96);
 
-            WriteableBitmap bitmap = new WriteableBitmap(
+            var bitmap = new WriteableBitmap(
                 new PixelSize(pixelWidth, pixelHeight),
                 dpi,
                 PixelFormat.Bgra8888,
@@ -383,6 +679,50 @@ namespace Avalonia.Controls.Primitives
             }
 
             return bitmap;
+        }
+
+        /// <summary>
+        /// Converts the given bitmap (in raw BGRA pre-multiplied alpha pixels) into an image brush
+        /// that can be used in the UI.
+        /// </summary>
+        /// <param name="bgraPixelData">The bitmap (in raw BGRA pre-multiplied alpha pixels)
+        /// to convert to a brush.</param>
+        /// <param name="pixelWidth">The pixel width of the bitmap.</param>
+        /// <param name="pixelHeight">The pixel height of the bitmap.</param>
+        /// <returns>A new <see cref="ImageBrush"/>.</returns>
+        public static IBrush? BitmapToBrushAsync(
+            byte[] bgraPixelData,
+            int pixelWidth,
+            int pixelHeight)
+        {
+            if (bgraPixelData.Length == 0 ||
+                (pixelWidth == 0 &&
+                 pixelHeight == 0))
+            {
+                return null;
+            }
+
+            // Standard may need to change on some devices
+            Vector dpi = new Vector(96, 96);
+
+            var bitmap = new WriteableBitmap(
+                new PixelSize(pixelWidth, pixelHeight),
+                dpi,
+                PixelFormat.Bgra8888,
+                AlphaFormat.Premul);
+
+            // Warning: This is highly questionable
+            using (var frameBuffer = bitmap.Lock())
+            {
+                Marshal.Copy(bgraPixelData, 0, frameBuffer.Address, bgraPixelData.Length);
+            }
+
+            var brush = new ImageBrush(bitmap)
+            {
+                Stretch = Stretch.Fill
+            };
+
+            return brush;
         }
 
         /// <summary>
