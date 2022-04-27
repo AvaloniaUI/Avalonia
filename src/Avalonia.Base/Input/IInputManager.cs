@@ -27,6 +27,11 @@ namespace Avalonia.Input
         IObservable<RawInputEventArgs> PostProcess { get; }
 
         /// <summary>
+        /// Gets the last input device type
+        /// </summary>
+        FocusInputDeviceKind LastInputDeviceType { get; }
+
+        /// <summary>
         /// Processes a raw input event.
         /// </summary>
         /// <param name="e">The raw input event.</param>
