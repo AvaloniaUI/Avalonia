@@ -1,10 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Input.Navigation
+namespace Avalonia.Controls
 {
+    // TODO_FOCUS: This can probably be merged in with the FocusManager
+
     /// <summary>
     /// The implementation for default tab navigation.
     /// </summary>
@@ -206,20 +207,21 @@ namespace Avalonia.Input.Navigation
             // Focus delegation is enabled only if keyboard focus is outside the container
             if (iie != null && !iie.IsKeyboardFocusWithin)
             {
-                var focusedElement = (FocusManager.Instance as FocusManager)?.GetFocusedElement(e);
-                if (focusedElement != null)
-                {
-                    if (!IsFocusScope(e))
-                    {
-                        // Verify if focusedElement is a visual descendant of e
-                        if (focusedElement is IVisual visualFocusedElement &&
-                            visualFocusedElement != e &&
-                            e.IsVisualAncestorOf(visualFocusedElement))
-                        {
-                            return focusedElement;
-                        }
-                    }
-                }
+                // TODO_FOCUS
+                //var focusedElement = FocusManager.GetFocusedElement();// (FocusManager.Instance as FocusManager)?.GetFocusedElement(e);
+                //if (focusedElement != null)
+                //{
+                //    if (!IsFocusScope(e))
+                //    {
+                //        // Verify if focusedElement is a visual descendant of e
+                //        if (focusedElement is IVisual visualFocusedElement &&
+                //            visualFocusedElement != e &&
+                //            e.IsVisualAncestorOf(visualFocusedElement))
+                //        {
+                //            return focusedElement;
+                //        }
+                //    }
+                //}
             }
 
             return null;
@@ -299,7 +301,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetFirstTabInGroup(IInputElement container)
+        public static IInputElement? GetFirstTabInGroup(IInputElement container)
         {
             IInputElement? firstTabElement = null;
             int minIndexFirstTab = int.MinValue;
@@ -338,7 +340,7 @@ namespace Avalonia.Input.Navigation
             return result;
         }
 
-        private static IInputElement? GetLastTabInGroup(IInputElement container)
+        public static IInputElement? GetLastTabInGroup(IInputElement container)
         {
             IInputElement? lastTabElement = null;
             int maxIndexFirstTab = int.MaxValue;
@@ -594,7 +596,7 @@ namespace Avalonia.Input.Navigation
                 var children = parentAsVisual.VisualChildren;
                 var count = children.Count;
                 IInputElement? prev = null;
-                
+
                 for (int i = 0; i < count; i++)
                 {
                     var vchild = children[i];
@@ -658,7 +660,7 @@ namespace Avalonia.Input.Navigation
             return ((AvaloniaObject)e).GetValue(KeyboardNavigation.TabNavigationProperty);
         }
 
-        private static bool IsFocusScope(IInputElement e) => FocusManager.GetIsFocusScope(e) || GetParent(e) == null;
+        private static bool IsFocusScope(IInputElement e) => GetParent(e) == null;// FocusManager.GetIsFocusScope(e) ||;
         private static bool IsGroup(IInputElement e) => GetKeyNavigationMode(e) != KeyboardNavigationMode.Continue;
 
         private static bool IsTabStop(IInputElement e)
