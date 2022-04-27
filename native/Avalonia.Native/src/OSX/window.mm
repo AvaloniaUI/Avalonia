@@ -457,7 +457,7 @@ public:
             }
             
             point = ConvertPointY(point);
-            NSRect convertRect = [Window convertRectToScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
+            NSRect convertRect = [Window convertRectFromScreen:NSMakeRect(point.X, point.Y, 0.0, 0.0)];
             auto viewPoint = NSMakePoint(convertRect.origin.x, convertRect.origin.y);
             
             *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];

@@ -417,7 +417,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void MenuOpened(object? sender, RoutedEventArgs e)
         {
-            if (e.Source == Menu)
+            if (e.Source is Menu)
             {
                 Menu?.MoveSelection(NavigationDirection.First, true);
             }

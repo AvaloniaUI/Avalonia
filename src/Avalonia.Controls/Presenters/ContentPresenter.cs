@@ -9,6 +9,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -403,7 +404,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             switch (change.Property.Name)
@@ -414,6 +415,10 @@ namespace Avalonia.Controls.Presenters
                     break;
                 case nameof(TemplatedParent):
                     TemplatedParentChanged(change);
+                    break;
+                case nameof(UseLayoutRounding):
+                case nameof(BorderThickness):
+                    _layoutThickness = null;
                     break;
             }
         }
@@ -495,10 +500,43 @@ namespace Avalonia.Controls.Presenters
             InvalidateMeasure();
         }
 
+        private Thickness? _layoutThickness;
+        private double _scale;
+
+        private Thickness LayoutThickness
+        {
+            get
+            {
+                VerifyScale();
+
+                if (_layoutThickness == null)
+                {
+                    var borderThickness = BorderThickness;
+
+                    if (UseLayoutRounding)
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+
+                    _layoutThickness = borderThickness;
+                }
+
+                return _layoutThickness.Value;
+            }
+        }
+
+        private void VerifyScale()
+        {
+            var currentScale = LayoutHelper.GetLayoutScale(this);
+            if (MathUtilities.AreClose(currentScale, _scale))
+                return;
+
+            _scale = currentScale;
+            _layoutThickness = null;
+        }
+
         /// <inheritdoc/>
         public override void Render(DrawingContext context)
         {
-            _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+            _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow);
         }
 
@@ -566,13 +604,22 @@ namespace Avalonia.Controls.Presenters
         {
             if (Child == null) return finalSize;
 
-            var padding = Padding + BorderThickness;
+            var useLayoutRounding = UseLayoutRounding;
+            var scale = LayoutHelper.GetLayoutScale(this);
+            var padding = Padding;
+            var borderThickness = BorderThickness;
+
+            if (useLayoutRounding)
+            {
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale, scale);
+                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale, scale);
+            }
+
+            padding += borderThickness;
             var horizontalContentAlignment = HorizontalContentAlignment;
             var verticalContentAlignment = VerticalContentAlignment;
-            var useLayoutRounding = UseLayoutRounding;
             var availableSize = finalSize;
             var sizeForChild = availableSize;
-            var scale = LayoutHelper.GetLayoutScale(this);
             var originX = offset.X;
             var originY = offset.Y;
 

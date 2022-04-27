@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -1612,6 +1613,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
             target.MoveSelection(NavigationDirection.Next, true);
+        }
+
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_First_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem { Focusable = false },
+                    new ListBoxItem(),
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.First, true));
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_Last_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.Last, true));
+            Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact]
