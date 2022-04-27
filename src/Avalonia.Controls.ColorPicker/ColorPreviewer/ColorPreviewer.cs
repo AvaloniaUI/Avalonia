@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     {
         /// <summary>
         /// Event for when the selected color changes within the previewer.
-        /// This happens when an accent color is pressed.
+        /// This occurs when an accent color is pressed.
         /// </summary>
         public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
@@ -80,22 +80,6 @@ namespace Avalonia.Controls.Primitives
             ConnectEvents(true);
 
             base.OnApplyTemplate(e);
-        }
-
-        /// <inheritdoc/>
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            // Always keep the two color properties in sync
-            if (change.Property == ColorProperty)
-            {
-                HsvColor = Color.ToHsv();
-            }
-            else if (change.Property == HsvColorProperty)
-            {
-                Color = HsvColor.ToRgb();
-            }
-
-            base.OnPropertyChanged(change);
         }
 
         /// <summary>

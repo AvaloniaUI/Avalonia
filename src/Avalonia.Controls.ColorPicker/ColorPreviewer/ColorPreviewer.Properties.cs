@@ -6,27 +6,6 @@ namespace Avalonia.Controls.Primitives
     public partial class ColorPreviewer
     {
         /// <summary>
-        /// Defines the <see cref="Color"/> property.
-        /// </summary>
-        public static readonly StyledProperty<Color> ColorProperty =
-            AvaloniaProperty.Register<ColorSpectrum, Color>(
-                nameof(Color),
-                Colors.White);
-
-        /// <summary>
-        /// Gets or sets the currently previewed color in the RGB color model.
-        /// </summary>
-        /// <remarks>
-        /// For control authors use <see cref="HsvColor"/> instead to avoid loss
-        /// of precision and color drifting.
-        /// </remarks>
-        public Color Color
-        {
-            get => GetValue(ColorProperty);
-            set => SetValue(ColorProperty, value);
-        }
-
-        /// <summary>
         /// Defines the <see cref="HsvColor"/> property.
         /// </summary>
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
@@ -38,9 +17,9 @@ namespace Avalonia.Controls.Primitives
         /// Gets or sets the currently previewed color in the HSV color model.
         /// </summary>
         /// <remarks>
-        /// This should be used in all cases instead of the <see cref="Color"/> property.
-        /// Internally, the <see cref="ColorPreviewer"/> uses the HSV color model and using
-        /// this property will avoid loss of precision and color drifting.
+        /// Only an HSV color is supported in this control to ensure there is never any
+        /// loss of precision or color information. Accent colors, like the color spectrum,
+        /// only operate with the HSV color model.
         /// </remarks>
         public HsvColor HsvColor
         {
