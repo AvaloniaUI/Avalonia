@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
 
@@ -9,7 +10,7 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public partial class ColorSlider : Slider
     {
-        private Size cachedSize = Size.Empty;
+        private bool disableUpdates = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.
@@ -19,200 +20,308 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Update the slider's Foreground and Background brushes based on the current slider state and color.
+        /// Generates a new background image for the color slider and applies it.
         /// </summary>
-        /// <remarks>
-        /// Manually refreshes the background gradient of the slider.
-        /// This is callable separately for performance reasons.
-        /// </remarks>
-        public void UpdateColors()
+        private async void UpdateBackground()
         {
-            HsvColor hsvColor = HsvColor;
+            // In Avalonia, Bounds returns the actual device-independent pixel size of a control.
+            // However, this is not necessarily the size of the control rendered on a display.
+            // A desktop or application scaling factor may be applied which must be accounted for here.
+            // Remember bitmaps in Avalonia are rendered mapping to actual device pixels, not the device-
+            // independent pixels of controls.
 
-            // Calculate and set the background
-            UpdateBackground(hsvColor);
+            var scale = LayoutHelper.GetLayoutScale(this);
+            var pixelWidth = Convert.ToInt32(Bounds.Width * scale);
+            var pixelHeight = Convert.ToInt32(Bounds.Height * scale);
 
-            // Calculate and set the foreground ensuring contrast with the background
-            Color rgbColor = hsvColor.ToRgb();
-            Color selectedRgbColor;
-            double sliderPercent = Value / (Maximum - Minimum);
-
-            var component = ColorComponent;
-
-            if (ColorModel == ColorModel.Hsva)
+            if (pixelWidth != 0 && pixelHeight != 0)
             {
-                if (IsAlphaMaxForced &&
-                    component != ColorComponent.Alpha)
+                var bitmap = await ColorHelpers.CreateComponentBitmapAsync(
+                    pixelWidth,
+                    pixelHeight,
+                    Orientation,
+                    ColorModel,
+                    ColorComponent,
+                    HsvColor,
+                    IsAlphaMaxForced,
+                    IsSaturationValueMaxForced);
+
+                if (bitmap != null)
                 {
-                    hsvColor = new HsvColor(1.0, hsvColor.H, hsvColor.S, hsvColor.V);
+                    Background = ColorHelpers.BitmapToBrushAsync(bitmap, pixelWidth, pixelHeight);
                 }
-
-                switch (component)
-                {
-                    case ColorComponent.Component1:
-                        {
-                            var componentValue = MathUtilities.Clamp(sliderPercent * 360.0, 0.0, 360.0);
-
-                            hsvColor = new HsvColor(
-                                hsvColor.A,
-                                componentValue,
-                                IsSaturationValueMaxForced ? 1.0 : hsvColor.S,
-                                IsSaturationValueMaxForced ? 1.0 : hsvColor.V);
-
-                            break;
-                        }
-
-                    case ColorComponent.Component2:
-                        {
-                            var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
-
-                            hsvColor = new HsvColor(
-                                hsvColor.A,
-                                hsvColor.H,
-                                componentValue,
-                                IsSaturationValueMaxForced ? 1.0 : hsvColor.V);
-
-                            break;
-                        }
-
-                    case ColorComponent.Component3:
-                        {
-                            var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
-
-                            hsvColor = new HsvColor(
-                                hsvColor.A,
-                                hsvColor.H,
-                                IsSaturationValueMaxForced ? 1.0 : hsvColor.S,
-                                componentValue);
-
-                            break;
-                        }
-                }
-
-                selectedRgbColor = hsvColor.ToRgb();
             }
-            else
-            {
-                if (IsAlphaMaxForced &&
-                    component != ColorComponent.Alpha)
-                {
-                    rgbColor = new Color(255, rgbColor.R, rgbColor.G, rgbColor.B);
-                }
-
-                byte componentValue = Convert.ToByte(MathUtilities.Clamp(sliderPercent * 255, 0, 255));
-
-                switch (component)
-                {
-                    case ColorComponent.Component1:
-                        rgbColor = new Color(rgbColor.A, componentValue, rgbColor.G, rgbColor.B);
-                        break;
-                    case ColorComponent.Component2:
-                        rgbColor = new Color(rgbColor.A, rgbColor.R, componentValue, rgbColor.B);
-                        break;
-                    case ColorComponent.Component3:
-                        rgbColor = new Color(rgbColor.A, rgbColor.R, rgbColor.G, componentValue);
-                        break;
-                }
-
-                selectedRgbColor = rgbColor;
-            }
-
-            //var converter = new ContrastBrushConverter();
-            //this.Foreground = converter.Convert(selectedRgbColor, typeof(Brush), this.DefaultForeground, null) as Brush;
 
             return;
         }
 
         /// <summary>
-        /// Generates a new background image for the color slider and applies it.
+        /// Updates the slider property values by applying the current color.
         /// </summary>
-        private async void UpdateBackground(HsvColor color)
+        /// <remarks>
+        /// Warning: This will trigger property changed updates.
+        /// Consider using <see cref="disableUpdates"/> externally.
+        /// </remarks>
+        private void SetColorToSliderValues()
         {
-            // Updates may be requested when sliders are not in the visual tree.
-            // For first-time load this is handled by the Loaded event.
-            // However, after that problems may arise, consider the following case:
-            //
-            //   (1) Backgrounds are drawn normally the first time on Loaded.
-            //       Actual height/width are available.
-            //   (2) The palette tab is selected which has no sliders
-            //   (3) The picker flyout is closed
-            //   (4) Externally the color is changed
-            //       The color change will trigger slider background updates but
-            //       with the flyout closed, actual height/width are zero.
-            //       No zero size bitmap can be generated.
-            //   (5) The picker flyout is re-opened by the user and the default
-            //       last-opened tab will be viewed: palette.
-            //       No loaded events will be fired for sliders. The color change
-            //       event was already handled in (4). The sliders will never
-            //       be updated.
-            //
-            // In this case the sliders become out of sync with the Color because there is no way
-            // to tell when they actually come into view. To work around this, force a re-render of
-            // the background with the last size of the slider. This last size will be when it was
-            // last loaded or updated.
-            //
-            // In the future additional consideration may be required for SizeChanged of the control.
-            // This work-around will also cause issues if display scaling changes in the special
-            // case where cached sizes are required.
+            var hsvColor = HsvColor;
+            var rgbColor = Color;
+            var component = ColorComponent;
 
-            var width = Convert.ToInt32(Bounds.Width);
-            var height = Convert.ToInt32(Bounds.Height);
-
-            if (width == 0 || height == 0)
+            if (ColorModel == ColorModel.Hsva)
             {
-                // Attempt to use the last size if it was available
-                if (cachedSize.IsDefault == false)
+                // Note: Components converted into a usable range for the user
+                switch (component)
                 {
-                    width = Convert.ToInt32(cachedSize.Width);
-                    height = Convert.ToInt32(cachedSize.Height);
+                    case ColorComponent.Alpha:
+                        Minimum = 0;
+                        Maximum = 100;
+                        Value   = hsvColor.A * 100;
+                        break;
+                    case ColorComponent.Component1: // Hue
+                        Minimum = 0;
+                        Maximum = 359;
+                        Value   = hsvColor.H;
+                        break;
+                    case ColorComponent.Component2: // Saturation
+                        Minimum = 0;
+                        Maximum = 100;
+                        Value   = hsvColor.S * 100;
+                        break;
+                    case ColorComponent.Component3: // Value
+                        Minimum = 0;
+                        Maximum = 100;
+                        Value   = hsvColor.V * 100;
+                        break;
                 }
             }
             else
             {
-                cachedSize = new Size(width, height);
-            }
-
-            var bitmap = await ColorHelpers.CreateComponentBitmapAsync(
-                width,
-                height,
-                Orientation,
-                ColorModel,
-                ColorComponent,
-                color,
-                IsAlphaMaxForced,
-                IsSaturationValueMaxForced);
-
-            if (bitmap != null)
-            {
-                Background = ColorHelpers.BitmapToBrushAsync(bitmap, width, height);
+                switch (component)
+                {
+                    case ColorComponent.Alpha:
+                        Minimum = 0;
+                        Maximum = 255;
+                        Value   = Convert.ToDouble(rgbColor.A);
+                        break;
+                    case ColorComponent.Component1: // Red
+                        Minimum = 0;
+                        Maximum = 255;
+                        Value   = Convert.ToDouble(rgbColor.R);
+                        break;
+                    case ColorComponent.Component2: // Green
+                        Minimum = 0;
+                        Maximum = 255;
+                        Value   = Convert.ToDouble(rgbColor.G);
+                        break;
+                    case ColorComponent.Component3: // Blue
+                        Minimum = 0;
+                        Maximum = 255;
+                        Value   = Convert.ToDouble(rgbColor.B);
+                        break;
+                }
             }
 
             return;
         }
 
+        /// <summary>
+        /// Gets the current color determined by the slider values.
+        /// </summary>
+        private (Color, HsvColor) GetColorFromSliderValues()
+        {
+            HsvColor hsvColor = new HsvColor();
+            Color rgbColor = new Color();
+            double sliderPercent = Value / (Maximum - Minimum);
+
+            var baseHsvColor = HsvColor;
+            var baseRgbColor = Color;
+            var component = ColorComponent;
+
+            if (ColorModel == ColorModel.Hsva)
+            {
+                switch (component)
+                {
+                    case ColorComponent.Alpha:
+                    {
+                        var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
+                        hsvColor = new HsvColor(componentValue, baseHsvColor.H, baseHsvColor.S, baseHsvColor.V);
+                        break;
+                    }
+                    case ColorComponent.Component1:
+                    {
+                        var componentValue = MathUtilities.Clamp(sliderPercent * 360.0, 0.0, 360.0);
+                        hsvColor = new HsvColor(baseHsvColor.A, componentValue, baseHsvColor.S, baseHsvColor.V);
+                        break;
+                    }
+                    case ColorComponent.Component2:
+                    {
+                        var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
+                        hsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, componentValue, baseHsvColor.V);
+                        break;
+                    }
+                    case ColorComponent.Component3:
+                    {
+                        var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
+                        hsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, baseHsvColor.S, componentValue);
+                        break;
+                    }
+                }
+
+                return (hsvColor.ToRgb(), hsvColor);
+            }
+            else
+            {
+                byte componentValue = Convert.ToByte(MathUtilities.Clamp(sliderPercent * 255, 0, 255));
+
+                switch (component)
+                {
+                    case ColorComponent.Alpha:
+                        rgbColor = new Color(componentValue, baseRgbColor.R, baseRgbColor.G, baseRgbColor.B);
+                        break;
+                    case ColorComponent.Component1:
+                        rgbColor = new Color(baseRgbColor.A, componentValue, baseRgbColor.G, baseRgbColor.B);
+                        break;
+                    case ColorComponent.Component2:
+                        rgbColor = new Color(baseRgbColor.A, baseRgbColor.R, componentValue, baseRgbColor.B);
+                        break;
+                    case ColorComponent.Component3:
+                        rgbColor = new Color(baseRgbColor.A, baseRgbColor.R, baseRgbColor.G, componentValue);
+                        break;
+                }
+
+                return (rgbColor, rgbColor.ToHsv());
+            }
+        }
+
+        /// <summary>
+        /// Gets the actual background color displayed for the given HSV color.
+        /// This can differ due to the effects of certain properties intended to improve perception.
+        /// </summary>
+        /// <param name="hsvColor">The actual color to get the equivalent background color for.</param>
+        /// <returns>The equivalent, perceived background color.</returns>
+        private HsvColor GetEquivalentBackgroundColor(HsvColor hsvColor)
+        {
+            var component = ColorComponent;
+            var isAlphaMaxForced = IsAlphaMaxForced;
+            var isSaturationValueMaxForced = IsSaturationValueMaxForced;
+
+            if (isAlphaMaxForced &&
+                component != ColorComponent.Alpha)
+            {
+                hsvColor = new HsvColor(1.0, hsvColor.H, hsvColor.S, hsvColor.V);
+            }
+
+            switch (component)
+            {
+                case ColorComponent.Component1:
+                    return new HsvColor(
+                        hsvColor.A,
+                        hsvColor.H,
+                        isSaturationValueMaxForced ? 1.0 : hsvColor.S,
+                        isSaturationValueMaxForced ? 1.0 : hsvColor.V);
+                case ColorComponent.Component2:
+                    return new HsvColor(
+                        hsvColor.A,
+                        hsvColor.H,
+                        hsvColor.S,
+                        isSaturationValueMaxForced ? 1.0 : hsvColor.V);
+                case ColorComponent.Component3:
+                    return new HsvColor(
+                        hsvColor.A,
+                        hsvColor.H,
+                        isSaturationValueMaxForced ? 1.0 : hsvColor.S,
+                        hsvColor.V);
+                default:
+                    return hsvColor;
+            }
+        }
+
+        /// <summary>
+        /// Gets the actual background color displayed for the given RGB color.
+        /// This can differ due to the effects of certain properties intended to improve perception.
+        /// </summary>
+        /// <param name="rgbColor">The actual color to get the equivalent background color for.</param>
+        /// <returns>The equivalent, perceived background color.</returns>
+        private Color GetEquivalentBackgroundColor(Color rgbColor)
+        {
+            var component = ColorComponent;
+            var isAlphaMaxForced = IsAlphaMaxForced;
+
+            if (isAlphaMaxForced &&
+                component != ColorComponent.Alpha)
+            {
+                rgbColor = new Color(255, rgbColor.R, rgbColor.G, rgbColor.B);
+            }
+
+            return rgbColor;
+        }
+
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            bool update = false;
+            if (disableUpdates)
+            {
+                base.OnPropertyChanged(change);
+                return;
+            }
 
+            // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
-                // Sync with HSV (which is primary)
+                disableUpdates = true;
+
                 HsvColor = Color.ToHsv();
-                update = true;
+
+                if (IsAutoUpdatingEnabled)
+                {
+                    SetColorToSliderValues();
+                    UpdateBackground();
+                }
+
+                disableUpdates = false;
             }
             else if (change.Property == HsvColorProperty)
             {
-                update = true;
+                disableUpdates = true;
+
+                Color = HsvColor.ToRgb();
+
+                if (IsAutoUpdatingEnabled)
+                {
+                    SetColorToSliderValues();
+                    UpdateBackground();
+                }
+
+                disableUpdates = false;
             }
             else if (change.Property == BoundsProperty)
             {
-                update = true;
+                if (IsAutoUpdatingEnabled)
+                {
+                    UpdateBackground();
+                }
             }
-
-            if (update && IsAutoUpdatingEnabled)
+            else if (change.Property == ValueProperty ||
+                     change.Property == MinimumProperty ||
+                     change.Property == MaximumProperty)
             {
-                UpdateColors();
+                disableUpdates = true;
+
+                (var color, var hsvColor) = GetColorFromSliderValues();
+
+                if (ColorModel == ColorModel.Hsva)
+                {
+                    HsvColor = hsvColor;
+                    Color = hsvColor.ToRgb();
+                }
+                else
+                {
+                    Color = color;
+                    HsvColor = color.ToHsv();
+                }
+
+                disableUpdates = false;
             }
 
             base.OnPropertyChanged(change);

@@ -719,7 +719,7 @@ namespace Avalonia.Controls.Primitives
 
             var brush = new ImageBrush(bitmap)
             {
-                Stretch = Stretch.Fill
+                Stretch = Stretch.None
             };
 
             return brush;

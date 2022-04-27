@@ -25,7 +25,8 @@
                    Width="256" />
     <Grid Grid.Column="0"
           Grid.Row="1"
-          RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+          Margin="0,10,0,0">
       <ColorSlider Grid.Row="0"
                    ColorComponent="Component1"
                    ColorModel="Hsva"
