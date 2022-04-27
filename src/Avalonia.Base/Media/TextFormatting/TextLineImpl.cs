@@ -404,7 +404,7 @@ namespace Avalonia.Media.TextFormatting
             var result = new List<TextBounds>(TextRuns.Count);
             var lastDirection = _flowDirection;
             var currentDirection = lastDirection;
-            var currentPosition = 0;
+            var currentPosition = FirstTextSourceIndex;
             var currentRect = Rect.Empty;
             var startX = Start;
 
@@ -414,6 +414,11 @@ namespace Avalonia.Media.TextFormatting
                 var currentRun = TextRuns[index] as DrawableTextRun;
 
                 if (currentRun is null)
+                {
+                    continue;
+                }
+
+                if(currentPosition + currentRun.TextSourceLength <= firstTextSourceCharacterIndex)
                 {
                     continue;
                 }
@@ -1018,31 +1023,21 @@ namespace Avalonia.Media.TextFormatting
 
         private TextLineMetrics CreateLineMetrics()
         {
-            var start = 0d;
-            var height = 0d;
+            var glyphTypeface = _paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface;
+            var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
+            var scale = fontRenderingEmSize / glyphTypeface.DesignEmHeight;
+          
             var width = 0d;
             var widthIncludingWhitespace = 0d;
             var trailingWhitespaceLength = 0;
             var newLineLength = 0;
-            var ascent = 0d;
-            var descent = 0d;
-            var lineGap = 0d;
-            var fontRenderingEmSize = 0d;
+            var ascent = glyphTypeface.Ascent * scale;
+            var descent = glyphTypeface.Descent * scale;
+            var lineGap = glyphTypeface.LineGap * scale;
 
-            var lineHeight = _paragraphProperties.LineHeight;
-
-            if (_textRuns.Count == 0)
-            {
-                var glyphTypeface = _paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface;
-                fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
-                var scale = fontRenderingEmSize / glyphTypeface.DesignEmHeight;
-                ascent = glyphTypeface.Ascent * scale;
-                height = double.IsNaN(lineHeight) || MathUtilities.IsZero(lineHeight) ?
-                descent - ascent + lineGap :
-                lineHeight;
-
-                return new TextLineMetrics(false, height, 0, start, -ascent, 0, 0, 0);
-            }
+            var height = descent - ascent + lineGap;
+         
+            var lineHeight = _paragraphProperties.LineHeight;            
 
             for (var index = 0; index < _textRuns.Count; index++)
             {
@@ -1166,12 +1161,15 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            start = GetParagraphOffsetX(width, widthIncludingWhitespace, _paragraphWidth,
+            var start = GetParagraphOffsetX(width, widthIncludingWhitespace, _paragraphWidth,
                 _paragraphProperties.TextAlignment, _paragraphProperties.FlowDirection);
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
-                height = lineHeight;
+                if(lineHeight > height)
+                {
+                    height = lineHeight;
+                }              
             }
 
             return new TextLineMetrics(widthIncludingWhitespace > _paragraphWidth, height, newLineLength, start,
