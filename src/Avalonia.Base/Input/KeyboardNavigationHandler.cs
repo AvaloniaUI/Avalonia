@@ -9,6 +9,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
+    [Obsolete("To be removed")]
     public class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>
@@ -47,26 +48,27 @@ namespace Avalonia.Input
             IInputElement element,
             NavigationDirection direction)
         {
-            element = element ?? throw new ArgumentNullException(nameof(element));
+            return null;
+            //element = element ?? throw new ArgumentNullException(nameof(element));
 
-            // If there's a custom keyboard navigation handler as an ancestor, use that.
-            var custom = element.FindAncestorOfType<ICustomKeyboardNavigation>(true);
-            if (custom is object && HandlePreCustomNavigation(custom, element, direction, out var ce))
-                return ce;
+            //// If there's a custom keyboard navigation handler as an ancestor, use that.
+            //var custom = element.FindAncestorOfType<ICustomKeyboardNavigation>(true);
+            //if (custom is object && HandlePreCustomNavigation(custom, element, direction, out var ce))
+            //    return ce;
 
-            var result = direction switch
-            {
-                NavigationDirection.Next => TabNavigation.GetNextTab(element, false),
-                NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
-                _ => throw new NotSupportedException(),
-            };
+            //var result = direction switch
+            //{
+            //    NavigationDirection.Next => TabNavigation.GetNextTab(element, false),
+            //    NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
+            //    _ => throw new NotSupportedException(),
+            //};
 
-            // If there wasn't a custom navigation handler as an ancestor of the current element,
-            // but there is one as an ancestor of the new element, use that.
-            if (custom is null && HandlePostCustomNavigation(element, result, direction, out ce))
-                return ce;
+            //// If there wasn't a custom navigation handler as an ancestor of the current element,
+            //// but there is one as an ancestor of the new element, use that.
+            //if (custom is null && HandlePostCustomNavigation(element, result, direction, out ce))
+            //    return ce;
 
-            return result;
+            //return result;
         }
 
         /// <summary>
@@ -80,17 +82,17 @@ namespace Avalonia.Input
             NavigationDirection direction,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            element = element ?? throw new ArgumentNullException(nameof(element));
+            //element = element ?? throw new ArgumentNullException(nameof(element));
 
-            var next = GetNext(element, direction);
+            //var next = GetNext(element, direction);
 
-            if (next != null)
-            {
-                var method = direction == NavigationDirection.Next ||
-                             direction == NavigationDirection.Previous ?
-                             NavigationMethod.Tab : NavigationMethod.Directional;
-                FocusManager.Instance?.Focus(next, method, keyModifiers);
-            }
+            //if (next != null)
+            //{
+            //    var method = direction == NavigationDirection.Next ||
+            //                 direction == NavigationDirection.Previous ?
+            //                 NavigationMethod.Tab : NavigationMethod.Directional;
+            //    FocusManager.Instance?.Focus(next, method, keyModifiers);
+            //}
         }
 
         /// <summary>
@@ -100,15 +102,15 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
         {
-            var current = FocusManager.Instance?.Current;
+            //var current = FocusManager.Instance?.Current;
 
-            if (current != null && e.Key == Key.Tab)
-            {
-                var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
-                    NavigationDirection.Next : NavigationDirection.Previous;
-                Move(current, direction, e.KeyModifiers);
-                e.Handled = true;
-            }
+            //if (current != null && e.Key == Key.Tab)
+            //{
+            //    var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
+            //        NavigationDirection.Next : NavigationDirection.Previous;
+            //    Move(current, direction, e.KeyModifiers);
+            //    e.Handled = true;
+            //}
         }
 
         private static bool HandlePreCustomNavigation(
@@ -117,34 +119,34 @@ namespace Avalonia.Input
             NavigationDirection direction,
             [NotNullWhen(true)] out IInputElement? result)
         {
-            if (customHandler != null)
-            {
-                var (handled, next) = customHandler.GetNext(element, direction);
+            //if (customHandler != null)
+            //{
+            //    var (handled, next) = customHandler.GetNext(element, direction);
 
-                if (handled)
-                {
-                    if (next != null)
-                    {
-                        result = next;
-                        return true;
-                    }
-                    else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
-                    {
-                        var r = direction switch
-                        {
-                            NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
-                            NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
-                            _ => throw new NotSupportedException(),
-                        };
+            //    if (handled)
+            //    {
+            //        if (next != null)
+            //        {
+            //            result = next;
+            //            return true;
+            //        }
+            //        else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
+            //        {
+            //            var r = direction switch
+            //            {
+            //                NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
+            //                NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
+            //                _ => throw new NotSupportedException(),
+            //            };
 
-                        if (r is object)
-                        {
-                            result = r;
-                            return true;
-                        }
-                    }
-                }
-            }
+            //            if (r is object)
+            //            {
+            //                result = r;
+            //                return true;
+            //            }
+            //        }
+            //    }
+            //}
 
             result = null;
             return false;

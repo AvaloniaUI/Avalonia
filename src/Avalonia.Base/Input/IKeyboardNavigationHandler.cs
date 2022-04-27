@@ -1,8 +1,11 @@
+using System;
+
 namespace Avalonia.Input
 {
     /// <summary>
     /// Defines the interface for classes that handle keyboard navigation for a window.
     /// </summary>
+    [Obsolete("To be removed")]
     public interface IKeyboardNavigationHandler
     {
         /// <summary>
