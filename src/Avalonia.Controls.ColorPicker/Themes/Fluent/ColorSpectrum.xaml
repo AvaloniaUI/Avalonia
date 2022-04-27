@@ -118,6 +118,9 @@
   </Style>
 
   <Style Selector="ColorSpectrum:pointerover /template/ Ellipse#SelectionEllipse">
+    <Setter Property="Opacity" Value="0.7" />
+  </Style>
+  <Style Selector="ColorSpectrum:pointerover:light-selector /template/ Ellipse#SelectionEllipse">
     <Setter Property="Opacity" Value="0.8" />
   </Style>
 

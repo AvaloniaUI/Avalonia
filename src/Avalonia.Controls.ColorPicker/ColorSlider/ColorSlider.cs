@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
@@ -8,8 +9,13 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A slider with a background that represents a single color component.
     /// </summary>
+    [PseudoClasses(pcDarkSelector, pcLightSelector)]
     public partial class ColorSlider : Slider
     {
+        protected const string pcDarkSelector = ":dark-selector";
+        protected const string pcLightSelector = ":light-selector";
+
+        private const double MaxHue = 359.99999999999999999;
         private bool disableUpdates = false;
 
         /// <summary>
@@ -17,6 +23,49 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public ColorSlider() : base()
         {
+        }
+
+        /// <summary>
+        /// Updates the visual state of the control by applying latest PseudoClasses.
+        /// </summary>
+        private void UpdatePseudoClasses()
+        {
+            // The slider itself can be transparent for certain color values.
+            // This causes an issue where a white selector thumb over a light window background or
+            // a black selector thumb over a dark window background is not visible.
+            // This means under a certain alpha threshold, neither a white or black selector thumb
+            // should be shown and instead the default slider thumb color should be used instead.
+            if (Color.A < 128 &&
+                (IsAlphaMaxForced == false ||
+                 ColorComponent == ColorComponent.Alpha))
+            {
+                PseudoClasses.Set(pcDarkSelector, false);
+                PseudoClasses.Set(pcLightSelector, false);
+            }
+            else
+            {
+                Color perceivedColor;
+
+                if (ColorModel == ColorModel.Hsva)
+                {
+                    perceivedColor = GetEquivalentBackgroundColor(HsvColor).ToRgb();
+                }
+                else
+                {
+                    perceivedColor = GetEquivalentBackgroundColor(Color);
+                }
+
+                if (ColorHelpers.GetRelativeLuminance(perceivedColor) <= 0.5)
+                {
+                    PseudoClasses.Set(pcDarkSelector, false);
+                    PseudoClasses.Set(pcLightSelector, true);
+                }
+                else
+                {
+                    PseudoClasses.Set(pcDarkSelector, true);
+                    PseudoClasses.Set(pcLightSelector, false);
+                }
+            }
         }
 
         /// <summary>
@@ -80,7 +129,7 @@ namespace Avalonia.Controls.Primitives
                         break;
                     case ColorComponent.Component1: // Hue
                         Minimum = 0;
-                        Maximum = 359;
+                        Maximum = MaxHue;
                         Value   = hsvColor.H;
                         break;
                     case ColorComponent.Component2: // Saturation
@@ -144,26 +193,22 @@ namespace Avalonia.Controls.Primitives
                 {
                     case ColorComponent.Alpha:
                     {
-                        var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
-                        hsvColor = new HsvColor(componentValue, baseHsvColor.H, baseHsvColor.S, baseHsvColor.V);
+                        hsvColor = new HsvColor(sliderPercent, baseHsvColor.H, baseHsvColor.S, baseHsvColor.V);
                         break;
                     }
                     case ColorComponent.Component1:
                     {
-                        var componentValue = MathUtilities.Clamp(sliderPercent * 360.0, 0.0, 360.0);
-                        hsvColor = new HsvColor(baseHsvColor.A, componentValue, baseHsvColor.S, baseHsvColor.V);
+                        hsvColor = new HsvColor(baseHsvColor.A, sliderPercent * MaxHue, baseHsvColor.S, baseHsvColor.V);
                         break;
                     }
                     case ColorComponent.Component2:
                     {
-                        var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
-                        hsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, componentValue, baseHsvColor.V);
+                        hsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, sliderPercent, baseHsvColor.V);
                         break;
                     }
                     case ColorComponent.Component3:
                     {
-                        var componentValue = MathUtilities.Clamp(sliderPercent * 1.0, 0.0, 1.0);
-                        hsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, baseHsvColor.S, componentValue);
+                        hsvColor = new HsvColor(baseHsvColor.A, baseHsvColor.H, baseHsvColor.S, sliderPercent);
                         break;
                     }
                 }
@@ -279,6 +324,7 @@ namespace Avalonia.Controls.Primitives
                     UpdateBackground();
                 }
 
+                UpdatePseudoClasses();
                 disableUpdates = false;
             }
             else if (change.Property == HsvColorProperty)
@@ -293,6 +339,7 @@ namespace Avalonia.Controls.Primitives
                     UpdateBackground();
                 }
 
+                UpdatePseudoClasses();
                 disableUpdates = false;
             }
             else if (change.Property == BoundsProperty)
@@ -321,6 +368,7 @@ namespace Avalonia.Controls.Primitives
                     HsvColor = color.ToHsv();
                 }
 
+                UpdatePseudoClasses();
                 disableUpdates = false;
             }
 

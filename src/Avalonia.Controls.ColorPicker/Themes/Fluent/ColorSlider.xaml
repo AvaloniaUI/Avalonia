@@ -159,14 +159,26 @@
     <Setter Property="BorderThickness" Value="3" />
   </Style>
 
-  <!-- PointerOver State -->
+  <!-- Selector/Thumb Color -->
+  <Style Selector="ColorSlider:pressed /template/ Thumb.SliderThumbStyle">
+    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+  </Style>
+
   <Style Selector="ColorSlider:pointerover /template/ Thumb.SliderThumbStyle">
     <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
   </Style>
+  <Style Selector="ColorSlider:pointerover:dark-selector /template/ Thumb.SliderThumbStyle">
+    <Setter Property="Opacity" Value="0.7" />
+  </Style>
+  <Style Selector="ColorSlider:pointerover:light-selector /template/ Thumb.SliderThumbStyle">
+    <Setter Property="Opacity" Value="0.8" />
+  </Style>
 
-  <!-- Pressed State -->
-  <Style Selector="ColorSlider:pressed /template/ Thumb.SliderThumbStyle">
-    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+  <Style Selector="ColorSlider:dark-selector /template/ Thumb.SliderThumbStyle">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
+  </Style>
+  <Style Selector="ColorSlider:light-selector /template/ Thumb.SliderThumbStyle">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
   </Style>
 
 </Styles>
