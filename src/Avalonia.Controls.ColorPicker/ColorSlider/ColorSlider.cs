@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
-        private const double MaxHue = 359.99999999999999999;
+        private const double MaxHue = 359.99999999999999999; // 17 decimal places
         private bool disableUpdates = false;
 
         /// <summary>

@@ -38,37 +38,49 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="MaxHue"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MaxHueProperty =
-            AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MaxHue), 359);
+            AvaloniaProperty.Register<ColorSpectrum, int>(
+                nameof(MaxHue),
+                359);
 
         /// <summary>
         /// Defines the <see cref="MaxSaturation"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MaxSaturationProperty =
-            AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MaxSaturation), 100);
+            AvaloniaProperty.Register<ColorSpectrum, int>(
+                nameof(MaxSaturation),
+                100);
 
         /// <summary>
         /// Defines the <see cref="MaxValue"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MaxValueProperty =
-            AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MaxValue), 100);
+            AvaloniaProperty.Register<ColorSpectrum, int>(
+                nameof(MaxValue),
+                100);
 
         /// <summary>
         /// Defines the <see cref="MinHue"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MinHueProperty =
-            AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MinHue), 0);
+            AvaloniaProperty.Register<ColorSpectrum, int>(
+                nameof(MinHue),
+                0);
 
         /// <summary>
         /// Defines the <see cref="MinSaturation"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MinSaturationProperty =
-            AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MinSaturation), 0);
+            AvaloniaProperty.Register<ColorSpectrum, int>(
+                nameof(MinSaturation),
+                0);
 
         /// <summary>
         /// Defines the <see cref="MinValue"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MinValueProperty =
-            AvaloniaProperty.Register<ColorSpectrum, int>(nameof(MinValue), 0);
+            AvaloniaProperty.Register<ColorSpectrum, int>(
+                nameof(MinValue),
+                0);
 
         /// <summary>
         /// Defines the <see cref="Shape"/> property.
