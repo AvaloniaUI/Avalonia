@@ -17,18 +17,6 @@ namespace Avalonia.Controls.Primitives
 {
     internal static class ColorHelpers
     {
-        public const int CheckerSize = 4;
-
-        public static bool ToDisplayNameExists
-        {
-            get => false;
-        }
-
-        public static string ToDisplayName(Color color)
-        {
-            return string.Empty;
-        }
-
         /// <summary>
         /// Generates a new bitmap of the specified size by changing a specific color component.
         /// This will produce a gradient representing a sweep of all possible values of the color component.
@@ -325,7 +313,7 @@ namespace Avalonia.Controls.Primitives
         {
             Hsv newHsv = originalHsv;
 
-            if (amount == IncrementAmount.Small || !ToDisplayNameExists)
+            if (amount == IncrementAmount.Small || !ColorNameHelpers.ToDisplayNameExists)
             {
                 // In order to avoid working with small values that can incur rounding issues,
                 // we'll multiple saturation and value by 100 to put them in the range of 0-100 instead of 0-1.
@@ -416,7 +404,7 @@ namespace Avalonia.Controls.Primitives
             // in the middle of that color's bounds.
             Hsv newHsv = originalHsv;
             
-            string originalColorName = ColorHelpers.ToDisplayName(originalHsv.ToRgb().ToColor());
+            string originalColorName = ColorNameHelpers.ToDisplayName(originalHsv.ToRgb().ToColor());
             string newColorName = originalColorName;
 
             // Note: *newValue replaced with ref local variable for C#, must be initialized
@@ -471,7 +459,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         newValue = maxBound;
                         shouldFindMidPoint = false;
-                        newColorName = ColorHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
+                        newColorName = ColorNameHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
                         break;
                     }
                 }
@@ -486,7 +474,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         newValue = minBound;
                         shouldFindMidPoint = false;
-                        newColorName = ColorHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
+                        newColorName = ColorNameHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
                         break;
                     }
                 }
@@ -501,7 +489,7 @@ namespace Avalonia.Controls.Primitives
                     break;
                 }
 
-                newColorName = ColorHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
+                newColorName = ColorNameHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
             }
 
             if (shouldFindMidPoint)
@@ -574,7 +562,7 @@ namespace Avalonia.Controls.Primitives
                         }
                     }
 
-                    currentColorName = ColorHelpers.ToDisplayName(currentHsv.ToRgb().ToColor());
+                    currentColorName = ColorNameHelpers.ToDisplayName(currentHsv.ToRgb().ToColor());
                 }
 
                 newValue = (startValue + currentValue + startEndOffset) / 2;

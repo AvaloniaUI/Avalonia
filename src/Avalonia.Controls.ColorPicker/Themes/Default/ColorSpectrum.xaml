@@ -48,7 +48,10 @@
                       Background="Transparent"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
-                <Panel x:Name="PART_SelectionEllipsePanel">
+                <!-- Note: ToolTip.VerticalOffset is for touch devices to keep the tip above fingers -->
+                <Panel x:Name="PART_SelectionEllipsePanel"
+                       ToolTip.VerticalOffset="-10"
+                       ToolTip.Placement="Top">
                   <Ellipse x:Name="FocusEllipse"
                            Margin="-2"
                            StrokeThickness="2"
@@ -59,13 +62,10 @@
                            StrokeThickness="2"
                            IsHitTestVisible="False"
                            HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch"
-                           ToolTip.VerticalOffset="-20"
-                           ToolTip.Placement="Top">
-                    <ToolTip.Tip>
-                      <ToolTip x:Name="PART_ColorNameToolTip" />
-                    </ToolTip.Tip>
-                  </Ellipse>
+                           VerticalAlignment="Stretch" />
+                  <ToolTip.Tip>
+                    <!-- Set in code-behind -->
+                  </ToolTip.Tip>
                 </Panel>
               </Canvas>
               <Rectangle x:Name="BorderRectangle"

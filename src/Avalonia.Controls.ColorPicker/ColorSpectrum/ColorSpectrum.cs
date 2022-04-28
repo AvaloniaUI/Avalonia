@@ -20,7 +20,6 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A two dimensional spectrum for color selection.
     /// </summary>
-    [TemplatePart("PART_ColorNameToolTip",         typeof(ToolTip))]
     [TemplatePart("PART_InputTarget",              typeof(Canvas))]
     [TemplatePart("PART_LayoutRoot",               typeof(Panel))]
     [TemplatePart("PART_SelectionEllipsePanel",    typeof(Panel))]
@@ -60,7 +59,6 @@ namespace Avalonia.Controls.Primitives
         private Ellipse? _spectrumOverlayEllipse;
         private Canvas? _inputTarget;
         private Panel? _selectionEllipsePanel;
-        private ToolTip? _colorNameToolTip;
 
         // Put the spectrum images in a bitmap, which is then given to an ImageBrush.
         private WriteableBitmap? _hueRedBitmap;
@@ -117,7 +115,6 @@ namespace Avalonia.Controls.Primitives
 
             UnregisterEvents(); // Failsafe
 
-            _colorNameToolTip = e.NameScope.Find<ToolTip>("PART_ColorNameToolTip");
             _inputTarget = e.NameScope.Find<Canvas>("PART_InputTarget");
             _layoutRoot = e.NameScope.Find<Panel>("PART_LayoutRoot");
             _selectionEllipsePanel = e.NameScope.Find<Panel>("PART_SelectionEllipsePanel");
@@ -152,10 +149,10 @@ namespace Avalonia.Controls.Primitives
                 });
             }
 
-            if (ColorHelpers.ToDisplayNameExists &&
-                _colorNameToolTip != null)
+            if (_selectionEllipsePanel != null &&
+                ColorNameHelpers.ToDisplayNameExists)
             {
-                _colorNameToolTip.Content = ColorHelpers.ToDisplayName(Color);
+                ToolTip.SetTip(_selectionEllipsePanel, ColorNameHelpers.ToDisplayName(Color));
             }
 
             // If we haven't yet created our bitmaps, do so now.
@@ -338,26 +335,45 @@ namespace Avalonia.Controls.Primitives
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (_colorNameToolTip != null &&
-                ColorHelpers.ToDisplayNameExists)
+            if (_selectionEllipsePanel != null &&
+                ColorNameHelpers.ToDisplayNameExists)
             {
-                ToolTip.SetIsOpen(_colorNameToolTip, true);
+                ToolTip.SetIsOpen(_selectionEllipsePanel, true);
             }
 
             UpdatePseudoClasses();
+
+            base.OnGotFocus(e);
         }
 
         /// <inheritdoc/>
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (_colorNameToolTip != null &&
-                ColorHelpers.ToDisplayNameExists)
+            if (_selectionEllipsePanel != null &&
+                ColorNameHelpers.ToDisplayNameExists)
             {
-                ToolTip.SetIsOpen(_colorNameToolTip, false);
+                ToolTip.SetIsOpen(_selectionEllipsePanel, false);
             }
 
             UpdatePseudoClasses();
+
+            base.OnLostFocus(e);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerLeave(PointerEventArgs e)
+        {
+            // We only want to bother with the color name tool tip if we can provide color names.
+            if (_selectionEllipsePanel != null &&
+                ColorNameHelpers.ToDisplayNameExists)
+            {
+                ToolTip.SetIsOpen(_selectionEllipsePanel, false);
+            }
+
+            UpdatePseudoClasses();
+
+            base.OnPointerLeave(e);
         }
 
         /// <inheritdoc/>
@@ -516,12 +532,10 @@ namespace Avalonia.Controls.Primitives
                 var colorChangedEventArgs = new ColorChangedEventArgs(_oldColor, newColor);
                 ColorChanged?.Invoke(this, colorChangedEventArgs);
 
-                if (ColorHelpers.ToDisplayNameExists)
+                if (_selectionEllipsePanel != null &&
+                    ColorNameHelpers.ToDisplayNameExists)
                 {
-                    if (_colorNameToolTip != null)
-                    {
-                        _colorNameToolTip.Content = ColorHelpers.ToDisplayName(newColor);
-                    }
+                    ToolTip.SetTip(_selectionEllipsePanel, ColorNameHelpers.ToDisplayName(Color));
                 }
             }
         }
@@ -811,15 +825,11 @@ namespace Avalonia.Controls.Primitives
             Canvas.SetTop(_selectionEllipsePanel, yPosition - (_selectionEllipsePanel.Height / 2));
 
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (ColorHelpers.ToDisplayNameExists)
+            if (IsFocused &&
+                _selectionEllipsePanel != null &&
+                ColorNameHelpers.ToDisplayNameExists)
             {
-                if (_colorNameToolTip != null)
-                {
-                    // ToolTip doesn't currently provide any way to re-run its placement logic if its placement target moves,
-                    // so toggling IsEnabled induces it to do that without incurring any visual glitches.
-                    _colorNameToolTip.IsEnabled = false;
-                    _colorNameToolTip.IsEnabled = true;
-                }
+                ToolTip.SetIsOpen(_selectionEllipsePanel, true);
             }
 
             UpdatePseudoClasses();

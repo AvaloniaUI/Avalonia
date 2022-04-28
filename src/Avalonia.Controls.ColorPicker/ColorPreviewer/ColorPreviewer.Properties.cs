@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool ShowAccentColors
         {
-            get => (bool)this.GetValue(ShowAccentColorsProperty);
+            get => GetValue(ShowAccentColorsProperty);
             set => SetValue(ShowAccentColorsProperty, value);
         }
     }
