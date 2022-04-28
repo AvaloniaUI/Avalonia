@@ -8,21 +8,21 @@
         /// <summary>
         /// Represents the alpha component.
         /// </summary>
-        Alpha,
+        Alpha = 0,
 
         /// <summary>
         /// Represents the first color component which is Red when RGB or Hue when HSV.
         /// </summary>
-        Component1,
+        Component1 = 1,
 
         /// <summary>
         /// Represents the second color component which is Green when RGB or Saturation when HSV.
         /// </summary>
-        Component2,
+        Component2 = 2,
 
         /// <summary>
         /// Represents the third color component which is Blue when RGB or Value when HSV.
         /// </summary>
-        Component3
+        Component3 = 3
     }
 }
