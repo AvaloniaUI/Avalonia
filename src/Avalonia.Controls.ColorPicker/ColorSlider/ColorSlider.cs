@@ -15,6 +15,11 @@ namespace Avalonia.Controls.Primitives
         protected const string pcDarkSelector = ":dark-selector";
         protected const string pcLightSelector = ":light-selector";
 
+        /// <summary>
+        /// Event for when the selected color changes within the slider.
+        /// </summary>
+        public event EventHandler<ColorChangedEventArgs>? ColorChanged;
+
         private const double MaxHue = 359.99999999999999999;
         private bool disableUpdates = false;
 
@@ -321,6 +326,10 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 UpdatePseudoClasses();
+                OnColorChanged(new ColorChangedEventArgs(
+                    change.GetOldValue<Color>(),
+                    change.GetNewValue<Color>()));
+
                 disableUpdates = false;
             }
             else if (change.Property == HsvColorProperty)
@@ -336,6 +345,10 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 UpdatePseudoClasses();
+                OnColorChanged(new ColorChangedEventArgs(
+                    change.GetOldValue<HsvColor>().ToRgb(),
+                    change.GetNewValue<HsvColor>().ToRgb()));
+
                 disableUpdates = false;
             }
             else if (change.Property == BoundsProperty)
@@ -351,6 +364,7 @@ namespace Avalonia.Controls.Primitives
             {
                 disableUpdates = true;
 
+                Color oldColor = Color;
                 (var color, var hsvColor) = GetColorFromSliderValues();
 
                 if (ColorModel == ColorModel.Hsva)
@@ -365,10 +379,21 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 UpdatePseudoClasses();
+                OnColorChanged(new ColorChangedEventArgs(oldColor, Color));
+
                 disableUpdates = false;
             }
 
             base.OnPropertyChanged(change);
+        }
+
+        /// <summary>
+        /// Called before the <see cref="ColorChanged"/> event occurs.
+        /// </summary>
+        /// <param name="e">The <see cref="ColorChangedEventArgs"/> defining old/new colors.</param>
+        protected virtual void OnColorChanged(ColorChangedEventArgs e)
+        {
+            ColorChanged?.Invoke(this, e);
         }
     }
 }

@@ -81,16 +81,26 @@ namespace Avalonia.Controls.Primitives
             base.OnApplyTemplate(e);
         }
 
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            if (change.Property == HsvColorProperty)
+            {
+                OnColorChanged(new ColorChangedEventArgs(
+                    change.GetOldValue<HsvColor>().ToRgb(),
+                    change.GetNewValue<HsvColor>().ToRgb()));
+            }
+
+            base.OnPropertyChanged(change);
+        }
+
         /// <summary>
         /// Called before the <see cref="ColorChanged"/> event occurs.
         /// </summary>
-        /// <param name="newColor">The newly selected color.</param>
-        protected virtual void OnColorChanged(HsvColor newColor)
+        /// <param name="e">The <see cref="ColorChangedEventArgs"/> defining old/new colors.</param>
+        protected virtual void OnColorChanged(ColorChangedEventArgs e)
         {
-            var oldColor = HsvColor;
-            HsvColor = newColor;
-
-            ColorChanged?.Invoke(this, new ColorChangedEventArgs(oldColor.ToRgb(), newColor.ToRgb()));
+            ColorChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -111,7 +121,10 @@ namespace Avalonia.Controls.Primitives
             catch { }
 
             HsvColor newHsvColor = AccentColorConverter.GetAccent(hsvColor, accentStep);
-            OnColorChanged(newHsvColor);
+            HsvColor oldHsvColor = HsvColor;
+
+            HsvColor = newHsvColor;
+            OnColorChanged(new ColorChangedEventArgs(oldHsvColor.ToRgb(), newHsvColor.ToRgb()));
         }
     }
 }
