@@ -14,6 +14,54 @@ namespace Avalonia.Controls.Primitives
                 Colors.White);
 
         /// <summary>
+        /// Defines the <see cref="ColorComponent"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ColorComponent> ColorComponentProperty =
+            AvaloniaProperty.Register<ColorSlider, ColorComponent>(
+                nameof(ColorComponent),
+                ColorComponent.Component1);
+
+        /// <summary>
+        /// Defines the <see cref="ColorModel"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ColorModel> ColorModelProperty =
+            AvaloniaProperty.Register<ColorSlider, ColorModel>(
+                nameof(ColorModel),
+                ColorModel.Rgba);
+
+        /// <summary>
+        /// Defines the <see cref="HsvColor"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HsvColor> HsvColorProperty =
+            AvaloniaProperty.Register<ColorSlider, HsvColor>(
+                nameof(HsvColor),
+                Colors.White.ToHsv());
+
+        /// <summary>
+        /// Defines the <see cref="IsAlphaMaxForced"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsAlphaMaxForcedProperty =
+            AvaloniaProperty.Register<ColorSlider, bool>(
+                nameof(IsAlphaMaxForced),
+                true);
+
+        /// <summary>
+        /// Defines the <see cref="IsAutoUpdatingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsAutoUpdatingEnabledProperty =
+            AvaloniaProperty.Register<ColorSlider, bool>(
+                nameof(IsAutoUpdatingEnabled),
+                true);
+
+        /// <summary>
+        /// Defines the <see cref="IsSaturationValueMaxForced"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsSaturationValueMaxForcedProperty =
+            AvaloniaProperty.Register<ColorSlider, bool>(
+                nameof(IsSaturationValueMaxForced),
+                true);
+
+        /// <summary>
         /// Gets or sets the currently selected color in the RGB color model.
         /// </summary>
         /// <remarks>
@@ -27,14 +75,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Defines the <see cref="ColorComponent"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ColorComponent> ColorComponentProperty =
-            AvaloniaProperty.Register<ColorSlider, ColorComponent>(
-                nameof(ColorComponent),
-                ColorComponent.Component1);
-
-        /// <summary>
         /// Gets or sets the color component represented by the slider.
         /// </summary>
         public ColorComponent ColorComponent
@@ -44,14 +84,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Defines the <see cref="ColorModel"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ColorModel> ColorModelProperty =
-            AvaloniaProperty.Register<ColorSlider, ColorModel>(
-                nameof(ColorModel),
-                ColorModel.Rgba);
-
-        /// <summary>
         /// Gets or sets the active color model used by the slider.
         /// </summary>
         public ColorModel ColorModel
@@ -59,14 +91,6 @@ namespace Avalonia.Controls.Primitives
             get => GetValue(ColorModelProperty);
             set => SetValue(ColorModelProperty, value);
         }
-
-        /// <summary>
-        /// Defines the <see cref="HsvColor"/> property.
-        /// </summary>
-        public static readonly StyledProperty<HsvColor> HsvColorProperty =
-            AvaloniaProperty.Register<ColorSlider, HsvColor>(
-                nameof(HsvColor),
-                Colors.White.ToHsv());
 
         /// <summary>
         /// Gets or sets the currently selected color in the HSV color model.
@@ -82,14 +106,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Defines the <see cref="IsAlphaMaxForced"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsAlphaMaxForcedProperty =
-            AvaloniaProperty.Register<ColorSlider, bool>(
-                nameof(IsAlphaMaxForced),
-                true);
-
-        /// <summary>
         /// Gets or sets a value indicating whether the alpha component is always forced to maximum for components
         /// other than <see cref="ColorComponent"/>.
         /// This ensures that the background is always visible and never transparent regardless of the actual color.
@@ -99,14 +115,6 @@ namespace Avalonia.Controls.Primitives
             get => GetValue(IsAlphaMaxForcedProperty);
             set => SetValue(IsAlphaMaxForcedProperty, value);
         }
-
-        /// <summary>
-        /// Defines the <see cref="IsAutoUpdatingEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsAutoUpdatingEnabledProperty =
-            AvaloniaProperty.Register<ColorSlider, bool>(
-                nameof(IsAutoUpdatingEnabled),
-                true);
 
         /// <summary>
         /// Gets or sets a value indicating whether automatic background and foreground updates will be
@@ -120,14 +128,6 @@ namespace Avalonia.Controls.Primitives
             get => GetValue(IsAutoUpdatingEnabledProperty);
             set => SetValue(IsAutoUpdatingEnabledProperty, value);
         }
-
-        /// <summary>
-        /// Defines the <see cref="IsSaturationValueMaxForced"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsSaturationValueMaxForcedProperty =
-            AvaloniaProperty.Register<ColorSlider, bool>(
-                nameof(IsSaturationValueMaxForced),
-                true);
 
         /// <summary>
         /// Gets or sets a value indicating whether the saturation and value components are always forced to maximum values

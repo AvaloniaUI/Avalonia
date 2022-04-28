@@ -14,6 +14,14 @@ namespace Avalonia.Controls.Primitives
                 Colors.Transparent.ToHsv());
 
         /// <summary>
+        /// Defines the <see cref="ShowAccentColors"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowAccentColorsProperty =
+            AvaloniaProperty.Register<ColorPreviewer, bool>(
+                nameof(ShowAccentColors),
+                true);
+
+        /// <summary>
         /// Gets or sets the currently previewed color in the HSV color model.
         /// </summary>
         /// <remarks>
@@ -26,14 +34,6 @@ namespace Avalonia.Controls.Primitives
             get => GetValue(HsvColorProperty);
             set => SetValue(HsvColorProperty, value);
         }
-
-        /// <summary>
-        /// Defines the <see cref="ShowAccentColors"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> ShowAccentColorsProperty =
-            AvaloniaProperty.Register<ColorPreviewer, bool>(
-                nameof(ShowAccentColors),
-                true);
 
         /// <summary>
         /// Gets or sets a value indicating whether accent colors are shown along
