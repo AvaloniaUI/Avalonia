@@ -80,10 +80,9 @@
       <Compile Include="../Avalonia.Base/CornerRadius.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/EllipticalRadius.cs">
+      <Compile Include="../Avalonia.Base/EllipticalRadius.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Media/Color.cs">
       <Compile Include="../Avalonia.Base/Media/Color.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
