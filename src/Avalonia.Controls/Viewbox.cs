@@ -82,13 +82,13 @@ namespace Avalonia.Controls
             set => _containerVisual.RenderTransform = value;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ChildProperty)
             {
-                _containerVisual.Child = change.NewValue.GetValueOrDefault<IControl>();
+                _containerVisual.Child = change.GetNewValue<IControl>();
                 InvalidateMeasure();
             }
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Input
 {
@@ -155,7 +156,7 @@ namespace Avalonia.Input
             if (s_keySynonyms.TryGetValue(key.ToLower(), out Key rv))
                 return rv;
 
-            return (Key)Enum.Parse(typeof(Key), key, true);
+            return EnumHelper.Parse<Key>(key, true);
         }
 
         private static KeyModifiers ParseModifier(ReadOnlySpan<char> modifier)
@@ -172,7 +173,7 @@ namespace Avalonia.Input
                 return KeyModifiers.Meta;
             }
 
-            return (KeyModifiers)Enum.Parse(typeof(KeyModifiers), modifier.ToString(), true);
+            return EnumHelper.Parse<KeyModifiers>(modifier.ToString(), true);
         }
 
         private Key ResolveNumPadOperationKey(Key key)

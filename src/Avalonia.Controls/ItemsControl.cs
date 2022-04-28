@@ -341,13 +341,13 @@ namespace Avalonia.Controls
             return new ItemsControlAutomationPeer(this);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ItemCountProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<int>());
+                UpdatePseudoClasses(change.GetNewValue<int>());
             }
         }
 
@@ -508,7 +508,6 @@ namespace Avalonia.Controls
             do
             {
                 result = container.GetControl(direction, c, wrap);
-                from = from ?? result;
 
                 if (result != null &&
                     result.Focusable &&
@@ -519,7 +518,7 @@ namespace Avalonia.Controls
                 }
 
                 c = result;
-            } while (c != null && c != from);
+            } while (c != null && c != from && direction != NavigationDirection.First && direction != NavigationDirection.Last);
 
             return null;
         }

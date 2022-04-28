@@ -336,7 +336,7 @@ namespace Avalonia.Controls
         {
             if (property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 

@@ -31,6 +31,19 @@ namespace ControlCatalog.ViewModels
             Items.Insert(index + 1, new Item(index + 1) { Text = $"New Item {_newItemIndex++}" });
         }
 
+        public void RemoveItem()
+        {
+            if (SelectedItem is not null)
+            {
+                Items.Remove(SelectedItem);
+                SelectedItem = null;
+            }
+            else if (Items.Count > 0)
+            {
+                Items.RemoveAt(Items.Count - 1);
+            }
+        }
+
         public void RandomizeHeights()
         {
             var random = new Random();
