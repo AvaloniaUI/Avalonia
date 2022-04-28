@@ -418,11 +418,6 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                if(currentPosition + currentRun.TextSourceLength <= firstTextSourceCharacterIndex)
-                {
-                    continue;
-                }
-
                 TextRun? nextRun = null;
 
                 if (index + 1 < TextRuns.Count)

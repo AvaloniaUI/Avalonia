@@ -528,7 +528,7 @@ namespace Avalonia.Media.TextFormatting
         /// Creates an empty text line.
         /// </summary>
         /// <returns>The empty text line.</returns>
-        public static TextLineImpl CreateEmptyTextLine(int firstTextSourceIndex, TextParagraphProperties paragraphProperties)
+        public static TextLineImpl CreateEmptyTextLine(int firstTextSourceIndex, double paragraphWidth, TextParagraphProperties paragraphProperties)
         {
             var flowDirection = paragraphProperties.FlowDirection;
             var properties = paragraphProperties.DefaultTextRunProperties;
@@ -542,7 +542,7 @@ namespace Avalonia.Media.TextFormatting
 
             var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
 
-            return new TextLineImpl(textRuns, firstTextSourceIndex, 0, double.PositiveInfinity, paragraphProperties, flowDirection).FinalizeLine();
+            return new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection).FinalizeLine();
         }
 
         /// <summary>
@@ -561,7 +561,7 @@ namespace Avalonia.Media.TextFormatting
         {
             if(textRuns.Count == 0)
             {
-                return CreateEmptyTextLine(firstTextSourceIndex, paragraphProperties);
+                return CreateEmptyTextLine(firstTextSourceIndex,paragraphWidth, paragraphProperties);
             }
 
             if (!TryMeasureLength(textRuns, paragraphWidth, out var measuredLength))
