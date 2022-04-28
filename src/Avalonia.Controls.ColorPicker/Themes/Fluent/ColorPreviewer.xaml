@@ -1,10 +1,13 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="using:Avalonia.Controls.Converters"
         xmlns:pc="using:Avalonia.Controls.Primitives.Converters"
         x:CompileBindings="True">
 
   <Styles.Resources>
     <pc:AccentColorConverter x:Key="AccentColor" />
+    <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
   </Styles.Resources>
 
   <Style Selector="ColorPreviewer">
@@ -31,7 +34,7 @@
                     Background="{StaticResource CheckeredBackgroundBrush}" />
             <Border x:Name="AccentDec2Border"
                     Grid.Column="0"
-                    CornerRadius="4,0,0,4"
+                    CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
                     Tag="-2"
                     Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='-2'}" />
             <Border x:Name="AccentDec1Border"
@@ -61,7 +64,7 @@
                     Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='1'}" />
             <Border x:Name="AccentInc2Border"
                     Grid.Column="1"
-                    CornerRadius="0,4,4,0"
+                    CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
                     Tag="2"
                     Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='2'}" />
           </Grid>
