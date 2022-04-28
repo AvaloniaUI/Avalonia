@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 
 namespace Avalonia.Controls.Documents
 {
@@ -251,10 +250,7 @@ namespace Avalonia.Controls.Documents
             control.SetValue(ForegroundProperty, value);
         }
 
-        /// <summary>
-        /// Raised when the visual representation of the text element changes.
-        /// </summary>
-        public event EventHandler? Invalidated;
+        internal IInlineHost? InlineHost { get; set; }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
@@ -269,14 +265,9 @@ namespace Avalonia.Controls.Documents
                 case nameof(FontWeight):
                 case nameof(FontStretch):
                 case nameof(Foreground):
-                    Invalidate();
+                    InlineHost?.Invalidate();
                     break;
             }
         }
-
-        /// <summary>
-        /// Raises the <see cref="Invalidate"/> event.
-        /// </summary>
-        protected void Invalidate() => Invalidated?.Invoke(this, EventArgs.Empty);
     }
 }
