@@ -46,7 +46,9 @@ namespace Avalonia.Controls.Converters
 
             if (includeSymbol == false)
             {
-                hexColor = hexColor.Replace("#", string.Empty, StringComparison.Ordinal);
+                // TODO: When .net standard 2.0 is dropped, replace the below line
+                //hexColor = hexColor.Replace("#", string.Empty, StringComparison.Ordinal);
+                hexColor = hexColor.Replace("#", string.Empty);
             }
 
             return hexColor;
