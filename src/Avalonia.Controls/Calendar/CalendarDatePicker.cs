@@ -202,7 +202,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             // CustomDateFormatString
             if (change.Property == CustomDateFormatStringProperty)
@@ -215,8 +215,8 @@ namespace Avalonia.Controls
             // IsDropDownOpen
             else if (change.Property == IsDropDownOpenProperty)
             {
-                var oldValue = change.OldValue.GetValueOrDefault<bool>();
-                var value = change.NewValue.GetValueOrDefault<bool>();
+                var oldValue = change.GetOldValue<bool>();
+                var value = change.GetNewValue<bool>();
 
                 if (_popUp != null && _popUp.Child != null)
                 {
@@ -246,8 +246,8 @@ namespace Avalonia.Controls
             // SelectedDate
             else if (change.Property == SelectedDateProperty)
             {
-                var addedDate = change.NewValue.GetValueOrDefault() as DateTime?;
-                var removedDate = change.OldValue.GetValueOrDefault() as DateTime?;
+                var addedDate = change.GetNewValue<DateTime?>();
+                var removedDate = change.GetOldValue<DateTime?>();
 
                 if (SelectedDate != null)
                 {
@@ -291,8 +291,8 @@ namespace Avalonia.Controls
             // Text
             else if (change.Property == TextProperty)
             {
-                var oldValue = change.OldValue.GetValueOrDefault() as string;
-                var value = change.NewValue.GetValueOrDefault() as string;
+                var oldValue = change.GetOldValue<string>();
+                var value = change.GetNewValue<string>();
 
                 if (!_suspendTextChangeHandler)
                 {
@@ -332,12 +332,14 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {
             if (property == SelectedDateProperty)
             {
                 DataValidationErrors.SetError(this, error);
             }
+
+            base.UpdateDataValidation(property, state, error);
         }
 
         /// <inheritdoc/>
