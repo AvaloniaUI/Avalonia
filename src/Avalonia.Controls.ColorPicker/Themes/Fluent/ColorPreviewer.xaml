@@ -6,6 +6,7 @@
 
   <Styles.Resources>
     <pc:AccentColorConverter x:Key="AccentColor" />
+    <converters:ToBrushConverter x:Key="ToBrush" />
     <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
     <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
   </Styles.Resources>
@@ -80,7 +81,7 @@
                       CornerRadius="{TemplateBinding CornerRadius}" />
               <Border x:Name="PreviewBorder"
                       CornerRadius="{TemplateBinding CornerRadius}"
-                      Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='0'}"
+                      Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrush}}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch" />
             </Grid>
