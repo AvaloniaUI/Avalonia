@@ -10,6 +10,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -587,8 +588,10 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            double xPosition = point.Position.X;
-            double yPosition = point.Position.Y;
+            // Remember the bitmap size follows physical device pixels
+            var scale = LayoutHelper.GetLayoutScale(this);
+            double xPosition = point.Position.X * scale;
+            double yPosition = point.Position.Y * scale;
             double radius = Math.Min(_imageWidthFromLastBitmapCreation, _imageHeightFromLastBitmapCreation) / 2;
             double distanceFromRadius = Math.Sqrt(Math.Pow(xPosition - radius, 2) + Math.Pow(yPosition - radius, 2));
 
@@ -819,8 +822,10 @@ namespace Avalonia.Controls.Primitives
                 yPosition = (Math.Sin((thetaValue * Math.PI / 180.0) + Math.PI) * radius * rValue) + radius;
             }
 
-            Canvas.SetLeft(_selectionEllipsePanel, xPosition - (_selectionEllipsePanel.Width / 2));
-            Canvas.SetTop(_selectionEllipsePanel, yPosition - (_selectionEllipsePanel.Height / 2));
+            // Remember the bitmap size follows physical device pixels
+            var scale = LayoutHelper.GetLayoutScale(this);
+            Canvas.SetLeft(_selectionEllipsePanel, (xPosition / scale) - (_selectionEllipsePanel.Width / 2));
+            Canvas.SetTop(_selectionEllipsePanel, (yPosition / scale) - (_selectionEllipsePanel.Height / 2));
 
             // We only want to bother with the color name tool tip if we can provide color names.
             if (IsFocused &&
@@ -969,7 +974,14 @@ namespace Avalonia.Controls.Primitives
             List<byte> bgraMaxPixelData = new List<byte>();
             List<Hsv> newHsvValues = new List<Hsv>();
 
-            var pixelCount = (int)(Math.Round(minDimension) * Math.Round(minDimension));
+            // In Avalonia, Bounds returns the actual device-independent pixel size of a control.
+            // However, this is not necessarily the size of the control rendered on a display.
+            // A desktop or application scaling factor may be applied which must be accounted for here.
+            // Remember bitmaps in Avalonia are rendered mapping to actual device pixels, not the device-
+            // independent pixels of controls.
+            var scale = LayoutHelper.GetLayoutScale(this);
+            int pixelDimension = (int)Math.Round(minDimension * scale);
+            var pixelCount = pixelDimension * pixelDimension;
             var pixelDataSize = pixelCount * 4;
             bgraMinPixelData.Capacity = pixelDataSize;
 
@@ -985,8 +997,6 @@ namespace Avalonia.Controls.Primitives
 
             bgraMaxPixelData.Capacity = pixelDataSize;
             newHsvValues.Capacity = pixelCount;
-
-            int minDimensionInt = (int)Math.Round(minDimension);
 
             await Task.Run(() =>
             {
@@ -1006,12 +1016,12 @@ namespace Avalonia.Controls.Primitives
                 // but the running time savings after that are *huge* when we can just set an opacity instead of generating a brand new bitmap.
                 if (shape == ColorSpectrumShape.Box)
                 {
-                    for (int x = minDimensionInt - 1; x >= 0; --x)
+                    for (int x = pixelDimension - 1; x >= 0; --x)
                     {
-                        for (int y = minDimensionInt - 1; y >= 0; --y)
+                        for (int y = pixelDimension - 1; y >= 0; --y)
                         {
                             FillPixelForBox(
-                                x, y, hsv, minDimensionInt, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                                x, y, hsv, pixelDimension, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
                                 bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
                                 newHsvValues);
                         }
@@ -1019,12 +1029,12 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    for (int y = 0; y < minDimensionInt; ++y)
+                    for (int y = 0; y < pixelDimension; ++y)
                     {
-                        for (int x = 0; x < minDimensionInt; ++x)
+                        for (int x = 0; x < pixelDimension; ++x)
                         {
                             FillPixelForRing(
-                                x, y, minDimensionInt / 2.0, hsv, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                                x, y, pixelDimension / 2.0, hsv, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
                                 bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
                                 newHsvValues);
                         }
@@ -1034,8 +1044,8 @@ namespace Avalonia.Controls.Primitives
 
             Dispatcher.UIThread.Post(() =>
             {
-                int pixelWidth = (int)Math.Round(minDimension);
-                int pixelHeight = (int)Math.Round(minDimension);
+                int pixelWidth = pixelDimension;
+                int pixelHeight = pixelDimension;
 
                 ColorSpectrumComponents components2 = Components;
 
@@ -1066,8 +1076,8 @@ namespace Avalonia.Controls.Primitives
 
                 _shapeFromLastBitmapCreation = Shape;
                 _componentsFromLastBitmapCreation = Components;
-                _imageWidthFromLastBitmapCreation = minDimension;
-                _imageHeightFromLastBitmapCreation = minDimension;
+                _imageWidthFromLastBitmapCreation = pixelDimension;
+                _imageHeightFromLastBitmapCreation = pixelDimension;
                 _minHueFromLastBitmapCreation = MinHue;
                 _maxHueFromLastBitmapCreation = MaxHue;
                 _minSaturationFromLastBitmapCreation = MinSaturation;
@@ -1086,7 +1096,7 @@ namespace Avalonia.Controls.Primitives
             double x,
             double y,
             Hsv baseHsv,
-            double minDimension,
+            int minDimension,
             ColorSpectrumComponents components,
             double minHue,
             double maxHue,
