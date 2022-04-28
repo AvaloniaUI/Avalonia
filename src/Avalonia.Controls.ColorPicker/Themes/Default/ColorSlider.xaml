@@ -169,17 +169,17 @@
   <!-- Normal State -->
   <Style Selector="ColorSlider /template/ Thumb.ColorSliderThumbStyle">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
     <Setter Property="BorderThickness" Value="3" />
   </Style>
 
   <!-- Selector/Thumb Color -->
   <Style Selector="ColorSlider:pressed /template/ Thumb.ColorSliderThumbStyle">
-    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
   </Style>
 
   <Style Selector="ColorSlider:pointerover /template/ Thumb.ColorSliderThumbStyle">
-    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
   </Style>
   <Style Selector="ColorSlider:pointerover:dark-selector /template/ Thumb.ColorSliderThumbStyle">
     <Setter Property="Opacity" Value="0.7" />
@@ -189,10 +189,10 @@
   </Style>
 
   <Style Selector="ColorSlider:dark-selector /template/ Thumb.ColorSliderThumbStyle">
-    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" />
+    <Setter Property="BorderBrush" Value="Black" />
   </Style>
   <Style Selector="ColorSlider:light-selector /template/ Thumb.ColorSliderThumbStyle">
-    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundChromeWhiteBrush}" />
+    <Setter Property="BorderBrush" Value="White" />
   </Style>
 
 </Styles>
