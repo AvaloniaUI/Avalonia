@@ -29,10 +29,11 @@ namespace Avalonia.Controls.Primitives
     [TemplatePart("PART_SpectrumRectangle",        typeof(Rectangle))]
     [TemplatePart("PART_SpectrumOverlayEllipse",   typeof(Ellipse))]
     [TemplatePart("PART_SpectrumOverlayRectangle", typeof(Rectangle))]
-    [PseudoClasses(pcPressed, pcLargeSelector, pcLightSelector)]
+    [PseudoClasses(pcPressed, pcLargeSelector, pcDarkSelector, pcLightSelector)]
     public partial class ColorSpectrum : TemplatedControl
     {
         protected const string pcPressed       = ":pressed";
+        protected const string pcDarkSelector  = ":dark-selector";
         protected const string pcLargeSelector = ":large-selector";
         protected const string pcLightSelector = ":light-selector";
 
@@ -556,7 +557,16 @@ namespace Avalonia.Controls.Primitives
                 PseudoClasses.Set(pcLargeSelector, false);
             }
 
-            PseudoClasses.Set(pcLightSelector, SelectionEllipseShouldBeLight());
+            if (SelectionEllipseShouldBeLight())
+            {
+                PseudoClasses.Set(pcDarkSelector, false);
+                PseudoClasses.Set(pcLightSelector, true);
+            }
+            else
+            {
+                PseudoClasses.Set(pcDarkSelector, true);
+                PseudoClasses.Set(pcLightSelector, false);
+            }
         }
 
         private void UpdateColor(Hsv newHsv)
