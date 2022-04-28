@@ -26,10 +26,13 @@ namespace Avalonia.Controls.Primitives.Converters
             Color? rgbColor = null;
             HsvColor? hsvColor = null;
 
-            // Get the current color in HSV
             if (value is Color valueColor)
             {
                 rgbColor = valueColor;
+            }
+            else if (value is HslColor valueHslColor)
+            {
+                rgbColor = valueHslColor.ToRgb();
             }
             else if (value is HsvColor valueHsvColor)
             {
