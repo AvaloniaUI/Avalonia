@@ -100,8 +100,6 @@ namespace Avalonia.Controls.Primitives
                     Background = ColorHelpers.BitmapToBrushAsync(bitmap, pixelWidth, pixelHeight);
                 }
             }
-
-            return;
         }
 
         /// <summary>
@@ -170,8 +168,6 @@ namespace Avalonia.Controls.Primitives
                         break;
                 }
             }
-
-            return;
         }
 
         /// <summary>

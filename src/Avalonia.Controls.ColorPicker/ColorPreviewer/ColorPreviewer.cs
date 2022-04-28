@@ -61,8 +61,6 @@ namespace Avalonia.Controls.Primitives
 
                 eventsConnected = false;
             }
-
-            return;
         }
 
         /// <inheritdoc/>
@@ -92,8 +90,6 @@ namespace Avalonia.Controls.Primitives
             HsvColor = newColor;
 
             ColorChanged?.Invoke(this, new ColorChangedEventArgs(oldColor.ToRgb(), newColor.ToRgb()));
-
-            return;
         }
 
         /// <summary>
@@ -115,8 +111,6 @@ namespace Avalonia.Controls.Primitives
 
             HsvColor newHsvColor = AccentColorConverter.GetAccent(hsvColor, accentStep);
             OnColorChanged(newHsvColor);
-
-            return;
         }
     }
 }

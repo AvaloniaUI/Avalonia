@@ -327,8 +327,6 @@ namespace Avalonia.Controls.Primitives
                 maxBound));
 
             e.Handled = true;
-
-            return;
         }
 
         /// <inheritdoc/>
