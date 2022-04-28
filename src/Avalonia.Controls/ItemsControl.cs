@@ -518,7 +518,7 @@ namespace Avalonia.Controls
                 }
 
                 c = result;
-            } while (c != null && c != from);
+            } while (c != null && c != from && direction != NavigationDirection.First && direction != NavigationDirection.Last);
 
             return null;
         }
