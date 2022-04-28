@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -459,32 +460,23 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Uses the visitor pattern to resolve an untyped property to a typed property.
-        /// </summary>
-        /// <typeparam name="TData">The type of user data passed.</typeparam>
-        /// <param name="visitor">The visitor which will accept the typed property.</param>
-        /// <param name="data">The user data to pass.</param>
-        public abstract void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
-            where TData : struct;
-
-        /// <summary>
         /// Routes an untyped ClearValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        internal abstract void RouteClearValue(IAvaloniaObject o);
+        internal abstract void RouteClearValue(AvaloniaObject o);
 
         /// <summary>
         /// Routes an untyped GetValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        internal abstract object? RouteGetValue(IAvaloniaObject o);
+        internal abstract object? RouteGetValue(AvaloniaObject o);
 
         /// <summary>
         /// Routes an untyped GetBaseValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
         /// <param name="maxPriority">The maximum priority for the value.</param>
-        internal abstract object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority);
+        internal abstract object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority);
 
         /// <summary>
         /// Routes an untyped SetValue call to a typed call.
@@ -496,7 +488,7 @@ namespace Avalonia
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
         internal abstract IDisposable? RouteSetValue(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             object? value,
             BindingPriority priority);
 
@@ -507,11 +499,12 @@ namespace Avalonia
         /// <param name="source">The binding source.</param>
         /// <param name="priority">The priority.</param>
         internal abstract IDisposable RouteBind(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             IObservable<BindingValue<object?>> source,
             BindingPriority priority);
 
-        internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject? oldParent);
+        internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent);
+        internal abstract ISetterInstance CreateSetterInstance(IStyleable target, object? value);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.

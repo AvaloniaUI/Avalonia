@@ -105,7 +105,7 @@ namespace Avalonia.Controls.Utils
                 static void Notify(
                     INotifyCollectionChanged incc,
                     NotifyCollectionChangedEventArgs args,
-                    List<WeakReference<ICollectionChangedListener>> listeners)
+                    WeakReference<ICollectionChangedListener>[] listeners)
                 {
                     foreach (var l in listeners)
                     {
@@ -132,7 +132,7 @@ namespace Avalonia.Controls.Utils
                     }
                 }
 
-                var l = Listeners.ToList();
+                var l = Listeners.ToArray();
 
                 if (Dispatcher.UIThread.CheckAccess())
                 {

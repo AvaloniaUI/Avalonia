@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.LogicalTree;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents 
 {
@@ -20,24 +20,14 @@ namespace Avalonia.Controls.Documents
         {
         }
 
-        internal override int BuildRun(StringBuilder stringBuilder,
-            IList<ValueSpan<TextRunProperties>> textStyleOverrides, int firstCharacterIndex)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            var length = AppendText(stringBuilder);
-
-            textStyleOverrides.Add(new ValueSpan<TextRunProperties>(firstCharacterIndex, length,
-                CreateTextRunProperties()));
-
-            return length;
+            textRuns.Add(new TextEndOfLine());
         }
 
-        internal override int AppendText(StringBuilder stringBuilder)
+        internal override void AppendText(StringBuilder stringBuilder)
         {
-            var text = Environment.NewLine;
-
-            stringBuilder.Append(text);
-
-            return text.Length;
+            stringBuilder.Append(Environment.NewLine);
         }
     }
 }

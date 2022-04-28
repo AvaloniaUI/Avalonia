@@ -8,15 +8,6 @@ namespace Avalonia.Controls
 {
     public class MenuFlyoutPresenter : MenuBase
     {
-        public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
-            Border.CornerRadiusProperty.AddOwner<FlyoutPresenter>();
-
-        public CornerRadius CornerRadius
-        {
-            get => GetValue(CornerRadiusProperty);
-            set => SetValue(CornerRadiusProperty, value);
-        }
-
         public MenuFlyoutPresenter()
             :base(new DefaultMenuInteractionHandler(true))
         {

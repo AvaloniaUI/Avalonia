@@ -49,7 +49,8 @@ namespace ControlCatalog
                             App.Fluent.Mode = FluentThemeMode.Light;
                         }
                         Application.Current.Styles[0] = App.Fluent;
-                        Application.Current.Styles[1] = App.DataGridFluent;
+                        Application.Current.Styles[1] = App.ColorPickerFluent;
+                        Application.Current.Styles[2] = App.DataGridFluent;
                     }
                     else if (theme == CatalogTheme.FluentDark)
                     {
@@ -59,20 +60,32 @@ namespace ControlCatalog
                             App.Fluent.Mode = FluentThemeMode.Dark;
                         }
                         Application.Current.Styles[0] = App.Fluent;
-                        Application.Current.Styles[1] = App.DataGridFluent;
+                        Application.Current.Styles[1] = App.ColorPickerFluent;
+                        Application.Current.Styles[2] = App.DataGridFluent;
                     }
                     else if (theme == CatalogTheme.DefaultLight)
                     {
                         App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Light;
                         Application.Current.Styles[0] = App.DefaultLight;
-                        Application.Current.Styles[1] = App.DataGridDefault;
+                        Application.Current.Styles[1] = App.ColorPickerDefault;
+                        Application.Current.Styles[2] = App.DataGridDefault;
                     }
                     else if (theme == CatalogTheme.DefaultDark)
                     {
                         App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Dark;
                         Application.Current.Styles[0] = App.DefaultDark;
-                        Application.Current.Styles[1] = App.DataGridDefault;
+                        Application.Current.Styles[1] = App.ColorPickerDefault;
+                        Application.Current.Styles[2] = App.DataGridDefault;
                     }
+                }
+            };
+
+            var flowDirections = this.Find<ComboBox>("FlowDirection");
+            flowDirections.SelectionChanged += (sender, e) =>
+            {
+                if (flowDirections.SelectedItem is FlowDirection flowDirection)
+                {
+                    this.FlowDirection = flowDirection;
                 }
             };
 

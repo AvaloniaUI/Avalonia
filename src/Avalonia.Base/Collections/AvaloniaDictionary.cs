@@ -123,7 +123,7 @@ namespace Avalonia.Collections
             {
                 var e = new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Remove,
-                    old.ToList(),
+                    old.ToArray(),
                     -1);
                 CollectionChanged(this, e);
             }

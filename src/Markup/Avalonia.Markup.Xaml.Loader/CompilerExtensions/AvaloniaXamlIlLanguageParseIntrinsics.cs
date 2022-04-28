@@ -160,6 +160,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return true;
             }
 
+            if (type.Equals(types.RelativePoint))
+            {
+                try
+                {
+                    var relativePoint = RelativePoint.Parse(text);
+                
+                    var relativePointTypeRef = new XamlAstClrTypeReference(node, types.RelativePoint, false);
+                    
+                    result = new XamlAstNewClrObjectNode(node, relativePointTypeRef, types.RelativePointFullConstructor, new List<IXamlAstValueNode>
+                    {
+                        new XamlConstantNode(node, types.XamlIlTypes.Double, relativePoint.Point.X),
+                        new XamlConstantNode(node, types.XamlIlTypes.Double, relativePoint.Point.Y),
+                        new XamlConstantNode(node, types.RelativeUnit, (int) relativePoint.Unit),
+                    });
+
+                    return true;
+                }
+                catch
+                {
+                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a relative point", node);
+                }
+            }
+
             if (type.Equals(types.GridLength))
             {
                 try
@@ -218,6 +241,32 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         new List<IXamlAstValueNode> { new XamlConstantNode(node, types.UInt, color.ToUint32()) });
 
                     return true;
+                }
+            }
+
+            if (type.Equals(types.TextTrimming))
+            {
+                foreach (var property in types.TextTrimming.Properties)
+                {
+                    if (property.PropertyType == types.TextTrimming && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+
+                        return true;
+                    }
+                }
+            }
+
+            if (type.Equals(types.TextDecorationCollection))
+            {
+                foreach (var property in types.TextDecorations.Properties)
+                {
+                    if (property.PropertyType == types.TextDecorationCollection && property.Name.Equals(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = new XamlStaticOrTargetedReturnMethodCallNode(node, property.Getter, Enumerable.Empty<IXamlAstValueNode>());
+
+                        return true;
+                    }
                 }
             }
 

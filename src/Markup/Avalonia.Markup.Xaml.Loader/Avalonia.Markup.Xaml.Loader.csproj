@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-  </ItemGroup>  
+  </ItemGroup>
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>

@@ -110,7 +110,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateSizeConstraints()
         {
-            if (_control is IAvaloniaObject ao)
+            if (_control is AvaloniaObject ao)
             {
                 string? CreateConstraintInfo(StyledProperty<double> minProperty, StyledProperty<double> maxProperty)
                 {
@@ -191,7 +191,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
                 else
                 {
-                    if (_control is IAvaloniaObject ao)
+                    if (_control is AvaloniaObject ao)
                     {
                         if (e.Property == Layoutable.MarginProperty)
                         {
