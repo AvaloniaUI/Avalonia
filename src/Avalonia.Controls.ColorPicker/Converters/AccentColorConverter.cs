@@ -3,7 +3,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 
-namespace Avalonia.Controls.Primitives
+namespace Avalonia.Controls.Primitives.Converters
 {
     /// <summary>
     /// Creates an accent color for a given base color value and step parameter.
