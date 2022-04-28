@@ -501,12 +501,15 @@ namespace Avalonia.Controls
             return new MenuItemAutomationPeer(this);
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
-            base.UpdateDataValidation(property, value);
+            base.UpdateDataValidation(property, state, error);
             if (property == CommandProperty)
             {
-                _commandBindingError = value.Type == BindingValueType.BindingError;
+                _commandBindingError = state == BindingValueType.BindingError;
                 if (_commandBindingError && _commandCanExecute)
                 {
                     _commandCanExecute = false;
@@ -644,7 +647,9 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue!)
+            var parentMenu = Parent as Menu;
+
+            if ((bool)e.NewValue! && (parentMenu is null || parentMenu.IsOpen))
             {
                 Focus();
             }

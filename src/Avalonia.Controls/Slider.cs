@@ -361,21 +361,24 @@ namespace Avalonia.Controls
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == ValueProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
         }
 

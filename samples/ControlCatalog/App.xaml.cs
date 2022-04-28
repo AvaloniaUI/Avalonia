@@ -18,6 +18,16 @@ namespace ControlCatalog
             DataContext = new ApplicationViewModel();
         }
 
+        public static readonly StyleInclude ColorPickerFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        {
+            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Fluent.xaml")
+        };
+
+        public static readonly StyleInclude ColorPickerDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        {
+            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Default.xaml")
+        };
+
         public static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
             Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
@@ -69,7 +79,8 @@ namespace ControlCatalog
         public override void Initialize()
         {
             Styles.Insert(0, Fluent);
-            Styles.Insert(1, DataGridFluent);
+            Styles.Insert(1, ColorPickerFluent);
+            Styles.Insert(2, DataGridFluent);
             AvaloniaXamlLoader.Load(this);
         }
 
