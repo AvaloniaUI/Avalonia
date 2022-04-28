@@ -238,6 +238,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _levelRuns.Clear();
             _resolvedLevelsBuffer.Clear();
 
+            if (types.IsEmpty)
+            {
+                return;
+            }
+
             // Setup original types and working types
             _originalClasses = types;
             _workingClasses = _workingClassesBuffer.Add(types);
