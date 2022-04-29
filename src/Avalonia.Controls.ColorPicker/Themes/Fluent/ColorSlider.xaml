@@ -169,17 +169,13 @@
   <!-- Normal State -->
   <Style Selector="ColorSlider /template/ Thumb.ColorSliderThumbStyle">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
     <Setter Property="BorderThickness" Value="3" />
   </Style>
 
   <!-- Selector/Thumb Color -->
-  <Style Selector="ColorSlider:pressed /template/ Thumb.ColorSliderThumbStyle">
-    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackgroundPressed}" />
-  </Style>
-
   <Style Selector="ColorSlider:pointerover /template/ Thumb.ColorSliderThumbStyle">
-    <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
+    <Setter Property="Opacity" Value="0.75" />
   </Style>
   <Style Selector="ColorSlider:pointerover:dark-selector /template/ Thumb.ColorSliderThumbStyle">
     <Setter Property="Opacity" Value="0.7" />
