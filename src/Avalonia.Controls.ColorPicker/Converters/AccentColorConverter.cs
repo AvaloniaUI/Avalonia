@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives.Converters
     public class AccentColorConverter : IValueConverter
     {
         /// <summary>
-        /// The amount to change the Value channel for each accent color step.
+        /// The amount to change the Value component for each accent color step.
         /// </summary>
         public const double ValueDelta = 0.1;
 

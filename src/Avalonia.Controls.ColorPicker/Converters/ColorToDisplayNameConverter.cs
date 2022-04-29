@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Converters
                 return AvaloniaProperty.UnsetValue;
             }
 
-            // ColorHelper.ToDisplayName ignores the alpha channel value
+            // ColorHelper.ToDisplayName ignores the alpha component
             // This means fully transparent colors will be named as a real color
             // That undesirable behavior is specially overridden here
             if (color.A == 0x00)
