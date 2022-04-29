@@ -21,13 +21,10 @@
           <Grid Grid.Column="0"
                 Height="40"
                 Width="80"
+                ColumnDefinitions="*,*"
                 Margin="0,0,-10,0"
                 VerticalAlignment="Center"
                 IsVisible="{TemplateBinding ShowAccentColors}">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
             <Border Grid.Column="0"
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Stretch"
@@ -47,13 +44,10 @@
           <Grid Grid.Column="2"
                 Height="40"
                 Width="80"
+                ColumnDefinitions="*,*"
                 Margin="-10,0,0,0"
                 VerticalAlignment="Center"
                 IsVisible="{TemplateBinding ShowAccentColors}">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
             <Border Grid.Column="0"
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Stretch"
@@ -74,9 +68,7 @@
                   BoxShadow="0 0 10 2 #BF000000"
                   CornerRadius="{TemplateBinding CornerRadius}"
                   Margin="10">
-            <Grid>
-              <Border Background="{DynamicResource ThemeBackgroundBrush}"
-                      CornerRadius="{TemplateBinding CornerRadius}" />
+            <Panel>
               <Border Background="{StaticResource CheckeredBackgroundBrush}"
                       CornerRadius="{TemplateBinding CornerRadius}" />
               <Border x:Name="PreviewBorder"
@@ -84,7 +76,7 @@
                       Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrush}}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch" />
-            </Grid>
+            </Panel>
           </Border>
         </Grid>
       </ControlTemplate>
