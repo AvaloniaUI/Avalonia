@@ -532,7 +532,9 @@ namespace Avalonia.Controls.Presenters
                 return finalSize;
             }
 
-            _constraint = new Size(finalSize.Width, Math.Ceiling(finalSize.Height));
+            var textSize = PixelSize.FromSize(finalSize, 1);
+
+            _constraint = new Size(textSize.Width, textSize.Height);
 
             _textLayout = null;
 
