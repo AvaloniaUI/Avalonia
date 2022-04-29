@@ -102,7 +102,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (bitmap != null)
                 {
-                    Background = ColorHelpers.BitmapToBrushAsync(bitmap, pixelWidth, pixelHeight);
+                    Background = new ImageBrush(ColorHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight));
                 }
             }
         }

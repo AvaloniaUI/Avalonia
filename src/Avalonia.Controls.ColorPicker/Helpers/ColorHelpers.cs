@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Layout;
@@ -640,16 +641,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// 
+        /// Converts the given raw BGRA pre-multiplied alpha pixel data into a bitmap.
         /// </summary>
+        /// <param name="bgraPixelData">The bitmap (in raw BGRA pre-multiplied alpha pixels).</param>
         /// <param name="pixelWidth">The pixel width of the bitmap.</param>
         /// <param name="pixelHeight">The pixel height of the bitmap.</param>
-        /// <param name="bgraPixelData"></param>
-        /// <returns></returns>
+        /// <returns>A new <see cref="WriteableBitmap"/>.</returns>
         public static WriteableBitmap CreateBitmapFromPixelData(
+            IList<byte> bgraPixelData,
             int pixelWidth,
-            int pixelHeight,
-            List<byte> bgraPixelData)
+            int pixelHeight)
         {
             // Standard may need to change on some devices
             Vector dpi = new Vector(96, 96);
@@ -667,50 +668,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             return bitmap;
-        }
-
-        /// <summary>
-        /// Converts the given bitmap (in raw BGRA pre-multiplied alpha pixels) into an image brush
-        /// that can be used in the UI.
-        /// </summary>
-        /// <param name="bgraPixelData">The bitmap (in raw BGRA pre-multiplied alpha pixels)
-        /// to convert to a brush.</param>
-        /// <param name="pixelWidth">The pixel width of the bitmap.</param>
-        /// <param name="pixelHeight">The pixel height of the bitmap.</param>
-        /// <returns>A new <see cref="ImageBrush"/>.</returns>
-        public static IBrush? BitmapToBrushAsync(
-            byte[] bgraPixelData,
-            int pixelWidth,
-            int pixelHeight)
-        {
-            if (bgraPixelData.Length == 0 ||
-                (pixelWidth == 0 &&
-                 pixelHeight == 0))
-            {
-                return null;
-            }
-
-            // Standard may need to change on some devices
-            Vector dpi = new Vector(96, 96);
-
-            var bitmap = new WriteableBitmap(
-                new PixelSize(pixelWidth, pixelHeight),
-                dpi,
-                PixelFormat.Bgra8888,
-                AlphaFormat.Premul);
-
-            // Warning: This is highly questionable
-            using (var frameBuffer = bitmap.Lock())
-            {
-                Marshal.Copy(bgraPixelData, 0, frameBuffer.Address, bgraPixelData.Length);
-            }
-
-            var brush = new ImageBrush(bitmap)
-            {
-                Stretch = Stretch.None
-            };
-
-            return brush;
         }
 
         /// <summary>

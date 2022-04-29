@@ -1059,8 +1059,8 @@ namespace Avalonia.Controls.Primitives
 
                 ColorSpectrumComponents components2 = Components;
 
-                WriteableBitmap minBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMinPixelData);
-                WriteableBitmap maxBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMaxPixelData);
+                WriteableBitmap minBitmap = ColorHelpers.CreateBitmapFromPixelData(bgraMinPixelData, pixelWidth, pixelHeight);
+                WriteableBitmap maxBitmap = ColorHelpers.CreateBitmapFromPixelData(bgraMaxPixelData, pixelWidth, pixelHeight);
 
                 switch (components2)
                 {
@@ -1076,10 +1076,10 @@ namespace Avalonia.Controls.Primitives
                     case ColorSpectrumComponents.ValueSaturation:
                     case ColorSpectrumComponents.SaturationValue:
                         _hueRedBitmap = minBitmap;
-                        _hueYellowBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle1PixelData);
-                        _hueGreenBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle2PixelData);
-                        _hueCyanBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle3PixelData);
-                        _hueBlueBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle4PixelData);
+                        _hueYellowBitmap = ColorHelpers.CreateBitmapFromPixelData(bgraMiddle1PixelData, pixelWidth, pixelHeight);
+                        _hueGreenBitmap = ColorHelpers.CreateBitmapFromPixelData(bgraMiddle2PixelData, pixelWidth, pixelHeight);
+                        _hueCyanBitmap = ColorHelpers.CreateBitmapFromPixelData(bgraMiddle3PixelData, pixelWidth, pixelHeight);
+                        _hueBlueBitmap = ColorHelpers.CreateBitmapFromPixelData(bgraMiddle4PixelData, pixelWidth, pixelHeight);
                         _huePurpleBitmap = maxBitmap;
                         break;
                 }
