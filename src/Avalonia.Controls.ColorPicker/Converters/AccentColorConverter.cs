@@ -7,6 +7,7 @@ namespace Avalonia.Controls.Primitives.Converters
 {
     /// <summary>
     /// Creates an accent color for a given base color value and step parameter.
+    /// This is a highly-specialized converter for the color picker.
     /// </summary>
     public class AccentColorConverter : IValueConverter
     {
