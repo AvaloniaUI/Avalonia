@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Data;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -11,7 +12,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
             AvaloniaProperty.Register<ColorPreviewer, HsvColor>(
                 nameof(HsvColor),
-                Colors.Transparent.ToHsv());
+                Colors.Transparent.ToHsv(),
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="ShowAccentColors"/> property.

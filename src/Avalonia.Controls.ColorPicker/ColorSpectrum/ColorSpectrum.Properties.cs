@@ -3,6 +3,7 @@
 //
 // Licensed to The Avalonia Project under the MIT License.
 
+using Avalonia.Data;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
@@ -16,7 +17,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Color> ColorProperty =
             AvaloniaProperty.Register<ColorSpectrum, Color>(
                 nameof(Color),
-                Colors.White);
+                Colors.White,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="Components"/> property.
@@ -32,7 +34,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
             AvaloniaProperty.Register<ColorSpectrum, HsvColor>(
                 nameof(HsvColor),
-                Colors.White.ToHsv());
+                Colors.White.ToHsv(),
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="MaxHue"/> property.

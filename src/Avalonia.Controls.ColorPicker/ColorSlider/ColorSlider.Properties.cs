@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Data;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -11,7 +12,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Color> ColorProperty =
             AvaloniaProperty.Register<ColorSlider, Color>(
                 nameof(Color),
-                Colors.White);
+                Colors.White,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="ColorComponent"/> property.
@@ -35,7 +37,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
             AvaloniaProperty.Register<ColorSlider, HsvColor>(
                 nameof(HsvColor),
-                Colors.White.ToHsv());
+                Colors.White.ToHsv(),
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="IsAlphaMaxForced"/> property.
