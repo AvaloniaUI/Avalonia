@@ -593,53 +593,6 @@ namespace Avalonia.Controls.Primitives
             return newHsv;
         }
 
-        public static double IncrementAlphaComponent(
-            double originalAlpha,
-            IncrementDirection direction,
-            IncrementAmount amount,
-            bool shouldWrap,
-            double minBound,
-            double maxBound)
-        {
-            // In order to avoid working with small values that can incur rounding issues,
-            // we'll multiple alpha by 100 to put it in the range of 0-100 instead of 0-1.
-            originalAlpha *= 100;
-
-            const double smallIncrementAmount = 1;
-            const double largeIncrementAmount = 10;
-
-            if (amount == IncrementAmount.Small)
-            {
-                originalAlpha += (direction == IncrementDirection.Lower ? -1 : 1) * smallIncrementAmount;
-            }
-            else
-            {
-                if (direction == IncrementDirection.Lower)
-                {
-                    originalAlpha = Math.Ceiling((originalAlpha - largeIncrementAmount) / largeIncrementAmount) * largeIncrementAmount;
-                }
-                else
-                {
-                    originalAlpha = Math.Floor((originalAlpha + largeIncrementAmount) / largeIncrementAmount) * largeIncrementAmount;
-                }
-            }
-
-            // If the value has reached outside the bounds and we should wrap, then we'll place the selection
-            // on the other side of the spectrum.  Otherwise, we'll place it on the boundary that was exceeded.
-            if (originalAlpha < minBound)
-            {
-                originalAlpha = shouldWrap ? maxBound : minBound;
-            }
-
-            if (originalAlpha > maxBound)
-            {
-                originalAlpha = shouldWrap ? minBound : maxBound;
-            }
-
-            // We multiplied alpha by 100 previously, so now we want to put it back in the 0-1 range.
-            return originalAlpha / 100;
-        }
-
         /// <summary>
         /// Converts the given raw BGRA pre-multiplied alpha pixel data into a bitmap.
         /// </summary>
