@@ -626,7 +626,7 @@ namespace Avalonia.Controls
 
             var padding = Padding;
 
-            var textSize = PixelSize.FromSize(finalSize.Deflate(padding), 1);
+            var textSize = PixelSize.FromSize(finalSize.Deflate(padding), VisualRoot?.RenderScaling ?? 1);
 
             _constraint = new Size(textSize.Width, textSize.Height);
 
