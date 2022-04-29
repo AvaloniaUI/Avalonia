@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Primitives
                     perceivedColor = GetEquivalentBackgroundColor(Color);
                 }
 
-                if (ColorHelpers.GetRelativeLuminance(perceivedColor) <= 0.5)
+                if (ColorHelper.GetRelativeLuminance(perceivedColor) <= 0.5)
                 {
                     PseudoClasses.Set(pcDarkSelector, false);
                     PseudoClasses.Set(pcLightSelector, true);
@@ -90,7 +90,7 @@ namespace Avalonia.Controls.Primitives
 
             if (pixelWidth != 0 && pixelHeight != 0)
             {
-                var bitmap = await ColorHelpers.CreateComponentBitmapAsync(
+                var bitmap = await ColorPickerHelpers.CreateComponentBitmapAsync(
                     pixelWidth,
                     pixelHeight,
                     Orientation,
@@ -102,7 +102,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (bitmap != null)
                 {
-                    Background = new ImageBrush(ColorHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight));
+                    Background = new ImageBrush(ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight));
                 }
             }
         }

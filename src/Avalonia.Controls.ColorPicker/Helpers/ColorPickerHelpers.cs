@@ -16,7 +16,10 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
-    internal static class ColorHelpers
+    /// <summary>
+    /// Contains internal, special-purpose helpers used with the color picker.
+    /// </summary>
+    internal static class ColorPickerHelpers
     {
         /// <summary>
         /// Generates a new bitmap of the specified size by changing a specific color component.
@@ -34,7 +37,7 @@ namespace Avalonia.Controls.Primitives
         /// during calculation with the HSVA color model.
         /// This will ensure colors are always discernible regardless of saturation/value.</param>
         /// <returns>A new bitmap representing a gradient of color component values.</returns>
-        internal static async Task<byte[]> CreateComponentBitmapAsync(
+        public static async Task<byte[]> CreateComponentBitmapAsync(
             int width,
             int height,
             Orientation orientation,
@@ -314,7 +317,7 @@ namespace Avalonia.Controls.Primitives
         {
             Hsv newHsv = originalHsv;
 
-            if (amount == IncrementAmount.Small || !ColorNameHelpers.ToDisplayNameExists)
+            if (amount == IncrementAmount.Small || !ColorHelper.ToDisplayNameExists)
             {
                 // In order to avoid working with small values that can incur rounding issues,
                 // we'll multiple saturation and value by 100 to put them in the range of 0-100 instead of 0-1.
@@ -405,7 +408,7 @@ namespace Avalonia.Controls.Primitives
             // in the middle of that color's bounds.
             Hsv newHsv = originalHsv;
             
-            string originalColorName = ColorNameHelpers.ToDisplayName(originalHsv.ToRgb().ToColor());
+            string originalColorName = ColorHelper.ToDisplayName(originalHsv.ToRgb().ToColor());
             string newColorName = originalColorName;
 
             // Note: *newValue replaced with ref local variable for C#, must be initialized
@@ -460,7 +463,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         newValue = maxBound;
                         shouldFindMidPoint = false;
-                        newColorName = ColorNameHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
+                        newColorName = ColorHelper.ToDisplayName(newHsv.ToRgb().ToColor());
                         break;
                     }
                 }
@@ -475,7 +478,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         newValue = minBound;
                         shouldFindMidPoint = false;
-                        newColorName = ColorNameHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
+                        newColorName = ColorHelper.ToDisplayName(newHsv.ToRgb().ToColor());
                         break;
                     }
                 }
@@ -490,7 +493,7 @@ namespace Avalonia.Controls.Primitives
                     break;
                 }
 
-                newColorName = ColorNameHelpers.ToDisplayName(newHsv.ToRgb().ToColor());
+                newColorName = ColorHelper.ToDisplayName(newHsv.ToRgb().ToColor());
             }
 
             if (shouldFindMidPoint)
@@ -563,7 +566,7 @@ namespace Avalonia.Controls.Primitives
                         }
                     }
 
-                    currentColorName = ColorNameHelpers.ToDisplayName(currentHsv.ToRgb().ToColor());
+                    currentColorName = ColorHelper.ToDisplayName(currentHsv.ToRgb().ToColor());
                 }
 
                 newValue = (startValue + currentValue + startEndOffset) / 2;
@@ -621,32 +624,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             return bitmap;
-        }
-
-        /// <summary>
-        /// Gets the relative (perceptual) luminance/brightness of the given color.
-        /// 1 is closer to white while 0 is closer to black.
-        /// </summary>
-        /// <param name="color">The color to calculate relative luminance for.</param>
-        /// <returns>The relative (perceptual) luminance/brightness of the given color.</returns>
-        public static double GetRelativeLuminance(Color color)
-        {
-            // The equation for relative luminance is given by
-            //
-            // L = 0.2126 * Rg + 0.7152 * Gg + 0.0722 * Bg
-            //
-            // where Xg = { X/3294 if X <= 10, (R/269 + 0.0513)^2.4 otherwise }
-            //
-            // If L is closer to 1, then the color is closer to white; if it is closer to 0,
-            // then the color is closer to black.  This is based on the fact that the human
-            // eye perceives green to be much brighter than red, which in turn is perceived to be
-            // brighter than blue.
-
-            double rg = color.R <= 10 ? color.R / 3294.0 : Math.Pow(color.R / 269.0 + 0.0513, 2.4);
-            double gg = color.G <= 10 ? color.G / 3294.0 : Math.Pow(color.G / 269.0 + 0.0513, 2.4);
-            double bg = color.B <= 10 ? color.B / 3294.0 : Math.Pow(color.B / 269.0 + 0.0513, 2.4);
-
-            return (0.2126 * rg + 0.7152 * gg + 0.0722 * bg);
         }
     }
 }

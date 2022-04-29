@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Converters
             }
             else
             {
-                return ColorNameHelpers.ToDisplayName(color);
+                return ColorHelper.ToDisplayName(color);
             }
         }
 
