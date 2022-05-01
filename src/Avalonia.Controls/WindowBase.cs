@@ -1,14 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -194,11 +190,6 @@ namespace Avalonia.Controls
             {
                 IsVisible = false;
                 
-                if (this is IFocusScope scope)
-                {
-                    FocusManager.Instance?.RemoveFocusScope(scope);
-                }
-                
                 base.HandleClosed();
             }
             finally
@@ -283,12 +274,7 @@ namespace Avalonia.Controls
         {
             Activated?.Invoke(this, EventArgs.Empty);
 
-            var scope = this as IFocusScope;
-
-            if (scope != null)
-            {
-                FocusManager.Instance?.SetFocusScope(scope);
-            }
+            ((this as IInputRoot).FocusManager as FocusManager)!.TryRestoreFocus();
 
             IsActive = true;
         }

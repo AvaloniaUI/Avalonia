@@ -11,11 +11,6 @@ namespace Avalonia.Input
         IAccessKeyHandler AccessKeyHandler { get; }
 
         /// <summary>
-        /// Gets or sets the keyboard navigation handler.
-        /// </summary>
-        IKeyboardNavigationHandler KeyboardNavigationHandler { get; }
-
-        /// <summary>
         /// Gets or sets the input element that the pointer is currently over.
         /// </summary>
         IInputElement? PointerOverElement { get; set; }

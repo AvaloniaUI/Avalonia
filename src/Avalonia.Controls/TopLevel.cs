@@ -14,7 +14,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -82,7 +81,6 @@ namespace Avalonia.Controls
 
         private readonly IInputManager? _inputManager;
         private readonly IAccessKeyHandler? _accessKeyHandler;
-        private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface? _renderInterface;
         private readonly IGlobalStyles? _globalStyles;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
@@ -93,6 +91,7 @@ namespace Avalonia.Controls
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
+        private FocusManager _focusManager;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -139,6 +138,8 @@ namespace Avalonia.Controls
 
             PlatformImpl = impl;
 
+            _focusManager = new FocusManager(this);
+
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
@@ -146,7 +147,6 @@ namespace Avalonia.Controls
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
-            _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
 
@@ -171,7 +171,9 @@ namespace Avalonia.Controls
             impl.ScalingChanged = HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
-            _keyboardNavigationHandler?.SetOwner(this);
+            // TODO_FOCUS: Remove this
+            //_keyboardNavigationHandler?.SetOwner(this);
+            AddHandler(KeyDownEvent, HandleTopLevelKeyDown);
             _accessKeyHandler?.SetOwner(this);
 
             if (_globalStyles is object)
@@ -288,11 +290,6 @@ namespace Avalonia.Controls
         /// </summary>
         IAccessKeyHandler IInputRoot.AccessKeyHandler => _accessKeyHandler!;
 
-        /// <summary>
-        /// Gets or sets the keyboard navigation handler for the window.
-        /// </summary>
-        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler!;
-
         /// <inheritdoc/>
         IInputElement? IInputRoot.PointerOverElement
         {
@@ -321,6 +318,8 @@ namespace Avalonia.Controls
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
+
+        IFocusManager IInputRoot.FocusManager => _focusManager;
 
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
@@ -535,14 +534,36 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (IVisual?)FocusManager.Instance?.Current;
-            if (focused == null)
-                return;
-            while (focused.VisualParent != null)
-                focused = focused.VisualParent;
+            // TODO_FOCUS: need to know how to restore focus
+            // On WindowBase, it's easy - we can use HandleActivated
+            // But what about other platforms?
+            // Looks like WASM and mobile use EmbeddableControlRoot
+            // Also LinuxFramebufferPlatform...
 
-            if (focused == this)
-                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+            // This is called on deactivation and closing,
+            // so we can handle this here once
+            _focusManager.ClearFocus(this);
+        }
+
+        private void HandleTopLevelKeyDown(object? sender, KeyEventArgs e)
+        {
+            // TODO_FOCUS
+
+            var current = FocusManager.GetFocusedElement();
+
+            if (current != null && e.Key == Key.Tab)
+            {
+                var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
+                    NavigationDirection.Next : NavigationDirection.Previous;
+
+                var result = FocusManager.TryMoveFocus(direction);
+                if (!result)
+                {
+                    // TODO_FOCUS: Raise NoFocusCandidateFound event
+                }
+
+                e.Handled = true;
+            }
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
