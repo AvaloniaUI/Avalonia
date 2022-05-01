@@ -14,6 +14,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -21,7 +22,7 @@ namespace Avalonia.Controls.Primitives
     /// Displays a popup window.
     /// </summary>
 #pragma warning disable CS0612 // Type or member is obsolete
-    public class Popup : Control, IVisualTreeHost, IPopupHostProvider
+    public class Popup : Control, IVisualTreeHost, IPopupHostProvider, IInteractive
 #pragma warning restore CS0612 // Type or member is obsolete
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
@@ -361,6 +362,24 @@ namespace Avalonia.Controls.Primitives
 
         IPopupHost? IPopupHostProvider.PopupHost => Host;
 
+        /// <summary>
+        /// Gets or sets whether the popup content should get focus on open
+        /// </summary>
+        /// <remarks>
+        /// In UWP, LightDismiss popups get focus automatically when opened, non-light dismiss
+        /// do not. This property exists for Flyouts, which are light dismiss, but whether content
+        /// is actually focused depends on the ShowMode of the Flyout
+        /// </remarks>
+        internal bool ManagesFocus { get; set; } = true;
+
+        IInteractive? IInteractive.InteractiveParent => Host is PopupRoot pr ? pr.ParentTopLevel : 
+            (Host as IVisual)?.VisualRoot as IInteractive;
+
+        /// <summary>
+        /// Stores the element focused when the popup opens so it can be restored later
+        /// </summary>
+        internal WeakReference<IInputElement>? LastFocusedElement { get; private set; }
+
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
             add => _popupHostChangedHandler += value; 
@@ -471,7 +490,9 @@ namespace Avalonia.Controls.Primitives
                 state.popupHost.Dispose();
             });
 
-            if (IsLightDismissEnabled)
+            var isLightDismiss = IsLightDismissEnabled;
+
+            if (isLightDismiss)
             {
                 var dismissLayer = LightDismissOverlayLayer.GetLightDismissOverlayLayer(placementTarget);
 
@@ -506,6 +527,35 @@ namespace Avalonia.Controls.Primitives
             }
 
             Opened?.Invoke(this, EventArgs.Empty);
+
+            // Register Windowed popups with the OverlayLayer of the owning TopLevel
+            // This is so FocusManager knows they exist and are treated in the same scope
+            if (popupHost is PopupRoot)
+            {
+                RegisterOrUnregisterPopup(topLevel, true);
+            }
+
+            var current = FocusManager.GetFocusedElement();
+            if (current != null)
+            {
+                LastFocusedElement = new WeakReference<IInputElement>(current);
+            }
+
+            if (isLightDismiss && ManagesFocus)
+            {
+                // OverlayPopupHost creates its content very late, but we need everything now to find
+                // a focus candidate, so force the layout pass to ensure the popup's content exists
+                if (popupHost is OverlayPopupHost oph)
+                {
+                    if (popupHost.Presenter == null || !popupHost.Presenter.IsMeasureValid)
+                    {
+                        (oph.GetVisualRoot() as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
+                    }
+                }
+               
+                var first = FocusManager.FindFirstFocusableElement(popupHost as IInputElement);
+                first?.Focus();
+            }
 
             _popupHostChangedHandler?.Invoke(Host);
         }
@@ -637,6 +687,41 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
+            // Before returning focus, we need to check whether the focus is actually
+            // in the popup. If it's not, we don't touch it as user may have focused
+            // something else that triggered the popup closing. If it is, return it
+            // to the previously focused item
+            var focus = FocusManager.GetFocusedElement() as IVisual;
+            bool isInPopup = false;
+            if (focus != null)
+            {
+                var item = focus;
+                while (item != null)
+                {
+                    if (item is PopupRoot || item is OverlayPopupHost)
+                    {
+                        isInPopup = true;
+                        break;
+                    }
+
+                    item = item.VisualParent;
+                }
+            }
+
+            if (isInPopup)
+            {
+                if (LastFocusedElement?.TryGetTarget(out var target) == true)
+                {
+                    target.Focus();
+                }
+            }
+
+            if (Host is PopupRoot)
+            {
+                RegisterOrUnregisterPopup(_openState.TopLevel, false);
+            }            
+
+            LastFocusedElement = null;
             _openState.Dispose();
             _openState = null;
 
@@ -648,36 +733,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
-
-            var focusCheck = FocusManager.Instance?.Current;
-
-            // Focus is set to null as part of popup closing, so we only want to
-            // set focus to PlacementTarget if this is the case
-            if (focusCheck == null)
-            {
-                if (PlacementTarget != null)
-                {
-                    var e = (IControl?)PlacementTarget;
-
-                    while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
-                    {
-                        e = e.Parent;
-                    }
-
-                    if (e is object)
-                    {
-                        FocusManager.Instance?.Focus(e);
-                    }
-                }
-                else
-                {
-                    var anc = this.FindLogicalAncestorOfType<IControl>();
-                    if (anc != null)
-                    {
-                        FocusManager.Instance?.Focus(anc);
-                    }
-                }
-            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)
@@ -839,6 +894,48 @@ namespace Avalonia.Controls.Primitives
         private IgnoreIsOpenScope BeginIgnoringIsOpen()
         {
             return new IgnoreIsOpenScope(this);
+        }
+
+        private void RegisterOrUnregisterPopup(TopLevel topLevel, bool register)
+        {
+            OverlayLayer? overlayLayer = null;
+            if (!(topLevel is PopupRoot))
+            {
+                // Single popup, topLevel will be the owning TopLevel
+                overlayLayer = OverlayLayer.GetOverlayLayer(topLevel);
+            }
+            else
+            {
+                // Use the logical tree here since that will connect all the way
+                // back up to the owning TopLevel (window, etc)
+                // We have to do the full look up here for cascading popups where
+                // 'topLevel' may be the parent Popup
+                var tl = (Host as ILogical)!.LogicalParent;
+
+                while (tl != null)
+                {
+                    if (tl is TopLevel t && !(t is PopupRoot))
+                    {
+                        break;
+                    }
+
+                    tl = tl.LogicalParent;
+                }
+
+                // Based on logic at start of this method, all popups must be connected
+                // to a TopLevel some way, so there should be no case that 'tl'
+                // will be null at this point
+                overlayLayer = OverlayLayer.GetOverlayLayer((tl as IVisual)!);
+            }
+
+            if (register)
+            {
+                overlayLayer?.RegisterWindowedPopup(this);
+            }
+            else
+            {
+                overlayLayer?.UnregisterWindowedPopup(this);
+            }
         }
 
         private readonly struct IgnoreIsOpenScope : IDisposable

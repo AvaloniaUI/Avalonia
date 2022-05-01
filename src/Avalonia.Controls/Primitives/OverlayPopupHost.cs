@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Primitives
         public IVisual? HostedVisualTreeRoot => null;
         
         /// <inheritdoc/>
-        IInteractive? IInteractive.InteractiveParent => Parent;
+        //IInteractive? IInteractive.InteractiveParent => Parent;
 
         public void Dispose() => Hide();
 

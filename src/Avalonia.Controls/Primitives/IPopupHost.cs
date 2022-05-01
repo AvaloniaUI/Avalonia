@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// (<see cref="PopupRoot"/>) or an <see cref="OverlayPopupHost"/> which is created
     /// on an <see cref="OverlayLayer"/>.
     /// </remarks>
-    public interface IPopupHost : IDisposable, IFocusScope
+    public interface IPopupHost : IDisposable
     {
         /// <summary>
         /// Sets the control to display in the popup.

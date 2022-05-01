@@ -234,6 +234,11 @@ namespace Avalonia.Controls.Primitives
                 return false;
             }
 
+            var showMode = ShowMode;
+            
+            // Ensures popup only auto-focuses content if we have Standard ShowM ode
+            Popup.ManagesFocus = showMode == FlyoutShowMode.Standard; 
+
             PositionPopup(showAtPointer);
             IsOpen = Popup.IsOpen = true;
             OnOpened();
@@ -241,23 +246,7 @@ namespace Avalonia.Controls.Primitives
             placementTarget.DetachedFromVisualTree += PlacementTarget_DetachedFromVisualTree;
             placementTarget.KeyUp += OnPlacementTargetOrPopupKeyUp;
 
-            if (ShowMode == FlyoutShowMode.Standard)
-            {
-                // Try and focus content inside Flyout
-                if (Popup.Child.Focusable)
-                {
-                    FocusManager.Instance?.Focus(Popup.Child);
-                }
-                else
-                {
-                    var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
-                    if (nextFocus != null)
-                    {
-                        FocusManager.Instance?.Focus(nextFocus);
-                    }
-                }
-            }
-            else if (ShowMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
+            if (showMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
             {
                 _transientDisposable = InputManager.Instance?.Process.Subscribe(HandleTransientDismiss);
             }

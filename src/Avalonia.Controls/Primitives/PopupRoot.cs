@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -15,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
+    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost, IInputRoot
     {
         private PopupPositionerParameters _positionerParameters;        
 
@@ -73,6 +75,32 @@ namespace Avalonia.Controls.Primitives
         IStyleHost? IStyleHost.StylingParent => Parent;
 
         public TopLevel ParentTopLevel { get; }
+
+        IFocusManager IInputRoot.FocusManager
+        {
+            get
+            {
+                // Cascading popups
+                if (ParentTopLevel is PopupRoot pr)
+                {
+                    var tl = (this as ILogical)!.LogicalParent;
+
+                    while (tl != null)
+                    {
+                        if (tl is TopLevel t && !(t is PopupRoot))
+                        {
+                            break;
+                        }
+
+                        tl = tl.LogicalParent;
+                    }
+
+                    return (tl as IInputRoot)!.FocusManager;
+                }
+
+                return (ParentTopLevel as IInputRoot)!.FocusManager;
+            }
+        }
 
         /// <inheritdoc/>
         public void Dispose()
