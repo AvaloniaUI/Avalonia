@@ -1,10 +1,12 @@
 using System;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
-    // TODO_FOCUS: This can probably be merged in with the FocusManager
+    // TODO_FOCUS:
+    //   - Some logic here needs to be amended to support IInputElement.AllowFocusWhenDisabled 
 
     /// <summary>
     /// The implementation for default tab navigation.
@@ -22,7 +24,7 @@ namespace Avalonia.Controls
 
             if (e == null)
             {
-                if (IsTabStop(container))
+                if (FocusManager.IsFocusable(container))
                     return container;
 
                 // Using ActiveElement if set
@@ -117,7 +119,7 @@ namespace Avalonia.Controls
                         var firstTabElement = GetNextTabInGroup(null, container, tabbingType);
                         if (firstTabElement == null)
                         {
-                            if (IsTabStop(container))
+                            if (FocusManager.IsFocusable(container))
                                 return container;
                             if (goDownOnly)
                                 return null;
@@ -139,7 +141,7 @@ namespace Avalonia.Controls
                         return null;
 
                     // FocusedElement should not be e otherwise we will delegate focus to the same element
-                    if (IsTabStop(container))
+                    if (FocusManager.IsFocusable(container))
                         return container;
 
                     return GetPrevTab(container, null, false);
@@ -158,7 +160,7 @@ namespace Avalonia.Controls
 
                 // At this point nextTabElement is TabStop or TabGroup
                 // In case it is a TabStop only return the element
-                if (IsTabStop(nextTabElement) && !IsGroup(nextTabElement))
+                if (FocusManager.IsFocusable(nextTabElement) && !IsGroup(nextTabElement))
                     return nextTabElement;
 
                 // Avoid the endless loop here
@@ -176,7 +178,7 @@ namespace Avalonia.Controls
             if (tabbingType == KeyboardNavigationMode.Contained)
                 return null;
 
-            if (e != container && IsTabStop(container))
+            if (e != container && FocusManager.IsFocusable(container))
                 return container;
 
             // If end of the subtree is reached or there no other elements above
@@ -657,20 +659,21 @@ namespace Avalonia.Controls
 
         private static KeyboardNavigationMode GetKeyNavigationMode(IInputElement e)
         {
+            // Enforce an explicit cycle within popups
+            // Particularly important for overlay popups so focus doesn't move back to 
+            // main app content
+            if (e is PopupRoot || e is OverlayPopupHost)
+            {
+                return KeyboardNavigationMode.Cycle;
+            }
+
             return ((AvaloniaObject)e).GetValue(KeyboardNavigation.TabNavigationProperty);
         }
 
-        private static bool IsFocusScope(IInputElement e) => GetParent(e) == null;// FocusManager.GetIsFocusScope(e) ||;
         private static bool IsGroup(IInputElement e) => GetKeyNavigationMode(e) != KeyboardNavigationMode.Continue;
 
-        private static bool IsTabStop(IInputElement e)
-        {
-            if (e is InputElement ie)
-                return ie.Focusable && KeyboardNavigation.GetIsTabStop(ie) && ie.IsVisible && ie.IsEnabled;
-            return false;
-        }
+        private static bool IsTabStopOrGroup(IInputElement e) => FocusManager.IsFocusable(e) || IsGroup(e);
 
-        private static bool IsTabStopOrGroup(IInputElement e) => IsTabStop(e) || IsGroup(e);
         private static bool IsVisibleAndEnabled(IInputElement e) => e.IsVisible && e.IsEnabled;
     }
 }

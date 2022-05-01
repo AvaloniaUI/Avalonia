@@ -1,4 +1,6 @@
 ﻿using System;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -34,7 +36,7 @@ namespace Avalonia.Controls
 
         static FocusManager()
         {
-            // Would this be better suited in TopLevel rather than here?
+            // Would this be better suited in TopLevel or InputElement rather than here?
             InputElement.PointerPressedEvent.AddClassHandler(
                 typeof(IInputElement),
                 new EventHandler<RoutedEventArgs>(OnPreviewPointerPressed),
@@ -76,7 +78,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Retreieves the element in the active UI that has focus
         /// </summary>
-        /// <returns></returns>
         public static IInputElement? GetFocusedElement()
         {
             return (_activeFocusRoot?.FocusManager as FocusManager)?.FocusedElement;
@@ -90,7 +91,9 @@ namespace Avalonia.Controls
         /// <returns>The first focusable object</returns>
         public static IInputElement? FindFirstFocusableElement(IInputElement? searchScope)
         {
-            throw new NotImplementedException();
+            searchScope = ResolveSearchScope(searchScope);
+
+            return TabNavigation.GetFirstTabInGroup(searchScope);            
         }
 
         /// <summary>
@@ -100,8 +103,10 @@ namespace Avalonia.Controls
         /// is the current TopLevel</param>
         /// <returns>The last focusable object</returns>
         public static IInputElement? FindLastFocusableElement(IInputElement? searchScope)
-        {
-            throw new NotImplementedException();
+        {            
+            searchScope = ResolveSearchScope(searchScope);
+
+            return TabNavigation.GetLastTabInGroup(searchScope);
         }
 
         /// <summary>
@@ -114,13 +119,14 @@ namespace Avalonia.Controls
         /// FindNextFocusableElement will return null if the next focusable element is not an <see cref="IInputElement"/> 
         /// (such as a hyperlink object)
         /// </remarks>
-        public static AvaloniaObject? FindNextElement(NavigationDirection focusNavigationDirection)
+        public static IInputElement? FindNextElement(NavigationDirection focusNavigationDirection)
         {
             // TODO: This should be used to find elements that aren't InputElements that should be focusable
             // when/if support for that becomes available. WinUI references hyperlink objects which aren't
             // UIElements, but are still focusable
+            // Return type should be changed to common base type when/if this happens (UWP uses DependencyObject)
 
-            throw new NotImplementedException();
+            return FindNextElementInternal(focusNavigationDirection);
         }
 
         /// <summary>
@@ -134,8 +140,13 @@ namespace Avalonia.Controls
         /// Only directional navigation may be used in this method, <see cref="NavigationDirection.Previous"/> and 
         /// <see cref="NavigationDirection.Next"/> are invalid and will throw
         /// </remarks>
-        public static AvaloniaObject? FindNextElement(NavigationDirection focusNavigationDirection, FindNextElementOptions focusNavigationOptions)
+        public static IInputElement? FindNextElement(NavigationDirection focusNavigationDirection, FindNextElementOptions focusNavigationOptions)
         {
+            // TODO: This should be used to find elements that aren't InputElements that should be focusable
+            // when/if support for that becomes available. WinUI references hyperlink objects which aren't
+            // UIElements, but are still focusable
+            // Return type should be changed to common base type when/if this happens (UWP uses DependencyObject)
+
             throw new NotImplementedException("To be implemented with XYFocus");
         }
 
@@ -147,7 +158,7 @@ namespace Avalonia.Controls
         public static IInputElement? FindNextFocusableElement(NavigationDirection focusNavigationDirection)
         {
             // For now this will just call FindNextElement
-            return FindNextElement(focusNavigationDirection) as IInputElement;
+            return FindNextElement(focusNavigationDirection);
         }
 
         /// <summary>
@@ -169,7 +180,18 @@ namespace Avalonia.Controls
         /// <returns>true if focus moved; otherwise, false</returns>
         public static bool TryMoveFocus(NavigationDirection focusNavigationDirection)
         {
-            throw new NotImplementedException();
+            var root = _activeFocusRoot ?? ResolveInitialFocusRoot();
+            var currentFM = root.FocusManager as FocusManager;
+
+            var result = FindNextElementInternal(focusNavigationDirection);
+
+            if (result == null)
+            {
+                return false;
+            }
+
+            currentFM!.SetFocusedElement(result, focusNavigationDirection, FocusState.Programmatic);
+            return true;
         }
 
         /// <summary>
@@ -181,7 +203,7 @@ namespace Avalonia.Controls
         /// <returns>true if focus moved; otherwise, false</returns>
         public static bool TryMoveFocus(NavigationDirection focusNavigationDirection, FindNextElementOptions focusNavigationOptions)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("To be implemented with XYFocus");
         }
 
 
@@ -205,8 +227,10 @@ namespace Avalonia.Controls
             if (!element.IsEffectivelyEnabled && !element.AllowFocusWhenDisabled)
                 return false;
 
-            // This walks the whole tree up
-            if (!element.IsEffectivelyVisible)
+            // Probably should use IsEffectivelyVisible here, but that walks the tree
+            // every time and that could be an issue. Also how often would just 
+            // IsVisible be insufficient?
+            if (!element.IsVisible)
                 return false;
 
             return true;
@@ -226,6 +250,32 @@ namespace Avalonia.Controls
             }
 
             return fm;
+
+            //var root = element.VisualRoot;
+
+            //// PopupRoot shouldn't be a TopLevel, but because it is, has a FocusManager instance with it
+            //// inherited from TopLevel. But we want all windowed Popups to be treated in the same "tree" as the window
+            //// its associated with, so if the visual root of the current element is a Popup,
+            //// we need to find the TopLevel its attached to
+            //if (root is PopupRoot pr)
+            //{
+            //    // Search up the logical tree to find the parent TopLevel that owns the Popup
+            //    var tl = pr.FindLogicalAncestorOfType<TopLevel>();
+            //    if (tl != null)
+            //    {
+            //        return tl.FocusManager;
+            //    }
+
+            //    // TODO: if this fail, probably should try to brute force it checking open windows on desktop or 
+            //    // MainView on single app lifetime, find the OverlayLayer, and seeing if we can find the associated
+            //    // windowed popup in its registry
+            //}
+            //else if (root is TopLevel tl)
+            //{
+            //    return tl.FocusManager;
+            //}
+
+            return null;
         }
 
         internal static FocusState GetActualFocusState(FocusInputDeviceKind lastInputType, FocusState state)
@@ -243,17 +293,125 @@ namespace Avalonia.Controls
                     return FocusState.Pointer;
             }
         }
-    }
 
-    // TODO: Separate this out
-    public class FindNextElementOptions
-    {
-        public XYFocusNavigationStrategy XYFocusNavigationStrategyOverride { get; set; }
+        internal static IInputRoot ResolveInitialFocusRoot()
+        {
+            // This should rarely be needed, but just in case TopLevel hasn't set focus or user has
+            // cleared focus to 'null', we need to make sure we can find a root to move focus in
+            var app = Application.Current!.ApplicationLifetime;
+            IInputRoot? root = null;
+            if (app is IClassicDesktopStyleApplicationLifetime cdl)
+            {
+                root = cdl.MainWindow;
+            }
+            else if (app is ISingleViewApplicationLifetime sal)
+            {
+                root = sal.MainView?.FindAncestorOfType<IInputRoot>(true);
+            }
 
-        public IInputElement? SearchRoot { get; set; }
+            if (root == null)
+            {
+                throw new InvalidOperationException("Unable to find a valid IInputRoot for initial focus");
+            }
 
-        public Rect HintRect { get; set; }
+            return root;
+        }
 
-        public Rect ExclusionRect { get; set; }
-    }
+        // TODO_FOCUS: In future, if non-IInputElement focusable items are supported, this return type should change
+        private static IInputElement? FindNextElementInternal(NavigationDirection direction)
+        {
+            var currentFocus = GetFocusedElement();
+
+            if (currentFocus == null)
+            {
+                var root = _activeFocusRoot ?? ResolveInitialFocusRoot();
+                switch (direction)
+                {
+                    // If no focus exists yet, we'll use normal tab stop behavior regardless of direction
+                    // to get focus directed into the app content. Grouping Right/Down with Next and
+                    // Left/Up with Previous
+                    case NavigationDirection.Next:
+                    case NavigationDirection.Right:
+                    case NavigationDirection.Down:
+                        return TabNavigation.GetFirstTabInGroup(root);
+
+                    case NavigationDirection.Previous:
+                    case NavigationDirection.Left:
+                    case NavigationDirection.Up:
+                        return TabNavigation.GetLastTabInGroup(root);
+                }
+
+                throw new ArgumentException("Invalid NavigationDirection provided");
+            }
+
+            switch (direction)
+            {
+                case NavigationDirection.Next:
+                    return TabNavigation.GetNextTab(currentFocus, false);
+
+                case NavigationDirection.Previous:
+                    return TabNavigation.GetPrevTab(currentFocus, null, false);
+
+                default:
+                    throw new NotImplementedException("To be implemented with XYFocus");
+            }
+        }
+
+        private static IInputElement FindNextElementWithOptions(NavigationDirection direction, FindNextElementOptions options)
+        {
+            if (direction.IsTab())
+            {
+                throw new InvalidOperationException("NavigationDirection Next and Previous are not allowed" +
+                   "when using FindNextElementOptions");
+            }
+
+            throw new NotImplementedException("To be implemented with XYFocus");
+        }
+
+        private static IInputElement ResolveSearchScope(IInputElement? scope)
+        {
+            // A null scope should use _activeFocusRoot or attempt to find the main view
+            // if a focus action has not occurred yet
+            if (scope == null)
+            {
+                if (_activeFocusRoot == null)
+                {
+                    _activeFocusRoot = ResolveInitialFocusRoot();
+
+                    // If _activeFocusRoot is still null, user called this too early in app lifetime as no views
+                    // exist yet
+                    if (_activeFocusRoot == null)
+                    {
+                        throw new InvalidOperationException("Search scope is not specified and no " +
+                            "active focus scope is currently available");
+                    }
+                }
+
+                scope = _activeFocusRoot;
+            }
+
+            // If the search root is the TopLevel we handle this in a specific way
+            // First, we check with the OverlayLayer
+            // Popups and items in the OverlayLayer get first precedence. Only lightdismiss/popups
+            // are eligible here *TODO (see GetTopMostLightDismissElement note)
+            // If nothing in the OverlayLayer is available, we then move to the main app content
+            if (scope is TopLevel tl && !(tl is PopupRoot))
+            {
+                var overlayLayer = OverlayLayer.GetOverlayLayer(tl);
+                if (overlayLayer != null)
+                {
+                    var possSearchRoot = overlayLayer.GetTopMostLightDismissElement();
+
+                    if (possSearchRoot != null)
+                    {
+                        return possSearchRoot;
+                    }
+                }
+
+                return (tl.Presenter as IInputElement) ?? tl;
+            }
+
+            return scope;
+        }
+    }    
 }

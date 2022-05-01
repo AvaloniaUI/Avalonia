@@ -1,5 +1,9 @@
 namespace Avalonia.Input
 {
+    // TODO_FOCUS: WinUI doesn't have First,Last,PgUp,PgDown directions
+    //             Remove or is there a use case for this?
+
+
     /// <summary>
     /// Describes how focus should be moved by directional or tab keys.
     /// </summary>
