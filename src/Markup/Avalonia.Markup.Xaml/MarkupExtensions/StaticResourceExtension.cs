@@ -52,6 +52,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             if (provideTarget.TargetObject is IControl target &&
                 provideTarget.TargetProperty is PropertyInfo property)
             {
+                // This is stored locally to avoid allocating closure in the outer scope.
                 var localTargetType = targetType;
                 var localInstance = this;
                 
