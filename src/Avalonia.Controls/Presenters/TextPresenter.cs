@@ -511,30 +511,39 @@ namespace Avalonia.Controls.Presenters
             
             InvalidateMeasure();
         }
-        
+
+
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (string.IsNullOrEmpty(Text))
+            {
+                return new Size();
+            }
+
             _constraint = availableSize;
-            
+
             _textLayout = null;
-            
+
             InvalidateArrange();
 
-            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, 1);
-            
-            return new Size(measuredSize.Width, measuredSize.Height);
+            var measuredSize = TextLayout.Bounds.Size;
+
+            return measuredSize;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            if (finalSize.Width < TextLayout.Bounds.Width)
+            {
+                finalSize = finalSize.WithWidth(TextLayout.Bounds.Width);
+            }
+
             if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
             {
                 return finalSize;
             }
 
-            var textSize = PixelSize.FromSize(finalSize, VisualRoot?.RenderScaling ?? 1);
-
-            _constraint = new Size(textSize.Width, textSize.Height);
+            _constraint = new Size(finalSize.Width, double.PositiveInfinity);
 
             _textLayout = null;
 
