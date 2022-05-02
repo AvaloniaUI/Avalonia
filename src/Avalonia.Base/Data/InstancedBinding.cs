@@ -15,7 +15,7 @@ namespace Avalonia.Data
     /// </remarks>
     public class InstancedBinding
     {
-        private SingleSubscriberSubject<ExplicitUpdateMode>? _explicitUpdateSubject;
+        private Subject<ExplicitUpdateMode>? _explicitUpdateSubject;
 
         internal enum ExplicitUpdateMode
         {
@@ -88,7 +88,7 @@ namespace Avalonia.Data
         {
             get
             {
-                _explicitUpdateSubject ??= new SingleSubscriberSubject<ExplicitUpdateMode>();
+                _explicitUpdateSubject ??= new Subject<ExplicitUpdateMode>();
 
                 return _explicitUpdateSubject;
             }

@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Input;
 using Avalonia.Reactive;
 
@@ -140,12 +142,13 @@ namespace Avalonia.Data
             }
         }
 
-        private sealed class TargetPropertyObservable : SingleSubscriberObservableBase<object?>
+        private sealed class TargetPropertyObservable : LightweightObservableBase<object?>
         {
-            private readonly IAvaloniaObject _target;
+            private readonly InstancedBinding _binding;
+            private readonly WeakReference<IAvaloniaObject> _target;
             private readonly AvaloniaProperty _property;
             private readonly UpdateSourceTrigger _updateSourceTrigger;
-            private readonly IDisposable _explicitUpdateSubscription;
+            private IDisposable? _explicitUpdateSubscription;
 
             public TargetPropertyObservable(
                 InstancedBinding binding,
@@ -153,36 +156,10 @@ namespace Avalonia.Data
                 AvaloniaProperty property,
                 UpdateSourceTrigger updateSourceTrigger)
             {
-                _target = target;
+                _binding = binding;
+                _target = new WeakReference<IAvaloniaObject>(target);
                 _property = property;
                 _updateSourceTrigger = updateSourceTrigger;
-                _explicitUpdateSubscription =
-                    binding.ExplicitUpdateRequested.Subscribe(OnExplicitUpdateRequested);
-
-                switch (updateSourceTrigger)
-                {
-                    case UpdateSourceTrigger.Default:
-                    case UpdateSourceTrigger.PropertyChanged:
-                    case UpdateSourceTrigger.LostFocus:
-
-                        _target.PropertyChanged += OnTargetPropertyChanged;
-
-                        break;
-
-                    default:
-                        throw new ArgumentOutOfRangeException(
-                            nameof(updateSourceTrigger),
-                            updateSourceTrigger,
-                            null);
-                }
-            }
-
-            public override void Dispose()
-            {
-                base.Dispose();
-
-                _target.PropertyChanged -= OnTargetPropertyChanged;
-                _explicitUpdateSubscription.Dispose();
             }
 
             private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -190,10 +167,13 @@ namespace Avalonia.Data
                 if (_updateSourceTrigger == UpdateSourceTrigger.LostFocus &&
                     e.Property == InputElement.IsFocusedProperty &&
                     e.OldValue is true &&
-                    e.NewValue is false ||
-                    e.Property == _property)
+                    e.NewValue is false)
                 {
                     PublishNext();
+                }
+                else if (e.Property == _property)
+                {
+                    PublishNext(e.NewValue);
                 }
             }
 
@@ -207,17 +187,39 @@ namespace Avalonia.Data
 
             private void PublishNext()
             {
-                var value = _target.GetValue(_property);
+                if (_target.TryGetTarget(out var target))
+                {
+                    var value = target.GetValue(_property);
 
-                PublishNext(value);
+                    PublishNext(value);
+                }
             }
 
-            protected override void Unsubscribed()
+            protected override void Initialize()
             {
+                _explicitUpdateSubscription =
+                    _binding.ExplicitUpdateRequested.Subscribe(OnExplicitUpdateRequested);
+
+                if (_updateSourceTrigger is 
+                    UpdateSourceTrigger.Default or 
+                    UpdateSourceTrigger.PropertyChanged or 
+                    UpdateSourceTrigger.LostFocus)
+                {
+                    if (_target.TryGetTarget(out var target))
+                    {
+                        target.PropertyChanged += OnTargetPropertyChanged;
+                    }
+                }
             }
 
-            protected override void Subscribed()
+            protected override void Deinitialize()
             {
+                if (_target.TryGetTarget(out var target))
+                {
+                    target.PropertyChanged -= OnTargetPropertyChanged;
+                }
+
+                _explicitUpdateSubscription?.Dispose();
             }
         }
 
