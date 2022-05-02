@@ -74,7 +74,13 @@ namespace Avalonia.X11
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new SleepLoopRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)
+                {
+                    OpenContextMenu =
+                    {
+                        new KeyGesture(Key.F10, KeyModifiers.Shift)
+                    }
+                })
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
