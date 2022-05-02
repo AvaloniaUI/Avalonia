@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics;
-using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Avalonia.Input;
 using Avalonia.Reactive;
 
@@ -56,17 +54,6 @@ namespace Avalonia.Data
                 updateSourceTrigger = metadata.UpdateSourceTrigger;
             }
 
-            static IObservable<object?> GetSourceObservable(InstancedBinding binding)
-            {
-                var explicitTargetUpdate = binding
-                    .ExplicitUpdateRequested
-                    .Where(m => m == InstancedBinding.ExplicitUpdateMode.Target);
-
-                Debug.Assert(binding.Observable != null);
-
-                return binding.Observable.CombineLatest(explicitTargetUpdate, (v, _) => v);
-            }
-
             switch (mode)
             {
                 case BindingMode.Default:
@@ -88,7 +75,7 @@ namespace Avalonia.Data
                     return new TwoWayBindingDisposable(
                         target.Bind(
                             property, 
-                            GetSourceObservable(binding), 
+                            binding.Subject, 
                             binding.Priority),
                         targetPropertyObservable.Subscribe(binding.Subject));
 
@@ -142,7 +129,7 @@ namespace Avalonia.Data
             }
         }
 
-        private sealed class TargetPropertyObservable : LightweightObservableBase<object?>
+        private sealed class TargetPropertyObservable : SingleSubscriberObservableBase<object?>
         {
             private readonly InstancedBinding _binding;
             private readonly WeakReference<IAvaloniaObject> _target;
@@ -195,24 +182,7 @@ namespace Avalonia.Data
                 }
             }
 
-            protected override void Initialize()
-            {
-                _explicitUpdateSubscription =
-                    _binding.ExplicitUpdateRequested.Subscribe(OnExplicitUpdateRequested);
-
-                if (_updateSourceTrigger is 
-                    UpdateSourceTrigger.Default or 
-                    UpdateSourceTrigger.PropertyChanged or 
-                    UpdateSourceTrigger.LostFocus)
-                {
-                    if (_target.TryGetTarget(out var target))
-                    {
-                        target.PropertyChanged += OnTargetPropertyChanged;
-                    }
-                }
-            }
-
-            protected override void Deinitialize()
+            protected override void Unsubscribed()
             {
                 if (_target.TryGetTarget(out var target))
                 {
@@ -220,6 +190,23 @@ namespace Avalonia.Data
                 }
 
                 _explicitUpdateSubscription?.Dispose();
+            }
+
+            protected override void Subscribed()
+            {
+                _explicitUpdateSubscription =
+                    _binding.ExplicitUpdateRequested.Subscribe(OnExplicitUpdateRequested);
+
+                if (_updateSourceTrigger is
+                    UpdateSourceTrigger.Default or
+                    UpdateSourceTrigger.PropertyChanged or
+                    UpdateSourceTrigger.LostFocus)
+                {
+                    if (_target.TryGetTarget(out var target))
+                    {
+                        target.PropertyChanged += OnTargetPropertyChanged;
+                    }
+                }
             }
         }
 
