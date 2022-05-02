@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Avalonia.Input;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
@@ -52,57 +54,6 @@ namespace Avalonia.Data
                 updateSourceTrigger = metadata.UpdateSourceTrigger;
             }
 
-            static IObservable<object?> GetTargetPropertyObservable(
-                InstancedBinding binding,
-                IAvaloniaObject target,
-                AvaloniaProperty property,
-                UpdateSourceTrigger updateSourceTrigger)
-            {
-                var explicitSourceUpdate = binding
-                    .ExplicitUpdateRequested
-                    .Where(m => m == InstancedBinding.ExplicitUpdateMode.Source)
-                    .Select(_ => target.GetValue(property));
-
-                IObservable<object?> valueObservable;
-
-                switch (updateSourceTrigger)
-                {
-                    case UpdateSourceTrigger.PropertyChanged:
-                    case UpdateSourceTrigger.Default:
-
-                        valueObservable = target.GetObservable(property);
-
-                        break;
-
-
-                    case UpdateSourceTrigger.Explicit:
-
-                        return explicitSourceUpdate;
-
-
-                    case UpdateSourceTrigger.LostFocus:
-
-                        valueObservable = Observable.FromEventPattern<AvaloniaPropertyChangedEventArgs>(
-                                x => target.PropertyChanged += x,
-                                x => target.PropertyChanged -= x)
-                            .Where(e => e.EventArgs.Property.Name.Equals("IsFocused") &&
-                                        e.EventArgs.OldValue is true &&
-                                        e.EventArgs.NewValue is false)
-                            .Select(_ => target.GetValue(property));
-
-                        break;
-
-
-                    default:
-                        throw new ArgumentOutOfRangeException(
-                            nameof(updateSourceTrigger),
-                            updateSourceTrigger,
-                            null);
-                }
-
-                return valueObservable.Merge(explicitSourceUpdate);
-            }
-
             static IObservable<object?> GetSourceObservable(InstancedBinding binding)
             {
                 var explicitTargetUpdate = binding
@@ -121,20 +72,23 @@ namespace Avalonia.Data
                     if (binding.Observable is null)
                         throw new InvalidOperationException("InstancedBinding does not contain an observable.");
                     return target.Bind(property, binding.Observable, binding.Priority);
+
                 case BindingMode.TwoWay:
                     if (binding.Subject is null)
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
+
+                    var targetPropertyObservable = new TargetPropertyObservable(
+                            binding,
+                            target, 
+                            property, 
+                            updateSourceTrigger);
 
                     return new TwoWayBindingDisposable(
                         target.Bind(
                             property, 
                             GetSourceObservable(binding), 
                             binding.Priority),
-                        GetTargetPropertyObservable(
-                            binding,
-                            target,
-                            property,
-                            updateSourceTrigger).Subscribe(binding.Subject));
+                        targetPropertyObservable.Subscribe(binding.Subject));
 
                 case BindingMode.OneTime:
                     var source = binding.Subject ?? binding.Observable;
@@ -172,7 +126,7 @@ namespace Avalonia.Data
 
                     return Observable.CombineLatest(
                             binding.Observable,
-                            GetTargetPropertyObservable(
+                            new TargetPropertyObservable(
                                 binding,
                                 target,
                                 property,
@@ -183,6 +137,87 @@ namespace Avalonia.Data
 
                 default:
                     throw new ArgumentException("Invalid binding mode.");
+            }
+        }
+
+        private sealed class TargetPropertyObservable : SingleSubscriberObservableBase<object?>
+        {
+            private readonly IAvaloniaObject _target;
+            private readonly AvaloniaProperty _property;
+            private readonly UpdateSourceTrigger _updateSourceTrigger;
+            private readonly IDisposable _explicitUpdateSubscription;
+
+            public TargetPropertyObservable(
+                InstancedBinding binding,
+                IAvaloniaObject target,
+                AvaloniaProperty property,
+                UpdateSourceTrigger updateSourceTrigger)
+            {
+                _target = target;
+                _property = property;
+                _updateSourceTrigger = updateSourceTrigger;
+                _explicitUpdateSubscription =
+                    binding.ExplicitUpdateRequested.Subscribe(OnExplicitUpdateRequested);
+
+                switch (updateSourceTrigger)
+                {
+                    case UpdateSourceTrigger.Default:
+                    case UpdateSourceTrigger.PropertyChanged:
+                    case UpdateSourceTrigger.LostFocus:
+
+                        _target.PropertyChanged += OnTargetPropertyChanged;
+
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(
+                            nameof(updateSourceTrigger),
+                            updateSourceTrigger,
+                            null);
+                }
+            }
+
+            public override void Dispose()
+            {
+                base.Dispose();
+
+                _target.PropertyChanged -= OnTargetPropertyChanged;
+                _explicitUpdateSubscription.Dispose();
+            }
+
+            private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+            {
+                if (_updateSourceTrigger == UpdateSourceTrigger.LostFocus &&
+                    e.Property == InputElement.IsFocusedProperty &&
+                    e.OldValue is true &&
+                    e.NewValue is false ||
+                    e.Property == _property)
+                {
+                    PublishNext();
+                }
+            }
+
+            private void OnExplicitUpdateRequested(InstancedBinding.ExplicitUpdateMode updateMode)
+            {
+                if (updateMode == InstancedBinding.ExplicitUpdateMode.Source)
+                {
+                    PublishNext();
+                }
+            }
+
+            private void PublishNext()
+            {
+                var value = _target.GetValue(_property);
+
+                PublishNext(value);
+            }
+
+            protected override void Unsubscribed()
+            {
+            }
+
+            protected override void Subscribed()
+            {
             }
         }
 
