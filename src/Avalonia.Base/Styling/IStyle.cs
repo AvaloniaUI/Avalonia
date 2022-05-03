@@ -8,7 +8,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines the interface for styles.
     /// </summary>
-    public interface IStyle
+    public interface IStyle : IResourceNode
     {
         /// <summary>
         /// Gets a collection of child styles.
