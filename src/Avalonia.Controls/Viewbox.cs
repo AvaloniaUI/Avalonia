@@ -14,7 +14,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Stretch"/> property.
         /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
-            AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
+            AvaloniaProperty.Register<Viewbox, Stretch>(nameof(Stretch), Stretch.Uniform);
 
         /// <summary>
         /// Defines the <see cref="StretchDirection"/> property.
