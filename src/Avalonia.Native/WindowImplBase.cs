@@ -13,11 +13,13 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
+#nullable enable
+
 namespace Avalonia.Native
 {
     internal class MacOSTopLevelWindowHandle : IPlatformHandle, IMacOSTopLevelPlatformHandle
     {
-        IAvnWindowBase _native;
+        private readonly IAvnWindowBase _native;
 
         public MacOSTopLevelWindowHandle(IAvnWindowBase native)
         {
@@ -28,50 +30,55 @@ namespace Avalonia.Native
 
         public string HandleDescriptor => "NSWindow";
 
-        public IntPtr NSView => _native?.ObtainNSViewHandle() ?? IntPtr.Zero;
+        public IntPtr NSView => _native.ObtainNSViewHandle();
 
-        public IntPtr NSWindow => _native?.ObtainNSWindowHandle() ?? IntPtr.Zero;
+        public IntPtr NSWindow => _native.ObtainNSWindowHandle();
 
         public IntPtr GetNSViewRetained()
         {
-            return _native?.ObtainNSViewHandleRetained() ?? IntPtr.Zero;
+            return _native.ObtainNSViewHandleRetained();
         }
 
         public IntPtr GetNSWindowRetained()
         {
-            return _native?.ObtainNSWindowHandleRetained() ?? IntPtr.Zero;
+            return _native.ObtainNSWindowHandleRetained();
         }
     }
 
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
-        protected IInputRoot _inputRoot;
-        IAvnWindowBase _native;
-        private object _syncRoot = new object();
-        private bool _deferredRendering = false;
-        private bool _gpu = false;
+        protected IInputRoot? _inputRoot;
+        IAvnWindowBase? _native;
+        private object _syncRoot = new();
+        private bool _deferredRendering;
+        private bool _gpu;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly ICursorFactory _cursorFactory;
         private Size _savedLogicalSize;
-        private Size _lastRenderedLogicalSize;
         private double _savedScaling;
-        private GlPlatformSurface _glSurface;
-        private NativeControlHostImpl _nativeControlHost;
-        private IGlContext _glContext;
+        private GlPlatformSurface? _glSurface;
+        private NativeControlHostImpl? _nativeControlHost;
+        private IGlContext? _glContext;
 
-        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface glFeature)
+        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface? glFeature)
         {
             _gpu = opts.UseGpu && glFeature != null;
             _deferredRendering = opts.UseDeferredRendering;
 
-            _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+            var keyboardDevice = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+
+            _keyboard = keyboardDevice ?? throw new Exception("Invalid configuration, missing IKeyboardDevice");
+            
             _mouse = new MouseDevice();
-            _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
+            
+            var cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
+
+            _cursorFactory = cursorFactory ?? throw new Exception("Invalid configuration, missing ICursorFactory");
         }
 
-        protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
+        protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext? glContext)
         {
             _native = window;
             _glContext = glContext;
@@ -85,7 +92,7 @@ namespace Avalonia.Native
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
-                    .FirstOrDefault(m => m.Bounds.Contains(Position));
+                    .First(m => m.Bounds.Contains(Position));
 
             Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);
         }
@@ -137,19 +144,18 @@ namespace Avalonia.Native
                     if (_native == null)
                         return false;
                     cb(_native);
-                    _lastRenderedLogicalSize = _savedLogicalSize;
                     return true;
                 }
             }, (int)w, (int)h, new Vector(dpi, dpi));
         }
 
-        public Action LostFocus { get; set; }
+        public Action? LostFocus { get; set; }
         
-        public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
-        public Action Closed { get; set; }
+        public Action<Rect>? Paint { get; set; }
+        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action? Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
-        public abstract IPopupImpl CreatePopup();
+        public abstract IPopupImpl? CreatePopup();
 
         protected unsafe class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
         {
@@ -165,12 +171,12 @@ namespace Avalonia.Native
                 var n = _parent._native;
                 try
                 {
-                    _parent?.Closed?.Invoke();
+                    _parent.Closed?.Invoke();
                 }
                 finally
                 {
                     
-                    _parent?.Dispose();
+                    _parent.Dispose();
                     n?.Dispose();
                 }
             }
@@ -188,7 +194,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Resized(AvnSize* size, AvnPlatformResizeReason reason)
             {
-                if (_parent?._native != null)
+                if (_parent._native != null)
                 {
                     var s = new Size(size->Width, size->Height);
                     _parent._savedLogicalSize = s;
@@ -240,21 +246,26 @@ namespace Avalonia.Native
             {
                 var device = AvaloniaLocator.Current.GetService<IDragDropDevice>();
 
-                IDataObject dataObject = null;
-                if (dataObjectHandle != IntPtr.Zero)
-                    dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
-                
-                using(var clipboardDataObject = new ClipboardDataObject(clipboard))
+                if (device != null && _parent._inputRoot != null)
                 {
-                    if (dataObject == null)
-                        dataObject = clipboardDataObject;
-                    
-                    var args = new RawDragEvent(device, (RawDragEventType)type,
-                        _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
-                        (RawInputModifiers)modifiers);
-                    _parent.Input(args);
-                    return (AvnDragDropEffects)args.Effects;
+                    IDataObject? dataObject = null;
+                    if (dataObjectHandle != IntPtr.Zero)
+                        dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
+
+                    using (var clipboardDataObject = new ClipboardDataObject(clipboard))
+                    {
+                        if (dataObject == null)
+                            dataObject = clipboardDataObject;
+
+                        var args = new RawDragEvent(device, (RawDragEventType)type,
+                            _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
+                            (RawInputModifiers)modifiers);
+                        _parent.Input?.Invoke(args);
+                        return (AvnDragDropEffects)args.Effects;
+                    }
                 }
+
+                return AvnDragDropEffects.None;
             }
         }
 
@@ -262,6 +273,7 @@ namespace Avalonia.Native
         {
             _native?.Activate();
         }
+
 
         public bool RawTextInputEvent(uint timeStamp, string text)
         {
@@ -409,8 +421,8 @@ namespace Avalonia.Native
 
         public double DesktopScaling => 1;
 
-        public Action Deactivated { get; set; }
-        public Action Activated { get; set; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
 
         public void SetCursor(ICursorImpl cursor)
         {
@@ -420,19 +432,21 @@ namespace Avalonia.Native
             }
             
             var newCursor = cursor as AvaloniaNativeCursor;
-            newCursor = newCursor ?? (_cursorFactory.GetCursor(StandardCursorType.Arrow) as AvaloniaNativeCursor);
-            _native.SetCursor(newCursor.Cursor);
+            
+            newCursor ??= (_cursorFactory.GetCursor(StandardCursorType.Arrow) as AvaloniaNativeCursor);
+            
+            _native.SetCursor(newCursor?.Cursor);
         }
 
-        public Action<PixelPoint> PositionChanged { get; set; }
+        public Action<PixelPoint>? PositionChanged { get; set; }
 
-        public Action<RawInputEventArgs> Input { get; set; }
+        public Action<RawInputEventArgs>? Input { get; set; }
 
-        public Action<double> ScalingChanged { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public IScreenImpl Screen { get; private set; }
+        public IScreenImpl? Screen { get; private set; }
 
         // TODO
 
