@@ -252,7 +252,7 @@ namespace Avalonia.Media.TextFormatting
                             //Look at the left and right edge of the current run
                             if (currentRun.IsLeftToRight)
                             {
-                                if (lastRun == null || lastRun.IsLeftToRight)
+                                if (_flowDirection == FlowDirection.LeftToRight && (lastRun == null || lastRun.IsLeftToRight))
                                 {
                                     if (characterIndex <= textRun.Text.Start)
                                     {
@@ -455,7 +455,7 @@ namespace Avalonia.Media.TextFormatting
                             }
                         default:
                             {
-                               goto noop;
+                                goto noop;
                             }
                     }
 
@@ -536,7 +536,7 @@ namespace Avalonia.Media.TextFormatting
                                 endX += currentRun.Size.Width;
                             }
 
-                            if(currentPosition < firstTextSourceCharacterIndex)
+                            if (currentPosition < firstTextSourceCharacterIndex)
                             {
                                 startX += currentRun.Size.Width;
                             }
@@ -554,24 +554,29 @@ namespace Avalonia.Media.TextFormatting
 
                 var width = endX - startX;
 
-                if (lastDirection == currentDirection && result.Count > 0 && MathUtilities.AreClose(currentRect.Right, startX))
+                if (!MathUtilities.IsZero(width))
                 {
-                    currentRect = currentRect.WithWidth(currentRect.Width + width);
+                    if (lastDirection == currentDirection && result.Count > 0 && MathUtilities.AreClose(currentRect.Right, startX))
+                    {
+                        currentRect = currentRect.WithWidth(currentRect.Width + width);
 
-                    var textBounds = new TextBounds(currentRect, currentDirection);
+                        var textBounds = new TextBounds(currentRect, currentDirection);
 
-                    result[result.Count - 1] = textBounds;
-                }
-                else
-                {
-                    currentRect = new Rect(startX, 0, width, Height);
+                        result[result.Count - 1] = textBounds;
+                    }
+                    else
+                    {
 
-                    result.Add(new TextBounds(currentRect, currentDirection));
+                        currentRect = new Rect(startX, 0, width, Height);
+
+                        result.Add(new TextBounds(currentRect, currentDirection));
+
+                    }
                 }
 
                 if (currentDirection == FlowDirection.LeftToRight)
                 {
-                    if (currentPosition >= firstTextSourceCharacterIndex + textLength)
+                    if (currentPosition > firstTextSourceCharacterIndex + textLength)
                     {
                         break;
                     }
@@ -1026,7 +1031,7 @@ namespace Avalonia.Media.TextFormatting
             var glyphTypeface = _paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface;
             var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
             var scale = fontRenderingEmSize / glyphTypeface.DesignEmHeight;
-          
+
             var width = 0d;
             var widthIncludingWhitespace = 0d;
             var trailingWhitespaceLength = 0;
@@ -1036,8 +1041,8 @@ namespace Avalonia.Media.TextFormatting
             var lineGap = glyphTypeface.LineGap * scale;
 
             var height = descent - ascent + lineGap;
-         
-            var lineHeight = _paragraphProperties.LineHeight;            
+
+            var lineHeight = _paragraphProperties.LineHeight;
 
             for (var index = 0; index < _textRuns.Count; index++)
             {
@@ -1136,10 +1141,10 @@ namespace Avalonia.Media.TextFormatting
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
-                if(lineHeight > height)
+                if (lineHeight > height)
                 {
                     height = lineHeight;
-                }              
+                }
             }
 
             return new TextLineMetrics(widthIncludingWhitespace > _paragraphWidth, height, newLineLength, start,
