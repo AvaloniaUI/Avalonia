@@ -10,6 +10,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -20,7 +21,6 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A two dimensional spectrum for color selection.
     /// </summary>
-    [TemplatePart("PART_ColorNameToolTip",         typeof(ToolTip))]
     [TemplatePart("PART_InputTarget",              typeof(Canvas))]
     [TemplatePart("PART_LayoutRoot",               typeof(Panel))]
     [TemplatePart("PART_SelectionEllipsePanel",    typeof(Panel))]
@@ -29,10 +29,11 @@ namespace Avalonia.Controls.Primitives
     [TemplatePart("PART_SpectrumRectangle",        typeof(Rectangle))]
     [TemplatePart("PART_SpectrumOverlayEllipse",   typeof(Ellipse))]
     [TemplatePart("PART_SpectrumOverlayRectangle", typeof(Rectangle))]
-    [PseudoClasses(pcPressed, pcLargeSelector, pcLightSelector)]
+    [PseudoClasses(pcPressed, pcLargeSelector, pcDarkSelector, pcLightSelector)]
     public partial class ColorSpectrum : TemplatedControl
     {
         protected const string pcPressed       = ":pressed";
+        protected const string pcDarkSelector  = ":dark-selector";
         protected const string pcLargeSelector = ":large-selector";
         protected const string pcLightSelector = ":light-selector";
 
@@ -60,7 +61,6 @@ namespace Avalonia.Controls.Primitives
         private Ellipse? _spectrumOverlayEllipse;
         private Canvas? _inputTarget;
         private Panel? _selectionEllipsePanel;
-        private ToolTip? _colorNameToolTip;
 
         // Put the spectrum images in a bitmap, which is then given to an ImageBrush.
         private WriteableBitmap? _hueRedBitmap;
@@ -117,7 +117,6 @@ namespace Avalonia.Controls.Primitives
 
             UnregisterEvents(); // Failsafe
 
-            _colorNameToolTip = e.NameScope.Find<ToolTip>("PART_ColorNameToolTip");
             _inputTarget = e.NameScope.Find<Canvas>("PART_InputTarget");
             _layoutRoot = e.NameScope.Find<Panel>("PART_LayoutRoot");
             _selectionEllipsePanel = e.NameScope.Find<Panel>("PART_SelectionEllipsePanel");
@@ -152,10 +151,10 @@ namespace Avalonia.Controls.Primitives
                 });
             }
 
-            if (ColorHelpers.ToDisplayNameExists &&
-                _colorNameToolTip != null)
+            if (_selectionEllipsePanel != null &&
+                ColorHelper.ToDisplayNameExists)
             {
-                _colorNameToolTip.Content = ColorHelpers.ToDisplayName(Color);
+                ToolTip.SetTip(_selectionEllipsePanel, ColorHelper.ToDisplayName(Color));
             }
 
             // If we haven't yet created our bitmaps, do so now.
@@ -320,7 +319,7 @@ namespace Avalonia.Controls.Primitives
             IncrementAmount amount = isControlDown ? IncrementAmount.Large : IncrementAmount.Small;
 
             HsvColor hsvColor = HsvColor;
-            UpdateColor(ColorHelpers.IncrementColorComponent(
+            UpdateColor(ColorPickerHelpers.IncrementColorComponent(
                 new Hsv(hsvColor),
                 incrementComponent,
                 direction,
@@ -330,34 +329,51 @@ namespace Avalonia.Controls.Primitives
                 maxBound));
 
             e.Handled = true;
-
-            return;
         }
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (_colorNameToolTip != null &&
-                ColorHelpers.ToDisplayNameExists)
+            if (_selectionEllipsePanel != null &&
+                ColorHelper.ToDisplayNameExists)
             {
-                ToolTip.SetIsOpen(_colorNameToolTip, true);
+                ToolTip.SetIsOpen(_selectionEllipsePanel, true);
             }
 
             UpdatePseudoClasses();
+
+            base.OnGotFocus(e);
         }
 
         /// <inheritdoc/>
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (_colorNameToolTip != null &&
-                ColorHelpers.ToDisplayNameExists)
+            if (_selectionEllipsePanel != null &&
+                ColorHelper.ToDisplayNameExists)
             {
-                ToolTip.SetIsOpen(_colorNameToolTip, false);
+                ToolTip.SetIsOpen(_selectionEllipsePanel, false);
             }
 
             UpdatePseudoClasses();
+
+            base.OnLostFocus(e);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerLeave(PointerEventArgs e)
+        {
+            // We only want to bother with the color name tool tip if we can provide color names.
+            if (_selectionEllipsePanel != null &&
+                ColorHelper.ToDisplayNameExists)
+            {
+                ToolTip.SetIsOpen(_selectionEllipsePanel, false);
+            }
+
+            UpdatePseudoClasses();
+
+            base.OnPointerLeave(e);
         }
 
         /// <inheritdoc/>
@@ -516,12 +532,10 @@ namespace Avalonia.Controls.Primitives
                 var colorChangedEventArgs = new ColorChangedEventArgs(_oldColor, newColor);
                 ColorChanged?.Invoke(this, colorChangedEventArgs);
 
-                if (ColorHelpers.ToDisplayNameExists)
+                if (_selectionEllipsePanel != null &&
+                    ColorHelper.ToDisplayNameExists)
                 {
-                    if (_colorNameToolTip != null)
-                    {
-                        _colorNameToolTip.Content = ColorHelpers.ToDisplayName(newColor);
-                    }
+                    ToolTip.SetTip(_selectionEllipsePanel, ColorHelper.ToDisplayName(Color));
                 }
             }
         }
@@ -543,7 +557,16 @@ namespace Avalonia.Controls.Primitives
                 PseudoClasses.Set(pcLargeSelector, false);
             }
 
-            PseudoClasses.Set(pcLightSelector, SelectionEllipseShouldBeLight());
+            if (SelectionEllipseShouldBeLight())
+            {
+                PseudoClasses.Set(pcDarkSelector, false);
+                PseudoClasses.Set(pcLightSelector, true);
+            }
+            else
+            {
+                PseudoClasses.Set(pcDarkSelector, true);
+                PseudoClasses.Set(pcLightSelector, false);
+            }
         }
 
         private void UpdateColor(Hsv newHsv)
@@ -575,8 +598,10 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            double xPosition = point.Position.X;
-            double yPosition = point.Position.Y;
+            // Remember the bitmap size follows physical device pixels
+            var scale = LayoutHelper.GetLayoutScale(this);
+            double xPosition = point.Position.X * scale;
+            double yPosition = point.Position.Y * scale;
             double radius = Math.Min(_imageWidthFromLastBitmapCreation, _imageHeightFromLastBitmapCreation) / 2;
             double distanceFromRadius = Math.Sqrt(Math.Pow(xPosition - radius, 2) + Math.Pow(yPosition - radius, 2));
 
@@ -807,19 +832,17 @@ namespace Avalonia.Controls.Primitives
                 yPosition = (Math.Sin((thetaValue * Math.PI / 180.0) + Math.PI) * radius * rValue) + radius;
             }
 
-            Canvas.SetLeft(_selectionEllipsePanel, xPosition - (_selectionEllipsePanel.Width / 2));
-            Canvas.SetTop(_selectionEllipsePanel, yPosition - (_selectionEllipsePanel.Height / 2));
+            // Remember the bitmap size follows physical device pixels
+            var scale = LayoutHelper.GetLayoutScale(this);
+            Canvas.SetLeft(_selectionEllipsePanel, (xPosition / scale) - (_selectionEllipsePanel.Width / 2));
+            Canvas.SetTop(_selectionEllipsePanel, (yPosition / scale) - (_selectionEllipsePanel.Height / 2));
 
             // We only want to bother with the color name tool tip if we can provide color names.
-            if (ColorHelpers.ToDisplayNameExists)
+            if (IsFocused &&
+                _selectionEllipsePanel != null &&
+                ColorHelper.ToDisplayNameExists)
             {
-                if (_colorNameToolTip != null)
-                {
-                    // ToolTip doesn't currently provide any way to re-run its placement logic if its placement target moves,
-                    // so toggling IsEnabled induces it to do that without incurring any visual glitches.
-                    _colorNameToolTip.IsEnabled = false;
-                    _colorNameToolTip.IsEnabled = true;
-                }
+                ToolTip.SetIsOpen(_selectionEllipsePanel, true);
             }
 
             UpdatePseudoClasses();
@@ -961,7 +984,14 @@ namespace Avalonia.Controls.Primitives
             List<byte> bgraMaxPixelData = new List<byte>();
             List<Hsv> newHsvValues = new List<Hsv>();
 
-            var pixelCount = (int)(Math.Round(minDimension) * Math.Round(minDimension));
+            // In Avalonia, Bounds returns the actual device-independent pixel size of a control.
+            // However, this is not necessarily the size of the control rendered on a display.
+            // A desktop or application scaling factor may be applied which must be accounted for here.
+            // Remember bitmaps in Avalonia are rendered mapping to actual device pixels, not the device-
+            // independent pixels of controls.
+            var scale = LayoutHelper.GetLayoutScale(this);
+            int pixelDimension = (int)Math.Round(minDimension * scale);
+            var pixelCount = pixelDimension * pixelDimension;
             var pixelDataSize = pixelCount * 4;
             bgraMinPixelData.Capacity = pixelDataSize;
 
@@ -977,8 +1007,6 @@ namespace Avalonia.Controls.Primitives
 
             bgraMaxPixelData.Capacity = pixelDataSize;
             newHsvValues.Capacity = pixelCount;
-
-            int minDimensionInt = (int)Math.Round(minDimension);
 
             await Task.Run(() =>
             {
@@ -998,12 +1026,12 @@ namespace Avalonia.Controls.Primitives
                 // but the running time savings after that are *huge* when we can just set an opacity instead of generating a brand new bitmap.
                 if (shape == ColorSpectrumShape.Box)
                 {
-                    for (int x = minDimensionInt - 1; x >= 0; --x)
+                    for (int x = pixelDimension - 1; x >= 0; --x)
                     {
-                        for (int y = minDimensionInt - 1; y >= 0; --y)
+                        for (int y = pixelDimension - 1; y >= 0; --y)
                         {
                             FillPixelForBox(
-                                x, y, hsv, minDimensionInt, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                                x, y, hsv, pixelDimension, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
                                 bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
                                 newHsvValues);
                         }
@@ -1011,12 +1039,12 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    for (int y = 0; y < minDimensionInt; ++y)
+                    for (int y = 0; y < pixelDimension; ++y)
                     {
-                        for (int x = 0; x < minDimensionInt; ++x)
+                        for (int x = 0; x < pixelDimension; ++x)
                         {
                             FillPixelForRing(
-                                x, y, minDimensionInt / 2.0, hsv, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                                x, y, pixelDimension / 2.0, hsv, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
                                 bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
                                 newHsvValues);
                         }
@@ -1026,13 +1054,13 @@ namespace Avalonia.Controls.Primitives
 
             Dispatcher.UIThread.Post(() =>
             {
-                int pixelWidth = (int)Math.Round(minDimension);
-                int pixelHeight = (int)Math.Round(minDimension);
+                int pixelWidth = pixelDimension;
+                int pixelHeight = pixelDimension;
 
                 ColorSpectrumComponents components2 = Components;
 
-                WriteableBitmap minBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMinPixelData);
-                WriteableBitmap maxBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMaxPixelData);
+                WriteableBitmap minBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMinPixelData, pixelWidth, pixelHeight);
+                WriteableBitmap maxBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMaxPixelData, pixelWidth, pixelHeight);
 
                 switch (components2)
                 {
@@ -1048,18 +1076,18 @@ namespace Avalonia.Controls.Primitives
                     case ColorSpectrumComponents.ValueSaturation:
                     case ColorSpectrumComponents.SaturationValue:
                         _hueRedBitmap = minBitmap;
-                        _hueYellowBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle1PixelData);
-                        _hueGreenBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle2PixelData);
-                        _hueCyanBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle3PixelData);
-                        _hueBlueBitmap = ColorHelpers.CreateBitmapFromPixelData(pixelWidth, pixelHeight, bgraMiddle4PixelData);
+                        _hueYellowBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle1PixelData, pixelWidth, pixelHeight);
+                        _hueGreenBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle2PixelData, pixelWidth, pixelHeight);
+                        _hueCyanBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle3PixelData, pixelWidth, pixelHeight);
+                        _hueBlueBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle4PixelData, pixelWidth, pixelHeight);
                         _huePurpleBitmap = maxBitmap;
                         break;
                 }
 
                 _shapeFromLastBitmapCreation = Shape;
                 _componentsFromLastBitmapCreation = Components;
-                _imageWidthFromLastBitmapCreation = minDimension;
-                _imageHeightFromLastBitmapCreation = minDimension;
+                _imageWidthFromLastBitmapCreation = pixelDimension;
+                _imageHeightFromLastBitmapCreation = pixelDimension;
                 _minHueFromLastBitmapCreation = MinHue;
                 _maxHueFromLastBitmapCreation = MaxHue;
                 _minSaturationFromLastBitmapCreation = MinSaturation;
@@ -1078,7 +1106,7 @@ namespace Avalonia.Controls.Primitives
             double x,
             double y,
             Hsv baseHsv,
-            double minDimension,
+            int minDimension,
             ColorSpectrumComponents components,
             double minHue,
             double maxHue,
@@ -1570,7 +1598,7 @@ namespace Avalonia.Controls.Primitives
                 displayedColor = Color;
             }
 
-            var lum = ColorHelpers.GetRelativeLuminance(displayedColor);
+            var lum = ColorHelper.GetRelativeLuminance(displayedColor);
 
             return lum <= 0.5;
         }
