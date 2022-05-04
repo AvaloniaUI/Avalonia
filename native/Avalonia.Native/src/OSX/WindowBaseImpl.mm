@@ -16,7 +16,6 @@
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
     _shown = false;
     _inResize = false;
-    _mainMenu = nullptr;
     BaseEvents = events;
     _glContext = gl;
     renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext:gl];
@@ -279,7 +278,7 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
     }
 }
 
-HRESULT WindowBaseImpl::Invalidate(AvnRect rect) {
+HRESULT WindowBaseImpl::Invalidate(__attribute__((unused)) AvnRect rect) {
     START_COM_CALL;
 
     @autoreleasepool {
@@ -291,8 +290,6 @@ HRESULT WindowBaseImpl::Invalidate(AvnRect rect) {
 
 HRESULT WindowBaseImpl::SetMainMenu(IAvnMenu *menu) {
     START_COM_CALL;
-
-    _mainMenu = menu;
 
     auto nativeMenu = dynamic_cast<AvnAppMenu *>(menu);
 
@@ -323,7 +320,7 @@ HRESULT WindowBaseImpl::BeginMoveDrag() {
     }
 }
 
-HRESULT WindowBaseImpl::BeginResizeDrag(AvnWindowEdge edge) {
+HRESULT WindowBaseImpl::BeginResizeDrag(__attribute__((unused)) AvnWindowEdge edge) {
     START_COM_CALL;
 
     return S_OK;
@@ -431,7 +428,7 @@ HRESULT WindowBaseImpl::CreateGlRenderTarget(IAvnGlSurfaceRenderTarget **ppv) {
     if (View == NULL)
         return E_FAIL;
     *ppv = [renderTarget createSurfaceRenderTarget];
-    return *ppv == nil ? E_FAIL : S_OK;
+    return static_cast<HRESULT>(*ppv == nil ? E_FAIL : S_OK);
 }
 
 HRESULT WindowBaseImpl::CreateNativeControlHost(IAvnNativeControlHost **retOut) {
@@ -505,8 +502,4 @@ NSWindowStyleMask WindowBaseImpl::GetStyle() {
 
 void WindowBaseImpl::UpdateStyle() {
     [Window setStyleMask:GetStyle()];
-}
-
-void WindowBaseImpl::OnResized() {
-
 }

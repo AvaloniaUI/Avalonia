@@ -1,3 +1,4 @@
+#import <AppKit/AppKit.h>
 #include "common.h"
 #import "window.h"
 #include "KeyTransform.h"
@@ -6,10 +7,6 @@
 #include "automation.h"
 #import "WindowBaseImpl.h"
 #include "WindowImpl.h"
-#include "IWindowStateChanged.h"
-
-
-NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
 
 @implementation AutoFitContentView
 {
@@ -106,26 +103,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
     _settingSize = false;
 }
-
--(void) SetContent: (NSView* _Nonnull) content
-{
-    if(content != nullptr)
-    {
-        [content removeFromSuperview];
-        [self addSubview:content];
-        _content = content;
-    }
-}
 @end
 
 @implementation AvnView
 {
     ComPtr<WindowBaseImpl> _parent;
-    ComPtr<IUnknown> _swRenderedFrame;
-    AvnFramebuffer _swRenderedFrameBuffer;
-    bool _queuedDisplayFromThread;
     NSTrackingArea* _area;
-    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed, _isMouseOver;
+    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
@@ -143,11 +127,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
--(AvnPixelSize) getPixelSize
-{
-    return _lastPixelSize;
-}
-
 - (NSEvent*) lastMouseDownEvent
 {
     return _lastMouseDownEvent;
@@ -155,7 +134,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void) updateRenderTarget
 {
-    [_renderTarget resize:_lastPixelSize withScale: [[self window] backingScaleFactor]];
+    [_renderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
     [self setNeedsDisplayInRect:[self frame]];
 }
 
@@ -345,7 +324,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
-    AvnVector delta;
+    AvnVector delta = { 0, 0};
     
     if(type == Wheel)
     {
@@ -378,7 +357,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         delta.Y = [event deltaY];
     }
     
-    auto timestamp = [event timestamp] * 1000;
+    uint32 timestamp = static_cast<uint32>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
     if(type != AvnRawMouseEventType::Move ||
@@ -437,6 +416,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             _isXButton2Pressed = true;
             [self mouseEvent:event withType:XButton2Down];
             break;
+
+        default:
+            break;
     }
 }
 
@@ -469,6 +451,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         case 5:
             _isXButton2Pressed = false;
             [self mouseEvent:event withType:XButton2Up];
+            break;
+
+        default:
             break;
     }
 }
@@ -523,13 +508,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)mouseEntered:(NSEvent *)event
 {
-    _isMouseOver = true;
     [super mouseEntered:event];
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
-    _isMouseOver = false;
     [self mouseEvent:event withType:LeaveWindow];
     [super mouseExited:event];
 } 
@@ -543,7 +526,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     auto key = s_KeyMap[[event keyCode]];
     
-    auto timestamp = [event timestamp] * 1000;
+    uint32_t timestamp = static_cast<uint32_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
      
     if(_parent != nullptr)
@@ -711,7 +694,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    CGRect result;
+    CGRect result = { 0 };
     
     return result;
 }
@@ -730,10 +713,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
                 CreateClipboard([info draggingPasteboard], nil),
                 GetAvnDataObjectHandleFromDraggingInfo(info));
     
-    NSDragOperation ret = 0;
+    NSDragOperation ret = static_cast<NSDragOperation>(0);
     
     // Ensure that the managed part didn't add any new effects
-    reffects = (int)effects & (int)reffects;
+    reffects = (int)effects & reffects;
     
     // OSX requires exactly one operation
     if((reffects & (int)AvnDragDropEffects::Copy) != 0)
@@ -829,9 +812,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _isEnabled;
     bool _isExtended;
     AvnMenu* _menu;
-    double _lastScaling;
-    IAvnAutomationPeer* _automationPeer;
-    NSMutableArray* _automationChildren;
 }
 
 -(void) setIsExtended:(bool)value;
@@ -842,11 +822,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 -(bool) isDialog
 {
     return _parent->IsDialog();
-}
-
--(double) getScaling
-{
-    return _lastScaling;
 }
 
 -(double) getExtendedTitleBarHeight
@@ -869,11 +844,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         return 0;
     }
-}
-
-+(void)closeAll
-{
-    [[NSApplication sharedApplication] terminate:self];
 }
 
 - (void)performClose:(id)sender
@@ -983,7 +953,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _closed = false;
     _isEnabled = true;
     
-    _lastScaling = [self backingScaleFactor];
+    [self backingScaleFactor];
     [self setOpaque:NO];
     [self setBackgroundColor: [NSColor clearColor]];
     _isExtended = false;
@@ -1004,7 +974,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification
 {
-    _lastScaling = [self backingScaleFactor];
+    [self backingScaleFactor];
 }
 
 - (void)windowWillClose:(NSNotification *)notification
@@ -1221,9 +1191,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
                 {
                     auto avnPoint = [AvnView toAvnPoint:windowPoint];
                     auto point = [self translateLocalPoint:avnPoint];
-                    AvnVector delta;
+                    AvnVector delta = { 0, 0 };
                    
-                    _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+                    _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint32>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
                 }
             }
             break;

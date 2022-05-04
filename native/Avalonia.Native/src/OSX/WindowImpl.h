@@ -88,8 +88,6 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT SetWindowState (AvnWindowState state) override;
 
-    virtual void OnResized () override;
-
     virtual bool IsDialog() override;
 
 protected:

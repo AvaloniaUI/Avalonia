@@ -504,12 +504,6 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
     }
 }
 
-void WindowImpl::OnResized() {
-    if (_shown && !_inSetWindowState && !_transitioningWindowState) {
-        WindowStateChanged();
-    }
-}
-
 bool WindowImpl::IsDialog() {
     return _isDialog;
 }

@@ -35,7 +35,6 @@ BEGIN_INTERFACE_MAP()
     NSObject <IRenderTarget> *renderTarget;
     AvnPoint lastPositionSet;
     NSString *_lastTitle;
-    IAvnMenu *_mainMenu;
 
     bool _shown;
     bool _inResize;
@@ -76,13 +75,13 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override;
 
-    virtual HRESULT Invalidate(AvnRect rect) override;
+    virtual HRESULT Invalidate(__attribute__((unused)) AvnRect rect) override;
 
     virtual HRESULT SetMainMenu(IAvnMenu *menu) override;
 
     virtual HRESULT BeginMoveDrag() override;
 
-    virtual HRESULT BeginResizeDrag(AvnWindowEdge edge) override;
+    virtual HRESULT BeginResizeDrag(__attribute__((unused)) AvnWindowEdge edge) override;
 
     virtual HRESULT GetPosition(AvnPoint *ret) override;
 
@@ -115,8 +114,6 @@ protected:
 
     void UpdateStyle();
 
-public:
-    virtual void OnResized();
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
