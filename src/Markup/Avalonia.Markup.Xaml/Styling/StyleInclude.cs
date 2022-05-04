@@ -60,7 +60,7 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
-        bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
+        bool IResourceNode.HasResources => Loaded?.HasResources ?? false;
 
         IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
@@ -86,9 +86,9 @@ namespace Avalonia.Markup.Xaml.Styling
 
         public bool TryGetResource(object key, out object? value)
         {
-            if (!_isLoading && Loaded is IResourceProvider p)
+            if (!_isLoading)
             {
-                return p.TryGetResource(key, out value);
+                return Loaded.TryGetResource(key, out value);
             }
 
             value = null;
