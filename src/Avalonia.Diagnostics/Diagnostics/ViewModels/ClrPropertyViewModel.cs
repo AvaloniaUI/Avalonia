@@ -76,7 +76,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
             catch (Exception e)
             {
-                value = e;
+                value = e.GetBaseException();
             }
 
             RaiseAndSetIfChanged(ref _value, value, nameof(Value));
