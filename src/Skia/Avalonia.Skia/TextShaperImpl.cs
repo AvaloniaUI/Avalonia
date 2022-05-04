@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -59,7 +58,7 @@ namespace Avalonia.Skia
 
                     var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                    var glyphCluster = (int)sourceInfo.Cluster;
+                    var glyphCluster = (int)(sourceInfo.Cluster);
 
                     var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
 
