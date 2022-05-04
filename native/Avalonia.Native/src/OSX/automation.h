@@ -1,5 +1,5 @@
 #import <Cocoa/Cocoa.h>
-#include "window.h"
+#import "window.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
