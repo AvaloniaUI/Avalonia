@@ -1,7 +1,7 @@
 #ifndef window_h
 #define window_h
 
-
+#import "avalonia-native.h"
 class WindowBaseImpl;
 
 @interface AvnView : NSView<NSTextInputClient, NSDraggingDestination>
@@ -40,33 +40,5 @@ class WindowBaseImpl;
 -(void) setIsExtended:(bool)value;
 -(bool) isDialog;
 @end
-
-struct IWindowStateChanged
-{
-    virtual void WindowStateChanged () = 0;
-    virtual void StartStateTransition () = 0;
-    virtual void EndStateTransition () = 0;
-    virtual SystemDecorations Decorations () = 0;
-    virtual AvnWindowState WindowState () = 0;
-};
-
-class ResizeScope
-{
-public:
-    ResizeScope(AvnView* _Nonnull view, AvnPlatformResizeReason reason)
-    {
-        _view = view;
-        _restore = [view getResizeReason];
-        [view setResizeReason:reason];
-    }
-    
-    ~ResizeScope()
-    {
-        [_view setResizeReason:_restore];
-    }
-private:
-    AvnView* _Nonnull _view;
-    AvnPlatformResizeReason _restore;
-};
 
 #endif /* window_h */

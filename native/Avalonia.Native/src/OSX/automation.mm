@@ -1,5 +1,6 @@
 #include "common.h"
 #import "automation.h"
+#import "window.h"
 #include "AvnString.h"
 #import "INSWindowHolder.h"
 

@@ -11,6 +11,7 @@
 #include "automation.h"
 #import "WindowBaseImpl.h"
 #import "cursor.h"
+#include "ResizeScope.h"
 
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
     _shown = false;

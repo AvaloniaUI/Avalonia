@@ -6,6 +6,7 @@
 #ifndef AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
 #define AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
 
+#import "rendertarget.h"
 #include "INSWindowHolder.h"
 
 class WindowBaseImpl : public virtual ComObject,
