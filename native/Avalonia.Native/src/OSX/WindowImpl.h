@@ -46,15 +46,15 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT SetParent (IAvnWindow* parent) override;
 
-    void StartStateTransition ();
+    void StartStateTransition () override ;
 
-    void EndStateTransition ();
+    void EndStateTransition () override ;
 
-    SystemDecorations Decorations ();
+    SystemDecorations Decorations () override ;
 
-    AvnWindowState WindowState ();
+    AvnWindowState WindowState () override ;
 
-    void WindowStateChanged ();
+    void WindowStateChanged () override ;
 
     bool UndecoratedIsMaximized ();
 
