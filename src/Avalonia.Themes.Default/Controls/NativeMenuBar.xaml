@@ -4,6 +4,7 @@
        Selector="NativeMenuBar">
   <Style.Resources>
     <local:InverseBooleanValueConverter x:Key="AvaloniaThemesDefaultNativeMenuBarInverseBooleanValueConverter" Default="True"/>
+    <local:IBitmapToImageConverter x:Key="AvaloniaThemesDefaultNativeMenuBarIBitmapToImageConverterr"/>
   </Style.Resources>
   <Setter Property="Template">
     <ControlTemplate>
@@ -18,6 +19,8 @@
             <Setter Property="Command" Value="{Binding Command}"/>
             <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
             <Setter Property="(NativeMenuBar.EnableMenuItemClickForwarding)" Value="True"/>
+            <!--NativeMenuItem is IBitmap and MenuItem is Image-->
+            <Setter Property="Icon" Value="{Binding Icon , Converter={StaticResource AvaloniaThemesDefaultNativeMenuBarIBitmapToImageConverterr}}"/>
           </Style>
         </Menu.Styles>
       </Menu>
