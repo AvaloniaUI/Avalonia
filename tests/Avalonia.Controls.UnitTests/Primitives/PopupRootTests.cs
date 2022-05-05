@@ -78,9 +78,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
                 
-                Assert.IsType<Panel>(templatedChild);
+                Assert.IsType<LayoutTransformControl>(templatedChild);
 
-                var visualLayerManager = templatedChild.GetVisualChildren().Skip(1).Single();
+                var panel = templatedChild.GetVisualChildren().Single();
+
+                Assert.IsType<Panel>(panel);
+
+                var visualLayerManager = panel.GetVisualChildren().Skip(1).Single();
 
                 Assert.IsType<VisualLayerManager>(visualLayerManager);
 
