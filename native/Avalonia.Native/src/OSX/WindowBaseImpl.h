@@ -9,6 +9,8 @@
 #import "rendertarget.h"
 #include "INSWindowHolder.h"
 
+@class AutoFitContentView;
+
 class WindowBaseImpl : public virtual ComObject,
                        public virtual IAvnWindowBase,
                        public INSWindowHolder {

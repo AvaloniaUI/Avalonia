@@ -3,6 +3,7 @@
 #import "window.h"
 #include "AvnString.h"
 #import "INSWindowHolder.h"
+#import "AvnView.h"
 
 @interface AvnAccessibilityElement (Events)
 - (void) raiseChildrenChanged;
