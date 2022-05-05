@@ -471,11 +471,11 @@ namespace Avalonia.Layout
             gridState.ClearElementOnDataSourceChange(context, args);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == OrientationProperty)
             {
-                var orientation = change.NewValue.GetValueOrDefault<Orientation>();
+                var orientation = change.GetNewValue<Orientation>();
 
                 //Note: For UniformGridLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
                 //i.e. the properties are the inverse of each other.
@@ -484,31 +484,31 @@ namespace Avalonia.Layout
             }
             else if (change.Property == MinColumnSpacingProperty)
             {
-                _minColumnSpacing = change.NewValue.GetValueOrDefault<double>();
+                _minColumnSpacing = change.GetNewValue<double>();
             }
             else if (change.Property == MinRowSpacingProperty)
             {
-                _minRowSpacing = change.NewValue.GetValueOrDefault<double>();
+                _minRowSpacing = change.GetNewValue<double>();
             }
             else if (change.Property == ItemsJustificationProperty)
             {
-                _itemsJustification = change.NewValue.GetValueOrDefault<UniformGridLayoutItemsJustification>();
+                _itemsJustification = change.GetNewValue<UniformGridLayoutItemsJustification>();
             }
             else if (change.Property == ItemsStretchProperty)
             {
-                _itemsStretch = change.NewValue.GetValueOrDefault<UniformGridLayoutItemsStretch>();
+                _itemsStretch = change.GetNewValue<UniformGridLayoutItemsStretch>();
             }
             else if (change.Property == MinItemWidthProperty)
             {
-                _minItemWidth = change.NewValue.GetValueOrDefault<double>();
+                _minItemWidth = change.GetNewValue<double>();
             }
             else if (change.Property == MinItemHeightProperty)
             {
-                _minItemHeight = change.NewValue.GetValueOrDefault<double>();
+                _minItemHeight = change.GetNewValue<double>();
             }
             else if (change.Property == MaximumRowsOrColumnsProperty)
             {
-                _maximumRowsOrColumns = change.NewValue.GetValueOrDefault<int>();
+                _maximumRowsOrColumns = change.GetNewValue<int>();
             }
 
             InvalidateLayout();

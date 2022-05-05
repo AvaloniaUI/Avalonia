@@ -15,8 +15,10 @@ namespace ControlCatalog.Pages
         private readonly ItemsRepeaterPageViewModel _viewModel;
         private ItemsRepeater _repeater;
         private ScrollViewer _scroller;
+        private int _selectedIndex;
         private Button _scrollToLast;
         private Button _scrollToRandom;
+        private Button _scrollToSelected;
         private Random _random = new Random(0);
 
         public ItemsRepeaterPage()
@@ -26,10 +28,12 @@ namespace ControlCatalog.Pages
             _scroller = this.FindControl<ScrollViewer>("scroller");
             _scrollToLast = this.FindControl<Button>("scrollToLast");
             _scrollToRandom = this.FindControl<Button>("scrollToRandom");
+            _scrollToSelected = this.FindControl<Button>("scrollToSelected");
             _repeater.PointerPressed += RepeaterClick;
             _repeater.KeyDown += RepeaterOnKeyDown;
             _scrollToLast.Click += scrollToLast_Click;
             _scrollToRandom.Click += scrollToRandom_Click;
+            _scrollToSelected.Click += scrollToSelected_Click;
             DataContext = _viewModel = new ItemsRepeaterPageViewModel();
         }
 
@@ -121,6 +125,7 @@ namespace ControlCatalog.Pages
         {
             var item = (e.Source as TextBlock)?.DataContext as ItemsRepeaterPageViewModel.Item;
             _viewModel.SelectedItem = item;
+            _selectedIndex = _viewModel.Items.IndexOf(item);
         }
 
         private void RepeaterOnKeyDown(object sender, KeyEventArgs e)
@@ -139,6 +144,11 @@ namespace ControlCatalog.Pages
         private void scrollToRandom_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ScrollTo(_random.Next(_viewModel.Items.Count - 1));
+        }
+
+        private void scrollToSelected_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            ScrollTo(_selectedIndex);
         }
     }
 }

@@ -643,17 +643,27 @@ namespace Avalonia.Layout
         {
             if (IsVisible)
             {
+                var useLayoutRounding = UseLayoutRounding;
+                var scale = LayoutHelper.GetLayoutScale(this);
+
                 var margin = Margin;
                 var originX = finalRect.X + margin.Left;
                 var originY = finalRect.Y + margin.Top;
+
+                // Margin has to be treated separately because the layout rounding function is not linear
+                // f(a + b) != f(a) + f(b)
+                // If the margin isn't pre-rounded some sizes will be offset by 1 pixel in certain scales.
+                if (useLayoutRounding)
+                {
+                    margin = LayoutHelper.RoundLayoutThickness(margin, scale, scale);
+                }
+
                 var availableSizeMinusMargins = new Size(
                     Math.Max(0, finalRect.Width - margin.Left - margin.Right),
                     Math.Max(0, finalRect.Height - margin.Top - margin.Bottom));
                 var horizontalAlignment = HorizontalAlignment;
                 var verticalAlignment = VerticalAlignment;
                 var size = availableSizeMinusMargins;
-                var scale = LayoutHelper.GetLayoutScale(this);
-                var useLayoutRounding = UseLayoutRounding;
 
                 if (horizontalAlignment != HorizontalAlignment.Stretch)
                 {
