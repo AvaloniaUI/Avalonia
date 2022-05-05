@@ -7,14 +7,6 @@
 
 class WindowBaseImpl;
 
-@interface AutoFitContentView : NSView
--(AutoFitContentView* _Nonnull) initWithContent: (NSView* _Nonnull) content;
--(void) ShowTitleBar: (bool) show;
--(void) SetTitleBarHeightHint: (double) height;
-
--(void) ShowBlur: (bool) show;
-@end
-
 @interface AvnWindow : NSWindow <NSWindowDelegate>
 -(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(void) setCanBecomeKeyAndMain;

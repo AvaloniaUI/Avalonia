@@ -13,6 +13,7 @@
 #import "WindowBaseImpl.h"
 #import "cursor.h"
 #include "ResizeScope.h"
+#import "AutoFitContentView.h"
 
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
     _shown = false;

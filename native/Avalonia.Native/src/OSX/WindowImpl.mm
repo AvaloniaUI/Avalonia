@@ -5,10 +5,9 @@
 
 #import <AppKit/AppKit.h>
 #import "window.h"
+#import "AutoFitContentView.h"
 #import "AvnView.h"
 #include "automation.h"
-#include "menu.h"
-#import "WindowImpl.h"
 
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
