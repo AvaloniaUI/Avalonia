@@ -9,7 +9,6 @@
 #import "AvnView.h"
 #include "automation.h"
 
-
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;

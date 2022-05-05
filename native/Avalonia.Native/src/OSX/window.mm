@@ -1,15 +1,11 @@
 #import <AppKit/AppKit.h>
 #include "common.h"
 #import "window.h"
-#include "KeyTransform.h"
 #include "menu.h"
-#include "rendertarget.h"
 #include "automation.h"
 #import "WindowBaseImpl.h"
 #include "WindowImpl.h"
 #include "AvnView.h"
-#include "AutoFitContentView.h"
-
 
 @implementation AvnWindow
 {
