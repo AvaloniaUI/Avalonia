@@ -5,6 +5,7 @@
 
 #import <AppKit/AppKit.h>
 #include "ResizeScope.h"
+#import "AvnView.h"
 
 ResizeScope::ResizeScope(AvnView *view, AvnPlatformResizeReason reason) {
     _view = view;

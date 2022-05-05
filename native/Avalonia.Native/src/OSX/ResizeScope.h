@@ -9,6 +9,8 @@
 #include "window.h"
 #include "avalonia-native.h"
 
+@class AvnView;
+
 class ResizeScope
 {
 public:

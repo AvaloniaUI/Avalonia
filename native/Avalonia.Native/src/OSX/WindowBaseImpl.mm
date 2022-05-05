@@ -6,11 +6,11 @@
 #import <AppKit/AppKit.h>
 #include "common.h"
 #import "window.h"
+#import "AvnView.h"
 #include "menu.h"
-#include "rendertarget.h"
-#import "WindowBaseImpl.h"
 #import "cursor.h"
 #include "ResizeScope.h"
+#import "AutoFitContentView.h"
 
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
     _shown = false;

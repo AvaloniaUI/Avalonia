@@ -5,9 +5,8 @@
 
 #import <AppKit/AppKit.h>
 #import "window.h"
-#include "menu.h"
-#import "WindowImpl.h"
-
+#import "AutoFitContentView.h"
+#import "AvnView.h"
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
     _isClientAreaExtended = false;

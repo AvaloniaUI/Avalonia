@@ -6,6 +6,8 @@
 #ifndef AVALONIA_NATIVE_OSX_INSWINDOWHOLDER_H
 #define AVALONIA_NATIVE_OSX_INSWINDOWHOLDER_H
 
+@class AvnView;
+
 struct INSWindowHolder
 {
     virtual AvnWindow* _Nonnull GetNSWindow () = 0;
