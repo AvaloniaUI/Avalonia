@@ -923,10 +923,6 @@
         
         [NSApp setMenu:nativeAppMenu->GetNative()];
     }
-    else
-    {
-        [NSApp setMenu:nullptr];
-    }
 }
 
 -(void) applyMenu:(AvnMenu *)menu
