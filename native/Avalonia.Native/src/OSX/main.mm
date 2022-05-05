@@ -342,7 +342,7 @@ public:
         
         @autoreleasepool
         {
-            ::SetAppMenu(s_appTitle, appMenu);
+            ::SetAppMenu(appMenu);
             return S_OK;
         }
     }
@@ -418,7 +418,3 @@ AvnPoint ConvertPointY (AvnPoint p)
     return p;
 }
 
-CGFloat PrimaryDisplayHeight()
-{
-  return NSMaxY([[[NSScreen screens] firstObject] frame]);
-}
