@@ -15,6 +15,8 @@
 		183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391CD090AA776E7E841AC9 /* WindowImpl.h */; };
 		18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 1839171D898F9BFC1373631A /* ResizeScope.h */; };
 		18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */ = {isa = PBXBuildFile; fileRef = 183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */; };
+		18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839132D0E2454D911F1D1F9 /* AvnView.mm */; };
+		18391ED5F611FF62C45F196D /* AvnView.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391D1669284AD2EC9E866A /* AvnView.h */; };
 		1A002B9E232135EE00021753 /* app.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A002B9D232135EE00021753 /* app.mm */; };
 		1A1852DC23E05814008F0DED /* deadlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A1852DB23E05814008F0DED /* deadlock.mm */; };
 		1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */; };
@@ -43,6 +45,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1839132D0E2454D911F1D1F9 /* AvnView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnView.mm; sourceTree = "<group>"; };
 		183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IWindowStateChanged.h; sourceTree = "<group>"; };
 		183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowBaseImpl.h; sourceTree = "<group>"; };
 		18391676ECF0E983F4964357 /* WindowBaseImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WindowBaseImpl.mm; sourceTree = "<group>"; };
@@ -50,6 +53,7 @@
 		183919BF108EB72A029F7671 /* WindowImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WindowImpl.mm; sourceTree = "<group>"; };
 		18391BBB7782C296D424071F /* INSWindowHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INSWindowHolder.h; sourceTree = "<group>"; };
 		18391CD090AA776E7E841AC9 /* WindowImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowImpl.h; sourceTree = "<group>"; };
+		18391D1669284AD2EC9E866A /* AvnView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvnView.h; sourceTree = "<group>"; };
 		18391E45702740FE9DD69695 /* ResizeScope.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ResizeScope.mm; sourceTree = "<group>"; };
 		1A002B9D232135EE00021753 /* app.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = app.mm; sourceTree = "<group>"; };
 		1A1852DB23E05814008F0DED /* deadlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = deadlock.mm; sourceTree = "<group>"; };
@@ -154,6 +158,8 @@
 				183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */,
 				18391E45702740FE9DD69695 /* ResizeScope.mm */,
 				1839171D898F9BFC1373631A /* ResizeScope.h */,
+				1839132D0E2454D911F1D1F9 /* AvnView.mm */,
+				18391D1669284AD2EC9E866A /* AvnView.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -179,6 +185,7 @@
 				183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */,
 				18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */,
 				18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */,
+				18391ED5F611FF62C45F196D /* AvnView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,6 +268,7 @@
 				1839179A55FC1421BEE83330 /* WindowBaseImpl.mm in Sources */,
 				1839125F057B0A4EB1760058 /* WindowImpl.mm in Sources */,
 				18391068E48EF96E3DB5FDAB /* ResizeScope.mm in Sources */,
+				18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

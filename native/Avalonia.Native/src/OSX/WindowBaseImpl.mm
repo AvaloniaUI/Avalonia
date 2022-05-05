@@ -6,6 +6,7 @@
 #import <AppKit/AppKit.h>
 #include "common.h"
 #import "window.h"
+#import "AvnView.h"
 #include "menu.h"
 #include "rendertarget.h"
 #include "automation.h"

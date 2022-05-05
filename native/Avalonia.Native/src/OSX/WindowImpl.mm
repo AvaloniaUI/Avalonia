@@ -5,6 +5,7 @@
 
 #import <AppKit/AppKit.h>
 #import "window.h"
+#import "AvnView.h"
 #include "automation.h"
 #include "menu.h"
 #import "WindowImpl.h"
