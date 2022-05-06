@@ -521,10 +521,12 @@ void WindowBaseImpl::UpdateStyle() {
 }
 
 void WindowBaseImpl::InitialiseNSWindow() {
-    Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{ 0, 0, lastSize } styleMask:GetStyle()];
-    [Window setContentView:StandardContainer];
-    [Window setStyleMask:NSWindowStyleMaskBorderless];
-    [Window setBackingType:NSBackingStoreBuffered];
+    if(Window == nullptr) {
+        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
+        [Window setContentView:StandardContainer];
+        [Window setStyleMask:NSWindowStyleMaskBorderless];
+        [Window setBackingType:NSBackingStoreBuffered];
 
-    [Window setOpaque:false];
+        [Window setOpaque:false];
+    }
 }
