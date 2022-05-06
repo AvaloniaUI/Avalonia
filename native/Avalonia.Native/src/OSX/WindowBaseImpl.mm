@@ -527,6 +527,10 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
 
+        [Window setContentSize: lastSize];
+        [Window setContentMinSize:lastMinSize];
+        [Window setContentMaxSize:lastMaxSize];
+
         [Window setOpaque:false];
     }
 }
