@@ -1,7 +1,9 @@
 #include "common.h"
-#include "automation.h"
+#import "automation.h"
+#import "window.h"
 #include "AvnString.h"
-#include "window.h"
+#import "INSWindowHolder.h"
+#import "AvnView.h"
 
 @interface AvnAccessibilityElement (Events)
 - (void) raiseChildrenChanged;

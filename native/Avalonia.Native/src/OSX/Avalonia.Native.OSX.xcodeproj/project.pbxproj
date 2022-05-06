@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		18391068E48EF96E3DB5FDAB /* ResizeScope.mm in Sources */ = {isa = PBXBuildFile; fileRef = 18391E45702740FE9DD69695 /* ResizeScope.mm */; };
+		1839125F057B0A4EB1760058 /* WindowImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 183919BF108EB72A029F7671 /* WindowImpl.mm */; };
+		183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */; };
+		1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391BBB7782C296D424071F /* INSWindowHolder.h */; };
+		1839179A55FC1421BEE83330 /* WindowBaseImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 18391676ECF0E983F4964357 /* WindowBaseImpl.mm */; };
+		183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391CD090AA776E7E841AC9 /* WindowImpl.h */; };
+		18391AA7E0BBA74D184C5734 /* AutoFitContentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839166350F32661F3ABD70F /* AutoFitContentView.mm */; };
+		18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 1839171D898F9BFC1373631A /* ResizeScope.h */; };
+		18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */ = {isa = PBXBuildFile; fileRef = 183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */; };
+		18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839132D0E2454D911F1D1F9 /* AvnView.mm */; };
+		18391E1381E2D5BFD60265A9 /* AutoFitContentView.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */; };
+		18391ED5F611FF62C45F196D /* AvnView.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391D1669284AD2EC9E866A /* AvnView.h */; };
 		1A002B9E232135EE00021753 /* app.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A002B9D232135EE00021753 /* app.mm */; };
 		1A1852DC23E05814008F0DED /* deadlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A1852DB23E05814008F0DED /* deadlock.mm */; };
 		1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */; };
@@ -35,6 +47,18 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1839132D0E2454D911F1D1F9 /* AvnView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnView.mm; sourceTree = "<group>"; };
+		183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IWindowStateChanged.h; sourceTree = "<group>"; };
+		183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowBaseImpl.h; sourceTree = "<group>"; };
+		18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutoFitContentView.h; sourceTree = "<group>"; };
+		1839166350F32661F3ABD70F /* AutoFitContentView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AutoFitContentView.mm; sourceTree = "<group>"; };
+		18391676ECF0E983F4964357 /* WindowBaseImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WindowBaseImpl.mm; sourceTree = "<group>"; };
+		1839171D898F9BFC1373631A /* ResizeScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResizeScope.h; sourceTree = "<group>"; };
+		183919BF108EB72A029F7671 /* WindowImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WindowImpl.mm; sourceTree = "<group>"; };
+		18391BBB7782C296D424071F /* INSWindowHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INSWindowHolder.h; sourceTree = "<group>"; };
+		18391CD090AA776E7E841AC9 /* WindowImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowImpl.h; sourceTree = "<group>"; };
+		18391D1669284AD2EC9E866A /* AvnView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvnView.h; sourceTree = "<group>"; };
+		18391E45702740FE9DD69695 /* ResizeScope.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ResizeScope.mm; sourceTree = "<group>"; };
 		1A002B9D232135EE00021753 /* app.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = app.mm; sourceTree = "<group>"; };
 		1A1852DB23E05814008F0DED /* deadlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = deadlock.mm; sourceTree = "<group>"; };
 		1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = rendertarget.mm; sourceTree = "<group>"; };
@@ -130,6 +154,18 @@
 				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
 				AB7A61F02147C815003C5833 /* Products */,
 				AB661C1C2148230E00291242 /* Frameworks */,
+				18391676ECF0E983F4964357 /* WindowBaseImpl.mm */,
+				183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */,
+				18391BBB7782C296D424071F /* INSWindowHolder.h */,
+				183919BF108EB72A029F7671 /* WindowImpl.mm */,
+				18391CD090AA776E7E841AC9 /* WindowImpl.h */,
+				183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */,
+				18391E45702740FE9DD69695 /* ResizeScope.mm */,
+				1839171D898F9BFC1373631A /* ResizeScope.h */,
+				1839132D0E2454D911F1D1F9 /* AvnView.mm */,
+				18391D1669284AD2EC9E866A /* AvnView.h */,
+				1839166350F32661F3ABD70F /* AutoFitContentView.mm */,
+				18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -150,6 +186,13 @@
 			files = (
 				37155CE4233C00EB0034DCE9 /* menu.h in Headers */,
 				BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */,
+				183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */,
+				1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */,
+				183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */,
+				18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */,
+				18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */,
+				18391ED5F611FF62C45F196D /* AvnView.h in Headers */,
+				18391E1381E2D5BFD60265A9 /* AutoFitContentView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,6 +272,11 @@
 				AB00E4F72147CA920032A60A /* main.mm in Sources */,
 				37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */,
 				AB661C202148286E00291242 /* window.mm in Sources */,
+				1839179A55FC1421BEE83330 /* WindowBaseImpl.mm in Sources */,
+				1839125F057B0A4EB1760058 /* WindowImpl.mm in Sources */,
+				18391068E48EF96E3DB5FDAB /* ResizeScope.mm in Sources */,
+				18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */,
+				18391AA7E0BBA74D184C5734 /* AutoFitContentView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
