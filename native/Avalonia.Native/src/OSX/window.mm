@@ -145,6 +145,9 @@
 
 -(AvnWindow*)  initWithParent: (WindowBaseImpl*) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 {
+    // https://jameshfisher.com/2020/07/10/why-is-the-contentrect-of-my-nswindow-ignored/
+    // create nswindow with specific contentRect, otherwise we wont be able to resize the window
+    // until several ms after the window is physically on the screen.
     self = [super initWithContentRect:contentRect styleMask: styleMask backing:NSBackingStoreBuffered defer:false];
     
     [self setReleasedWhenClosed:false];
