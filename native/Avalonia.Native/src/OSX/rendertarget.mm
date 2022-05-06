@@ -1,14 +1,10 @@
 #include "common.h"
 #include "rendertarget.h"
-#import <IOSurface/IOSurface.h>
 #import <IOSurface/IOSurfaceObjC.h>
 #import <QuartzCore/QuartzCore.h>
 
-#include <OpenGL/CGLIOSurface.h>
-#include <OpenGL/OpenGL.h>
 #include <OpenGL/glext.h>
 #include <OpenGL/gl3.h>
-#include <OpenGL/gl3ext.h>
 
 @interface IOSurfaceHolder : NSObject
 @end
