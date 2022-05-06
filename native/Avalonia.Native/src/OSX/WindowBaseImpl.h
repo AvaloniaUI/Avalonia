@@ -122,6 +122,7 @@ protected:
     id<AvnWindowProtocol> GetWindowProtocol ();
 
 private:
+    void CreateNSWindow (bool isDialog);
     void InitialiseNSWindow ();
 };
 

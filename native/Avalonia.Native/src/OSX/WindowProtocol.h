@@ -10,7 +10,6 @@
 @class AvnMenu;
 
 @protocol AvnWindowProtocol
--(void) setCanBecomeKeyAndMain;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;

@@ -13,6 +13,7 @@
 #include "AutoFitContentView.h"
 #import "WindowProtocol.h"
 #import "WindowInterfaces.h"
+#include "WindowBaseImpl.h"
 
 
 WindowBaseImpl::~WindowBaseImpl() {
@@ -31,6 +32,9 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
 
     lastPositionSet.X = 100;
     lastPositionSet.Y = 100;
+    lastSize = NSSize { 100, 100 };
+    lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
+    lastMinSize = NSSize { 0, 0 };
     _lastTitle = @"";
 
     Window = nullptr;
@@ -85,16 +89,13 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
+        CreateNSWindow(isDialog);
         InitialiseNSWindow();
 
         SetPosition(lastPositionSet);
         UpdateStyle();
 
         [Window setTitle:_lastTitle];
-
-        if(!isDialog) {
-            [GetWindowProtocol() setCanBecomeKeyAndMain];
-        }
 
         if (ShouldTakeFocusOnShow() && activate) {
             [Window orderFront:Window];
@@ -524,9 +525,21 @@ void WindowBaseImpl::UpdateStyle() {
     [Window setStyleMask:GetStyle()];
 }
 
-void WindowBaseImpl::InitialiseNSWindow() {
+void WindowBaseImpl::CreateNSWindow(bool isDialog) {
     if(Window == nullptr) {
-        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
+        if(isDialog)
+        {
+            Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
+        }
+        else
+        {
+            Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
+        }
+    }
+}
+
+void WindowBaseImpl::InitialiseNSWindow() {
+    if(Window != nullptr) {
         [Window setContentView:StandardContainer];
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
@@ -536,9 +549,6 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
-
-        [Window setContentMinSize:lastMinSize];
-        [Window setContentMaxSize:lastMaxSize];
 
         if (lastMenu != nullptr) {
             [GetWindowProtocol() applyMenu:lastMenu];

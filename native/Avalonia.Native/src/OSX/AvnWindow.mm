@@ -29,7 +29,6 @@
 @implementation CLASS_NAME
 {
     ComPtr<WindowBaseImpl> _parent;
-    bool _canBecomeKeyAndMain;
     bool _closed;
     bool _isEnabled;
     bool _isExtended;
@@ -157,11 +156,6 @@
     _menu = menu;
 }
 
--(void) setCanBecomeKeyAndMain
-{
-    _canBecomeKeyAndMain = true;
-}
-
 -(CLASS_NAME*)  initWithParent: (WindowBaseImpl*) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 {
     // https://jameshfisher.com/2020/07/10/why-is-the-contentrect-of-my-nswindow-ignored/
@@ -215,28 +209,27 @@
 
 -(BOOL)canBecomeKeyWindow
 {
-    if (_canBecomeKeyAndMain)
+    // If the window has a child window being shown as a dialog then don't allow it to become the key window.
+    for(NSWindow* uch in [self childWindows])
     {
-        // If the window has a child window being shown as a dialog then don't allow it to become the key window.
-        for(NSWindow* uch in [self childWindows])
-        {
-            // TODO protocol
-            auto ch = objc_cast<CLASS_NAME>(uch);
-            if(ch == nil)
-                continue;
-            if (ch.isDialog)
-                return false;
-        }
-
-        return true;
+        // TODO protocol
+        auto ch = objc_cast<CLASS_NAME>(uch);
+        if(ch == nil)
+            continue;
+        if (ch.isDialog)
+            return false;
     }
 
-    return false;
+    return true;
 }
 
 -(BOOL)canBecomeMainWindow
 {
-    return _canBecomeKeyAndMain;
+#ifdef IS_NSPANEL
+    return false;
+#else
+    return true;
+#endif
 }
 
 -(bool)shouldTryToHandleEvents
