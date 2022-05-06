@@ -905,6 +905,15 @@ namespace Avalonia.Controls
             var clientSize = ClientSize;
             var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
+            
+            if (MaxWidth > 0)
+            {
+                maxAutoSize = maxAutoSize.WithWidth(MaxWidth);
+            }
+            if (MaxHeight > 0)
+            {
+                maxAutoSize = maxAutoSize.WithHeight(MaxHeight);
+            }
 
             if (sizeToContent.HasAllFlags(SizeToContent.Width))
             {
