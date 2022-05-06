@@ -255,7 +255,8 @@
 
 -(void) restoreParentWindow;
 {
-    auto parent = static_cast<id <AvnWindowProtocol>>([self parentWindow]);
+    auto parent = [self parentWindow];
+
     if(parent != nil)
     {
         [parent removeChildWindow:self];
