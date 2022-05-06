@@ -143,9 +143,10 @@
     _canBecomeKeyAndMain = true;
 }
 
--(AvnWindow*)  initWithParent: (WindowBaseImpl*) parent
+-(AvnWindow*)  initWithParent: (WindowBaseImpl*) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 {
-    self = [super init];
+    self = [super initWithContentRect:contentRect styleMask: styleMask backing:NSBackingStoreBuffered defer:false];
+    
     [self setReleasedWhenClosed:false];
     _parent = parent;
     [self setDelegate:self];
@@ -155,6 +156,7 @@
     [self backingScaleFactor];
     [self setOpaque:NO];
     [self setBackgroundColor: [NSColor clearColor]];
+
     _isExtended = false;
     return self;
 }

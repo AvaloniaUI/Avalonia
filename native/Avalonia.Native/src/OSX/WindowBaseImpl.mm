@@ -12,6 +12,13 @@
 #import "cursor.h"
 #include "ResizeScope.h"
 #import "AutoFitContentView.h"
+#include "WindowBaseImpl.h"
+
+
+WindowBaseImpl::~WindowBaseImpl() {
+    View = nullptr;
+    Window = nullptr;
+}
 
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
     _shown = false;
@@ -22,17 +29,11 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     View = [[AvnView alloc] initWithParent:this];
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
-    Window = [[AvnWindow alloc] initWithParent:this];
-    [Window setContentView:StandardContainer];
-
     lastPositionSet.X = 100;
     lastPositionSet.Y = 100;
     _lastTitle = @"";
 
-    [Window setStyleMask:NSWindowStyleMaskBorderless];
-    [Window setBackingType:NSBackingStoreBuffered];
-
-    [Window setOpaque:false];
+    Window = nullptr;
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -83,6 +84,8 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
+        InitialiseNSWindow();
+
         SetPosition(lastPositionSet);
         UpdateStyle();
 
@@ -96,6 +99,10 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         } else {
             [Window orderFront:Window];
         }
+
+        [Window setContentMinSize:lastMinSize];
+        [Window setContentMaxSize:lastMaxSize];
+        [Window setContentSize: lastSize];
 
         _shown = true;
 
@@ -225,8 +232,13 @@ HRESULT WindowBaseImpl::SetMinMaxSize(AvnSize minSize, AvnSize maxSize) {
     START_COM_CALL;
 
     @autoreleasepool {
-        [Window setMinSize:ToNSSize(minSize)];
-        [Window setMaxSize:ToNSSize(maxSize)];
+        lastMinSize = ToNSSize(minSize);
+        lastMaxSize = ToNSSize(maxSize);
+
+        if(Window != nullptr) {
+            [Window setContentMinSize:lastMinSize];
+            [Window setContentMaxSize:lastMaxSize];
+        }
 
         return S_OK;
     }
@@ -243,8 +255,8 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
     auto resizeBlock = ResizeScope(View, reason);
 
     @autoreleasepool {
-        auto maxSize = [Window maxSize];
-        auto minSize = [Window minSize];
+        auto maxSize = lastMaxSize;
+        auto minSize = lastMinSize;
 
         if (x < minSize.width) {
             x = minSize.width;
@@ -267,8 +279,12 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
                 BaseEvents->Resized(AvnSize{x, y}, reason);
             }
 
-            [Window setContentSize:NSSize{x, y}];
-            [Window invalidateShadow];
+            lastSize = NSSize {x, y};
+
+            if(Window != nullptr) {
+                [Window setContentSize:lastSize];
+                [Window invalidateShadow];
+            }
         }
         @finally {
             _inResize = false;
@@ -502,4 +518,13 @@ NSWindowStyleMask WindowBaseImpl::GetStyle() {
 
 void WindowBaseImpl::UpdateStyle() {
     [Window setStyleMask:GetStyle()];
+}
+
+void WindowBaseImpl::InitialiseNSWindow() {
+    Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{ 0, 0, lastSize } styleMask:GetStyle()];
+    [Window setContentView:StandardContainer];
+    [Window setStyleMask:NSWindowStyleMaskBorderless];
+    [Window setBackingType:NSBackingStoreBuffered];
+
+    [Window setOpaque:false];
 }

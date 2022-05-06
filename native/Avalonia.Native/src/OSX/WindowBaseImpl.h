@@ -24,10 +24,7 @@ BEGIN_INTERFACE_MAP()
         INTERFACE_MAP_ENTRY(IAvnWindowBase, IID_IAvnWindowBase)
     END_INTERFACE_MAP()
 
-    virtual ~WindowBaseImpl() {
-        View = NULL;
-        Window = NULL;
-    }
+    virtual ~WindowBaseImpl();
 
     AutoFitContentView *StandardContainer;
     AvnView *View;
@@ -36,6 +33,9 @@ BEGIN_INTERFACE_MAP()
     ComPtr<IAvnGlContext> _glContext;
     NSObject <IRenderTarget> *renderTarget;
     AvnPoint lastPositionSet;
+    NSSize lastSize;
+    NSSize lastMinSize;
+    NSSize lastMaxSize;
     NSString *_lastTitle;
 
     bool _shown;
@@ -115,6 +115,9 @@ protected:
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
+
+private:
+    void InitialiseNSWindow ();
 
 };
 
