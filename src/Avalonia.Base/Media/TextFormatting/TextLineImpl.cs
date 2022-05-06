@@ -407,6 +407,7 @@ namespace Avalonia.Media.TextFormatting
             var currentPosition = FirstTextSourceIndex;
             var currentRect = Rect.Empty;
             var startX = Start;
+            var runStart = startX;
 
             //A portion of the line is covered.
             for (var index = 0; index < TextRuns.Count; index++)
@@ -431,7 +432,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         case ShapedTextCharacters when currentRun is ShapedTextCharacters:
                             {
-                                if (nextRun.Text.Start < currentRun.Text.Start && firstTextSourceCharacterIndex + textLength < currentRun.Text.End)
+                                if (nextRun.Text.Start < currentRun.Text.Start && firstTextSourceCharacterIndex + textLength < currentRun.Text.End && _flowDirection == FlowDirection.LeftToRight)
                                 {
                                     goto skip;
                                 }
@@ -480,7 +481,7 @@ namespace Avalonia.Media.TextFormatting
                     case ShapedTextCharacters shapedRun:
                         {
                             endOffset = shapedRun.GlyphRun.GetDistanceFromCharacterHit(
-                                shapedRun.ShapedBuffer.IsLeftToRight ?
+                               shapedRun.ShapedBuffer.IsLeftToRight ?
                                     new CharacterHit(firstTextSourceCharacterIndex + textLength) :
                                     new CharacterHit(firstTextSourceCharacterIndex));
 
@@ -493,7 +494,7 @@ namespace Avalonia.Media.TextFormatting
 
                             startX += startOffset;
 
-                            var characterHit = shapedRun.GlyphRun.IsLeftToRight ?
+                            var characterHit = _flowDirection == FlowDirection.LeftToRight ?
                                 shapedRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _) :
                                 shapedRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
 
@@ -580,6 +581,11 @@ namespace Avalonia.Media.TextFormatting
                     {
                         break;
                     }
+
+                    if (_flowDirection == FlowDirection.RightToLeft)
+                    {
+                        endX += currentRun.Size.Width - endOffset;
+                    }
                 }
                 else
                 {
@@ -591,8 +597,9 @@ namespace Avalonia.Media.TextFormatting
                     endX += currentRun.Size.Width - endOffset;
                 }
 
-                lastDirection = currentDirection;
                 startX = endX;
+                lastDirection = currentDirection;
+                runStart += currentRun.Size.Width;
             }
 
             return result;

@@ -16,7 +16,7 @@ namespace Avalonia.Media.TextFormatting
         {
             Typeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
-            BidLevel = bidiLevel;
+            BidiLevel = bidiLevel;
             Culture = culture;
             IncrementalTabWidth = incrementalTabWidth;
         }
@@ -33,7 +33,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Get the bidi level of the text.
         /// </summary>
-        public sbyte BidLevel { get; }
+        public sbyte BidiLevel { get; }
 
         /// <summary>
         /// Get the culture.

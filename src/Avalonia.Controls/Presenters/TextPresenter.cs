@@ -515,11 +515,6 @@ namespace Avalonia.Controls.Presenters
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (string.IsNullOrEmpty(Text))
-            {
-                return new Size();
-            }
-
             _constraint = availableSize;
 
             _textLayout = null;
