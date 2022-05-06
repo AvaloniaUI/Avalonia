@@ -34,6 +34,7 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     _lastTitle = @"";
 
     Window = nullptr;
+    lastMenu = nullptr;
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -90,6 +91,10 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         UpdateStyle();
 
         [Window setTitle:_lastTitle];
+
+        if(!isDialog) {
+            [GetWindowProtocol() setCanBecomeKeyAndMain];
+        }
 
         if (ShouldTakeFocusOnShow() && activate) {
             [Window orderFront:Window];
@@ -306,12 +311,14 @@ HRESULT WindowBaseImpl::SetMainMenu(IAvnMenu *menu) {
 
     auto nativeMenu = dynamic_cast<AvnAppMenu *>(menu);
 
-    auto nsmenu = nativeMenu->GetNative();
+    lastMenu = nativeMenu->GetNative();
 
-    [GetWindowProtocol() applyMenu:nsmenu];
+    if(Window != nullptr) {
+        [GetWindowProtocol() applyMenu:lastMenu];
 
-    if ([Window isKeyWindow]) {
-        [GetWindowProtocol() showWindowMenuWithAppMenu];
+        if ([Window isKeyWindow]) {
+            [GetWindowProtocol() showWindowMenuWithAppMenu];
+        }
     }
 
     return S_OK;
@@ -524,17 +531,30 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
 
-        [Window setContentSize: lastSize];
+        [Window setContentSize:lastSize];
         [Window setContentMinSize:lastMinSize];
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
 
-        [Window setContentMinSize: lastMinSize];
-        [Window setContentMaxSize: lastMaxSize];
+        [Window setContentMinSize:lastMinSize];
+        [Window setContentMaxSize:lastMaxSize];
+
+        if (lastMenu != nullptr) {
+            [GetWindowProtocol() applyMenu:lastMenu];
+
+            if ([Window isKeyWindow]) {
+                [GetWindowProtocol() showWindowMenuWithAppMenu];
+            }
+        }
     }
 }
 
 id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
-    return static_cast<id <AvnWindowProtocol>>(Window);
+    id instance;
+    if ([Window conformsToProtocol:@protocol(AvnWindowProtocol)]) {
+        instance = Window;
+    }
+
+    return instance;
 }

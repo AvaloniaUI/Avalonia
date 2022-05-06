@@ -37,6 +37,7 @@ BEGIN_INTERFACE_MAP()
     NSSize lastSize;
     NSSize lastMinSize;
     NSSize lastMaxSize;
+    AvnMenu* lastMenu;
     NSString *_lastTitle;
 
     bool _shown;
