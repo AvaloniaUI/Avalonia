@@ -561,12 +561,12 @@ void WindowBaseImpl::InitialiseNSWindow() {
 }
 
 id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
-    id instance;
-    if ([Window conformsToProtocol:@protocol(AvnWindowProtocol)]) {
-        instance = Window;
+    if(Window == nullptr)
+    {
+        return nullptr;
     }
 
-    return instance;
+    return static_cast<id <AvnWindowProtocol>>(Window);
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)

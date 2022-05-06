@@ -195,7 +195,12 @@
 
 - (bool) ignoreUserInput:(bool)trigerInputWhenDisabled
 {
-    auto parentWindow = objc_cast<AvnWindow>([self window]);
+    if(_parent == nullptr)
+    {
+        return TRUE;
+    }
+
+    auto parentWindow = _parent->GetWindowProtocol();
 
     if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
     {

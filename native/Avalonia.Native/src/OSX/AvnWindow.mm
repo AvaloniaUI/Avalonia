@@ -212,8 +212,7 @@
     // If the window has a child window being shown as a dialog then don't allow it to become the key window.
     for(NSWindow* uch in [self childWindows])
     {
-        // TODO protocol
-        auto ch = objc_cast<CLASS_NAME>(uch);
+        auto ch = static_cast<id <AvnWindowProtocol>>(uch);
         if(ch == nil)
             continue;
         if (ch.isDialog)
@@ -256,8 +255,7 @@
 
 -(void) restoreParentWindow;
 {
-    // TODO protocol
-    auto parent = objc_cast<CLASS_NAME>([self parentWindow]);
+    auto parent = static_cast<id <AvnWindowProtocol>>([self parentWindow]);
     if(parent != nil)
     {
         [parent removeChildWindow:self];

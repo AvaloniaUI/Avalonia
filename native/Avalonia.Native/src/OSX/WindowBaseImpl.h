@@ -114,12 +114,12 @@ BEGIN_INTERFACE_MAP()
 
     virtual bool IsDialog();
 
+    id<AvnWindowProtocol> GetWindowProtocol ();
+
 protected:
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
-
-    id<AvnWindowProtocol> GetWindowProtocol ();
 
 private:
     void CreateNSWindow (bool isDialog);
