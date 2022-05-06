@@ -4,8 +4,9 @@
 //
 
 #import <AppKit/AppKit.h>
-#import "AvnView.h"
+#include "AvnView.h"
 #include "automation.h"
+#import "WindowInterfaces.h"
 
 @implementation AvnView
 {

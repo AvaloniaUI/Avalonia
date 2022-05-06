@@ -6,11 +6,12 @@
 #ifndef AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
 #define AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
 
-#import "rendertarget.h"
-#import "WindowProtocol.h"
+#include "rendertarget.h"
 #include "INSWindowHolder.h"
 
 @class AutoFitContentView;
+@class AvnMenu;
+@protocol AvnWindowProtocol;
 
 class WindowBaseImpl : public virtual ComObject,
                        public virtual IAvnWindowBase,

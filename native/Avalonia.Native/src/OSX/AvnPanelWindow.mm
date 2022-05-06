@@ -3,6 +3,9 @@
 // Copyright (c) 2022 Avalonia. All rights reserved.
 //
 
-#define AvnWindow AvnPanelWindow
+#pragma once
 
-//#include "window.mm"
+#define IS_NSPANEL
+
+#include "AvnWindow.mm"
+

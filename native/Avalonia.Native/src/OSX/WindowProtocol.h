@@ -3,6 +3,8 @@
 // Copyright (c) 2022 Avalonia. All rights reserved.
 //
 
+#pragma once
+
 #import <AppKit/AppKit.h>
 
 @class AvnMenu;

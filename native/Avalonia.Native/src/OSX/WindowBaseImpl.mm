@@ -5,14 +5,14 @@
 
 #import <AppKit/AppKit.h>
 #include "common.h"
-#import "window.h"
-#import "AvnView.h"
+#include "AvnView.h"
 #include "menu.h"
 #include "automation.h"
-#import "cursor.h"
+#include "cursor.h"
 #include "ResizeScope.h"
-#import "AutoFitContentView.h"
-#include "WindowBaseImpl.h"
+#include "AutoFitContentView.h"
+#import "WindowProtocol.h"
+#import "WindowInterfaces.h"
 
 
 WindowBaseImpl::~WindowBaseImpl() {
@@ -557,4 +557,13 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
     }
 
     return instance;
+}
+
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)
+{
+    @autoreleasepool
+    {
+        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events, gl);
+        return ptr;
+    }
 }

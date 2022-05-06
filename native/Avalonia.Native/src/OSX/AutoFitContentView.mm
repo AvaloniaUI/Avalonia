@@ -4,7 +4,8 @@
 //
 
 #include "AvnView.h"
-#import "AutoFitContentView.h"
+#include "AutoFitContentView.h"
+#import "WindowInterfaces.h"
 
 @implementation AutoFitContentView
 {

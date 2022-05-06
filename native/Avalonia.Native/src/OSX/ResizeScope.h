@@ -6,7 +6,6 @@
 #ifndef AVALONIA_NATIVE_OSX_RESIZESCOPE_H
 #define AVALONIA_NATIVE_OSX_RESIZESCOPE_H
 
-#include "window.h"
 #include "avalonia-native.h"
 
 @class AvnView;
