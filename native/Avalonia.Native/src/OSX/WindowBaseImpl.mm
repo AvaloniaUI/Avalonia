@@ -60,11 +60,11 @@ HRESULT WindowBaseImpl::ObtainNSViewHandleRetained(void **ret) {
     return S_OK;
 }
 
-AvnWindow *WindowBaseImpl::GetNSWindow() {
+NSWindow *WindowBaseImpl::GetNSWindow() {
     return Window;
 }
 
-AvnView *WindowBaseImpl::GetNSView() {
+NSView *WindowBaseImpl::GetNSView() {
     return View;
 }
 

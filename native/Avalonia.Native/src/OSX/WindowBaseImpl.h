@@ -51,9 +51,9 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT ObtainNSViewHandleRetained(void **ret) override;
 
-    virtual AvnWindow *GetNSWindow() override;
+    virtual NSWindow *GetNSWindow() override;
 
-    virtual AvnView *GetNSView() override;
+    virtual NSView *GetNSView() override;
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
 
