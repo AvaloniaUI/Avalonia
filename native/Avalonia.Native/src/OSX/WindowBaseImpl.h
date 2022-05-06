@@ -7,6 +7,7 @@
 #define AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
 
 #import "rendertarget.h"
+#import "WindowProtocol.h"
 #include "INSWindowHolder.h"
 
 @class AutoFitContentView;
@@ -28,7 +29,7 @@ BEGIN_INTERFACE_MAP()
 
     AutoFitContentView *StandardContainer;
     AvnView *View;
-    AvnWindow *Window;
+    NSWindow * Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     ComPtr<IAvnGlContext> _glContext;
     NSObject <IRenderTarget> *renderTarget;
@@ -116,9 +117,10 @@ protected:
 
     void UpdateStyle();
 
+    id<AvnWindowProtocol> GetWindowProtocol ();
+
 private:
     void InitialiseNSWindow ();
-
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H

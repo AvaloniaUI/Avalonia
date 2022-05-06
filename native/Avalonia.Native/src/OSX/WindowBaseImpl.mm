@@ -100,10 +100,6 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
             [Window orderFront:Window];
         }
 
-        [Window setContentMinSize:lastMinSize];
-        [Window setContentMaxSize:lastMaxSize];
-        [Window setContentSize: lastSize];
-
         _shown = true;
 
         return S_OK;
@@ -132,7 +128,8 @@ HRESULT WindowBaseImpl::Hide() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window orderOut:Window];
-            [Window restoreParentWindow];
+
+            [GetWindowProtocol() restoreParentWindow];
         }
 
         return S_OK;
@@ -311,10 +308,10 @@ HRESULT WindowBaseImpl::SetMainMenu(IAvnMenu *menu) {
 
     auto nsmenu = nativeMenu->GetNative();
 
-    [Window applyMenu:nsmenu];
+    [GetWindowProtocol() applyMenu:nsmenu];
 
     if ([Window isKeyWindow]) {
-        [Window showWindowMenuWithAppMenu];
+        [GetWindowProtocol() showWindowMenuWithAppMenu];
     }
 
     return S_OK;
@@ -532,5 +529,12 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
+
+        [Window setContentMinSize: lastMinSize];
+        [Window setContentMaxSize: lastMaxSize];
     }
+}
+
+id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
+    return static_cast<id <AvnWindowProtocol>>(Window);
 }

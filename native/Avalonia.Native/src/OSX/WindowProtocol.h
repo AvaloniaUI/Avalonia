@@ -1,0 +1,23 @@
+//
+// Created by Dan Walmsley on 06/05/2022.
+// Copyright (c) 2022 Avalonia. All rights reserved.
+//
+
+#import <AppKit/AppKit.h>
+
+@class AvnMenu;
+
+@protocol AvnWindowProtocol
+-(void) setCanBecomeKeyAndMain;
+-(void) pollModalSession: (NSModalSession _Nonnull) session;
+-(void) restoreParentWindow;
+-(bool) shouldTryToHandleEvents;
+-(void) setEnabled: (bool) enable;
+-(void) showAppMenuOnly;
+-(void) showWindowMenuWithAppMenu;
+-(void) applyMenu:(AvnMenu* _Nullable)menu;
+
+-(double) getExtendedTitleBarHeight;
+-(void) setIsExtended:(bool)value;
+-(bool) isDialog;
+@end

@@ -1,11 +1,11 @@
 #import <AppKit/AppKit.h>
-#include "common.h"
+#import "common.h"
 #import "window.h"
-#include "menu.h"
-#include "automation.h"
+#import "menu.h"
+#import "automation.h"
 #import "WindowBaseImpl.h"
-#include "WindowImpl.h"
-#include "AvnView.h"
+#import "WindowImpl.h"
+#import "AvnView.h"
 
 @implementation AvnWindow
 {

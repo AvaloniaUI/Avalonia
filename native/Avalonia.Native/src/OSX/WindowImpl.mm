@@ -20,7 +20,7 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     WindowEvents = events;
-    [Window setCanBecomeKeyAndMain];
+    [GetWindowProtocol() setCanBecomeKeyAndMain];
     [Window disableCursorRects];
     [Window setTabbingMode:NSWindowTabbingModeDisallowed];
     [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -68,7 +68,7 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
     START_COM_CALL;
 
     @autoreleasepool {
-        [Window setEnabled:enable];
+        [GetWindowProtocol() setEnabled:enable];
         return S_OK;
     }
 }
@@ -354,7 +354,7 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
             View.layer.zPosition = 0;
         }
 
-        [Window setIsExtended:enable];
+        [GetWindowProtocol() setIsExtended:enable];
 
         HideOrShowTrafficLights();
 
@@ -383,7 +383,7 @@ HRESULT WindowImpl::GetExtendTitleBarHeight(double *ret) {
             return E_POINTER;
         }
 
-        *ret = [Window getExtendedTitleBarHeight];
+        *ret = [GetWindowProtocol() getExtendedTitleBarHeight];
 
         return S_OK;
     }
