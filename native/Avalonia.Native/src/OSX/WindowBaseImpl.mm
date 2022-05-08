@@ -225,8 +225,8 @@ HRESULT WindowBaseImpl::SetMinMaxSize(AvnSize minSize, AvnSize maxSize) {
     START_COM_CALL;
 
     @autoreleasepool {
-        [Window setMinSize:ToNSSize(minSize)];
-        [Window setMaxSize:ToNSSize(maxSize)];
+        [Window setContentMinSize:ToNSSize(minSize)];
+        [Window setContentMaxSize:ToNSSize(maxSize)];
 
         return S_OK;
     }
@@ -243,8 +243,8 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
     auto resizeBlock = ResizeScope(View, reason);
 
     @autoreleasepool {
-        auto maxSize = [Window maxSize];
-        auto minSize = [Window minSize];
+        auto maxSize = [Window contentMaxSize];
+        auto minSize = [Window contentMinSize];
 
         if (x < minSize.width) {
             x = minSize.width;
