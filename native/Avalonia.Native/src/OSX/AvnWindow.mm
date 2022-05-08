@@ -433,5 +433,9 @@
     }
 }
 
+- (void)disconnectParent {
+    _parent = nullptr;
+}
+
 @end
 

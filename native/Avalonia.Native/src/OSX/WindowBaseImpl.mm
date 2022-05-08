@@ -525,14 +525,25 @@ void WindowBaseImpl::UpdateStyle() {
     [Window setStyleMask:GetStyle()];
 }
 
+void WindowBaseImpl::CleanNSWindow() {
+    if(Window != nullptr) {
+        [GetWindowProtocol() disconnectParent];
+        [Window close];
+        Window = nullptr;
+    }
+}
+
 void WindowBaseImpl::CreateNSWindow(bool isDialog) {
-    if(Window == nullptr) {
-        if(isDialog)
-        {
+    if (isDialog) {
+        if (![Window isKindOfClass:[AvnPanel class]]) {
+            CleanNSWindow();
+
             Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
         }
-        else
-        {
+    } else {
+        if (![Window isKindOfClass:[AvnWindow class]]) {
+            CleanNSWindow();
+
             Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
         }
     }

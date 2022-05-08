@@ -20,5 +20,6 @@
 
 -(double) getExtendedTitleBarHeight;
 -(void) setIsExtended:(bool)value;
+-(void) disconnectParent;
 -(bool) isDialog;
 @end

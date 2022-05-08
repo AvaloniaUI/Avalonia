@@ -123,6 +123,7 @@ protected:
 
 private:
     void CreateNSWindow (bool isDialog);
+    void CleanNSWindow ();
     void InitialiseNSWindow ();
 };
 
