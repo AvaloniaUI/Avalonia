@@ -20,12 +20,12 @@ namespace ControlCatalog
 
         public static readonly StyleInclude ColorPickerFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
-            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Fluent.xaml")
+            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml")
         };
 
         public static readonly StyleInclude ColorPickerDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
-            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Default.xaml")
+            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Default/Default.xaml")
         };
 
         public static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))

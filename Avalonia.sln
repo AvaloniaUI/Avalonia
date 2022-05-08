@@ -99,7 +99,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\HarfBuzzSharp.props = build\HarfBuzzSharp.props
 		build\JetBrains.Annotations.props = build\JetBrains.Annotations.props
 		build\JetBrains.dotMemoryUnit.props = build\JetBrains.dotMemoryUnit.props
-		build\Magick.NET-Q16-AnyCPU.props = build\Magick.NET-Q16-AnyCPU.props
 		build\Microsoft.CSharp.props = build\Microsoft.CSharp.props
 		build\Microsoft.Reactive.Testing.props = build\Microsoft.Reactive.Testing.props
 		build\Moq.props = build\Moq.props
@@ -118,6 +117,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\System.Memory.props = build\System.Memory.props
 		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
 		build\XUnit.props = build\XUnit.props
+		build\ImageSharp.props = build\ImageSharp.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6FAF79-58B4-482F-9122-0668C346364C}"
