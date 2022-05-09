@@ -177,7 +177,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
 
     public void Stop()
     {
-        _target.IsEnabled = true;
+        _target.IsEnabled = false;
     }
     
     public void Dispose()
