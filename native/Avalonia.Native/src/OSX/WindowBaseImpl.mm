@@ -286,7 +286,6 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
 
             if(Window != nullptr) {
                 [Window setContentSize:lastSize];
-                [Window invalidateShadow];
             }
         }
         @finally {
