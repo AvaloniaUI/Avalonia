@@ -111,6 +111,7 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    UseCompositor = true
                 })
                 .With(new Win32PlatformOptions
                 {

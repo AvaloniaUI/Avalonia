@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Rendering
 {
@@ -86,5 +87,10 @@ namespace Avalonia.Rendering
         /// Stops the renderer.
         /// </summary>
         void Stop();
+    }
+    
+    public interface IRendererWithCompositor : IRenderer
+    {
+        Compositor Compositor { get; }
     }
 }

@@ -3,10 +3,13 @@
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <AssemblyName>Avalonia.Base</AssemblyName>
     <RootNamespace>Avalonia</RootNamespace>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>    
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\*.trie" />
+    <AdditionalFiles Include="composition-schema.xml" />
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\Binding.props" />

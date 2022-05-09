@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;

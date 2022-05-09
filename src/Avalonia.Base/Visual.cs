@@ -1,3 +1,7 @@
+
+
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -8,11 +12,10 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -288,6 +291,8 @@ namespace Avalonia
         /// </summary>
         protected IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
+        internal CompositionDrawListVisual? CompositionVisual { get; private set; }
+        
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
         /// </summary>
@@ -432,6 +437,10 @@ namespace Avalonia
             }
 
             EnableTransitions();
+            if (_visualRoot.Renderer is IRendererWithCompositor compositingRenderer)
+            {
+                AttachToCompositor(compositingRenderer.Compositor);
+            }
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
@@ -450,6 +459,14 @@ namespace Avalonia
                     }
                 }
             }
+        }
+
+        internal CompositionVisual AttachToCompositor(Compositor compositor)
+        {
+            if (CompositionVisual == null || CompositionVisual.Compositor != compositor)
+                CompositionVisual = new CompositionDrawListVisual(compositor,
+                    new ServerCompositionDrawListVisual(compositor.Server), this);
+            return CompositionVisual;
         }
 
         /// <summary>
@@ -564,7 +581,7 @@ namespace Avalonia
                 {
                     newValue.Changed += sender.RenderTransformChanged;
                 }
-
+                
                 sender.InvalidateVisual();
             }
         }

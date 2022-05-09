@@ -13,6 +13,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
@@ -29,6 +30,7 @@ namespace Avalonia.X11
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
+        public Compositor Compositor { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
@@ -101,7 +103,9 @@ namespace Avalonia.X11
                     GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
             }
 
-            
+            if (options.UseCompositor)
+                Compositor = Compositor.Create(AvaloniaLocator.Current.GetService<IRenderLoop>()!);
+
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -222,6 +226,8 @@ namespace Avalonia
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+        
+        public bool UseCompositor { get; set; }
 
         /// <summary>
         /// Determines whether to use IME.

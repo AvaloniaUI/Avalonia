@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -344,6 +345,7 @@ namespace Avalonia.Headless
             }
 
             public Matrix Transform { get; set; }
+
             public void Clear(Color color)
             {
 

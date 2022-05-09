@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Numerics;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -104,6 +105,36 @@ namespace Avalonia
                 (value1.M21 * value2.M12) + (value1.M22 * value2.M22),
                 (value1._m31 * value2.M11) + (value1._m32 * value2.M21) + value2._m31,
                 (value1._m31 * value2.M12) + (value1._m32 * value2.M22) + value2._m32);
+        }
+
+        public static Matrix operator +(Matrix value1, Matrix value2)
+        {
+            return new Matrix(value1.M11 + value2.M11,
+                value1.M12 + value2.M12,
+                value1.M21 + value2.M21,
+                value1.M22 + value2.M22,
+                value1.M31 + value2.M31,
+                value1.M32 + value2.M32);
+        }
+        
+        public static Matrix operator -(Matrix value1, Matrix value2)
+        {
+            return new Matrix(value1.M11 - value2.M11,
+                value1.M12 - value2.M12,
+                value1.M21 - value2.M21,
+                value1.M22 - value2.M22,
+                value1.M31 - value2.M31,
+                value1.M32 - value2.M32);
+        }
+        
+        public static Matrix operator *(Matrix value1, double value2)
+        {
+            return new Matrix(value1.M11 * value2,
+                value1.M12 * value2,
+                value1.M21 * value2,
+                value1.M22 * value2,
+                value1.M31 * value2,
+                value1.M32 * value2);
         }
 
         /// <summary>
@@ -427,6 +458,14 @@ namespace Avalonia
             return true;
         }
 
+#if !BUILDTASK
+        public static implicit operator Matrix4x4(Matrix m)
+        {
+            return new Matrix4x4(new Matrix3x2((float)m._m11, (float)m._m12, (float)m._m21, (float)m._m22,
+                (float)m._m31, (float)m._m32));
+        }
+#endif
+        
         public struct Decomposed
         {
             public Vector Translate;

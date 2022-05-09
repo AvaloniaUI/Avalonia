@@ -52,6 +52,17 @@ namespace Avalonia
             _width = width;
             _height = height;
         }
+        
+#if !BUILDTASK
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Size"/> structure.
+        /// </summary>
+        /// <param name="vector2">The vector to take values from.</param>
+        public Size(System.Numerics.Vector2 vector2) : this(vector2.X, vector2.Y)
+        {
+            
+        }
+#endif
 
         /// <summary>
         /// Gets the aspect ratio of the size.
