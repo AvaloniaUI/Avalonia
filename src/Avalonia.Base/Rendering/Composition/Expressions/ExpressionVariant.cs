@@ -290,9 +290,6 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 + right.Matrix3x2;
             
-            if (left.Type == VariantType.AvaloniaMatrix)
-                return left.AvaloniaMatrix + right.AvaloniaMatrix;
-
             if (left.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 + right.Matrix4x4;
             
@@ -325,9 +322,6 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 - right.Matrix3x2;
             
-            if (left.Type == VariantType.AvaloniaMatrix)
-                return left.AvaloniaMatrix - right.AvaloniaMatrix;
-
             if (left.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 - right.Matrix4x4;
             
@@ -407,12 +401,6 @@ namespace Avalonia.Rendering.Composition.Expressions
             
             if (left.Type == VariantType.AvaloniaMatrix && right.Type == VariantType.AvaloniaMatrix)
                 return left.AvaloniaMatrix * right.AvaloniaMatrix;
-
-            if (left.Type == VariantType.AvaloniaMatrix && right.Type == VariantType.Scalar)
-                return left.AvaloniaMatrix * (double)right.Scalar;
-            
-            if (left.Type == VariantType.AvaloniaMatrix && right.Type == VariantType.Double)
-                return left.AvaloniaMatrix * right.Double;
             
             if (left.Type == VariantType.Matrix4x4 && right.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 * right.Matrix4x4;
