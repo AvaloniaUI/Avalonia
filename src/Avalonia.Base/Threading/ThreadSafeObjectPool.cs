@@ -5,7 +5,6 @@ namespace Avalonia.Threading
     public class ThreadSafeObjectPool<T> where T : class, new()
     {
         private Stack<T> _stack = new Stack<T>();
-        private object _lock = new object();
         public static ThreadSafeObjectPool<T> Default { get; } = new ThreadSafeObjectPool<T>();
 
         public T Get()
@@ -20,7 +19,7 @@ namespace Avalonia.Threading
 
         public void Return(T obj)
         {
-            lock (_stack)
+            lock (_lock)
             {
                 _stack.Push(obj);
             }
