@@ -9,7 +9,7 @@ namespace Avalonia.Threading
 
         public T Get()
         {
-            lock (_lock)
+            lock (_stack)
             {
                 if(_stack.Count == 0)
                     return new T();
@@ -19,7 +19,7 @@ namespace Avalonia.Threading
 
         public void Return(T obj)
         {
-            lock (_lock)
+            lock (_stack)
             {
                 _stack.Push(obj);
             }
