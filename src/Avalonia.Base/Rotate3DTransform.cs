@@ -203,7 +203,7 @@ public class Rotate3DTransform : Transform
         }
     }
 
-    protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (!_isInitializing) RaiseChanged();
     } 
