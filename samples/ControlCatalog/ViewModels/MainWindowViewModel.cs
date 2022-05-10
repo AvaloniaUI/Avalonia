@@ -18,7 +18,7 @@ namespace ControlCatalog.ViewModels
         private WindowState _windowState;
         private WindowState[] _windowStates;
         private int _transparencyLevel;
-        private ExtendClientAreaChromeHints _chromeHints;
+        private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
         private bool _extendClientAreaEnabled;
         private bool _systemTitleBarEnabled;        
         private bool _preferSystemChromeEnabled;
