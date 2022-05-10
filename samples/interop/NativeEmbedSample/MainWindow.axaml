@@ -1,0 +1,10 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:nativeEmbedSample="clr-namespace:NativeEmbedSample"
+        x:Class="NativeEmbedSample.MainWindow"
+        MinWidth="500" MinHeight="300"
+        Width="1024" Height="800"
+        Title="Native embedding sample">
+  <nativeEmbedSample:MainView />
+</Window>
+
