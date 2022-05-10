@@ -55,7 +55,19 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
 
     @autoreleasepool {
         _isDialog = isDialog;
+
+        bool created = Window == nullptr;
+
         WindowBaseImpl::Show(activate, isDialog);
+
+        if(created)
+        {
+            if(_isClientAreaExtended)
+            {
+                [GetWindowProtocol() setIsExtended:true];
+                SetExtendClientArea(true);
+            }
+        }
 
         HideOrShowTrafficLights();
 
@@ -327,37 +339,39 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
     @autoreleasepool {
         _isClientAreaExtended = enable;
 
-        if (enable) {
-            Window.titleVisibility = NSWindowTitleHidden;
+        if(Window != nullptr) {
+            if (enable) {
+                Window.titleVisibility = NSWindowTitleHidden;
 
-            [Window setTitlebarAppearsTransparent:true];
+                [Window setTitlebarAppearsTransparent:true];
 
-            auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+                auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
 
-            if (wantsTitleBar) {
-                [StandardContainer ShowTitleBar:true];
+                if (wantsTitleBar) {
+                    [StandardContainer ShowTitleBar:true];
+                } else {
+                    [StandardContainer ShowTitleBar:false];
+                }
+
+                if (_extendClientHints & AvnOSXThickTitleBar) {
+                    Window.toolbar = [NSToolbar new];
+                    Window.toolbar.showsBaselineSeparator = false;
+                } else {
+                    Window.toolbar = nullptr;
+                }
             } else {
-                [StandardContainer ShowTitleBar:false];
-            }
-
-            if (_extendClientHints & AvnOSXThickTitleBar) {
-                Window.toolbar = [NSToolbar new];
-                Window.toolbar.showsBaselineSeparator = false;
-            } else {
+                Window.titleVisibility = NSWindowTitleVisible;
                 Window.toolbar = nullptr;
+                [Window setTitlebarAppearsTransparent:false];
+                View.layer.zPosition = 0;
             }
-        } else {
-            Window.titleVisibility = NSWindowTitleVisible;
-            Window.toolbar = nullptr;
-            [Window setTitlebarAppearsTransparent:false];
-            View.layer.zPosition = 0;
+
+            [GetWindowProtocol() setIsExtended:enable];
+
+            HideOrShowTrafficLights();
+
+            UpdateStyle();
         }
-
-        [GetWindowProtocol() setIsExtended:enable];
-
-        HideOrShowTrafficLights();
-
-        UpdateStyle();
 
         return S_OK;
     }
