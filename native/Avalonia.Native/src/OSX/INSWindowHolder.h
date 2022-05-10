@@ -10,8 +10,8 @@
 
 struct INSWindowHolder
 {
-    virtual AvnWindow* _Nonnull GetNSWindow () = 0;
-    virtual AvnView* _Nonnull GetNSView () = 0;
+    virtual NSWindow* _Nonnull GetNSWindow () = 0;
+    virtual NSView* _Nonnull GetNSView () = 0;
 };
 
 #endif //AVALONIA_NATIVE_OSX_INSWINDOWHOLDER_H

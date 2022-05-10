@@ -6,7 +6,6 @@
 #ifndef AVALONIA_NATIVE_OSX_WINDOWIMPL_H
 #define AVALONIA_NATIVE_OSX_WINDOWIMPL_H
 
-
 #import "WindowBaseImpl.h"
 #include "IWindowStateChanged.h"
 
