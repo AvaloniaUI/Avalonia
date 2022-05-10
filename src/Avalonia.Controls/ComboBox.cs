@@ -429,22 +429,18 @@ namespace Avalonia.Controls
 
         private void SelectNext()
         {
-            int next = SelectedIndex + 1;
-
-            if (next >= ItemCount)
-                next = 0;
-
-            SelectedIndex = next;
+            if (ItemCount >= 1)
+            {
+                MoveSelection(NavigationDirection.Next, WrapSelection);
+            }
         }
 
         private void SelectPrev()
         {
-            int prev = SelectedIndex - 1;
-
-            if (prev < 0)
-                prev = ItemCount - 1;
-
-            SelectedIndex = prev;
+            if (ItemCount >= 1)
+            {
+                MoveSelection(NavigationDirection.Previous, WrapSelection);
+            }
         }
     }
 }
