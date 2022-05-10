@@ -110,8 +110,10 @@ namespace Avalonia.Android.Platform
             public void HideWithSize(Size size)
             {
                 CheckDisposed();
+
+                size *= _attachedTo?._avaloniaView.TopLevelImpl.RenderScaling ?? 1;
                 _view.Visibility = ViewStates.Gone;
-                _view.LayoutParameters = new ViewGroup.LayoutParams(Math.Max(1, (int)size.Width), Math.Max(1, (int)size.Height));
+                _view.LayoutParameters = new FrameLayout.LayoutParams(Math.Max(1, (int)size.Width), Math.Max(1, (int)size.Height));
                 _view.RequestLayout();
             }
 
@@ -123,7 +125,7 @@ namespace Avalonia.Android.Platform
 
                 bounds *= _attachedTo._avaloniaView.TopLevelImpl.RenderScaling;
                 _view.Visibility = ViewStates.Visible;
-                _view.LayoutParameters = new ViewGroup.MarginLayoutParams(Math.Max(1, (int)bounds.Width), Math.Max(1, (int)bounds.Height))
+                _view.LayoutParameters = new FrameLayout.LayoutParams(Math.Max(1, (int)bounds.Width), Math.Max(1, (int)bounds.Height))
                 {
                     LeftMargin = (int)bounds.X,
                     TopMargin = (int)bounds.Y

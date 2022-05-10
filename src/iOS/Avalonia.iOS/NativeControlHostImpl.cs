@@ -117,6 +117,8 @@ namespace Avalonia.iOS
             public void HideWithSize(Size size)
             {
                 CheckDisposed();
+                if (_attachedTo == null)
+                    return;
 
                 _view.Hidden = true;
                 _view.Frame = new CGRect(0d, 0d, Math.Max(1d, size.Width), Math.Max(1d, size.Height));
