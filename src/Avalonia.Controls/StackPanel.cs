@@ -123,7 +123,7 @@ namespace Avalonia.Controls
                     index = Children.Count - 1;
                     break;
                 case NavigationDirection.Next:
-                    ++index;
+                    if (index != -1) ++index;
                     break;
                 case NavigationDirection.Previous:
                     if (index != -1) --index;

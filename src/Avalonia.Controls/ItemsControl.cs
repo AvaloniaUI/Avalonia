@@ -509,6 +509,7 @@ namespace Avalonia.Controls
             do
             {
                 result = container.GetControl(direction, c, wrap);
+                from = from ?? result;
 
                 if (result != null &&
                     result.Focusable &&
