@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using Android.Views;
-using Android.Webkit;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 
@@ -13,9 +12,24 @@ public partial class EmbedSample
 {
     private IPlatformHandle CreateAndroid(IPlatformHandle parent)
     {
-        var button = new Android.Widget.Button(Android.App.Application.Context) { Text = "Android button" };
+        if (IsSecond)
+        {
+            var webView = new Android.Webkit.WebView(Android.App.Application.Context);
+            webView.LoadUrl("https://www.android.com/");
 
-        return new AndroidViewHandle(button);
+            return new AndroidViewHandle(webView);
+        }
+        else
+        {
+            var button = new Android.Widget.Button(Android.App.Application.Context) { Text = "Hello world" };
+            var clickCount = 0;
+            button.Click += (sender, args) =>
+            {
+                clickCount++;
+                button.Text = $"Click count {clickCount}";
+            };
+            return new AndroidViewHandle(button);   
+        }
     }
 
     private void DestroyAndroid(IPlatformHandle control)
