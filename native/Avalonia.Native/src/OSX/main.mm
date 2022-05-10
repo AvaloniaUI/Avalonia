@@ -1,7 +1,6 @@
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
-#include "window.h"
 
 static NSString* s_appTitle = @"Avalonia";
 
