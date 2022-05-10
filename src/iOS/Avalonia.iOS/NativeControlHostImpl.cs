@@ -118,7 +118,9 @@ namespace Avalonia.iOS
             public void HideWithSize(Size size)
             {
                 CheckDisposed();
+
                 _view.Hidden = true;
+                _view.Frame = new CGRect(0d, 0d, Math.Max(1d, size.Width), Math.Max(1d, size.Height));
             }
 
             public void ShowInBounds(Rect bounds)
@@ -127,7 +129,7 @@ namespace Avalonia.iOS
                 if (_attachedTo == null)
                     throw new InvalidOperationException("The control isn't currently attached to a toplevel");
 
-                _view.Frame = new CGRect(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                _view.Frame = new CGRect(bounds.X, bounds.Y, Math.Max(1d, bounds.Width), Math.Max(1d, bounds.Height));
                 _view.Hidden = false;
             }
         }
