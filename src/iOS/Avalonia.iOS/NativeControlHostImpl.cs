@@ -21,19 +21,19 @@ namespace Avalonia.iOS
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
-            return new UIViewControlHandle(new UIView());
+            return new UIViewControlHandle(new UIView(), true);
         }
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var holder = new UIViewControlHandle(_avaloniaView);
+            var holder = new UIViewControlHandle(_avaloniaView, false);
             NativeControlAttachment? attachment = null;
             try
             {
                 var child = create(holder);
                 // It has to be assigned to the variable before property setter is called so we dispose it on exception
 #pragma warning disable IDE0017 // Simplify object initialization
-                attachment = new NativeControlAttachment(holder, child);
+                attachment = new NativeControlAttachment(child);
 #pragma warning restore IDE0017 // Simplify object initialization
                 attachment.AttachedTo = this;
                 return attachment;
@@ -48,7 +48,7 @@ namespace Avalonia.iOS
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(IPlatformHandle handle)
         {
-            return new NativeControlAttachment(new UIViewControlHandle(_avaloniaView), handle)
+            return new NativeControlAttachment(handle)
             {
                 AttachedTo = this
             };
@@ -68,17 +68,14 @@ namespace Avalonia.iOS
         {
             // ReSharper disable once NotAccessedField.Local (keep GC reference)
             private IPlatformHandle? _child;
-            private UIViewControlHandle? _holder;
             private UIView? _view;
             private NativeControlHostImpl? _attachedTo;
 
-            public NativeControlAttachment(UIViewControlHandle holder, IPlatformHandle child)
+            public NativeControlAttachment(IPlatformHandle child)
             {
-                _holder = holder;
                 _child = child;
                 
                 _view = (child as UIViewControlHandle)?.View ?? new ViewHolder(child.Handle);
-                _holder.View.AddSubview(_view);
             }
 
             [MemberNotNull(nameof(_view))]
@@ -91,7 +88,6 @@ namespace Avalonia.iOS
             public void Dispose()
             {
                 _view?.RemoveFromSuperview();
-                _holder = null;
                 _child = null;
                 _attachedTo = null;
                 _view?.Dispose();
@@ -112,7 +108,7 @@ namespace Avalonia.iOS
                     }
                     else
                     {
-                        _holder!.View.AddSubview(_view);
+                        _attachedTo._avaloniaView.AddSubview(_view);
                     }
                 }
             }
@@ -131,7 +127,6 @@ namespace Avalonia.iOS
                 if (_attachedTo == null)
                     throw new InvalidOperationException("The control isn't currently attached to a toplevel");
 
-                //bounds = _attachedTo._avaloniaView.ContentScaleFactor;
                 _view.Frame = new CGRect(bounds.X, bounds.Y, bounds.Width, bounds.Height);
                 _view.Hidden = false;
             }
@@ -143,10 +138,12 @@ namespace Avalonia.iOS
         internal const string UIViewDescriptor = "UIView";
         
         private UIView? _view;
+        private bool _disposeView;
         
-        public UIViewControlHandle(UIView view)
+        public UIViewControlHandle(UIView view, bool disposeView)
         {
             _view = view;
+            _disposeView = disposeView;
         }
         
         public UIView View => _view ?? throw new ObjectDisposedException(nameof(UIViewControlHandle));
@@ -172,7 +169,11 @@ namespace Avalonia.iOS
         
         private void Dispose(bool disposing)
         {
-            _view?.Dispose();
+            if (_disposeView)
+            {
+                _view?.Dispose();
+            }
+
             _view = null;
             if (disposing)
             {
