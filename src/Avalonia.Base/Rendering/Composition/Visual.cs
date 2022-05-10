@@ -59,6 +59,6 @@ namespace Avalonia.Rendering.Composition
         
         internal object? Tag { get; set; }
 
-        internal virtual bool HitTest(Vector2 point) => true;
+        internal virtual bool HitTest(Point point) => true;
     }
 }

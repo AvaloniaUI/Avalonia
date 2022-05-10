@@ -54,6 +54,11 @@ namespace Avalonia.Rendering.Composition
 
         partial void OnRemoved(CompositionVisual item) => item.Parent = null;
 
+        partial void OnBeforeClear()
+        {
+            foreach (var i in this)
+                i.Parent = null;
+        }
 
         partial void OnBeforeAdded(CompositionVisual item)
         {

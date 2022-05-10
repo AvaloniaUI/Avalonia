@@ -16,6 +16,25 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
     {
     }
 
+    Rect? _contentBounds;
+
+    public override Rect ContentBounds
+    {
+        get
+        {
+            if (_contentBounds == null)
+            {
+                var rect = Rect.Empty;
+                if(_renderCommands!=null)
+                    foreach (var cmd in _renderCommands)
+                        rect = rect.Union(cmd.Item.Bounds);
+                _contentBounds = rect;
+            }
+
+            return _contentBounds.Value;
+        }
+    }
+
     protected override void ApplyCore(ChangeSet changes)
     {
         var ch = (DrawListVisualChanges)changes;
@@ -23,6 +42,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         {
             _renderCommands?.Dispose();
             _renderCommands = ch.AcquireDrawCommands();
+            _contentBounds = null;
         }
         base.ApplyCore(changes);
     }

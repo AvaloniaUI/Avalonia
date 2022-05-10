@@ -37,9 +37,19 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
         _target.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
         _update = Update;
     }
-    
-    public bool DrawFps { get; set; }
-    public bool DrawDirtyRects { get; set; }
+
+    public bool DrawFps
+    {
+        get => _target.DrawFps;
+        set => _target.DrawFps = value;
+    }
+
+    public bool DrawDirtyRects
+    {
+        get => _target.DrawDirtyRects;
+        set => _target.DrawDirtyRects = value;
+    }
+
     public event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
 
     void QueueUpdate()
@@ -57,7 +67,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
 
     public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
     {
-        var res = _target.TryHitTest(new Vector2((float)p.X, (float)p.Y));
+        var res = _target.TryHitTest(p);
         if(res == null)
             yield break;
         for (var index = res.Count - 1; index >= 0; index--)
@@ -146,7 +156,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
                 renderTransform *= mirrorMatrix;
             }
 
-            comp.TransformMatrix = renderTransform;
+            comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
 
             _recorder.BeginUpdate(comp.DrawList ?? new CompositionDrawList());
             visual.Render(_recordingContext);
@@ -159,6 +169,8 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
                 SyncChildren(v);
         _dirty.Clear();
         _recalculateChildren.Clear();
+        _target.Size = _root.ClientSize;
+        _target.Scaling = _root.RenderScaling;
     }
     
     public void Resized(Size size)
@@ -169,7 +181,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
     {
         // We render only on the render thread for now
         Update();
-        
+        _target.RequestRedraw();
         Compositor.RequestCommitAsync().Wait();
     }
 
@@ -177,7 +189,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
 
     public void Stop()
     {
-        _target.IsEnabled = true;
+        _target.IsEnabled = false;
     }
     
     public void Dispose()

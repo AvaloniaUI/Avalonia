@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;

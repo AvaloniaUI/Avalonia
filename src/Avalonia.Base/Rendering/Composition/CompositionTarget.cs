@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.Composition
                 Root.Root = null;
         }
         
-        public PooledList<CompositionVisual>? TryHitTest(Vector2 point)
+        public PooledList<CompositionVisual>? TryHitTest(Point point)
         {
             Server.Readback.NextRead();
             if (Root == null)
@@ -28,12 +28,12 @@ namespace Avalonia.Rendering.Composition
             return res;
         }
 
-        public Vector2? TryTransformToVisual(CompositionVisual visual, Vector2 point)
+        public Point? TryTransformToVisual(CompositionVisual visual, Point point)
         {
             if (visual.Root != this)
                 return null;
             var v = visual;
-            var m = Matrix3x2.Identity;
+            var m = Matrix.Identity;
             while (v != null)
             {
                 if (!TryGetInvertedTransform(v, out var cm))
@@ -42,10 +42,10 @@ namespace Avalonia.Rendering.Composition
                 v = v.Parent;
             }
 
-            return Vector2.Transform(point, m);
+            return point * m;
         }
 
-        bool TryGetInvertedTransform(CompositionVisual visual, out Matrix3x2 matrix)
+        bool TryGetInvertedTransform(CompositionVisual visual, out Matrix matrix)
         {
             var m = visual.TryGetServerTransform();
             if (m == null)
@@ -54,24 +54,22 @@ namespace Avalonia.Rendering.Composition
                 return false;
             }
 
-            // TODO: Use Matrix3x3
-            var m32 = new Matrix3x2(m.Value.M11, m.Value.M12, m.Value.M21, m.Value.M22, m.Value.M41, m.Value.M42);
-            
-            return Matrix3x2.Invert(m32, out matrix);
+            var m33 = MatrixUtils.ToMatrix(m.Value);
+            return m33.TryInvert(out matrix);
         }
 
-        bool TryTransformTo(CompositionVisual visual, ref Vector2 v)
+        bool TryTransformTo(CompositionVisual visual, ref Point v)
         {
             if (TryGetInvertedTransform(visual, out var m))
             {
-                v = Vector2.Transform(v, m);
+                v = v * m;
                 return true;
             }
 
             return false;
         }
         
-        bool HitTestCore(CompositionVisual visual, Vector2 point, PooledList<CompositionVisual> result)
+        bool HitTestCore(CompositionVisual visual, Point point, PooledList<CompositionVisual> result)
         {
             //TODO: Check readback too
             if (visual.Visible == false)
@@ -103,5 +101,7 @@ namespace Avalonia.Rendering.Composition
 
             return false;
         }
+
+        public void RequestRedraw() => Changes.RedrawRequested.Value = true;
     }
 }

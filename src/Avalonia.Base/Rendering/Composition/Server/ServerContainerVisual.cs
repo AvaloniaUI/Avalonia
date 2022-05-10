@@ -21,6 +21,13 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
+        public override void Update(ServerCompositionTarget root, Matrix4x4 transform)
+        {
+            base.Update(root, transform);
+            foreach (var child in Children) 
+                child.Update(root, GlobalTransformMatrix);
+        }
+
         public ServerCompositionContainerVisual(ServerCompositor compositor) : base(compositor)
         {
             Children = new ServerCompositionVisualCollection(compositor);

@@ -8,7 +8,7 @@ namespace Avalonia.Rendering.Composition.Server
     {
         protected override void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
         {
-            canvas.Transform = canvas.CutTransform(transform);
+            canvas.Transform = MatrixUtils.ToMatrix(transform);
             canvas.DrawRectangle(new ImmutableSolidColorBrush(Color), null, new RoundedRect(new Rect(new Size(Size))));
             base.RenderCore(canvas, transform);
         }

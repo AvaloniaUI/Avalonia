@@ -135,8 +135,4 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl
     {
         _impl.Custom(custom);
     }
-
-    public Matrix CutTransform(Matrix4x4 transform) => new Matrix(transform.M11, transform.M12, transform.M21,
-        transform.M22, transform.M41,
-        transform.M42);
 }

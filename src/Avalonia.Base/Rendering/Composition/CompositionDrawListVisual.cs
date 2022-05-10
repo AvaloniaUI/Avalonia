@@ -29,11 +29,10 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         Visual = visual;
     }
 
-    internal override bool HitTest(Vector2 point)
+    internal override bool HitTest(Point pt)
     {
         if (DrawList == null)
             return false;
-        var pt = new Point(point.X, point.Y);
         if (Visual is ICustomHitTest custom)
             return custom.HitTest(pt);
         foreach (var op in DrawList)
