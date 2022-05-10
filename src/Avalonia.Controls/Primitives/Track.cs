@@ -442,7 +442,7 @@ namespace Avalonia.Controls.Primitives
 
         private void ThumbDragged(object? sender, VectorEventArgs e)
         {
-            if (IsThumbDragHandled)
+            if (IgnoreThumbDrag)
                 return;
                 
             Value = MathUtilities.Clamp(
