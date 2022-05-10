@@ -21,16 +21,16 @@ namespace Avalonia.iOS
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
-            return new UIViewControlHandle(new UIView(), true);
+            return new UIViewControlHandle(new UIView());
         }
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var holder = new UIViewControlHandle(_avaloniaView, false);
+            var parent = new UIViewControlHandle(_avaloniaView);
             NativeControlAttachment? attachment = null;
             try
             {
-                var child = create(holder);
+                var child = create(parent);
                 // It has to be assigned to the variable before property setter is called so we dispose it on exception
 #pragma warning disable IDE0017 // Simplify object initialization
                 attachment = new NativeControlAttachment(child);
@@ -41,7 +41,6 @@ namespace Avalonia.iOS
             catch
             {
                 attachment?.Dispose();
-                holder?.Destroy();
                 throw;
             }
         }
@@ -134,53 +133,26 @@ namespace Avalonia.iOS
             }
         }
     }
-    
-    public class UIViewControlHandle : INativeControlHostDestroyableControlHandle, IDisposable
+
+    public class UIViewControlHandle : INativeControlHostDestroyableControlHandle
     {
         internal const string UIViewDescriptor = "UIView";
+
         
-        private UIView? _view;
-        private bool _disposeView;
-        
-        public UIViewControlHandle(UIView view, bool disposeView)
+        public UIViewControlHandle(UIView view)
         {
-            _view = view;
-            _disposeView = disposeView;
+            View = view;
         }
         
-        public UIView View => _view ?? throw new ObjectDisposedException(nameof(UIViewControlHandle));
+        public UIView View { get; }
         
         public string HandleDescriptor => UIViewDescriptor;
 
-        IntPtr IPlatformHandle.Handle => _view?.Handle.Handle ?? default;
+        IntPtr IPlatformHandle.Handle => View.Handle.Handle;
 
         public void Destroy()
         {
-            Dispose(true);
-        }
-        
-        void IDisposable.Dispose()
-        {
-            Dispose(true);
-        }
-        
-        ~UIViewControlHandle()
-        {
-            Dispose(false);
-        }
-        
-        private void Dispose(bool disposing)
-        {
-            if (_disposeView)
-            {
-                _view?.Dispose();
-            }
-
-            _view = null;
-            if (disposing)
-            {
-                GC.SuppressFinalize(this);
-            }
+            View.Dispose();
         }
     }
 }

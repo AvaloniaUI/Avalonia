@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+
 using Android.Views;
 using Android.Widget;
 
@@ -21,16 +22,16 @@ namespace Avalonia.Android.Platform
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
-            return new AndroidViewControlHandle(new FrameLayout(_avaloniaView.Context!), false);
+            return new AndroidViewControlHandle(new FrameLayout(_avaloniaView.Context!));
         }
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var holder = new AndroidViewControlHandle(_avaloniaView, false);
+            var parent = new AndroidViewControlHandle(_avaloniaView);
             AndroidNativeControlAttachment? attachment = null;
             try
             {
-                var child = create(holder);
+                var child = create(parent);
                 // It has to be assigned to the variable before property setter is called so we dispose it on exception
 #pragma warning disable IDE0017 // Simplify object initialization
                 attachment = new AndroidNativeControlAttachment(child);
@@ -41,7 +42,6 @@ namespace Avalonia.Android.Platform
             catch
             {
                 attachment?.Dispose();
-                holder?.Destroy();
                 throw;
             }
         }
@@ -56,17 +56,13 @@ namespace Avalonia.Android.Platform
 
         public bool IsCompatibleWith(IPlatformHandle handle) => handle.HandleDescriptor == AndroidViewControlHandle.AndroidDescriptor;
 
-        class AndroidNativeControlAttachment : INativeControlHostControlTopLevelAttachment
+        private class AndroidNativeControlAttachment : INativeControlHostControlTopLevelAttachment
         {
-            // ReSharper disable once NotAccessedField.Local (keep GC reference)
-            private IPlatformHandle? _child;
             private View? _view;
             private AndroidNativeControlHostImpl? _attachedTo;
 
             public AndroidNativeControlAttachment(IPlatformHandle child)
             {
-                _child = child;
-
                 _view = (child as AndroidViewControlHandle)?.View
                     ?? Java.Lang.Object.GetObject<View>(child.Handle, global::Android.Runtime.JniHandleOwnership.DoNotTransfer);
             }
@@ -84,7 +80,6 @@ namespace Avalonia.Android.Platform
                 {
                     parent.RemoveView(_view);
                 }
-                _child = null;
                 _attachedTo = null;
                 _view?.Dispose();
                 _view = null;
@@ -134,55 +129,6 @@ namespace Avalonia.Android.Platform
                     TopMargin = (int)bounds.Y
                 };
                 _view.RequestLayout();
-            }
-        }
-    }
-
-    public class AndroidViewControlHandle : INativeControlHostDestroyableControlHandle, IDisposable
-    {
-        internal const string AndroidDescriptor = "JavaHandle";
-        
-        private View? _view;
-        private bool _disposeView;
-        
-        public AndroidViewControlHandle(View view, bool disposeView)
-        {
-            _view = view;
-            _disposeView = disposeView;
-        }
-        
-        public View View => _view ?? throw new ObjectDisposedException(nameof(AndroidViewControlHandle));
-        
-        public string HandleDescriptor => AndroidDescriptor;
-
-        IntPtr IPlatformHandle.Handle => _view?.Handle ?? default;
-
-        public void Destroy()
-        {
-            Dispose(true);
-        }
-        
-        void IDisposable.Dispose()
-        {
-            Dispose(true);
-        }
-        
-        ~AndroidViewControlHandle()
-        {
-            Dispose(false);
-        }
-        
-        private void Dispose(bool disposing)
-        {
-            if (_disposeView)
-            {
-                _view?.Dispose();
-            }
-
-            _view = null;
-            if (disposing)
-            {
-                GC.SuppressFinalize(this);
             }
         }
     }

@@ -1,10 +1,6 @@
 #if __ANDROID__ || ANDROID
-using System;
-using System.IO;
-using System.Diagnostics;
-using Android.Views;
-using Avalonia.Controls.Platform;
 using Avalonia.Platform;
+using Avalonia.Android;
 
 namespace NativeEmbedSample;
 
@@ -12,53 +8,33 @@ public partial class EmbedSample
 {
     private IPlatformHandle CreateAndroid(IPlatformHandle parent)
     {
+        var parentContext = (parent as AndroidViewControlHandle)?.View.Context
+            ?? Android.App.Application.Context;
+
         if (IsSecond)
         {
-            var webView = new Android.Webkit.WebView(Android.App.Application.Context);
+            var webView = new Android.Webkit.WebView(parentContext);
             webView.LoadUrl("https://www.android.com/");
 
-            return new AndroidViewHandle(webView);
+            return new AndroidViewControlHandle(webView);
         }
         else
         {
-            var button = new Android.Widget.Button(Android.App.Application.Context) { Text = "Hello world" };
+            var button = new Android.Widget.Button(parentContext) { Text = "Hello world" };
             var clickCount = 0;
             button.Click += (sender, args) =>
             {
                 clickCount++;
                 button.Text = $"Click count {clickCount}";
             };
-            return new AndroidViewHandle(button);   
+
+            return new AndroidViewControlHandle(button);
         }
     }
 
     private void DestroyAndroid(IPlatformHandle control)
     {
         base.DestroyNativeControlCore(control);
-    }
-}
-
-internal sealed class AndroidViewHandle : INativeControlHostDestroyableControlHandle
-{
-    private View _view;
-
-    public AndroidViewHandle(View view)
-    {
-        _view = view;
-    }
-
-    public IntPtr Handle => _view?.Handle ?? IntPtr.Zero;
-    public string HandleDescriptor => "JavaHandle";
-
-    public void Destroy()
-    {
-        _view?.Dispose();
-        _view = null;
-    }
-
-    ~AndroidViewHandle()
-    {
-        Destroy();
     }
 }
 #endif

@@ -27,6 +27,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+    <ProjectReference Include="..\..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios'">
+    <ProjectReference Include="..\..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
+  </ItemGroup>
 
   <Import Project="..\..\..\build\BuildTargets.targets" />
 </Project>
