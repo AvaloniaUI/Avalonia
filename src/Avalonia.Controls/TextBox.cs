@@ -55,13 +55,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
 
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrush));
 
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(

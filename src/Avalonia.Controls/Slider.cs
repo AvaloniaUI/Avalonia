@@ -76,7 +76,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TickPlacement"/> property.
         /// </summary>
         public static readonly StyledProperty<TickPlacement> TickPlacementProperty =
-            AvaloniaProperty.Register<TickBar, TickPlacement>(nameof(TickPlacement), 0d);
+            AvaloniaProperty.Register<Slider, TickPlacement>(nameof(TickPlacement), 0d);
 
         /// <summary>
         /// Defines the <see cref="TicksProperty"/> property.
@@ -197,7 +197,7 @@ namespace Avalonia.Controls
 
             if (_track != null)
             {
-                _track.IsThumbDragHandled = true;
+                _track.IgnoreThumbDrag = true;
             }
 
             if (_decreaseButton != null)
