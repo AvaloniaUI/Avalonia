@@ -14,7 +14,7 @@ namespace Avalonia.Win32.WinRT.Composition
         private readonly WinUICompositorConnection _connection;
         private EglPlatformOpenGlInterface _egl;
         private readonly EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo _info;
-        private IRef<WinUICompositedWindow> _window;
+        private IRef<WinUICompositedWindow>? _window;
         private BlurEffect _blurEffect;
 
         public WinUiCompositedWindowSurface(WinUICompositorConnection connection, IEglWindowGlPlatformSurfaceInfo info) : base()
@@ -58,9 +58,9 @@ namespace Avalonia.Win32.WinRT.Composition
             public override IGlPlatformSurfaceRenderingSession BeginDraw()
             {
                 var contextLock = _egl.PrimaryEglContext.EnsureCurrent();
-                IUnknown texture = null;
-                EglSurface surface = null;
-                IDisposable transaction = null;
+                IUnknown? texture = null;
+                EglSurface? surface = null;
+                IDisposable? transaction = null;
                 var success = false;
                 try
                 {

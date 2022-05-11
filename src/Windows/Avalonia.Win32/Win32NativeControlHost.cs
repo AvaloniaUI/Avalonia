@@ -33,7 +33,7 @@ namespace Avalonia.Win32
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
             var holder = new DumbWindow(_useLayeredWindow, Window.Handle.Handle);
-            Win32NativeControlAttachment attachment = null;
+            Win32NativeControlAttachment? attachment = null;
             try
             {
                 var child = create(holder);
@@ -128,7 +128,7 @@ namespace Avalonia.Win32
         {
             private DumbWindow _holder;
             private IPlatformHandle _child;
-            private Win32NativeControlHost _attachedTo;
+            private Win32NativeControlHost? _attachedTo;
 
             public Win32NativeControlAttachment(DumbWindow holder, IPlatformHandle child)
             {
@@ -149,18 +149,18 @@ namespace Avalonia.Win32
                 if (_child != null)
                     UnmanagedMethods.SetParent(_child.Handle, OffscreenParentWindow.Handle);
                 _holder?.Dispose();
-                _holder = null;
-                _child = null;
-                _attachedTo = null;
+                _holder = null!;
+                _child = null!;
+                _attachedTo = null!;
             }
 
-            public INativeControlHostImpl AttachedTo
+            public INativeControlHostImpl? AttachedTo
             {
                 get => _attachedTo;
                 set
                 {
                     CheckDisposed();
-                    _attachedTo = (Win32NativeControlHost) value;
+                    _attachedTo = (Win32NativeControlHost?) value;
                     if (_attachedTo == null)
                     {
                         UnmanagedMethods.ShowWindow(_holder.Handle, UnmanagedMethods.ShowWindowCommand.Hide);

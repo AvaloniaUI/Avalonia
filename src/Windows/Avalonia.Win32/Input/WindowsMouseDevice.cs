@@ -19,7 +19,7 @@ namespace Avalonia.Win32.Input
             {
             }
 
-            protected override void PlatformCapture(IInputElement element)
+            protected override void PlatformCapture(IInputElement? element)
             {
                 var hwnd = ((element?.GetVisualRoot() as TopLevel)?.PlatformImpl as WindowImpl)
                     ?.Handle.Handle;

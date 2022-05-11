@@ -13,7 +13,7 @@ namespace Avalonia.Win32.Input
     {
         public IntPtr HWND { get; private set; }
         private IntPtr _defaultImc;
-        private WindowImpl _parent;
+        private WindowImpl? _parent;
         private bool _active;
         private bool _showCompositionWindow;
         private Imm32CaretManager _caretManager = new();
@@ -74,7 +74,7 @@ namespace Avalonia.Win32.Input
             }
         }
 
-        public void SetClient(ITextInputMethodClient client)
+        public void SetClient(ITextInputMethodClient? client)
         {
             _active = client is { };
             Dispatcher.UIThread.Post(() =>

@@ -4,6 +4,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageId>Avalonia.Win32</PackageId>
     <MicroComGeneratorRuntimeNamespace>Avalonia.MicroCom</MicroComGeneratorRuntimeNamespace>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />

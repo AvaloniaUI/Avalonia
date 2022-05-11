@@ -18,8 +18,8 @@ namespace Avalonia.Win32
             SetSynchronizationContext(this);
         }
 
-        public override void Post(SendOrPostCallback d, object state) => _inner.Post(d, state);
-        public override void Send(SendOrPostCallback d, object state) => _inner.Send(d, state);
+        public override void Post(SendOrPostCallback d, object? state) => _inner.Post(d, state);
+        public override void Send(SendOrPostCallback d, object? state) => _inner.Send(d, state);
         
         [PrePrepareMethod]
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
@@ -30,7 +30,7 @@ namespace Avalonia.Win32
 
         public void Dispose() => SetSynchronizationContext(_inner);
 
-        public static IDisposable Use()
+        public static IDisposable? Use()
         {
             var current = Current;
             if (current == null)
@@ -46,7 +46,7 @@ namespace Avalonia.Win32
 
         internal class HelperImpl : NonPumpingLockHelper.IHelperImpl
         {
-            IDisposable NonPumpingLockHelper.IHelperImpl.Use() => NonPumpingSyncContext.Use();
+            IDisposable? NonPumpingLockHelper.IHelperImpl.Use() => NonPumpingSyncContext.Use();
         }
     }
 }

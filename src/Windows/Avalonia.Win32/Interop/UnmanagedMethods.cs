@@ -943,7 +943,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr CreateWindowEx(
            int dwExStyle,
            uint lpClassName,
-           string lpWindowName,
+           string? lpWindowName,
            uint dwStyle,
            int x,
            int y,
@@ -994,7 +994,7 @@ namespace Avalonia.Win32.Interop
         public static extern int GetMessageTime();
 
         [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
+        public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
@@ -1197,7 +1197,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]
-        public static extern bool SetWindowText(IntPtr hwnd, string lpString);
+        public static extern bool SetWindowText(IntPtr hwnd, string? lpString);
 
         public enum ClassLongIndex : int
         {
@@ -1456,7 +1456,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr GlobalSize(IntPtr hGlobal);
 
         [DllImport("shell32.dll", BestFitMapping = false, CharSet = CharSet.Auto)]
-        public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
+        public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder? lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
         internal static extern void DoDragDrop(IntPtr dataObject, IntPtr dropSource, int allowedEffects, [Out] out int finalEffect);
@@ -2205,14 +2205,14 @@ namespace Avalonia.Win32.Interop
         public int uCallbackMessage;
         public IntPtr hIcon;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string szTip;
+        public string? szTip;
         public int dwState = 0;
         public int dwStateMask = 0;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-        public string szInfo;
+        public string? szInfo;
         public int uTimeoutOrVersion;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-        public string szInfoTitle;
+        public string? szInfoTitle;
         public NIIF dwInfoFlags;
     }
 }

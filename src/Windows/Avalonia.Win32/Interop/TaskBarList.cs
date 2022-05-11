@@ -7,8 +7,8 @@ namespace Avalonia.Win32.Interop
     internal class TaskBarList
     {
         private static IntPtr s_taskBarList;
-        private static HrInit s_hrInitDelegate;
-        private static MarkFullscreenWindow s_markFullscreenWindowDelegate;
+        private static HrInit? s_hrInitDelegate;
+        private static MarkFullscreenWindow? s_markFullscreenWindowDelegate;
 
         /// <summary>
         /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc

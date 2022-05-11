@@ -20,7 +20,7 @@ namespace Avalonia.Win32.WinRT.Composition
         public static readonly Version MinHostBackdropVersion = new Version(10, 0, 22000);
         private readonly float? _backdropCornerRadius;
         private readonly EglContext _syncContext;
-        private readonly ICompositionBrush _micaBrush;
+        private readonly ICompositionBrush? _micaBrush;
         private ICompositor _compositor;
         private ICompositor5 _compositor5;
         private ICompositorInterop _compositorInterop;
@@ -108,7 +108,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 act.SetCompleted(this);
             }
 
-            public MicroComShadow Shadow { get; set; }
+            public MicroComShadow? Shadow { get; set; }
             public void OnReferencedFromNative()
             {
             }
@@ -193,7 +193,7 @@ namespace Avalonia.Win32.WinRT.Composition
             target.SetRoot(containerVisual);
 
             using var blur = CreateBlurVisual(_blurBrush);
-            IVisual mica = null;
+            IVisual? mica = null;
             if (_micaBrush != null)
             {
                 mica = CreateBlurVisual(_micaBrush);
@@ -209,7 +209,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 blur, mica, compositionRoundedRectangleGeometry);
         }
 
-        private ICompositionBrush CreateMicaBackdropBrush()
+        private ICompositionBrush? CreateMicaBackdropBrush()
         {
             if (Win32Platform.WindowsVersion.Build < 22000)
                 return null;
@@ -242,7 +242,7 @@ namespace Avalonia.Win32.WinRT.Composition
             return compositionEffectBrush.QueryInterface<ICompositionBrush>();
         }
 
-        private ICompositionRoundedRectangleGeometry ClipVisual(params IVisual[] containerVisuals)
+        private ICompositionRoundedRectangleGeometry? ClipVisual(params IVisual?[] containerVisuals)
         {
             if (!_backdropCornerRadius.HasValue)
                 return null;
@@ -279,7 +279,7 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private ICompositionBrush CreateBackdropBrush()
         {
-            ICompositionBackdropBrush brush = null;
+            ICompositionBackdropBrush? brush = null;
             try
             {
                 if (Win32Platform.WindowsVersion >= MinHostBackdropVersion)
@@ -301,6 +301,6 @@ namespace Avalonia.Win32.WinRT.Composition
             }
         }
 
-        public event Action<TimeSpan> Tick;
+        public event Action<TimeSpan>? Tick;
     }
 }

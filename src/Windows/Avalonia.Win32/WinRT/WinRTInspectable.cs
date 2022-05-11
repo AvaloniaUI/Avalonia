@@ -24,9 +24,9 @@ namespace Avalonia.Win32.WinRT
             *iidCount = (ulong) interfaces.Length;
         }
 
-        public IntPtr RuntimeClassName => NativeWinRTMethods.WindowsCreateString(GetType().FullName);
+        public IntPtr RuntimeClassName => NativeWinRTMethods.WindowsCreateString(GetType().FullName!);
         public TrustLevel TrustLevel => TrustLevel.BaseTrust;
-        public MicroComShadow Shadow { get; set; }
+        public MicroComShadow? Shadow { get; set; }
         public virtual void OnReferencedFromNative()
         {
         }

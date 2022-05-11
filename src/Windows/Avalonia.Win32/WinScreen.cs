@@ -19,7 +19,7 @@ namespace Avalonia.Win32
             return (int)_hMonitor;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return (obj is WinScreen screen) ? _hMonitor == screen._hMonitor : base.Equals(obj);
         }

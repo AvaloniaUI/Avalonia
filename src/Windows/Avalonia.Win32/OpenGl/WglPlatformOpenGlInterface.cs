@@ -9,24 +9,24 @@ namespace Avalonia.Win32.OpenGl
     {
         public WglContext PrimaryContext { get; }
         IGlContext IPlatformOpenGlInterface.PrimaryContext => PrimaryContext;
-        public IGlContext CreateSharedContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, PrimaryContext);
+        public IGlContext? CreateSharedContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, PrimaryContext);
 
         public bool CanShareContexts => true;
         public bool CanCreateContexts => true;
-        public IGlContext CreateContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, null);
+        public IGlContext? CreateContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, null);
 
         private  WglPlatformOpenGlInterface(WglContext primary)
         {
             PrimaryContext = primary;
         }
 
-        public static WglPlatformOpenGlInterface TryCreate()
+        public static WglPlatformOpenGlInterface? TryCreate()
         {
             try
             {
                 var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions();
                 var primary = WglDisplay.CreateContext(opts.WglProfiles.ToArray(), null);
-                return new WglPlatformOpenGlInterface(primary);
+                return primary is not null ? new WglPlatformOpenGlInterface(primary) : null;
             }
             catch (Exception e)
             {

@@ -10,7 +10,7 @@ namespace Avalonia.Win32.OpenGl
     class WglContext : IGlContext
     {
         private object _lock = new object();
-        private readonly WglContext _sharedWith;
+        private readonly WglContext? _sharedWith;
         private readonly IntPtr _context;
         private readonly IntPtr _hWnd;
         private readonly IntPtr _dc;
@@ -18,7 +18,7 @@ namespace Avalonia.Win32.OpenGl
         private readonly PixelFormatDescriptor _formatDescriptor;
         public IntPtr Handle => _context;
 
-        public WglContext(WglContext sharedWith, GlVersion version, IntPtr context, IntPtr hWnd, IntPtr dc, int pixelFormat,
+        public WglContext(WglContext? sharedWith, GlVersion version, IntPtr context, IntPtr hWnd, IntPtr dc, int pixelFormat,
             PixelFormatDescriptor formatDescriptor)
         {
             Version = version;

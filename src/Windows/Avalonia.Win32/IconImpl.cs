@@ -8,8 +8,8 @@ namespace Avalonia.Win32
 {
     class IconImpl : IWindowIconImpl
     {
-        private Bitmap bitmap;
-        private Icon icon;
+        private Bitmap? bitmap;
+        private Icon? icon;
 
         public IconImpl(Bitmap bitmap)
         {
@@ -21,7 +21,7 @@ namespace Avalonia.Win32
             this.icon = icon;
         }
 
-        public IntPtr HIcon => icon?.Handle ?? bitmap.GetHicon();
+        public IntPtr HIcon => icon?.Handle ?? bitmap!.GetHicon();
 
         public void Save(Stream outputStream)
         {
@@ -31,7 +31,7 @@ namespace Avalonia.Win32
             }
             else
             {
-                bitmap.Save(outputStream, ImageFormat.Png);
+                bitmap!.Save(outputStream, ImageFormat.Png);
             }
         }
     }

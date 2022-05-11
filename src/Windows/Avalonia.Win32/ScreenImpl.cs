@@ -14,7 +14,7 @@ namespace Avalonia.Win32
             get => GetSystemMetrics(SystemMetric.SM_CMONITORS);
         }
 
-        private Screen[] _allScreens;
+        private Screen[]? _allScreens;
         public IReadOnlyList<Screen> AllScreens
         {
             get
@@ -72,7 +72,7 @@ namespace Avalonia.Win32
             _allScreens = null;
         }
 
-        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             var handle = window.Handle.Handle;
 
@@ -81,7 +81,7 @@ namespace Avalonia.Win32
             return FindScreenByHandle(monitor);
         }
 
-        public Screen ScreenFromPoint(PixelPoint point)
+        public Screen? ScreenFromPoint(PixelPoint point)
         {
             var monitor = MonitorFromPoint(new POINT
             {
@@ -92,7 +92,7 @@ namespace Avalonia.Win32
             return FindScreenByHandle(monitor);
         }
 
-        public Screen ScreenFromRect(PixelRect rect)
+        public Screen? ScreenFromRect(PixelRect rect)
         {
             var monitor = MonitorFromRect(new RECT
             {
@@ -105,7 +105,7 @@ namespace Avalonia.Win32
             return FindScreenByHandle(monitor);
         }
 
-        private Screen FindScreenByHandle(IntPtr handle)
+        private Screen? FindScreenByHandle(IntPtr handle)
         {
             return AllScreens.Cast<WinScreen>().FirstOrDefault(m => m.Handle == handle);
         }

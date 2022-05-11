@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Automation.Peers;
@@ -56,7 +57,7 @@ namespace Avalonia.Win32
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
-        private IBlurHost _blurHost;
+        private IBlurHost? _blurHost;
         private PlatformResizeReason _resizeReason;
 
 #if USE_MANAGED_DRAG
@@ -68,25 +69,25 @@ namespace Avalonia.Win32
         private readonly MouseDevice _mouseDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
-        private readonly IGlPlatformSurface _gl;
+        private readonly IGlPlatformSurface? _gl;
 
         private Win32NativeControlHost _nativeControlHost;
-        private WndProc _wndProcDelegate;
-        private string _className;
+        private WndProc? _wndProcDelegate;
+        private string? _className;
         private IntPtr _hwnd;
         private bool _multitouch;
-        private IInputRoot _owner;
+        private IInputRoot? _owner;
         private WindowProperties _windowProperties;
         private bool _trackingMouse;
         private bool _topmost;
         private double _scaling = 1;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
-        private OleDropTarget _dropTarget;
+        private OleDropTarget? _dropTarget;
         private Size _minSize;
         private Size _maxSize;
         private POINT _maxTrackSize;
-        private WindowImpl _parent;
+        private WindowImpl? _parent;
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
@@ -133,7 +134,7 @@ namespace Avalonia.Win32
             {
                 if (_isUsingComposition)
                 {
-                    var cgl = new WinUiCompositedWindowSurface(compositionConnector, this);
+                    var cgl = new WinUiCompositedWindowSurface(compositionConnector!, this);
                     _blurHost = cgl;
 
                     _gl = cgl;
@@ -155,29 +156,29 @@ namespace Avalonia.Win32
             s_instances.Add(this);
         }
 
-        public Action Activated { get; set; }
+        public Action? Activated { get; set; }
 
-        public Func<bool> Closing { get; set; }
+        public Func<bool>? Closing { get; set; }
 
-        public Action Closed { get; set; }
+        public Action? Closed { get; set; }
 
-        public Action Deactivated { get; set; }
+        public Action? Deactivated { get; set; }
 
-        public Action<RawInputEventArgs> Input { get; set; }
+        public Action<RawInputEventArgs>? Input { get; set; }
 
-        public Action<Rect> Paint { get; set; }
+        public Action<Rect>? Paint { get; set; }
 
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<Size, PlatformResizeReason>? Resized { get; set; }
 
-        public Action<double> ScalingChanged { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
 
-        public Action<PixelPoint> PositionChanged { get; set; }
+        public Action<PixelPoint>? PositionChanged { get; set; }
 
-        public Action<WindowState> WindowStateChanged { get; set; }
+        public Action<WindowState>? WindowStateChanged { get; set; }
 
-        public Action LostFocus { get; set; }
+        public Action? LostFocus { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -459,7 +460,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IEnumerable<object> Surfaces => new object[] { (IPlatformNativeSurfaceHandle)Handle, _gl, _framebuffer };
+        public IEnumerable<object?> Surfaces => new object?[] { (IPlatformNativeSurfaceHandle)Handle, _gl, _framebuffer };
 
         public PixelPoint Position
         {
@@ -494,7 +495,7 @@ namespace Avalonia.Win32
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
             var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
 
             if (customRendererFactory != null)
@@ -539,7 +540,7 @@ namespace Avalonia.Win32
             SetForegroundWindow(_hwnd);
         }
 
-        public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
+        public IPopupImpl? CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
 
         public void Dispose()
         {
@@ -621,11 +622,11 @@ namespace Avalonia.Win32
             ShowWindow(_showWindowState, activate);
         }
 
-        public Action GotInputWhenDisabled { get; set; }
+        public Action? GotInputWhenDisabled { get; set; }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
-            _parent = (WindowImpl)parent;
+            _parent = (WindowImpl?)parent;
 
             var parentHwnd = _parent?._hwnd ?? IntPtr.Zero;
 
@@ -662,13 +663,16 @@ namespace Avalonia.Win32
             }
         }
 
-        public void SetTitle(string title)
+        public void SetTitle(string? title)
         {
             SetWindowText(_hwnd, title);
         }
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
+            if (_owner is null)
+                throw new InvalidOperationException("WindowImpl has not been initialized.");
+
             var impl = cursor as CursorImpl;
 
             if (cursor is null || impl is object)
@@ -683,9 +687,9 @@ namespace Avalonia.Win32
             }
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
-            var impl = (IconImpl)icon;
+            var impl = (IconImpl?)icon;
             var hIcon = impl?.HIcon ?? IntPtr.Zero;
             PostMessage(_hwnd, (int)WindowsMessage.WM_SETICON,
                 new IntPtr((int)Icons.ICON_BIG), hIcon);
@@ -751,6 +755,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero);
         }
 
+        [MemberNotNull(nameof(Handle))]
         private void CreateWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
@@ -814,6 +819,9 @@ namespace Avalonia.Win32
 
         private void CreateDropTarget()
         {
+            if (_owner is null)
+                throw new InvalidOperationException("WindowImpl has not been initialized.");
+
             var odt = new OleDropTarget(this, _owner);
 
             if (OleContext.Current?.RegisterDragDrop(Handle, odt) ?? false)
@@ -1331,7 +1339,7 @@ namespace Avalonia.Win32
         public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
 
         /// <inheritdoc/>
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         /// <inheritdoc/>
         public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);

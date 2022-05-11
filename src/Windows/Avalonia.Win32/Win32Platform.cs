@@ -109,7 +109,8 @@ namespace Avalonia.Win32
     public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
-        private static Thread _uiThread;
+        private static Thread? _uiThread;
+        private static Win32PlatformOptions? _options;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private IntPtr _hwnd;
         private readonly List<Delegate> _delegates = new List<Delegate>();
@@ -131,7 +132,11 @@ namespace Avalonia.Win32
 
         public static bool UseDeferredRendering => Options.UseDeferredRendering;
         internal static bool UseOverlayPopups => Options.OverlayPopups;
-        public static Win32PlatformOptions Options { get; private set; }
+        public static Win32PlatformOptions Options
+        {
+            get => _options ?? throw new InvalidOperationException("Win32Platform is not initialized.");
+            private set => _options = value ?? throw new ArgumentNullException(nameof(value));
+        }
 
         public Size DoubleClickSize => new Size(
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
@@ -256,9 +261,9 @@ namespace Avalonia.Win32
 
         public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
-        public event Action<DispatcherPriority?> Signaled;
+        public event Action<DispatcherPriority?>? Signaled;
 
-        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -288,6 +293,7 @@ namespace Avalonia.Win32
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
+        [MemberNotNull(nameof(_wndProcDelegate))]
         private void CreateMessageWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.

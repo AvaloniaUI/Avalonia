@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -177,6 +178,7 @@ namespace Avalonia.Win32.Automation
 
         public void SetFocus() => InvokeSync(() => Peer.SetFocus());
 
+        [return: NotNullIfNotNull("peer")]
         public static AutomationNode? GetOrCreate(AutomationPeer? peer)
         {
             return peer is null ? null : s_nodes.GetValue(peer, Create);

@@ -33,7 +33,7 @@ namespace Avalonia.Win32
         };
 
 
-        private static string QueryFormatName(ushort format)
+        private static string? QueryFormatName(ushort format)
         {
             StringBuilder sb = new StringBuilder(MAX_FORMAT_NAME_LENGTH);
             if (UnmanagedMethods.GetClipboardFormatName(format, sb, sb.Capacity) > 0)
@@ -48,7 +48,7 @@ namespace Avalonia.Win32
                 var pd = FormatList.FirstOrDefault(f => f.Format == format || Array.IndexOf(f.Synthesized, format) >= 0);
                 if (pd == null)
                 {
-                    string name = QueryFormatName(format);
+                    string? name = QueryFormatName(format);
                     if (string.IsNullOrEmpty(name))
                         name = string.Format("Unknown_Format_{0}", format);
                     pd = new ClipboardFormat(name, format);

@@ -77,7 +77,7 @@ namespace Avalonia.Platform
         /// If you have some rendering platform that's tied to your particular windowing platform,
         /// just expose some toolkit-specific object (e. g. Func&lt;Gdk.Drawable&gt; in case of GTK#+Cairo)
         /// </remarks>
-        IEnumerable<object> Surfaces { get; }
+        IEnumerable<object?> Surfaces { get; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel receives input.

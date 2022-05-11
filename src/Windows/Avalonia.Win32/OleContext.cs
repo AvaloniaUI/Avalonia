@@ -10,9 +10,9 @@ namespace Avalonia.Win32
 {
     internal class OleContext
     {
-        private static OleContext s_current;
+        private static OleContext? s_current;
 
-        internal static OleContext Current
+        internal static OleContext? Current
         {
             get
             {

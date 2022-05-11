@@ -263,7 +263,7 @@ namespace Avalonia.Win32
 
         private uint WriteDataToHGlobal(string dataFormat, ref IntPtr hGlobal)
         {
-            object data = _wrapped.Get(dataFormat);
+            object? data = _wrapped.Get(dataFormat);
             if (dataFormat == DataFormats.Text || data is string)
                 return WriteStringToHGlobal(ref hGlobal, Convert.ToString(data));
             if (dataFormat == DataFormats.FileNames && data is IEnumerable<string> files)

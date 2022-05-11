@@ -10,7 +10,7 @@ namespace Avalonia.Web.Blazor
 {
     internal class ClipboardStub : IClipboard
     {
-        public Task<string> GetTextAsync() => Task.FromResult("");
+        public Task<string?> GetTextAsync() => Task.FromResult<string?>("");
 
         public Task SetTextAsync(string text) => Task.CompletedTask;
 

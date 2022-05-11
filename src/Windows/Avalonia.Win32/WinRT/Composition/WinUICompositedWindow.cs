@@ -13,8 +13,8 @@ namespace Avalonia.Win32.WinRT.Composition
     {
         private EglContext _syncContext;
         private readonly object _pumpLock;
-        private readonly IVisual _micaVisual;
-        private readonly ICompositionRoundedRectangleGeometry _roundedRectangleGeometry;
+        private readonly IVisual? _micaVisual;
+        private readonly ICompositionRoundedRectangleGeometry? _roundedRectangleGeometry;
         private readonly IVisual _blurVisual;
         private ICompositionTarget _compositionTarget;
         private IVisual _contentVisual;
@@ -30,8 +30,8 @@ namespace Avalonia.Win32.WinRT.Composition
             object pumpLock,
             ICompositionTarget compositionTarget,
             ICompositionDrawingSurfaceInterop surfaceInterop,
-            IVisual contentVisual, IVisual blurVisual, IVisual micaVisual,
-            ICompositionRoundedRectangleGeometry roundedRectangleGeometry)
+            IVisual contentVisual, IVisual blurVisual, IVisual? micaVisual,
+            ICompositionRoundedRectangleGeometry? roundedRectangleGeometry)
         {
             _compositor = compositor.CloneReference();
             _syncContext = syncContext;

@@ -29,7 +29,7 @@ namespace Avalonia.Win32
             return Disposable.Create(() => UnmanagedMethods.CloseClipboard());
         }
 
-        public async Task<string> GetTextAsync()
+        public async Task<string?> GetTextAsync()
         {
             using(await OpenClipboard())
             {

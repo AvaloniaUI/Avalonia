@@ -21,10 +21,13 @@ namespace Avalonia.Win32
             Justification = "Using Win32 naming for consistency.")]
         protected virtual unsafe IntPtr AppWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            if (_owner is null)
+                throw new InvalidOperationException("WindowImpl has not been initialized.");
+
             const double wheelDelta = 120.0;
             const long UiaRootObjectId = -25;
             uint timestamp = unchecked((uint)GetMessageTime());
-            RawInputEventArgs e = null;
+            RawInputEventArgs? e = null;
             var shouldTakeFocus = false;
 
             switch ((WindowsMessage)msg)

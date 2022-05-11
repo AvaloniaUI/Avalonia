@@ -63,7 +63,7 @@ namespace Avalonia.Platform
         /// The list of native platform surfaces that can be used for output.
         /// </param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
+        IRenderTarget CreateRenderTarget(IEnumerable<object?> surfaces);
 
         /// <summary>
         /// Creates a render target bitmap implementation.

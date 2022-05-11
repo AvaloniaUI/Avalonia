@@ -7,7 +7,7 @@ namespace Avalonia.Win32.WinRT.Composition
 {
     abstract class WinUIEffectBase : WinRTInspectable, IGraphicsEffect,  IGraphicsEffectSource, IGraphicsEffectD2D1Interop
     {
-        private IGraphicsEffectSource[] _sources;
+        private IGraphicsEffectSource[]? _sources;
 
         public WinUIEffectBase(params IGraphicsEffectSource[] _sources)
         {
@@ -31,7 +31,7 @@ namespace Avalonia.Win32.WinRT.Composition
             throw new COMException("Not supported", unchecked((int)0x80004001));
 
         public abstract uint PropertyCount { get; }
-        public abstract IPropertyValue GetProperty(uint index);
+        public abstract IPropertyValue? GetProperty(uint index);
 
         public IGraphicsEffectSource GetSource(uint index)
         {
@@ -86,7 +86,7 @@ namespace Avalonia.Win32.WinRT.Composition
 
         public override uint PropertyCount => 3;
 
-        public override IPropertyValue GetProperty(uint index)
+        public override IPropertyValue? GetProperty(uint index)
         {
             switch ((D2D1GaussianBlurProp)index)
             {
@@ -121,7 +121,7 @@ namespace Avalonia.Win32.WinRT.Composition
 
         public override uint PropertyCount => 1;
 
-        public override IPropertyValue GetProperty(uint index)
+        public override IPropertyValue? GetProperty(uint index)
         {
             switch ((D2D1_SATURATION_PROP)index)
             {

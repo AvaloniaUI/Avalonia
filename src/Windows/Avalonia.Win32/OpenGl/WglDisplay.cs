@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.Win32.Interop;
@@ -20,28 +21,31 @@ namespace Avalonia.Win32.OpenGl
         private static int _defaultPixelFormat;
         public static IntPtr OpenGl32Handle = LoadLibrary("opengl32");
 
-        private delegate bool WglChoosePixelFormatARBDelegate(IntPtr hdc, int[] piAttribIList, float[] pfAttribFList,
+        private delegate bool WglChoosePixelFormatARBDelegate(IntPtr hdc, int[] piAttribIList, float[]? pfAttribFList,
             int nMaxFormats, int[] piFormats, out int nNumFormats);
 
-        private static WglChoosePixelFormatARBDelegate WglChoosePixelFormatArb;
+        private static WglChoosePixelFormatARBDelegate? WglChoosePixelFormatArb;
 
         private delegate IntPtr WglCreateContextAttribsARBDelegate(IntPtr hDC, IntPtr hShareContext, int[] attribList);
 
-        private static WglCreateContextAttribsARBDelegate WglCreateContextAttribsArb;
+        private static WglCreateContextAttribsARBDelegate? WglCreateContextAttribsArb;
         
         private delegate void GlDebugMessageCallbackDelegate(IntPtr callback, IntPtr userParam);
 
-        private static GlDebugMessageCallbackDelegate GlDebugMessageCallback;
+        private static GlDebugMessageCallbackDelegate? GlDebugMessageCallback;
 
         private delegate void DebugCallbackDelegate(int source, int type, int id, int severity, int len, IntPtr message,
             IntPtr userParam);
         
+        [MemberNotNullWhen(true, nameof(WglCreateContextAttribsArb), nameof(GlDebugMessageCallback))]
         static bool Initialize()
         {
             if (!_initialized.HasValue)
                 _initialized = InitializeCore();
             return _initialized.Value;
         }
+
+        [MemberNotNullWhen(true, nameof(WglCreateContextAttribsArb), nameof(GlDebugMessageCallback))]
         static bool InitializeCore()
         {
             var wndClassEx = new WNDCLASSEX
@@ -122,12 +126,12 @@ namespace Avalonia.Win32.OpenGl
             Console.Error.WriteLine(err);
         }
         
-        public static WglContext CreateContext(GlVersion[] versions, IGlContext share)
+        public static WglContext? CreateContext(GlVersion[] versions, IGlContext? share)
         {
             if (!Initialize())
                 return null;
 
-            var shareContext = (WglContext)share;
+            var shareContext = (WglContext?)share;
 
             using (new WglRestoreContext(_bootstrapDc, _bootstrapContext, null))
             {

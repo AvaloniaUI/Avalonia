@@ -8,7 +8,7 @@ namespace Avalonia.Win32.Interop.Automation
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IRawElementProviderFragmentRoot : IRawElementProviderFragment
     {
-        IRawElementProviderFragment ElementProviderFromPoint(double x, double y);
-        IRawElementProviderFragment GetFocus();
+        IRawElementProviderFragment? ElementProviderFromPoint(double x, double y);
+        IRawElementProviderFragment? GetFocus();
     }
 }

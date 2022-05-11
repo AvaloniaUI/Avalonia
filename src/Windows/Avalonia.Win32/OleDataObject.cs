@@ -41,15 +41,15 @@ namespace Avalonia.Win32
 
         public IEnumerable<string> GetFileNames()
         {
-            return (IEnumerable<string>)GetDataFromOleHGLOBAL(DataFormats.FileNames, DVASPECT.DVASPECT_CONTENT);
+            return (IEnumerable<string>?)GetDataFromOleHGLOBAL(DataFormats.FileNames, DVASPECT.DVASPECT_CONTENT);
         }
 
-        public object Get(string dataFormat)
+        public object? Get(string dataFormat)
         {
             return GetDataFromOleHGLOBAL(dataFormat, DVASPECT.DVASPECT_CONTENT);
         }
 
-        private unsafe object GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
+        private unsafe object? GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
         {
             var formatEtc = new Interop.FORMATETC();
             formatEtc.cfFormat = ClipboardFormats.GetFormat(format);
@@ -114,7 +114,7 @@ namespace Avalonia.Win32
             return files;
         }
 
-        private static string ReadStringFromHGlobal(IntPtr hGlobal)
+        private static string? ReadStringFromHGlobal(IntPtr hGlobal)
         {
             IntPtr ptr = UnmanagedMethods.GlobalLock(hGlobal);
             try
