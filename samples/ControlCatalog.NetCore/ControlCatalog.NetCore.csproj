@@ -45,6 +45,7 @@
   <PropertyGroup>
     <!-- For Microsoft.CodeAnalysis -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <Import Project="..\..\build\SampleApp.props" />
