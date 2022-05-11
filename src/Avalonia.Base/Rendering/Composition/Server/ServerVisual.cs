@@ -30,6 +30,9 @@ namespace Avalonia.Rendering.Composition.Server
             //TODO: Check clip
             RenderCore(canvas, transform);
             
+            canvas.PreTransform = MatrixUtils.ToMatrix(transform);
+            canvas.Transform = Matrix.Identity;
+            
             if (Clip != null)
                 canvas.PopGeometryClip();
             if (ClipToBounds)
