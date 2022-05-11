@@ -1,24 +1,26 @@
-#if DESKTOP
 using System.IO;
 using System.Diagnostics;
 using Avalonia.Platform;
+using Avalonia.Controls.Platform;
+using System;
+using ControlCatalog.Pages;
 
-namespace NativeEmbedSample;
+namespace ControlCatalog.NetCore;
 
-public partial class EmbedSample
+public class EmbedSampleGtk : INativeDemoControl
 {
     private Process _mplayer;
 
-    IPlatformHandle CreateLinux(IPlatformHandle parent)
+    public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
-        if (IsSecond)
+        if (isSecond)
         {
             var chooser = GtkHelper.CreateGtkFileChooser(parent.Handle);
             if (chooser != null)
                 return chooser;
         }
 
-        var control = base.CreateNativeControlCore(parent);
+        var control = createDefault();
         var nodes = Path.GetFullPath(Path.Combine(typeof(EmbedSample).Assembly.GetModules()[0].FullyQualifiedName,
             "..",
             "nodes.mp4"));
@@ -30,12 +32,4 @@ public partial class EmbedSample
         });
         return control;
     }
-
-    void DestroyLinux(IPlatformHandle handle)
-    {
-        _mplayer?.Kill();
-        _mplayer = null;
-        base.DestroyNativeControlCore(handle);
-    }
 }
-#endif

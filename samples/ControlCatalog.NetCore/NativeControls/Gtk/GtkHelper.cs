@@ -1,15 +1,12 @@
-#if DESKTOP
-
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
-using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.NativeDialogs.Gtk;
 using static Avalonia.X11.NativeDialogs.Glib;
 
-namespace NativeEmbedSample;
+namespace ControlCatalog.NetCore;
 
 internal class GtkHelper
 {
@@ -39,7 +36,7 @@ internal class GtkHelper
     }
 
 
-    public static IPlatformHandle CreateGtkFileChooser(IntPtr parentXid)
+    public static INativeControlHostDestroyableControlHandle CreateGtkFileChooser(IntPtr parentXid)
     {
         if (s_gtkTask == null)
             s_gtkTask = StartGtk();
@@ -59,4 +56,3 @@ internal class GtkHelper
         }).Result;
     }
 }
-#endif

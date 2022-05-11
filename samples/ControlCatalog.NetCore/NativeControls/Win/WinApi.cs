@@ -1,8 +1,7 @@
-#if DESKTOP
 using System;
 using System.Runtime.InteropServices;
 
-namespace NativeEmbedSample;
+namespace ControlCatalog.NetCore;
 
 internal unsafe class WinApi
 {
@@ -72,4 +71,3 @@ internal unsafe class WinApi
     [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "SendMessageW")]
     public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, ref SETTEXTEX wParam, byte[] lParam);
 }
-#endif

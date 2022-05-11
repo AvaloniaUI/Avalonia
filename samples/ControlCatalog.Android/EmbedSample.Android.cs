@@ -1,26 +1,27 @@
-#if __ANDROID__ || ANDROID
+using System;
 using Avalonia.Platform;
 using Avalonia.Android;
+using ControlCatalog.Pages;
 
-namespace NativeEmbedSample;
+namespace ControlCatalog.Android;
 
-public partial class EmbedSample
+public class EmbedSampleAndroid : INativeDemoControl
 {
-    private IPlatformHandle CreateAndroid(IPlatformHandle parent)
+    public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
         var parentContext = (parent as AndroidViewControlHandle)?.View.Context
-            ?? Android.App.Application.Context;
+            ?? global::Android.App.Application.Context;
 
-        if (IsSecond)
+        if (isSecond)
         {
-            var webView = new Android.Webkit.WebView(parentContext);
+            var webView = new global::Android.Webkit.WebView(parentContext);
             webView.LoadUrl("https://www.android.com/");
 
             return new AndroidViewControlHandle(webView);
         }
         else
         {
-            var button = new Android.Widget.Button(parentContext) { Text = "Hello world" };
+            var button = new global::Android.Widget.Button(parentContext) { Text = "Hello world" };
             var clickCount = 0;
             button.Click += (sender, args) =>
             {
@@ -31,10 +32,4 @@ public partial class EmbedSample
             return new AndroidViewControlHandle(button);
         }
     }
-
-    private void DestroyAndroid(IPlatformHandle control)
-    {
-        base.DestroyNativeControlCore(control);
-    }
 }
-#endif

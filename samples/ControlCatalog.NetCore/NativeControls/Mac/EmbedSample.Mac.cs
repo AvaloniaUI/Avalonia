@@ -1,14 +1,18 @@
-#if DESKTOP
+using System;
+
 using Avalonia.Platform;
 using Avalonia.Threading;
+
+using ControlCatalog.Pages;
+
 using MonoMac.Foundation;
 using MonoMac.WebKit;
 
-namespace NativeEmbedSample;
+namespace ControlCatalog.NetCore;
 
-public partial class EmbedSample
+public class EmbedSampleMac : INativeDemoControl
 {
-    IPlatformHandle CreateOSX(IPlatformHandle parent)
+    public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
         // Note: We are using MonoMac for example purposes
         // It shouldn't be used in production apps
@@ -18,15 +22,8 @@ public partial class EmbedSample
         Dispatcher.UIThread.Post(() =>
         {
             webView.MainFrame.LoadRequest(new NSUrlRequest(new NSUrl(
-                IsSecond ? "https://bing.com": "https://google.com/")));
+                isSecond ? "https://bing.com" : "https://google.com/")));
         });
         return new MacOSViewHandle(webView);
-
-    }
-
-    void DestroyOSX(IPlatformHandle handle)
-    {
-        ((MacOSViewHandle)handle).Dispose();
     }
 }
-#endif

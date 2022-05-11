@@ -1,11 +1,14 @@
-#if DESKTOP
 using System;
 using System.Text;
+
+using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 
-namespace NativeEmbedSample;
+using ControlCatalog.Pages;
 
-public partial class EmbedSample
+namespace ControlCatalog.NetCore;
+
+public class EmbedSampleWin : INativeDemoControl
 {
     private const string RichText =
         @"{\rtf1\ansi\ansicpg1251\deff0\nouicompat\deflang1049{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
@@ -14,7 +17,7 @@ public partial class EmbedSample
 \pard\sa200\sl276\slmult1\f0\fs22\lang9 <PREFIX>I \i am\i0  a \cf1\b Rich Text \cf0\b0\fs24 control\cf2\fs28 !\cf3\fs32 !\cf4\fs36 !\cf1\fs40 !\cf5\fs44 !\cf6\fs48 !\cf0\fs44\par
 }";
 
-    IPlatformHandle CreateWin32(IPlatformHandle parent)
+    public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
         WinApi.LoadLibrary("Msftedit.dll");
         var handle = WinApi.CreateWindowEx(0, "RICHEDIT50W",
@@ -22,16 +25,21 @@ public partial class EmbedSample
             0x800000 | 0x10000000 | 0x40000000 | 0x800000 | 0x10000 | 0x0004, 0, 0, 1, 1, parent.Handle,
             IntPtr.Zero, WinApi.GetModuleHandle(null), IntPtr.Zero);
         var st = new WinApi.SETTEXTEX { Codepage = 65001, Flags = 0x00000008 };
-        var text = RichText.Replace("<PREFIX>", IsSecond ? "\\qr " : "");
+        var text = RichText.Replace("<PREFIX>", isSecond ? "\\qr " : "");
         var bytes = Encoding.UTF8.GetBytes(text);
         WinApi.SendMessage(handle, 0x0400 + 97, ref st, bytes);
-        return new PlatformHandle(handle, "HWND");
-
-    }
-
-    void DestroyWin32(IPlatformHandle handle)
-    {
-        WinApi.DestroyWindow(handle.Handle);
+        return new Win32WindowControlHandle(handle, "HWND");
     }
 }
-#endif
+
+internal class Win32WindowControlHandle : PlatformHandle, INativeControlHostDestroyableControlHandle
+{
+    public Win32WindowControlHandle(IntPtr handle, string descriptor) : base(handle, descriptor)
+    {
+    }
+
+    public void Destroy()
+    {
+        _ = WinApi.DestroyWindow(Handle);
+    }
+}

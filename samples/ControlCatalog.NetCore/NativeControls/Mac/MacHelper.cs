@@ -1,9 +1,9 @@
-#if DESKTOP
 using System;
-using Avalonia.Platform;
+
+using Avalonia.Controls.Platform;
 using MonoMac.AppKit;
 
-namespace NativeEmbedSample;
+namespace ControlCatalog.NetCore;
 
 internal class MacHelper
 {
@@ -18,7 +18,7 @@ internal class MacHelper
     }
 }
 
-internal class MacOSViewHandle : IPlatformHandle, IDisposable
+internal class MacOSViewHandle : INativeControlHostDestroyableControlHandle
 {
     private NSView _view;
 
@@ -30,10 +30,9 @@ internal class MacOSViewHandle : IPlatformHandle, IDisposable
     public IntPtr Handle => _view?.Handle ?? IntPtr.Zero;
     public string HandleDescriptor => "NSView";
 
-    public void Dispose()
+    public void Destroy()
     {
         _view.Dispose();
         _view = null;
     }
 }
-#endif

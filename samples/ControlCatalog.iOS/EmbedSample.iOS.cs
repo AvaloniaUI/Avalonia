@@ -1,18 +1,19 @@
-#if IOS
+using System;
 using Avalonia.Platform;
 using CoreGraphics;
 using Foundation;
 using UIKit;
 using WebKit;
 using Avalonia.iOS;
+using ControlCatalog.Pages;
 
-namespace NativeEmbedSample;
+namespace ControlCatalog;
 
-public partial class EmbedSample
+public class EmbedSampleIOS : INativeDemoControl
 {
-    private IPlatformHandle CreateIOS(IPlatformHandle parent)
+    public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
-        if (IsSecond)
+        if (isSecond)
         {
             var webView = new WKWebView(CGRect.Empty, new WKWebViewConfiguration());
             webView.LoadRequest(new NSUrlRequest(new NSUrl("https://www.apple.com/")));
@@ -34,10 +35,4 @@ public partial class EmbedSample
             return new UIViewControlHandle(button);
         }
     }
-
-    private void DestroyIOS(IPlatformHandle control)
-    {
-        base.DestroyNativeControlCore(control);
-    }
 }
-#endif
