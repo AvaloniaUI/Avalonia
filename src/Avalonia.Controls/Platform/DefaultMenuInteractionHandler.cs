@@ -54,6 +54,7 @@ namespace Avalonia.Controls.Platform
             Menu.AddHandler(Avalonia.Controls.Menu.MenuOpenedEvent, this.MenuOpened);
             Menu.AddHandler(MenuItem.PointerEnterItemEvent, PointerEnter);
             Menu.AddHandler(MenuItem.PointerLeaveItemEvent, PointerLeave);
+            Menu.AddHandler(InputElement.PointerMovedEvent, PointerMove);
 
             _root = Menu.VisualRoot;
 
@@ -99,7 +100,7 @@ namespace Avalonia.Controls.Platform
             {
                 root.Deactivated -= WindowDeactivated;
             }
-            
+
             if (_root is TopLevel tl && tl.PlatformImpl != null)
                 tl.PlatformImpl.LostFocus -= TopLevelLostPlatformFocus;
 
@@ -148,122 +149,122 @@ namespace Avalonia.Controls.Platform
             {
                 case Key.Up:
                 case Key.Down:
-                {
-                    if (item?.IsTopLevel == true && item.HasSubMenu)
                     {
-                        if (!item.IsSubMenuOpen)
+                        if (item?.IsTopLevel == true && item.HasSubMenu)
                         {
-                            Open(item, true);
+                            if (!item.IsSubMenuOpen)
+                            {
+                                Open(item, true);
+                            }
+                            else
+                            {
+                                item.MoveSelection(NavigationDirection.First, true);
+                            }
+
+                            e.Handled = true;
                         }
                         else
                         {
-                            item.MoveSelection(NavigationDirection.First, true);
+                            goto default;
                         }
-
-                        e.Handled = true;
+                        break;
                     }
-                    else
-                    {
-                        goto default;
-                    }
-                    break;
-                }
 
                 case Key.Left:
-                {
-                    if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
                     {
-                        parent.Close();
-                        parent.Focus();
-                        e.Handled = true;
-                    }
-                    else
-                    {
-                        goto default;
-                    }
-                    break;
-                }
-
-                case Key.Right:
-                {
-                    if (item != null && !item.IsTopLevel && item.HasSubMenu)
-                    {
-                        Open(item, true);
-                        e.Handled = true;
-                    }
-                    else
-                    {
-                        goto default;
-                    }
-                    break;
-                }
-
-                case Key.Enter:
-                {
-                    if (item != null)
-                    {
-                        if (!item.HasSubMenu)
+                        if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
                         {
-                            Click(item);
+                            parent.Close();
+                            parent.Focus();
+                            e.Handled = true;
                         }
                         else
                         {
+                            goto default;
+                        }
+                        break;
+                    }
+
+                case Key.Right:
+                    {
+                        if (item != null && !item.IsTopLevel && item.HasSubMenu)
+                        {
                             Open(item, true);
+                            e.Handled = true;
+                        }
+                        else
+                        {
+                            goto default;
+                        }
+                        break;
+                    }
+
+                case Key.Enter:
+                    {
+                        if (item != null)
+                        {
+                            if (!item.HasSubMenu)
+                            {
+                                Click(item);
+                            }
+                            else
+                            {
+                                Open(item, true);
+                            }
+
+                            e.Handled = true;
+                        }
+                        break;
+                    }
+
+                case Key.Escape:
+                    {
+                        if (item?.Parent is IMenuElement parent)
+                        {
+                            parent.Close();
+                            parent.Focus();
+                        }
+                        else
+                        {
+                            Menu!.Close();
                         }
 
                         e.Handled = true;
+                        break;
                     }
-                    break;
-                }
-
-                case Key.Escape:
-                {
-                    if (item?.Parent is IMenuElement parent)
-                    {
-                        parent.Close();
-                        parent.Focus();
-                    }
-                    else
-                    {
-                        Menu!.Close();
-                    }
-
-                    e.Handled = true;
-                    break;
-                }
 
                 default:
-                {
-                    var direction = e.Key.ToNavigationDirection();
-
-                    if (direction?.IsDirectional() == true)
                     {
-                        if (item == null && _isContextMenu)
+                        var direction = e.Key.ToNavigationDirection();
+
+                        if (direction?.IsDirectional() == true)
                         {
-                            if (Menu!.MoveSelection(direction.Value, true) == true)
+                            if (item == null && _isContextMenu)
                             {
+                                if (Menu!.MoveSelection(direction.Value, true) == true)
+                                {
+                                    e.Handled = true;
+                                }
+                            }
+                            else if (item?.Parent?.MoveSelection(direction.Value, true) == true)
+                            {
+                                // If the the parent is an IMenu which successfully moved its selection,
+                                // and the current menu is open then close the current menu and open the
+                                // new menu.
+                                if (item.IsSubMenuOpen &&
+                                    item.Parent is IMenu &&
+                                    item.Parent.SelectedItem is object &&
+                                    item.Parent.SelectedItem != item)
+                                {
+                                    item.Close();
+                                    Open(item.Parent.SelectedItem, true);
+                                }
                                 e.Handled = true;
                             }
                         }
-                        else if (item?.Parent?.MoveSelection(direction.Value, true) == true)
-                        {
-                            // If the the parent is an IMenu which successfully moved its selection,
-                            // and the current menu is open then close the current menu and open the
-                            // new menu.
-                            if (item.IsSubMenuOpen &&
-                                item.Parent is IMenu &&
-                                item.Parent.SelectedItem is object &&
-                                item.Parent.SelectedItem != item)
-                            {
-                                item.Close();
-                                Open(item.Parent.SelectedItem, true);
-                            }
-                            e.Handled = true;
-                        }
-                    }
 
-                    break;
-                }
+                        break;
+                    }
             }
 
             if (!e.Handled && item?.Parent is IMenuItem parentItem)
@@ -336,6 +337,45 @@ namespace Avalonia.Controls.Platform
                     }
                 }
             }
+        }
+
+        protected internal virtual void PointerMove(object? sender, PointerEventArgs e)
+        {
+            var item = GetMenuItem(e.Source as IControl);
+            if (item == null)
+            {
+                return;
+            }
+            if (item.Parent == null)
+            {
+                return;
+            }
+
+            var point = e.GetCurrentPoint((IVisual?)sender);
+            if (point.Properties.IsLeftButtonPressed)
+            {
+                if (item.TransformedBounds!.Value.Contains(point.Position) == false)
+                {
+                    var classes = (IPseudoClasses)item.Parent.SelectedItem!.Classes;
+                    classes.Set(":pressed", false);
+                    classes.Set(":selected", false);
+                    var temp = GetMenuItem((IControl?)(item.GetVisualRoot() as IInputElement)!.InputHitTest(point.Position));
+                    if (temp != null)
+                    {
+                        item.Parent.SelectedItem = temp;
+                        ((IPseudoClasses)temp.Classes).Set(":selected", true);
+                    }
+
+
+                }
+                else
+                {
+                    item.Parent.SelectedItem = item;
+                    ((IPseudoClasses)item!.Classes).Set(":selected", true);
+                }
+            }
+
+
         }
 
         protected internal virtual void PointerLeave(object? sender, PointerEventArgs e)
@@ -448,7 +488,7 @@ namespace Avalonia.Controls.Platform
         {
             Menu?.Close();
         }
-        
+
         private void TopLevelLostPlatformFocus()
         {
             Menu?.Close();
