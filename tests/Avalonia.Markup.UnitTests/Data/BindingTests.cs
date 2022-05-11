@@ -617,6 +617,25 @@ namespace Avalonia.Markup.UnitTests.Data
             
             Assert.Equal(0, source.SubscriberCount);
         }
+        
+        [Fact]
+        public void Binding_Can_Resolve_Property_From_IReflectableType_Type()
+        {
+            var source = new DynamicReflectableType { ["Foo"] = "foo" };
+            var target = new TwoWayBindingTest { DataContext = source };
+            var binding = new Binding
+            {
+                Path = "Foo",
+            };
+
+            target.Bind(TwoWayBindingTest.TwoWayProperty, binding);
+
+            Assert.Equal("foo", target.TwoWay);
+            source["Foo"] = "bar";
+            Assert.Equal("bar", target.TwoWay);
+            target.TwoWay = "baz";
+            Assert.Equal("baz", source["Foo"]);
+        }
 
         private class StyledPropertyClass : AvaloniaObject
         {
