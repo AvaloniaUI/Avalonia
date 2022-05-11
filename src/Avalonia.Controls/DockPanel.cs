@@ -34,7 +34,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> LastChildFillProperty =
             AvaloniaProperty.Register<DockPanel, bool>(
-                nameof(LastChildFillProperty),
+                nameof(LastChildFill),
                 defaultValue: true);
 
         /// <summary>

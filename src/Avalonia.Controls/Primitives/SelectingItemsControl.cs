@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
 
         /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to

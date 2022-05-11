@@ -3,8 +3,10 @@
 // Copyright (c) 2022 Avalonia. All rights reserved.
 //
 
+#pragma once
+
 #import <Foundation/Foundation.h>
-#import "avalonia-native.h"
+#include "avalonia-native.h"
 
 @interface AutoFitContentView : NSView
 -(AutoFitContentView* _Nonnull) initWithContent: (NSView* _Nonnull) content;

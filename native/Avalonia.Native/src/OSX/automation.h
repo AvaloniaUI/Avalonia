@@ -1,5 +1,6 @@
-#import <Cocoa/Cocoa.h>
+#pragma once
 
+#import <Cocoa/Cocoa.h>
 NS_ASSUME_NONNULL_BEGIN
 
 class IAvnAutomationPeer;
