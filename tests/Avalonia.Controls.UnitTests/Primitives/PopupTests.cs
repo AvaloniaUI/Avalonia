@@ -325,6 +325,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Assert.Equal(
                         new[]
                         {
+                            "LayoutTransformControl",
                             "VisualLayerManager",
                             "ContentPresenter",
                             "ContentPresenter",
@@ -337,6 +338,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Assert.Equal(
                         new[]
                         {
+                            "LayoutTransformControl",
                             "Panel",
                             "Border",
                             "VisualLayerManager",
@@ -358,6 +360,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         {
                             popupRoot,
                             popupRoot,
+                            popupRoot,
                             target,
                             null,
                         },
@@ -368,6 +371,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Assert.Equal(
                         new object[]
                         {
+                            popupRoot,
                             popupRoot,
                             popupRoot,
                             popupRoot,

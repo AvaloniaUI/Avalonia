@@ -69,15 +69,18 @@ namespace Avalonia.Controls.Primitives
         {
             foreach (var child in Children)
             {
-                var info = child.GetValue(s_adornedElementInfoProperty);
+                if (child is AvaloniaObject ao)
+                {
+                    var info = ao.GetValue(s_adornedElementInfoProperty);
 
-                if (info != null && info.Bounds.HasValue)
-                {
-                    child.Measure(info.Bounds.Value.Bounds.Size);
-                }
-                else
-                {
-                    child.Measure(availableSize);
+                    if (info != null && info.Bounds.HasValue)
+                    {
+                        child.Measure(info.Bounds.Value.Bounds.Size);
+                    }
+                    else
+                    {
+                        child.Measure(availableSize);
+                    }
                 }
             }
 
@@ -88,19 +91,22 @@ namespace Avalonia.Controls.Primitives
         {
             foreach (var child in Children)
             {
-                var info = child.GetValue(s_adornedElementInfoProperty);
-                var isClipEnabled = child.GetValue(IsClipEnabledProperty);
+                if (child is AvaloniaObject ao)
+                {
+                    var info = ao.GetValue(s_adornedElementInfoProperty);
+                    var isClipEnabled = ao.GetValue(IsClipEnabledProperty);
 
-                if (info != null && info.Bounds.HasValue)
-                {
-                    child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
-                    child.RenderTransformOrigin = new RelativePoint(new Point(0,0), RelativeUnit.Absolute);
-                    UpdateClip(child, info.Bounds.Value, isClipEnabled);
-                    child.Arrange(info.Bounds.Value.Bounds);
-                }
-                else
-                {
-                    child.Arrange(new Rect(finalSize));
+                    if (info != null && info.Bounds.HasValue)
+                    {
+                        child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
+                        child.RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Absolute);
+                        UpdateClip(child, info.Bounds.Value, isClipEnabled);
+                        child.Arrange(info.Bounds.Value.Bounds);
+                    }
+                    else
+                    {
+                        child.Arrange(new Rect(finalSize));
+                    }
                 }
             }
 

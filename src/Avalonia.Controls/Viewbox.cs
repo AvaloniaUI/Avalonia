@@ -14,7 +14,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Stretch"/> property.
         /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
-            AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
+            AvaloniaProperty.Register<Viewbox, Stretch>(nameof(Stretch), Stretch.Uniform);
 
         /// <summary>
         /// Defines the <see cref="StretchDirection"/> property.
@@ -82,13 +82,13 @@ namespace Avalonia.Controls
             set => _containerVisual.RenderTransform = value;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ChildProperty)
             {
-                _containerVisual.Child = change.NewValue.GetValueOrDefault<IControl>();
+                _containerVisual.Child = change.GetNewValue<IControl>();
                 InvalidateMeasure();
             }
         }
