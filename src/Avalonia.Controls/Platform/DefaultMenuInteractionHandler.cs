@@ -342,11 +342,7 @@ namespace Avalonia.Controls.Platform
         protected internal virtual void PointerMove(object? sender, PointerEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
-            if (item == null)
-            {
-                return;
-            }
-            if (item.Parent == null)
+            if (item?.Parent?.SelectedItem == null)
             {
                 return;
             }
