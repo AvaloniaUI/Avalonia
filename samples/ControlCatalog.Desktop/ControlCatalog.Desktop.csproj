@@ -4,12 +4,13 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net461</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\build\SampleApp.props" />
+  <Import Condition="'$(Configuration)'!='Test'" Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\NetFX.props" />
 </Project>

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>    
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Configurations>Debug;Release;Test</Configurations>    
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -20,14 +21,21 @@
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Regular.ttf" />
     <EmbeddedResource Include="Pages\teapot.bin" />
   </ItemGroup>
-
   <ItemGroup>
+    <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(Configuration)'=='Test'">
+    <PackageReference Include="Avalonia" Version="0.10.14" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.14" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.14" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(Configuration)'!='Test'">
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
-    <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
-    <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\build\BuildTargets.targets" />
+  <Import Condition="'$(Configuration)'!='Test'" Project="..\..\build\BuildTargets.targets" />
 </Project>

@@ -4,22 +4,32 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
+    <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(Configuration)'!='Test'">
     <ProjectReference Include="..\..\src\Avalonia.Headless.Vnc\Avalonia.Headless.Vnc.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
-    <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(Configuration)'=='Test'">
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.14"/>
+    <PackageReference Include="Avalonia.Headless.Vnc" Version="0.10.14"/>
+    <PackageReference Include="Avalonia.LinuxFramebuffer" Version="0.10.14"/>
+    <PackageReference Include="Avalonia.X11" Version="0.10.14"/>
+  </ItemGroup>
+  
   <PropertyGroup>
     <!-- For Microsoft.CodeAnalysis -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
-  <Import Project="..\..\build\SampleApp.props" />
-  <Import Project="..\..\build\ReferenceCoreLibraries.props" />
+  <Import Condition="'$(Configuration)'!='Test'" Project="..\..\build\SampleApp.props" />
 </Project>
