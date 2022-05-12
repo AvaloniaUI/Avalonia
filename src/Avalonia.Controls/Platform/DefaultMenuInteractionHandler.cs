@@ -356,7 +356,7 @@ namespace Avalonia.Controls.Platform
                     classes.Set(":pressed", false);
                     classes.Set(":selected", false);
                     var temp = GetMenuItem((IControl?)(item.GetVisualRoot() as IInputElement)!.InputHitTest(point.Position));
-                    if (temp != null)
+                    if (temp != null&&item.Parent==temp.Parent)
                     {
                         item.Parent.SelectedItem = temp;
                         ((IPseudoClasses)temp.Classes).Set(":selected", true);
