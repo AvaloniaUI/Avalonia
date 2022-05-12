@@ -1,7 +1,6 @@
 
 #include "common.h"
 #include "menu.h"
-#include "window.h"
 #include "KeyTransform.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <Carbon/Carbon.h> /* For kVK_ constants, and TIS functions. */
@@ -74,8 +73,7 @@
 AvnAppMenuItem::AvnAppMenuItem(bool isSeparator)
 {
     _isCheckable = false;
-    _isSeparator = isSeparator;
-    
+
     if(isSeparator)
     {
         _native = [NSMenuItem separatorItem];
@@ -460,7 +458,7 @@ extern IAvnMenuItem* CreateAppMenuItemSeparator()
 static IAvnMenu* s_appMenu = nullptr;
 static NSMenuItem* s_appMenuItem = nullptr;
 
-extern void SetAppMenu (NSString* appName, IAvnMenu* menu)
+extern void SetAppMenu(IAvnMenu *menu)
 {
     s_appMenu = menu;
     

@@ -26,13 +26,13 @@ namespace Avalonia.Controls.Presenters
             AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SelectionBrushProperty));
+            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SelectionBrush));
 
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
-            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SelectionForegroundBrushProperty));
+            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SelectionForegroundBrush));
 
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
-            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrushProperty));
+            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
 
         public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
@@ -511,28 +511,39 @@ namespace Avalonia.Controls.Presenters
             
             InvalidateMeasure();
         }
-        
+
+
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (string.IsNullOrEmpty(Text))
+            {
+                return new Size();
+            }
+
             _constraint = availableSize;
-            
+
             _textLayout = null;
-            
+
             InvalidateArrange();
 
-            var measuredSize = PixelSize.FromSize(TextLayout.Bounds.Size, 1);
-            
-            return new Size(measuredSize.Width, measuredSize.Height);
+            var measuredSize = TextLayout.Bounds.Size;
+
+            return measuredSize;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            if (finalSize.Width < TextLayout.Bounds.Width)
+            {
+                finalSize = finalSize.WithWidth(TextLayout.Bounds.Width);
+            }
+
             if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
             {
                 return finalSize;
             }
 
-            _constraint = new Size(finalSize.Width, Math.Ceiling(finalSize.Height));
+            _constraint = new Size(finalSize.Width, double.PositiveInfinity);
 
             _textLayout = null;
 

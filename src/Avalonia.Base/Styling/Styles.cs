@@ -160,7 +160,7 @@ namespace Avalonia.Styling
 
             for (var i = Count - 1; i >= 0; --i)
             {
-                if (this[i] is IResourceProvider p && p.TryGetResource(key, out value))
+                if (this[i].TryGetResource(key, out value))
                 {
                     return true;
                 }

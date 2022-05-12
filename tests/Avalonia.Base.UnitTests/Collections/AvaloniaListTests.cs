@@ -147,6 +147,23 @@ namespace Avalonia.Base.UnitTests.Collections
         }
 
         [Fact]
+        public void AddRange_IEnumerable_Should_Raise_Count_PropertyChanged()
+        {
+            var target = new AvaloniaList<int>(new[] { 1, 2, 3, 4, 5 });
+            var raised = false;
+
+            target.PropertyChanged += (s, e) => {
+                Assert.Equal(e.PropertyName, nameof(target.Count));
+                Assert.Equal(target.Count, 7);
+                raised = true;
+            };
+
+            target.AddRange(Enumerable.Range(6, 2));
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void AddRange_Items_Should_Raise_Correct_CollectionChanged()
         {
             var target = new AvaloniaList<object>();

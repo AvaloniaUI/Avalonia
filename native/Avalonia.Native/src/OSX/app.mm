@@ -82,18 +82,6 @@ ComPtr<IAvnApplicationEvents> _events;
         _isHandlingSendEvent = oldHandling;
     }
 }
-
-// This is needed for certain embedded controls
-- (BOOL) isHandlingSendEvent
-{
-    return _isHandlingSendEvent;
-}
-
-- (void)setHandlingSendEvent:(BOOL)handlingSendEvent
-{
-    _isHandlingSendEvent = handlingSendEvent;
-}
-
 @end
 
 extern void InitializeAvnApp(IAvnApplicationEvents* events)
