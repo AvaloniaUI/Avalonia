@@ -347,7 +347,7 @@ namespace Avalonia.Controls.Platform
                 return;
             }
 
-            var point = e.GetCurrentPoint((IVisual?)sender);
+            var point = e.GetCurrentPoint(null);
             if (point.Properties.IsLeftButtonPressed)
             {
                 if (item.TransformedBounds!.Value.Contains(point.Position) == false)
