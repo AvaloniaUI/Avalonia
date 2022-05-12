@@ -95,7 +95,7 @@ namespace Avalonia.Controls
                     LogicalChildren.Remove(oldChild);
                 }
 
-                _containerVisual.Child = change.GetNewValue<IControl>();
+                _containerVisual.Child = newChild;
 
                 if (newChild is not null)
                 {
