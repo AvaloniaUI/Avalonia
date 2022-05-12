@@ -26,9 +26,9 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(Configuration)'=='Test'">
-    <PackageReference Include="Avalonia" Version="0.10.14" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.14" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.14" />
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaVersion)" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(Configuration)'!='Test'">
@@ -37,5 +37,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
   </ItemGroup>
 
+  <Import Condition="'$(Configuration)'=='Test'" Project="..\..\build\AvaloniaTestVersion.props"/>
   <Import Condition="'$(Configuration)'!='Test'" Project="..\..\build\BuildTargets.targets" />
 </Project>

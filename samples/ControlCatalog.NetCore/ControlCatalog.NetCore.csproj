@@ -20,16 +20,17 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Test'">
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.14"/>
-    <PackageReference Include="Avalonia.Headless.Vnc" Version="0.10.14"/>
-    <PackageReference Include="Avalonia.LinuxFramebuffer" Version="0.10.14"/>
-    <PackageReference Include="Avalonia.X11" Version="0.10.14"/>
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
+    <PackageReference Include="Avalonia.Headless.Vnc" Version="$(AvaloniaVersion)"/>
+    <PackageReference Include="Avalonia.LinuxFramebuffer" Version="$(AvaloniaVersion)"/>
+    <PackageReference Include="Avalonia.X11" Version="$(AvaloniaVersion)"/>
   </ItemGroup>
   
   <PropertyGroup>
     <!-- For Microsoft.CodeAnalysis -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
-
+  
+  <Import Condition="'$(Configuration)'=='Test'" Project="..\..\build\AvaloniaTestVersion.props"/>
   <Import Condition="'$(Configuration)'!='Test'" Project="..\..\build\SampleApp.props" />
 </Project>
