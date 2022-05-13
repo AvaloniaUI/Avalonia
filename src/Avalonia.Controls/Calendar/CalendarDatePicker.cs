@@ -291,8 +291,7 @@ namespace Avalonia.Controls
             // Text
             else if (change.Property == TextProperty)
             {
-                var oldValue = change.GetOldValue<string>();
-                var value = change.GetNewValue<string>();
+                var (oldValue, value) = change.GetOldAndNewValue<string>();
 
                 if (!_suspendTextChangeHandler)
                 {
