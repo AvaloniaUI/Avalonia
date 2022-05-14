@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
 
         /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
@@ -118,7 +118,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="WrapSelection"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> WrapSelectionProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
 
         private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;
@@ -501,12 +501,16 @@ namespace Avalonia.Controls.Primitives
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="value">The new binding value for the property.</param>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        /// <param name="state">The current data binding state.</param>
+        /// <param name="error">The current data binding error, if any.</param>
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == SelectedItemProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
         
@@ -533,9 +537,9 @@ namespace Avalonia.Controls.Primitives
 
                 bool Match(ItemContainerInfo info)
                 {
-                    if (info.ContainerControl.IsSet(TextSearch.TextProperty))
+                    if (info.ContainerControl is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
                     {
-                        var searchText = info.ContainerControl.GetValue(TextSearch.TextProperty);
+                        var searchText = ao.GetValue(TextSearch.TextProperty);
 
                         if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
                         {
@@ -585,7 +589,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -595,7 +599,7 @@ namespace Avalonia.Controls.Primitives
             }
             if (change.Property == ItemsProperty && _updateState is null && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var newValue = change.GetNewValue<IEnumerable>();
                 _selection.Source = newValue;
 
                 if (newValue is null)
@@ -605,7 +609,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
+                var newValue = change.GetNewValue<SelectionMode>();
                 _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
             }
             else if (change.Property == WrapSelectionProperty)

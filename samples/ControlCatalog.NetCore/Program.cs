@@ -117,7 +117,6 @@ namespace ControlCatalog.NetCore
                     EnableWmPointerEvents = true
                 })
                 .UseSkia()
-                .UseManagedSystemDialogs()
                 .AfterSetup(builder =>
                 {
                     builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()

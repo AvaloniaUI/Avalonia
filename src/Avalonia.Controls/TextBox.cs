@@ -55,13 +55,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
 
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrush));
 
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -585,7 +585,7 @@ namespace Avalonia.Controls
             _imClient.SetPresenter(null, null);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -594,7 +594,7 @@ namespace Avalonia.Controls
                 UpdatePseudoclasses();
                 UpdateCommandStates();
             }
-            else if (change.Property == IsUndoEnabledProperty && change.NewValue.GetValueOrDefault<bool>() == false)
+            else if (change.Property == IsUndoEnabledProperty && change.GetNewValue<bool>() == false)
             {
                 // from docs at
                 // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
@@ -1262,11 +1262,14 @@ namespace Avalonia.Controls
             return new TextBoxAutomationPeer(this);
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == TextProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 

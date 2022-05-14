@@ -78,7 +78,7 @@ namespace Avalonia.Themes.Fluent
             set => SetValue(DensityStyleProperty, value);
         }
         
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             if (change.Property == ModeProperty)
