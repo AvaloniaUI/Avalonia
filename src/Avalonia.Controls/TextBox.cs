@@ -79,8 +79,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
 
         public static readonly StyledProperty<int> MaxLinesProperty =
-      AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
-
+            AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
+        
         public static readonly DirectProperty<TextBox, string?> TextProperty =
             TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
                 o => o.Text,
@@ -105,6 +105,12 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
+        
+        /// <summary>
+        /// Defines see <see cref="LineHeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LineHeightProperty =
+            AvaloniaProperty.Register<TextBox, double>(nameof(LineHeight), defaultValue: double.NaN);
 
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
@@ -357,6 +363,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(MaxLinesProperty); }
             set { SetValue(MaxLinesProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets or sets the line height. By default, this is set to <see cref="double.NaN"/>, which determines the appropriate height automatically.
+        /// </summary>
+        public double LineHeight
+        {
+            get { return GetValue(LineHeightProperty); }
+            set { SetValue(LineHeightProperty, value); }
         }
 
         [Content]
