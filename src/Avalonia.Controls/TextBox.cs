@@ -107,10 +107,10 @@ namespace Avalonia.Controls
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
         
         /// <summary>
-        /// Defines see <see cref="LineHeight"/> property.
+        /// Defines see <see cref="TextPresenter.LineHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LineHeightProperty =
-            AvaloniaProperty.Register<TextBox, double>(nameof(LineHeight), defaultValue: double.NaN);
+            TextPresenter.LineHeightProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
@@ -366,7 +366,7 @@ namespace Avalonia.Controls
         }
         
         /// <summary>
-        /// Gets or sets the line height. By default, this is set to <see cref="double.NaN"/>, which determines the appropriate height automatically.
+        /// Gets or sets the line height.
         /// </summary>
         public double LineHeight
         {
