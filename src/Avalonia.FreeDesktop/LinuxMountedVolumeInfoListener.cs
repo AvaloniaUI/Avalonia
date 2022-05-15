@@ -41,6 +41,8 @@ namespace Avalonia.FreeDesktop
 
         private string UnescapePathFromProcMounts(string input) => UnescapeString(input, @"\\(\d{3})", 8);
 
+        private string UnescapeDeviceLabel(string input) => UnescapeString(input, @"\\x([0-9a-f]{2})", 16);
+
         private void Poll(long _)
         {
             var fProcPartitions = File.ReadAllLines(ProcPartitionsDir)
@@ -59,7 +61,7 @@ namespace Avalonia.FreeDesktop
                                new DirectoryInfo(DevByLabelDir).GetFiles() : Enumerable.Empty<FileInfo>();
 
             var labelDevPathPairs = labelDirEnum
-                                    .Select(x => (GetSymlinkTarget(x.FullName), x.Name));
+                                    .Select(x => (GetSymlinkTarget(x.FullName), UnescapeDeviceLabel(x.Name)));
 
             var q1 = from mount in fProcMounts
                      join device in fProcPartitions on mount.Item1 equals device.Item2
@@ -69,7 +71,7 @@ namespace Avalonia.FreeDesktop
                      {
                          VolumePath = mount.Item2,
                          VolumeSizeBytes = device.Item1,
-                         VolumeLabel = x.Name
+                         VolumeLabel = x.Item2
                      };
 
             var mountVolInfos = q1.ToArray();
