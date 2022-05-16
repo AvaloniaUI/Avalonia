@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
@@ -16,7 +15,7 @@ namespace Avalonia.PropertyStore
     /// <see cref="PriorityValue{T}"/>.
     /// </summary>
     /// <typeparam name="T">The property type.</typeparam>
-    internal class ConstantValueEntry<T> : IPriorityValueEntry<T>, IConstantValueEntry
+    internal sealed class ConstantValueEntry<T> : IPriorityValueEntry<T>, IConstantValueEntry
     {
         private ValueOwner<T> _sink;
         private Optional<T> _value;
@@ -78,6 +77,14 @@ namespace Avalonia.PropertyStore
                 oldValue.Cast<T>(),
                 newValue.Cast<T>(),
                 Priority));
+        }
+
+        public void BeginBatchUpdate()
+        {
+        }
+
+        public void EndBatchUpdate()
+        {
         }
     }
 }

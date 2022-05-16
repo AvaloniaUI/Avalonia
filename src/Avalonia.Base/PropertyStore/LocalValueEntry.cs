@@ -8,7 +8,7 @@ namespace Avalonia.PropertyStore
     /// <see cref="PriorityValue{T}"/>.
     /// </summary>
     /// <typeparam name="T">The property type.</typeparam>
-    internal class LocalValueEntry<T> : IValue<T>
+    internal sealed class LocalValueEntry<T> : IValue<T>
     {
         private T _value;
 
@@ -37,6 +37,14 @@ namespace Avalonia.PropertyStore
                 oldValue.Cast<T>(),
                 newValue.Cast<T>(),
                 BindingPriority.LocalValue));
+        }
+
+        public void BeginBatchUpdate()
+        {
+        }
+
+        public void EndBatchUpdate()
+        {
         }
     }
 }

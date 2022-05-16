@@ -5,7 +5,7 @@ namespace Avalonia.PropertyStore
     /// <summary>
     /// Represents an untyped interface to <see cref="IValue{T}"/>.
     /// </summary>
-    internal interface IValue
+    internal interface IValue : IBatchUpdate
     {
         bool IsRemoveSentinel { get; }
         BindingPriority Priority { get; }

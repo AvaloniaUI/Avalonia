@@ -343,8 +343,8 @@ namespace Avalonia
         private void AddValue(AvaloniaProperty property, IValue value)
         {
             _values.AddValue(property, value);
-            if (IsBatchUpdating() && value is IBatchUpdate batch)
-                batch.BeginBatchUpdate();
+            if (IsBatchUpdating())
+                value.BeginBatchUpdate();
             value.Start();
         }
 
@@ -395,7 +395,7 @@ namespace Avalonia
 
                     for (var i = 0; i < values.Count; ++i)
                     {
-                        (values[i] as IBatchUpdate)?.BeginBatchUpdate();
+                        values[i].BeginBatchUpdate();
                     }
                 }
             }
@@ -412,7 +412,7 @@ namespace Avalonia
                 // to this batch update object.
                 for (var i = 0; i < values.Count; ++i)
                 {
-                    (values[i] as IBatchUpdate)?.EndBatchUpdate();
+                    values[i].EndBatchUpdate();
 
                     // Somehow subscribing to a binding caused a new batch update. This shouldn't happen but in case it
                     // does, abort and continue batch updating.

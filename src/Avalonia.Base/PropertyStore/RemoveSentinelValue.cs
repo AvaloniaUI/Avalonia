@@ -28,5 +28,13 @@ namespace Avalonia.PropertyStore
                 newValue.Cast<T>(),
                 Priority));
         }
+
+        public void BeginBatchUpdate()
+        {
+        }
+
+        public void EndBatchUpdate()
+        {
+        }
     }
 }
