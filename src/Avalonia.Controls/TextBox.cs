@@ -110,7 +110,7 @@ namespace Avalonia.Controls
         /// Defines see <see cref="TextPresenter.LineHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LineHeightProperty =
-            TextPresenter.LineHeightProperty.AddOwner<TextBox>();
+            TextBlock.LineHeightProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));

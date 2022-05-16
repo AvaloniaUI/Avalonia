@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="LineHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LineHeightProperty =
-            AvaloniaProperty.Register<TextPresenter, double>(nameof(LineHeight), defaultValue: double.NaN);
+            TextBlock.LineHeightProperty.AddOwner<TextBox>();
         
         /// <summary>
         /// Defines the <see cref="Background"/> property.
