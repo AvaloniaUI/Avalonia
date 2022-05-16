@@ -28,7 +28,7 @@ namespace Avalonia.Interactivity
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         public void AddHandler(
             RoutedEvent routedEvent,
-            Delegate handler,
+            Delegate? handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)
         {
@@ -77,7 +77,7 @@ namespace Avalonia.Interactivity
         /// </summary>
         /// <param name="routedEvent">The routed event.</param>
         /// <param name="handler">The handler.</param>
-        public void RemoveHandler(RoutedEvent routedEvent, Delegate handler)
+        public void RemoveHandler(RoutedEvent routedEvent, Delegate? handler)
         {
             routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
             handler = handler ?? throw new ArgumentNullException(nameof(handler));
