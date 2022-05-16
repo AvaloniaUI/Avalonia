@@ -24,13 +24,19 @@ namespace Avalonia
     internal class ValueStore
     {
         private readonly AvaloniaObject _owner;
-        private readonly AvaloniaPropertyValueStore<IValue> _values;
+        private AvaloniaPropertyValueStore<IValue> _values;
         private BatchUpdate? _batchUpdate;
 
         public ValueStore(AvaloniaObject owner)
         {
             _owner = owner;
             _values = new AvaloniaPropertyValueStore<IValue>();
+        }
+
+        public bool IsDuringInitialization
+        {
+            get => _values.IsDuringInitialization;
+            set => _values.IsDuringInitialization = value;
         }
 
         public void BeginBatchUpdate()
@@ -186,8 +192,7 @@ namespace Avalonia
                         // so there's no way to mark them for removal at the end of a batch update. Instead convert
                         // them to a constant value entry with Unset priority in the event of a local value being
                         // cleared during a batch update.
-                        var sentinel = new ConstantValueEntry<T>(property, Optional<T>.Empty, BindingPriority.Unset, new(this));
-                        _values.SetValue(property, sentinel);
+                        _values.SetValue(property, RemoveSentinelValue<T>.s_instance);
                     }
 
                     NotifyValueChanged<T>(property, old, default, BindingPriority.Unset);
@@ -368,20 +373,12 @@ namespace Avalonia
 
         private bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out IValue value)
         {
-            return _values.TryGetValue(property, out value) && !IsRemoveSentinel(value);
-        }
-
-        private static bool IsRemoveSentinel(IValue value)
-        {
-            // Local value entries are optimized and contain only a single value field to save space,
-            // so there's no way to mark them for removal at the end of a batch update. Instead a
-            // ConstantValueEntry with a priority of Unset is used as a sentinel value.
-            return value is IConstantValueEntry t && t.Priority == BindingPriority.Unset;
+            return _values.TryGetValue(property, out value) && !value.IsRemoveSentinel;
         }
 
         private class BatchUpdate
         {
-            private ValueStore _owner;
+            private readonly ValueStore _owner;
             private List<Notification>? _notifications;
             private int _batchUpdateCount;
             private int _iterator = -1;
@@ -408,7 +405,7 @@ namespace Avalonia
                 if (--_batchUpdateCount > 0)
                     return false;
 
-                var values = _owner._values;
+                ref var values = ref _owner._values;
 
                 // First call EndBatchUpdate on all bindings. This should cause the active binding to be subscribed
                 // but notifications will still not be raised because the owner ValueStore will still have a reference

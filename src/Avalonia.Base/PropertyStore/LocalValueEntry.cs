@@ -13,6 +13,7 @@ namespace Avalonia.PropertyStore
         private T _value;
 
         public LocalValueEntry(T value) => _value = value;
+        public bool IsRemoveSentinel => false;
         public BindingPriority Priority => BindingPriority.LocalValue;
         Optional<object?> IValue.GetValue() => new Optional<object?>(_value);
         

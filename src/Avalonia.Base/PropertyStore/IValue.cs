@@ -7,6 +7,7 @@ namespace Avalonia.PropertyStore
     /// </summary>
     internal interface IValue
     {
+        bool IsRemoveSentinel { get; }
         BindingPriority Priority { get; }
         Optional<object?> GetValue();
         void Start();

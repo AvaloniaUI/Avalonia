@@ -46,6 +46,7 @@ namespace Avalonia.PropertyStore
         }
 
         public StyledPropertyBase<T> Property { get; }
+        public bool IsRemoveSentinel => false;
         public BindingPriority Priority { get; private set; }
         Optional<object?> IValue.GetValue() => _value.ToObject();
 

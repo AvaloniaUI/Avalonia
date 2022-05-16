@@ -306,6 +306,11 @@ namespace Avalonia
         public virtual void BeginInit()
         {
             ++_initCount;
+
+            if (_initCount == 1)
+            {
+                SetValueStoreIsInitializing(true);
+            }
         }
 
         /// <inheritdoc/>
@@ -316,10 +321,15 @@ namespace Avalonia
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0 && _logicalRoot != null)
+            if (--_initCount == 0)
             {
-                ApplyStyling();
-                InitializeIfNeeded();
+                if (_logicalRoot is not null)
+                {
+                    ApplyStyling();
+                    InitializeIfNeeded();
+                }
+                
+                SetValueStoreIsInitializing(false);
             }
         }
 
@@ -337,11 +347,13 @@ namespace Avalonia
                 try
                 {
                     BeginBatchUpdate();
+                    SetValueStoreIsInitializing(true);
                     AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
                 }
                 finally
                 {
                     EndBatchUpdate();
+                    SetValueStoreIsInitializing(false);
                 }
 
                 _styled = true;

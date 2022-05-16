@@ -93,6 +93,7 @@ namespace Avalonia.PropertyStore
         }
 
         public StyledPropertyBase<T> Property { get; }
+        public bool IsRemoveSentinel => false;
         public BindingPriority Priority { get; private set; } = BindingPriority.Unset;
         public IReadOnlyList<IPriorityValueEntry<T>> Entries => _entries;
         Optional<object?> IValue.GetValue() => _value.ToObject();
