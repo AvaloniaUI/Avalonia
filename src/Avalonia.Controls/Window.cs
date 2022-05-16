@@ -171,15 +171,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Routed event that can be used for global tracking of window destruction
         /// </summary>
-        public static readonly RoutedEvent WindowClosedEvent =
-            RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
+        public static readonly RoutedEvent<RoutedEventArgs> WindowClosedEvent =
+            RoutedEvent.Register<Window, RoutedEventArgs>(nameof(WindowClosed), RoutingStrategies.Direct);
 
         /// <summary>
         /// Routed event that can be used for global tracking of opening windows
         /// </summary>
-        public static readonly RoutedEvent WindowOpenedEvent =
-            RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
-
+        public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
+            RoutedEvent.Register<Window, RoutedEventArgs>(nameof(WindowOpened), RoutingStrategies.Direct);
 
 
         private readonly NameScope _nameScope = new NameScope();
@@ -444,6 +443,24 @@ namespace Avalonia.Controls
             {
                 PlatformImpl?.Move(value);
             }
+        }
+
+        /// <summary>
+        /// Routed event that can be used for global tracking of window destruction.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? WindowClosed
+        {
+            add => AddHandler(WindowClosedEvent, value);
+            remove => RemoveHandler(WindowClosedEvent, value);
+        }
+
+        /// <summary>
+        /// Routed event that can be used for global tracking of opening windows.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? WindowOpened
+        {
+            add => AddHandler(WindowOpenedEvent, value);
+            remove => RemoveHandler(WindowOpenedEvent, value);
         }
 
         /// <summary>
