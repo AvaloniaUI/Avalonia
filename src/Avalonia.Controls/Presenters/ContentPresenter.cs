@@ -635,8 +635,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                sizeForChild = LayoutHelper.RoundLayoutSize(sizeForChild, scale, scale);
-                availableSize = LayoutHelper.RoundLayoutSize(availableSize, scale, scale);
+                sizeForChild = LayoutHelper.RoundLayoutSizeUp(sizeForChild, scale, scale);
+                availableSize = LayoutHelper.RoundLayoutSizeUp(availableSize, scale, scale);
             }
 
             switch (horizontalContentAlignment)

@@ -173,37 +173,6 @@ namespace Avalonia.Base.UnitTests.Layout
             target.Verify(x => x.InvalidateMeasure(root), Times.Once());
         }
 
-        [Theory]
-        [InlineData(16, 6, 5.333333333333333)]
-        [InlineData(18, 10, 4)]
-        public void UseLayoutRounding_Arranges_Center_Alignment_Correctly_With_Fractional_Scaling(
-            double containerWidth,
-            double childWidth,
-            double expectedX)
-        {
-            Border target;
-            var root = new TestRoot
-            {
-                LayoutScaling = 1.5,
-                UseLayoutRounding = true,
-                Child = new Decorator
-                {
-                    Width = containerWidth,
-                    Height = 100,
-                    Child = target = new Border
-                    {
-                        Width = childWidth,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                    }
-                }
-            };
-
-            root.Measure(new Size(100, 100));
-            root.Arrange(new Rect(target.DesiredSize));
-
-            Assert.Equal(new Rect(expectedX, 0, childWidth, 100), target.Bounds);
-        }
-
         [Fact]
         public void LayoutUpdated_Is_Called_At_End_Of_Layout_Pass()
         {
