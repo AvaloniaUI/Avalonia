@@ -53,7 +53,7 @@ namespace Avalonia.Controls
         /// Event raised when an element wishes to be scrolled into view.
         /// </summary>
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
-            RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
+            RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>(nameof(RequestBringIntoView), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Provides event data for the <see cref="ContextRequested"/> event.
@@ -124,6 +124,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(FlowDirectionProperty);
             set => SetValue(FlowDirectionProperty, value);
+        }
+
+        /// <summary>
+        /// Occurs when an element wishes to be scrolled into view.
+        /// </summary>
+        public event EventHandler<ContextRequestedEventArgs>? RequestBringIntoView
+        {
+            add => AddHandler(RequestBringIntoViewEvent, value);
+            remove => RemoveHandler(RequestBringIntoViewEvent, value);
         }
 
         /// <summary>
