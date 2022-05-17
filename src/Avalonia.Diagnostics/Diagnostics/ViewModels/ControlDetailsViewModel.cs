@@ -60,7 +60,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 var styleDiagnostics = styledElement.GetStyleDiagnostics();
 
-                foreach (var appliedStyle in styleDiagnostics.AppliedStyles)
+                // We need to place styles without activator first, such styles will be overwritten by ones with activators.
+                foreach (var appliedStyle in styleDiagnostics.AppliedStyles.OrderBy(s => s.HasActivator))
                 {
                     var styleSource = appliedStyle.Source;
 
