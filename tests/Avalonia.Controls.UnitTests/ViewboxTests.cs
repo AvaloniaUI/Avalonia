@@ -1,4 +1,5 @@
 using Avalonia.Controls.Shapes;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -169,6 +170,25 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotNull(scaleTransform);
             Assert.Equal(expectedScale, scaleTransform.ScaleX);
             Assert.Equal(expectedScale, scaleTransform.ScaleY);
+        }
+
+        [Fact]
+        public void Child_Should_Be_Logical_Child_Of_Viewbox()
+        {
+            var target = new Viewbox();
+
+            Assert.Empty(target.GetLogicalChildren());
+
+            var child = new Canvas();
+            target.Child = child;
+
+            Assert.Single(target.GetLogicalChildren(), child);
+            Assert.Same(child.GetLogicalParent(), target);
+
+            target.Child = null;
+
+            Assert.Empty(target.GetLogicalChildren());
+            Assert.Null(child.GetLogicalParent());
         }
     }
 }

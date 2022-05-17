@@ -8,7 +8,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Viewbox : Control
     {
-        private Decorator _containerVisual;
+        private ViewboxContainer _containerVisual;
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
@@ -37,9 +37,10 @@ namespace Avalonia.Controls
 
         public Viewbox()
         {
-            _containerVisual = new Decorator();
+            // The Child control is hosted inside a ViewboxContainer control so that the transform
+            // can be applied independently of the Viewbox and Child transforms.
+            _containerVisual = new ViewboxContainer();
             _containerVisual.RenderTransformOrigin = RelativePoint.TopLeft;
-            LogicalChildren.Add(_containerVisual);
             VisualChildren.Add(_containerVisual);
         }
 
@@ -88,7 +89,22 @@ namespace Avalonia.Controls
 
             if (change.Property == ChildProperty)
             {
-                _containerVisual.Child = change.GetNewValue<IControl>();
+                var (oldChild, newChild) = change.GetOldAndNewValue<IControl>();
+
+                if (oldChild is not null)
+                {
+                    ((ISetLogicalParent)oldChild).SetParent(null);
+                    LogicalChildren.Remove(oldChild);
+                }
+
+                _containerVisual.Child = newChild;
+
+                if (newChild is not null)
+                {
+                    ((ISetLogicalParent)newChild).SetParent(this);
+                    LogicalChildren.Add(newChild);
+                }
+
                 InvalidateMeasure();
             }
         }
@@ -128,6 +144,32 @@ namespace Avalonia.Controls
             }
 
             return finalSize;
+        }
+
+        /// <summary>
+        /// A simple container control which hosts its child as a visual but not logical child.
+        /// </summary>
+        private class ViewboxContainer : Control
+        {
+            private IControl? _child;
+
+            public IControl? Child
+            {
+                get => _child;
+                set
+                {
+                    if (_child != value)
+                    {
+                        if (_child is not null)
+                            VisualChildren.Remove(_child);
+
+                        _child = value;
+
+                        if (_child is not null)
+                            VisualChildren.Add(_child);
+                    }
+                }
+            }
         }
     }
 }
