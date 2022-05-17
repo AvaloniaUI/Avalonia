@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Metadata;
 
 namespace Avalonia.Styling
@@ -7,7 +8,7 @@ namespace Avalonia.Styling
     /// Defines the interface for styles.
     /// </summary>
     [NotClientImplementable]
-    public interface IStyle
+    public interface IStyle : IResourceNode
     {
         /// <summary>
         /// Gets a collection of child styles.

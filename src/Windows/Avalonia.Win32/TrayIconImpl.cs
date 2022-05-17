@@ -26,6 +26,7 @@ namespace Avalonia.Win32
         private readonly Win32NativeToManagedMenuExporter _exporter;
         private static readonly Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
         private bool _disposedValue;
+        private static readonly uint WM_TASKBARCREATED = UnmanagedMethods.RegisterWindowMessage("TaskbarCreated");
 
         public TrayIconImpl()
         {
@@ -45,6 +46,18 @@ namespace Avalonia.Win32
             if (msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.ContainsKey(wParam.ToInt32()))
             {
                 s_trayIcons[wParam.ToInt32()].WndProc(hWnd, msg, wParam, lParam);
+            }
+
+            if (msg == WM_TASKBARCREATED)
+            {
+                foreach (var tray in s_trayIcons.Values)
+                {
+                    if (tray._iconAdded)
+                    {
+                        tray.UpdateIcon(true);
+                        tray.UpdateIcon();
+                    }
+                }
             }
         }
 
@@ -147,7 +160,7 @@ namespace Avalonia.Win32
         private enum CustomWindowsMessage : uint
         {
             WM_TRAYICON = WindowsMessage.WM_APP + 1024,
-            WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
+            WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024,
         }
 
         private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter, IStyleable

@@ -118,7 +118,7 @@ internal class WeakHashList<T> where T : class
     {
         if (_arr != null)
         {
-            for (var c = 0; c < _arr.Length; c++)
+            for (var c = 0; c < _arrCount; c++)
             {
                 if (_arr[c]?.TryGetTarget(out var target) == true && target == item)
                 {

@@ -15,6 +15,11 @@ namespace Avalonia.Styling
         IStyle Source { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this style has an activator.
+        /// </summary>
+        bool HasActivator { get; }
+        
+        /// <summary>
         /// Gets a value indicating whether this style is active.
         /// </summary>
         bool IsActive { get; }
