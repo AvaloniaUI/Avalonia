@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -8,7 +9,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Viewbox : Control
     {
-        private ViewboxContainer _containerVisual;
+        private readonly ViewboxContainer _containerVisual;
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
@@ -136,7 +137,7 @@ namespace Avalonia.Controls
                 var childSize = child.DesiredSize;
                 var scale = Stretch.CalculateScaling(finalSize, childSize, StretchDirection);
 
-                InternalTransform = new ScaleTransform(scale.X, scale.Y);
+                InternalTransform = new ImmutableTransform(Matrix.CreateScale(scale.X, scale.Y));
 
                 child.Arrange(new Rect(childSize));
 
