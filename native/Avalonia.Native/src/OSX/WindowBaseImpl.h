@@ -72,6 +72,8 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT GetClientSize(AvnSize *ret) override;
 
+    virtual HRESULT GetFrameSize(AvnSize *ret) override;
+
     virtual HRESULT GetScaling(double *ret) override;
 
     virtual HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize) override;
