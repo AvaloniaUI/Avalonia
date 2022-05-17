@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -116,6 +117,10 @@ namespace Avalonia.Controls
         Custom = 2
     }
 
+    [TemplatePart(ElementButton,   typeof(Button))]
+    [TemplatePart(ElementCalendar, typeof(Calendar))]
+    [TemplatePart(ElementPopup,    typeof(Popup))]
+    [TemplatePart(ElementTextBox,  typeof(TextBox))]
     public class CalendarDatePicker : TemplatedControl
     {
         private const string ElementTextBox = "PART_TextBox";
@@ -186,7 +191,8 @@ namespace Avalonia.Controls
                 nameof(SelectedDate),
                 o => o.SelectedDate,
                 (o, v) => o.SelectedDate = v,
-                enableDataValidation: true);
+                enableDataValidation: true, 
+                defaultBindingMode:BindingMode.TwoWay);
 
         public static readonly StyledProperty<CalendarDatePickerFormat> SelectedDateFormatProperty =
             AvaloniaProperty.Register<CalendarDatePicker, CalendarDatePickerFormat>(
@@ -534,11 +540,11 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {
             if (property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 

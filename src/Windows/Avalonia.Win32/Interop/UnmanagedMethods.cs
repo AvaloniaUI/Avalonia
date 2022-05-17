@@ -765,6 +765,14 @@ namespace Avalonia.Win32.Interop
             DWMWA_CLOAK,
             DWMWA_CLOAKED,
             DWMWA_FREEZE_REPRESENTATION,
+            DWMWA_PASSIVE_UPDATE_MODE,
+            DWMWA_USE_HOSTBACKDROPBRUSH,
+            DWMWA_USE_IMMERSIVE_DARK_MODE = 20,
+            DWMWA_WINDOW_CORNER_PREFERENCE = 33,
+            DWMWA_BORDER_COLOR,
+            DWMWA_CAPTION_COLOR,
+            DWMWA_TEXT_COLOR,
+            DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
             DWMWA_LAST
         };
 
@@ -906,9 +914,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
                                                       MonitorEnumDelegate lpfnEnum, IntPtr dwData);
-        
+
         public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
-        
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
@@ -999,7 +1007,7 @@ namespace Avalonia.Win32.Interop
 
         public static uint GetWindowLong(IntPtr hWnd, int nIndex)
         {
-            if(IntPtr.Size == 4)
+            if (IntPtr.Size == 4)
             {
                 return GetWindowLong32b(hWnd, nIndex);
             }
@@ -1026,7 +1034,7 @@ namespace Avalonia.Win32.Interop
                 return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr((uint)value)).ToInt32();
             }
         }
-        
+
         public static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr handle)
         {
             if (IntPtr.Size == 4)
@@ -1060,14 +1068,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool InvalidateRect(IntPtr hWnd, RECT* lpRect, bool bErase);
-        
-        
+
+
         [DllImport("user32.dll")]
         public static extern bool ValidateRect(IntPtr hWnd, IntPtr lpRect);
 
         [DllImport("user32.dll")]
         public static extern bool IsWindow(IntPtr hWnd);
-        
+
         [DllImport("user32.dll")]
         public static extern bool IsWindowEnabled(IntPtr hWnd);
 
@@ -1094,22 +1102,25 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32")]
         public static extern IntPtr GetMessageExtraInfo();
-        
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
 
         [DllImport("user32.dll")]
         public static extern void RegisterTouchWindow(IntPtr hWnd, int flags);
-        
+
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint RegisterWindowMessage(string lpString);
 
         [DllImport("user32.dll")]
         public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetActiveWindow();
-        
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
@@ -1277,10 +1288,10 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
 
         [DllImport("ole32.dll", PreserveSig = false)]
-        public static extern int OleGetClipboard(out IOleDataObject dataObject);
+        public static extern int OleGetClipboard(out IntPtr dataObject);
 
         [DllImport("ole32.dll", PreserveSig = true)]
-        public static extern int OleSetClipboard(IOleDataObject dataObject);
+        public static extern int OleSetClipboard(IntPtr dataObject);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
@@ -1296,7 +1307,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr LoadLibrary(string fileName);
-        
+
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr LoadLibraryEx(string fileName, IntPtr hFile, int flags);
 
@@ -1340,7 +1351,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
-        
+
         [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
@@ -1348,14 +1359,14 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32")]
         public static extern unsafe bool GetTouchInputInfo(
             IntPtr hTouchInput,
-            uint        cInputs,
+            uint cInputs,
             TOUCHINPUT* pInputs,
-            int         cbSize
+            int cbSize
         );
-        
+
         [DllImport("user32")]
         public static extern bool CloseTouchInputHandle(IntPtr hTouchInput);
-        
+
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -1364,7 +1375,7 @@ namespace Avalonia.Win32.Interop
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
             IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
-        
+
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
@@ -1379,27 +1390,27 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("gdi32.dll")]
         public static extern int ChoosePixelFormat(IntPtr hdc, ref PixelFormatDescriptor pfd);
-        
+
         [DllImport("gdi32.dll")]
         public static extern int DescribePixelFormat(IntPtr hdc, ref PixelFormatDescriptor pfd);
 
         [DllImport("gdi32.dll")]
         public static extern int SetPixelFormat(IntPtr hdc, int iPixelFormat, ref PixelFormatDescriptor pfd);
-        
-        
+
+
         [DllImport("gdi32.dll")]
         public static extern int DescribePixelFormat(IntPtr hdc, int iPixelFormat, int bytes, ref PixelFormatDescriptor pfd);
-        
+
         [DllImport("gdi32.dll")]
         public static extern bool SwapBuffers(IntPtr hdc);
 
         [DllImport("opengl32.dll")]
         public static extern IntPtr wglCreateContext(IntPtr hdc);
-        
+
         [DllImport("opengl32.dll")]
         public static extern bool wglDeleteContext(IntPtr context);
 
-        
+
         [DllImport("opengl32.dll")]
         public static extern bool wglMakeCurrent(IntPtr hdc, IntPtr context);
 
@@ -1420,11 +1431,11 @@ namespace Avalonia.Win32.Interop
             uint dwMaximumSizeLow,
             string lpName);
 
-        [DllImport("msvcrt.dll", EntryPoint="memcpy", SetLastError = false, CallingConvention=CallingConvention.Cdecl)]
-        public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count); 
-        
+        [DllImport("msvcrt.dll", EntryPoint = "memcpy", SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count);
+
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IDropTarget target);
+        public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IntPtr target);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern HRESULT RevokeDragDrop(IntPtr hwnd);
@@ -1448,7 +1459,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
+        internal static extern void DoDragDrop(IntPtr dataObject, IntPtr dropSource, int allowedEffects, [Out] out int finalEffect);
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
@@ -1457,14 +1468,17 @@ namespace Avalonia.Win32.Interop
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
 
         [DllImport("dwmapi.dll")]
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
+
+        [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
         [DllImport("dwmapi.dll")]
         public static extern void DwmFlush();
-        
+
         [DllImport("dwmapi.dll")]
         public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
-        
+
         [DllImport("dwmapi.dll")]
         public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
         
@@ -1531,8 +1545,8 @@ namespace Avalonia.Win32.Interop
                 throw new Exception("RtlGetVersion failed!");
             }
         }
-        
-        [DllImport("kernel32", EntryPoint="WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
+
+        [DllImport("kernel32", EntryPoint = "WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int IntWaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable);
 
         public const int WAIT_FAILED = unchecked((int)0xFFFFFFFF);
@@ -1540,7 +1554,7 @@ namespace Avalonia.Win32.Interop
         internal static int WaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable)
         {
             int result = IntWaitForMultipleObjectsEx(nCount, pHandles, bWaitAll, dwMilliseconds, bAlertable);
-            if(result ==  WAIT_FAILED)
+            if (result == WAIT_FAILED)
             {
                 throw new Win32Exception();
             }
@@ -1688,7 +1702,7 @@ namespace Avalonia.Win32.Interop
             DrawLeftBorder = 0x20,
             DrawTopBorder = 0x40,
             DrawRightBorder = 0x80,
-            DrawBottomBorder = 0x100,            
+            DrawBottomBorder = 0x100,
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1756,9 +1770,9 @@ namespace Avalonia.Win32.Interop
             MDT_ANGULAR_DPI = 1,
             MDT_RAW_DPI = 2,
             MDT_DEFAULT = MDT_EFFECTIVE_DPI
-        } 
+        }
 
-        public enum ClipboardFormat 
+        public enum ClipboardFormat
         {
             /// <summary>
             /// Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data. Use this format for ANSI text.
@@ -1809,7 +1823,7 @@ namespace Avalonia.Win32.Interop
             public int X;
             public int Y;
         }
-        
+
         public struct SIZE
         {
             public int X;
@@ -2010,7 +2024,7 @@ namespace Avalonia.Win32.Interop
             OFN_NOREADONLYRETURN = 0x00008000,
             OFN_OVERWRITEPROMPT = 0x00000002
         }
-        
+
         public enum HRESULT : uint
         {
             S_FALSE = 0x0001,
@@ -2064,64 +2078,6 @@ namespace Avalonia.Win32.Interop
         }
     }
 
-    [Flags]
-    internal enum DropEffect : int
-    {
-        None = 0,
-        Copy = 1,
-        Move = 2,
-        Link = 4,
-        Scroll = -2147483648,
-    }
-
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("00000122-0000-0000-C000-000000000046")]
-    internal interface IDropTarget
-    {
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragEnter([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragOver([MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragLeave();
-        [PreserveSig]
-        UnmanagedMethods.HRESULT Drop([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-    }
-
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("00000121-0000-0000-C000-000000000046")]
-    internal interface IDropSource
-    {
-        [PreserveSig]
-        int QueryContinueDrag(int fEscapePressed, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState);
-        [PreserveSig]
-        int GiveFeedback([MarshalAs(UnmanagedType.U4)] [In] int dwEffect);
-    }
-
-
-    [ComImport]
-    [Guid("0000010E-0000-0000-C000-000000000046")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IOleDataObject
-    {
-        void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
-        void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);
-        [PreserveSig]
-        int QueryGetData([In] ref FORMATETC format);
-        [PreserveSig]
-        int GetCanonicalFormatEtc([In] ref FORMATETC formatIn, out FORMATETC formatOut);
-        void SetData([In] ref FORMATETC formatIn, [In] ref STGMEDIUM medium, [MarshalAs(UnmanagedType.Bool)] bool release);
-        IEnumFORMATETC EnumFormatEtc(DATADIR direction);
-        [PreserveSig]
-        int DAdvise([In] ref FORMATETC pFormatetc, ADVF advf, IAdviseSink adviseSink, out int connection);
-        void DUnadvise(int connection);
-        [PreserveSig]
-        int EnumDAdvise(out IEnumSTATDATA enumAdvise);
-    }
-
-
     [StructLayoutAttribute(LayoutKind.Sequential)]
     internal struct _DROPFILES
     {
@@ -2130,6 +2086,24 @@ namespace Avalonia.Win32.Interop
         public Int32 Y;
         public bool fNC;
         public bool fWide;
+    }
+
+    [StructLayoutAttribute(LayoutKind.Sequential)]
+    internal struct STGMEDIUM
+    {
+        public TYMED tymed;
+        public IntPtr unionmember;
+        public IntPtr pUnkForRelease;
+    }
+
+    [StructLayoutAttribute(LayoutKind.Sequential)]
+    internal struct FORMATETC
+    {
+        public ushort cfFormat;
+        public IntPtr ptd;
+        public DVASPECT dwAspect;
+        public int lindex;
+        public TYMED tymed;
     }
 
     [Flags]

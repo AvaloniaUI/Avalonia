@@ -117,7 +117,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     return parentDataContextNode.DataContextType;
                 };
 
-                XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, binding, startTypeResolver, context.ParentNodes().OfType<XamlAstConstructableObjectNode>().First().Type.GetClrType());
+                var selfType = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().First().Type.GetClrType();
+                
+                // When using self bindings with setters we need to change target type to resolved selector type.
+                if (context.GetAvaloniaTypes().ISetter.IsAssignableFrom(selfType))
+                {
+                    selfType = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().First().TargetType.GetClrType();
+                }
+
+                XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, binding, startTypeResolver, selfType);
             }
 
             return node;

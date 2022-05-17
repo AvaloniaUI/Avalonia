@@ -133,7 +133,7 @@ namespace Avalonia.Controls
 
             if (logicalScrollable?.IsLogicalScrollEnabled == true)
             {
-                return logicalScrollable.GetControlInDirection(direction, from!);
+                return logicalScrollable.GetControlInDirection(direction, from);
             }
             else
             {

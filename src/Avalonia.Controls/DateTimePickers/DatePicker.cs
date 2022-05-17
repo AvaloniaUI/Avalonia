@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +14,15 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a date
     /// </summary>
+    [TemplatePart("ButtonContentGrid", typeof(Grid))]
+    [TemplatePart("DayText",           typeof(TextBlock))]
+    [TemplatePart("FirstSpacer",       typeof(Rectangle))]
+    [TemplatePart("FlyoutButton",      typeof(Button))]
+    [TemplatePart("MonthText",         typeof(TextBlock))]
+    [TemplatePart("PickerPresenter",   typeof(DatePickerPresenter))]
+    [TemplatePart("Popup",             typeof(Popup))]
+    [TemplatePart("SecondSpacer",      typeof(Rectangle))]
+    [TemplatePart("YearText",          typeof(TextBlock))]
     [PseudoClasses(":hasnodate")]
     public class DatePicker : TemplatedControl
     {
@@ -398,18 +408,27 @@ namespace Avalonia.Controls
         private void OnFlyoutButtonClicked(object? sender, RoutedEventArgs e)
         {
             if (_presenter == null)
-                throw new InvalidOperationException("No DatePickerPresenter found");
+                throw new InvalidOperationException("No DatePickerPresenter found.");
+            if (_popup == null)
+                throw new InvalidOperationException("No Popup found.");
 
             _presenter.Date = SelectedDate ?? DateTimeOffset.Now;
 
-            _popup!.IsOpen = true;
+            _popup.PlacementMode = PlacementMode.AnchorAndGravity;
+            _popup.PlacementAnchor = Primitives.PopupPositioning.PopupAnchor.Bottom;
+            _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
+            _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
+            _popup.IsOpen = true;
+
+            // Overlay popup hosts won't get measured until the next layout pass, but we need the
+            // template to be applied to `_presenter` now. Detect this case and force a layout pass.
+            if (!_presenter.IsMeasureValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 
             // The extra 5 px I think is related to default popup placement behavior
-            _popup!.Host!.ConfigurePosition(_popup.PlacementTarget!, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
-                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
-                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
+            _popup.VerticalOffset = deltaY + 5;
         }
 
         protected virtual void OnSelectedDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e)

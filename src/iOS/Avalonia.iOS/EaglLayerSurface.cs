@@ -4,7 +4,6 @@ using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using CoreAnimation;
-using OpenTK.Graphics.ES30;
 
 namespace Avalonia.iOS
 {
@@ -35,7 +34,7 @@ namespace Avalonia.iOS
 
             public void Dispose()
             {
-                GL.Finish();
+                _ctx.GlInterface.Finish();
                 _fbo.Present();
                 _restoreContext.Dispose();
             }
@@ -85,7 +84,7 @@ namespace Avalonia.iOS
             var ctx = Platform.GlFeature.Context;
             using (ctx.MakeCurrent())
             {
-                var fbo = new SizeSynchronizedLayerFbo(ctx.Context, _layer);
+                var fbo = new SizeSynchronizedLayerFbo(ctx.Context, ctx.GlInterface, _layer);
                 if (!fbo.Sync())
                     throw new InvalidOperationException("Unable to create render target");
                 return new RenderTarget(ctx, fbo);

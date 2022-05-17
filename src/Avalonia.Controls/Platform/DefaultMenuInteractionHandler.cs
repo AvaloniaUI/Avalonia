@@ -149,13 +149,18 @@ namespace Avalonia.Controls.Platform
                 case Key.Up:
                 case Key.Down:
                 {
-                    if (item?.IsTopLevel == true)
+                    if (item?.IsTopLevel == true && item.HasSubMenu)
                     {
-                        if (item.HasSubMenu && !item.IsSubMenuOpen)
+                        if (!item.IsSubMenuOpen)
                         {
                             Open(item, true);
-                            e.Handled = true;
                         }
+                        else
+                        {
+                            item.MoveSelection(NavigationDirection.First, true);
+                        }
+
+                        e.Handled = true;
                     }
                     else
                     {
@@ -247,7 +252,8 @@ namespace Avalonia.Controls.Platform
                             // new menu.
                             if (item.IsSubMenuOpen &&
                                 item.Parent is IMenu &&
-                                item.Parent.SelectedItem is object)
+                                item.Parent.SelectedItem is object &&
+                                item.Parent.SelectedItem != item)
                             {
                                 item.Close();
                                 Open(item.Parent.SelectedItem, true);
@@ -411,7 +417,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void MenuOpened(object? sender, RoutedEventArgs e)
         {
-            if (e.Source == Menu)
+            if (e.Source is Menu)
             {
                 Menu?.MoveSelection(NavigationDirection.First, true);
             }

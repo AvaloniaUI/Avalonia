@@ -27,7 +27,7 @@ extern IAvnMenuItem* CreateAppMenuItem();
 extern IAvnMenuItem* CreateAppMenuItemSeparator();
 extern IAvnApplicationCommands* CreateApplicationCommands();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
-extern void SetAppMenu (NSString* appName, IAvnMenu* appMenu);
+extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
@@ -35,9 +35,9 @@ extern NSMenuItem* GetAppMenuItem ();
 extern void InitializeAvnApp(IAvnApplicationEvents* events);
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
+extern NSRect ToNSRect (AvnRect r);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
-extern CGFloat PrimaryDisplayHeight();
 extern NSSize ToNSSize (AvnSize s);
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)

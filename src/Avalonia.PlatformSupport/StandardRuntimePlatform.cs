@@ -201,7 +201,7 @@ namespace Avalonia.PlatformSupport
 #if NETCOREAPP
                 IsCoreClr = true,
 #elif NETFRAMEWORK
-                IsDotNetFramework = false,
+                IsDotNetFramework = true,
 #endif
                 IsDesktop = os == OperatingSystemType.Linux || os == OperatingSystemType.OSX || os == OperatingSystemType.WinNT,
                 IsMono = os == OperatingSystemType.Android || os == OperatingSystemType.iOS || os == OperatingSystemType.Browser,

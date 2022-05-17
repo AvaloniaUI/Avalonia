@@ -117,7 +117,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        IControl? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl from)
+        IControl? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl? from)
         {
             return Virtualizer?.GetControlInDirection(direction, from);
         }

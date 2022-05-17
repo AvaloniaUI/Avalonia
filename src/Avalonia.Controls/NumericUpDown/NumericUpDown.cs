@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -15,6 +16,8 @@ namespace Avalonia.Controls
     /// <summary>
     /// Control that represents a TextBox with button spinners that allow incrementing and decrementing numeric values.
     /// </summary>
+    [TemplatePart("PART_Spinner", typeof(Spinner))]
+    [TemplatePart("PART_TextBox", typeof(TextBox))]
     public class NumericUpDown : TemplatedControl
     {
         /// <summary>
@@ -400,12 +403,16 @@ namespace Avalonia.Controls
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="value">The new binding value for the property.</param>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        /// <param name="state">The current data binding state.</param>
+        /// <param name="error">The current data binding error, if any.</param>
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == TextProperty || property == ValueProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 
@@ -1051,7 +1058,7 @@ namespace Avalonia.Controls
                         var currentValueTextSpecialCharacters = currentValueText.Where(c => !char.IsDigit(c));
                         var textSpecialCharacters = text.Where(c => !char.IsDigit(c));
                         // same non-digit characters on currentValueText and new text => remove them on new Text to parse it again.
-                        if (currentValueTextSpecialCharacters.Except(textSpecialCharacters).ToList().Count == 0)
+                        if (!currentValueTextSpecialCharacters.Except(textSpecialCharacters).Any())
                         {
                             foreach (var character in textSpecialCharacters)
                             {

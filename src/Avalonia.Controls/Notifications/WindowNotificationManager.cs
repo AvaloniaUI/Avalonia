@@ -14,6 +14,7 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
+    [TemplatePart("PART_Items", typeof(Panel))]
     [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright")]
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
     {
@@ -138,13 +139,13 @@ namespace Avalonia.Controls.Notifications
             notificationControl.Close();
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == PositionProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<NotificationPosition>());
+                UpdatePseudoClasses(change.GetNewValue<NotificationPosition>());
             }
         }
 

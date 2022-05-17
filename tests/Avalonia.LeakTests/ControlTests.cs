@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
@@ -24,9 +25,50 @@ namespace Avalonia.LeakTests
     [DotMemoryUnit(FailIfRunWithoutSupport = false)]
     public class ControlTests
     {
+        // Need to have the collection as field, so GC will not free it
+        private readonly ObservableCollection<string> _observableCollection = new();
+        
         public ControlTests(ITestOutputHelper atr)
         {
             DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
+        }
+
+ 
+        [Fact]
+        public void DataGrid_Is_Freed()
+        {
+            using (Start())
+            {
+                // When attached to INotifyCollectionChanged, DataGrid will subscribe to it's events, potentially causing leak
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new DataGrid
+                        {
+                            Items = _observableCollection
+                        }
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that DataGrid gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<DataGrid>(window.Presenter.Child);
+
+                    // Clear the content and ensure the DataGrid is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<DataGrid>()).ObjectsCount));
+            }
         }
 
         [Fact]
@@ -496,7 +538,7 @@ namespace Avalonia.LeakTests
                 
                 AttachShowAndDetachContextMenu(window);
 
-                Mock.Get(ValidatingWindowImpl.Unwrap(window.PlatformImpl)).Invocations.Clear();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -541,7 +583,7 @@ namespace Avalonia.LeakTests
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
-                Mock.Get(ValidatingWindowImpl.Unwrap(window.PlatformImpl)).Invocations.Clear();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>

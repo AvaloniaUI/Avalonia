@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -66,9 +67,10 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
-        
+
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
+        private AutomationPeer? _automationPeer;
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -135,8 +137,38 @@ namespace Avalonia.Controls
 
         public new IControl? Parent => (IControl?)base.Parent;
 
+        /// <summary>
+        /// Gets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The flow direction.</returns>
+        public static FlowDirection GetFlowDirection(Control control)
+        {
+            return control.GetValue(FlowDirectionProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFlowDirection(Control control, FlowDirection value)
+        {
+            control.SetValue(FlowDirectionProperty, value);
+        }
+
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
+
+        /// <summary>
+        /// Gets a value indicating whether control bypass FlowDirecton policies.
+        /// </summary>
+        /// <remarks>
+        /// Related to FlowDirection system and returns false as default, so if 
+        /// <see cref="FlowDirection"/> is RTL then control will get a mirror presentation. 
+        /// For controls that want to avoid this behavior, override this property and return true.
+        /// </remarks>
+        protected virtual bool BypassFlowDirectionPolicies => false;
 
         /// <inheritdoc/>
         void ISetterValue.Initialize(ISetter setter)
@@ -198,6 +230,14 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            InvalidateMirrorTransform();
+        }
+
+        /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
@@ -240,6 +280,24 @@ namespace Avalonia.Controls
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
             }
+        }
+
+        protected virtual AutomationPeer OnCreateAutomationPeer()
+        {
+            return new NoneAutomationPeer(this);
+        }
+
+        internal AutomationPeer GetOrCreateAutomationPeer()
+        {
+            VerifyAccess();
+
+            if (_automationPeer is object)
+            {
+                return _automationPeer;
+            }
+
+            _automationPeer = OnCreateAutomationPeer();
+            return _automationPeer;
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -288,6 +346,56 @@ namespace Avalonia.Controls
                     e.Handled = args.Handled;
                 }
             }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == FlowDirectionProperty)
+            {
+                InvalidateMirrorTransform();
+                
+                foreach (var visual in VisualChildren)
+                {
+                    if (visual is Control child)
+                    {
+                        child.InvalidateMirrorTransform();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Computes the <see cref="IVisual.HasMirrorTransform"/> value according to the 
+        /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
+        /// </summary>
+        public virtual void InvalidateMirrorTransform()
+        {
+            var flowDirection = this.FlowDirection;
+            var parentFlowDirection = FlowDirection.LeftToRight;
+
+            bool bypassFlowDirectionPolicies = BypassFlowDirectionPolicies;
+            bool parentBypassFlowDirectionPolicies = false;
+
+            var parent = this.FindAncestorOfType<Control>();
+            if (parent != null)
+            {
+                parentFlowDirection = parent.FlowDirection;
+                parentBypassFlowDirectionPolicies = parent.BypassFlowDirectionPolicies;
+            }
+            else if (Parent is Control logicalParent)
+            {
+                parentFlowDirection = logicalParent.FlowDirection;
+                parentBypassFlowDirectionPolicies = logicalParent.BypassFlowDirectionPolicies;
+            }
+
+            bool thisShouldBeMirrored = flowDirection == FlowDirection.RightToLeft && !bypassFlowDirectionPolicies;
+            bool parentShouldBeMirrored = parentFlowDirection == FlowDirection.RightToLeft && !parentBypassFlowDirectionPolicies;
+
+            bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
+
+            HasMirrorTransform = shouldApplyMirrorTransform;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -9,12 +10,15 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using Avalonia.Automation;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
+    [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
     public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         /// <summary>
@@ -68,6 +72,7 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
         }
 
         /// <summary>
