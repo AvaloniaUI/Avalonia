@@ -149,6 +149,9 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.NotSyntax not:
                         result = result.Not(x => Create(not.Argument)!);
                         break;
+                    case SelectorGrammar.PlatformSyntax platform:
+                        result = result.Platform(x => Create(platform.Argument)!, platform.Platform!);
+                        break;
                     case SelectorGrammar.NthChildSyntax nth:
                         result = result.NthChild(nth.Step, nth.Offset);
                         break;

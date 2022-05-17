@@ -171,6 +171,9 @@ namespace Avalonia.Markup.Parsers
             const string NotKeyword = "not";
             const string NthChildKeyword = "nth-child";
             const string NthLastChildKeyword = "nth-last-child";
+            const string WindowsKeyword = "windows";
+            const string OsxKeyword = "osx";
+            const string LinuxKeyword = "linux";
 
             if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
@@ -185,6 +188,30 @@ namespace Avalonia.Markup.Parsers
                 Expect(ref r, ')');
 
                 var syntax = new NotSyntax { Argument = argument };
+                return (State.Middle, syntax);
+            }
+            if (identifier.SequenceEqual(WindowsKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = Parse(ref r, ')');
+                Expect(ref r, ')');
+
+                var syntax = new PlatformSyntax { Argument = argument, Platform = WindowsKeyword};
+                return (State.Middle, syntax);
+            }
+            if (identifier.SequenceEqual(OsxKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = Parse(ref r, ')');
+                Expect(ref r, ')');
+
+                var syntax = new PlatformSyntax { Argument = argument, Platform = OsxKeyword};
+                return (State.Middle, syntax);
+            }
+            if (identifier.SequenceEqual(LinuxKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = Parse(ref r, ')');
+                Expect(ref r, ')');
+
+                var syntax = new PlatformSyntax { Argument = argument, Platform = LinuxKeyword};
                 return (State.Middle, syntax);
             }
             if (identifier.SequenceEqual(NthChildKeyword.AsSpan()) && r.TakeIf('('))
@@ -603,6 +630,18 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object? obj)
             {
                 return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
+            }
+        }
+        
+        public class PlatformSyntax : ISyntax
+        {
+            public string? Platform { get; set; }
+            
+            public IEnumerable<ISyntax> Argument { get; set; } = Enumerable.Empty<ISyntax>();
+
+            public override bool Equals(object? obj)
+            {
+                return (obj is PlatformSyntax ps) && Argument.SequenceEqual(ps.Argument) && ps.Platform == Platform;
             }
         }
 

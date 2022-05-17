@@ -139,6 +139,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
                             break;
+                        case SelectorGrammar.PlatformSyntax platform:
+                            result = new XamlIlPlatformSelector(result, Create(platform.Argument, typeResolver), platform.Platform);
+                            break;
                         case SelectorGrammar.NthChildSyntax nth:
                             result = new XamlIlNthChildSelector(result, nth.Step, nth.Offset, XamlIlNthChildSelector.SelectorType.NthChild);
                             break;
@@ -184,8 +187,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
 
     }
-
-
     
     abstract class XamlIlSelectorNode : XamlAstNode, IXamlAstValueNode, IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
     {
@@ -318,6 +319,28 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             context.Emit(Argument, codeGen, Type.GetClrType());
             EmitCall(context, codeGen,
                 m => m.Name == "Not" && m.Parameters.Count == 2 && m.Parameters[1].Equals(Type.GetClrType()));
+        }
+    }
+    
+    class XamlIlPlatformSelector : XamlIlSelectorNode
+    {
+        public XamlIlSelectorNode Argument { get; }
+
+        private string _platform;
+
+        public XamlIlPlatformSelector(XamlIlSelectorNode previous, XamlIlSelectorNode argument, string platform) : base(previous)
+        {
+            Argument = argument;
+            _platform = platform;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            context.Emit(Argument, codeGen, Type.GetClrType());
+            codeGen.Ldstr(_platform);
+            EmitCall(context, codeGen,
+                m => m.Name == "Platform" && m.Parameters.Count == 3 && m.Parameters[1].Equals(Type.GetClrType()));
         }
     }
 

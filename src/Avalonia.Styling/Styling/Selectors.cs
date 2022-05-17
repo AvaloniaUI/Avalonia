@@ -121,6 +121,18 @@ namespace Avalonia.Styling
         }
         
         /// <summary>
+        /// Returns a selector which on triggers if platform runtime condition is true.
+        /// </summary>
+        /// <param name="previous">The previous selector.</param>
+        /// <param name="argument">The selector to be not-ed.</param>
+        /// <param name="platform">The platform that needs to be matched.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Platform(this Selector? previous, Func<Selector?, Selector> argument, string platform)
+        {
+            return new PlatformSelector(previous, argument(null), platform);
+        }
+        
+        /// <summary>
         /// Returns a selector which inverts the results of selector argument.
         /// </summary>
         /// <param name="previous">The previous selector.</param>

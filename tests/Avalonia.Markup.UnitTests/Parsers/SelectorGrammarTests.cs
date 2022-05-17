@@ -251,7 +251,67 @@ namespace Avalonia.Markup.UnitTests.Parsers
                 },
                 result);
         }
+        
+        [Fact]
+        public void WindowsPlatform()
+        {
+            var result = SelectorGrammar.Parse(":windows(Button)");
 
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.PlatformSyntax
+                    {
+                        Platform = "windows",
+                        Argument = new SelectorGrammar.ISyntax[]
+                        {
+                            new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                        },
+                    }
+                },
+                result);
+        }
+        
+        [Fact]
+        public void LinuxPlatform()
+        {
+            var result = SelectorGrammar.Parse(":linux(Button)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.PlatformSyntax
+                    {
+                        Platform = "linux",
+                        Argument = new SelectorGrammar.ISyntax[]
+                        {
+                            new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                        },
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OsxPlatform()
+        {
+            var result = SelectorGrammar.Parse(":osx(Button)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.PlatformSyntax
+                    {
+                        Platform = "osx",
+                        Argument = new SelectorGrammar.ISyntax[]
+                        {
+                            new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                        },
+                    }
+                },
+                result);
+        }
+        
         [Fact]
         public void OfType_Not_Class()
         {
