@@ -117,7 +117,7 @@ namespace Avalonia.Native
                 if (_native != null)
                 {
                     var s = _native.FrameSize;
-                    return new Size(s.Width, s.Height);
+                    return s.Width == 0 && s.Height == 0 ? null : new Size(s.Width, s.Height);
                 }
 
                 return default;

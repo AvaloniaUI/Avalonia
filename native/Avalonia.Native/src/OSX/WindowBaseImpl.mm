@@ -191,9 +191,8 @@ HRESULT WindowBaseImpl::GetClientSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        auto frame = [View frame];
-        ret->Width = frame.size.width;
-        ret->Height = frame.size.height;
+        ret->Width = lastSize.width;
+        ret->Height = lastSize.height;
 
         return S_OK;
     }
@@ -206,9 +205,15 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        auto frame = [Window frame];
-        ret->Width = frame.size.width;
-        ret->Height = frame.size.height;
+        if(Window == nullptr){
+            ret->Width = 0;
+            ret->Height = 0;
+        }
+        else {
+            auto frame = [Window frame];
+            ret->Width = frame.size.width;
+            ret->Height = frame.size.height;
+        }
 
         return S_OK;
     }
