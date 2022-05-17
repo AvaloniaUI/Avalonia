@@ -181,6 +181,7 @@ namespace Avalonia.Controls
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
 
 
+
         private readonly NameScope _nameScope = new NameScope();
         private object? _dialogResult;
         private readonly Size _maxPlatformClientSize;
