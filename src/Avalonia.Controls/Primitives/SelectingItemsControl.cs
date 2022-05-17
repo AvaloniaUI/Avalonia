@@ -118,7 +118,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="WrapSelection"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> WrapSelectionProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
 
         private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;
