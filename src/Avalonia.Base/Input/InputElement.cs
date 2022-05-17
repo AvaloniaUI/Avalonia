@@ -144,7 +144,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerMovedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>(
-                "PointerMove",
+                "PointerMoved",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
