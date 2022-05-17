@@ -205,11 +205,7 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        if(Window == nullptr){
-            ret->Width = 0;
-            ret->Height = 0;
-        }
-        else {
+        if(Window != nullptr){
             auto frame = [Window frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;
