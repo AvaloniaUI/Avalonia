@@ -103,7 +103,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>(
-                nameof("IsSelectedChanged"),
+                "IsSelectedChanged",
                 RoutingStrategies.Bubble);
 
         /// <summary>
