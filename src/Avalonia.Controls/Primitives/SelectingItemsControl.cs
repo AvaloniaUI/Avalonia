@@ -103,7 +103,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> IsSelectedChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, RoutedEventArgs>(
-                nameof(IsSelectedChanged),
+                nameof("IsSelectedChanged"),
                 RoutingStrategies.Bubble);
 
         /// <summary>
@@ -137,17 +137,6 @@ namespace Avalonia.Controls.Primitives
         static SelectingItemsControl()
         {
             IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>((x, e) => x.ContainerSelectionChanged(e));
-        }
-
-        /// <summary>
-        /// Event that should be raised by items that implement <see cref="ISelectable"/> to
-        /// notify the parent <see cref="SelectingItemsControl"/> that their selection state
-        /// has changed.
-        /// </summary>
-        public event EventHandler<RoutedEventArgs>? IsSelectedChanged
-        {
-            add { AddHandler(IsSelectedChangedEvent, value); }
-            remove { RemoveHandler(IsSelectedChangedEvent, value); }
         }
 
         /// <summary>
