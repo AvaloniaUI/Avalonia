@@ -91,16 +91,13 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Setter_Should_Apply_Value_Without_Activator_With_Style_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
+            var control = new Control();
             var setter = new Setter(TextBlock.TagProperty, "foo");
 
-            setter.Instance(control.Object).Start(false);
+            setter.Instance(control).Start(false);
 
-            control.Verify(x => x.SetValue(
-                TextBlock.TagProperty,
-                "foo",
-                BindingPriority.Style));
+            Assert.Equal("foo", control.Tag);
+            Assert.Equal(BindingPriority.Style, control.GetDiagnostic(TextBlock.TagProperty).Priority);
         }
 
         [Fact]
