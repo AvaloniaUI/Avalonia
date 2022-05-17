@@ -92,7 +92,6 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         CreateNSWindow(isDialog);
         InitialiseNSWindow();
 
-        SetPosition(lastPositionSet);
         UpdateStyle();
 
         [Window setTitle:_lastTitle];
@@ -560,6 +559,8 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
+
+        [Window center];
 
         if (lastMenu != nullptr) {
             [GetWindowProtocol() applyMenu:lastMenu];
