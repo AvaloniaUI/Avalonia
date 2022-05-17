@@ -44,7 +44,7 @@ namespace Avalonia.Styling
         {
             if (hasActivator)
             {
-                if (_styledProperty is object)
+                if (_styledProperty is not null)
                 {
                     _subscription = _target.Bind(_styledProperty, this, BindingPriority.StyleTrigger);
                 }
@@ -55,13 +55,15 @@ namespace Avalonia.Styling
             }
             else
             {
-                if (_styledProperty is object)
+                var target = (AvaloniaObject) _target;
+                
+                if (_styledProperty is not null)
                 {
-                    _subscription = _target.SetValue(_styledProperty!, _value, BindingPriority.Style);
+                    _subscription = target.SetValue(_styledProperty!, _value, BindingPriority.Style);
                 }
                 else
                 {
-                    _target.SetValue(_directProperty!, _value);
+                    target.SetValue(_directProperty!, _value);
                 }
             }
         }
