@@ -191,22 +191,7 @@ HRESULT WindowBaseImpl::GetClientSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        auto frame = [View frame];
-        ret->Width = frame.size.width;
-        ret->Height = frame.size.height;
-
-        return S_OK;
-    }
-}
-
-HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if (ret == nullptr)
-            return E_POINTER;
-
-        auto frame = [Window frame];
+        auto frame = [View.frame];
         ret->Width = frame.size.width;
         ret->Height = frame.size.height;
 
