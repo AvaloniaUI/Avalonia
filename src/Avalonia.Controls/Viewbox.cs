@@ -37,6 +37,8 @@ namespace Avalonia.Controls
 
         public Viewbox()
         {
+            // The Child control is hosted inside a ViewboxContainer control so that the transform
+            // can be applied independently of the Viewbox and Child transforms.
             _containerVisual = new ViewboxContainer();
             _containerVisual.RenderTransformOrigin = RelativePoint.TopLeft;
             VisualChildren.Add(_containerVisual);
@@ -144,6 +146,9 @@ namespace Avalonia.Controls
             return finalSize;
         }
 
+        /// <summary>
+        /// A simple container control which hosts its child as a visual but not logical child.
+        /// </summary>
         private class ViewboxContainer : Control
         {
             private IControl? _child;
