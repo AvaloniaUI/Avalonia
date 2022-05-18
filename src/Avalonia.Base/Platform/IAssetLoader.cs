@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Loads assets compiled into the application binary.
     /// </summary>
+    [Unstable]
     public interface IAssetLoader
     {
         /// <summary>

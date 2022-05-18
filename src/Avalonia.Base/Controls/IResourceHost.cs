@@ -1,6 +1,5 @@
 ﻿using System;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -10,6 +9,7 @@ namespace Avalonia.Controls
     /// <remarks>
     /// This interface is implemented by <see cref="StyledElement"/> and `Application`.
     /// </remarks>
+    [NotClientImplementable]
     public interface IResourceHost : IResourceNode
     {
         /// <summary>

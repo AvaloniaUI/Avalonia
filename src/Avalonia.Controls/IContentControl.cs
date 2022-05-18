@@ -1,5 +1,6 @@
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -7,6 +8,7 @@ namespace Avalonia.Controls
     /// Defines a control that displays <see cref="Content"/> according to a
     /// <see cref="Avalonia.Controls.Templates.FuncDataTemplate"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface IContentControl : IControl
     {
         /// <summary>

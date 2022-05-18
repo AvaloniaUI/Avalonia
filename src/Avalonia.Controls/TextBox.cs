@@ -160,15 +160,15 @@ namespace Avalonia.Controls
 
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CopyingToClipboard", RoutingStrategies.Bubble);
+                nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CuttingToClipboard", RoutingStrategies.Bubble);
+                nameof(CuttingToClipboard), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "PastingFromClipboard", RoutingStrategies.Bubble);
+                nameof(PastingFromClipboard), RoutingStrategies.Bubble);
 
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
