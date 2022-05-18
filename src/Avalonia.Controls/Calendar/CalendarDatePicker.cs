@@ -433,6 +433,45 @@ namespace Avalonia.Controls
             SetSelectedDate();
         }
 
+        /// <inheritdoc/>
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            var key = e.Key;
+
+            if ((key == Key.Space || key == Key.Enter) && IsEffectivelyEnabled) // Key.GamepadA is not currently supported
+            {
+                // Since the TextBox is used for direct date entry,
+                // it isn't supported to open the popup/flyout using these keys.
+                // Other controls open the popup/flyout here.
+            }
+            else if (key == Key.Down && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) && IsEffectivelyEnabled)
+            {
+                // It is only possible to open the popup using these keys.
+                // This is important as the down key is handled by calendar.
+                // If down also closed the popup, the date would move 1 week
+                // and then close the popup. This isn't user friendly at all.
+                // (calendar doesn't mark as handled either).
+                // The Escape key will still close the popup.
+                if (IsDropDownOpen == false)
+                {
+                    e.Handled = true;
+
+                    if (!_ignoreButtonClick)
+                    {
+                        HandlePopUp();
+                    }
+                    else
+                    {
+                        _ignoreButtonClick = false;
+                    }
+
+                    UpdatePseudoClasses();
+                }
+            }
+
+            base.OnKeyUp(e);
+        }
+
         private void OnDateFormatChanged()
         {
             if (_textBox != null)
