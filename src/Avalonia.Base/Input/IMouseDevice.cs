@@ -1,10 +1,12 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
     /// <summary>
     /// Represents a mouse device.
     /// </summary>
+    [NotClientImplementable]
     public interface IMouseDevice : IPointerDevice
     {
         /// <summary>
@@ -13,8 +15,10 @@ namespace Avalonia.Input
         [Obsolete("Use PointerEventArgs.GetPosition")]
         PixelPoint Position { get; }
 
+        [Obsolete]
         void TopLevelClosed(IInputRoot root);
 
+        [Obsolete]
         void SceneInvalidated(IInputRoot root, Rect rect);
     }
 }

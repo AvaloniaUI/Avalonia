@@ -120,6 +120,8 @@ namespace Avalonia.Input.Raw
         /// only valid for Move and TouchUpdate
         /// </summary>
         public Lazy<IReadOnlyList<RawPointerPoint>?>? IntermediatePoints { get; set; }
+
+        internal IInputElement? InputHitTestResult { get; set; }
     }
 
     public struct RawPointerPoint

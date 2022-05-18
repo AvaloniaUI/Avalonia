@@ -1,12 +1,14 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines a platform-specific window implementation.
     /// </summary>
+    [Unstable]
     public interface IWindowImpl : IWindowBaseImpl
     {
         /// <summary>

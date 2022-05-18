@@ -540,11 +540,11 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {
             if (property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 

@@ -1,10 +1,11 @@
-using JetBrains.Annotations;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
     /// <summary>
     /// Defines the interface for top-level input elements.
     /// </summary>
+    [NotClientImplementable]
     public interface IInputRoot : IInputElement
     {
         /// <summary>
@@ -30,7 +31,6 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets associated mouse device
         /// </summary>
-        [CanBeNull]
         IMouseDevice? MouseDevice { get; }
     }
 }

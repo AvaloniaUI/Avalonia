@@ -1,9 +1,7 @@
 using System;
 using Avalonia.Animation;
 using Avalonia.Data;
-using Avalonia.Data.Core;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 #nullable enable
 
@@ -16,7 +14,7 @@ namespace Avalonia.Styling
     /// A <see cref="Setter"/> is used to set a <see cref="AvaloniaProperty"/> value on a
     /// <see cref="AvaloniaObject"/> depending on a condition.
     /// </remarks>
-    public class Setter : ISetter, IAnimationSetter, IAvaloniaPropertyVisitor<Setter.SetterVisitorData>
+    public class Setter : ISetter, IAnimationSetter
     {
         private object? _value;
 
@@ -68,75 +66,7 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException("Setter.Property must be set.");
             }
 
-            var data = new SetterVisitorData
-            {
-                target = target,
-                value = Value,
-            };
-
-            Property.Accept(this, ref data);
-            return data.result!;
-        }
-
-        void IAvaloniaPropertyVisitor<SetterVisitorData>.Visit<T>(
-            StyledPropertyBase<T> property,
-            ref SetterVisitorData data)
-        {
-            if (data.value is IBinding binding)
-            {
-                data.result = new PropertySetterBindingInstance<T>(
-                    data.target,
-                    property,
-                    binding);
-            }
-            else if (data.value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(property.PropertyType))
-            {
-                data.result = new PropertySetterLazyInstance<T>(
-                    data.target,
-                    property,
-                    () => (T)template.Build());
-            }
-            else
-            {
-                data.result = new PropertySetterInstance<T>(
-                    data.target,
-                    property,
-                    (T)data.value!);
-            }
-        }
-
-        void IAvaloniaPropertyVisitor<SetterVisitorData>.Visit<T>(
-            DirectPropertyBase<T> property,
-            ref SetterVisitorData data)
-        {
-            if (data.value is IBinding binding)
-            {
-                data.result = new PropertySetterBindingInstance<T>(
-                    data.target,
-                    property,
-                    binding);
-            }
-            else if (data.value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(property.PropertyType))
-            {
-                data.result = new PropertySetterLazyInstance<T>(
-                    data.target,
-                    property,
-                    () => (T)template.Build());
-            }
-            else
-            {
-                data.result = new PropertySetterInstance<T>(
-                    data.target,
-                    property,
-                    (T)data.value!);
-            }
-        }
-
-        private struct SetterVisitorData
-        {
-            public IStyleable target;
-            public object? value;
-            public ISetterInstance? result;
+            return Property.CreateSetterInstance(target, Value);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> row header. 
     /// </summary>
+    [TemplatePart(DATAGRIDROWHEADER_elementRootName, typeof(Control))]
     [PseudoClasses(":invalid", ":selected", ":editing", ":current")]
     public class DataGridRowHeader : ContentControl
     {

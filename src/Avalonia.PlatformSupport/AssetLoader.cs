@@ -14,14 +14,14 @@ namespace Avalonia.PlatformSupport
     /// </summary>
     public class AssetLoader : IAssetLoader
     {
-        private static AssemblyDescriptorResolver s_assemblyDescriptorResolver = new();
+        private static IAssemblyDescriptorResolver s_assemblyDescriptorResolver = new AssemblyDescriptorResolver();
 
         private AssemblyDescriptor? _defaultResmAssembly;
 
         /// <remarks>
         /// Introduced for tests.
         /// </remarks>
-        internal static void SetAssemblyDescriptorResolver(AssemblyDescriptorResolver resolver) =>
+        internal static void SetAssemblyDescriptorResolver(IAssemblyDescriptorResolver resolver) =>
             s_assemblyDescriptorResolver = resolver;
 
         /// <summary>
@@ -182,13 +182,13 @@ namespace Avalonia.PlatformSupport
             throw new ArgumentException($"Unsupported url type: " + uri.Scheme, nameof(uri));
         }
 
-        private (AssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
+        private (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
         {
             var asm = s_assemblyDescriptorResolver.GetAssembly(uri.Authority);
             return (asm, uri.GetUnescapeAbsolutePath());
         }
         
-        private AssemblyDescriptor? GetAssembly(Uri? uri)
+        private IAssemblyDescriptor? GetAssembly(Uri? uri)
         {
             if (uri != null)
             {

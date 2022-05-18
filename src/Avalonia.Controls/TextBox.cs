@@ -55,13 +55,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
 
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrush));
 
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -79,8 +79,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
 
         public static readonly StyledProperty<int> MaxLinesProperty =
-      AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
-
+            AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
+        
         public static readonly DirectProperty<TextBox, string?> TextProperty =
             TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
                 o => o.Text,
@@ -105,6 +105,12 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
+        
+        /// <summary>
+        /// Defines see <see cref="TextPresenter.LineHeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LineHeightProperty =
+            TextBlock.LineHeightProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
@@ -154,15 +160,15 @@ namespace Avalonia.Controls
 
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CopyingToClipboard", RoutingStrategies.Bubble);
+                nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CuttingToClipboard", RoutingStrategies.Bubble);
+                nameof(CuttingToClipboard), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "PastingFromClipboard", RoutingStrategies.Bubble);
+                nameof(PastingFromClipboard), RoutingStrategies.Bubble);
 
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -357,6 +363,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(MaxLinesProperty); }
             set { SetValue(MaxLinesProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets or sets the line height.
+        /// </summary>
+        public double LineHeight
+        {
+            get { return GetValue(LineHeightProperty); }
+            set { SetValue(LineHeightProperty, value); }
         }
 
         [Content]
@@ -585,7 +600,7 @@ namespace Avalonia.Controls
             _imClient.SetPresenter(null, null);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -594,7 +609,7 @@ namespace Avalonia.Controls
                 UpdatePseudoclasses();
                 UpdateCommandStates();
             }
-            else if (change.Property == IsUndoEnabledProperty && change.NewValue.GetValueOrDefault<bool>() == false)
+            else if (change.Property == IsUndoEnabledProperty && change.GetNewValue<bool>() == false)
             {
                 // from docs at
                 // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
@@ -1262,11 +1277,14 @@ namespace Avalonia.Controls
             return new TextBoxAutomationPeer(this);
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == TextProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 

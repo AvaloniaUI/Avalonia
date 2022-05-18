@@ -21,6 +21,11 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a <see cref="T:Avalonia.Controls.DataGrid" /> row.
     /// </summary>
+    [TemplatePart(DATAGRIDROW_elementBottomGridLine, typeof(Rectangle))]
+    [TemplatePart(DATAGRIDROW_elementCells,          typeof(DataGridCellsPresenter))]
+    [TemplatePart(DATAGRIDROW_elementDetails,        typeof(DataGridDetailsPresenter))]
+    [TemplatePart(DATAGRIDROW_elementRoot,           typeof(Panel))]
+    [TemplatePart(DATAGRIDROW_elementRowHeader,      typeof(DataGridRowHeader))]
     [PseudoClasses(":selected", ":editing", ":invalid")]
     public class DataGridRow : TemplatedControl
     {
@@ -1057,7 +1062,7 @@ namespace Avalonia.Controls
         }
         
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == DataContextProperty)
             {

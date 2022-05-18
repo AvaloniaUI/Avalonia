@@ -1,11 +1,12 @@
 ﻿using System;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Remote.Server;
-using Avalonia.Platform;
+using Avalonia.Metadata;
 using Avalonia.Remote.Protocol;
 
 namespace Avalonia.Controls.Remote
 {
+    [Unstable]
     public class RemoteServer
     {
         private EmbeddableControlRoot _topLevel;
