@@ -797,7 +797,15 @@ namespace Avalonia.Layout
             if (change.Property == IsVisibleProperty)
             {
                 DesiredSize = default;
+
+                // All changes to visibility cause the parent element to be notified.
                 this.GetVisualParent<ILayoutable>()?.ChildDesiredSizeChanged(this);
+
+                // We only invalidate outselves when visibility is changed to true.
+                if (change.GetNewValue<bool>())
+                {
+                    InvalidateMeasure();
+                }
             }
         }
 
