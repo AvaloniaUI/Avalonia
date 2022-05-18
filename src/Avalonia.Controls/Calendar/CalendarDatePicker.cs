@@ -369,7 +369,7 @@ namespace Avalonia.Controls
 
                 if (!_ignoreButtonClick)
                 {
-                    HandlePopUp();
+                    TogglePopUp();
                 }
                 else
                 {
@@ -458,7 +458,7 @@ namespace Avalonia.Controls
 
                     if (!_ignoreButtonClick)
                     {
-                        HandlePopUp();
+                        TogglePopUp();
                     }
                     else
                     {
@@ -650,7 +650,7 @@ namespace Avalonia.Controls
         {
             if (!_ignoreButtonClick)
             {
-                HandlePopUp();
+                TogglePopUp();
             }
             else
             {
@@ -669,7 +669,11 @@ namespace Avalonia.Controls
             }
         }
 
-        private void HandlePopUp()
+        /// <summary>
+        /// Toggles the <see cref="IsDropDownOpen"/> property to open/close the calendar popup.
+        /// This will automatically adjust control focus as well.
+        /// </summary>
+        private void TogglePopUp()
         {
             if (IsDropDownOpen)
             {
@@ -678,7 +682,9 @@ namespace Avalonia.Controls
             }
             else
             {
-                ProcessTextBox();
+                SetSelectedDate();
+                IsDropDownOpen = true;
+                _calendar!.Focus();
             }
         }
 
@@ -778,7 +784,7 @@ namespace Avalonia.Controls
                     { 
                         if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
-                            HandlePopUp();
+                            TogglePopUp();
                             return true;
                         }
                         break;
@@ -786,13 +792,6 @@ namespace Avalonia.Controls
             }
 
             return false;
-        }
-
-        private void ProcessTextBox()
-        {
-            SetSelectedDate();
-            IsDropDownOpen = true;
-            _calendar!.Focus();
         }
 
         private void SetSelectedDate()
