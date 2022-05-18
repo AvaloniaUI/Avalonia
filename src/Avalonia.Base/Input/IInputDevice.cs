@@ -1,7 +1,9 @@
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
+    [NotClientImplementable]
     public interface IInputDevice
     {
         /// <summary>

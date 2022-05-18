@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Platform
 {
     /// <summary>
     /// Defines a platform-specific system dialog implementation.
     /// </summary>
+    [Unstable]
     public interface ISystemDialogImpl
     {
         /// <summary>

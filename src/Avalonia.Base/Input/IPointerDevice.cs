@@ -1,9 +1,11 @@
 using System;
 using Avalonia.VisualTree;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
+    [NotClientImplementable]
     public interface IPointerDevice : IInputDevice
     {
         /// <inheritdoc cref="IPointer.Captured" />

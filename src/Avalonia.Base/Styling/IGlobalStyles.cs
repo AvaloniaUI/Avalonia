@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Defines the style host that provides styles global to the application.
     /// </summary>
+    [NotClientImplementable]
     public interface IGlobalStyles : IStyleHost
     {
         /// <summary>
