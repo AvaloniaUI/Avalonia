@@ -171,13 +171,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Routed event that can be used for global tracking of window destruction
         /// </summary>
-        public static readonly RoutedEvent WindowClosedEvent =
+        public static readonly RoutedEvent<RoutedEventArgs> WindowClosedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
 
         /// <summary>
         /// Routed event that can be used for global tracking of opening windows
         /// </summary>
-        public static readonly RoutedEvent WindowOpenedEvent =
+        public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
 
 
