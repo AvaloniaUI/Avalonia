@@ -60,6 +60,8 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
 
+    virtual bool IsShown ();
+
     virtual bool ShouldTakeFocusOnShow();
 
     virtual HRESULT Hide() override;

@@ -29,8 +29,8 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     View = [[AvnView alloc] initWithParent:this];
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
-    lastPositionSet.X = 100;
-    lastPositionSet.Y = 100;
+    lastPositionSet.X = -1;
+    lastPositionSet.Y = -1;
     lastSize = NSSize { 100, 100 };
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
@@ -91,7 +91,11 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         CreateNSWindow(isDialog);
         InitialiseNSWindow();
 
-        SetPosition(lastPositionSet);
+        if(lastPositionSet.X >= 0 && lastPositionSet.Y >= 0)
+        {
+            SetPosition(lastPositionSet);
+        }
+
         UpdateStyle();
 
         [Window setTitle:_lastTitle];
@@ -109,6 +113,11 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
         return S_OK;
     }
+}
+
+bool WindowBaseImpl::IsShown ()
+{
+    return _shown;
 }
 
 bool WindowBaseImpl::ShouldTakeFocusOnShow() {
@@ -190,9 +199,8 @@ HRESULT WindowBaseImpl::GetClientSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        auto frame = [View frame];
-        ret->Width = frame.size.width;
-        ret->Height = frame.size.height;
+        ret->Width = lastSize.width;
+        ret->Height = lastSize.height;
 
         return S_OK;
     }
@@ -205,9 +213,11 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        auto frame = [Window frame];
-        ret->Width = frame.size.width;
-        ret->Height = frame.size.height;
+        if(Window != nullptr){
+            auto frame = [Window frame];
+            ret->Width = frame.size.width;
+            ret->Height = frame.size.height;
+        }
 
         return S_OK;
     }
@@ -369,7 +379,10 @@ HRESULT WindowBaseImpl::SetPosition(AvnPoint point) {
 
     @autoreleasepool {
         lastPositionSet = point;
-        [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
+
+        if(Window != nullptr) {
+            [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
+        }
 
         return S_OK;
     }
@@ -558,6 +571,7 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
+        [Window center];
 
         if (lastMenu != nullptr) {
             [GetWindowProtocol() applyMenu:lastMenu];
@@ -575,7 +589,7 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
         return nullptr;
     }
 
-    return static_cast<id <AvnWindowProtocol>>(Window);
+    return (id <AvnWindowProtocol>) Window;
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)

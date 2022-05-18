@@ -429,6 +429,9 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
     START_COM_CALL;
 
     @autoreleasepool {
+        auto currentState = _actualWindowState;
+        _lastWindowState = state;
+
         if (Window == nullptr) {
             return S_OK;
         }
@@ -438,9 +441,6 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
         }
 
         _inSetWindowState = true;
-
-        auto currentState = _actualWindowState;
-        _lastWindowState = state;
 
         if (currentState == Normal) {
             _preZoomSize = [Window frame];
