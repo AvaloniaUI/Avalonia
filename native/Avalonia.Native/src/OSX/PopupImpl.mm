@@ -50,10 +50,16 @@ protected:
             return S_OK;
         }
     }
+
 public:
     virtual bool ShouldTakeFocusOnShow() override
     {
         return false;
+    }
+
+    virtual HRESULT Show(bool activate, bool isDialog) override
+    {
+        return WindowBaseImpl::Show(activate, true);
     }
 };
 

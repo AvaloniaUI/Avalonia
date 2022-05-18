@@ -174,6 +174,11 @@
     [self setBackgroundColor: [NSColor clearColor]];
 
     _isExtended = false;
+
+#ifdef IS_NSPANEL
+    [self setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary];
+#endif
+
     return self;
 }
 
@@ -212,11 +217,14 @@
     // If the window has a child window being shown as a dialog then don't allow it to become the key window.
     for(NSWindow* uch in [self childWindows])
     {
-        auto ch = static_cast<id <AvnWindowProtocol>>(uch);
-        if(ch == nil)
+        if (![uch conformsToProtocol:@protocol(AvnWindowProtocol)])
+        {
             continue;
-        if (ch.isDialog)
-            return false;
+        }
+
+        id <AvnWindowProtocol> ch = (id <AvnWindowProtocol>) uch;
+
+        return !ch.isDialog;
     }
 
     return true;
