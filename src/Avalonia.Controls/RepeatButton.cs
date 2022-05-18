@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Delay"/> property.
         /// </summary>
         public static readonly StyledProperty<int> DelayProperty =
-            AvaloniaProperty.Register<Button, int>(nameof(Delay), 300);
+            AvaloniaProperty.Register<RepeatButton, int>(nameof(Delay), 300);
 
         private DispatcherTimer? _repeatTimer;
 
