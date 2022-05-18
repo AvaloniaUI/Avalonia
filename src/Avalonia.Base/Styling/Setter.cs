@@ -1,9 +1,7 @@
 using System;
 using Avalonia.Animation;
 using Avalonia.Data;
-using Avalonia.Data.Core;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 #nullable enable
 
@@ -69,13 +67,6 @@ namespace Avalonia.Styling
             }
 
             return Property.CreateSetterInstance(target, Value);
-        }
-
-        private struct SetterVisitorData
-        {
-            public IStyleable target;
-            public object? value;
-            public ISetterInstance? result;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="Center"/> property.
         /// </summary>
         public static readonly StyledProperty<RelativePoint> CenterProperty =
-            AvaloniaProperty.Register<RadialGradientBrush, RelativePoint>(
+            AvaloniaProperty.Register<ConicGradientBrush, RelativePoint>(
                 nameof(Center),
                 RelativePoint.Center);
 
@@ -19,7 +19,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="Angle"/> property.
         /// </summary>
         public static readonly StyledProperty<double> AngleProperty =
-            AvaloniaProperty.Register<RadialGradientBrush, double>(
+            AvaloniaProperty.Register<ConicGradientBrush, double>(
                 nameof(Angle),
                 0);
         
