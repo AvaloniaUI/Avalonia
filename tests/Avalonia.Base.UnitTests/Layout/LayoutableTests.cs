@@ -353,6 +353,38 @@ namespace Avalonia.Base.UnitTests.Layout
         }
 
         [Fact]
+        public void Making_Control_Visible_Should_Invalidate_Own_And_Parent_Measure()
+        {
+            Border child;
+            var target = new StackPanel
+            {
+                Children =
+                {
+                    (child = new Border
+                    {
+                        Width = 100,
+                        IsVisible = false,
+                    }),
+                }
+            };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.True(child.IsMeasureValid);
+            Assert.False(child.IsArrangeValid);
+
+            child.IsVisible = true;
+
+            Assert.False(target.IsMeasureValid);
+            Assert.False(target.IsArrangeValid);
+            Assert.False(child.IsMeasureValid);
+            Assert.False(child.IsArrangeValid);
+        }
+
+        [Fact]
         public void Measuring_Invisible_Control_Should_Not_Invalidate_Parent_Measure()
         {
             Border child;
