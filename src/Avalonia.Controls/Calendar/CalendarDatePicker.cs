@@ -215,19 +215,18 @@ namespace Avalonia.Controls
             // IsDropDownOpen
             else if (change.Property == IsDropDownOpenProperty)
             {
-                var oldValue = change.GetOldValue<bool>();
-                var value = change.GetNewValue<bool>();
+                var (oldValue, newValue) = change.GetOldAndNewValue<bool>();
 
                 if (_popUp != null && _popUp.Child != null)
                 {
-                    if (value != oldValue)
+                    if (newValue != oldValue)
                     {
                         if (_calendar!.DisplayMode != CalendarMode.Month)
                         {
                             _calendar.DisplayMode = CalendarMode.Month;
                         }
 
-                        if (value)
+                        if (newValue)
                         {
                             OpenDropDown();
                         }
@@ -246,8 +245,7 @@ namespace Avalonia.Controls
             // SelectedDate
             else if (change.Property == SelectedDateProperty)
             {
-                var addedDate = change.GetNewValue<DateTime?>();
-                var removedDate = change.GetOldValue<DateTime?>();
+                var (removedDate, addedDate) = change.GetOldAndNewValue<DateTime?>();
 
                 if (SelectedDate != null)
                 {
@@ -272,8 +270,11 @@ namespace Avalonia.Controls
                     {
                         DisplayDate = day;
                     }
+
                     if(_calendar != null)
+                    {
                         _calendar.CalendarDatePickerDisplayDateFlag = false;
+                    }
                 }
                 else
                 {
@@ -291,19 +292,19 @@ namespace Avalonia.Controls
             // Text
             else if (change.Property == TextProperty)
             {
-                var (oldValue, value) = change.GetOldAndNewValue<string>();
+                var (oldValue, newValue) = change.GetOldAndNewValue<string>();
 
                 if (!_suspendTextChangeHandler)
                 {
-                    if (value != null)
+                    if (newValue != null)
                     {
                         if (_textBox != null)
                         {
-                            _textBox.Text = value;
+                            _textBox.Text = newValue;
                         }
                         else
                         {
-                            _defaultText = value;
+                            _defaultText = newValue;
                         }
 
                         if (!_settingSelectedDate)
