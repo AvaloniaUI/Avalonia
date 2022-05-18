@@ -199,6 +199,8 @@
     [self backingScaleFactor];
 }
 
+
+
 - (void)windowWillClose:(NSNotification *)notification
 {
     _closed = true;
@@ -380,6 +382,11 @@
 
         if(cparent != nullptr)
         {
+            if(!cparent->IsShown())
+            {
+                return;
+            }
+
             if(cparent->WindowState() == Maximized)
             {
                 cparent->SetWindowState(Normal);

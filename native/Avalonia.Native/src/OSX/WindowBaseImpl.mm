@@ -116,6 +116,11 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     }
 }
 
+bool WindowBaseImpl::IsShown ()
+{
+    return _shown;
+}
+
 bool WindowBaseImpl::ShouldTakeFocusOnShow() {
     return true;
 }
@@ -567,7 +572,6 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
-
         [Window center];
 
         if (lastMenu != nullptr) {
