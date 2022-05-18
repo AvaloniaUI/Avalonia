@@ -590,7 +590,7 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
         return nullptr;
     }
 
-    return static_cast<id <AvnWindowProtocol>>(Window);
+    return (id <AvnWindowProtocol>) Window;
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)
