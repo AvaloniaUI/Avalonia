@@ -18,7 +18,6 @@
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />

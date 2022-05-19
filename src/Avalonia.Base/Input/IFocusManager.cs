@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Input
 {
     /// <summary>
     /// Manages focus for the application.
     /// </summary>
+    [NotClientImplementable]
     public interface IFocusManager
     {
         /// <summary>

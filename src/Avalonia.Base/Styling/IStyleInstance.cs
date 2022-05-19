@@ -1,12 +1,12 @@
 ﻿using System;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Represents a style that has been instanced on a control.
     /// </summary>
+    [Unstable]
     public interface IStyleInstance : IDisposable
     {
         /// <summary>

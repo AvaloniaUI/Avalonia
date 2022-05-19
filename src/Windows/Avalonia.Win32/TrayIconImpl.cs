@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Win32.Interop;
@@ -14,6 +15,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
+    [Unstable]
     public class TrayIconImpl : ITrayIconImpl
     {
         private readonly int _uniqueId;

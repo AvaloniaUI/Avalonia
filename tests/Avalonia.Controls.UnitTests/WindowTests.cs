@@ -720,6 +720,27 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void MaxWidth_And_MaxHeight_Should_Be_Respected_With_SizeToContent_WidthAndHeight()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new ChildControl();
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        MaxWidth = 300,
+                        MaxHeight = 700,
+                        Content = child,
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(new[] { new Size(300, 700) }, child.MeasureSizes);
+                }
+            }
+
+            [Fact]
             public void SizeToContent_Should_Not_Be_Lost_On_Show()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
