@@ -86,6 +86,8 @@ namespace Avalonia.Styling
         /// </summary>
         protected abstract Selector? MovePrevious();
 
+        internal abstract bool HasValidNestingSelector();
+
         private static SelectorMatch MatchUntilCombinator(
             IStyleable control,
             Selector start,

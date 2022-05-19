@@ -186,8 +186,9 @@ namespace Avalonia.Styling
             if (parent?.Selector is not null)
             {
                 if (Selector is null)
-                    throw new InvalidOperationException("Nested styles must have a selector.");
-                // TODO: Validate that selector contains & in the right place.
+                    throw new InvalidOperationException("Child styles must have a selector.");
+                if (!Selector.HasValidNestingSelector())
+                    throw new InvalidOperationException("Child styles must have a nesting selector.");
             }
 
             Parent = parent;

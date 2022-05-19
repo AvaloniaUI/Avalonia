@@ -219,6 +219,48 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Throws<InvalidOperationException>(() => nested.Selector.Match(control, parent));
         }
 
+        [Fact]
+        public void Adding_Child_With_No_Nesting_Selector_Fails()
+        {
+            var control = new Control1();
+            var parent = new Style(x => x.OfType<Control1>());
+            var child = new Style(x => x.Class("foo"));
+
+            Assert.Throws<InvalidOperationException>(() => parent.Children.Add(child));
+        }
+
+        [Fact]
+        public void Adding_Combinator_Selector_Child_With_No_Nesting_Selector_Fails()
+        {
+            var control = new Control1();
+            var parent = new Style(x => x.OfType<Control1>());
+            var child = new Style(x => x.Class("foo").Descendant().Class("bar"));
+
+            Assert.Throws<InvalidOperationException>(() => parent.Children.Add(child));
+        }
+
+        [Fact]
+        public void Adding_Or_Selector_Child_With_No_Nesting_Selector_Fails()
+        {
+            var control = new Control1();
+            var parent = new Style(x => x.OfType<Control1>());
+            var child = new Style(x => Selectors.Or(
+                x.Nesting().Class("foo"),
+                x.Class("bar")));
+
+            Assert.Throws<InvalidOperationException>(() => parent.Children.Add(child));
+        }
+
+        [Fact]
+        public void Can_Add_Child_Without_Nesting_Selector_To_Style_Without_Selector()
+        {
+            var control = new Control1();
+            var parent = new Style();
+            var child = new Style(x => x.Class("foo"));
+
+            parent.Children.Add(child);
+        }
+
         public class Control1 : Control
         {
         }

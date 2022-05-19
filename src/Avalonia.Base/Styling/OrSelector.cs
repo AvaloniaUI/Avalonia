@@ -104,6 +104,19 @@ namespace Avalonia.Styling
 
         protected override Selector? MovePrevious() => null;
 
+        internal override bool HasValidNestingSelector()
+        {
+            foreach (var selector in _selectors)
+            {
+                if (!selector.HasValidNestingSelector())
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private Type? EvaluateTargetType()
         {
             Type? result = null;

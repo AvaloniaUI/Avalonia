@@ -11,23 +11,23 @@ namespace Avalonia.Styling
 
         protected override void InsertItem(int index, IStyle item)
         {
-            base.InsertItem(index, item);
             (item as Style)?.SetParent(_owner);
+            base.InsertItem(index, item);
         }
 
         protected override void RemoveItem(int index)
         {
             var item = Items[index];
+            (item as Style)?.SetParent(null);
             if (_owner.Owner is IResourceHost host)
                 (item as IResourceProvider)?.RemoveOwner(host);
-            (item as Style)?.SetParent(null);
             base.RemoveItem(index);
         }
 
         protected override void SetItem(int index, IStyle item)
         {
-            base.SetItem(index, item);
             (item as Style)?.SetParent(_owner);
+            base.SetItem(index, item);
             if (_owner.Owner is IResourceHost host)
                 (item as IResourceProvider)?.AddOwner(host);
         }

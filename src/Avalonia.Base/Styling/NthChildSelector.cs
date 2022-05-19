@@ -105,6 +105,7 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => _previous;
+        internal override bool HasValidNestingSelector() => _previous?.HasValidNestingSelector() ?? false;
 
         public override string ToString()
         {
