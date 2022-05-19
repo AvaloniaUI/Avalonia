@@ -85,7 +85,7 @@
     _settingSize = true;
     [super setFrameSize:newSize];
 
-    auto window = static_cast<id <AvnWindowProtocol>>([self window]);
+    auto window = (id <AvnWindowProtocol>) [self window];
 
     // TODO get actual titlebar size
 

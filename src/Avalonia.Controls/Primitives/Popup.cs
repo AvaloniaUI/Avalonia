@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Primitives
 #pragma warning restore CS0612 // Type or member is obsolete
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
-            AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), false);
+            AvaloniaProperty.Register<Popup, bool>(nameof(WindowManagerAddShadowHint), false);
 
         /// <summary>
         /// Defines the <see cref="Child"/> property.
