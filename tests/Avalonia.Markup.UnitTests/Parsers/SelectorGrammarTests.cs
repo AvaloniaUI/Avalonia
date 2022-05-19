@@ -472,7 +472,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Nesting_Class()
         {
-            var result = SelectorGrammar.Parse("&.foo");
+            var result = SelectorGrammar.Parse("^.foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -486,7 +486,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Nesting_Child_Class()
         {
-            var result = SelectorGrammar.Parse("& > .foo");
+            var result = SelectorGrammar.Parse("^ > .foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -501,7 +501,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Nesting_Descendant_Class()
         {
-            var result = SelectorGrammar.Parse("& .foo");
+            var result = SelectorGrammar.Parse("^ .foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -516,7 +516,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Nesting_Template_Class()
         {
-            var result = SelectorGrammar.Parse("& /template/ .foo");
+            var result = SelectorGrammar.Parse("^ /template/ .foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -531,7 +531,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void OfType_Template_Nesting()
         {
-            var result = SelectorGrammar.Parse("Button /template/ &");
+            var result = SelectorGrammar.Parse("Button /template/ ^");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -546,7 +546,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Nesting_Property()
         {
-            var result = SelectorGrammar.Parse("&[Foo=bar]");
+            var result = SelectorGrammar.Parse("^[Foo=bar]");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -560,7 +560,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Not_Nesting()
         {
-            var result = SelectorGrammar.Parse(":not(&)");
+            var result = SelectorGrammar.Parse(":not(^)");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -576,7 +576,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Nesting_NthChild()
         {
-            var result = SelectorGrammar.Parse("&:nth-child(2n+1)");
+            var result = SelectorGrammar.Parse("^:nth-child(2n+1)");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -594,7 +594,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Nesting_Comma_Nesting_Class()
         {
-            var result = SelectorGrammar.Parse("&, &.foo");
+            var result = SelectorGrammar.Parse("^, ^.foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]

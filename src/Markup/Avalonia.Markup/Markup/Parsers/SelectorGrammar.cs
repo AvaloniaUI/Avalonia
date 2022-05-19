@@ -113,7 +113,7 @@ namespace Avalonia.Markup.Parsers
             {
                 return (State.Name, null);
             }
-            else if (r.TakeIf('&'))
+            else if (r.TakeIf('^'))
             {
                 return (State.CanHaveType, new NestingSyntax());
             }
@@ -146,7 +146,7 @@ namespace Avalonia.Markup.Parsers
             {
                 return (State.Start, new CommaSyntax());
             }
-            else if (r.TakeIf('&'))
+            else if (r.TakeIf('^'))
             {
                 return (State.CanHaveType, new NestingSyntax());
             }

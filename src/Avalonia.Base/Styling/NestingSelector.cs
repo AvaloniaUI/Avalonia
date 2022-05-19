@@ -3,7 +3,7 @@
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// The `&amp;` nesting style selector.
+    /// The `^` nesting style selector.
     /// </summary>
     internal class NestingSelector : Selector
     {
@@ -11,7 +11,7 @@ namespace Avalonia.Styling
         public override bool IsCombinator => false;
         public override Type? TargetType => null;
 
-        public override string ToString() => "&";
+        public override string ToString() => "^";
 
         protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {

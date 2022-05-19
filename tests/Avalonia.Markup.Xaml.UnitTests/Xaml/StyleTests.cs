@@ -629,7 +629,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Window.Styles>
         <Style Selector='Border'>
             <Style.Children>
-                <Style Selector='&amp;.foo'>
+                <Style Selector='^.foo'>
                     <Setter Property='Background' Value='Red'/>
                 </Style>
             </Style.Children>
