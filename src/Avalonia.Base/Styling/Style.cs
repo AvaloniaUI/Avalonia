@@ -16,6 +16,7 @@ namespace Avalonia.Styling
         private IResourceDictionary? _resources;
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
+        private StyleCache? _childCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -124,12 +125,10 @@ namespace Avalonia.Styling
 
             if (_children is not null)
             {
-                foreach (var child in _children)
-                {
-                    var childResult = child.TryAttach(target, host);
-                    if (childResult > result)
-                        result = childResult;
-                }
+                _childCache ??= new StyleCache();
+                var childResult = _childCache.TryAttach(_children, target, host);
+                if (childResult > result)
+                    result = childResult;
             }
 
             return result;
