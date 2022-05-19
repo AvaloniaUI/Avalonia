@@ -21,12 +21,14 @@ using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.WinRT;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Metadata;
 
 namespace Avalonia.Win32
 {
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
+    [Unstable]
     public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
         ITopLevelImplWithNativeControlHost,
         ITopLevelImplWithTextInputMethod

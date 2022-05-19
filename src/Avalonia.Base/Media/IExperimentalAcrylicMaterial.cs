@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media
 {
     /// <summary>
     /// Experimental Interface for producing Acrylic-like materials.
     /// </summary>
+    [NotClientImplementable]
     public interface IExperimentalAcrylicMaterial
     {
         /// <summary>

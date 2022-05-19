@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines the main platform-specific interface for the rendering subsystem.
     /// </summary>
+    [Unstable]
     public interface IPlatformRenderInterface
     {
         /// <summary>

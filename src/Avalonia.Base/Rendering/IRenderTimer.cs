@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 
 namespace Avalonia.Rendering
 {
     /// <summary>
     /// Defines the interface implemented by an application render timer.
     /// </summary>
+    [NotClientImplementable]
     public interface IRenderTimer
     {
         /// <summary>

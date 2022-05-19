@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Controls.Embedding.Offscreen
 {
+    [Unstable]
     public abstract class OffscreenTopLevelImplBase : ITopLevelImpl
     {
         private double _scaling = 1;
