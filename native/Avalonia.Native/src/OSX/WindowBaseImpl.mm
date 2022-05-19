@@ -29,8 +29,8 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     View = [[AvnView alloc] initWithParent:this];
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
-    lastPositionSet.X = -1;
-    lastPositionSet.Y = -1;
+    lastPositionSet = { 0, 0 };
+    hasPosition = false;
     lastSize = NSSize { 100, 100 };
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
@@ -91,7 +91,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         CreateNSWindow(isDialog);
         InitialiseNSWindow();
 
-        if(lastPositionSet.X >= 0 && lastPositionSet.Y >= 0)
+        if(hasPosition)
         {
             SetPosition(lastPositionSet);
         }
@@ -384,6 +384,7 @@ HRESULT WindowBaseImpl::SetPosition(AvnPoint point) {
 
     @autoreleasepool {
         lastPositionSet = point;
+        hasPosition = true;
 
         if(Window != nullptr) {
             [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
