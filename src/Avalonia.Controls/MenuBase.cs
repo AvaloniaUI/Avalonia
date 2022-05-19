@@ -18,8 +18,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<Menu, bool> IsOpenProperty =
-            AvaloniaProperty.RegisterDirect<Menu, bool>(
+        public static readonly DirectProperty<MenuBase, bool> IsOpenProperty =
+            AvaloniaProperty.RegisterDirect<MenuBase, bool>(
                 nameof(IsOpen),
                 o => o.IsOpen);
 

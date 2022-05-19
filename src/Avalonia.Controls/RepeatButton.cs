@@ -13,13 +13,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Interval"/> property.
         /// </summary>
         public static readonly StyledProperty<int> IntervalProperty =
-            AvaloniaProperty.Register<Button, int>(nameof(Interval), 100);
+            AvaloniaProperty.Register<RepeatButton, int>(nameof(Interval), 100);
 
         /// <summary>
         /// Defines the <see cref="Delay"/> property.
         /// </summary>
         public static readonly StyledProperty<int> DelayProperty =
-            AvaloniaProperty.Register<Button, int>(nameof(Delay), 300);
+            AvaloniaProperty.Register<RepeatButton, int>(nameof(Delay), 300);
 
         private DispatcherTimer? _repeatTimer;
 
