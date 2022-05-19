@@ -94,6 +94,9 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
+        } else
+        {
+            [Window center];
         }
 
         UpdateStyle();
@@ -287,11 +290,11 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
+            lastSize = NSSize {x, y};
+
             if (!_shown) {
                 BaseEvents->Resized(AvnSize{x, y}, reason);
             }
-
-            lastSize = NSSize {x, y};
 
             if(Window != nullptr) {
                 [Window setContentSize:lastSize];
@@ -577,7 +580,6 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
-        [Window center];
 
         if (lastMenu != nullptr) {
             [GetWindowProtocol() applyMenu:lastMenu];
