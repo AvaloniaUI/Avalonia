@@ -364,12 +364,17 @@ HRESULT WindowBaseImpl::GetPosition(AvnPoint *ret) {
             return E_POINTER;
         }
 
-        auto frame = [Window frame];
+        if(Window != nullptr) {
+            auto frame = [Window frame];
 
-        ret->X = frame.origin.x;
-        ret->Y = frame.origin.y + frame.size.height;
+            ret->X = frame.origin.x;
+            ret->Y = frame.origin.y + frame.size.height;
 
-        *ret = ConvertPointY(*ret);
+            *ret = ConvertPointY(*ret);
+        } else
+        {
+            *ret = lastPositionSet;
+        }
 
         return S_OK;
     }
