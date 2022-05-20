@@ -222,7 +222,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Adding_Child_With_No_Nesting_Selector_Fails()
         {
-            var control = new Control1();
             var parent = new Style(x => x.OfType<Control1>());
             var child = new Style(x => x.Class("foo"));
 
@@ -232,7 +231,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Adding_Combinator_Selector_Child_With_No_Nesting_Selector_Fails()
         {
-            var control = new Control1();
             var parent = new Style(x => x.OfType<Control1>());
             var child = new Style(x => x.Class("foo").Descendant().Class("bar"));
 
@@ -242,7 +240,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Adding_Or_Selector_Child_With_No_Nesting_Selector_Fails()
         {
-            var control = new Control1();
             var parent = new Style(x => x.OfType<Control1>());
             var child = new Style(x => Selectors.Or(
                 x.Nesting().Class("foo"),
@@ -254,7 +251,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Can_Add_Child_Without_Nesting_Selector_To_Style_Without_Selector()
         {
-            var control = new Control1();
             var parent = new Style();
             var child = new Style(x => x.Class("foo"));
 
