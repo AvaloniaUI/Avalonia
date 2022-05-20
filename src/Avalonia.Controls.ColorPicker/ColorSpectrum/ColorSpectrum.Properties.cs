@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets or sets the currently selected color in the RGB color model.
         /// </summary>
         /// <remarks>
-        /// For control authors use <see cref="HsvColor"/> instead to avoid loss
+        /// For control authors, use <see cref="HsvColor"/> instead to avoid loss
         /// of precision and color drifting.
         /// </remarks>
         public Color Color
