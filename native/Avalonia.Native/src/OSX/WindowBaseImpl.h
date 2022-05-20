@@ -35,6 +35,7 @@ BEGIN_INTERFACE_MAP()
     ComPtr<IAvnGlContext> _glContext;
     NSObject <IRenderTarget> *renderTarget;
     AvnPoint lastPositionSet;
+    bool hasPosition;
     NSSize lastSize;
     NSSize lastMinSize;
     NSSize lastMaxSize;

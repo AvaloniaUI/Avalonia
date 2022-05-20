@@ -34,23 +34,6 @@ protected:
         return NSWindowStyleMaskBorderless;
     }
 
-    virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override
-    {
-        START_COM_CALL;
-
-        @autoreleasepool
-        {
-            if (Window != nullptr)
-            {
-                [Window setContentSize:NSSize{x, y}];
-
-                [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
-            }
-
-            return S_OK;
-        }
-    }
-
 public:
     virtual bool ShouldTakeFocusOnShow() override
     {
