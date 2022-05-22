@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Converters
                 return AvaloniaProperty.UnsetValue;
             }
 
-            string hexColor = color.ToString();
+            string hexColor = color.ToUint32().ToString("x8", CultureInfo.InvariantCulture).ToUpperInvariant();
 
             if (includeSymbol == false)
             {
