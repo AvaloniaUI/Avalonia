@@ -292,7 +292,9 @@ namespace Avalonia.Controls
             set => SetValue(IsColorPreviewVisibleProperty, value);
         }
 
-        public bool IsColorSliderVisible
+        // IsColorComponentsVisible
+
+        public bool IsColorSliderVisible // ColorSpectrumSlider
         {
             get => GetValue(IsColorSliderVisibleProperty);
             set => SetValue(IsColorSliderVisibleProperty, value);
