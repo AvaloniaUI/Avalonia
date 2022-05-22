@@ -13,8 +13,11 @@
     <pc:ThirdComponentConverter x:Key="ThirdComponent" />
   </UserControl.Resources>
 
-  <Grid ColumnDefinitions="Auto,10,Auto">
-    <Grid Grid.Column="0"
+  <Grid ColumnDefinitions="Auto,10,Auto,10,Auto">
+    <ColorView Grid.Column="0"
+               Grid.Row="0"
+               ColorSpectrumShape="Ring" />
+    <Grid Grid.Column="2"
           Grid.Row="0"
           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
       <ColorSpectrum x:Name="ColorSpectrum1"
@@ -44,7 +47,7 @@
                       ShowAccentColors="True"
                       HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
     </Grid>
-    <Grid Grid.Column="2"
+    <Grid Grid.Column="4"
           Grid.Row="0"
           ColumnDefinitions="Auto,Auto,Auto"
           RowDefinitions="Auto,Auto">
