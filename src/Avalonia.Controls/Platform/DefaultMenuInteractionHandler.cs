@@ -344,6 +344,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void PointerMoved(object? sender, PointerEventArgs e)
         {
+            // HACK: #8179 needs to be addressed to correctly implement it in the PointerPressed method.
             var item = GetMenuItem(e.Source as IControl) as MenuItem;
             if (item?.TransformedBounds == null)
             {
