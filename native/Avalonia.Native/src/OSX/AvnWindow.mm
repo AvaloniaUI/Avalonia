@@ -230,7 +230,7 @@
             id <AvnWindowProtocol> ch = (id <AvnWindowProtocol>) uch;
 
             if(ch.isDialog)
-                return true;
+                return false;
         }
 
         return true;
