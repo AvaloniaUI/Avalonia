@@ -11,42 +11,42 @@ namespace Avalonia.Styling
     /// evaluated.
     /// </summary>
     /// <typeparam name="T">The target property type.</typeparam>
-    internal class PropertySetterLazyInstance<T> : SingleSubscriberObservableBase<BindingValue<T>>,
+    internal class PropertySetterTemplateInstance<T> : SingleSubscriberObservableBase<BindingValue<T>>,
         ISetterInstance
     {
         private readonly IStyleable _target;
         private readonly StyledPropertyBase<T>? _styledProperty;
         private readonly DirectPropertyBase<T>? _directProperty;
-        private readonly Func<T> _valueFactory;
+        private readonly ITemplate _template;
         private BindingValue<T> _value;
         private IDisposable? _subscription;
         private bool _isActive;
 
-        public PropertySetterLazyInstance(
+        public PropertySetterTemplateInstance(
             IStyleable target,
             StyledPropertyBase<T> property,
-            Func<T> valueFactory)
+            ITemplate template)
         {
             _target = target;
             _styledProperty = property;
-            _valueFactory = valueFactory;
+            _template = template;
         }
 
-        public PropertySetterLazyInstance(
+        public PropertySetterTemplateInstance(
             IStyleable target,
             DirectPropertyBase<T> property,
-            Func<T> valueFactory)
+            ITemplate template)
         {
             _target = target;
             _directProperty = property;
-            _valueFactory = valueFactory;
+            _template = template;
         }
 
         public void Start(bool hasActivator)
         {
             _isActive = !hasActivator;
 
-            if (_styledProperty is object)
+            if (_styledProperty is not null)
             {
                 var priority = hasActivator ? BindingPriority.StyleTrigger : BindingPriority.Style;
                 _subscription = _target.Bind(_styledProperty, this, priority);
@@ -77,7 +77,7 @@ namespace Avalonia.Styling
 
         public override void Dispose()
         {
-            if (_subscription is object)
+            if (_subscription is not null)
             {
                 var sub = _subscription;
                 _subscription = null;
@@ -85,7 +85,7 @@ namespace Avalonia.Styling
             }
             else if (_isActive)
             {
-                if (_styledProperty is object)
+                if (_styledProperty is not null)
                 {
                     _target.ClearValue(_styledProperty);
                 }
@@ -101,22 +101,21 @@ namespace Avalonia.Styling
         protected override void Subscribed() => PublishNext();
         protected override void Unsubscribed() { }
 
-        private T GetValue()
+        private void EnsureTemplate()
         {
             if (_value.HasValue)
             {
-                return _value.Value;
+                return;
             }
 
-            _value = _valueFactory();
-            return _value.Value;
+            _value = (T) _template.Build();
         }
 
         private void PublishNext()
         {
             if (_isActive)
             {
-                GetValue();
+                EnsureTemplate();
                 PublishNext(_value);
             }
             else

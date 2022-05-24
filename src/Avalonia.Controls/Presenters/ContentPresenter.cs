@@ -52,67 +52,67 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly AttachedProperty<IBrush?> ForegroundProperty =
+        public static readonly StyledProperty<IBrush?> ForegroundProperty =
             TextElement.ForegroundProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
+        public static readonly StyledProperty<FontFamily> FontFamilyProperty =
             TextElement.FontFamilyProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
-        public static readonly AttachedProperty<double> FontSizeProperty =
+        public static readonly StyledProperty<double> FontSizeProperty =
             TextElement.FontSizeProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontStyle> FontStyleProperty =
+        public static readonly StyledProperty<FontStyle> FontStyleProperty =
             TextElement.FontStyleProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontWeight> FontWeightProperty =
+        public static readonly StyledProperty<FontWeight> FontWeightProperty =
             TextElement.FontWeightProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontStretch"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontStretch> FontStretchProperty =
+        public static readonly StyledProperty<FontStretch> FontStretchProperty =
             TextElement.FontStretchProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property
         /// </summary>
-        public static readonly AttachedProperty<TextAlignment> TextAlignmentProperty =
+        public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="TextWrapping"/> property
         /// </summary>
-        public static readonly AttachedProperty<TextWrapping> TextWrappingProperty =
+        public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="TextTrimming"/> property
         /// </summary>
-        public static readonly AttachedProperty<TextTrimming> TextTrimmingProperty =
+        public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
             TextBlock.TextTrimmingProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="LineHeight"/> property
         /// </summary>
-        public static readonly AttachedProperty<double> LineHeightProperty =
+        public static readonly StyledProperty<double> LineHeightProperty =
             TextBlock.LineHeightProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="MaxLines"/> property
         /// </summary>
-        public static readonly AttachedProperty<int> MaxLinesProperty =
+        public static readonly StyledProperty<int> MaxLinesProperty =
             TextBlock.MaxLinesProperty.AddOwner<ContentPresenter>();
                 
         /// <summary>
