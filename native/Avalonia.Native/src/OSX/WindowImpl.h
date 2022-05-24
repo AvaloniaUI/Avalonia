@@ -88,6 +88,8 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT SetWindowState (AvnWindowState state) override;
 
     virtual bool IsDialog() override;
+    
+    virtual void OnInitialiseNSWindow() override;
 
 protected:
     virtual NSWindowStyleMask GetStyle() override;
