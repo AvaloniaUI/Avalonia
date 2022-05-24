@@ -19,10 +19,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _inSetWindowState = false;
     _lastWindowState = Normal;
     _actualWindowState = Normal;
+    _lastTitle = @"";
     WindowEvents = events;
-    [Window disableCursorRects];
-    [Window setTabbingMode:NSWindowTabbingModeDisallowed];
-    [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 }
 
 void WindowImpl::HideOrShowTrafficLights() {
@@ -50,24 +48,28 @@ void WindowImpl::HideOrShowTrafficLights() {
     }
 }
 
+void WindowImpl::OnInitialiseNSWindow(){
+    [GetWindowProtocol() setCanBecomeKeyWindow:true];
+    [Window disableCursorRects];
+    [Window setTabbingMode:NSWindowTabbingModeDisallowed];
+    [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+
+    [Window setTitle:_lastTitle];
+    
+    if(_isClientAreaExtended)
+    {
+        [GetWindowProtocol() setIsExtended:true];
+        SetExtendClientArea(true);
+    }
+}
+
 HRESULT WindowImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
         _isDialog = isDialog;
 
-        bool created = Window == nullptr;
-
         WindowBaseImpl::Show(activate, isDialog);
-
-        if(created)
-        {
-            if(_isClientAreaExtended)
-            {
-                [GetWindowProtocol() setIsExtended:true];
-                SetExtendClientArea(true);
-            }
-        }
 
         HideOrShowTrafficLights();
 
