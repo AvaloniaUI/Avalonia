@@ -19,6 +19,7 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _inSetWindowState = false;
     _lastWindowState = Normal;
     _actualWindowState = Normal;
+    _lastTitle = @"";
     WindowEvents = events;
     [Window disableCursorRects];
     [Window setTabbingMode:NSWindowTabbingModeDisallowed];

@@ -91,6 +91,9 @@ BEGIN_INTERFACE_MAP()
 
 protected:
     virtual NSWindowStyleMask GetStyle() override;
+
+private:
+    NSString *_lastTitle;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

@@ -16,8 +16,6 @@
 class WindowBaseImpl : public virtual ComObject,
                        public virtual IAvnWindowBase,
                        public INSWindowHolder {
-private:
-    NSCursor *cursor;
 
 public:
     FORWARD_IUNKNOWN()
@@ -27,23 +25,6 @@ BEGIN_INTERFACE_MAP()
     END_INTERFACE_MAP()
 
     virtual ~WindowBaseImpl();
-
-    AutoFitContentView *StandardContainer;
-    AvnView *View;
-    NSWindow * Window;
-    ComPtr<IAvnWindowBaseEvents> BaseEvents;
-    ComPtr<IAvnGlContext> _glContext;
-    NSObject <IRenderTarget> *renderTarget;
-    AvnPoint lastPositionSet;
-    bool hasPosition;
-    NSSize lastSize;
-    NSSize lastMinSize;
-    NSSize lastMaxSize;
-    AvnMenu* lastMenu;
-    NSString *_lastTitle;
-
-    bool _shown;
-    bool _inResize;
 
     WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl);
 
@@ -128,6 +109,26 @@ private:
     void CreateNSWindow (bool isDialog);
     void CleanNSWindow ();
     void InitialiseNSWindow ();
+
+    NSCursor *cursor;
+    ComPtr<IAvnGlContext> _glContext;
+    bool hasPosition;
+    NSSize lastSize;
+    NSSize lastMinSize;
+    NSSize lastMaxSize;
+    AvnMenu* lastMenu;
+    bool _inResize;
+
+protected:
+    AvnPoint lastPositionSet;
+    AutoFitContentView *StandardContainer;
+    bool _shown;
+
+public:
+    NSObject <IRenderTarget> *renderTarget;
+    NSWindow * Window;
+    ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    AvnView *View;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
