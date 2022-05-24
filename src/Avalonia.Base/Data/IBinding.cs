@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Data
 {
     /// <summary>
     /// Holds a binding that can be applied to a property on an object.
     /// </summary>
+    [NotClientImplementable]
     public interface IBinding
     {
         /// <summary>

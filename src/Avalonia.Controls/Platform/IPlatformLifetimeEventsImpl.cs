@@ -1,9 +1,10 @@
 using System;
-using System.ComponentModel;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IPlatformLifetimeEventsImpl
     {
         /// <summary>

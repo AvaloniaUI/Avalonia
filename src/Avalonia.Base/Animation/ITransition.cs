@@ -1,10 +1,12 @@
 ﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Interface for Transition objects.
     /// </summary>
+    [NotClientImplementable]
     public interface ITransition
     {
         /// <summary>

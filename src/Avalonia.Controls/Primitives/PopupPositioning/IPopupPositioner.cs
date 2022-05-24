@@ -45,6 +45,7 @@ Copyright © 2019 Nikita Tsukanov
 */
 
 using System;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 using Avalonia.Media;
 
@@ -61,6 +62,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// requirement that a popup must intersect with or be at least partially adjacent to its parent
     /// surface.
     /// </remarks>
+    [Unstable]
     public struct PopupPositionerParameters
     {
         private PopupGravity _gravity;
@@ -429,6 +431,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// managed implementation is provided in <see cref="ManagedPopupPositioner"/> for platforms
     /// on which popups can be arbitrarily positioned.
     /// </remarks>
+    [NotClientImplementable]
     public interface IPopupPositioner
     {
         /// <summary>
@@ -439,6 +442,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         void Update(PopupPositionerParameters parameters);
     }
 
+    [Unstable]
     static class PopupPositionerExtensions
     {
         public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,

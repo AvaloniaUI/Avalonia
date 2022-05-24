@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Metadata;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// A brush that draws with a gradient.
     /// </summary>
+    [NotClientImplementable]
     public interface IGradientBrush : IBrush
     {
         /// <summary>

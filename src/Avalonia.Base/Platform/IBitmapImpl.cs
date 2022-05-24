@@ -1,11 +1,13 @@
 using System;
 using System.IO;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines the platform-specific interface for a <see cref="Avalonia.Media.Imaging.Bitmap"/>.
     /// </summary>
+    [Unstable]
     public interface IBitmapImpl : IDisposable
     {
         /// <summary>

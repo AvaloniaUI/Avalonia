@@ -1,9 +1,12 @@
-﻿namespace Avalonia.Controls.Notifications
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Controls.Notifications
 {
     /// <summary>
     /// Represents a notification manager that can be used to show notifications in a window or using
 	/// the host operating system.
     /// </summary>
+    [NotClientImplementable]
     public interface INotificationManager
     {
         /// <summary>
