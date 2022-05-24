@@ -55,6 +55,7 @@ namespace Avalonia.Controls.Platform
             Menu.AddHandler(Avalonia.Controls.Menu.MenuOpenedEvent, this.MenuOpened);
             Menu.AddHandler(MenuItem.PointerEnterItemEvent, PointerEnter);
             Menu.AddHandler(MenuItem.PointerLeaveItemEvent, PointerLeave);
+            Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
 
             _root = Menu.VisualRoot;
 
@@ -90,6 +91,7 @@ namespace Avalonia.Controls.Platform
             Menu.RemoveHandler(Avalonia.Controls.Menu.MenuOpenedEvent, this.MenuOpened);
             Menu.RemoveHandler(MenuItem.PointerEnterItemEvent, PointerEnter);
             Menu.RemoveHandler(MenuItem.PointerLeaveItemEvent, PointerLeave);
+            Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
 
             if (_root is InputElement inputRoot)
             {
@@ -333,7 +335,23 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void PointerLeave(object sender, PointerEventArgs e)
+        protected internal virtual void PointerMoved(object? sender, PointerEventArgs e)
+        {
+            // HACK: #8179 needs to be addressed to correctly implement it in the PointerPressed method.
+            var item = GetMenuItem(e.Source as IControl) as MenuItem;
+            if (item?.TransformedBounds == null)
+            {
+                return;
+            }
+            var point = e.GetCurrentPoint(null);
+
+            if (point.Properties.IsLeftButtonPressed && item.TransformedBounds.Value.Contains(point.Position) == false)
+            {
+                e.Pointer.Capture(null);
+            }
+        }
+
+        protected internal virtual void PointerLeave(object? sender, PointerEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 
