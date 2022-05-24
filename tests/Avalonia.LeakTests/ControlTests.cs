@@ -6,6 +6,7 @@ using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -661,6 +662,70 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ElementName_Binding_In_DataTemplate_Is_Freed()
+        {
+            using (Start())
+            {
+                var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
+                NameScope ns;
+                TextBox tb;
+                ListBox lb;
+                var window = new Window
+                {
+                    [NameScope.NameScopeProperty] = ns = new NameScope(),
+                    Width = 100,
+                    Height = 100,
+                    Content = new StackPanel
+                    {
+                        Children =
+                        {
+                            (tb = new TextBox
+                            {
+                                Name = "tb",
+                                Text = "foo",
+                            }),
+                            (lb = new ListBox
+                            {
+                                Items = items,
+                                ItemTemplate = new FuncDataTemplate<int>((_, _) =>
+                                    new Canvas
+                                    {
+                                        Width = 10,
+                                        Height = 10,
+                                        [!Control.TagProperty] = new Binding
+                                        {
+                                            ElementName = "tb",
+                                            Path = "Text",
+                                            NameScope = new WeakReference<INameScope>(ns),
+                                        }
+                                    })
+                            }),
+                        }
+                    }
+                };
+
+                tb.RegisterInNameScope(ns);
+
+                window.Show();
+                window.LayoutManager.ExecuteInitialLayoutPass();
+
+                Assert.Equal(10, lb.ItemContainerGenerator.Containers.Count());
+
+                var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
+                var canvas0 = (Canvas)item0.Presenter.Child;
+                Assert.Equal("foo", canvas0.Tag);
+
+                items.Clear();
+                window.LayoutManager.ExecuteLayoutPass();
+
+                Assert.Empty(lb.ItemContainerGenerator.Containers);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
@@ -668,6 +733,7 @@ namespace Avalonia.LeakTests
                 keyboardDevice: () => new KeyboardDevice(),
                 inputManager: new InputManager()));
         }
+
 
         private class Node
         {
