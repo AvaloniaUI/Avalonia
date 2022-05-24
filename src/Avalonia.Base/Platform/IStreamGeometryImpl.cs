@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines the platform-specific interface for a <see cref="Avalonia.Media.StreamGeometry"/>.
     /// </summary>
+    [Unstable]
     public interface IStreamGeometryImpl : IGeometryImpl
     {
         /// <summary>

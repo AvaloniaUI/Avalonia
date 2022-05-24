@@ -1,10 +1,12 @@
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines the platform-specific interface for a <see cref="Geometry"/>.
     /// </summary>
+    [Unstable]
     public interface IGeometryImpl
     {
         /// <summary>

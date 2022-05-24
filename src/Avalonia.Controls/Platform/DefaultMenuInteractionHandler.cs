@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -14,6 +15,7 @@ namespace Avalonia.Controls.Platform
     /// <summary>
     /// Provides the default keyboard and pointer interaction for menus.
     /// </summary>
+    [Unstable]
     public class DefaultMenuInteractionHandler : IMenuInteractionHandler
     {
         private readonly bool _isContextMenu;

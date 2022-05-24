@@ -1,10 +1,12 @@
 ﻿using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 
 namespace Avalonia.Media
-{  
+{
     /// <summary>
     /// A brush which displays a repeating image.
     /// </summary>
+    [NotClientImplementable]
     public interface ITileBrush : IBrush
     {
         /// <summary>

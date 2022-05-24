@@ -85,13 +85,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PointerEnterItem"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterItemEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerEnterItem), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuItem, PointerEventArgs>(nameof(PointerEnterItem), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerLeaveItem"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerLeaveItemEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerLeaveItem), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuItem, PointerEventArgs>(nameof(PointerLeaveItem), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="SubmenuOpened"/> event.

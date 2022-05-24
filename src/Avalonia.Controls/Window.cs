@@ -917,6 +917,15 @@ namespace Avalonia.Controls
             var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
+            if (MaxWidth > 0 && MaxWidth < maxAutoSize.Width)
+            {
+                maxAutoSize = maxAutoSize.WithWidth(MaxWidth);
+            }
+            if (MaxHeight > 0 && MaxHeight < maxAutoSize.Height)
+            {
+                maxAutoSize = maxAutoSize.WithHeight(MaxHeight);
+            }
+
             if (sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia.Rendering
 {
@@ -6,6 +7,7 @@ namespace Avalonia.Rendering
     /// Internal interface for initializing controls that are to be used as the visual in a
     /// <see cref="VisualBrush"/>.
     /// </summary>
+    [Unstable]
     public interface IVisualBrushInitialize
     {
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
+using Avalonia.Metadata;
 
 #nullable enable
 
@@ -9,6 +10,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Interface for styleable elements.
     /// </summary>
+    [NotClientImplementable]
     public interface IStyleable : IAvaloniaObject, INamed
     {
         /// <summary>

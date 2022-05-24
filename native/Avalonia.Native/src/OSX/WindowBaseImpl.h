@@ -35,6 +35,7 @@ BEGIN_INTERFACE_MAP()
     ComPtr<IAvnGlContext> _glContext;
     NSObject <IRenderTarget> *renderTarget;
     AvnPoint lastPositionSet;
+    bool hasPosition;
     NSSize lastSize;
     NSSize lastMinSize;
     NSSize lastMaxSize;
@@ -59,6 +60,8 @@ BEGIN_INTERFACE_MAP()
     virtual NSView *GetNSView() override;
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
+
+    virtual bool IsShown ();
 
     virtual bool ShouldTakeFocusOnShow();
 
