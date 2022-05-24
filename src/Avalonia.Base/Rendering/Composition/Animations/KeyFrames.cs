@@ -66,7 +66,7 @@ namespace Avalonia.Rendering.Composition.Animations
     struct ServerKeyFrame<T>
     {
         public T Value;
-        public Expression Expression;
+        public Expression? Expression;
         public IEasingFunction EasingFunction;
         public float Key;
     }

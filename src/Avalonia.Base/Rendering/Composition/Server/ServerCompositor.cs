@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Rendering.Composition.Animations;
+using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server
@@ -13,6 +15,8 @@ namespace Avalonia.Rendering.Composition.Server
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
         private List<ServerCompositionTarget> _activeTargets = new();
+        private HashSet<IAnimationInstance> _activeAnimations = new();
+        private List<IAnimationInstance> _animationsToUpdate = new();
 
         public ServerCompositor(IRenderLoop renderLoop)
         {
@@ -64,6 +68,7 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         bool IRenderLoopTask.NeedsUpdate => false;
+
         void IRenderLoopTask.Update(TimeSpan time)
         {
         }
@@ -71,6 +76,15 @@ namespace Avalonia.Rendering.Composition.Server
         void IRenderLoopTask.Render()
         {
             ApplyPendingBatches();
+            
+            foreach(var animation in _activeAnimations)
+                _animationsToUpdate.Add(animation);
+            
+            foreach(var animation in _animationsToUpdate)
+                animation.Invalidate();
+            
+            _animationsToUpdate.Clear();
+            
             foreach (var t in _activeTargets)
                 t.Render();
             
@@ -86,5 +100,11 @@ namespace Avalonia.Rendering.Composition.Server
         {
             _activeTargets.Remove(target);
         }
+        
+        public void AddToClock(IAnimationInstance animationInstance) =>
+            _activeAnimations.Add(animationInstance);
+
+        public void RemoveFromClock(IAnimationInstance animationInstance) =>
+            _activeAnimations.Remove(animationInstance);
     }
 }

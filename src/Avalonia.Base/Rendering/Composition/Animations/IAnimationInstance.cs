@@ -1,11 +1,16 @@
 using System;
 using Avalonia.Rendering.Composition.Expressions;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
     internal interface IAnimationInstance
     {
+        ServerObject TargetObject { get; }
         ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue);
-        void Start(TimeSpan startedAt, ExpressionVariant startingValue);
+        void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, int storeOffset);
+        void Activate();
+        void Deactivate();
+        void Invalidate();
     }
 }

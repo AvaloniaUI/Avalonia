@@ -56,10 +56,11 @@ namespace Avalonia.Rendering.Composition.Server
 
             Compositor.UpdateServerTime();
             
-            Root.Update(this, Matrix4x4.Identity);
-            
             if(_dirtyRect.IsEmpty && !_redrawRequested)
                 return;
+            
+            Root.Update(this, Matrix4x4.Identity);
+            
             _redrawRequested = false;
             using (var targetContext = _renderTarget.CreateDrawingContext(null))
             {

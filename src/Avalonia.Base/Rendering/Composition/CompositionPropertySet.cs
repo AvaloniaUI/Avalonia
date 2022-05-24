@@ -24,11 +24,16 @@ namespace Avalonia.Rendering.Composition
             _variants[key] = value;
         }
 
+        /*
+         For INTERNAL USE by CompositionAnimation ONLY, we DON'T support expression
+         paths like SomeParam.SomePropertyObject.SomeValue
+        */
         internal void Set(string key, CompositionObject obj)
         {
             _objects[key] = obj ?? throw new ArgumentNullException(nameof(obj));
             _variants.Remove(key);
         }
+        
         public void InsertColor(string propertyName, Avalonia.Media.Color value) => Set(propertyName, value);
 
         public void InsertMatrix3x2(string propertyName, Matrix3x2 value) => Set(propertyName, value);
@@ -99,7 +104,10 @@ namespace Avalonia.Rendering.Composition
             _variants.Remove(key);
         }
 
-        internal PropertySetSnapshot Snapshot(bool server, int allowedNestingLevel)
+        internal PropertySetSnapshot Snapshot(bool server) =>
+            SnapshotCore(server, 1);
+        
+        private PropertySetSnapshot SnapshotCore(bool server, int allowedNestingLevel)
         {
             var dic = new Dictionary<string, PropertySetSnapshot.Value>(_objects.Count + _variants.Count);
             foreach (var o in _objects)
@@ -108,7 +116,7 @@ namespace Avalonia.Rendering.Composition
                 {
                     if (allowedNestingLevel <= 0)
                         throw new InvalidOperationException("PropertySet depth limit reached");
-                    dic[o.Key] = new PropertySetSnapshot.Value(ps.Snapshot(server, allowedNestingLevel - 1));
+                    dic[o.Key] = new PropertySetSnapshot.Value(ps.SnapshotCore(server, allowedNestingLevel - 1));
                 }
                 else if (o.Value.Server == null)
                     throw new InvalidOperationException($"Object of type {o.Value.GetType()} is not allowed");

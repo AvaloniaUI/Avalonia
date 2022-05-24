@@ -2,20 +2,22 @@ using System.IO;
 using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 
-namespace Avalonia.SourceGenerator.CompositionGenerator;
-
-[Generator(LanguageNames.CSharp)]
-public class CompositionRoslynGenerator : IIncrementalGenerator
+namespace Avalonia.SourceGenerator.CompositionGenerator
 {
-    public void Initialize(IncrementalGeneratorInitializationContext context)
+    [Generator(LanguageNames.CSharp)]
+    public class CompositionRoslynGenerator : IIncrementalGenerator
     {
-        var schema = context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith("composition-schema.xml"));
-        var configs = schema.Select((t, _) =>
-            (GConfig)new XmlSerializer(typeof(GConfig)).Deserialize(new StringReader(t.GetText().ToString())));
-        context.RegisterSourceOutput(configs, (spc, config) =>
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var generator = new Generator(spc, config);
-            generator.Generate();
-        });
+            var schema =
+                context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith("composition-schema.xml"));
+            var configs = schema.Select((t, _) =>
+                (GConfig)new XmlSerializer(typeof(GConfig)).Deserialize(new StringReader(t.GetText().ToString())));
+            context.RegisterSourceOutput(configs, (spc, config) =>
+            {
+                var generator = new Generator(new RoslynCompositionGeneratorSink(spc), config);
+                generator.Generate();
+            });
+        }
     }
 }

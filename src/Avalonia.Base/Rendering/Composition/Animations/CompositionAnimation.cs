@@ -53,7 +53,7 @@ namespace Avalonia.Rendering.Composition.Animations
               ExpressionVariant? finalValue);
 
           internal PropertySetSnapshot CreateSnapshot(bool server) 
-              => _propertySet.Snapshot(server, 1);
+              => _propertySet.Snapshot(server);
 
           void ICompositionAnimationBase.InternalOnly()
           {

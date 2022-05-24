@@ -38,7 +38,6 @@ namespace Avalonia.Rendering.Composition
         {
         }
 
-
         internal Matrix4x4? TryGetServerTransform()
         {
             if (Root == null)

@@ -1,22 +1,22 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Expressions;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
-    internal class ExpressionAnimationInstance : IAnimationInstance
+    internal class ExpressionAnimationInstance : AnimationInstanceBase, IAnimationInstance
     {
         private readonly Expression _expression;
-        private readonly IExpressionObject _target;
         private ExpressionVariant _startingValue;
         private readonly ExpressionVariant? _finalValue;
-        private readonly PropertySetSnapshot _parameters;
 
-        public ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue)
+        protected override ExpressionVariant EvaluateCore(TimeSpan now, ExpressionVariant currentValue)
         {
             var ctx = new ExpressionEvaluationContext
             {
-                Parameters = _parameters,
-                Target = _target,
+                Parameters = Parameters,
+                Target = TargetObject,
                 ForeignFunctionInterface = BuiltInExpressionFfi.Instance,
                 StartingValue = _startingValue,
                 FinalValue = _finalValue ?? _startingValue,
@@ -25,20 +25,21 @@ namespace Avalonia.Rendering.Composition.Animations
             return _expression.Evaluate(ref ctx);
         }
 
-        public void Start(TimeSpan startedAt, ExpressionVariant startingValue)
+        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, int storeOffset)
         {
             _startingValue = startingValue;
+            var hs = new HashSet<(string, string)>();
+            _expression.CollectReferences(hs);
+            base.Initialize(storeOffset, hs);
         }
-
+        
         public ExpressionAnimationInstance(Expression expression,
-            IExpressionObject target,
+            ServerObject target,
             ExpressionVariant? finalValue,
-            PropertySetSnapshot parameters)
+            PropertySetSnapshot parameters) : base(target, parameters)
         {
             _expression = expression;
-            _target = target;
             _finalValue = finalValue;
-            _parameters = parameters;
         }
     }
 }

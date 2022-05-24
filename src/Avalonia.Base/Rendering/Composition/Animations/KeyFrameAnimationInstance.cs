@@ -1,15 +1,15 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Expressions;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
-    class KeyFrameAnimationInstance<T> : IAnimationInstance where T : struct
+    class KeyFrameAnimationInstance<T> : AnimationInstanceBase, IAnimationInstance where T : struct
     {
         private readonly IInterpolator<T> _interpolator;
         private readonly ServerKeyFrame<T>[] _keyFrames;
-        private readonly PropertySetSnapshot _snapshot;
         private readonly ExpressionVariant? _finalValue;
-        private readonly IExpressionObject _target;
         private readonly AnimationDelayBehavior _delayBehavior;
         private readonly TimeSpan _delayTime;
         private readonly AnimationDirection _direction;
@@ -19,21 +19,21 @@ namespace Avalonia.Rendering.Composition.Animations
         private readonly AnimationStopBehavior _stopBehavior;
         private TimeSpan _startedAt;
         private T _startingValue;
+        private readonly TimeSpan _totalDuration;
+        private bool _finished;
 
         public KeyFrameAnimationInstance(
             IInterpolator<T> interpolator, ServerKeyFrame<T>[] keyFrames,
             PropertySetSnapshot snapshot, ExpressionVariant? finalValue,
-            IExpressionObject target,
+            ServerObject target,
             AnimationDelayBehavior delayBehavior, TimeSpan delayTime,
             AnimationDirection direction, TimeSpan duration,
             AnimationIterationBehavior iterationBehavior,
-            int iterationCount, AnimationStopBehavior stopBehavior)
+            int iterationCount, AnimationStopBehavior stopBehavior) : base(target, snapshot)
         {
             _interpolator = interpolator;
             _keyFrames = keyFrames;
-            _snapshot = snapshot;
             _finalValue = finalValue;
-            _target = target;
             _delayBehavior = delayBehavior;
             _delayTime = delayTime;
             _direction = direction;
@@ -41,26 +41,43 @@ namespace Avalonia.Rendering.Composition.Animations
             _iterationBehavior = iterationBehavior;
             _iterationCount = iterationCount;
             _stopBehavior = stopBehavior;
+            if (_iterationBehavior == AnimationIterationBehavior.Count)
+                _totalDuration = delayTime.Add(TimeSpan.FromTicks(iterationCount * _duration.Ticks));
             if (_keyFrames.Length == 0)
                 throw new InvalidOperationException("Animation has no key frames");
             if(_duration.Ticks <= 0)
                 throw new InvalidOperationException("Invalid animation duration");
         }
 
-        public ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue)
+
+        protected override ExpressionVariant EvaluateCore(TimeSpan now, ExpressionVariant currentValue)
         {
-            var elapsed = now - _startedAt;
             var starting = ExpressionVariant.Create(_startingValue);
             var ctx = new ExpressionEvaluationContext
             {
-                Parameters = _snapshot,
-                Target = _target,
+                Parameters = Parameters,
+                Target = TargetObject,
                 CurrentValue = currentValue,
                 FinalValue = _finalValue ??  starting,
                 StartingValue = starting,
                 ForeignFunctionInterface = BuiltInExpressionFfi.Instance
             };
+            var elapsed = now - _startedAt;
+            var res = EvaluateImpl(elapsed, currentValue, ref ctx);
             
+            if (_iterationBehavior == AnimationIterationBehavior.Count
+                && !_finished
+                && elapsed > _totalDuration)
+            {
+                // Active check?
+                TargetObject.Compositor.RemoveFromClock(this);
+                _finished = true;
+            }
+            return res;
+        }
+        
+        private ExpressionVariant EvaluateImpl(TimeSpan elapsed, ExpressionVariant currentValue, ref ExpressionEvaluationContext ctx)
+        {
             if (elapsed < _delayTime)
             {
                 if (_delayBehavior == AnimationDelayBehavior.SetInitialValueBeforeDelay)
@@ -130,10 +147,28 @@ namespace Avalonia.Rendering.Composition.Animations
                 return f.Value;
         }
 
-        public void Start(TimeSpan startedAt, ExpressionVariant startingValue)
+        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, int storeOffset)
         {
             _startedAt = startedAt;
             _startingValue = startingValue.CastOrDefault<T>();
+            var hs = new HashSet<(string, string)>();
+            
+            // TODO: Update subscriptions based on the current keyframe rather than keeping subscriptions to all of them
+            foreach (var frame in _keyFrames)
+                frame.Expression?.CollectReferences(hs);
+            Initialize(storeOffset, hs);
+        }
+
+        public override void Activate()
+        {
+            TargetObject.Compositor.AddToClock(this);
+            base.Activate();
+        }
+
+        public override void Deactivate()
+        {
+            TargetObject.Compositor.RemoveFromClock(this);
+            base.Deactivate();
         }
     }
 }

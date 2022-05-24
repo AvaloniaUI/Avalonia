@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
@@ -14,6 +15,11 @@ namespace Avalonia.Rendering.Composition.Expressions
         }
 
         public abstract ExpressionVariant Evaluate(ref ExpressionEvaluationContext context);
+
+        public virtual void CollectReferences(HashSet<(string parameter, string property)> references)
+        {
+            
+        }
 
         protected abstract string Print();
         public override string ToString() => Print();
@@ -114,6 +120,13 @@ namespace Avalonia.Rendering.Composition.Expressions
             return FalsePart.Evaluate(ref context);
         }
 
+        public override void CollectReferences(HashSet<(string parameter, string property)> references)
+        {
+            Condition.CollectReferences(references);
+            TruePart.CollectReferences(references);
+            FalsePart.CollectReferences(references);
+        }
+
         protected override string Print() => $"({Condition}) ? ({TruePart}) : ({FalsePart})";
     }
     
@@ -128,6 +141,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         }
 
         public override ExpressionVariant Evaluate(ref ExpressionEvaluationContext context) => Constant;
+
         protected override string Print() => Constant.ToString(CultureInfo.InvariantCulture);
     }
 
@@ -155,6 +169,12 @@ namespace Avalonia.Rendering.Composition.Expressions
             return res;
         }
 
+        public override void CollectReferences(HashSet<(string parameter, string property)> references)
+        {
+            foreach(var arg in Parameters)
+                arg.CollectReferences(references);
+        }
+
         protected override string Print()
         {
             return Name + "( (" + string.Join("), (", Parameters) + ") )";
@@ -173,18 +193,30 @@ namespace Avalonia.Rendering.Composition.Expressions
             Member = string.Intern(member);
         }
 
+        public override void CollectReferences(HashSet<(string parameter, string property)> references)
+        {
+            Target.CollectReferences(references);
+            if (Target is ParameterExpression pe)
+                references.Add((pe.Name, Member));
+        }
+
         public override ExpressionVariant Evaluate(ref ExpressionEvaluationContext context)
         {
             if (Target is KeywordExpression ke
                 && ke.Keyword == ExpressionKeyword.Target)
+            {
                 return context.Target.GetProperty(Member);
+            }
+
             if (Target is ParameterExpression pe)
             {
                 var obj = context.Parameters?.GetObjectParameter(pe.Name);
                 if (obj != null)
+                {
                     return obj.GetProperty(Member);
+                }
             }
-
+            // Those are considered immutable
             return Target.Evaluate(ref context).GetProperty(Member);
         }
 
@@ -263,6 +295,11 @@ namespace Avalonia.Rendering.Composition.Expressions
             return default;
         }
 
+        public override void CollectReferences(HashSet<(string parameter, string property)> references)
+        {
+            Parameter.CollectReferences(references);
+        }
+
         protected override string Print()
         {
             return OperatorName(Type) + Parameter;
@@ -311,6 +348,12 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (Type == ExpressionType.NotEquals)
                 return left.NotEqualsTo(right);
             return default;
+        }
+
+        public override void CollectReferences(HashSet<(string parameter, string property)> references)
+        {
+            Left.CollectReferences(references);
+            Right.CollectReferences(references);
         }
 
         protected override string Print()
