@@ -88,9 +88,14 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT SetWindowState (AvnWindowState state) override;
 
     virtual bool IsDialog() override;
+    
+    virtual void OnInitialiseNSWindow() override;
 
 protected:
     virtual NSWindowStyleMask GetStyle() override;
+
+private:
+    NSString *_lastTitle;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

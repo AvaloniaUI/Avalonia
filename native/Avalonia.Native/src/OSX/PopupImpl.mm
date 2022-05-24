@@ -26,29 +26,16 @@ private:
     PopupImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         WindowEvents = events;
-        [Window setLevel:NSPopUpMenuWindowLevel];
     }
 protected:
     virtual NSWindowStyleMask GetStyle() override
     {
         return NSWindowStyleMaskBorderless;
     }
-
-    virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override
+    
+    virtual void OnInitialiseNSWindow () override
     {
-        START_COM_CALL;
-
-        @autoreleasepool
-        {
-            if (Window != nullptr)
-            {
-                [Window setContentSize:NSSize{x, y}];
-
-                [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
-            }
-
-            return S_OK;
-        }
+        [Window setLevel:NSPopUpMenuWindowLevel];
     }
 
 public:
