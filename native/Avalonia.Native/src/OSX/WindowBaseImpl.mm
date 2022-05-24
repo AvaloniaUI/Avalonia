@@ -34,7 +34,6 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     lastSize = NSSize { 100, 100 };
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
-    _lastTitle = @"";
 
     Window = nullptr;
     lastMenu = nullptr;
@@ -100,8 +99,6 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         }
 
         UpdateStyle();
-
-        [Window setTitle:_lastTitle];
 
         if (ShouldTakeFocusOnShow() && activate) {
             [Window orderFront:Window];
@@ -569,6 +566,11 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
     }
 }
 
+void WindowBaseImpl::OnInitialiseNSWindow()
+{
+    
+}
+
 void WindowBaseImpl::InitialiseNSWindow() {
     if(Window != nullptr) {
         [Window setContentView:StandardContainer];
@@ -588,6 +590,8 @@ void WindowBaseImpl::InitialiseNSWindow() {
                 [GetWindowProtocol() showWindowMenuWithAppMenu];
             }
         }
+        
+        OnInitialiseNSWindow();
     }
 }
 
