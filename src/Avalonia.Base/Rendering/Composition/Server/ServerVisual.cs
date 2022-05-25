@@ -69,7 +69,14 @@ namespace Avalonia.Rendering.Composition.Server
             //TODO: check effective opacity too
             IsVisibleInFrame = Visible && Opacity > 0;
             CombinedTransformMatrix = res;
-            GlobalTransformMatrix = res * transform;
+            var newTransform = res * transform;
+            if (GlobalTransformMatrix != newTransform)
+            {
+                // Visual was moved alongside with its parent
+                _isDirty = true;
+                Root.AddDirtyRect(TransformedBounds);
+            }
+            GlobalTransformMatrix = newTransform;
             //TODO: Cache
             TransformedBounds = ContentBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
             
