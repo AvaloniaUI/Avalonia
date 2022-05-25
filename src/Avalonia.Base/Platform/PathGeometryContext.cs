@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
+using Avalonia.Platform;
 
-namespace Avalonia.Platform
+namespace Avalonia.Visuals.Platform
 {
     public class PathGeometryContext : IGeometryContext
     {
