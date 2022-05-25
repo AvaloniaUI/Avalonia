@@ -15,7 +15,7 @@ namespace Avalonia.Rendering.Composition.Server
         private readonly Func<IRenderTarget> _renderTargetFactory;
         private static long s_nextId = 1;
         public long Id { get; }
-        private ulong _frame = 1;
+        public ulong Revision { get; private set; }
         private IRenderTarget? _renderTarget;
         private FpsCounter _fpsCounter = new FpsCounter(Typeface.Default.GlyphTypeface);
         private Rect _dirtyRect;
@@ -58,9 +58,14 @@ namespace Avalonia.Rendering.Composition.Server
             
             if(_dirtyRect.IsEmpty && !_redrawRequested)
                 return;
+
+            Revision++;
             
+            // Update happens in a separate phase to extend dirty rect if needed
             Root.Update(this, Matrix4x4.Identity);
             
+            Readback.CompleteWrite(Revision);
+
             _redrawRequested = false;
             using (var targetContext = _renderTarget.CreateDrawingContext(null))
             {
@@ -102,9 +107,6 @@ namespace Avalonia.Rendering.Composition.Server
                 _dirtyRect = Rect.Empty;
                 
             }
-
-            Readback.NextWrite(_frame);
-            _frame++;
         }
 
         private static Rect SnapToDevicePixels(Rect rect, double scale)

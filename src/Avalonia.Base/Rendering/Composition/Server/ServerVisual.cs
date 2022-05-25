@@ -63,7 +63,7 @@ namespace Avalonia.Rendering.Composition.Server
                 Scale, RotationAngle, Orientation, Offset);
             var i = Root!.Readback;
             ref var readback = ref GetReadback(i.WriteIndex);
-            readback.Revision = i.WriteRevision;
+            readback.Revision = root.Revision;
             readback.Matrix = res;
             readback.TargetId = Root.Id;
             //TODO: check effective opacity too
@@ -85,7 +85,6 @@ namespace Avalonia.Rendering.Composition.Server
         public struct ReadbackData
         {
             public Matrix4x4 Matrix;
-            public bool Visible;
             public ulong Revision;
             public long TargetId;
         }
