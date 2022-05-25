@@ -30,7 +30,7 @@ namespace Avalonia.Native
                                         ofd.Title ?? "",
                                         ofd.Directory ?? "",
                                         ofd.InitialFileName ?? "",
-                                        string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
+                                        string.Join(";", dialog.Filters?.SelectMany(f => f.Extensions) ?? Array.Empty<string>()));
             }
             else
             {
@@ -39,7 +39,7 @@ namespace Avalonia.Native
                                         dialog.Title ?? "",
                                         dialog.Directory ?? "",
                                         dialog.InitialFileName ?? "",
-                                        string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
+                                        string.Join(";", dialog.Filters?.SelectMany(f => f.Extensions) ?? Array.Empty<string>()));
             }
 
             return events.Task.ContinueWith(t => { events.Dispose(); return t.Result; });
