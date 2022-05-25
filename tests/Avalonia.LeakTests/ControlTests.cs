@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
@@ -12,6 +13,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using JetBrains.dotMemoryUnit;
@@ -730,10 +732,23 @@ namespace Avalonia.LeakTests
 
         private IDisposable Start()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
-                keyboardDevice: () => new KeyboardDevice(),
-                inputManager: new InputManager()));
+            void Cleanup()
+            {
+                // KeyboardDevice holds a reference to the focused item.
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                
+                // Empty the dispatcher queue.
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            return new CompositeDisposable
+            {
+                Disposable.Create(Cleanup),
+                UnitTestApplication.Start(TestServices.StyledWindow.With(
+                    focusManager: new FocusManager(),
+                    keyboardDevice: () => new KeyboardDevice(),
+                    inputManager: new InputManager()))
+            };
         }
 
 
