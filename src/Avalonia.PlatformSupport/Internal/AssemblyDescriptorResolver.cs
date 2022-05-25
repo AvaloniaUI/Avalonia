@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.PlatformSupport.Internal;
 
@@ -29,9 +30,8 @@ internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
             }
             else
             {
-                // iOS does not support loading assemblies dynamically!
 #if NET6_0_OR_GREATER
-                if (OperatingSystem.IsIOS())
+                if (!RuntimeFeature.IsDynamicCodeSupported)
                 {
                     throw new InvalidOperationException(
                         $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
