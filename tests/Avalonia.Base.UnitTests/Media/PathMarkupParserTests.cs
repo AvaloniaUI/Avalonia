@@ -2,7 +2,6 @@ using System.Globalization;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Visuals.Platform;
 using Moq;
 using Xunit;
 

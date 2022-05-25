@@ -1,5 +1,5 @@
 using Avalonia.Collections;
-using Avalonia.Visuals.Platform;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {

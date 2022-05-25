@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
 
 // ReSharper disable InconsistentNaming
-namespace Avalonia.PlatformSupport
+namespace Avalonia.Platform.Internal
 {
     class UnixLoader : IDynamicLibraryLoader
     {

@@ -2,7 +2,6 @@ using System;
 using Avalonia.Collections;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Visuals.Platform;
 
 namespace Avalonia.Media
 {

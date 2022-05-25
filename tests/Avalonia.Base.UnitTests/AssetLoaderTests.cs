@@ -1,10 +1,11 @@
 using System;
 using System.Reflection;
-using Avalonia.PlatformSupport.Internal;
+using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Moq;
 using Xunit;
 
-namespace Avalonia.PlatformSupport.UnitTests;
+namespace Avalonia.Base.UnitTests;
 
 public class AssetLoaderTests
 {

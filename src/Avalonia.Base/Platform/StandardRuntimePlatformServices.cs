@@ -1,8 +1,8 @@
 using System.Reflection;
-using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Avalonia.Platform.Interop;
 
-namespace Avalonia.PlatformSupport
+namespace Avalonia.Platform
 {
     public static class StandardRuntimePlatformServices
     {

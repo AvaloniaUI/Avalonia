@@ -1,9 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.Platform;
 
-namespace Avalonia.PlatformSupport
+namespace Avalonia.Platform
 {
     public class StandardRuntimePlatform : IRuntimePlatform
     {

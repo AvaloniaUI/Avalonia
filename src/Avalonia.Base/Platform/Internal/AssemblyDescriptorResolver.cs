@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Avalonia.PlatformSupport.Internal;
+namespace Avalonia.Platform.Internal;
 
 internal interface IAssemblyDescriptorResolver
 {
