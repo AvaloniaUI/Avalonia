@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using Avalonia.Metadata;
 
 #nullable enable
 
@@ -8,6 +9,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines an element that has a <see cref="Styles"/> collection.
     /// </summary>
+    [NotClientImplementable]
     public interface IStyleHost
     {
         /// <summary>

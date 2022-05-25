@@ -1,9 +1,8 @@
 using System;
 using Avalonia.Collections;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
-
-#nullable enable
 
 namespace Avalonia.VisualTree
 {
@@ -18,6 +17,7 @@ namespace Avalonia.VisualTree
     /// implemented by <see cref="Visual"/>. It should not be necessary to implement it
     /// anywhere else.
     /// </remarks>
+    [NotClientImplementable]
     public interface IVisual
     {
         /// <summary>

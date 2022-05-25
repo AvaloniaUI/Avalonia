@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
             RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
-                "TemplateApplied", 
+                nameof(TemplateApplied), 
                 RoutingStrategies.Direct);
 
         private IControlTemplate? _appliedTemplate;

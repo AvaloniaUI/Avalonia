@@ -1,15 +1,15 @@
-#ifndef window_h
-#define window_h
+//
+// Created by Dan Walmsley on 06/05/2022.
+// Copyright (c) 2022 Avalonia. All rights reserved.
+//
 
-#import "avalonia-native.h"
+#pragma once
+
+#import <AppKit/AppKit.h>
 
 @class AvnMenu;
 
-class WindowBaseImpl;
-
-@interface AvnWindow : NSWindow <NSWindowDelegate>
--(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
--(void) setCanBecomeKeyAndMain;
+@protocol AvnWindowProtocol
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
@@ -20,7 +20,8 @@ class WindowBaseImpl;
 
 -(double) getExtendedTitleBarHeight;
 -(void) setIsExtended:(bool)value;
+-(void) disconnectParent;
 -(bool) isDialog;
-@end
 
-#endif /* window_h */
+-(void) setCanBecomeKeyWindow:(bool)value;
+@end

@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Controls.Notifications
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Controls.Notifications
 {
     /// <summary>
     /// Represents a notification manager that can show arbitrary content.
@@ -9,6 +11,7 @@
     /// can display arbitrary content, as opposed to notification managers which display notifications
     /// using the host operating system's notification mechanism.
     /// </remarks>
+    [NotClientImplementable]
     public interface IManagedNotificationManager : INotificationManager
     {
         /// <summary>
