@@ -48,7 +48,7 @@ namespace Avalonia.Styling
         public int Step { get; }
         public int Offset { get; }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             if (!(control is ILogical logical))
             {
@@ -105,6 +105,7 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => _previous;
+        internal override bool HasValidNestingSelector() => _previous?.HasValidNestingSelector() ?? false;
 
         public override string ToString()
         {

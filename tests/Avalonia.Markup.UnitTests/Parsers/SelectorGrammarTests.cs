@@ -470,6 +470,144 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Nesting_Class()
+        {
+            var result = SelectorGrammar.Parse("^.foo");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void Nesting_Child_Class()
+        {
+            var result = SelectorGrammar.Parse("^ > .foo");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.ChildSyntax { },
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void Nesting_Descendant_Class()
+        {
+            var result = SelectorGrammar.Parse("^ .foo");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.DescendantSyntax { },
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void Nesting_Template_Class()
+        {
+            var result = SelectorGrammar.Parse("^ /template/ .foo");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.TemplateSyntax { },
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_Template_Nesting()
+        {
+            var result = SelectorGrammar.Parse("Button /template/ ^");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.TemplateSyntax { },
+                    new SelectorGrammar.NestingSyntax(),
+                },
+                result);
+        }
+
+        [Fact]
+        public void Nesting_Property()
+        {
+            var result = SelectorGrammar.Parse("^[Foo=bar]");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.PropertySyntax { Property = "Foo", Value = "bar" },
+                },
+                result);
+        }
+
+        [Fact]
+        public void Not_Nesting()
+        {
+            var result = SelectorGrammar.Parse(":not(^)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NotSyntax
+                    {
+                        Argument = new[] { new SelectorGrammar.NestingSyntax() },
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void Nesting_NthChild()
+        {
+            var result = SelectorGrammar.Parse("^:nth-child(2n+1)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 1
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void Nesting_Comma_Nesting_Class()
+        {
+            var result = SelectorGrammar.Parse("^, ^.foo");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.CommaSyntax(),
+                    new SelectorGrammar.NestingSyntax(),
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
         public void Namespace_Alone_Fails()
         {
             Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse("ns|"));
