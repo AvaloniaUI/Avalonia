@@ -31,6 +31,7 @@
     ComPtr<WindowBaseImpl> _parent;
     bool _closed;
     bool _isEnabled;
+    bool _canBecomeKeyWindow;
     bool _isExtended;
     AvnMenu* _menu;
 }
@@ -216,29 +217,38 @@
 
 -(BOOL)canBecomeKeyWindow
 {
-    // If the window has a child window being shown as a dialog then don't allow it to become the key window.
-    for(NSWindow* uch in [self childWindows])
+    if(_canBecomeKeyWindow)
     {
-        if (![uch conformsToProtocol:@protocol(AvnWindowProtocol)])
+        // If the window has a child window being shown as a dialog then don't allow it to become the key window.
+        for(NSWindow* uch in [self childWindows])
         {
-            continue;
+            if (![uch conformsToProtocol:@protocol(AvnWindowProtocol)])
+            {
+                continue;
+            }
+
+            id <AvnWindowProtocol> ch = (id <AvnWindowProtocol>) uch;
+
+            if(ch.isDialog)
+                return false;
         }
 
-        id <AvnWindowProtocol> ch = (id <AvnWindowProtocol>) uch;
-
-        return !ch.isDialog;
+        return true;
     }
-
-    return true;
+    
+    return false;
 }
 
+#ifndef IS_NSPANEL
 -(BOOL)canBecomeMainWindow
 {
-#ifdef IS_NSPANEL
-    return false;
-#else
     return true;
+}
 #endif
+
+-(void)setCanBecomeKeyWindow:(bool)value
+{
+    _canBecomeKeyWindow = value;
 }
 
 -(bool)shouldTryToHandleEvents
