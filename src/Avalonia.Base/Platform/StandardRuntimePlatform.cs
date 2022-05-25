@@ -85,15 +85,18 @@ namespace Avalonia.Platform
             else
                 throw new Exception("Unknown OS platform " + RuntimeInformation.OSDescription);
 
+            // Source: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/tests/TestUtilities/System/PlatformDetection.cs
+            var isCoreClr = Environment.Version.Major >= 5 || RuntimeInformation.FrameworkDescription.StartsWith(".NET Core", StringComparison.OrdinalIgnoreCase);
+            var isMonoRuntime = Type.GetType("Mono.RuntimeStructs") != null;
+            var isFramework = !isCoreClr && RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.OrdinalIgnoreCase);
+            
             return new RuntimePlatformInfo
             {
-#if NETCOREAPP
-                IsCoreClr = true,
-#elif NETFRAMEWORK
-                IsDotNetFramework = true,
-#endif
+                IsCoreClr = isCoreClr,
+                IsDotNetFramework = isFramework,
+                IsMono = isMonoRuntime,
+                
                 IsDesktop = os is OperatingSystemType.Linux or OperatingSystemType.OSX or OperatingSystemType.WinNT,
-                IsMono = os is OperatingSystemType.Android or OperatingSystemType.iOS or OperatingSystemType.Browser,
                 IsMobile = os is OperatingSystemType.Android or OperatingSystemType.iOS,
                 IsUnix = os is OperatingSystemType.Linux or OperatingSystemType.OSX or OperatingSystemType.Android,
                 IsBrowser = os == OperatingSystemType.Browser,
