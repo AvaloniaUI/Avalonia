@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -710,11 +708,15 @@ namespace Avalonia.LeakTests
                 window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass();
 
+                void AssertInitialItemState()
+                {
+                    var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
+                    var canvas0 = (Canvas)item0.Presenter.Child;
+                    Assert.Equal("foo", canvas0.Tag);
+                }
+               
                 Assert.Equal(10, lb.ItemContainerGenerator.Containers.Count());
-
-                var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
-                var canvas0 = (Canvas)item0.Presenter.Child;
-                Assert.Equal("foo", canvas0.Tag);
+                AssertInitialItemState();
 
                 items.Clear();
                 window.LayoutManager.ExecuteLayoutPass();
