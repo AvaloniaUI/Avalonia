@@ -20,7 +20,7 @@ namespace Avalonia.Platform
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 os = OperatingSystemType.OSX;
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD")))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 os = OperatingSystemType.Linux;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 os = OperatingSystemType.WinNT;
@@ -35,7 +35,7 @@ namespace Avalonia.Platform
 
             // Source: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/tests/TestUtilities/System/PlatformDetection.cs
             var isCoreClr = Environment.Version.Major >= 5 || RuntimeInformation.FrameworkDescription.StartsWith(".NET Core", StringComparison.OrdinalIgnoreCase);
-            var isMonoRuntime = Type.GetType("Mono.RuntimeStructs") != null;
+            var isMonoRuntime = Type.GetType("Mono.Runtime") != null;
             var isFramework = !isCoreClr && RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.OrdinalIgnoreCase);
             
             return new RuntimePlatformInfo
