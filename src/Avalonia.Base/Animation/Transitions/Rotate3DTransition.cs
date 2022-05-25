@@ -14,6 +14,7 @@ public class Rotate3DTransition: PageSlide
     /// </summary>
     /// <param name="duration">How long the rotation should take place</param>
     /// <param name="orientation">The orientation of the rotation</param>
+    /// <param name="depth">Defines the depth of the 3D Effect. If null, depth will be calculated automatically from the width or height of the common parent of the visual being rotated</param>
     public Rotate3DTransition(TimeSpan duration, SlideAxis orientation = SlideAxis.Horizontal, double? depth = null)
         : base(duration, orientation)
     {
