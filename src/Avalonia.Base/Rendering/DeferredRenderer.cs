@@ -272,16 +272,18 @@ namespace Avalonia.Rendering
             }
         }
 
+        Scene? TryGetChildScene(IRef<IDrawOperation>? op) => (op?.Item as BrushDrawOperation)?.Aux as Scene;
+        
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            return (_currentDraw?.Item as BrushDrawOperation)?.ChildScenes?[brush.Visual]?.Size ?? Size.Empty;
+            return TryGetChildScene(_currentDraw)?.Size ?? Size.Empty;
         }
 
         /// <inheritdoc/>
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
-            var childScene = (_currentDraw?.Item as BrushDrawOperation)?.ChildScenes?[brush.Visual];
+            var childScene = TryGetChildScene(_currentDraw);
 
             if (childScene != null)
             {

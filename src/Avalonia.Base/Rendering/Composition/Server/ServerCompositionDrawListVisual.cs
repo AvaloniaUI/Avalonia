@@ -51,10 +51,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
     {
         if (_renderCommands != null)
         {
-            foreach (var cmd in _renderCommands)
-            {
-                cmd.Item.Render(canvas);
-            }
+            _renderCommands.Render(canvas);
         }
         base.RenderCore(canvas, transform);
     }

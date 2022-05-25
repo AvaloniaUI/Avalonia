@@ -2,6 +2,7 @@ using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 
@@ -10,12 +11,21 @@ namespace Avalonia.Rendering.Composition.Server;
 internal class CompositorDrawingContextProxy : IDrawingContextImpl
 {
     private IDrawingContextImpl _impl;
+    private readonly VisualBrushRenderer _visualBrushRenderer;
 
-    public CompositorDrawingContextProxy(IDrawingContextImpl impl)
+    public CompositorDrawingContextProxy(IDrawingContextImpl impl, VisualBrushRenderer visualBrushRenderer)
     {
         _impl = impl;
+        _visualBrushRenderer = visualBrushRenderer;
     }
 
+    // This is a hack to make it work with the current way of handling visual brushes
+    public CompositionDrawList? VisualBrushDrawList
+    {
+        get => _visualBrushRenderer.VisualBrushDrawList;
+        set => _visualBrushRenderer.VisualBrushDrawList = value;
+    }
+    
     public Matrix PreTransform { get; set; } = Matrix.Identity;
     
     public void Dispose()
@@ -134,5 +144,23 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl
     public void Custom(ICustomDrawOperation custom)
     {
         _impl.Custom(custom);
+    }
+
+    public class VisualBrushRenderer : IVisualBrushRenderer
+    {
+        public CompositionDrawList? VisualBrushDrawList { get; set; }
+        public Size GetRenderTargetSize(IVisualBrush brush)
+        {
+            return VisualBrushDrawList?.Size ?? Size.Empty;
+        }
+
+        public void RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
+        {
+            if (VisualBrushDrawList != null)
+            {
+                foreach (var cmd in VisualBrushDrawList)
+                    cmd.Item.Render(context);
+            }
+        }
     }
 }

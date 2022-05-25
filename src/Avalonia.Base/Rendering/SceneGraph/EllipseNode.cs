@@ -17,14 +17,13 @@ namespace Avalonia.Rendering.SceneGraph
             IBrush? brush, 
             IPen? pen, 
             Rect rect, 
-            IDictionary<IVisual, Scene>? childScenes = null) 
-            : base(rect.Inflate(pen?.Thickness ?? 0), transform)
+            IDisposable? aux = null) 
+            : base(rect.Inflate(pen?.Thickness ?? 0), transform, aux)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
-            ChildScenes = childScenes;
         }
 
         /// <summary>
@@ -46,8 +45,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the rect of the ellipse to draw.
         /// </summary>
         public Rect Rect { get; }
-
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         public bool Equals(Matrix transform, IBrush? brush, IPen? pen, Rect rect)
         {

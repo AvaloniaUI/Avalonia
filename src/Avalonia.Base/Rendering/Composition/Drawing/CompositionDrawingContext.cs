@@ -359,25 +359,30 @@ internal class CompositionDrawingContext : IDrawingContextImpl
             ? _builder.DrawOperations[_drawOperationIndex] as IRef<T>
             : null;
     }
-
-    private IDictionary<IVisual, Scene>? CreateChildScene(IBrush? brush)
+    
+    private IDisposable? CreateChildScene(IBrush? brush)
     {
-        /*
-        var visualBrush = brush as VisualBrush;
-
-        if (visualBrush != null)
+        if (brush is VisualBrush visualBrush)
         {
             var visual = visualBrush.Visual;
 
             if (visual != null)
             {
+                // TODO: This is a temporary solution to make visual brush to work like it does with DeferredRenderer
+                // We should directly reference the corresponding CompositionVisual (which should
+                // be attached to the same composition target) like UWP does.
+                // Render-able visuals shouldn't be dangling unattached
                 (visual as IVisualBrushInitialize)?.EnsureInitialized();
-                var scene = new Scene(visual);
-                _sceneBuilder.UpdateAll(scene);
-                return new Dictionary<IVisual, Scene> { { visualBrush.Visual, scene } };
-            }
-        }*/
 
+                var drawList = new CompositionDrawList() { Size = visual.Bounds.Size };
+                var recorder = new CompositionDrawingContext();
+                recorder.BeginUpdate(drawList);
+                ImmediateRenderer.Render(visual, new DrawingContext(recorder));
+                recorder.EndUpdate();
+
+                return drawList;
+            }
+        }
         return null;
     }
 }

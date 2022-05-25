@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -23,14 +24,13 @@ namespace Avalonia.Rendering.SceneGraph
             IBrush? brush,
             IPen? pen,
             IGeometryImpl geometry,
-            IDictionary<IVisual, Scene>? childScenes = null)
-            : base(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen), transform)
+            IDisposable? aux)
+            : base(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen), transform, aux)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Geometry = geometry;
-            ChildScenes = childScenes;
         }
 
         /// <summary>
@@ -52,9 +52,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the geometry to draw.
         /// </summary>
         public IGeometryImpl Geometry { get; }
-
-        /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.

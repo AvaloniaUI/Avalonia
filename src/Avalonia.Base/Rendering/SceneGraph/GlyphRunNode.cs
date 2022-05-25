@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -23,13 +24,12 @@ namespace Avalonia.Rendering.SceneGraph
             Matrix transform,
             IBrush foreground,
             GlyphRun glyphRun,
-            IDictionary<IVisual, Scene>? childScenes = null)
-            : base(new Rect(glyphRun.Size), transform)
+            IDisposable? aux = null)
+            : base(new Rect(glyphRun.Size), transform, aux)
         {
             Transform = transform;
             Foreground = foreground.ToImmutable();
             GlyphRun = glyphRun;
-            ChildScenes = childScenes;
         }
 
         /// <summary>
@@ -46,9 +46,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the glyph run to draw.
         /// </summary>
         public GlyphRun GlyphRun { get; }
-
-        /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)

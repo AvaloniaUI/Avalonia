@@ -75,11 +75,12 @@ namespace Avalonia.Rendering.Composition.Server
 
                 if (!_dirtyRect.IsEmpty)
                 {
-                    using (var context = _layer.CreateDrawingContext(null))
+                    var visualBrushHelper = new CompositorDrawingContextProxy.VisualBrushRenderer();
+                    using (var context = _layer.CreateDrawingContext(visualBrushHelper))
                     {
                         context.PushClip(_dirtyRect);
                         context.Clear(Colors.Transparent);
-                        Root.Render(new CompositorDrawingContextProxy(context), Root.CombinedTransformMatrix);
+                        Root.Render(new CompositorDrawingContextProxy(context, visualBrushHelper), Root.CombinedTransformMatrix);
                         context.PopClip();
                     }
                 }

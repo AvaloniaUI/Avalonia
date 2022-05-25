@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Collections.Pooled;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 
@@ -7,6 +8,8 @@ namespace Avalonia.Rendering.Composition.Drawing;
 
 internal class CompositionDrawList : PooledList<IRef<IDrawOperation>>
 {
+    public Size? Size { get; set; }
+    
     public CompositionDrawList()
     {
         
@@ -26,10 +29,21 @@ internal class CompositionDrawList : PooledList<IRef<IDrawOperation>>
 
     public CompositionDrawList Clone()
     {
-        var clone = new CompositionDrawList(Count);
+        var clone = new CompositionDrawList(Count) { Size = Size };
         foreach (var r in this)
             clone.Add(r.Clone());
         return clone;
+    }
+
+    public void Render(CompositorDrawingContextProxy canvas)
+    {
+        foreach (var cmd in this)
+        {
+            canvas.VisualBrushDrawList = (cmd.Item as BrushDrawOperation)?.Aux as CompositionDrawList;
+            cmd.Item.Render(canvas);
+        }
+
+        canvas.VisualBrushDrawList = null;
     }
 }
 

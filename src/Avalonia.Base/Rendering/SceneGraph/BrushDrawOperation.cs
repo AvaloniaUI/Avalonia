@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -9,14 +10,21 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     internal abstract class BrushDrawOperation : DrawOperation
     {
-        public BrushDrawOperation(Rect bounds, Matrix transform)
+        public BrushDrawOperation(Rect bounds, Matrix transform, IDisposable? aux)
             : base(bounds, transform)
         {
+            Aux = aux;
         }
 
         /// <summary>
-        /// Gets a collection of child scenes that are needed to draw visual brushes.
+        /// Auxiliary data required to draw the brush
         /// </summary>
-        public abstract IDictionary<IVisual, Scene>? ChildScenes { get; }
+        public IDisposable? Aux { get; }
+
+        public override void Dispose()
+        {
+            Aux?.Dispose();
+            base.Dispose();
+        }
     }
 }

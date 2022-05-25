@@ -24,7 +24,7 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
 
     private protected override IChangeSetPool ChangeSetPool => DrawListVisualChanges.Pool;
 
-    internal CompositionDrawListVisual(Compositor compositor, ServerCompositionContainerVisual server, Visual visual) : base(compositor, server)
+    internal CompositionDrawListVisual(Compositor compositor, ServerCompositionDrawListVisual server, Visual visual) : base(compositor, server)
     {
         Visual = visual;
     }
