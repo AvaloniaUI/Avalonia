@@ -587,7 +587,7 @@ namespace Avalonia.Collections.Pooled
             if (size > 0 && _clearOnFree)
             {
                 // Clear the elements so that the gc can reclaim the references.
-                Array.Clear(_items, 0, _size);
+                Array.Clear(_items, 0, size);
             }
         }
 
