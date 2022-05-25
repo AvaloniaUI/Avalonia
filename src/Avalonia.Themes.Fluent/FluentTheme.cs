@@ -50,7 +50,9 @@ namespace Avalonia.Themes.Fluent
         /// <param name="serviceProvider">The XAML service provider.</param>
         public FluentTheme(IServiceProvider serviceProvider)
         {
-            _baseUri = ((IUriContext)serviceProvider.GetService(typeof(IUriContext))).BaseUri;
+            var ctx  = serviceProvider.GetService(typeof(IUriContext)) as IUriContext
+                 ?? throw new NullReferenceException("Unable retrive UriContext");
+            _baseUri = ctx.BaseUri;
             InitStyles(_baseUri);
         }
 
@@ -146,7 +148,7 @@ namespace Avalonia.Themes.Fluent
 
         IReadOnlyList<IStyle> IStyle.Children => _loaded?.Children ?? Array.Empty<IStyle>();
 
-        public event EventHandler OwnerChanged
+        public event EventHandler? OwnerChanged
         {
             add
             {

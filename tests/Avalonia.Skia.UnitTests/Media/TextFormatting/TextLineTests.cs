@@ -547,7 +547,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             const string Text = "_A_A";
 
-            public TextRun? GetTextRun(int textSourceIndex)
+            public TextRun GetTextRun(int textSourceIndex)
             {
                 switch (textSourceIndex)
                 {
@@ -755,7 +755,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 _textRuns = textRuns;
             }
 
-            public TextRun? GetTextRun(int textSourceIndex)
+            public TextRun GetTextRun(int textSourceIndex)
             {
                 var currentPosition = 0;
 
