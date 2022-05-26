@@ -523,7 +523,7 @@ bool WindowImpl::IsDialog() {
 }
 
 NSWindowStyleMask WindowImpl::GetStyle() {
-    unsigned long s = this->_isDialog ? NSWindowStyleMaskUtilityWindow : NSWindowStyleMaskBorderless;
+    unsigned long s = this->_isDialog ? NSWindowStyleMaskDocModalWindow : NSWindowStyleMaskBorderless;
 
     switch (_decorations) {
         case SystemDecorationsNone:

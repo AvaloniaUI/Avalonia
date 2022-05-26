@@ -193,8 +193,11 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>Try get number of DataSource itmes.</summary>
         /// <param name="allowSlow">When "allowSlow" is false, method will not use Linq.Count() method and will return 0 or 1 instead.</param>
         /// <param name="getAny">If "getAny" is true, method can use Linq.Any() method to speedup.</param>
+        /// <param name="count">number of DataSource itmes.</param>
+        /// <returns>true if able to retrieve number of DataSource itmes; otherwise, false.</returns>
         internal bool TryGetCount(bool allowSlow, bool getAny, out int count)
         {
             bool result;
