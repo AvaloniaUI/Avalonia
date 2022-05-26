@@ -188,7 +188,7 @@ namespace Avalonia.Win32
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
             
             if (Options.UseCompositor)
-                Compositor = Compositor.Create(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>());
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>());
         }
 
         public bool HasMessages()

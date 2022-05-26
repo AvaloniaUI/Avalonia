@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
@@ -81,7 +82,7 @@ namespace Avalonia.Rendering.Composition.Animations
 
         public bool IsAnimation => _animation != null;
 
-        public void SetAnimation(ServerObject target, ChangeSet cs, IAnimationInstance animation, int storeOffset)
+        public void SetAnimation(ServerObject target, TimeSpan commitedAt, IAnimationInstance animation, int storeOffset)
         {
             _direct = default;
             if (_animation != null)
@@ -91,7 +92,7 @@ namespace Avalonia.Rendering.Composition.Animations
             }
 
             _animation = animation;
-            _animation.Initialize(cs.Batch.CommitedAt, ExpressionVariant.Create(LastAnimated), storeOffset);
+            _animation.Initialize(commitedAt, ExpressionVariant.Create(LastAnimated), storeOffset);
             if (target.IsActive)
                 _animation.Activate();
             

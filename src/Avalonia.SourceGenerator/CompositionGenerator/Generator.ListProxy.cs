@@ -11,9 +11,7 @@ class Template
 {
         private ServerListProxyHelper<ItemTypeName, ServerItemTypeName> _list = null!;
 
-        ListChangeSet<ServerItemTypeName>
-            ServerListProxyHelper<ItemTypeName, ServerItemTypeName>.IGetChanges.
-            GetChanges() => Changes;
+        void ServerListProxyHelper<ItemTypeName, ServerItemTypeName>.IRegisterForSerialization.RegisterForSerialization() => RegisterForSerialization();
 
         public List<ItemTypeName>.Enumerator GetEnumerator() => _list.GetEnumerator();
 
@@ -87,7 +85,11 @@ class Template
         partial void OnBeforeReplace(ItemTypeName oldItem, ItemTypeName newItem);
         partial void OnReplace(ItemTypeName oldItem, ItemTypeName newItem);
         partial void OnClear();
-}
+        private protected override void SerializeChangesCore(BatchStreamWriter writer)
+        {{
+            _list.Serialize(writer);
+            base.SerializeChangesCore(writer);
+        }}
 ";
 
         private ClassDeclarationSyntax AppendListProxy(GList list, ClassDeclarationSyntax cl)
@@ -97,7 +99,7 @@ class Template
             var serverItemType = ServerName(itemType);
 
             cl = cl.AddBaseListTypes(SimpleBaseType(
-                    ParseTypeName("ServerListProxyHelper<" + itemType + ", " + serverItemType + ">.IGetChanges")),
+                    ParseTypeName("ServerListProxyHelper<" + itemType + ", " + serverItemType + ">.IRegisterForSerialization")),
                 SimpleBaseType(ParseTypeName("IList<" + itemType + ">"))
             );
             var code = ListProxyTemplate.Replace("ListTypeName", list.Name)

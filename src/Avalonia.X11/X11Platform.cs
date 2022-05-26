@@ -104,7 +104,7 @@ namespace Avalonia.X11
             }
 
             if (options.UseCompositor)
-                Compositor = Compositor.Create(AvaloniaLocator.Current.GetService<IRenderLoop>()!);
+                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!);
 
         }
 

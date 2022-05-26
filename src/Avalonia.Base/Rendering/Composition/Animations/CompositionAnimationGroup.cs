@@ -20,7 +20,5 @@ namespace Avalonia.Rendering.Composition.Animations
         public CompositionAnimationGroup(Compositor compositor) : base(compositor, null!)
         {
         }
-
-        private protected override IChangeSetPool ChangeSetPool => throw new InvalidOperationException();
     }
 }

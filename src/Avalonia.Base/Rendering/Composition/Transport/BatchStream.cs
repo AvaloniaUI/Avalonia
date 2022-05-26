@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Transport;
 
 internal class BatchStreamData
 {
-    public Queue<BatchStreamSegment<ServerObject[]>> Objects { get; } = new();
+    public Queue<BatchStreamSegment<object?[]>> Objects { get; } = new();
     public Queue<BatchStreamSegment<IntPtr>> Structs { get; } = new();
 }
 
@@ -22,12 +23,12 @@ internal class BatchStreamWriter : IDisposable
 {
     private readonly BatchStreamData _output;
     private readonly BatchStreamMemoryPool _memoryPool;
-    private readonly BatchStreamObjectPool<ServerObject> _objectPool;
+    private readonly BatchStreamObjectPool<object?> _objectPool;
 
-    private BatchStreamSegment<ServerObject[]?> _currentObjectSegment;
+    private BatchStreamSegment<object?[]?> _currentObjectSegment;
     private BatchStreamSegment<IntPtr> _currentDataSegment;
     
-    public BatchStreamWriter(BatchStreamData output, BatchStreamMemoryPool memoryPool, BatchStreamObjectPool<ServerObject> objectPool)
+    public BatchStreamWriter(BatchStreamData output, BatchStreamMemoryPool memoryPool, BatchStreamObjectPool<object?> objectPool)
     {
         _output = output;
         _memoryPool = memoryPool;
@@ -69,7 +70,7 @@ internal class BatchStreamWriter : IDisposable
         _currentDataSegment.ElementCount += size;
     }
 
-    public void Write(ServerObject item)
+    public void WriteObject(object? item)
     {
         if (_currentObjectSegment.Data == null ||
             _currentObjectSegment.ElementCount >= _currentObjectSegment.Data.Length)
@@ -89,15 +90,15 @@ internal class BatchStreamReader : IDisposable
 {
     private readonly BatchStreamData _input;
     private readonly BatchStreamMemoryPool _memoryPool;
-    private readonly BatchStreamObjectPool<ServerObject> _objectPool;
+    private readonly BatchStreamObjectPool<object?> _objectPool;
 
-    private BatchStreamSegment<ServerObject[]?> _currentObjectSegment;
+    private BatchStreamSegment<object?[]?> _currentObjectSegment;
     private BatchStreamSegment<IntPtr> _currentDataSegment;
     private int _memoryOffset, _objectOffset;
     
-    public BatchStreamReader(BatchStreamData _input, BatchStreamMemoryPool memoryPool, BatchStreamObjectPool<ServerObject> objectPool)
+    public BatchStreamReader(BatchStreamData input, BatchStreamMemoryPool memoryPool, BatchStreamObjectPool<object?> objectPool)
     {
-        this._input = _input;
+        _input = input;
         _memoryPool = memoryPool;
         _objectPool = objectPool;
     }
@@ -116,7 +117,7 @@ internal class BatchStreamReader : IDisposable
         if (_memoryOffset + size > _currentDataSegment.ElementCount)
             throw new InvalidOperationException("Attempted to read more memory then left in the current segment");
 
-        var rv = *(T*)((byte*)_currentDataSegment.Data + size);
+        var rv = *(T*)((byte*)_currentDataSegment.Data + _memoryOffset);
         _memoryOffset += size;
         if (_memoryOffset == _currentDataSegment.ElementCount)
         {
@@ -127,7 +128,9 @@ internal class BatchStreamReader : IDisposable
         return rv;
     }
 
-    public ServerObject ReadObject()
+    public T ReadObject<T>() where T : class? => (T)ReadObject()!;
+    
+    public object? ReadObject()
     {
         if (_currentObjectSegment.Data == null)
         {
@@ -148,6 +151,8 @@ internal class BatchStreamReader : IDisposable
         return rv;
     }
 
+    public bool IsObjectEof => _currentObjectSegment.Data == null && _input.Objects.Count == 0;
+    
     public bool IsStructEof => _currentDataSegment.Data == IntPtr.Zero && _input.Structs.Count == 0;
     
     public void Dispose()

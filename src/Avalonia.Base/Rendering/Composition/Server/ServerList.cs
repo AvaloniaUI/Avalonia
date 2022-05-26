@@ -7,25 +7,19 @@ namespace Avalonia.Rendering.Composition.Server
     class ServerList<T> : ServerObject where T : ServerObject
     {
         public List<T> List { get; } = new List<T>();
-        protected override void ApplyCore(ChangeSet changes)
+
+        protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
         {
-            var c = (ListChangeSet<T>) changes;
-            if (c.HasListChanges)
+            if (reader.Read<byte>() == 1)
             {
-                foreach (var lc in c.ListChanges)
-                {
-                    if(lc.Action == ListChangeAction.Clear)
-                        List.Clear();
-                    if(lc.Action == ListChangeAction.RemoveAt)
-                        List.RemoveAt(lc.Index);
-                    if(lc.Action == ListChangeAction.InsertAt)
-                        List.Insert(lc.Index, lc.Added!);
-                    if (lc.Action == ListChangeAction.ReplaceAt)
-                        List[lc.Index] = lc.Added!;
-                }
+                List.Clear();
+                var count = reader.Read<int>();
+                for (var c = 0; c < count; c++) 
+                    List.Add(reader.ReadObject<T>());
             }
+            base.DeserializeChangesCore(reader, commitedAt);
         }
-        
+
         public override long LastChangedBy
         {
             get

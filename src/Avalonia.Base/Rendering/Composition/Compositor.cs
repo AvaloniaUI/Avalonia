@@ -16,18 +16,17 @@ namespace Avalonia.Rendering.Composition
     public partial class Compositor
     {
         private ServerCompositor _server;
-        private Batch _currentBatch;
         private bool _implicitBatchCommitQueued;
         private Action _implicitBatchCommit;
-
-        internal Batch CurrentBatch => _currentBatch;
+        private BatchStreamObjectPool<object?> _batchObjectPool = new();
+        private BatchStreamMemoryPool _batchMemoryPool = new();
+        private List<CompositionObject> _objectsForSerialization = new();
         internal ServerCompositor Server => _server;
         internal CompositionEasingFunction DefaultEasing { get; }
-
-        private Compositor(ServerCompositor server)
+        
+        public Compositor(IRenderLoop loop)
         {
-            _server = server;
-            _currentBatch = new Batch();
+            _server = new ServerCompositor(loop, _batchObjectPool, _batchMemoryPool);
             _implicitBatchCommit = ImplicitBatchCommit;
             DefaultEasing = new CubicBezierEasingFunction(this,
                 new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f));
@@ -40,16 +39,25 @@ namespace Avalonia.Rendering.Composition
 
         public Task RequestCommitAsync()
         {
-            var batch = CurrentBatch;
-            _currentBatch = new Batch();
+            var batch = new Batch();
+            
+            using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
+            {
+                foreach (var obj in _objectsForSerialization)
+                {
+                    writer.WriteObject(obj.Server);
+                    obj.SerializeChanges(writer);
+#if DEBUG_COMPOSITOR_SERIALIZATION
+                    writer.Write(BatchStreamDebugMarkers.ObjectEndMagic);
+                    writer.WriteObject(BatchStreamDebugMarkers.ObjectEndMarker);
+#endif
+                }
+                _objectsForSerialization.Clear();
+            }
+            
             batch.CommitedAt = Server.Clock.Elapsed;
             _server.EnqueueBatch(batch);
             return batch.Completed;
-        }
-
-        public static Compositor Create(IRenderLoop timer)
-        {
-            return new Compositor(new ServerCompositor(timer));
         }
 
         public void Dispose()
@@ -122,12 +130,8 @@ namespace Avalonia.Rendering.Composition
         public ImplicitAnimationCollection CreateImplicitAnimationCollection() => new ImplicitAnimationCollection(this);
 
         public CompositionAnimationGroup CreateAnimationGroup() => new CompositionAnimationGroup(this);
-
-        internal CustomDrawVisual<T> CreateCustomDrawVisual<T>(ICustomDrawVisualRenderer<T> renderer,
-            ICustomDrawVisualHitTest<T>? hitTest = null) where T : IEquatable<T> =>
-            new CustomDrawVisual<T>(this, renderer, hitTest);
-
-        public void QueueImplicitBatchCommit()
+        
+        private void QueueImplicitBatchCommit()
         {
             if(_implicitBatchCommitQueued)
                 return;
@@ -139,6 +143,12 @@ namespace Avalonia.Rendering.Composition
         {
             _implicitBatchCommitQueued = false;
             RequestCommitAsync();
+        }
+
+        internal void RegisterForSerialization(CompositionObject compositionObject)
+        {
+            _objectsForSerialization.Add(compositionObject);
+            QueueImplicitBatchCommit();
         }
     }
 }

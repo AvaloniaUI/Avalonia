@@ -102,6 +102,6 @@ namespace Avalonia.Rendering.Composition
             return false;
         }
 
-        public void RequestRedraw() => Changes.RedrawRequested.Value = true;
+        public void RequestRedraw() => RegisterForSerialization();
     }
 }

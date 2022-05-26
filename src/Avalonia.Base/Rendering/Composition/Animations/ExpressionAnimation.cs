@@ -29,6 +29,6 @@ namespace Avalonia.Rendering.Composition.Animations
         internal override IAnimationInstance CreateInstance(
             ServerObject targetObject, ExpressionVariant? finalValue)
             => new ExpressionAnimationInstance(ParsedExpression,
-                targetObject, finalValue, CreateSnapshot(true));
+                targetObject, finalValue, CreateSnapshot());
     }
 }

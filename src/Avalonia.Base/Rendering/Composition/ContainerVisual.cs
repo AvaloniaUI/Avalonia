@@ -2,19 +2,20 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition
 {
-    public class CompositionContainerVisual : CompositionVisual
+    public partial class CompositionContainerVisual : CompositionVisual
     {
-        public CompositionVisualCollection Children { get; }
-        internal CompositionContainerVisual(Compositor compositor, ServerCompositionContainerVisual server) : base(compositor, server)
+        public CompositionVisualCollection Children { get; private set; } = null!;
+
+        partial void InitializeDefaultsExtra()
         {
-            Children = new CompositionVisualCollection(this, server.Children);
+            Children = new CompositionVisualCollection(this, Server.Children);
         }
 
-        private protected override void OnRootChanged()
+        private protected override void OnRootChangedCore()
         {
             foreach (var ch in Children)
                 ch.Root = Root;
-            base.OnRootChanged();
+            base.OnRootChangedCore();
         }
     }
 }

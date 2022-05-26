@@ -18,8 +18,6 @@ namespace Avalonia.Rendering.Composition.Animations
               _propertySet = new CompositionPropertySet(compositor);
           }
 
-          private protected override IChangeSetPool ChangeSetPool => throw new InvalidOperationException();
-
           public void ClearAllParameters() => _propertySet.ClearAll();
 
           public void ClearParameter(string key) => _propertySet.Clear(key);
@@ -52,8 +50,7 @@ namespace Avalonia.Rendering.Composition.Animations
           internal abstract IAnimationInstance CreateInstance(ServerObject targetObject,
               ExpressionVariant? finalValue);
 
-          internal PropertySetSnapshot CreateSnapshot(bool server) 
-              => _propertySet.Snapshot(server);
+          internal PropertySetSnapshot CreateSnapshot() => _propertySet.Snapshot();
 
           void ICompositionAnimationBase.InternalOnly()
           {

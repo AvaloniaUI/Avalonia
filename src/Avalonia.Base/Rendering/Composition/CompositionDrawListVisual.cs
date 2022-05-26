@@ -9,7 +9,7 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
 {
     public Visual Visual { get; }
 
-    private new DrawListVisualChanges Changes => (DrawListVisualChanges)base.Changes;
+    private bool _drawListChanged;
     private CompositionDrawList? _drawList;
     public CompositionDrawList? DrawList
     {
@@ -18,11 +18,21 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         {
             _drawList?.Dispose();
             _drawList = value;
-            Changes.DrawCommands = value?.Clone();
+            _drawListChanged = true;
+            RegisterForSerialization();
         }
     }
 
-    private protected override IChangeSetPool ChangeSetPool => DrawListVisualChanges.Pool;
+    private protected override void SerializeChangesCore(BatchStreamWriter writer)
+    {
+        writer.Write((byte)(_drawListChanged ? 1 : 0));
+        if (_drawListChanged)
+        {
+            writer.WriteObject(DrawList?.Clone());
+            _drawListChanged = false;
+        }
+        base.SerializeChangesCore(writer);
+    }
 
     internal CompositionDrawListVisual(Compositor compositor, ServerCompositionDrawListVisual server, Visual visual) : base(compositor, server)
     {

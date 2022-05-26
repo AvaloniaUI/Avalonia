@@ -15,8 +15,6 @@ namespace Avalonia.Rendering.Composition.Animations
             _innerface = _inner;
         }
 
-        private protected override IChangeSetPool ChangeSetPool => throw new InvalidOperationException();
-
         public IEnumerator<KeyValuePair<string, ICompositionAnimationBase>> GetEnumerator() => _inner.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable) _inner).GetEnumerator();

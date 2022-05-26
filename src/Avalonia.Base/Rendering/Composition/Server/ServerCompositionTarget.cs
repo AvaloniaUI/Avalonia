@@ -42,8 +42,8 @@ namespace Avalonia.Rendering.Composition.Server
             else
                 _compositor.RemoveCompositionTarget(this);
         }
-
-        partial void ApplyChangesExtra(CompositionTargetChanges c)
+        
+        partial void DeserializeChangesExtra(BatchStreamReader c)
         {
             _redrawRequested = true;
         }

@@ -25,7 +25,7 @@ namespace Avalonia.Rendering.Composition
 
         internal override IAnimationInstance CreateInstance(Avalonia.Rendering.Composition.Server.ServerObject targetObject, ExpressionVariant? finalValue)
         {{
-            return new KeyFrameAnimationInstance<{a.Type}>({name}Interpolator.Instance, _keyFrames.Snapshot(), CreateSnapshot(true), 
+            return new KeyFrameAnimationInstance<{a.Type}>({name}Interpolator.Instance, _keyFrames.Snapshot(), CreateSnapshot(), 
                 finalValue?.CastOrDefault<{a.Type}>(), targetObject,
                 DelayBehavior, DelayTime, Direction, Duration, IterationBehavior,
                 IterationCount, StopBehavior);

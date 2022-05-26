@@ -3,10 +3,9 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition.Server
 {
-    internal class ServerCompositionContainerVisual : ServerCompositionVisual
+    internal partial class ServerCompositionContainerVisual : ServerCompositionVisual
     {
-        public ServerCompositionVisualCollection Children { get; }
-        
+        public ServerCompositionVisualCollection Children { get; private set; } = null!;
         
         protected override void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
         {
@@ -28,9 +27,9 @@ namespace Avalonia.Rendering.Composition.Server
                 child.Update(root, GlobalTransformMatrix);
         }
 
-        public ServerCompositionContainerVisual(ServerCompositor compositor) : base(compositor)
+        partial void Initialize()
         {
-            Children = new ServerCompositionVisualCollection(compositor);
+            Children = new ServerCompositionVisualCollection(Compositor);
         }
     }
 }

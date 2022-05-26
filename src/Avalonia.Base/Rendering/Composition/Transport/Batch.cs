@@ -9,23 +9,22 @@ namespace Avalonia.Rendering.Composition.Transport
     internal class Batch
     {
         private static long _nextSequenceId = 1;
-        private static ConcurrentBag<List<ChangeSet>> _pool = new ConcurrentBag<List<ChangeSet>>();
+        private static ConcurrentBag<BatchStreamData> _pool = new();
         public long SequenceId { get; }
         
         public Batch()
         {
             SequenceId = Interlocked.Increment(ref _nextSequenceId);
             if (!_pool.TryTake(out var lst))
-                lst = new List<ChangeSet>();
+                lst = new BatchStreamData();
             Changes = lst;
         }
         private TaskCompletionSource<int> _tcs = new TaskCompletionSource<int>();
-        public List<ChangeSet> Changes { get; private set; }
+        public BatchStreamData Changes { get; private set; }
         public TimeSpan CommitedAt { get; set; }
         
         public void Complete()
         {
-            Changes.Clear();
             _pool.Add(Changes);
             Changes = null!;
 

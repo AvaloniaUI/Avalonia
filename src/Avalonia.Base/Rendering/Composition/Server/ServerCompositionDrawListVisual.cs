@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Avalonia.Collections.Pooled;
 using Avalonia.Platform;
@@ -35,16 +36,15 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         }
     }
 
-    protected override void ApplyCore(ChangeSet changes)
+    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
     {
-        var ch = (DrawListVisualChanges)changes;
-        if (ch.DrawCommandsIsSet)
+        if (reader.Read<byte>() == 1)
         {
             _renderCommands?.Dispose();
-            _renderCommands = ch.AcquireDrawCommands();
+            _renderCommands = reader.ReadObject<CompositionDrawList?>();
             _contentBounds = null;
         }
-        base.ApplyCore(changes);
+        base.DeserializeChangesCore(reader, commitedAt);
     }
 
     protected override void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)

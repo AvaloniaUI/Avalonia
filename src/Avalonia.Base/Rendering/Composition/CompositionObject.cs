@@ -6,7 +6,7 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition
 {
-    public abstract class CompositionObject : IDisposable, IExpressionObject
+    public abstract class CompositionObject : IDisposable
     {
         public ImplicitAnimationCollection? ImplicitAnimations { get; set; }
         internal CompositionObject(Compositor compositor, ServerObject server)
@@ -18,45 +18,16 @@ namespace Avalonia.Rendering.Composition
         public Compositor Compositor { get; }
         internal ServerObject Server { get; }
         public bool IsDisposed { get; private set; }
-        private ChangeSet? _changes;
+        private bool _registeredForSerialization;
 
         private static void ThrowInvalidOperation() =>
             throw new InvalidOperationException("There is no server-side counterpart for this object");
-        
-        private protected ChangeSet Changes
-        {
-            get
-            {
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                if (Server == null) ThrowInvalidOperation();
-                var currentBatch = Compositor.CurrentBatch;
-                if (_changes != null && _changes.Batch != currentBatch)
-                    _changes = null;
-                if (_changes == null)
-                {
-                    _changes = ChangeSetPool.Get(Server!, currentBatch);
-                    currentBatch.Changes!.Add(_changes);
-                    Compositor.QueueImplicitBatchCommit();
-                }
-
-                return _changes;
-            }
-        }
-
-        private protected abstract IChangeSetPool ChangeSetPool { get; }
 
         public void Dispose()
         {
-            Changes.Dispose = true;
+            //Changes.Dispose = true;
             IsDisposed = true;
         }
-
-        internal virtual ExpressionVariant GetPropertyForAnimation(string name)
-        {
-            return default;
-        }
-
-        ExpressionVariant IExpressionObject.GetProperty(string name) => GetPropertyForAnimation(name);
 
         public void StartAnimation(string propertyName, CompositionAnimation animation)
             => StartAnimation(propertyName, animation, null);
@@ -120,6 +91,28 @@ namespace Avalonia.Rendering.Composition
             }
 
             throw new ArgumentException();
+        }
+
+        protected void RegisterForSerialization()
+        {
+            if (Server == null)
+                throw new InvalidOperationException("The object doesn't have an associated server counterpart");
+            
+            if(_registeredForSerialization)
+                return;
+            _registeredForSerialization = true;
+            Compositor.RegisterForSerialization(this);
+        }
+
+        internal void SerializeChanges(BatchStreamWriter writer)
+        {
+            _registeredForSerialization = false;
+            SerializeChangesCore(writer);
+        }
+
+        private protected virtual void SerializeChangesCore(BatchStreamWriter writer)
+        {
+            
         }
     }
 }

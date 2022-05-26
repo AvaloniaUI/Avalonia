@@ -10,9 +10,7 @@ namespace Avalonia.Rendering.Composition
         internal CompositionEasingFunction(Compositor compositor) : base(compositor, null!)
         {
         }
-
-        private protected override IChangeSetPool ChangeSetPool => throw new InvalidOperationException();
-
+        
         internal abstract IEasingFunction Snapshot();
     }
     

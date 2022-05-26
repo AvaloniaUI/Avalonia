@@ -17,10 +17,14 @@ namespace Avalonia.Rendering.Composition.Server
         private List<ServerCompositionTarget> _activeTargets = new();
         private HashSet<IAnimationInstance> _activeAnimations = new();
         private List<IAnimationInstance> _animationsToUpdate = new();
+        private BatchStreamObjectPool<object?> _batchObjectPool;
+        private BatchStreamMemoryPool _batchMemoryPool;
 
-        public ServerCompositor(IRenderLoop renderLoop)
+        public ServerCompositor(IRenderLoop renderLoop, BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
         {
             _renderLoop = renderLoop;
+            _batchObjectPool = batchObjectPool;
+            _batchMemoryPool = batchMemoryPool;
             _renderLoop.Add(this);
         }
 
@@ -45,14 +49,21 @@ namespace Avalonia.Rendering.Composition.Server
                     batch = _batches.Dequeue();
                 }
 
-                foreach (var change in batch.Changes)
+                using (var stream = new BatchStreamReader(batch.Changes, _batchMemoryPool, _batchObjectPool))
                 {
-                    if (change.Dispose)
+                    while (!stream.IsObjectEof)
                     {
-                        //TODO
+                        var target = (ServerObject)stream.ReadObject()!;
+                        target.DeserializeChanges(stream, batch);
+#if DEBUG_COMPOSITOR_SERIALIZATION
+                        if (stream.ReadObject() != BatchStreamDebugMarkers.ObjectEndMarker)
+                            throw new InvalidOperationException(
+                                $"Object {target.GetType()} failed to deserialize properly on object stream");
+                        if(stream.Read<Guid>() != BatchStreamDebugMarkers.ObjectEndMagic)
+                            throw new InvalidOperationException(
+                                $"Object {target.GetType()} failed to deserialize properly on data stream");
+#endif
                     }
-                    change.Target!.Apply(change);
-                    change.Reset();
                 }
 
                 _reusableToCompleteList.Add(batch);

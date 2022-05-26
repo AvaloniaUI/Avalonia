@@ -16,8 +16,6 @@ namespace Avalonia.Rendering.Composition
         {
         }
 
-        private protected override IChangeSetPool ChangeSetPool => throw new NotSupportedException();
-
         internal void Set(string key, ExpressionVariant value)
         {
             _objects.Remove(key);
@@ -104,10 +102,10 @@ namespace Avalonia.Rendering.Composition
             _variants.Remove(key);
         }
 
-        internal PropertySetSnapshot Snapshot(bool server) =>
-            SnapshotCore(server, 1);
+        internal PropertySetSnapshot Snapshot() =>
+            SnapshotCore(1);
         
-        private PropertySetSnapshot SnapshotCore(bool server, int allowedNestingLevel)
+        private PropertySetSnapshot SnapshotCore(int allowedNestingLevel)
         {
             var dic = new Dictionary<string, PropertySetSnapshot.Value>(_objects.Count + _variants.Count);
             foreach (var o in _objects)
@@ -116,12 +114,12 @@ namespace Avalonia.Rendering.Composition
                 {
                     if (allowedNestingLevel <= 0)
                         throw new InvalidOperationException("PropertySet depth limit reached");
-                    dic[o.Key] = new PropertySetSnapshot.Value(ps.SnapshotCore(server, allowedNestingLevel - 1));
+                    dic[o.Key] = new PropertySetSnapshot.Value(ps.SnapshotCore(allowedNestingLevel - 1));
                 }
                 else if (o.Value.Server == null)
                     throw new InvalidOperationException($"Object of type {o.Value.GetType()} is not allowed");
                 else
-                    dic[o.Key] = new PropertySetSnapshot.Value(server ? (IExpressionObject) o.Value.Server : o.Value);
+                    dic[o.Key] = new PropertySetSnapshot.Value(o.Value.Server);
             }
 
             foreach (var v in _variants)

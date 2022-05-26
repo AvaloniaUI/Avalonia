@@ -23,18 +23,6 @@ namespace Avalonia.Rendering.Composition.Server
             Compositor = compositor;
         }
 
-        protected virtual void ApplyCore(ChangeSet changes)
-        {
-            
-        }
-
-        public void Apply(ChangeSet changes)
-        {
-            ApplyCore(changes);
-            ValuesInvalidated();
-            ItselfLastChangedBy = changes.Batch!.SequenceId;
-        }
-
         public virtual ExpressionVariant GetPropertyForAnimation(string name)
         {
             return default;
@@ -81,6 +69,10 @@ namespace Avalonia.Rendering.Composition.Server
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ref ServerObjectSubscriptionStore GetStoreFromOffset(int offset)
         {
+#if DEBUG
+            if (offset == 0)
+                throw new InvalidOperationException();
+#endif
             return ref Unsafe.As<uint, ServerObjectSubscriptionStore>(ref Unsafe.AddByteOffset(ref _activationCount,
                 new IntPtr(offset)));
         }
@@ -112,5 +104,17 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         public virtual int? GetFieldOffset(string fieldName) => null;
+
+        protected virtual void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+        {
+            
+        }
+        
+        public void DeserializeChanges(BatchStreamReader reader, Batch batch)
+        {
+            DeserializeChangesCore(reader, batch.CommitedAt);
+            ValuesInvalidated();
+            ItselfLastChangedBy = batch.SequenceId;
+        }
     }
 }

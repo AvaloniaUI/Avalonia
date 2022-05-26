@@ -18,27 +18,31 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
     readonly int[] _usageStatistics = new int[10];
     int _usageStatisticsSlot;
 
-    public BatchStreamPoolBase(bool needsFinalize = false)
+    public BatchStreamPoolBase(bool needsFinalize, Action<Func<bool>>? startTimer = null)
     {
         if(!needsFinalize)
             GC.SuppressFinalize(needsFinalize);
 
         var updateRef = new WeakReference<BatchStreamPoolBase<T>>(this);
-        StartUpdateTimer(updateRef);
+        StartUpdateTimer(startTimer, updateRef);
     }
 
-    static void StartUpdateTimer(WeakReference<BatchStreamPoolBase<T>> updateRef)
+    static void StartUpdateTimer(Action<Func<bool>>? startTimer, WeakReference<BatchStreamPoolBase<T>> updateRef)
     {
-        DispatcherTimer.Run(() =>
+        Func<bool> timerProc = () =>
         {
             if (updateRef.TryGetTarget(out var target))
             {
                 target.UpdateStatistics();
                 return true;
             }
-            return false;
 
-        }, TimeSpan.FromSeconds(1));
+            return false;
+        };
+        if (startTimer != null)
+            startTimer(timerProc);
+        else
+            DispatcherTimer.Run(timerProc, TimeSpan.FromSeconds(1));
     }
 
     private void UpdateStatistics()
@@ -50,7 +54,7 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
             while (recentlyUsedPooledSlots < _pool.Count) 
                 DestroyItem(_pool.Pop());
 
-            _usageStatistics[_usage] = 0;
+            _usageStatistics[_usageStatisticsSlot] = 0;
             _usageStatisticsSlot = (_usageStatisticsSlot + 1) % _usageStatistics.Length;
         }
     }
@@ -109,11 +113,11 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
     }
 }
 
-internal sealed class BatchStreamObjectPool<T> : BatchStreamPoolBase<T[]> where T : class
+internal sealed class BatchStreamObjectPool<T> : BatchStreamPoolBase<T[]> where T : class?
 {
     private readonly int _arraySize;
 
-    public BatchStreamObjectPool(int arraySize = 1024)
+    public BatchStreamObjectPool(int arraySize = 1024, Action<Func<bool>>? startTimer = null) : base(false, startTimer)
     {
         _arraySize = arraySize;
     }
@@ -133,7 +137,7 @@ internal sealed class BatchStreamMemoryPool : BatchStreamPoolBase<IntPtr>
 {
     public int BufferSize { get; }
 
-    public BatchStreamMemoryPool(int bufferSize = 16384)
+    public BatchStreamMemoryPool(int bufferSize = 16384, Action<Func<bool>>? startTimer = null) : base(true, startTimer)
     {
         BufferSize = bufferSize;
     }

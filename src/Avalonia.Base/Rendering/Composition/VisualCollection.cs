@@ -64,6 +64,7 @@ namespace Avalonia.Rendering.Composition
         {
             if (item.Parent != null)
                 throw new InvalidOperationException("Visual already has a parent");
+            item.Parent = item;
         }
     }
 }

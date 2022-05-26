@@ -8,19 +8,21 @@ namespace Avalonia.Rendering.Composition.Transport
         where TServer : ServerObject
         where TClient : CompositionObject
     {
-        private readonly IGetChanges _parent;
-        private readonly List<TClient> _list = new List<TClient>();
+        private readonly IRegisterForSerialization _parent;
+        private bool _changed;
 
-        public interface IGetChanges
+        public interface IRegisterForSerialization
         {
-            ListChangeSet<TServer> GetChanges();
+            void RegisterForSerialization();
         }
 
-        public ServerListProxyHelper(IGetChanges parent)
+        public ServerListProxyHelper(IRegisterForSerialization parent)
         {
             _parent = parent;
         }
-
+        
+        private readonly List<TClient> _list = new List<TClient>();
+        
         IEnumerator<TClient> IEnumerable<TClient>.GetEnumerator() => GetEnumerator();
         public List<TClient>.Enumerator GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -30,10 +32,8 @@ namespace Avalonia.Rendering.Composition.Transport
         public void Clear()
         {
             _list.Clear();
-            _parent.GetChanges().ListChanges.Add(new ListChange<TServer>
-            {
-                Action = ListChangeAction.Clear
-            });
+            _changed = true;
+            _parent.RegisterForSerialization();
         }
 
         public bool Contains(TClient item) => _list.Contains(item);
@@ -56,22 +56,15 @@ namespace Avalonia.Rendering.Composition.Transport
         public void Insert(int index, TClient item)
         {
             _list.Insert(index, item);
-            _parent.GetChanges().ListChanges.Add(new ListChange<TServer>
-            {
-                Action = ListChangeAction.InsertAt,
-                Index = index,
-                Added = (TServer) item.Server
-            });
+            _changed = true;
+            _parent.RegisterForSerialization();
         }
 
         public void RemoveAt(int index)
         {
             _list.RemoveAt(index);
-            _parent.GetChanges().ListChanges.Add(new ListChange<TServer>
-            {
-                Action = ListChangeAction.RemoveAt,
-                Index = index
-            });
+            _changed = true;
+            _parent.RegisterForSerialization();
         }
 
         public TClient this[int index]
@@ -80,13 +73,21 @@ namespace Avalonia.Rendering.Composition.Transport
             set
             {
                 _list[index] = value;
-                _parent.GetChanges().ListChanges.Add(new ListChange<TServer>
-                {
-                    Action = ListChangeAction.ReplaceAt,
-                    Index = index,
-                    Added = (TServer) value.Server
-                });
+                _changed = true;
+                _parent.RegisterForSerialization();
             }
+        }
+
+        public void Serialize(BatchStreamWriter writer)
+        {
+            writer.Write((byte)(_changed ? 1 : 0));
+            if (_changed)
+            {
+                writer.Write(_list.Count);
+                foreach (var el in _list)
+                    writer.WriteObject(el.Server);
+            }
+            _changed = false;
         }
     }
 }

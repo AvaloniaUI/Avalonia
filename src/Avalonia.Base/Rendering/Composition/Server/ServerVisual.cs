@@ -7,7 +7,6 @@ namespace Avalonia.Rendering.Composition.Server
     unsafe partial class ServerCompositionVisual : ServerObject
     {
         private bool _isDirty;
-        private ServerCompositionTarget? _root;
         private bool _isBackface;
         protected virtual void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
         {
@@ -119,28 +118,24 @@ namespace Avalonia.Rendering.Composition.Server
             public bool Visible;
         }
 
-        partial void ApplyChangesExtra(CompositionVisualChanges c)
+        
+        partial void DeserializeChangesExtra(BatchStreamReader c)
         {
-            if (c.Parent.IsSet)
-                Parent = c.Parent.Value;
-            if (c.Root.IsSet)
-                Root = c.Root.Value;
             ValuesInvalidated();
         }
 
-        public ServerCompositionTarget? Root
+        partial void OnRootChanging()
         {
-            get => _root;
-            private set
-            {
-                if(_root != null)
-                    Deactivate();
-                _root = value;
-                if (_root != null)
-                    Activate();
-            }
+            if(Root != null)
+                Deactivate();
         }
-
+        
+        partial void OnRootChanged()
+        {
+            if (Root != null)
+                Activate();
+        }
+        
         protected override void ValuesInvalidated()
         {
             _isDirty = true;
@@ -149,8 +144,6 @@ namespace Avalonia.Rendering.Composition.Server
             else
                 Root?.Invalidate();
         }
-
-        public ServerCompositionVisual? Parent { get; private set; }
         public bool IsVisibleInFrame { get; set; }
         public Rect TransformedBounds { get; set; }
         public virtual Rect ContentBounds => new Rect(0, 0, Size.X, Size.Y);

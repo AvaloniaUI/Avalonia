@@ -41,6 +41,15 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 return cl;
             return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
         }
+        
+        public static EnumDeclarationSyntax AddModifiers(this EnumDeclarationSyntax cl, params SyntaxKind[] modifiers)
+        {
+            if (modifiers == null)
+                return cl;
+            return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
+        }
+        
+        
 
         public static string WithLowerFirst(this string s)
         {
