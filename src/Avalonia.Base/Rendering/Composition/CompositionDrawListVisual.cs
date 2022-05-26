@@ -1,7 +1,9 @@
+using System;
 using System.Numerics;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -39,9 +41,11 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         Visual = visual;
     }
 
-    internal override bool HitTest(Point pt)
+    internal override bool HitTest(Point pt, Func<IVisual, bool>? filter)
     {
         if (DrawList == null)
+            return false;
+        if (filter != null && !filter(Visual))
             return false;
         if (Visual is ICustomHitTest custom)
             return custom.HitTest(pt);

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Collections.Pooled;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition
 {
@@ -18,13 +20,13 @@ namespace Avalonia.Rendering.Composition
                 Root.Root = null;
         }
         
-        public PooledList<CompositionVisual>? TryHitTest(Point point)
+        public PooledList<CompositionVisual>? TryHitTest(Point point, Func<IVisual, bool>? filter)
         {
             Server.Readback.NextRead();
             if (Root == null)
                 return null;
             var res = new PooledList<CompositionVisual>();
-            HitTestCore(Root, point, res);
+            HitTestCore(Root, point, res, filter);
             return res;
         }
 
@@ -69,7 +71,8 @@ namespace Avalonia.Rendering.Composition
             return false;
         }
         
-        bool HitTestCore(CompositionVisual visual, Point point, PooledList<CompositionVisual> result)
+        bool HitTestCore(CompositionVisual visual, Point point, PooledList<CompositionVisual> result,
+            Func<IVisual, bool>? filter)
         {
             //TODO: Check readback too
             if (visual.Visible == false)
@@ -80,7 +83,7 @@ namespace Avalonia.Rendering.Composition
             {
                 bool success = false;
                 // Hit-test the current node
-                if (visual.HitTest(point))
+                if (visual.HitTest(point, filter))
                 {
                     result.Add(visual);
                     success = true;
@@ -91,7 +94,7 @@ namespace Avalonia.Rendering.Composition
                     for (var c = cv.Children.Count - 1; c >= 0; c--)
                     {
                         var ch = cv.Children[c];
-                        var hit = HitTestCore(ch, point, result);
+                        var hit = HitTestCore(ch, point, result, filter);
                         if (hit)
                             return true;
                     }

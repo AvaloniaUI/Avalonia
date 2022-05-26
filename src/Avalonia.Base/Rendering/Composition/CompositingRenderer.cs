@@ -65,9 +65,9 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
         QueueUpdate();
     }
 
-    public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
+    public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
     {
-        var res = _target.TryHitTest(p);
+        var res = _target.TryHitTest(p, filter);
         if(res == null)
             yield break;
         for (var index = res.Count - 1; index >= 0; index--)
@@ -81,7 +81,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
         }
     }
 
-    public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+    public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool>? filter)
     {
         // TODO: Optimize
         return HitTest(p, root, filter).FirstOrDefault();
