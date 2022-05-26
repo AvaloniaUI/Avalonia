@@ -51,11 +51,12 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
         {
             var maximumUsage = _usageStatistics.Max();
             var recentlyUsedPooledSlots = maximumUsage - _usage;
-            while (recentlyUsedPooledSlots < _pool.Count) 
+            var keepSlots = Math.Max(recentlyUsedPooledSlots, 10);
+            while (keepSlots < _pool.Count) 
                 DestroyItem(_pool.Pop());
 
-            _usageStatistics[_usageStatisticsSlot] = 0;
             _usageStatisticsSlot = (_usageStatisticsSlot + 1) % _usageStatistics.Length;
+            _usageStatistics[_usageStatisticsSlot] = 0;
         }
     }
 
@@ -137,7 +138,7 @@ internal sealed class BatchStreamMemoryPool : BatchStreamPoolBase<IntPtr>
 {
     public int BufferSize { get; }
 
-    public BatchStreamMemoryPool(int bufferSize = 16384, Action<Func<bool>>? startTimer = null) : base(true, startTimer)
+    public BatchStreamMemoryPool(int bufferSize = 1024, Action<Func<bool>>? startTimer = null) : base(true, startTimer)
     {
         BufferSize = bufferSize;
     }
