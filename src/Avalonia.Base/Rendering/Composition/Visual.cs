@@ -45,8 +45,8 @@ namespace Avalonia.Rendering.Composition
             var i = Root.Server.Readback;
             ref var readback = ref Server.GetReadback(i.ReadIndex);
             
-            // CompositionVisual wasn't visible
-            if (readback.Revision < i.ReadRevision)
+            // CompositionVisual wasn't visible or wasn't even attached to the composition target during the lat frame
+            if (!readback.Visible || readback.Revision < i.ReadRevision)
                 return null;
             
             // CompositionVisual was reparented (potential race here)
