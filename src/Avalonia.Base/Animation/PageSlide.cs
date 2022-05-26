@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Transitions between two pages by sliding them horizontally.
+    /// Transitions between two pages by sliding them horizontally or vertically.
     /// </summary>
     public class PageSlide : IPageTransition
     {
@@ -62,7 +62,7 @@ namespace Avalonia.Animation
         public Easing SlideOutEasing { get; set; } = new LinearEasing();
 
         /// <inheritdoc />
-        public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+        public virtual async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -157,7 +157,7 @@ namespace Avalonia.Animation
         /// <remarks>
         /// Any one of the parameters may be null, but not both.
         /// </remarks>
-        private static IVisual GetVisualParent(IVisual? from, IVisual? to)
+        protected static IVisual GetVisualParent(IVisual? from, IVisual? to)
         {
             var p1 = (from ?? to)!.VisualParent;
             var p2 = (to ?? from)!.VisualParent;
