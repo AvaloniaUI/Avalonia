@@ -17,4 +17,21 @@
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\SourceGenerators.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Base.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Controls, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Controls.ColorPicker, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Controls.DataGrid, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Direct2D1.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.LeakTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.PlatformSupport, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Web.Blazor, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
 </Project>
