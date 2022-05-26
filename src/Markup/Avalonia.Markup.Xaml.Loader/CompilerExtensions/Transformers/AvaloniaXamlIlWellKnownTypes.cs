@@ -26,6 +26,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType Transitions { get; }
         public IXamlType AssignBindingAttribute { get; }
         public IXamlType DependsOnAttribute { get; }
+        public IXamlType TemplateDataTypeAttribute { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
         public IXamlType IStyledElement { get; }
@@ -112,6 +113,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");
             AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
+            TemplateDataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.TemplateDataTypeAttribute");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
