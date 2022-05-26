@@ -74,7 +74,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             if (subscribe)
             {
@@ -90,6 +90,7 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => _previous;
+        internal override bool HasValidNestingSelector() => _previous?.HasValidNestingSelector() ?? false;
 
         internal static bool Compare(Type propertyType, object? propertyValue, object? value)
         {

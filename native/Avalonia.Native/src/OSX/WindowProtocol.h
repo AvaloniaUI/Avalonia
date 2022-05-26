@@ -22,4 +22,6 @@
 -(void) setIsExtended:(bool)value;
 -(void) disconnectParent;
 -(bool) isDialog;
+
+-(void) setCanBecomeKeyWindow:(bool)value;
 @end
