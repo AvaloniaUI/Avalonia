@@ -1,7 +1,6 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -151,7 +150,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// A simple container control which hosts its child as a visual but not logical child.
         /// </summary>
-        private class ViewboxContainer : Layoutable
+        private class ViewboxContainer : Control
         {
             private IControl? _child;
 
