@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
@@ -19,6 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
         private List<IAnimationInstance> _animationsToUpdate = new();
         private BatchStreamObjectPool<object?> _batchObjectPool;
         private BatchStreamMemoryPool _batchMemoryPool;
+        public Queue<IDrawingContextLayerImpl> LayersToDispose { get; } = new();
 
         public ServerCompositor(IRenderLoop renderLoop, BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
         {

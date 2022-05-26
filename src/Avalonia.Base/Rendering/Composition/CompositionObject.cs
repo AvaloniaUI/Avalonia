@@ -25,7 +25,7 @@ namespace Avalonia.Rendering.Composition
 
         public void Dispose()
         {
-            //Changes.Dispose = true;
+            RegisterForSerialization();
             IsDisposed = true;
         }
 
@@ -112,7 +112,8 @@ namespace Avalonia.Rendering.Composition
 
         private protected virtual void SerializeChangesCore(BatchStreamWriter writer)
         {
-            
+            if (Server is IDisposable)
+                writer.Write((byte)(IsDisposed ? 1 : 0));
         }
     }
 }

@@ -107,7 +107,9 @@ namespace Avalonia.Rendering.Composition.Server
 
         protected virtual void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
         {
-            
+            if (this is IDisposable disp
+                && reader.Read<byte>() == 1)
+                disp.Dispose();
         }
         
         public void DeserializeChanges(BatchStreamReader reader, Batch batch)

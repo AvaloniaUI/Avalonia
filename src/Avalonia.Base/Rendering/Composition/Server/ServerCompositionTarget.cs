@@ -9,7 +9,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server
 {
-    internal partial class ServerCompositionTarget
+    internal partial class ServerCompositionTarget : IDisposable
     {
         private readonly ServerCompositor _compositor;
         private readonly Func<IRenderTarget> _renderTargetFactory;
@@ -23,6 +23,7 @@ namespace Avalonia.Rendering.Composition.Server
         private Size _layerSize;
         private IDrawingContextLayerImpl? _layer;
         private bool _redrawRequested;
+        private bool _disposed;
 
 
         public ReadbackIndices Readback { get; } = new();
@@ -50,6 +51,12 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Render()
         {
+            if (_disposed)
+            {
+                Compositor.RemoveCompositionTarget(this);
+                return;
+            }
+
             if (Root == null) 
                 return;
             _renderTarget ??= _renderTargetFactory();
@@ -69,6 +76,12 @@ namespace Avalonia.Rendering.Composition.Server
             _redrawRequested = false;
             using (var targetContext = _renderTarget.CreateDrawingContext(null))
             {
+                // This is a hack to safely dispose layer created by some other render target
+                // because we can only dispose layers with the corresponding GPU context being
+                // active on the current thread
+                while (Compositor.LayersToDispose.Count > 0)
+                    Compositor.LayersToDispose.Dequeue().Dispose();
+
                 var layerSize = Size * Scaling;
                 if (layerSize != _layerSize || _layer == null)
                 {
@@ -129,6 +142,18 @@ namespace Avalonia.Rendering.Composition.Server
         public void Invalidate()
         {
             _redrawRequested = true;
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            if (_layer != null)
+            {
+                Compositor.LayersToDispose.Enqueue(_layer);
+                _layer = null;
+            }
+            _renderTarget?.Dispose();
+            _renderTarget = null;
         }
     }
 }
