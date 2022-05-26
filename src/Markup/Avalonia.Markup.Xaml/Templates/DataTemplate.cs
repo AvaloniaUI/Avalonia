@@ -7,7 +7,7 @@ namespace Avalonia.Markup.Xaml.Templates
 {
     public class DataTemplate : IRecyclingDataTemplate
     {
-        [TemplateDataType]
+        [DataType]
         public Type DataType { get; set; }
 
         [Content]

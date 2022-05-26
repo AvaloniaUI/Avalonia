@@ -49,7 +49,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
                     else if (child is XamlPropertyAssignmentNode pa)
                     {
-                        var templateDataTypeAttribute = context.GetAvaloniaTypes().TemplateDataTypeAttribute;
+                        var templateDataTypeAttribute = context.GetAvaloniaTypes().DataTypeAttribute;
                         
                         if (pa.Property.Name == "DataContext"
                             && pa.Property.DeclaringType.Equals(context.GetAvaloniaTypes().StyledElement)

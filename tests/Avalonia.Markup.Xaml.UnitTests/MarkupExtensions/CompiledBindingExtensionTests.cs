@@ -1520,7 +1520,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public class CustomDataTemplate : IDataTemplate
     {
-        [TemplateDataType]
+        [DataType]
         public Type FancyDataType { get; set; }
 
         [Content]
