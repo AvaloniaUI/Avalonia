@@ -8,6 +8,7 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private bool _isDirty;
         private ServerCompositionTarget? _root;
+        private bool _isBackface;
         protected virtual void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
         {
             
@@ -59,23 +60,35 @@ namespace Avalonia.Rendering.Composition.Server
 
         public virtual void Update(ServerCompositionTarget root, Matrix4x4 transform)
         {
-            var res = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, TransformMatrix,
+            // Calculate new parent-relative transform
+            CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, TransformMatrix,
                 Scale, RotationAngle, Orientation, Offset);
-            var i = Root!.Readback;
-            ref var readback = ref GetReadback(i.WriteIndex);
-            readback.Revision = root.Revision;
-            readback.Matrix = res;
-            readback.TargetId = Root.Id;
-            //TODO: check effective opacity too
-            IsVisibleInFrame = Visible && Opacity > 0;
-            CombinedTransformMatrix = res;
-            var newTransform = res * transform;
+            
+            var newTransform = CombinedTransformMatrix * transform;
+            
+            // Check if visual was moved and recalculate face orientation
+            var positionChanged = false;
             if (GlobalTransformMatrix != newTransform)
             {
-                // Visual was moved alongside with its parent
-                _isDirty = true;
-                Root.AddDirtyRect(TransformedBounds);
+                _isBackface = Vector3.Transform(
+                    new Vector3(0, 0, float.PositiveInfinity), GlobalTransformMatrix).Z <= 0;
+                positionChanged = true;
             }
+            
+            var wasVisible = IsVisibleInFrame;
+            //TODO: check effective opacity too
+            IsVisibleInFrame = Visible && Opacity > 0 && !_isBackface;
+
+            // Invalidate previous rect and queue new rect based on visibility
+            if (positionChanged)
+            {
+                if(wasVisible)
+                    Root!.AddDirtyRect(TransformedBounds);
+
+                if (IsVisibleInFrame)
+                    _isDirty = true;
+            }
+            
             GlobalTransformMatrix = newTransform;
             //TODO: Cache
             TransformedBounds = ContentBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
@@ -84,9 +97,18 @@ namespace Avalonia.Rendering.Composition.Server
                 _isDirty = false;
             else if (_isDirty)
             {
-                Root.AddDirtyRect(TransformedBounds);
+                Root!.AddDirtyRect(TransformedBounds);
                 _isDirty = false;
             }
+            
+            // Update readback indices
+            var i = Root!.Readback;
+            ref var readback = ref GetReadback(i.WriteIndex);
+            readback.Revision = root.Revision;
+            readback.Matrix = CombinedTransformMatrix;
+            readback.TargetId = Root.Id;
+            readback.Visible = IsVisibleInFrame;
+
         }
         
         public struct ReadbackData
@@ -94,6 +116,7 @@ namespace Avalonia.Rendering.Composition.Server
             public Matrix4x4 Matrix;
             public ulong Revision;
             public long TargetId;
+            public bool Visible;
         }
 
         partial void ApplyChangesExtra(CompositionVisualChanges c)
