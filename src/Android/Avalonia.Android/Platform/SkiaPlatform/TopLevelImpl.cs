@@ -41,7 +41,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             
             _framebuffer = new FramebufferManager(this);
 
-            RenderScaling = (int)_view.Scaling;
+            RenderScaling = _view.Scaling;
 
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);

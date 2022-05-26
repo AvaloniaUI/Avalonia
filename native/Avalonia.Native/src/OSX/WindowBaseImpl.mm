@@ -30,12 +30,11 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     View = [[AvnView alloc] initWithParent:this];
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
-    lastPositionSet.X = -1;
-    lastPositionSet.Y = -1;
+    lastPositionSet = { 0, 0 };
+    hasPosition = false;
     lastSize = NSSize { 100, 100 };
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
-    _lastTitle = @"";
 
     Window = nullptr;
     lastMenu = nullptr;
@@ -92,14 +91,15 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         CreateNSWindow(isDialog);
         InitialiseNSWindow();
 
-        if(lastPositionSet.X >= 0 && lastPositionSet.Y >= 0)
+        if(hasPosition)
         {
             SetPosition(lastPositionSet);
+        } else
+        {
+            [Window center];
         }
 
         UpdateStyle();
-
-        [Window setTitle:_lastTitle];
 
         if (ShouldTakeFocusOnShow() && activate) {
             [Window orderFront:Window];
@@ -288,11 +288,11 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
+            lastSize = NSSize {x, y};
+
             if (!_shown) {
                 BaseEvents->Resized(AvnSize{x, y}, reason);
             }
-
-            lastSize = NSSize {x, y};
 
             if(Window != nullptr) {
                 [Window setContentSize:lastSize];
@@ -385,6 +385,7 @@ HRESULT WindowBaseImpl::SetPosition(AvnPoint point) {
 
     @autoreleasepool {
         lastPositionSet = point;
+        hasPosition = true;
 
         if(Window != nullptr) {
             [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
@@ -566,6 +567,11 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
     }
 }
 
+void WindowBaseImpl::OnInitialiseNSWindow()
+{
+    
+}
+
 void WindowBaseImpl::InitialiseNSWindow() {
     if(Window != nullptr) {
         [Window setContentView:StandardContainer];
@@ -577,7 +583,6 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
-        [Window center];
 
         if (lastMenu != nullptr) {
             [GetWindowProtocol() applyMenu:lastMenu];
@@ -586,6 +591,8 @@ void WindowBaseImpl::InitialiseNSWindow() {
                 [GetWindowProtocol() showWindowMenuWithAppMenu];
             }
         }
+        
+        OnInitialiseNSWindow();
     }
 }
 
