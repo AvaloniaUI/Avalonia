@@ -40,7 +40,7 @@ internal class UnmanagedBlob : IUnmanagedBlob
         {
             if (size <= 0)
                 throw new ArgumentException("Positive number required", nameof(size));
-            _address = Marshal.AllocHGlobal(size);
+            _address = Alloc(size);
             GC.AddMemoryPressure(size);
             Size = size;
         }
@@ -66,7 +66,7 @@ internal class UnmanagedBlob : IUnmanagedBlob
                 lock (_btlock)
                     Backtraces.Remove(_backtrace);
 #endif
-                Marshal.FreeHGlobal(_address);
+                Free(_address, Size);
                 GC.RemoveMemoryPressure(Size);
                 IsDisposed = true;
                 _address = IntPtr.Zero;
@@ -106,4 +106,50 @@ internal class UnmanagedBlob : IUnmanagedBlob
     public IntPtr Address => IsDisposed ? throw new ObjectDisposedException("UnmanagedBlob") : _address;
     public int Size { get; private set; }
     public bool IsDisposed { get; private set; }
+
+    [DllImport("libc", SetLastError = true)]
+    private static extern IntPtr mmap(IntPtr addr, IntPtr length, int prot, int flags, int fd, IntPtr offset);
+    [DllImport("libc", SetLastError = true)]
+    private static extern int munmap(IntPtr addr, IntPtr length);
+    [DllImport("libc", SetLastError = true)]
+    private static extern long sysconf(int name);
+
+    private bool? _useMmap;
+    private bool UseMmap
+        => _useMmap ?? ((_useMmap = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)).Value);
+
+    // Could be replaced with https://github.com/dotnet/runtime/issues/40892 when it will be available.
+    private IntPtr Alloc(int size)
+    {
+        if (!UseMmap)
+        {
+            return Marshal.AllocHGlobal(size);
+        }
+        else
+        {
+            var rv = mmap(IntPtr.Zero, new IntPtr(size), 3, 0x22, -1, IntPtr.Zero);
+            if (rv.ToInt64() == -1 || (ulong)rv.ToInt64() == 0xffffffff)
+            {
+                var errno = Marshal.GetLastWin32Error();
+                throw new Exception("Unable to allocate memory: " + errno);
+            }
+            return rv;
+        }
+    }
+
+    private void Free(IntPtr ptr, int len)
+    {
+        if (!UseMmap)
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
+        else
+        {
+            if (munmap(ptr, new IntPtr(len)) == -1)
+            {
+                var errno = Marshal.GetLastWin32Error();
+                throw new Exception("Unable to free memory: " + errno);
+            }
+        }
+    }
 }
