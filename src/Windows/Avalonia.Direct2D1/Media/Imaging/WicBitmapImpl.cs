@@ -5,12 +5,14 @@ using SharpDX.WIC;
 using APixelFormat = Avalonia.Platform.PixelFormat;
 using AlphaFormat = Avalonia.Platform.AlphaFormat;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
+using Avalonia.Metadata;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// A WIC implementation of a <see cref="Avalonia.Media.Imaging.Bitmap"/>.
     /// </summary>
+    [Unstable]
     public class WicBitmapImpl : BitmapImpl
     {
         private readonly BitmapDecoder _decoder;

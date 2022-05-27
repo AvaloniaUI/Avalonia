@@ -722,6 +722,48 @@ namespace Avalonia.Base.UnitTests.Styling
             resources.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
 
+        [Fact]
+        public void Nested_Style_Can_Be_Added()
+        {
+            var parent = new Style(x => x.OfType<Class1>());
+            var nested = new Style(x => x.Nesting().Class("foo"));
+
+            parent.Children.Add(nested);
+
+            Assert.Same(parent, nested.Parent);
+        }
+
+        [Fact]
+        public void Nested_Or_Style_Can_Be_Added()
+        {
+            var parent = new Style(x => x.OfType<Class1>());
+            var nested = new Style(x => Selectors.Or(
+                x.Nesting().Class("foo"),
+                x.Nesting().Class("bar")));
+
+            parent.Children.Add(nested);
+
+            Assert.Same(parent, nested.Parent);
+        }
+
+        [Fact]
+        public void Nested_Style_Without_Selector_Throws()
+        {
+            var parent = new Style(x => x.OfType<Class1>());
+            var nested = new Style();
+
+            Assert.Throws<InvalidOperationException>(() => parent.Children.Add(nested));
+        }
+
+        [Fact(Skip = "TODO")]
+        public void Nested_Style_Without_Nesting_Operator_Throws()
+        {
+            var parent = new Style(x => x.OfType<Class1>());
+            var nested = new Style(x => x.Class("foo"));
+
+            Assert.Throws<InvalidOperationException>(() => parent.Children.Add(nested));
+        }
+
         private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =

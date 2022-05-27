@@ -20,7 +20,7 @@ namespace Avalonia.Styling
         private readonly AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
-        private Dictionary<Type, List<IStyle>?>? _cache;
+        private StyleCache? _cache;
 
         public Styles()
         {
@@ -111,43 +111,8 @@ namespace Avalonia.Styling
 
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
-            _cache ??= new Dictionary<Type, List<IStyle>?>();
-
-            if (_cache.TryGetValue(target.StyleKey, out var cached))
-            {
-                if (cached is object)
-                {
-                    foreach (var style in cached)
-                    {
-                        style.TryAttach(target, host);
-                    }
-
-                    return SelectorMatchResult.AlwaysThisType;
-                }
-                else
-                {
-                    return SelectorMatchResult.NeverThisType;
-                }
-            }
-            else
-            {
-                List<IStyle>? matches = null;
-
-                foreach (var child in this)
-                {
-                    if (child.TryAttach(target, host) != SelectorMatchResult.NeverThisType)
-                    {
-                        matches ??= new List<IStyle>();
-                        matches.Add(child);
-                    }
-                }
-
-                _cache.Add(target.StyleKey, matches);
-                
-                return matches is null ?
-                    SelectorMatchResult.NeverThisType :
-                    SelectorMatchResult.AlwaysThisType;
-            }
+            _cache ??= new StyleCache();
+            return _cache.TryAttach(this, target, host);
         }
 
         /// <inheritdoc/>
@@ -160,7 +125,7 @@ namespace Avalonia.Styling
 
             for (var i = Count - 1; i >= 0; --i)
             {
-                if (this[i] is IResourceProvider p && p.TryGetResource(key, out value))
+                if (this[i].TryGetResource(key, out value))
                 {
                     return true;
                 }

@@ -1,6 +1,5 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Styling.Activators
 {
@@ -16,6 +15,7 @@ namespace Avalonia.Styling.Activators
     /// - The subscription can have a tag associated with it, allowing a subscriber to index
     ///   into a list of subscriptions without having to allocate additional objects.
     /// </remarks>
+    [Unstable]
     public interface IStyleActivator : IDisposable
     {
         /// <summary>

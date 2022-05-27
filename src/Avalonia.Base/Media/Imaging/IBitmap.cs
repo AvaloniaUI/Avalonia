@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -8,6 +9,7 @@ namespace Avalonia.Media.Imaging
     /// <summary>
     /// Represents a bitmap image.
     /// </summary>
+    [NotClientImplementable]
     public interface IBitmap : IImage, IDisposable
     {
         /// <summary>

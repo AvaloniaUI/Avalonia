@@ -126,6 +126,7 @@ namespace Avalonia.Skia
         SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
         SKSurface ISkiaDrawingContextImpl.SkSurface => Surface;
         GRContext ISkiaDrawingContextImpl.GrContext => _grContext;
+        double ISkiaDrawingContextImpl.CurrentOpacity => _currentOpacity;
 
         /// <inheritdoc />
         public void Clear(Color color)

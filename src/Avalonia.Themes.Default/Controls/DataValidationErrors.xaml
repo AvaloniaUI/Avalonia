@@ -1,9 +1,13 @@
 <Style xmlns="https://github.com/avaloniaui" 
-       Selector="DataValidationErrors">
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       Selector="DataValidationErrors"
+       x:CompileBindings="True"
+       x:DataType="DataValidationErrors">
   <Setter Property="Template">
     <ControlTemplate>
       <DockPanel LastChildFill="True">
-        <ContentControl DockPanel.Dock="Right"
+        <ContentControl x:DataType="DataValidationErrors"
+                        DockPanel.Dock="Right"
                         ContentTemplate="{TemplateBinding ErrorTemplate}"
                         DataContext="{TemplateBinding Owner}"
                         Content="{Binding (DataValidationErrors.Errors)}"
@@ -30,7 +34,7 @@
           </Style>
         </Canvas.Styles>
         <ToolTip.Tip>
-          <ItemsControl Items="{Binding}"/>
+          <ItemsControl x:DataType="DataValidationErrors" Items="{Binding}"/>
         </ToolTip.Tip>
         <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" Stroke="{DynamicResource ErrorBrush}" StrokeThickness="2"/>
       </Canvas>
