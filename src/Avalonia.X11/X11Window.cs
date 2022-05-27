@@ -1160,7 +1160,7 @@ namespace Avalonia.X11
             }
 
             public IntPtr Handle => _owner._renderHandle;
-            public string? HandleDescriptor => "XID";
+            public string HandleDescriptor => "XID";
         }
     }
 }
