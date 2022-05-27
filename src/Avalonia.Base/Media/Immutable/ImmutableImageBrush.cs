@@ -16,6 +16,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="destinationRect">The rectangle on the destination in which to paint a tile.</param>
         /// <param name="opacity">The opacity of the brush.</param>
         /// <param name="transform">The transform of the brush.</param>
+        /// <param name="transformOrigin">The transform origin of the brush</param>
         /// <param name="sourceRect">The rectangle of the source image that will be displayed.</param>
         /// <param name="stretch">
         /// How the source rectangle will be stretched to fill the destination rect.
@@ -29,6 +30,7 @@ namespace Avalonia.Media.Immutable
             RelativeRect? destinationRect = null,
             double opacity = 1,
             ImmutableTransform? transform = null,
+            RelativePoint transformOrigin = new RelativePoint(),
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
             TileMode tileMode = TileMode.None,
@@ -39,6 +41,7 @@ namespace Avalonia.Media.Immutable
                   destinationRect ?? RelativeRect.Fill,
                   opacity,
                   transform,
+                  transformOrigin,
                   sourceRect ?? RelativeRect.Fill,
                   stretch,
                   tileMode,
