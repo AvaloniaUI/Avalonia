@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>    
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>    
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
