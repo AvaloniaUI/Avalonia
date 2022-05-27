@@ -378,6 +378,8 @@
         _parent->BaseEvents->Deactivated();
 
     [self showAppMenuOnly];
+    
+    [self invalidateShadow];
 
     [super resignKeyWindow];
 }
