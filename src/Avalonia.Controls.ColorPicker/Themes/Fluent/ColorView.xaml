@@ -152,8 +152,7 @@
                                           Grid.Row="0"
                                           Grid.RowSpan="2"
                                           Components="{TemplateBinding ColorSpectrumComponents}"
-                                          Color="{TemplateBinding Color}"
-                                          HsvColor="{TemplateBinding HsvColor}"
+                                          HsvColor="{Binding $parent[ColorView].HsvColor}"
                                           MinHue="{TemplateBinding MinHue}"
                                           MaxHue="{TemplateBinding MaxHue}"
                                           MinSaturation="{TemplateBinding MinSaturation}"
@@ -188,7 +187,7 @@
                 </Border>
               </TabItem.Header>
               <ListBox Items="{TemplateBinding CustomPaletteColors}"
-                       SelectedItem="{Binding Color, ElementName=ColorSpectrum}"
+                       SelectedItem="{Binding $parent[ColorView].Color}"
                        UseLayoutRounding="False"
                        Margin="12">
                 <ListBox.Styles>
@@ -369,12 +368,12 @@
                                  HorizontalAlignment="Center"
                                  VerticalAlignment="Center" />
                     </Border>
-                    <TextBox x:Name="HexTextBox"
+                    <!-- Color updated in code-behind -->
+                    <TextBox x:Name="PART_HexTextBox"
                              Grid.Column="1"
                              AutomationProperties.Name="Hexadecimal Color"
                              Height="32"
                              MaxLength="8"
-                             Text="{Binding Color, ElementName=ColorSpectrum, Converter={StaticResource ColorToHex}}"
                              HorizontalAlignment="Stretch"
                              CornerRadius="0,4,4,0" />
                   </Grid>
@@ -419,7 +418,7 @@
                                         Orientation="Horizontal"
                                         ColorComponent="Component1"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
+                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -462,7 +461,7 @@
                                         Orientation="Horizontal"
                                         ColorComponent="Component2"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
+                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -505,7 +504,7 @@
                                         Orientation="Horizontal"
                                         ColorComponent="Component3"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
+                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -543,7 +542,7 @@
                                         Orientation="Horizontal"
                                         ColorComponent="Alpha"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
+                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -553,7 +552,7 @@
           <!-- Previewer -->
           <primitives:ColorPreviewer Grid.Row="1"
                                      ShowAccentColors="True"
-                                     HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
+                                     HsvColor="{Binding $parent[ColorView].HsvColor}"
                                      Margin="12,0,12,12" />
         </Grid>
       </ControlTemplate>
