@@ -49,6 +49,14 @@ namespace Avalonia.Controls.Primitives
                 true);
 
         /// <summary>
+        /// Defines the <see cref="IsRoundingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsRoundingEnabledProperty =
+            AvaloniaProperty.Register<ColorSlider, bool>(
+                nameof(IsRoundingEnabled),
+                false);
+
+        /// <summary>
         /// Defines the <see cref="IsSaturationValueMaxForced"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSaturationValueMaxForcedProperty =
@@ -109,6 +117,19 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(IsAlphaMaxForcedProperty);
             set => SetValue(IsAlphaMaxForcedProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether rounding of color component values is enabled.
+        /// </summary>
+        /// <remarks>
+        /// This is applicable for the HSV color model only. The <see cref="Media.HsvColor"/> struct uses double
+        /// values while the <see cref="Media.Color"/> struct uses byte. Only double types need rounding.
+        /// </remarks>
+        public bool IsRoundingEnabled
+        {
+            get => GetValue(IsRoundingEnabledProperty);
+            set => SetValue(IsRoundingEnabledProperty, value);
         }
 
         /// <summary>

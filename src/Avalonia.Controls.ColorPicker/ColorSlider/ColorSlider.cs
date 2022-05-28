@@ -116,6 +116,21 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Rounds the component values of the given <see cref="HsvColor"/>.
+        /// This is useful for user-display and to ensure a color matches user selection exactly.
+        /// </summary>
+        /// <param name="hsvColor">The <see cref="HsvColor"/> to round component values for.</param>
+        /// <returns>A new <see cref="HsvColor"/> with rounded component values.</returns>
+        private HsvColor RoundComponentValues(HsvColor hsvColor)
+        {
+            return new HsvColor(
+                Math.Round(hsvColor.A, 2, MidpointRounding.AwayFromZero),
+                Math.Round(hsvColor.H, 0, MidpointRounding.AwayFromZero),
+                Math.Round(hsvColor.S, 2, MidpointRounding.AwayFromZero),
+                Math.Round(hsvColor.V, 2, MidpointRounding.AwayFromZero));
+        }
+
+        /// <summary>
         /// Updates the slider property values by applying the current color.
         /// </summary>
         /// <remarks>
@@ -130,6 +145,11 @@ namespace Avalonia.Controls.Primitives
 
             if (ColorModel == ColorModel.Hsva)
             {
+                if (IsRoundingEnabled)
+                {
+                    hsvColor = RoundComponentValues(hsvColor);
+                }
+
                 // Note: Components converted into a usable range for the user
                 switch (component)
                 {
@@ -222,7 +242,7 @@ namespace Avalonia.Controls.Primitives
                     }
                 }
 
-                return (hsvColor.ToRgb(), hsvColor);
+                rgbColor = hsvColor.ToRgb();
             }
             else
             {
@@ -244,8 +264,15 @@ namespace Avalonia.Controls.Primitives
                         break;
                 }
 
-                return (rgbColor, rgbColor.ToHsv());
+                hsvColor = rgbColor.ToHsv();
             }
+
+            if (IsRoundingEnabled)
+            {
+                hsvColor = RoundComponentValues(hsvColor);
+            }
+
+            return (rgbColor, hsvColor);
         }
 
         /// <summary>
@@ -362,6 +389,10 @@ namespace Avalonia.Controls.Primitives
                     change.GetNewValue<HsvColor>().ToRgb()));
 
                 disableUpdates = false;
+            }
+            else if (change.Property == IsRoundingEnabledProperty)
+            {
+                SetColorToSliderValues();
             }
             else if (change.Property == BoundsProperty)
             {
