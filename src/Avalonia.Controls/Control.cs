@@ -372,22 +372,18 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void InvalidateMirrorTransform()
         {
-            var flowDirection = this.FlowDirection;
+            var flowDirection = FlowDirection;
             var parentFlowDirection = FlowDirection.LeftToRight;
 
             bool bypassFlowDirectionPolicies = BypassFlowDirectionPolicies;
             bool parentBypassFlowDirectionPolicies = false;
 
-            var parent = this.FindAncestorOfType<Control>();
+            var parent = ((IVisual)this).VisualParent as Control;
+
             if (parent != null)
             {
                 parentFlowDirection = parent.FlowDirection;
                 parentBypassFlowDirectionPolicies = parent.BypassFlowDirectionPolicies;
-            }
-            else if (Parent is Control logicalParent)
-            {
-                parentFlowDirection = logicalParent.FlowDirection;
-                parentBypassFlowDirectionPolicies = logicalParent.BypassFlowDirectionPolicies;
             }
 
             bool thisShouldBeMirrored = flowDirection == FlowDirection.RightToLeft && !bypassFlowDirectionPolicies;
