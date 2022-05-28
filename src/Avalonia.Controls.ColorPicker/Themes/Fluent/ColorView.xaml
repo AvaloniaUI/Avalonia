@@ -3,12 +3,15 @@
         xmlns:converters="using:Avalonia.Controls.Converters"
         xmlns:primitives="using:Avalonia.Controls.Primitives"
         xmlns:pc="clr-namespace:Avalonia.Controls.Primitives.Converters;assembly=Avalonia.Controls.ColorPicker"
+        xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
         x:CompileBindings="False">
 
   <Styles.Resources>
+    <pc:ContrastBrushConverter x:Key="ContrastBrush" />
     <pc:ThirdComponentConverter x:Key="ThirdComponent" />
     <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayName" />
     <converters:ColorToHexConverter x:Key="ColorToHex" />
+    <globalization:NumberFormatInfo x:Key="ComponentNumberFormatInfo" NumberDecimalDigits="0" />
   </Styles.Resources>
 
   <Style Selector="ColorView">
@@ -123,9 +126,41 @@
                        SelectedItem="{Binding Color, ElementName=ColorSpectrum}">
                 <ListBox.Styles>
                   <Style Selector="ListBoxItem">
-                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
                     <Setter Property="Padding" Value="0" />
+                    <Setter Property="Template">
+                      <ControlTemplate>
+                        <Grid>
+                          <ContentPresenter Name="PART_ContentPresenter"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="{TemplateBinding CornerRadius}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            Content="{TemplateBinding Content}"
+                                            Padding="{TemplateBinding Padding}"
+                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                          <Rectangle x:Name="BorderRectangle"
+                                     IsHitTestVisible="False"
+                                     StrokeThickness="3"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch" />
+                        </Grid>
+                      </ControlTemplate>
+                    </Setter>
                   </Style>
+
+                  <Style Selector="ListBoxItem /template/ Rectangle#BorderRectangle">
+                    <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+                    <Setter Property="Opacity" Value="0" />
+                  </Style>
+
+                  <Style Selector="ListBoxItem:selected /template/ Rectangle#BorderRectangle">
+                    <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrush}, ConverterParameter={DynamicResource TextControlForeground}}" />
+                    <Setter Property="Opacity" Value="1" />
+                  </Style>
+
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
                   <DataTemplate>
@@ -195,11 +230,11 @@
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0"
                             Height="32"
-                            Background="{DynamicResource TextBoxDisabledBackgroundThemeBrush}"
+                            Background="{DynamicResource TextControlBackgroundDisabled}"
                             BorderBrush="{DynamicResource TextControlBorderBrush}"
                             BorderThickness="1,1,0,1"
                             CornerRadius="4,0,0,4">
-                      <TextBlock Foreground="{DynamicResource TextBoxDisabledForegroundThemeBrush}"
+                      <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
                                  FontWeight="SemiBold"
                                  Text="#"
                                  HorizontalAlignment="Center"
@@ -217,30 +252,154 @@
                 </Grid>
                 <!-- Color component editing controls -->
                 <!-- Component 1 RGB:Red HSV:Hue -->
+                <Border Grid.Column="0"
+                        Grid.Row="2"
+                        Height="{Binding ElementName=Component1NumericUpDown, Path=Bounds.Height}"
+                        Background="{DynamicResource TextControlBackgroundDisabled}"
+                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        BorderThickness="1,1,0,1"
+                        CornerRadius="4,0,0,4"
+                        VerticalAlignment="Center">
+                  <TextBlock x:Name="Component1TextBlock"
+                             Foreground="{DynamicResource TextControlForegroundDisabled}"
+                             FontWeight="SemiBold"
+                             Text="R"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Border>
+                <NumericUpDown x:Name="Component1NumericUpDown"
+                               Grid.Column="1"
+                               Grid.Row="2"
+                               AllowSpin="True"
+                               ShowButtonSpinner="False"
+                               Height="32"
+                               CornerRadius="0,4,4,0"
+                               VerticalAlignment="Center"
+                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               Minimum="{Binding Minimum, ElementName=Component1Slider}"
+                               Maximum="{Binding Maximum, ElementName=Component1Slider}"
+                               Value="{Binding Value, ElementName=Component1Slider}" />
                 <primitives:ColorSlider x:Name="Component1Slider"
                                         Grid.Column="2"
                                         Grid.Row="2"
+                                        Orientation="Horizontal"
+                                        ColorModel="Rgba"
+                                        ColorComponent="Component1"
+                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
                 <!-- Component 2 RGB:Green HSV:Saturation -->
+                <Border Grid.Column="0"
+                        Grid.Row="3"
+                        Height="{Binding ElementName=Component2NumericUpDown, Path=Bounds.Height}"
+                        Background="{DynamicResource TextControlBackgroundDisabled}"
+                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        BorderThickness="1,1,0,1"
+                        CornerRadius="4,0,0,4"
+                        VerticalAlignment="Center">
+                  <TextBlock x:Name="Component2TextBlock"
+                             Foreground="{DynamicResource TextControlForegroundDisabled}"
+                             FontWeight="SemiBold"
+                             Text="G"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Border>
+                <NumericUpDown x:Name="Component2NumericUpDown"
+                               Grid.Column="1"
+                               Grid.Row="3"
+                               AllowSpin="True"
+                               ShowButtonSpinner="False"
+                               Height="32"
+                               CornerRadius="0,4,4,0"
+                               VerticalAlignment="Center"
+                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               Minimum="{Binding Minimum, ElementName=Component2Slider}"
+                               Maximum="{Binding Maximum, ElementName=Component2Slider}"
+                               Value="{Binding Value, ElementName=Component2Slider}"/>
                 <primitives:ColorSlider x:Name="Component2Slider"
                                         Grid.Column="2"
                                         Grid.Row="3"
+                                        Orientation="Horizontal"
+                                        ColorModel="Rgba"
+                                        ColorComponent="Component2"
+                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
                 <!-- Component 3 RGB:Blue HSV:Value -->
+                <Border Grid.Column="0"
+                        Grid.Row="4"
+                        Height="{Binding ElementName=Component3NumericUpDown, Path=Bounds.Height}"
+                        Background="{DynamicResource TextControlBackgroundDisabled}"
+                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        BorderThickness="1,1,0,1"
+                        CornerRadius="4,0,0,4"
+                        VerticalAlignment="Center">
+                  <TextBlock x:Name="Component3TextBlock"
+                             Foreground="{DynamicResource TextControlForegroundDisabled}"
+                             FontWeight="SemiBold"
+                             Text="B"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Border>
+                <NumericUpDown x:Name="Component3NumericUpDown"
+                               Grid.Column="1"
+                               Grid.Row="4"
+                               AllowSpin="True"
+                               ShowButtonSpinner="False"
+                               Height="32"
+                               CornerRadius="0,4,4,0"
+                               VerticalAlignment="Center"
+                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               Minimum="{Binding Minimum, ElementName=Component3Slider}"
+                               Maximum="{Binding Maximum, ElementName=Component3Slider}"
+                               Value="{Binding Value, ElementName=Component3Slider}" />
                 <primitives:ColorSlider x:Name="Component3Slider"
                                         Grid.Column="2"
                                         Grid.Row="4"
+                                        Orientation="Horizontal"
+                                        ColorModel="Rgba"
+                                        ColorComponent="Component3"
+                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
                 <!-- Alpha Component -->
+                <Border Grid.Column="0"
+                        Grid.Row="5"
+                        Height="{Binding ElementName=AlphaComponentNumericUpDown, Path=Bounds.Height}"
+                        Background="{DynamicResource TextControlBackgroundDisabled}"
+                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        BorderThickness="1,1,0,1"
+                        CornerRadius="4,0,0,4"
+                        VerticalAlignment="Center">
+                  <TextBlock x:Name="AlphaComponentTextBlock"
+                             Foreground="{DynamicResource TextControlForegroundDisabled}"
+                             FontWeight="SemiBold"
+                             Text="A"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Border>
+                <NumericUpDown x:Name="AlphaComponentNumericUpDown"
+                               Grid.Column="1"
+                               Grid.Row="5"
+                               AllowSpin="True"
+                               ShowButtonSpinner="False"
+                               Height="32"
+                               CornerRadius="0,4,4,0"
+                               VerticalAlignment="Center"
+                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               Minimum="{Binding Minimum, ElementName=AlphaComponentSlider}"
+                               Maximum="{Binding Maximum, ElementName=AlphaComponentSlider}"
+                               Value="{Binding Value, ElementName=AlphaComponentSlider}" />
                 <primitives:ColorSlider x:Name="AlphaComponentSlider"
                                         Grid.Column="2"
                                         Grid.Row="5"
+                                        Orientation="Horizontal"
+                                        ColorModel="Rgba"
+                                        ColorComponent="Alpha"
+                                        HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
