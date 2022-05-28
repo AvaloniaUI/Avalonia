@@ -171,13 +171,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Routed event that can be used for global tracking of window destruction
         /// </summary>
-        public static readonly RoutedEvent WindowClosedEvent =
+        public static readonly RoutedEvent<RoutedEventArgs> WindowClosedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
 
         /// <summary>
         /// Routed event that can be used for global tracking of opening windows
         /// </summary>
-        public static readonly RoutedEvent WindowOpenedEvent =
+        public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
 
 
@@ -917,6 +917,15 @@ namespace Avalonia.Controls
             var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
+            if (MaxWidth > 0 && MaxWidth < maxAutoSize.Width)
+            {
+                maxAutoSize = maxAutoSize.WithWidth(MaxWidth);
+            }
+            if (MaxHeight > 0 && MaxHeight < maxAutoSize.Height)
+            {
+                maxAutoSize = maxAutoSize.WithHeight(MaxHeight);
+            }
+
             if (sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);
@@ -1019,16 +1028,16 @@ namespace Avalonia.Controls
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             if (change.Property == SystemDecorationsProperty)
             {
-                var typedNewValue = change.NewValue.GetValueOrDefault<SystemDecorations>();
+                var (typedOldValue, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
 
-                var o = change.OldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
+                var o = typedOldValue == SystemDecorations.Full;
                 var n = typedNewValue == SystemDecorations.Full;
 
                 if (o != n)

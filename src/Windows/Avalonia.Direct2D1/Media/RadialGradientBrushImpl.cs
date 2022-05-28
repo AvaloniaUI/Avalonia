@@ -1,8 +1,10 @@
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia.Direct2D1.Media
 {
+    [Unstable]
     public class RadialGradientBrushImpl : BrushImpl
     {
         public RadialGradientBrushImpl(

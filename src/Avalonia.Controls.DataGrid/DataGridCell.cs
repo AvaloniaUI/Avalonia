@@ -13,6 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> cell.
     /// </summary>
+    [TemplatePart(DATAGRIDCELL_elementRightGridLine, typeof(Rectangle))]
     [PseudoClasses(":selected", ":current", ":edited", ":invalid")]
     public class DataGridCell : ContentControl
     {

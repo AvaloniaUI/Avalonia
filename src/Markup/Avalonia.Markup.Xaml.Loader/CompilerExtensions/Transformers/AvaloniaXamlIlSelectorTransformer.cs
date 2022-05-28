@@ -151,6 +151,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             results.Add(result);
                             result = initialNode;
                             break;
+                        case SelectorGrammar.NestingSyntax:
+                            var parentTargetType = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
+
+                            if (parentTargetType is null)
+                                throw new XamlParseException($"Cannot find parent style for nested selector.", node);
+
+                            result = new XamlIlNestingSelector(result, parentTargetType.TargetType.GetClrType());
+                            break;
                         default:
                             throw new XamlParseException($"Unsupported selector grammar '{i.GetType()}'.", node);
                     }
@@ -472,6 +480,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             EmitCall(context, codeGen,
                 m => m.Name == "Or" && m.Parameters.Count == 1 && m.Parameters[0].Name.StartsWith("IReadOnlyList"));
+        }
+    }
+
+    class XamlIlNestingSelector : XamlIlSelectorNode
+    {
+        public XamlIlNestingSelector(XamlIlSelectorNode previous, IXamlType targetType)
+            : base(previous)
+        {
+            TargetType = targetType;
+        }
+
+        public override IXamlType TargetType { get; }
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            EmitCall(context, codeGen,
+                m => m.Name == "Nesting" && m.Parameters.Count == 1);
         }
     }
 }

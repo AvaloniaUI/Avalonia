@@ -178,17 +178,17 @@ namespace Avalonia.Controls
             return base.ArrangeOverride(finalSize);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == IsIndeterminateProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(change.GetNewValue<bool>(), null);
             }
             else if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(null, change.GetNewValue<Orientation>());
             }
         }
 

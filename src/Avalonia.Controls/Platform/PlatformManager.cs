@@ -1,9 +1,11 @@
 using System;
 using System.Reactive.Disposables;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Controls.Platform
 {
+    [Unstable]
     public static partial class PlatformManager
     {
         static bool s_designerMode;

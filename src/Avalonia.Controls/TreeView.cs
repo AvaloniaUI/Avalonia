@@ -401,7 +401,7 @@ namespace Avalonia.Controls
         protected virtual ITreeItemContainerGenerator CreateTreeItemContainerGenerator() =>
             CreateTreeItemContainerGenerator<TreeViewItem>();
 
-        protected virtual ITreeItemContainerGenerator CreateTreeItemContainerGenerator<TVItem>() where TVItem: TreeViewItem, new()
+        protected ITreeItemContainerGenerator CreateTreeItemContainerGenerator<TVItem>() where TVItem: TreeViewItem, new()
         {
             return new TreeItemContainerGenerator<TVItem>(
                 this,

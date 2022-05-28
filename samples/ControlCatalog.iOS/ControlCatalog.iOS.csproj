@@ -7,7 +7,7 @@
     <!-- temporal workaround for our GL interface backend -->
     <UseInterpreter>True</UseInterpreter>
     <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
-<!--    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>-->
+    <!--    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>-->
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />

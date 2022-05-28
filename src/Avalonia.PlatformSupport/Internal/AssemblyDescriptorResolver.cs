@@ -5,11 +5,16 @@ using System.Reflection;
 
 namespace Avalonia.PlatformSupport.Internal;
 
-internal class AssemblyDescriptorResolver
+internal interface IAssemblyDescriptorResolver
 {
-    private readonly Dictionary<string, AssemblyDescriptor> _assemblyNameCache = new();
+    IAssemblyDescriptor GetAssembly(string name);
+}
 
-    public AssemblyDescriptor GetAssembly(string name)
+internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
+{
+    private readonly Dictionary<string, IAssemblyDescriptor> _assemblyNameCache = new();
+
+    public IAssemblyDescriptor GetAssembly(string name)
     {
         if (name == null)
             throw new ArgumentNullException(nameof(name));
