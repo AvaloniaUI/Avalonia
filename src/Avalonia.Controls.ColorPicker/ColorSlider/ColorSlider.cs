@@ -20,7 +20,15 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
-        private const double MaxHue = 359.99999999999999999; // 17 decimal places
+        /// <summary>
+        /// Defines the maximum hue component value
+        /// (other components are always 0..100 or 0.255).
+        /// </summary>
+        /// <remarks>
+        /// This should match the default <see cref="ColorSpectrum.MaxHue"/> property.
+        /// </remarks>
+        private const double MaxHue = 359;
+
         private bool disableUpdates = false;
 
         /// <summary>
