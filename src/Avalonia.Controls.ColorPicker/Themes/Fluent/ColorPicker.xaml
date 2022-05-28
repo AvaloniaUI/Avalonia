@@ -1,0 +1,71 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Avalonia.Controls"
+        xmlns:converters="using:Avalonia.Controls.Converters"
+        x:CompileBindings="True">
+
+  <Styles.Resources>
+    <converters:ToBrushConverter x:Key="ToBrush" />
+  </Styles.Resources>
+
+  <Style Selector="ColorPicker">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Width" Value="64" />
+    <Setter Property="MinWidth" Value="64" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DropDownButton CornerRadius="{TemplateBinding CornerRadius}"
+                        Height="{TemplateBinding Height}"
+                        Width="{TemplateBinding Width}"
+                        Padding="0,0,8,0"
+                        UseLayoutRounding="False">
+          <DropDownButton.Styles>
+            <Style Selector="FlyoutPresenter.NoPadding">
+              <Setter Property="Padding" Value="0" />
+            </Style>
+          </DropDownButton.Styles>
+          <DropDownButton.Content>
+            <!-- Preview color -->
+            <Border Background="{Binding $parent[ColorPicker].HsvColor, Converter={StaticResource ToBrush}, Mode=OneWay}"
+                    CornerRadius="4,0,0,4"
+                    Margin="0,0,3,0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch" />
+          </DropDownButton.Content>
+          <DropDownButton.Flyout>
+            <Flyout FlyoutPresenterClasses="NoPadding">
+              <!-- Skip the following:
+                - Color
+                - CustomPaletteColors
+              -->
+              <ColorView ColorModel="{TemplateBinding ColorModel}"
+                         ColorSpectrumComponents="{TemplateBinding ColorSpectrumComponents}"
+                         ColorSpectrumShape="{TemplateBinding ColorSpectrumShape}"
+                         CustomPaletteColumnCount="{TemplateBinding CustomPaletteColumnCount}"
+                         CustomPalette="{TemplateBinding CustomPalette}"
+                         HsvColor="{Binding $parent[ColorPicker].HsvColor}"
+                         IsAlphaEnabled="{TemplateBinding IsAlphaEnabled}"
+                         IsAlphaSliderVisible="{TemplateBinding IsAlphaSliderVisible}"
+                         IsAlphaTextInputVisible="{TemplateBinding IsAlphaTextInputVisible}"
+                         IsColorChannelTextInputVisible="{TemplateBinding IsColorChannelTextInputVisible}"
+                         IsColorPaletteVisible="{TemplateBinding IsColorPaletteVisible}"
+                         IsColorPreviewVisible="{TemplateBinding IsColorPreviewVisible}"
+                         IsColorSliderVisible="{TemplateBinding IsColorSliderVisible}"
+                         IsColorSpectrumVisible="{TemplateBinding IsColorSpectrumVisible}"
+                         IsHexInputVisible="{TemplateBinding IsHexInputVisible}"
+                         MaxHue="{TemplateBinding MaxHue}"
+                         MaxSaturation="{TemplateBinding MaxSaturation}"
+                         MaxValue="{TemplateBinding MaxValue}"
+                         MinHue="{TemplateBinding MinHue}"
+                         MinSaturation="{TemplateBinding MinSaturation}"
+                         MinValue="{TemplateBinding MinValue}"
+                         ShowAccentColors="{TemplateBinding ShowAccentColors}" />
+            </Flyout>
+          </DropDownButton.Flyout>
+        </DropDownButton>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+</Styles>

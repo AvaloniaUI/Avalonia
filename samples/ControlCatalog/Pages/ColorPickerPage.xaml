@@ -13,7 +13,10 @@
     <pc:ThirdComponentConverter x:Key="ThirdComponent" />
   </UserControl.Resources>
 
-  <Grid ColumnDefinitions="Auto,10,Auto,10,Auto">
+  <Grid ColumnDefinitions="Auto,10,Auto,10,Auto"
+        RowDefinitions="Auto,Auto">
+    <ColorPicker Grid.Column="0"
+                 Grid.Row="1" />
     <ColorView Grid.Column="0"
                Grid.Row="0"
                ColorSpectrumShape="Ring" />

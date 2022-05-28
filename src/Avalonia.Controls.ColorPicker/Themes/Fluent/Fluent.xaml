@@ -26,6 +26,7 @@
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSpectrum.xaml" />
 
   <!-- Controls -->
+  <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPicker.xaml" />
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorView.xaml" />
 
 </Styles>
