@@ -49,14 +49,6 @@ namespace Avalonia.Controls.Primitives
                 true);
 
         /// <summary>
-        /// Defines the <see cref="IsAutoUpdatingEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsAutoUpdatingEnabledProperty =
-            AvaloniaProperty.Register<ColorSlider, bool>(
-                nameof(IsAutoUpdatingEnabled),
-                true);
-
-        /// <summary>
         /// Defines the <see cref="IsSaturationValueMaxForced"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSaturationValueMaxForcedProperty =
@@ -117,19 +109,6 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(IsAlphaMaxForcedProperty);
             set => SetValue(IsAlphaMaxForcedProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether automatic background and foreground updates will be
-        /// calculated when the set color changes.
-        /// </summary>
-        /// <remarks>
-        /// This can be disabled for performance reasons when working with multiple sliders.
-        /// </remarks>
-        public bool IsAutoUpdatingEnabled
-        {
-            get => GetValue(IsAutoUpdatingEnabledProperty);
-            set => SetValue(IsAutoUpdatingEnabledProperty, value);
         }
 
         /// <summary>

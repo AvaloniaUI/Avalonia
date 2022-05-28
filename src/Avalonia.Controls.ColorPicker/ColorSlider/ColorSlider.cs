@@ -327,13 +327,10 @@ namespace Avalonia.Controls.Primitives
 
                 HsvColor = Color.ToHsv();
 
-                if (IsAutoUpdatingEnabled)
-                {
-                    SetColorToSliderValues();
-                    UpdateBackground();
-                }
-
+                SetColorToSliderValues();
+                UpdateBackground();
                 UpdatePseudoClasses();
+
                 OnColorChanged(new ColorChangedEventArgs(
                     change.GetOldValue<Color>(),
                     change.GetNewValue<Color>()));
@@ -344,12 +341,8 @@ namespace Avalonia.Controls.Primitives
             {
                 disableUpdates = true;
 
-                if (IsAutoUpdatingEnabled)
-                {
-                    SetColorToSliderValues();
-                    UpdateBackground();
-                }
-
+                SetColorToSliderValues();
+                UpdateBackground();
                 UpdatePseudoClasses();
 
                 disableUpdates = false;
@@ -360,13 +353,10 @@ namespace Avalonia.Controls.Primitives
 
                 Color = HsvColor.ToRgb();
 
-                if (IsAutoUpdatingEnabled)
-                {
-                    SetColorToSliderValues();
-                    UpdateBackground();
-                }
-
+                SetColorToSliderValues();
+                UpdateBackground();
                 UpdatePseudoClasses();
+
                 OnColorChanged(new ColorChangedEventArgs(
                     change.GetOldValue<HsvColor>().ToRgb(),
                     change.GetNewValue<HsvColor>().ToRgb()));
@@ -375,10 +365,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == BoundsProperty)
             {
-                if (IsAutoUpdatingEnabled)
-                {
-                    UpdateBackground();
-                }
+                UpdateBackground();
             }
             else if (change.Property == ValueProperty ||
                      change.Property == MinimumProperty ||
