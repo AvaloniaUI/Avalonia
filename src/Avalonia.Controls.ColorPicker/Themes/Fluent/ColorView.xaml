@@ -1,5 +1,6 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Avalonia.Controls"
         xmlns:converters="using:Avalonia.Controls.Converters"
         xmlns:primitives="using:Avalonia.Controls.Primitives"
         xmlns:pc="clr-namespace:Avalonia.Controls.Primitives.Converters;assembly=Avalonia.Controls.ColorPicker"
@@ -11,6 +12,7 @@
     <pc:ThirdComponentConverter x:Key="ThirdComponent" />
     <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayName" />
     <converters:ColorToHexConverter x:Key="ColorToHex" />
+    <converters:EnumToBooleanConverter x:Key="EnumToBoolean" />
     <globalization:NumberFormatInfo x:Key="ComponentNumberFormatInfo" NumberDecimalDigits="0" />
   </Styles.Resources>
 
@@ -156,6 +158,11 @@
                     <Setter Property="Opacity" Value="0" />
                   </Style>
 
+                  <Style Selector="ListBoxItem:pointerover /template/ Rectangle#BorderRectangle">
+                    <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+                    <Setter Property="Opacity" Value="1" />
+                  </Style>
+
                   <Style Selector="ListBoxItem:selected /template/ Rectangle#BorderRectangle">
                     <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrush}, ConverterParameter={DynamicResource TextControlForeground}}" />
                     <Setter Property="Opacity" Value="1" />
@@ -203,27 +210,93 @@
                 <Grid Grid.Column="0"
                       Grid.ColumnSpan="3"
                       Grid.Row="0"
-                      ColumnDefinitions="1*,1*,12,2*">
-                  <!-- Content RGB/HSV names are hard-coded in ColorPicker as well -->
-                  <!-- ToggleButtons are styled to look like a 'SegmentedControl' or 'ButtonGroup' -->
-                  <ToggleButton x:Name="RgbToggleButton"
-                                Grid.Column="0"
-                                Content="RGB"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"
-                                VerticalContentAlignment="Center"
-                                IsThreeState="False"
-                                CornerRadius="4,0,0,4" />
-                  <ToggleButton x:Name="HsvToggleButton"
-                                Grid.Column="1"
-                                Content="HSV"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"
-                                VerticalContentAlignment="Center"
-                                IsThreeState="False"
-                                CornerRadius="0,4,4,0" />
+                      ColumnDefinitions="1*,12,1*">
+                  <!-- Content RGB/HSV names are hard-coded and considered universal -->
+                  <!-- RadioButtons are styled to look like a 'SegmentedControl' or 'ButtonGroup' -->
+                  <Grid ColumnDefinitions="1*,1*">
+                    <Grid.Styles>
+                      <Style Selector="RadioButton">
+                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrush}" />
+                        <Setter Property="BorderThickness" Value="{DynamicResource ToggleButtonBorderThemeThickness}" />
+                        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+                        <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+                        <Setter Property="HorizontalAlignment" Value="Left" />
+                        <Setter Property="VerticalAlignment" Value="Center" />    
+                        <Setter Property="FontWeight" Value="Normal" />
+                        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+                        <Setter Property="Template">
+                          <ControlTemplate>
+                            <ContentPresenter x:Name="PART_ContentPresenter"
+                                              Background="{TemplateBinding Background}"
+                                              BorderBrush="{TemplateBinding BorderBrush}"
+                                              BorderThickness="{TemplateBinding BorderThickness}"
+                                              CornerRadius="{TemplateBinding CornerRadius}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Padding="{TemplateBinding Padding}"
+                                              RecognizesAccessKey="True"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                          </ControlTemplate>
+                        </Setter>
+                      </Style>
+
+                      <Style Selector="RadioButton /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+                      </Style>
+
+                      <Style Selector="RadioButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPointerOver}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
+                      </Style>
+
+                      <Style Selector="RadioButton:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPressed}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPressed}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPressed}" />
+                      </Style>
+
+                      <Style Selector="RadioButton:checked /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundChecked}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushChecked}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundChecked}" />
+                      </Style>
+
+                      <Style Selector="RadioButton:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOver}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushCheckedPointerOver}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPointerOver}" />
+                      </Style>
+
+                      <Style Selector="RadioButton:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressed}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushCheckedPressed}" />
+                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressed}" />
+                      </Style>
+
+                    </Grid.Styles>
+                    <RadioButton x:Name="RgbRadioButton"
+                                 Grid.Column="0"
+                                 Content="RGB"
+                                 HorizontalAlignment="Stretch"
+                                 HorizontalContentAlignment="Center"
+                                 VerticalContentAlignment="Center"
+                                 CornerRadius="4,0,0,4"
+                                 IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=TwoWay}" />
+                    <RadioButton x:Name="HsvRadioButton"
+                                 Grid.Column="1"
+                                 Content="HSV"
+                                 HorizontalAlignment="Stretch"
+                                 HorizontalContentAlignment="Center"
+                                 VerticalContentAlignment="Center"
+                                 CornerRadius="0,4,4,0"
+                                 IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=TwoWay}" />
+                  </Grid>
                   <Grid x:Name="HexInputGrid"
-                        Grid.Column="3">
+                        Grid.Column="2">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="30" />
                       <ColumnDefinition Width="*" />
@@ -260,12 +333,17 @@
                         BorderThickness="1,1,0,1"
                         CornerRadius="4,0,0,4"
                         VerticalAlignment="Center">
-                  <TextBlock x:Name="Component1TextBlock"
-                             Foreground="{DynamicResource TextControlForegroundDisabled}"
-                             FontWeight="SemiBold"
-                             Text="R"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center" />
+                  <Panel HorizontalAlignment="Center"
+                         VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                               FontWeight="SemiBold"
+                               Text="R"
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}"/>
+                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                               FontWeight="SemiBold"
+                               Text="H"
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
+                  </Panel>
                 </Border>
                 <NumericUpDown x:Name="Component1NumericUpDown"
                                Grid.Column="1"
@@ -283,8 +361,8 @@
                                         Grid.Column="2"
                                         Grid.Row="2"
                                         Orientation="Horizontal"
-                                        ColorModel="Rgba"
                                         ColorComponent="Component1"
+                                        ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
@@ -298,12 +376,17 @@
                         BorderThickness="1,1,0,1"
                         CornerRadius="4,0,0,4"
                         VerticalAlignment="Center">
-                  <TextBlock x:Name="Component2TextBlock"
-                             Foreground="{DynamicResource TextControlForegroundDisabled}"
-                             FontWeight="SemiBold"
-                             Text="G"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center" />
+                  <Panel HorizontalAlignment="Center"
+                         VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                               FontWeight="SemiBold"
+                               Text="G"
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}" />
+                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                               FontWeight="SemiBold"
+                               Text="S"
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
+                  </Panel>
                 </Border>
                 <NumericUpDown x:Name="Component2NumericUpDown"
                                Grid.Column="1"
@@ -321,8 +404,8 @@
                                         Grid.Column="2"
                                         Grid.Row="3"
                                         Orientation="Horizontal"
-                                        ColorModel="Rgba"
                                         ColorComponent="Component2"
+                                        ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
@@ -336,12 +419,17 @@
                         BorderThickness="1,1,0,1"
                         CornerRadius="4,0,0,4"
                         VerticalAlignment="Center">
-                  <TextBlock x:Name="Component3TextBlock"
-                             Foreground="{DynamicResource TextControlForegroundDisabled}"
-                             FontWeight="SemiBold"
-                             Text="B"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center" />
+                  <Panel HorizontalAlignment="Center"
+                         VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                               FontWeight="SemiBold"
+                               Text="B"
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}" />
+                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                               FontWeight="SemiBold"
+                               Text="V"
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
+                  </Panel>
                 </Border>
                 <NumericUpDown x:Name="Component3NumericUpDown"
                                Grid.Column="1"
@@ -359,8 +447,8 @@
                                         Grid.Column="2"
                                         Grid.Row="4"
                                         Orientation="Horizontal"
-                                        ColorModel="Rgba"
                                         ColorComponent="Component3"
+                                        ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
@@ -397,8 +485,8 @@
                                         Grid.Column="2"
                                         Grid.Row="5"
                                         Orientation="Horizontal"
-                                        ColorModel="Rgba"
                                         ColorComponent="Alpha"
+                                        ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"

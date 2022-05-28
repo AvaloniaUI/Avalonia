@@ -332,6 +332,20 @@ namespace Avalonia.Controls.Primitives
 
                 disableUpdates = false;
             }
+            else if (change.Property == ColorModelProperty)
+            {
+                disableUpdates = true;
+
+                if (IsAutoUpdatingEnabled)
+                {
+                    SetColorToSliderValues();
+                    UpdateBackground();
+                }
+
+                UpdatePseudoClasses();
+
+                disableUpdates = false;
+            }
             else if (change.Property == HsvColorProperty)
             {
                 disableUpdates = true;

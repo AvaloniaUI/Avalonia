@@ -7,7 +7,6 @@ namespace Avalonia.Controls
 {
     public partial class ColorView
     {
-        // SelectedColorModel ActiveColorModel?
         // SelectedTab
 
         /// <summary>
@@ -18,6 +17,14 @@ namespace Avalonia.Controls
                 nameof(Color),
                 Colors.White,
                 defaultBindingMode: BindingMode.TwoWay);
+
+        /// <summary>
+        /// Defines the <see cref="ColorModel"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ColorModel> ColorModelProperty =
+            AvaloniaProperty.Register<ColorView, ColorModel>(
+                nameof(ColorModel),
+                ColorModel.Rgba);
 
         /// <summary>
         /// Defines the <see cref="ColorSpectrumComponents"/> property.
@@ -201,6 +208,17 @@ namespace Avalonia.Controls
         {
             get => GetValue(ColorProperty);
             set => SetValue(ColorProperty, value);
+        }
+
+        /// <inheritdoc cref="ColorSlider.ColorModel"/>
+        /// <remarks>
+        /// This property is only applicable to the components tab.
+        /// The spectrum tab must always be in HSV and the palette tab is pre-defined colors.
+        /// </remarks>
+        public ColorModel ColorModel
+        {
+            get => GetValue(ColorModelProperty);
+            set => SetValue(ColorModelProperty, value);
         }
 
         /// <inheritdoc cref="ColorSpectrum.Components"/>
