@@ -8,7 +8,7 @@ using Tmds.DBus;
 namespace Avalonia.FreeDesktop
 {
     [DBusInterface("org.freedesktop.portal.FileChooser")]
-    public interface IFileChooser : IDBusObject
+    internal interface IFileChooser : IDBusObject
     {
         Task<ObjectPath> OpenFileAsync(string ParentWindow, string Title, IDictionary<string, object> Options);
         Task<ObjectPath> SaveFileAsync(string ParentWindow, string Title, IDictionary<string, object> Options);
@@ -20,12 +20,12 @@ namespace Avalonia.FreeDesktop
     }
 
     [Dictionary]
-    public class FileChooserProperties
+    internal class FileChooserProperties
     {
         public uint Version { get; set; }
     }
 
-    public static class FileChooserExtensions
+    internal static class FileChooserExtensions
     {
         public static Task<uint> GetVersionAsync(this IFileChooser o) => o.GetAsync<uint>("version");
     }

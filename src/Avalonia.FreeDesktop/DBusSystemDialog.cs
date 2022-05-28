@@ -9,11 +9,11 @@ using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop
 {
-    public class DBusSystemDialog : ISystemDialogImpl
+    internal class DBusSystemDialog : ISystemDialogImpl
     {
         private readonly IFileChooser _fileChooser;
 
-        public DBusSystemDialog()
+        internal DBusSystemDialog()
         {
             _fileChooser = DBusHelper.Connection.CreateProxy<IFileChooser>("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
         }
