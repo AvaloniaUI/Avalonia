@@ -10,7 +10,11 @@ namespace Avalonia.Controls.Converters
     public class EnumValueEqualsConverter : IValueConverter
     {
         /// <inheritdoc/>
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture)
         {
             // Note: Unlike string comparisons, null/empty is not supported
             // Both 'value' and 'parameter' must exist and if both are missing they are not considered equal
@@ -46,7 +50,11 @@ namespace Avalonia.Controls.Converters
         }
 
         /// <inheritdoc/>
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object? value,
+            Type targetType,
+            object? parameter,
+            CultureInfo culture)
         {
             throw new System.NotImplementedException();
         }
