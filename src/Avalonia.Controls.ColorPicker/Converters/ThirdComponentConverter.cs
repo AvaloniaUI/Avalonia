@@ -7,8 +7,10 @@ namespace Avalonia.Controls.Primitives.Converters
     /// <summary>
     /// Gets the third <see cref="ColorComponent"/> corresponding with a given
     /// <see cref="ColorSpectrumComponents"/> that represents the other two components.
-    /// This is a highly-specialized converter for the color picker.
     /// </summary>
+    /// <remarks>
+    /// This is a highly-specialized converter for the color picker.
+    /// </remarks>
     public class ThirdComponentConverter : IValueConverter
     {
         /// <inheritdoc/>

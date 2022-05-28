@@ -10,6 +10,9 @@ namespace Avalonia.Controls.Primitives.Converters
     /// Gets a <see cref="SolidColorBrush"/>, either black or white, depending on the luminance of the supplied color.
     /// A default color supplied in the converter parameter may be returned if alpha is below the set threshold.
     /// </summary>
+    /// <remarks>
+    /// This is a highly-specialized converter for the color picker.
+    /// </remarks>
     public class ContrastBrushConverter : IValueConverter
     {
         private ToColorConverter toColorConverter = new ToColorConverter();
