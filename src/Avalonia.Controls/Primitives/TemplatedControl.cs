@@ -291,7 +291,9 @@ namespace Avalonia.Controls.Primitives
                     
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
+                    {
                         nameScope = new NameScope();
+                    }
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
