@@ -135,8 +135,8 @@ namespace Avalonia.Controls
         public Color GetColor(int colorIndex, int shadeIndex)
         {
             return colorChart[
-                MathUtilities.Clamp(colorIndex, 0, colorChart.GetLength(0)),
-                MathUtilities.Clamp(shadeIndex, 0, colorChart.GetLength(1))];
+                MathUtilities.Clamp(colorIndex, 0, colorChart.GetLength(0) - 1),
+                MathUtilities.Clamp(shadeIndex, 0, colorChart.GetLength(1) - 1)];
         }
     }
 }
