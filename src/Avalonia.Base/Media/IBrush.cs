@@ -19,5 +19,10 @@ namespace Avalonia.Media
         /// Gets the transform of the brush.
         /// </summary>
         ITransform? Transform { get; }
+
+        /// <summary>
+        /// Gets the origin of the brushes <see cref="Transform"/>
+        /// </summary>
+        RelativePoint TransformOrigin { get; }
     }
 }
