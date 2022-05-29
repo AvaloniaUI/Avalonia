@@ -139,9 +139,15 @@ namespace Avalonia.Dialogs
             return builder;
         }
 
+        public static Task<string[]> ShowManagedAsync(this FileDialog dialog, Window parent)
+            => new ManagedSystemDialogImpl<Window>().ShowFileDialogAsync(dialog, parent);
+
+        public static Task<string> ShowManagedAsync(this OpenFolderDialog dialog, Window parent)
+            => new ManagedSystemDialogImpl<Window>().ShowFolderDialogAsync(dialog, parent);
+
         public static Task<string[]> ShowManagedAsync(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions options = null) => ShowManagedAsync<Window>(dialog, parent, options);
-        
+
         public static Task<string[]> ShowManagedAsync<TWindow>(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions options = null) where TWindow : Window, new()
         {
