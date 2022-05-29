@@ -20,6 +20,7 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
+    _lastParent = nullptr;
     WindowEvents = events;
 }
 
@@ -61,6 +62,11 @@ void WindowImpl::OnInitialiseNSWindow(){
         [GetWindowProtocol() setIsExtended:true];
         SetExtendClientArea(true);
     }
+    
+    if(_lastParent != nullptr)
+    {
+        SetParent(_lastParent);
+    }
 }
 
 HRESULT WindowImpl::Show(bool activate, bool isDialog) {
@@ -97,6 +103,10 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
         if (cparent == nullptr)
             return E_INVALIDARG;
 
+        
+        _lastParent = cparent;
+        
+        if(Window != nullptr){
         // If one tries to show a child window with a minimized parent window, then the parent window will be
         // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
         // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
@@ -107,6 +117,7 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
         [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
 
         UpdateStyle();
+        }
 
         return S_OK;
     }
@@ -535,7 +546,7 @@ NSWindowStyleMask WindowImpl::GetStyle() {
             break;
 
         case SystemDecorationsFull:
-            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskBorderless;
+            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable;
 
             if (_canResize) {
                 s = s | NSWindowStyleMaskResizable;
