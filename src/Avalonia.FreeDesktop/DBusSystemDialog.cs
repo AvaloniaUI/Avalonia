@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Dialogs;
 using Avalonia.Logging;
 using Tmds.DBus;
 
@@ -13,48 +12,31 @@ namespace Avalonia.FreeDesktop
 {
     internal class DBusSystemDialog : ISystemDialogImpl
     {
-        private readonly IFileChooser? _fileChooser;
-        private bool _isDbusAvailable;
+        private readonly IFileChooser _fileChooser;
 
-        internal DBusSystemDialog()
+        internal static DBusSystemDialog? TryCreate()
         {
-            _fileChooser = DBusHelper.Connection?.CreateProxy<IFileChooser>("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
-            _isDbusAvailable = _fileChooser is not null;
+            var fileChooser = DBusHelper.Connection?.CreateProxy<IFileChooser>("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            if (fileChooser is null)
+                return null;
+            try
+            {
+                fileChooser.GetVersionAsync().GetAwaiter().GetResult();
+                return new DBusSystemDialog(fileChooser);
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)?.Log(null, $"Unable to connect to org.freedesktop.portal.Desktop: {e.Message}");
+                return null;
+            }
+        }
+
+        private DBusSystemDialog(IFileChooser fileChooser)
+        {
+            _fileChooser = fileChooser;
         }
 
         public async Task<string[]?> ShowFileDialogAsync(FileDialog dialog, Window parent)
-        {
-            if (!_isDbusAvailable)
-                return await dialog.ShowManagedAsync(parent);
-            try
-            {
-                return await ShowNativeFileDialogAsync(dialog, parent);
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)?.Log(this, e.Message);
-                _isDbusAvailable = false;
-                return await dialog.ShowManagedAsync(parent);
-            }
-        }
-
-        public async Task<string?> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
-        {
-            if (!_isDbusAvailable)
-                return await dialog.ShowManagedAsync(parent);
-            try
-            {
-                return await ShowNativeFolderDialogAsync(dialog, parent);
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)?.Log(this, e.Message);
-                _isDbusAvailable = false;
-                return await dialog.ShowManagedAsync(parent);
-            }
-        }
-
-        private async Task<string[]?> ShowNativeFileDialogAsync(FileDialog dialog, Window parent)
         {
             var parentWindow = $"x11:{parent.PlatformImpl!.Handle.Handle.ToString("X")}";
             ObjectPath objectPath;
@@ -66,14 +48,14 @@ namespace Avalonia.FreeDesktop
             {
                 case OpenFileDialog openFileDialog:
                     options.Add("multiple", openFileDialog.AllowMultiple);
-                    objectPath = await _fileChooser!.OpenFileAsync(parentWindow, openFileDialog.Title ?? string.Empty, options);
+                    objectPath = await _fileChooser.OpenFileAsync(parentWindow, openFileDialog.Title ?? string.Empty, options);
                     break;
                 case SaveFileDialog saveFileDialog:
                     if (saveFileDialog.InitialFileName is not null)
                         options.Add("current_name", saveFileDialog.InitialFileName);
                     if (saveFileDialog.Directory is not null)
                         options.Add("current_folder", Encoding.UTF8.GetBytes(saveFileDialog.Directory));
-                    objectPath = await _fileChooser!.SaveFileAsync(parentWindow, saveFileDialog.Title ?? string.Empty, options);
+                    objectPath = await _fileChooser.SaveFileAsync(parentWindow, saveFileDialog.Title ?? string.Empty, options);
                     break;
             }
 
@@ -88,14 +70,14 @@ namespace Avalonia.FreeDesktop
             return uris;
         }
 
-        private async Task<string?> ShowNativeFolderDialogAsync(OpenFolderDialog dialog, Window parent)
+        public async Task<string?> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
         {
             var parentWindow = $"x11:{parent.PlatformImpl!.Handle.Handle.ToString("X")}";
             var options = new Dictionary<string, object>
             {
                 { "directory", true }
             };
-            var objectPath = await _fileChooser!.OpenFileAsync(parentWindow, dialog.Title ?? string.Empty, options);
+            var objectPath = await _fileChooser.OpenFileAsync(parentWindow, dialog.Title ?? string.Empty, options);
             var request = DBusHelper.Connection!.CreateProxy<IRequest>("org.freedesktop.portal.Request", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync(x => tsc.SetResult(x.results["uris"] as string[]), tsc.SetException);

@@ -8,7 +8,7 @@ namespace Avalonia.Dialogs
 {
     public static class ManagedFileDialogExtensions
     {
-        private class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
+        internal class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
         {
             async Task<string[]> Show(SystemDialog d, Window parent, ManagedFileDialogOptions options = null)
             {
@@ -138,12 +138,6 @@ namespace Avalonia.Dialogs
                 AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<ManagedSystemDialogImpl<TWindow>>());
             return builder;
         }
-
-        public static Task<string[]> ShowManagedAsync(this FileDialog dialog, Window parent)
-            => new ManagedSystemDialogImpl<Window>().ShowFileDialogAsync(dialog, parent);
-
-        public static Task<string> ShowManagedAsync(this OpenFolderDialog dialog, Window parent)
-            => new ManagedSystemDialogImpl<Window>().ShowFolderDialogAsync(dialog, parent);
 
         public static Task<string[]> ShowManagedAsync(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions options = null) => ShowManagedAsync<Window>(dialog, parent, options);

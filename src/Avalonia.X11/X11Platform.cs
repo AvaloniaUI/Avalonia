@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Dialogs;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
@@ -79,7 +80,7 @@ namespace Avalonia.X11
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
-                .Bind<ISystemDialogImpl>().ToConstant(new DBusSystemDialog())
+                .Bind<ISystemDialogImpl>().ToConstant(DBusSystemDialog.TryCreate() as ISystemDialogImpl ?? new ManagedFileDialogExtensions.ManagedSystemDialogImpl<Window>())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
