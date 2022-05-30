@@ -991,28 +991,28 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
-            if (ClientSize == clientSize)
-                return;
-
-            var sizeToContent = SizeToContent;
-
-            // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
-            // unspecified) then turn off auto-resizing for any window dimension that is not equal
-            // to the requested size.
-            if (sizeToContent != SizeToContent.Manual &&
-                CanResize &&
-                reason == PlatformResizeReason.Unspecified ||  
-                reason == PlatformResizeReason.User)
+            if (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height))
             {
-                if (clientSize.Width != ClientSize.Width)
-                    sizeToContent &= ~SizeToContent.Width;
-                if (clientSize.Height != ClientSize.Height)
-                    sizeToContent &= ~SizeToContent.Height;
-                SizeToContent = sizeToContent;
-            }
+                var sizeToContent = SizeToContent;
 
-            Width = clientSize.Width;
-            Height = clientSize.Height;
+                // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
+                // unspecified) then turn off auto-resizing for any window dimension that is not equal
+                // to the requested size.
+                if (sizeToContent != SizeToContent.Manual &&
+                    CanResize &&
+                    reason == PlatformResizeReason.Unspecified ||
+                    reason == PlatformResizeReason.User)
+                {
+                    if (clientSize.Width != ClientSize.Width)
+                        sizeToContent &= ~SizeToContent.Width;
+                    if (clientSize.Height != ClientSize.Height)
+                        sizeToContent &= ~SizeToContent.Height;
+                    SizeToContent = sizeToContent;
+                }
+
+                Width = clientSize.Width;
+                Height = clientSize.Height;
+            }
 
             base.HandleResized(clientSize, reason);
         }
