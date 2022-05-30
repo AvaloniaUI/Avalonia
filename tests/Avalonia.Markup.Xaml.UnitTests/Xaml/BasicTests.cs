@@ -115,7 +115,97 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Foo", ToolTip.GetTip(target));
         }
-        
+
+        [Fact]
+        public void Can_Use_Attached_Property_Syntax_On_NonAttached_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Border Border.Background='Red'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var border = (Border)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background).Color);
+            }
+        }
+
+        [Fact]
+        public void Can_Use_Attached_Property_Syntax_On_Attached_AddOwnered_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock TextBlock.FontSize='48'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(48, textBlock.FontSize);
+            }
+        }
+
+        [Fact]
+        public void Can_Use_Attached_Property_Syntax_On_Attached_AddOwnered_Property_2()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock TextElement.FontSize='48'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(48, textBlock.FontSize);
+            }
+        }
+
+        [Fact]
+        public void Cannot_Use_Attached_Property_Syntax_From_Another_Control_On_Non_Attached_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock TextBox.FontSize='48'/>
+</Window>";
+                Assert.ThrowsAny<Exception>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+            }
+        }
+
+        [Fact]
+        public void Cannot_Use_Attached_Property_Syntax_From_Another_Control_On_Non_Attached_Property_With_Markup_Extension()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock TextBox.FontSize='{DynamicResource Size}'/>
+</Window>";
+                Assert.ThrowsAny<Exception>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+            }
+        }
+
         [Fact]
         public void NonExistent_Property_Throws()
         {

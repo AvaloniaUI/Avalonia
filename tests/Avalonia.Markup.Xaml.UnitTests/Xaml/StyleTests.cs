@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
@@ -215,6 +217,135 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
 
                 Assert.Equal(Dock.Right, DockPanel.GetDock(textBlock));
+            }
+        }
+
+        [Fact]
+        public void Setter_Can_Use_Attached_Property_Syntax_On_NonAttached_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='Border'>
+            <Setter Property='Border.Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <Border/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var border = (Border)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background).Color);
+            }
+        }
+
+        [Fact]
+        public void Setter_Can_Use_Attached_Property_Syntax_On_Attached_AddOwnered_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='TextBlock.FontSize' Value='48'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(48, textBlock.FontSize);
+            }
+        }
+
+        [Fact]
+        public void Setter_Can_Use_Attached_Property_Syntax_On_Attached_AddOwnered_Property_2()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='TextElement.FontSize' Value='48'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(48, textBlock.FontSize);
+            }
+        }
+
+        [Fact]
+        public void Binding_Setter_Can_Use_NonAttached_Property_Syntax_On_Attached_AddOwnered_Property_3()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='ContentPresenter'>
+            <Setter Property='Foreground' Value='{Binding Brush}'/>
+        </Style>
+    </Window.Styles>
+    <ContentPresenter/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentPresenter = (ContentPresenter)window.Content;
+                window.DataContext = new { Brush = Brushes.Red };
+
+                window.ApplyTemplate();
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)contentPresenter.Foreground).Color);
+            }
+        }
+
+        [Fact]
+        public void Setter_Can_Use_Attached_Property_Syntax_From_Another_Control_On_Non_Attached_Property()
+        {
+            // This is a weird one, but it follows WPF. Even though <TextBlock TextBox.FontSize="48"/>
+            // is an error in WPF, you can set the same property in a style and it works (because in
+            // the end they're actually the same property).
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='TextBox.FontSize' Value='48'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(48, textBlock.FontSize);
             }
         }
 
