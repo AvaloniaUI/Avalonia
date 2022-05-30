@@ -33,7 +33,7 @@ namespace Avalonia.Data.Converters
 
             if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d && d.Method.GetParameters().Length <= 1)
             {
-                if (d.Method.Attributes.HasFlag(System.Reflection.MethodAttributes.Private) == false)
+                if (d.Method.IsPrivate == false)
                 {
                     return new MethodToCommandConverter(d);
                 }
