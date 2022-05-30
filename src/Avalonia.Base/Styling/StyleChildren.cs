@@ -5,20 +5,20 @@ namespace Avalonia.Styling
 {
     internal class StyleChildren : Collection<IStyle>
     {
-        private readonly Style _owner;
+        private readonly StyleBase _owner;
 
-        public StyleChildren(Style owner) => _owner = owner;
+        public StyleChildren(StyleBase owner) => _owner = owner;
 
         protected override void InsertItem(int index, IStyle item)
         {
-            (item as Style)?.SetParent(_owner);
+            (item as StyleBase)?.SetParent(_owner);
             base.InsertItem(index, item);
         }
 
         protected override void RemoveItem(int index)
         {
             var item = Items[index];
-            (item as Style)?.SetParent(null);
+            (item as StyleBase)?.SetParent(null);
             if (_owner.Owner is IResourceHost host)
                 (item as IResourceProvider)?.RemoveOwner(host);
             base.RemoveItem(index);
@@ -26,7 +26,7 @@ namespace Avalonia.Styling
 
         protected override void SetItem(int index, IStyle item)
         {
-            (item as Style)?.SetParent(_owner);
+            (item as StyleBase)?.SetParent(_owner);
             base.SetItem(index, item);
             if (_owner.Owner is IResourceHost host)
                 (item as IResourceProvider)?.AddOwner(host);
