@@ -1,5 +1,7 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -89,6 +91,62 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact]
+        public void XDataType_Should_Be_Assigned_To_Clr_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:sys='clr-namespace:System;assembly=netstandard'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.DataTemplates>
+        <DataTemplate x:DataType='sys:String'>
+            <Canvas Name='foo'/>
+        </DataTemplate>
+    </Window.DataTemplates>
+    <ContentControl Name='target' Content='Foo'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var target = window.FindControl<ContentControl>("target");
+                var template = (DataTemplate)window.DataTemplates.First();
+                
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+                ((ContentPresenter)target.Presenter).UpdateChild();
+                
+                Assert.Equal(typeof(string), template.DataType);
+                Assert.IsType<Canvas>(target.Presenter.Child);
+            }
+        }
+        
+        [Fact]
+        public void XDataType_Should_Be_Ignored_If_DataType_Already_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:sys='clr-namespace:System;assembly=netstandard'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.DataTemplates>
+        <DataTemplate DataType='sys:String' x:DataType='UserControl'>
+            <Canvas Name='foo'/>
+        </DataTemplate>
+    </Window.DataTemplates>
+    <ContentControl Name='target' Content='Foo'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var target = window.FindControl<ContentControl>("target");
+
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+                ((ContentPresenter)target.Presenter).UpdateChild();
+
+                Assert.IsType<Canvas>(target.Presenter.Child);
+            }
+        }
+        
         [Fact]
         public void Can_Set_DataContext_In_DataTemplate()
         {
