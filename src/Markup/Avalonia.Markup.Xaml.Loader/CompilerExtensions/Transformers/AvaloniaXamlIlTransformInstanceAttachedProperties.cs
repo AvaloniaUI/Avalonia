@@ -25,7 +25,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     && !declaringRef.Type.IsAssignableFrom(targetRef.Type))
                 {
                     // Instance property
-                    var clrProp = declaringRef.Type.Properties.FirstOrDefault(p => p.Name == prop.Name);
+                    var clrProp = declaringRef.Type.GetAllProperties().FirstOrDefault(p => p.Name == prop.Name);
                     if (clrProp != null
                         && (clrProp.Getter?.IsStatic == false || clrProp.Setter?.IsStatic == false))
                     {
