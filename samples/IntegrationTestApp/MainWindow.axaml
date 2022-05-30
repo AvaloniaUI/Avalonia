@@ -94,6 +94,23 @@
           </StackPanel>
         </DockPanel>
       </TabItem>
+      
+      <TabItem Header="Window">
+        <StackPanel>
+          <TextBox Name="ShowWindowSize" Watermark="Window Size"/>
+          <ComboBox Name="ShowWindowMode" SelectedIndex="0">
+            <ComboBoxItem>NonOwned</ComboBoxItem>
+            <ComboBoxItem>Owned</ComboBoxItem>
+            <ComboBoxItem>Modal</ComboBoxItem>
+          </ComboBox>
+          <ComboBox Name="ShowWindowLocation" SelectedIndex="0">
+            <ComboBoxItem>Manual</ComboBoxItem>
+            <ComboBoxItem>CenterScreen</ComboBoxItem>
+            <ComboBoxItem>CenterOwner</ComboBoxItem>
+          </ComboBox>
+          <Button Name="ShowWindow">Show Window</Button>
+        </StackPanel>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>
