@@ -403,8 +403,8 @@ namespace Avalonia.Controls
                 {
                     control.Measure(Size.Infinity);
 
-                    var flowDirection = control.IsAttachedToVisualTree ? 
-                        (control.VisualParent as Control)!.FlowDirection : FlowDirection.LeftToRight;
+                    var flowDirection = 
+                        (control.VisualParent as Control)?.FlowDirection ?? FlowDirection.LeftToRight;
 
                     SelectionBoxItem = new Rectangle
                     {
