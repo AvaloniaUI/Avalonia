@@ -558,6 +558,8 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
             CleanNSWindow();
 
             Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
+            
+            [Window setHidesOnDeactivate:false];
         }
     } else {
         if (![Window isKindOfClass:[AvnWindow class]]) {

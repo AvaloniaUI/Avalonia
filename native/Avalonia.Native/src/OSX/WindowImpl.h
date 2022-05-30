@@ -22,6 +22,7 @@ private:
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
     bool _isDialog;
+    WindowImpl* _lastParent;
     AvnExtendClientAreaChromeHints _extendClientHints;
 
     FORWARD_IUNKNOWN()
