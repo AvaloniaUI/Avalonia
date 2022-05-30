@@ -45,6 +45,9 @@ namespace ControlCatalog.Pages
                 case 2:
                     _carousel.PageTransition = new CrossFade(TimeSpan.FromSeconds(0.25));
                     break;
+                case 3:
+                    _carousel.PageTransition = new Rotate3DTransition(TimeSpan.FromSeconds(0.5), _orientation.SelectedIndex == 0 ? PageSlide.SlideAxis.Horizontal : PageSlide.SlideAxis.Vertical);
+                    break;
             }
         }
     }

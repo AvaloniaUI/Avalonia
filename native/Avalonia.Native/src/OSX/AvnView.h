@@ -2,17 +2,15 @@
 // Created by Dan Walmsley on 05/05/2022.
 // Copyright (c) 2022 Avalonia. All rights reserved.
 //
-
+#pragma once
 #import <Foundation/Foundation.h>
 
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#include "window.h"
-#import "comimpl.h"
-#import "common.h"
-#import "WindowImpl.h"
-#import "KeyTransform.h"
+#include "common.h"
+#include "WindowImpl.h"
+#include "KeyTransform.h"
 
 @class AvnAccessibilityElement;
 

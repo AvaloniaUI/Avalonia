@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Defines the interface for styles.
     /// </summary>
+    [NotClientImplementable]
     public interface IStyle : IResourceNode
     {
         /// <summary>

@@ -4,10 +4,10 @@
 //
 
 #import <AppKit/AppKit.h>
-#import "window.h"
-#import "AutoFitContentView.h"
-#import "AvnView.h"
+#include "AutoFitContentView.h"
+#include "AvnView.h"
 #include "automation.h"
+#include "WindowProtocol.h"
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
     _isClientAreaExtended = false;
@@ -19,11 +19,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _inSetWindowState = false;
     _lastWindowState = Normal;
     _actualWindowState = Normal;
+    _lastTitle = @"";
     WindowEvents = events;
-    [Window setCanBecomeKeyAndMain];
-    [Window disableCursorRects];
-    [Window setTabbingMode:NSWindowTabbingModeDisallowed];
-    [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 }
 
 void WindowImpl::HideOrShowTrafficLights() {
@@ -51,11 +48,27 @@ void WindowImpl::HideOrShowTrafficLights() {
     }
 }
 
+void WindowImpl::OnInitialiseNSWindow(){
+    [GetWindowProtocol() setCanBecomeKeyWindow:true];
+    [Window disableCursorRects];
+    [Window setTabbingMode:NSWindowTabbingModeDisallowed];
+    [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+
+    [Window setTitle:_lastTitle];
+    
+    if(_isClientAreaExtended)
+    {
+        [GetWindowProtocol() setIsExtended:true];
+        SetExtendClientArea(true);
+    }
+}
+
 HRESULT WindowImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
         _isDialog = isDialog;
+
         WindowBaseImpl::Show(activate, isDialog);
 
         HideOrShowTrafficLights();
@@ -68,7 +81,7 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
     START_COM_CALL;
 
     @autoreleasepool {
-        [Window setEnabled:enable];
+        [GetWindowProtocol() setEnabled:enable];
         return S_OK;
     }
 }
@@ -328,37 +341,39 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
     @autoreleasepool {
         _isClientAreaExtended = enable;
 
-        if (enable) {
-            Window.titleVisibility = NSWindowTitleHidden;
+        if(Window != nullptr) {
+            if (enable) {
+                Window.titleVisibility = NSWindowTitleHidden;
 
-            [Window setTitlebarAppearsTransparent:true];
+                [Window setTitlebarAppearsTransparent:true];
 
-            auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+                auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
 
-            if (wantsTitleBar) {
-                [StandardContainer ShowTitleBar:true];
+                if (wantsTitleBar) {
+                    [StandardContainer ShowTitleBar:true];
+                } else {
+                    [StandardContainer ShowTitleBar:false];
+                }
+
+                if (_extendClientHints & AvnOSXThickTitleBar) {
+                    Window.toolbar = [NSToolbar new];
+                    Window.toolbar.showsBaselineSeparator = false;
+                } else {
+                    Window.toolbar = nullptr;
+                }
             } else {
-                [StandardContainer ShowTitleBar:false];
-            }
-
-            if (_extendClientHints & AvnOSXThickTitleBar) {
-                Window.toolbar = [NSToolbar new];
-                Window.toolbar.showsBaselineSeparator = false;
-            } else {
+                Window.titleVisibility = NSWindowTitleVisible;
                 Window.toolbar = nullptr;
+                [Window setTitlebarAppearsTransparent:false];
+                View.layer.zPosition = 0;
             }
-        } else {
-            Window.titleVisibility = NSWindowTitleVisible;
-            Window.toolbar = nullptr;
-            [Window setTitlebarAppearsTransparent:false];
-            View.layer.zPosition = 0;
+
+            [GetWindowProtocol() setIsExtended:enable];
+
+            HideOrShowTrafficLights();
+
+            UpdateStyle();
         }
-
-        [Window setIsExtended:enable];
-
-        HideOrShowTrafficLights();
-
-        UpdateStyle();
 
         return S_OK;
     }
@@ -383,7 +398,7 @@ HRESULT WindowImpl::GetExtendTitleBarHeight(double *ret) {
             return E_POINTER;
         }
 
-        *ret = [Window getExtendedTitleBarHeight];
+        *ret = [GetWindowProtocol() getExtendedTitleBarHeight];
 
         return S_OK;
     }
@@ -417,6 +432,9 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
     START_COM_CALL;
 
     @autoreleasepool {
+        auto currentState = _actualWindowState;
+        _lastWindowState = state;
+
         if (Window == nullptr) {
             return S_OK;
         }
@@ -426,9 +444,6 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
         }
 
         _inSetWindowState = true;
-
-        auto currentState = _actualWindowState;
-        _lastWindowState = state;
 
         if (currentState == Normal) {
             _preZoomSize = [Window frame];
@@ -508,7 +523,7 @@ bool WindowImpl::IsDialog() {
 }
 
 NSWindowStyleMask WindowImpl::GetStyle() {
-    unsigned long s = NSWindowStyleMaskBorderless;
+    unsigned long s = this->_isDialog ? NSWindowStyleMaskDocModalWindow : NSWindowStyleMaskBorderless;
 
     switch (_decorations) {
         case SystemDecorationsNone:

@@ -6,16 +6,16 @@
 #ifndef AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
 #define AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H
 
-#import "rendertarget.h"
+#include "rendertarget.h"
 #include "INSWindowHolder.h"
 
 @class AutoFitContentView;
+@class AvnMenu;
+@protocol AvnWindowProtocol;
 
 class WindowBaseImpl : public virtual ComObject,
                        public virtual IAvnWindowBase,
                        public INSWindowHolder {
-private:
-    NSCursor *cursor;
 
 public:
     FORWARD_IUNKNOWN()
@@ -24,22 +24,7 @@ BEGIN_INTERFACE_MAP()
         INTERFACE_MAP_ENTRY(IAvnWindowBase, IID_IAvnWindowBase)
     END_INTERFACE_MAP()
 
-    virtual ~WindowBaseImpl() {
-        View = NULL;
-        Window = NULL;
-    }
-
-    AutoFitContentView *StandardContainer;
-    AvnView *View;
-    AvnWindow *Window;
-    ComPtr<IAvnWindowBaseEvents> BaseEvents;
-    ComPtr<IAvnGlContext> _glContext;
-    NSObject <IRenderTarget> *renderTarget;
-    AvnPoint lastPositionSet;
-    NSString *_lastTitle;
-
-    bool _shown;
-    bool _inResize;
+    virtual ~WindowBaseImpl();
 
     WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl);
 
@@ -51,11 +36,13 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT ObtainNSViewHandleRetained(void **ret) override;
 
-    virtual AvnWindow *GetNSWindow() override;
+    virtual NSWindow *GetNSWindow() override;
 
-    virtual AvnView *GetNSView() override;
+    virtual NSView *GetNSView() override;
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
+
+    virtual bool IsShown ();
 
     virtual bool ShouldTakeFocusOnShow();
 
@@ -111,11 +98,39 @@ BEGIN_INTERFACE_MAP()
 
     virtual bool IsDialog();
 
+    id<AvnWindowProtocol> GetWindowProtocol ();
+
 protected:
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
+                           
+    virtual void OnInitialiseNSWindow ();
 
+private:
+    void CreateNSWindow (bool isDialog);
+    void CleanNSWindow ();
+    void InitialiseNSWindow ();
+
+    NSCursor *cursor;
+    ComPtr<IAvnGlContext> _glContext;
+    bool hasPosition;
+    NSSize lastSize;
+    NSSize lastMinSize;
+    NSSize lastMaxSize;
+    AvnMenu* lastMenu;
+    bool _inResize;
+
+protected:
+    AvnPoint lastPositionSet;
+    AutoFitContentView *StandardContainer;
+    bool _shown;
+
+public:
+    NSObject <IRenderTarget> *renderTarget;
+    NSWindow * Window;
+    ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    AvnView *View;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H

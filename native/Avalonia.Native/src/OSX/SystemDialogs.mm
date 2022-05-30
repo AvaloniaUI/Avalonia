@@ -1,5 +1,4 @@
 #include "common.h"
-#include "window.h"
 #include "INSWindowHolder.h"
 
 class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemDialogs>

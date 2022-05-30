@@ -1,5 +1,8 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Input
 {
+    [NotClientImplementable]
     public interface IPointer
     {
         int Id { get; }

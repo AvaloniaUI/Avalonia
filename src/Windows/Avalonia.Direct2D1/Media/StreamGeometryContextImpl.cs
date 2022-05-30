@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Logging;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using SharpDX.Direct2D1;
 using D2D = SharpDX.Direct2D1;
@@ -8,6 +9,7 @@ using SweepDirection = SharpDX.Direct2D1.SweepDirection;
 
 namespace Avalonia.Direct2D1.Media
 {
+    [Unstable]
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
         private readonly GeometrySink _sink;

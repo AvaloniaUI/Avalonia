@@ -1,7 +1,6 @@
 
 #include "common.h"
 #include "menu.h"
-#import "window.h"
 #include "KeyTransform.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <Carbon/Carbon.h> /* For kVK_ constants, and TIS functions. */

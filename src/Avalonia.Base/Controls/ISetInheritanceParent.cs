@@ -1,4 +1,4 @@
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -10,6 +10,7 @@ namespace Avalonia.Controls
     /// Additionally, <see cref="ISetLogicalParent"/> also sets the inheritance parent; this
     /// interface is only needed where the logical and inheritance parents differ.
     /// </remarks>
+    [NotClientImplementable]
     public interface ISetInheritanceParent
     {
         /// <summary>

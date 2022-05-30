@@ -4,7 +4,9 @@
 //
 
 #include "AvnView.h"
-#import "AutoFitContentView.h"
+#include "AutoFitContentView.h"
+#include "WindowInterfaces.h"
+#include "WindowProtocol.h"
 
 @implementation AutoFitContentView
 {
@@ -83,7 +85,7 @@
     _settingSize = true;
     [super setFrameSize:newSize];
 
-    auto window = objc_cast<AvnWindow>([self window]);
+    auto window = (id <AvnWindowProtocol>) [self window];
 
     // TODO get actual titlebar size
 
