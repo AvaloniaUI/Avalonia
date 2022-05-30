@@ -1,7 +1,11 @@
+using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;
+using Avalonia.Metadata;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -144,6 +148,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 ((ContentPresenter)target.Presenter).UpdateChild();
 
                 Assert.IsType<Canvas>(target.Presenter.Child);
+            }
+        }
+        
+        [Fact]
+        public void XDataType_Should_Be_Ignored_If_DataType_Has_Non_Standard_Name()
+        {
+            // We don't want DataType to be mapped to FancyDataType, avoid possible confusion.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:sys='clr-namespace:System;assembly=netstandard'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <ContentControl Name='target' Content='Foo'>
+        <ContentControl.ContentTemplate>
+            <local:CustomDataTemplate x:DataType='local:TestDataContext'>
+                <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
+            </local:CustomDataTemplate>
+        </ContentControl.ContentTemplate>
+    </ContentControl>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var target = window.FindControl<ContentControl>("target");
+                
+                window.ApplyTemplate();
+                target.ApplyTemplate();
+                ((ContentPresenter)target.Presenter).UpdateChild();
+
+                var dataTemplate = (CustomDataTemplate)target.ContentTemplate;
+                Assert.Null(dataTemplate.FancyDataType);
             }
         }
         
