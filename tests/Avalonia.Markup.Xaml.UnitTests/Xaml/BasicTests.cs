@@ -207,6 +207,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Cannot_Use_Attached_Property_Syntax_From_Another_Control_On_Non_Attached_Property_With_Markup_Extension_2()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock TemplatedControl.FontSize='{DynamicResource Size}'/>
+</Window>";
+                Assert.ThrowsAny<Exception>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+            }
+        }
+
+        [Fact]
         public void NonExistent_Property_Throws()
         {
             var xaml =
