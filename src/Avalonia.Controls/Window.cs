@@ -871,10 +871,10 @@ namespace Avalonia.Controls
 
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
 
-            // TODO: We really need non-client size here.
-            var rect = new PixelRect(
-                PixelPoint.Origin,
-                PixelSize.FromSize(ClientSize, scaling));
+            // Use frame size, falling back to client size if the platform can't give it to us.
+            var rect = FrameSize.HasValue ?
+                new PixelRect(PixelSize.FromSize(FrameSize.Value, scaling)) :
+                new PixelRect(PixelSize.FromSize(ClientSize, scaling));
 
             if (startupLocation == WindowStartupLocation.CenterScreen)
             {
