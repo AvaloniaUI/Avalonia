@@ -34,13 +34,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         
                         var templateDataTypeAttribute = context.GetAvaloniaTypes().DataTypeAttribute;
 
-                        var clrType = on.Type switch
-                        {
-                            XamlAstClrTypeReference clrRef => clrRef.Type,
-                            XamlAstXmlTypeReference xmlRef => TypeReferenceResolver.ResolveType(context, xmlRef.Name,
-                                on.Type.IsMarkupExtension, on, strict: false).Type,
-                            _ => null
-                        };
+                        var clrType = (on.Type as XamlAstClrTypeReference)?.Type;
                         if (clrType is null)
                         {
                             break;
