@@ -296,6 +296,7 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
 
             if(Window != nullptr) {
                 [Window setContentSize:lastSize];
+                [Window invalidateShadow];
             }
         }
         @finally {
@@ -583,6 +584,8 @@ void WindowBaseImpl::InitialiseNSWindow() {
         [Window setContentMaxSize:lastMaxSize];
 
         [Window setOpaque:false];
+        
+        [Window invalidateShadow];
 
         if (lastMenu != nullptr) {
             [GetWindowProtocol() applyMenu:lastMenu];

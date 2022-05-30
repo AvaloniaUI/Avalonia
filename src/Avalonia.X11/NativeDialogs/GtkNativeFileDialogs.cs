@@ -15,8 +15,9 @@ namespace Avalonia.X11.NativeDialogs
     class GtkSystemDialog : ISystemDialogImpl
     {
         private Task<bool> _initialized;
-        private unsafe  Task<string[]> ShowDialog(string title, IWindowImpl parent, GtkFileChooserAction action,
-            bool multiSelect, string initialFileName, IEnumerable<FileDialogFilter> filters, string defaultExtension, bool overwritePrompt)
+
+        private unsafe Task<string[]> ShowDialog(string title, IWindowImpl parent, GtkFileChooserAction action,
+            bool multiSelect, string initialDirectory, string initialFileName, IEnumerable<FileDialogFilter> filters, string defaultExtension, bool overwritePrompt)
         {
             IntPtr dlg;
             using (var name = new Utf8Buffer(title))
@@ -44,7 +45,7 @@ namespace Avalonia.X11.NativeDialogs
                     filtersDic[filter] = f;
                     using (var b = new Utf8Buffer(f.Name))
                         gtk_file_filter_set_name(filter, b);
-                    
+
                     foreach (var e in f.Extensions)
                         using (var b = new Utf8Buffer("*." + e))
                             gtk_file_filter_add_pattern(filter, b);
@@ -100,17 +101,32 @@ namespace Avalonia.X11.NativeDialogs
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Accept);
             using (var open = new Utf8Buffer("Cancel"))
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Cancel);
+
+            if (initialDirectory != null)
+            {
+                using var dir = new Utf8Buffer(initialDirectory);
+                gtk_file_chooser_set_current_folder(dlg, dir);
+            }
+
             if (initialFileName != null)
-                using (var fn = new Utf8Buffer(initialFileName))
+            {
+                // gtk_file_chooser_set_filename() expects full path
+                using var fn = action == GtkFileChooserAction.Open
+                    ? new Utf8Buffer(Path.Combine(initialDirectory ?? "", initialFileName))
+                    : new Utf8Buffer(initialFileName);
+
+                if (action == GtkFileChooserAction.Save)
                 {
-                    if (action == GtkFileChooserAction.Save)
-                        gtk_file_chooser_set_current_name(dlg, fn);
-                    else
-                        gtk_file_chooser_set_filename(dlg, fn);
+                    gtk_file_chooser_set_current_name(dlg, fn);
                 }
+                else
+                {
+                    gtk_file_chooser_set_filename(dlg, fn);
+                }
+            }
 
             gtk_file_chooser_set_do_overwrite_confirmation(dlg, overwritePrompt);
-            
+
             gtk_window_present(dlg);
             return tcs.Task;
         }
@@ -144,13 +160,15 @@ namespace Avalonia.X11.NativeDialogs
 
             var platformImpl = parent?.PlatformImpl;
 
-            return await await RunOnGlibThread(
-                () => ShowDialog(dialog.Title, platformImpl,
-                    dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
-                    (dialog as OpenFileDialog)?.AllowMultiple ?? false,
-                    Path.Combine(string.IsNullOrEmpty(dialog.Directory) ? "" : dialog.Directory,
-                        string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), dialog.Filters,
-                    (dialog as SaveFileDialog)?.DefaultExtension, (dialog as SaveFileDialog)?.ShowOverwritePrompt ?? false));
+            return await await RunOnGlibThread(() => ShowDialog(
+                dialog.Title, platformImpl,
+                dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
+                (dialog as OpenFileDialog)?.AllowMultiple ?? false,
+                dialog.Directory,
+                dialog.InitialFileName,
+                dialog.Filters,
+                (dialog as SaveFileDialog)?.DefaultExtension,
+                (dialog as SaveFileDialog)?.ShowOverwritePrompt ?? false));
         }
 
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
@@ -161,12 +179,20 @@ namespace Avalonia.X11.NativeDialogs
 
             return await await RunOnGlibThread(async () =>
             {
-                var res = await ShowDialog(dialog.Title, platformImpl,
-                    GtkFileChooserAction.SelectFolder, false, dialog.Directory, null, null, false);
+                var res = await ShowDialog(
+                    dialog.Title,
+                    platformImpl,GtkFileChooserAction.SelectFolder,
+                    false,
+                    dialog.Directory,
+                    null,
+                    null,
+                    null,
+                    false);
+
                 return res?.FirstOrDefault();
             });
         }
-        
+
         async Task EnsureInitialized()
         {
             if (_initialized == null) _initialized = StartGtk();
@@ -174,7 +200,7 @@ namespace Avalonia.X11.NativeDialogs
             if (!(await _initialized))
                 throw new Exception("Unable to initialize GTK on separate thread");
         }
-        
+
         void UpdateParent(IntPtr chooser, IWindowImpl parentWindow)
         {
             var xid = parentWindow.Handle.Handle;
