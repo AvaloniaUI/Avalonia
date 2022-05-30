@@ -427,7 +427,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Presenter.ApplyTemplate();
                 target.SelectedIndex = 0;
 
-                // need help here how to connect 'content' tio visual tree, or how to
+                // need help here how to connect 'content' to visual tree, or how to open popup
 
 
                 var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
