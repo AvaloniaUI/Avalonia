@@ -178,16 +178,10 @@ namespace Avalonia.Controls
                 ComboBoxItem.ContentTemplateProperty);
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            this.UpdateSelectionBoxItem(SelectedItem);
-        }
-
         public override void InvalidateMirrorTransform()
         {
             base.InvalidateMirrorTransform();
-           UpdateSelectionBoxItem(SelectedItem);
+            UpdateSelectionBoxItem(SelectedItem);
         }
 
         /// <inheritdoc/>
