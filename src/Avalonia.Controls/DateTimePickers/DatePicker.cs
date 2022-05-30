@@ -399,9 +399,9 @@ namespace Avalonia.Controls
             else
             {
                 PseudoClasses.Set(":hasnodate", true);
-                _monthText!.Text = "month";
-                _yearText!.Text = "year";
-                _dayText!.Text = "day";
+                _monthText!.Text ??= "month";
+                _yearText!.Text ??= "year";
+                _dayText!.Text ??= "day";
             }
         }
 

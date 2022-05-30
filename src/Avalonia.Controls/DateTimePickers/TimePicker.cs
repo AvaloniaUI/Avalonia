@@ -251,8 +251,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                _hourText.Text = "hour";
-                _minuteText.Text = "minute";
+                _hourText.Text ??= "hour";
+                _minuteText.Text ??= "minute";
                 PseudoClasses.Set(":hasnotime", true);
 
                 _periodText.Text = DateTime.Now.Hour >= 12 ? CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator :
