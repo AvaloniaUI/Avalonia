@@ -1,15 +1,17 @@
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
+    [Unstable]
     public sealed class ImageBrushImpl : BrushImpl
     {
         private readonly OptionalDispose<Bitmap> _bitmap;
 
-        private readonly Visuals.Media.Imaging.BitmapInterpolationMode _bitmapInterpolationMode;
+        private readonly Avalonia.Media.Imaging.BitmapInterpolationMode _bitmapInterpolationMode;
 
         public ImageBrushImpl(
             ITileBrush brush,

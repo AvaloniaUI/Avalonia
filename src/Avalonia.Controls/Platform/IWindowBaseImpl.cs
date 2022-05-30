@@ -1,7 +1,10 @@
 using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IWindowBaseImpl : ITopLevelImpl
     {
         /// <summary>

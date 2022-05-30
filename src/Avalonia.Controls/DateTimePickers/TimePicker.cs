@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Layout;
 using System;
 using System.Globalization;
 
@@ -11,6 +12,18 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a time.
     /// </summary>
+    [TemplatePart("FirstColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("FirstPickerHost",         typeof(Border))]
+    [TemplatePart("FlyoutButton",            typeof(Button))]
+    [TemplatePart("FlyoutButtonContentGrid", typeof(Grid))]
+    [TemplatePart("HourTextBlock",           typeof(TextBlock))]
+    [TemplatePart("MinuteTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PeriodTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PickerPresenter",         typeof(TimePickerPresenter))]
+    [TemplatePart("Popup",                   typeof(Popup))]
+    [TemplatePart("SecondColumnDivider",     typeof(Rectangle))]
+    [TemplatePart("SecondPickerHost",        typeof(Border))]
+    [TemplatePart("ThirdPickerHost",         typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
@@ -25,13 +38,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Header"/> property
         /// </summary>
         public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
+            AvaloniaProperty.Register<TimePicker, object>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> property
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
+            AvaloniaProperty.Register<TimePicker, IDataTemplate>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
@@ -254,16 +267,28 @@ namespace Avalonia.Controls
 
         private void OnFlyoutButtonClicked(object? sender, Interactivity.RoutedEventArgs e)
         {
-            _presenter!.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
+            if (_presenter == null)
+                throw new InvalidOperationException("No DatePickerPresenter found.");
+            if (_popup == null)
+                throw new InvalidOperationException("No Popup found.");
 
-            _popup!.IsOpen = true;
+            _presenter.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
+
+            _popup.PlacementMode = PlacementMode.AnchorAndGravity;
+            _popup.PlacementAnchor = Primitives.PopupPositioning.PopupAnchor.Bottom;
+            _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
+            _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
+            _popup.IsOpen = true;
+
+            // Overlay popup hosts won't get measured until the next layout pass, but we need the
+            // template to be applied to `_presenter` now. Detect this case and force a layout pass.
+            if (!_presenter.IsMeasureValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 
             // The extra 5 px I think is related to default popup placement behavior
-            _popup.Host!.ConfigurePosition(_popup.PlacementTarget!, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
-                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
-                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
+            _popup.VerticalOffset = deltaY + 5;
         }
 
         private void OnDismissPicker(object? sender, EventArgs e)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -19,8 +20,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// A menu item control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
     [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource, IClickableControl
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -83,13 +85,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PointerEnterItem"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerEnterItemEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerEnterItem), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuItem, PointerEventArgs>(nameof(PointerEnterItem), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerLeaveItem"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerLeaveItemEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerLeaveItem), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuItem, PointerEventArgs>(nameof(PointerLeaveItem), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="SubmenuOpened"/> event.
@@ -494,12 +496,20 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            base.UpdateDataValidation(property, value);
+            return new MenuItemAutomationPeer(this);
+        }
+
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
             if (property == CommandProperty)
             {
-                _commandBindingError = value.Type == BindingValueType.BindingError;
+                _commandBindingError = state == BindingValueType.BindingError;
                 if (_commandBindingError && _commandCanExecute)
                 {
                     _commandCanExecute = false;
@@ -637,7 +647,9 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue!)
+            var parentMenu = Parent as Menu;
+
+            if ((bool)e.NewValue! && (parentMenu is null || parentMenu.IsOpen))
             {
                 Focus();
             }
@@ -697,6 +709,14 @@ namespace Avalonia.Controls
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
+
+        void IClickableControl.RaiseClick()
+        {
+            if (IsEffectivelyEnabled)
+            {
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
+            }
+        }
 
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.

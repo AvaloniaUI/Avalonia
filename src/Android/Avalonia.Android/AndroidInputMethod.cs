@@ -13,7 +13,6 @@ namespace Avalonia.Android
     {
         private readonly TView _host;
         private readonly InputMethodManager _imm;
-        private IInputElement _inputElement;
 
         public AndroidInputMethod(TView host)
         {
@@ -25,7 +24,7 @@ namespace Avalonia.Android
 
             _host.Focusable = true;
             _host.FocusableInTouchMode = true;
-            _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListner(_host));
+            _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListener(_host));
         }
 
         public void Reset()
@@ -33,8 +32,10 @@ namespace Avalonia.Android
             _imm.RestartInput(_host);
         }
 
-        public void SetActive(bool active)
+        public void SetClient(ITextInputMethodClient client)
         {
+            var active = client is { };
+            
             if (active)
             {
                 _host.RequestFocus();
@@ -49,20 +50,8 @@ namespace Avalonia.Android
         {
         }
 
-        public void SetOptions(TextInputOptionsQueryEventArgs options)
+        public void SetOptions(TextInputOptions options)
         {
-            if (_inputElement != null)
-            {
-                _inputElement.PointerReleased -= RestoreSoftKeyboard;
-            }
-
-            _inputElement = options.Source as InputElement;
-
-            if (_inputElement == null)
-            {
-                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.None);
-            }
-
             _host.InitEditorInfo((outAttrs) =>
             {
                 outAttrs.InputType = options.ContentType switch
@@ -70,7 +59,7 @@ namespace Avalonia.Android
                     TextInputContentType.Email => global::Android.Text.InputTypes.TextVariationEmailAddress,
                     TextInputContentType.Number => global::Android.Text.InputTypes.ClassNumber,
                     TextInputContentType.Password => global::Android.Text.InputTypes.TextVariationPassword,
-                    TextInputContentType.Phone => global::Android.Text.InputTypes.ClassPhone,
+                    TextInputContentType.Digits => global::Android.Text.InputTypes.ClassPhone,
                     TextInputContentType.Url => global::Android.Text.InputTypes.TextVariationUri,
                     _ => global::Android.Text.InputTypes.ClassText
                 };
@@ -83,9 +72,9 @@ namespace Avalonia.Android
 
                 if (options.Multiline)
                     outAttrs.InputType |= global::Android.Text.InputTypes.TextFlagMultiLine;
-            });
 
-            //_inputElement.PointerReleased += RestoreSoftKeyboard;
+                outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
+            });
         }
 
         private void RestoreSoftKeyboard(object sender, PointerReleasedEventArgs e)

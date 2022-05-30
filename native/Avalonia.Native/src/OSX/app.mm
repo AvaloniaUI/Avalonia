@@ -73,22 +73,15 @@ ComPtr<IAvnApplicationEvents> _events;
     _isHandlingSendEvent = true;
     @try {
         [super sendEvent: event];
+        if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
+        {
+            [[self keyWindow] sendEvent:event];
+        }
+        
     } @finally {
         _isHandlingSendEvent = oldHandling;
     }
 }
-
-// This is needed for certain embedded controls
-- (BOOL) isHandlingSendEvent
-{
-    return _isHandlingSendEvent;
-}
-
-- (void)setHandlingSendEvent:(BOOL)handlingSendEvent
-{
-    _isHandlingSendEvent = handlingSendEvent;
-}
-
 @end
 
 extern void InitializeAvnApp(IAvnApplicationEvents* events)

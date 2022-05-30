@@ -88,8 +88,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     textWrapping: TextWrapping.Wrap,
                     maxWidth: 200);
 
-                var expectedLines = expected.TextLines.Select(x => text.Substring(x.TextRange.Start,
-                    x.TextRange.Length)).ToList();
+                var expectedLines = expected.TextLines.Select(x => text.Substring(x.FirstTextSourceIndex,
+                    x.Length)).ToList();
 
                 var spans = new[]
                 {
@@ -106,8 +106,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     maxWidth: 200,
                     textStyleOverrides: spans);
 
-                var actualLines = actual.TextLines.Select(x => text.Substring(x.TextRange.Start,
-                    x.TextRange.Length)).ToList();
+                var actualLines = actual.TextLines.Select(x => text.Substring(x.FirstTextSourceIndex,
+                    x.Length)).ToList();
 
                 Assert.Equal(expectedLines.Count, actualLines.Count);
 
@@ -140,7 +140,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     black,
                     textWrapping: TextWrapping.Wrap);
 
-                var expectedGlyphs = expected.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
+                var expectedGlyphs = expected.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>()
+                    .SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
 
                 var outer = new GraphemeEnumerator(text.AsMemory());
                 var inner = new GraphemeEnumerator(text.AsMemory());
@@ -172,7 +173,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                             textWrapping: TextWrapping.Wrap,
                             textStyleOverrides: spans);
 
-                        var actualGlyphs = actual.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
+                        var actualGlyphs = actual.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>()
+                            .SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
 
                         Assert.Equal(expectedGlyphs.Count, actualGlyphs.Count);
 
@@ -348,7 +350,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     12.0f,
                     Brushes.Black.ToImmutable());
 
-                Assert.Equal(MultiLineText.Length, layout.TextLines.Sum(x => x.TextRange.Length));
+                Assert.Equal(MultiLineText.Length, layout.TextLines.Sum(x => x.Length));
             }
         }
 
@@ -588,7 +590,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, layout.TextLines.Count);
 
-                Assert.Equal(lineHeight, layout.Size.Height);
+                Assert.Equal(lineHeight, layout.Bounds.Height);
             }
         }
 
@@ -716,7 +718,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var selectedRect = rects[0];
 
-                Assert.Equal(selectedText.Size.Width, selectedRect.Width);
+                Assert.Equal(selectedText.Bounds.Width, selectedRect.Width);
             }
         }
 
@@ -813,7 +815,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         Assert.True(textLine.Width <= maxWidth);
 
                         var actual = new string(textLine.TextRuns.Cast<ShapedTextCharacters>().OrderBy(x => x.Text.Start).SelectMany(x => x.Text).ToArray());
-                        var expected = text.Substring(textLine.TextRange.Start, textLine.TextRange.Length);
+                        var expected = text.Substring(textLine.FirstTextSourceIndex, textLine.Length);
 
                         Assert.Equal(expected, actual);
                     }                  
@@ -832,7 +834,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     12,
                     Brushes.Black);
                 
-                Assert.True(layout.Size.Height > 0);
+                Assert.True(layout.Bounds.Height > 0);
             }
         }
 

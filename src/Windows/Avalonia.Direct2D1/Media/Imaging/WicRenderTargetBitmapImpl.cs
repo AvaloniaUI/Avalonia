@@ -1,10 +1,12 @@
 using System;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
+    [Unstable]
     public class WicRenderTargetBitmapImpl : WicBitmapImpl, IDrawingContextLayerImpl
     {
         private readonly WicRenderTarget _renderTarget;

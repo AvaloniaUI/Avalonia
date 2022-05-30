@@ -28,31 +28,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Trace.WriteLine(Format<object, object, object>(area, messageTemplate, source));
-            }
-        }
-
-        public void Log<T0>(LogEventLevel level, string area, object? source, string messageTemplate, T0 propertyValue0)
-        {
-            if (IsEnabled(level, area))
-            {
-                Trace.WriteLine(Format<T0, object, object>(area, messageTemplate, source, propertyValue0));
-            }
-        }
-
-        public void Log<T0, T1>(LogEventLevel level, string area, object? source, string messageTemplate, T0 propertyValue0, T1 propertyValue1)
-        {
-            if (IsEnabled(level, area))
-            {
-                Trace.WriteLine(Format<T0, T1, object>(area, messageTemplate, source, propertyValue0, propertyValue1));
-            }
-        }
-
-        public void Log<T0, T1, T2>(LogEventLevel level, string area, object? source, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2)
-        {
-            if (IsEnabled(level, area))
-            {
-                Trace.WriteLine(Format(area, messageTemplate, source, propertyValue0, propertyValue1, propertyValue2));
+                Trace.WriteLine(Format<object, object, object>(area, messageTemplate, source, null));
             }
         }
 
@@ -68,9 +44,7 @@ namespace Avalonia.Logging
             string area,
             string template,
             object? source,
-            T0? v0 = default,
-            T1? v1 = default,
-            T2? v2 = default)
+            object?[]? values)
         {
             var result = new StringBuilder(template.Length);
             var r = new CharacterReader(template.AsSpan());
@@ -93,13 +67,7 @@ namespace Avalonia.Logging
                     if (r.Peek != '{')
                     {
                         result.Append('\'');
-                        result.Append(i++ switch
-                        {
-                            0 => v0,
-                            1 => v1,
-                            2 => v2,
-                            _ => null
-                        });
+                        result.Append(values?[i++]);
                         result.Append('\'');
                         r.TakeUntil('}');
                         r.Take();
