@@ -181,6 +181,32 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(child.GetLogicalParent());
         }
 
+        [Fact]
+        public void Changing_Child_Should_Invalidate_Layout()
+        {
+            var target = new Viewbox();
+
+            target.Child = new Canvas
+            {
+                Width = 100,
+                Height = 100,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.Equal(new Size(100, 100), target.DesiredSize);
+
+            target.Child = new Canvas
+            {
+                Width = 200,
+                Height = 200,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.Equal(new Size(200, 200), target.DesiredSize);
+        }
+
         private bool TryGetScale(Viewbox viewbox, out Vector scale)
         {
             if (viewbox.InternalTransform is null)
