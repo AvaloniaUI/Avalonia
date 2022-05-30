@@ -336,5 +336,104 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, count);
             }
         }
+
+        [Fact]
+        public void FlowDirection_Of_RectangleContent_Shuold_Be_LeftToRight()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new[]
+                {
+                    new ComboBoxItem()
+                    { 
+                        Content = new Control()
+                    }
+                };
+                var target = new ComboBox
+                {
+                    Items = items,
+                    Template = GetTemplate()
+                };
+
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.SelectedIndex = 0;
+
+                var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+
+                Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
+            }
+        }
+
+        [Fact]
+        public void FlowDirection_Of_RectangleContent_Updated_After_Change_ComboBox()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new[]
+                {
+                    new ComboBoxItem()
+                    { 
+                        Content = new Control()
+                    }
+                };
+                var target = new ComboBox
+                {
+                    FlowDirection = FlowDirection.RightToLeft,
+                    Items = items,
+                    Template = GetTemplate()
+                };
+
+                var root = new TestRoot(target);
+                
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.SelectedIndex = 0;
+
+                var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+
+                // need help here, the 'rectangle' isn't connected to visual tree for some reason
+
+                Assert.True(rectangle.HasMirrorTransform);
+
+                target.FlowDirection = FlowDirection.LeftToRight;
+
+                Assert.False(rectangle.HasMirrorTransform);
+            }
+        }
+
+        [Fact]
+        public void FlowDirection_Of_RectangleContent_Updated_After_Content_In_VisualTree()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                Control content;
+                var items = new[]
+                {
+                    new ComboBoxItem()
+                    {
+                        Content = content = new Control()
+                    }
+                };
+                var target = new ComboBox
+                {
+                    FlowDirection = FlowDirection.RightToLeft,
+                    Items = items,
+                    Template = GetTemplate()
+                };
+
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.SelectedIndex = 0;
+
+                // need help here how to connect 'content' tio visual tree, or how to
+
+
+                var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+
+                Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
+            }
+        }
     }
 }

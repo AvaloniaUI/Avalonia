@@ -184,23 +184,10 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(SelectedItem);
         }
 
-        // Because the SelectedItem isn't connected to the visual tree
         public override void InvalidateMirrorTransform()
         {
             base.InvalidateMirrorTransform();
-
-            if (SelectedItem is Control selectedControl)
-            {
-                selectedControl.InvalidateMirrorTransform();
-
-                foreach (var visual in selectedControl.GetVisualDescendants())
-                {
-                    if (visual is Control childControl)
-                    {
-                        childControl.InvalidateMirrorTransform();
-                    }
-                }
-            }
+           UpdateSelectionBoxItem(SelectedItem);
         }
 
         /// <inheritdoc/>
@@ -365,6 +352,8 @@ namespace Avalonia.Controls
             {
                 parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
             }
+
+            UpdateSelectionBoxItem(SelectedItem);
         }
 
         private void IsVisibleChanged(bool isVisible)
@@ -420,8 +409,12 @@ namespace Avalonia.Controls
                 {
                     control.Measure(Size.Infinity);
 
+                    var flowDirection = control.IsAttachedToVisualTree ? 
+                        (control.VisualParent as Control)!.FlowDirection : FlowDirection.LeftToRight;
+
                     SelectionBoxItem = new Rectangle
                     {
+                        FlowDirection = flowDirection,
                         Width = control.DesiredSize.Width,
                         Height = control.DesiredSize.Height,
                         Fill = new VisualBrush
