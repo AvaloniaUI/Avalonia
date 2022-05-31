@@ -336,6 +336,10 @@ namespace Avalonia.Controls
             set => SetValue(IsComponentTextInputVisibleProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the hexadecimal color value text input
+        /// is visible.
+        /// </summary>
         public bool IsHexInputVisible
         {
             get => GetValue(IsHexInputVisibleProperty);

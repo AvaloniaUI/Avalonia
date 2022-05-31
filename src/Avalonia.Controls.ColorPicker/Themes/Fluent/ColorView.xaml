@@ -352,7 +352,8 @@
                                  IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=TwoWay}" />
                   </Grid>
                   <Grid x:Name="HexInputGrid"
-                        Grid.Column="2">
+                        Grid.Column="2"
+                        IsVisible="{TemplateBinding IsHexInputVisible}">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="30" />
                       <ColumnDefinition Width="*" />
