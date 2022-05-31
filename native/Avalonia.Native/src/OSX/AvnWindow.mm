@@ -183,11 +183,6 @@
     return self;
 }
 
-- (void)mouseDown:(NSEvent *)event
-{
-    _parent->BringToFront();
-}
-
 - (BOOL)windowShouldClose:(NSWindow *)sender
 {
     auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
@@ -435,8 +430,10 @@
 
                     _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint32>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
                 }
+                
+                _parent->BringToFront();
             }
-                break;
+            break;
 
             case NSEventTypeMouseEntered:
             {
