@@ -21,7 +21,7 @@ WindowBaseImpl::~WindowBaseImpl() {
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
+WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel) {
     _shown = false;
     _inResize = false;
     BaseEvents = events;
@@ -38,7 +38,7 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
 
     lastMenu = nullptr;
     
-    CreateNSWindow(false);
+    CreateNSWindow(usePanel);
     InitialiseNSWindow();
 }
 
