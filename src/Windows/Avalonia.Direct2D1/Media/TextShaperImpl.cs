@@ -16,7 +16,7 @@ namespace Avalonia.Direct2D1.Media
         {
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
-            var bidiLevel = options.BidLevel;
+            var bidiLevel = options.BidiLevel;
             var culture = options.Culture;
 
             using (var buffer = new Buffer())
