@@ -274,6 +274,11 @@
     [super becomeKeyWindow];
 }
 
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+    _parent->BringToFront();
+}
+
 - (void)windowDidMiniaturize:(NSNotification *)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
