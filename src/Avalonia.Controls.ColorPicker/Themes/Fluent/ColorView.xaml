@@ -130,14 +130,18 @@
                             Data="{DynamicResource ColorViewSpectrumIconGeometry}" />
                 </Border>
               </TabItem.Header>
-              <Grid ColumnDefinitions="Auto,*,Auto"
-                    RowDefinitions="Auto,*"
+              <Grid RowDefinitions="*"
                     Margin="12">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"
+                                    MinWidth="32" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto"
+                                    MinWidth="32" />
+                </Grid.ColumnDefinitions>
                 <primitives:ColorSlider x:Name="ColorSpectrumThirdComponentSlider"
                                         AutomationProperties.Name="Third Component"
                                         Grid.Column="0"
-                                        Grid.Row="1"
-                                        Grid.RowSpan="2"
                                         IsAlphaMaxForced="True"
                                         IsSaturationValueMaxForced="False"
                                         Orientation="Vertical"
@@ -149,8 +153,6 @@
                                         Margin="0,0,12,0" />
                 <primitives:ColorSpectrum x:Name="ColorSpectrum"
                                           Grid.Column="1"
-                                          Grid.Row="0"
-                                          Grid.RowSpan="2"
                                           Components="{TemplateBinding ColorSpectrumComponents}"
                                           HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                           MinHue="{TemplateBinding MinHue}"
@@ -165,15 +167,14 @@
                 <primitives:ColorSlider x:Name="ColorSpectrumAlphaSlider"
                                         AutomationProperties.Name="Alpha Component"
                                         Grid.Column="2"
-                                        Grid.Row="1"
-                                        Grid.RowSpan="2"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"
                                         ColorComponent="Alpha"
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"
-                                        Margin="12,0,0,0" />
+                                        Margin="12,0,0,0"
+                                        IsVisible="{TemplateBinding IsAlphaVisible}" />
               </Grid>
             </TabItem>
             <!-- Palette Tab -->
@@ -387,7 +388,8 @@
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
                         BorderThickness="1,1,0,1"
                         CornerRadius="4,0,0,4"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        IsVisible="{TemplateBinding IsComponentTextInputVisible}">
                   <Panel HorizontalAlignment="Center"
                          VerticalAlignment="Center">
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
@@ -411,7 +413,8 @@
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=Component1Slider}"
                                Maximum="{Binding Maximum, ElementName=Component1Slider}"
-                               Value="{Binding Value, ElementName=Component1Slider}" />
+                               Value="{Binding Value, ElementName=Component1Slider}"
+                               IsVisible="{TemplateBinding IsComponentTextInputVisible}" />
                 <primitives:ColorSlider x:Name="Component1Slider"
                                         Grid.Column="2"
                                         Grid.Row="2"
@@ -433,7 +436,8 @@
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
                         BorderThickness="1,1,0,1"
                         CornerRadius="4,0,0,4"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        IsVisible="{TemplateBinding IsComponentTextInputVisible}">
                   <Panel HorizontalAlignment="Center"
                          VerticalAlignment="Center">
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
@@ -457,7 +461,8 @@
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=Component2Slider}"
                                Maximum="{Binding Maximum, ElementName=Component2Slider}"
-                               Value="{Binding Value, ElementName=Component2Slider}"/>
+                               Value="{Binding Value, ElementName=Component2Slider}"
+                               IsVisible="{TemplateBinding IsComponentTextInputVisible}" />
                 <primitives:ColorSlider x:Name="Component2Slider"
                                         Grid.Column="2"
                                         Grid.Row="3"
@@ -479,7 +484,8 @@
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
                         BorderThickness="1,1,0,1"
                         CornerRadius="4,0,0,4"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        IsVisible="{TemplateBinding IsComponentTextInputVisible}">
                   <Panel HorizontalAlignment="Center"
                          VerticalAlignment="Center">
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
@@ -503,7 +509,8 @@
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=Component3Slider}"
                                Maximum="{Binding Maximum, ElementName=Component3Slider}"
-                               Value="{Binding Value, ElementName=Component3Slider}" />
+                               Value="{Binding Value, ElementName=Component3Slider}"
+                               IsVisible="{TemplateBinding IsComponentTextInputVisible}" />
                 <primitives:ColorSlider x:Name="Component3Slider"
                                         Grid.Column="2"
                                         Grid.Row="4"
@@ -532,6 +539,14 @@
                              Text="A"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Center" />
+                  <Border.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaVisible" />
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsComponentTextInputVisible" />
+                    </MultiBinding>
+                  </Border.IsVisible>
                 </Border>
                 <NumericUpDown x:Name="AlphaComponentNumericUpDown"
                                Grid.Column="1"
@@ -544,7 +559,16 @@
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=AlphaComponentSlider}"
                                Maximum="{Binding Maximum, ElementName=AlphaComponentSlider}"
-                               Value="{Binding Value, ElementName=AlphaComponentSlider}" />
+                               Value="{Binding Value, ElementName=AlphaComponentSlider}">
+                  <NumericUpDown.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaVisible" />
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsComponentTextInputVisible" />
+                    </MultiBinding>
+                  </NumericUpDown.IsVisible>
+                </NumericUpDown>
                 <primitives:ColorSlider x:Name="AlphaComponentSlider"
                                         Grid.Column="2"
                                         Grid.Row="5"
@@ -557,15 +581,18 @@
                                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center" />
+                                        VerticalAlignment="Center"
+                                        IsVisible="{TemplateBinding IsAlphaVisible}" />
               </Grid>
             </TabItem>
           </TabControl>
           <!-- Previewer -->
+          <!-- Note that top/bottom margins have -5 to remove for drop shadow padding -->
           <primitives:ColorPreviewer Grid.Row="1"
                                      ShowAccentColors="True"
                                      HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                     Margin="12,-5,12,7" />
+                                     Margin="12,-5,12,7"
+                                     IsVisible="{TemplateBinding IsColorPreviewVisible}" />
         </Grid>
       </ControlTemplate>
     </Setter>

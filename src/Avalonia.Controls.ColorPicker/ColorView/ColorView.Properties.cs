@@ -84,27 +84,11 @@ namespace Avalonia.Controls
                 false);
 
         /// <summary>
-        /// Defines the <see cref="IsAlphaSliderVisible"/> property.
+        /// Defines the <see cref="IsAlphaVisible"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsAlphaSliderVisibleProperty =
+        public static readonly StyledProperty<bool> IsAlphaVisibleProperty =
             AvaloniaProperty.Register<ColorView, bool>(
-                nameof(IsAlphaSliderVisible),
-                true);
-
-        /// <summary>
-        /// Defines the <see cref="IsAlphaTextInputVisible"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsAlphaTextInputVisibleProperty =
-            AvaloniaProperty.Register<ColorView, bool>(
-                nameof(IsAlphaTextInputVisible),
-                true);
-
-        /// <summary>
-        /// Defines the <see cref="IsColorChannelTextInputVisible"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsColorChannelTextInputVisibleProperty =
-            AvaloniaProperty.Register<ColorView, bool>(
-                nameof(IsColorChannelTextInputVisible),
+                nameof(IsAlphaVisible),
                 true);
 
         /// <summary>
@@ -137,6 +121,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsColorSpectrumVisibleProperty =
             AvaloniaProperty.Register<ColorView, bool>(
                 nameof(IsColorSpectrumVisible),
+                true);
+
+        /// <summary>
+        /// Defines the <see cref="IsComponentTextInputVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsComponentTextInputVisibleProperty =
+            AvaloniaProperty.Register<ColorView, bool>(
+                nameof(IsComponentTextInputVisible),
                 true);
 
         /// <summary>
@@ -271,28 +263,28 @@ namespace Avalonia.Controls
             set => SetValue(HsvColorProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the alpha component is enabled.
+        /// When disabled (set to false) the alpha component will be fixed to maximum.
+        /// </summary>
         public bool IsAlphaEnabled
         {
             get => GetValue(IsAlphaEnabledProperty);
             set => SetValue(IsAlphaEnabledProperty, value);
         }
 
-        public bool IsAlphaSliderVisible
+        /// <summary>
+        /// Gets or sets a value indicating whether the alpha component editing controls
+        /// (both Slider and TextBox) are visible.
+        /// </summary>
+        /// <remarks>
+        /// Note that <see cref="IsComponentTextInputVisible"/> also controls the alpha
+        /// component TextBox visibility.
+        /// </remarks>
+        public bool IsAlphaVisible
         {
-            get => GetValue(IsAlphaSliderVisibleProperty);
-            set => SetValue(IsAlphaSliderVisibleProperty, value);
-        }
-
-        public bool IsAlphaTextInputVisible
-        {
-            get => GetValue(IsAlphaTextInputVisibleProperty);
-            set => SetValue(IsAlphaTextInputVisibleProperty, value);
-        }
-
-        public bool IsColorChannelTextInputVisible // TODO: Component
-        {
-            get => GetValue(IsColorChannelTextInputVisibleProperty);
-            set => SetValue(IsColorChannelTextInputVisibleProperty, value);
+            get => GetValue(IsAlphaVisibleProperty);
+            set => SetValue(IsAlphaVisibleProperty, value);
         }
 
         /// <summary>
@@ -304,6 +296,13 @@ namespace Avalonia.Controls
             set => SetValue(IsColorPaletteVisibleProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the color preview is visible.
+        /// </summary>
+        /// <remarks>
+        /// Note that accent color visibility is controlled separately by
+        /// <see cref="ShowAccentColors"/>.
+        /// </remarks>
         public bool IsColorPreviewVisible
         {
             get => GetValue(IsColorPreviewVisibleProperty);
@@ -322,6 +321,19 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsColorSpectrumVisibleProperty);
             set => SetValue(IsColorSpectrumVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether color component text inputs are visible.
+        /// </summary>
+        /// <remarks>
+        /// All color components are controlled by this property but alpha can also be
+        /// controlled with <see cref="IsAlphaVisible"/>.
+        /// </remarks>
+        public bool IsComponentTextInputVisible
+        {
+            get => GetValue(IsComponentTextInputVisibleProperty);
+            set => SetValue(IsComponentTextInputVisibleProperty, value);
         }
 
         public bool IsHexInputVisible
