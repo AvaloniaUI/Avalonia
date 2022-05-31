@@ -1,5 +1,6 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
@@ -18,14 +19,16 @@ namespace Avalonia.Web.Blazor
         private EmbeddableControlRoot _topLevel;
 
         // Interop
-        private SKHtmlCanvasInterop _interop = null!;
-        private SizeWatcherInterop _sizeWatcher = null!;
-        private DpiWatcherInterop _dpiWatcher = null!;
-        private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null!;
-        private InputHelperInterop _inputHelper = null!;
-        private InputHelperInterop _canvasHelper = null!;
+        private SKHtmlCanvasInterop? _interop = null;
+        private SizeWatcherInterop? _sizeWatcher = null;
+        private DpiWatcherInterop? _dpiWatcher = null;
+        private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null;
+        private InputHelperInterop? _inputHelper = null;
+        private InputHelperInterop? _canvasHelper = null;
+        private NativeControlHostInterop? _nativeControlHost = null;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
+        private ElementReference _nativeControlsContainer;
         private double _dpi = 1;
         private SKSize _canvasSize = new (100, 100);
 
@@ -47,6 +50,11 @@ namespace Avalonia.Web.Blazor
             {
                 _topLevel.Content = lifetime.MainView;
             }
+        }
+
+        internal INativeControlHostImpl GetNativeControlHostImpl()
+        {
+            return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
         }
 
         private void OnTouchStart(TouchEventArgs e)
@@ -243,7 +251,7 @@ namespace Avalonia.Web.Blazor
                 }
             }
 
-            _inputHelper.Clear();
+            _inputHelper?.Clear();
         }
 
         [Parameter(CaptureUnmatchedValues = true)]
@@ -253,6 +261,8 @@ namespace Avalonia.Web.Blazor
         {
             if (firstRender)
             {
+                AvaloniaLocator.CurrentMutable.Bind<IJSInProcessRuntime>().ToConstant((IJSInProcessRuntime)Js);
+
                 _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
                 _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
 
@@ -263,6 +273,8 @@ namespace Avalonia.Web.Blazor
                     _inputHelper.SetCursor(x); //macOS
                     _canvasHelper.SetCursor(x); //windows
                 };
+
+                _nativeControlHost = await NativeControlHostInterop.ImportAsync(Js, _nativeControlsContainer);
 
                 Console.WriteLine("starting html canvas setup");
                 _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
@@ -319,9 +331,9 @@ namespace Avalonia.Web.Blazor
 
         public void Dispose()
         {
-            _dpiWatcher.Unsubscribe(OnDpiChanged);
-            _sizeWatcher.Dispose();
-            _interop.Dispose();
+            _dpiWatcher?.Unsubscribe(OnDpiChanged);
+            _sizeWatcher?.Dispose();
+            _interop?.Dispose();
         }
 
         private void ForceBlit()
@@ -345,7 +357,7 @@ namespace Avalonia.Web.Blazor
             {
                 _dpi = newDpi;
 
-                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                _interop!.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -359,7 +371,7 @@ namespace Avalonia.Web.Blazor
             {
                 _canvasSize = newSize;
 
-                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                _interop!.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -369,6 +381,11 @@ namespace Avalonia.Web.Blazor
 
         public void SetClient(ITextInputMethodClient? client)
         {
+            if (_inputHelper is null)
+            {
+                return;
+            }
+
             _inputHelper.Clear();
 
             var active = client is { };
@@ -394,7 +411,7 @@ namespace Avalonia.Web.Blazor
 
         public void Reset()
         {
-            _inputHelper.Clear();
+            _inputHelper?.Clear();
         }
     }
 }
