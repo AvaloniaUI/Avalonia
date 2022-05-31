@@ -432,11 +432,11 @@ namespace Avalonia.Controls
 
         private void UpdateFlowDirection()
         {
-            var rectangle = SelectionBoxItem as Rectangle;
-            if (rectangle != null)
+            if (SelectionBoxItem is Rectangle rectangle)
             {
                 var content = (rectangle.Fill as VisualBrush)!.Visual as Control;
-                var flowDirection = (((IVisual)content!).VisualParent as Control)?.FlowDirection ?? FlowDirection.LeftToRight;
+                var flowDirection = (((IVisual)content!).VisualParent as Control)?.FlowDirection ?? 
+                    FlowDirection.LeftToRight;
 
                 rectangle.FlowDirection = flowDirection;
             }
