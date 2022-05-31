@@ -379,7 +379,6 @@ namespace Avalonia.Controls.UnitTests
             };
             var target = new ComboBox
             {
-                FlowDirection = FlowDirection.RightToLeft,
                 Items = items,
                 Template = GetTemplate()
             };
@@ -392,7 +391,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
 
             parentContent.FlowDirection = FlowDirection.RightToLeft;
-            target.InvalidateMirrorTransform();
+            target.FlowDirection = FlowDirection.RightToLeft;
             
             Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
         }
