@@ -56,7 +56,7 @@ namespace Avalonia.Web.Blazor
         {
             return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
         }
-                
+        
         private void OnTouchCancel(TouchEventArgs e)
         {
             foreach (var touch in e.ChangedTouches)
@@ -77,7 +77,7 @@ namespace Avalonia.Web.Blazor
 
         private void OnPointerMove(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            if (e.PointerType == "mouse")
+            if (e.PointerType != "touch")
             {
                 _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
@@ -90,7 +90,7 @@ namespace Avalonia.Web.Blazor
                 _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(e.ClientX, e.ClientY),
                     GetModifiers(e), e.PointerId);
             }
-            else if (e.PointerType == "mouse")
+            else
             {
                 RawPointerEventType type = default;
 
@@ -120,7 +120,7 @@ namespace Avalonia.Web.Blazor
                 _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(e.ClientX, e.ClientY),
                     GetModifiers(e), e.PointerId);
             }
-            else if (e.PointerType == "mouse")
+            else
             {
                 RawPointerEventType type = default;
 
