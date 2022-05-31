@@ -13,19 +13,19 @@ using SkiaSharp;
 
 namespace Avalonia.Web.Blazor
 {
-    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod
+    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
     {
         private Size _clientSize;
         private BlazorSkiaSurface? _currentSurface;
         private IInputRoot? _inputRoot;
         private readonly Stopwatch _sw = Stopwatch.StartNew();
-        private readonly ITextInputMethodImpl _textInputMethod;
+        private readonly AvaloniaView _avaloniaView;
         private readonly TouchDevice _touchDevice;
         private string _currentCursor = CssCursor.Default;
 
-        public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
+        public RazorViewTopLevelImpl(AvaloniaView avaloniaView)
         {
-            _textInputMethod = textInputMethod;
+            _avaloniaView = avaloniaView;
             TransparencyLevel = WindowTransparencyLevel.None;
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
@@ -175,6 +175,8 @@ namespace Avalonia.Web.Blazor
         public WindowTransparencyLevel TransparencyLevel { get; }
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
-        public ITextInputMethodImpl TextInputMethod => _textInputMethod;
+        public ITextInputMethodImpl TextInputMethod => _avaloniaView;
+
+        public INativeControlHostImpl? NativeControlHost => _avaloniaView.GetNativeControlHostImpl();
     }
 }
