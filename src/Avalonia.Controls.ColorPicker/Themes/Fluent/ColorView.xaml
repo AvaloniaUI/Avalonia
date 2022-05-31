@@ -152,7 +152,7 @@
                                           Grid.Row="0"
                                           Grid.RowSpan="2"
                                           Components="{TemplateBinding ColorSpectrumComponents}"
-                                          HsvColor="{Binding $parent[ColorView].HsvColor}"
+                                          HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                           MinHue="{TemplateBinding MinHue}"
                                           MaxHue="{TemplateBinding MaxHue}"
                                           MinSaturation="{TemplateBinding MinSaturation}"
@@ -187,7 +187,7 @@
                 </Border>
               </TabItem.Header>
               <ListBox Items="{TemplateBinding CustomPaletteColors}"
-                       SelectedItem="{Binding $parent[ColorView].Color}"
+                       SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                        UseLayoutRounding="False"
                        Margin="12">
                 <ListBox.Styles>
@@ -421,7 +421,7 @@
                                         TickFrequency="1"
                                         ColorComponent="Component1"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
+                                        HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -467,7 +467,7 @@
                                         TickFrequency="1"
                                         ColorComponent="Component2"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
+                                        HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -513,7 +513,7 @@
                                         TickFrequency="1"
                                         ColorComponent="Component3"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
+                                        HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -554,7 +554,7 @@
                                         TickFrequency="1"
                                         ColorComponent="Alpha"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
-                                        HsvColor="{Binding $parent[ColorView].HsvColor}"
+                                        HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center" />
@@ -564,8 +564,8 @@
           <!-- Previewer -->
           <primitives:ColorPreviewer Grid.Row="1"
                                      ShowAccentColors="True"
-                                     HsvColor="{Binding $parent[ColorView].HsvColor}"
-                                     Margin="12,0,12,12" />
+                                     HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                     Margin="12,-5,12,7" />
         </Grid>
       </ControlTemplate>
     </Setter>

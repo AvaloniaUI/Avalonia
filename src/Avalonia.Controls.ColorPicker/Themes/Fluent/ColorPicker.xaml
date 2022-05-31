@@ -2,10 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:Avalonia.Controls"
         xmlns:converters="using:Avalonia.Controls.Converters"
-        x:CompileBindings="True">
+        x:CompileBindings="False">
 
   <Styles.Resources>
     <converters:ToBrushConverter x:Key="ToBrush" />
+    <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
   </Styles.Resources>
 
   <Style Selector="ColorPicker">
@@ -18,7 +19,9 @@
         <DropDownButton CornerRadius="{TemplateBinding CornerRadius}"
                         Height="{TemplateBinding Height}"
                         Width="{TemplateBinding Width}"
-                        Padding="0,0,8,0"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Padding="0,0,10,0"
                         UseLayoutRounding="False">
           <DropDownButton.Styles>
             <Style Selector="FlyoutPresenter.NoPadding">
@@ -27,24 +30,32 @@
           </DropDownButton.Styles>
           <DropDownButton.Content>
             <!-- Preview color -->
-            <Border Background="{Binding $parent[ColorPicker].HsvColor, Converter={StaticResource ToBrush}, Mode=OneWay}"
-                    CornerRadius="4,0,0,4"
-                    Margin="0,0,3,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch" />
+            <Panel>
+              <Border Background="{StaticResource CheckeredBackgroundBrush}"
+                      CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Margin="1,1,0,1" />
+              <Border Background="{Binding HsvColor, ElementName=FlyoutColorView, Converter={StaticResource ToBrush}, Mode=OneWay}"
+                      CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Margin="1,1,0,1" />
+            </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
             <Flyout FlyoutPresenterClasses="NoPadding">
               <!-- Skip the following:
-                - Color
                 - CustomPaletteColors
               -->
-              <ColorView ColorModel="{TemplateBinding ColorModel}"
+              <ColorView x:Name="FlyoutColorView"
+                         Color="{Binding $parent[ColorPicker].Color, Mode=TwoWay}"
+                         ColorModel="{Binding $parent[ColorPicker].ColorModel, Mode=TwoWay}"
                          ColorSpectrumComponents="{TemplateBinding ColorSpectrumComponents}"
                          ColorSpectrumShape="{TemplateBinding ColorSpectrumShape}"
                          CustomPaletteColumnCount="{TemplateBinding CustomPaletteColumnCount}"
                          CustomPalette="{TemplateBinding CustomPalette}"
-                         HsvColor="{Binding $parent[ColorPicker].HsvColor}"
+                         HsvColor="{Binding $parent[ColorPicker].HsvColor, Mode=TwoWay}"
                          IsAlphaEnabled="{TemplateBinding IsAlphaEnabled}"
                          IsAlphaSliderVisible="{TemplateBinding IsAlphaSliderVisible}"
                          IsAlphaTextInputVisible="{TemplateBinding IsAlphaTextInputVisible}"
