@@ -5,9 +5,12 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
+    /// <inheritdoc/>
     public partial class ColorView
     {
-        // SelectedTab
+        // SelectedTabIndex
+        // IsColorModelSelectorVisible
+        // IsComponentSliderVisible
 
         /// <summary>
         /// Defines the <see cref="Color"/> property.
@@ -81,7 +84,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsAlphaEnabledProperty =
             AvaloniaProperty.Register<ColorView, bool>(
                 nameof(IsAlphaEnabled),
-                false);
+                true);
 
         /// <summary>
         /// Defines the <see cref="IsAlphaVisible"/> property.
@@ -89,6 +92,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsAlphaVisibleProperty =
             AvaloniaProperty.Register<ColorView, bool>(
                 nameof(IsAlphaVisible),
+                true);
+
+        /// <summary>
+        /// Defines the <see cref="IsColorComponentsVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsColorComponentsVisibleProperty =
+            AvaloniaProperty.Register<ColorView, bool>(
+                nameof(IsColorComponentsVisible),
                 true);
 
         /// <summary>
@@ -108,19 +119,19 @@ namespace Avalonia.Controls
                 true);
 
         /// <summary>
-        /// Defines the <see cref="IsColorSliderVisible"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsColorSliderVisibleProperty =
-            AvaloniaProperty.Register<ColorView, bool>(
-                nameof(IsColorSliderVisible),
-                true);
-
-        /// <summary>
         /// Defines the <see cref="IsColorSpectrumVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsColorSpectrumVisibleProperty =
             AvaloniaProperty.Register<ColorView, bool>(
                 nameof(IsColorSpectrumVisible),
+                true);
+
+        /// <summary>
+        /// Defines the <see cref="IsColorSpectrumSliderVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsColorSpectrumSliderVisibleProperty =
+            AvaloniaProperty.Register<ColorView, bool>(
+                nameof(IsColorSpectrumSliderVisible),
                 true);
 
         /// <summary>
@@ -205,7 +216,7 @@ namespace Avalonia.Controls
         /// <inheritdoc cref="ColorSlider.ColorModel"/>
         /// <remarks>
         /// This property is only applicable to the components tab.
-        /// The spectrum tab must always be in HSV and the palette tab is pre-defined colors.
+        /// The spectrum tab must always be in HSV and the palette tab contains only pre-defined colors.
         /// </remarks>
         public ColorModel ColorModel
         {
@@ -288,7 +299,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the color palette is visible.
+        /// Gets or sets a value indicating whether the color components subview/tab is visible.
+        /// </summary>
+        public bool IsColorComponentsVisible
+        {
+            get => GetValue(IsColorComponentsVisibleProperty);
+            set => SetValue(IsColorComponentsVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the color palette subview/tab is visible.
         /// </summary>
         public bool IsColorPaletteVisible
         {
@@ -309,18 +329,23 @@ namespace Avalonia.Controls
             set => SetValue(IsColorPreviewVisibleProperty, value);
         }
 
-        // IsColorComponentsVisible
-
-        public bool IsColorSliderVisible // ColorSpectrumSlider
-        {
-            get => GetValue(IsColorSliderVisibleProperty);
-            set => SetValue(IsColorSliderVisibleProperty, value);
-        }
-
+        /// <summary>
+        /// Gets or sets a value indicating whether the color spectrum subview/tab is visible.
+        /// </summary>
         public bool IsColorSpectrumVisible
         {
             get => GetValue(IsColorSpectrumVisibleProperty);
             set => SetValue(IsColorSpectrumVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the color spectrum's third component slider
+        /// is visible.
+        /// </summary>
+        public bool IsColorSpectrumSliderVisible
+        {
+            get => GetValue(IsColorSpectrumSliderVisibleProperty);
+            set => SetValue(IsColorSpectrumSliderVisibleProperty, value);
         }
 
         /// <summary>

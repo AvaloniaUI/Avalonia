@@ -121,7 +121,7 @@
               </Style>
             </TabControl.Styles>
             <!-- Spectrum Tab -->
-            <TabItem>
+            <TabItem IsVisible="{TemplateBinding IsColorSpectrumVisible}">
               <TabItem.Header>
                 <Border Width="116"
                         Height="{DynamicResource ColorViewTabStripHeight}">
@@ -150,7 +150,8 @@
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"
-                                        Margin="0,0,12,0" />
+                                        Margin="0,0,12,0"
+                                        IsVisible="{TemplateBinding IsColorSpectrumSliderVisible}"/>
                 <primitives:ColorSpectrum x:Name="ColorSpectrum"
                                           Grid.Column="1"
                                           Components="{TemplateBinding ColorSpectrumComponents}"
@@ -178,7 +179,7 @@
               </Grid>
             </TabItem>
             <!-- Palette Tab -->
-            <TabItem>
+            <TabItem IsVisible="{TemplateBinding IsColorPaletteVisible}">
               <TabItem.Header>
                 <Border Width="116"
                         Height="{DynamicResource ColorViewTabStripHeight}">
@@ -254,7 +255,7 @@
               </ListBox>
             </TabItem>
             <!-- Components Tab -->
-            <TabItem>
+            <TabItem IsVisible="{TemplateBinding IsColorComponentsVisible}">
               <TabItem.Header>
                 <Border Width="116"
                         Height="{DynamicResource ColorViewTabStripHeight}">
@@ -590,7 +591,7 @@
           <!-- Previewer -->
           <!-- Note that top/bottom margins have -5 to remove for drop shadow padding -->
           <primitives:ColorPreviewer Grid.Row="1"
-                                     ShowAccentColors="True"
+                                     ShowAccentColors="{TemplateBinding ShowAccentColors}"
                                      HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                      Margin="12,-5,12,7"
                                      IsVisible="{TemplateBinding IsColorPreviewVisible}" />

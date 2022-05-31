@@ -1,7 +1,7 @@
 ﻿namespace Avalonia.Controls
 {
     /// <summary>
-    /// Defines a specific tab (subview) within the <see cref="ColorView"/>.
+    /// Defines a specific subview (tab) within the <see cref="ColorView"/>.
     /// </summary>
     public enum ColorViewTab
     {
