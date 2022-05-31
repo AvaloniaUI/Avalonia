@@ -10,10 +10,42 @@
      onkeydown="@OnKeyDown"
      onkeyup="@OnKeyUp">
     
-    <canvas @ref="_htmlCanvas" @attributes="AdditionalAttributes"/>
-    
-    <input @ref="_inputElement"
-           class="overlay"
-           type="text"
-           oninput="@OnInput"/>
+    <canvas id="htmlCanvas" @ref="_htmlCanvas" @attributes="AdditionalAttributes"/>
+
+	<div id="nativeControlsContainer" @ref="_nativeControlsContainer" />
+
+    <input id="inputElement" @ref="_inputElement" type="text" oninput="@OnInput"/>
 </div>
+
+<style>
+#htmlCanvas {
+    opacity: 1;
+    background-color: #ccc;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0px;
+    left: 0px;
+    z-index: 500;
+}
+
+#nativeControlsContainer {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0px;
+    left: 0px;
+    z-index: 700;
+}
+
+#inputElement {
+    opacity: 0.0;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0px;
+    left: 0px;
+    z-index: 1000;
+}
+
+</style>
