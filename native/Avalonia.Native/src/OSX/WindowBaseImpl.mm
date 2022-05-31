@@ -143,8 +143,6 @@ HRESULT WindowBaseImpl::Hide() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window orderOut:Window];
-
-            [GetWindowProtocol() restoreParentWindow];
         }
 
         return S_OK;
@@ -608,6 +606,11 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
     }
 
     return (id <AvnWindowProtocol>) Window;
+}
+
+void WindowBaseImpl::BringToFront()
+{
+    // do nothing.
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)

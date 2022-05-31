@@ -10,6 +10,7 @@
 #include "WindowProtocol.h"
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
+    _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
@@ -20,7 +21,7 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
-    _lastParent = nullptr;
+    _parent = nullptr;
     WindowEvents = events;
 }
 
@@ -63,9 +64,9 @@ void WindowImpl::OnInitialiseNSWindow(){
         SetExtendClientArea(true);
     }
     
-    if(_lastParent != nullptr)
+    if(_parent != nullptr)
     {
-        SetParent(_lastParent);
+        SetParent(_parent);
     }
 }
 
@@ -96,31 +97,54 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        if (parent == nullptr)
-            return E_POINTER;
+        if(_parent != nullptr)
+        {
+            _parent->_children.remove(this);
+        }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
-        if (cparent == nullptr)
-            return E_INVALIDARG;
-
         
-        _lastParent = cparent;
+        _parent = cparent;
         
-        if(Window != nullptr){
-        // If one tries to show a child window with a minimized parent window, then the parent window will be
-        // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
-        // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
-        if (cparent->WindowState() == Minimized)
-            cparent->SetWindowState(Normal);
+        if(_parent != nullptr && Window != nullptr){
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
 
-        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-        [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
-
-        UpdateStyle();
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+                
+            cparent->_children.push_back(this);
+                
+            UpdateStyle();
         }
 
         return S_OK;
     }
+}
+
+void WindowImpl::BringToFront()
+{
+    Activate();
+    
+    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+    {
+        (*iterator)->BringToFront();
+    }
+}
+
+bool WindowImpl::CanBecomeKeyWindow()
+{
+    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+    {
+        if((*iterator)->IsDialog())
+        {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 void WindowImpl::StartStateTransition() {
@@ -534,7 +558,7 @@ bool WindowImpl::IsDialog() {
 }
 
 NSWindowStyleMask WindowImpl::GetStyle() {
-    unsigned long s = this->_isDialog ? NSWindowStyleMaskDocModalWindow : NSWindowStyleMaskBorderless;
+    unsigned long s = NSWindowStyleMaskBorderless;
 
     switch (_decorations) {
         case SystemDecorationsNone:

@@ -183,6 +183,11 @@
     return self;
 }
 
+- (void)mouseDown:(NSEvent *)event
+{
+    _parent->BringToFront();
+}
+
 - (BOOL)windowShouldClose:(NSWindow *)sender
 {
     auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
@@ -209,7 +214,14 @@
     {
         ComPtr<WindowBaseImpl> parent = _parent;
         _parent = NULL;
-        [self restoreParentWindow];
+        
+        auto window = dynamic_cast<WindowImpl*>(parent.getRaw());
+        
+        if(window != nullptr)
+        {
+            window->SetParent(nullptr);
+        }
+        
         parent->BaseEvents->Closed();
         [parent->View onClosed];
     }
@@ -220,17 +232,11 @@
     if(_canBecomeKeyWindow)
     {
         // If the window has a child window being shown as a dialog then don't allow it to become the key window.
-        for(NSWindow* uch in [self childWindows])
+        auto parent = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        
+        if(parent != nullptr)
         {
-            if (![uch conformsToProtocol:@protocol(AvnWindowProtocol)])
-            {
-                continue;
-            }
-
-            id <AvnWindowProtocol> ch = (id <AvnWindowProtocol>) uch;
-
-            if(ch.isDialog)
-                return false;
+            return parent->CanBecomeKeyWindow();
         }
 
         return true;
@@ -271,16 +277,6 @@
     }
 
     [super becomeKeyWindow];
-}
-
--(void) restoreParentWindow;
-{
-    auto parent = [self parentWindow];
-
-    if(parent != nil)
-    {
-        [parent removeChildWindow:self];
-    }
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification

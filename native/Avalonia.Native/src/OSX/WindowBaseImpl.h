@@ -99,6 +99,8 @@ BEGIN_INTERFACE_MAP()
     virtual bool IsDialog();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
+                           
+    virtual void BringToFront ();
 
 protected:
     virtual NSWindowStyleMask GetStyle();

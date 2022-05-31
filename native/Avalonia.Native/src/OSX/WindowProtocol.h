@@ -11,7 +11,6 @@
 
 @protocol AvnWindowProtocol
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
--(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
 -(void) setEnabled: (bool) enable;
 -(void) showAppMenuOnly;
