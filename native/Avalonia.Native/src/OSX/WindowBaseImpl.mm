@@ -36,8 +36,10 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
 
-    Window = nullptr;
     lastMenu = nullptr;
+    
+    CreateNSWindow(false);
+    InitialiseNSWindow();
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -88,7 +90,6 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        CreateNSWindow(isDialog);
         InitialiseNSWindow();
 
         if(hasPosition)
@@ -585,6 +586,7 @@ void WindowBaseImpl::InitialiseNSWindow() {
 
         [Window setOpaque:false];
         
+        [Window setHasShadow:true];
         [Window invalidateShadow];
 
         if (lastMenu != nullptr) {
