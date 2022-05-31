@@ -137,7 +137,7 @@ namespace Avalonia.Headless
         {
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
-            var bidiLevel = options.BidLevel;
+            var bidiLevel = options.BidiLevel;
 
             return new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
         }
