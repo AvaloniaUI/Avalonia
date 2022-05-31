@@ -351,6 +351,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var target = new ComboBox
                 {
+                    FlowDirection = FlowDirection.RightToLeft,
                     Items = items,
                     Template = GetTemplate()
                 };
@@ -368,7 +369,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void FlowDirection_Of_RectangleContent_Updated_After_Change_ComboBox()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (UnitTestApplication.Start(TestServices.RealStyler))
             {
                 var items = new[]
                 {
@@ -385,10 +386,10 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var root = new TestRoot(target);
-                
                 target.ApplyTemplate();
                 target.Presenter.ApplyTemplate();
                 target.SelectedIndex = 0;
+                ((ContentPresenter)target.Presenter).UpdateChild();
 
                 var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
 

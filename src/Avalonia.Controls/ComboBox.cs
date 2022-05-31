@@ -178,10 +178,16 @@ namespace Avalonia.Controls
                 ComboBoxItem.ContentTemplateProperty);
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            UpdateSelectionBoxItem(SelectedItem);
+        }
+
         public override void InvalidateMirrorTransform()
         {
             base.InvalidateMirrorTransform();
-            UpdateSelectionBoxItem(SelectedItem);
+            UpdateFlowDirection();
         }
 
         /// <inheritdoc/>
@@ -347,7 +353,7 @@ namespace Avalonia.Controls
                 parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
             }
 
-            UpdateSelectionBoxItem(SelectedItem);
+            UpdateFlowDirection();
         }
 
         private void IsVisibleChanged(bool isVisible)
@@ -403,12 +409,8 @@ namespace Avalonia.Controls
                 {
                     control.Measure(Size.Infinity);
 
-                    var flowDirection = 
-                        (control.VisualParent as Control)?.FlowDirection ?? FlowDirection.LeftToRight;
-
                     SelectionBoxItem = new Rectangle
                     {
-                        FlowDirection = flowDirection,
                         Width = control.DesiredSize.Width,
                         Height = control.DesiredSize.Height,
                         Fill = new VisualBrush
@@ -419,10 +421,24 @@ namespace Avalonia.Controls
                         }
                     };
                 }
+
+                UpdateFlowDirection();
             }
             else
             {
                 SelectionBoxItem = item;
+            }
+        }
+
+        private void UpdateFlowDirection()
+        {
+            var rectangle = SelectionBoxItem as Rectangle;
+            if (rectangle != null)
+            {
+                var content = (rectangle.Fill as VisualBrush)!.Visual as Control;
+                var flowDirection = (((IVisual)content!).VisualParent as Control)?.FlowDirection ?? FlowDirection.LeftToRight;
+
+                rectangle.FlowDirection = flowDirection;
             }
         }
 
