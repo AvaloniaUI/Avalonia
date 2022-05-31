@@ -300,11 +300,6 @@
 
 - (void)mouseDown:(NSEvent *)event
 {
-    if(_parent != nullptr)
-    {
-        _parent->BringToFront();
-    }
-    
     _isLeftPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:LeftButtonDown];

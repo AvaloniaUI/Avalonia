@@ -126,7 +126,14 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
 
 void WindowImpl::BringToFront()
 {
-    Activate();
+    if(IsDialog())
+    {
+        Activate();
+    }
+    else
+    {
+        [Window orderFront:nullptr];
+    }
     
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
