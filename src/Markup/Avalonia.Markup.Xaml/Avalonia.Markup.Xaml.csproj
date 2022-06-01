@@ -51,7 +51,6 @@
         <Compile Include="Templates\TreeDataTemplate.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
-        <Compile Include="XamlIl\Runtime\RuntimePlatformInfo.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
         <Compile Include="XamlLoadException.cs" />
         <Compile Include="..\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs" />

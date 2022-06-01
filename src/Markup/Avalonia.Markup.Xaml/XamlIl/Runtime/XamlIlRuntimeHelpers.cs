@@ -182,8 +182,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return _nameScope;
                 if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
                     return this;
-                if (serviceType == typeof(RuntimePlatformInfo))
-                    return RuntimePlatformInfo.Instance;
                 
                 return null;
             }
