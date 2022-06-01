@@ -9,7 +9,7 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -126,6 +126,7 @@ namespace Avalonia.Skia
         SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
         SKSurface ISkiaDrawingContextImpl.SkSurface => Surface;
         GRContext ISkiaDrawingContextImpl.GrContext => _grContext;
+        double ISkiaDrawingContextImpl.CurrentOpacity => _currentOpacity;
 
         /// <inheritdoc />
         public void Clear(Color color)
@@ -180,7 +181,8 @@ namespace Avalonia.Skia
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
-            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, 
+                size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))) : default(PaintWrapper))
             {
                 if (fill.Paint != null)
                 {
@@ -397,7 +399,7 @@ namespace Avalonia.Skia
 
             if (pen?.Brush != null)
             {
-                using (var paint = CreatePaint(_strokePaint, pen, rect.Rect.Size))
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Rect.Size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))))
                 {
                     if (paint.Paint is object)
                     {
@@ -432,7 +434,7 @@ namespace Avalonia.Skia
 
             if (pen?.Brush != null)
             {
-                using (var paint = CreatePaint(_strokePaint, pen, rect.Size))
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))))
                 {
                     if (paint.Paint is object)
                     {
@@ -624,8 +626,12 @@ namespace Avalonia.Skia
                     }
                     else
                     {
+                        var transformOrigin = linearGradient.TransformOrigin.ToPixels(targetSize);
+                        var offset = Matrix.CreateTranslation(transformOrigin);
+                        var transform = (-offset) * linearGradient.Transform.Value * (offset);
+
                         using (var shader =
-                            SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode, linearGradient.Transform.Value.ToSKMatrix()))
+                            SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode, transform.ToSKMatrix()))
                         {
                             paintWrapper.Paint.Shader = shader;
                         }   
@@ -653,8 +659,12 @@ namespace Avalonia.Skia
                         }
                         else
                         {
+                            var transformOrigin = radialGradient.TransformOrigin.ToPixels(targetSize);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+                            var transform = (-offset) * radialGradient.Transform.Value * (offset);
+                        
                             using (var shader =
-                                SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode, radialGradient.Transform.Value.ToSKMatrix()))
+                                SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode, transform.ToSKMatrix()))
                             {
                                 paintWrapper.Paint.Shader = shader;
                             }
@@ -693,9 +703,14 @@ namespace Avalonia.Skia
                         }
                         else
                         {
+                                
+                            var transformOrigin = radialGradient.TransformOrigin.ToPixels(targetSize);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+                            var transform = (-offset) * radialGradient.Transform.Value * (offset);
+                           
                             using (var shader = SKShader.CreateCompose(
                                 SKShader.CreateColor(reversedColors[0]),
-                                SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode, radialGradient.Transform.Value.ToSKMatrix())
+                                SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode, transform.ToSKMatrix())
                             ))
                             {
                                 paintWrapper.Paint.Shader = shader;
@@ -716,7 +731,12 @@ namespace Avalonia.Skia
 
                     if (conicGradient.Transform is { })
                     {
-                        rotation = rotation.PreConcat(conicGradient.Transform.Value.ToSKMatrix());
+                            
+                        var transformOrigin = conicGradient.TransformOrigin.ToPixels(targetSize);
+                        var offset = Matrix.CreateTranslation(transformOrigin);
+                        var transform = (-offset) * conicGradient.Transform.Value * (offset);
+
+                        rotation = rotation.PreConcat(transform.ToSKMatrix());
                     }
 
                     using (var shader = 
@@ -793,7 +813,11 @@ namespace Avalonia.Skia
 
             if (tileBrush.Transform is { })
             {
-                paintTransform = paintTransform.PreConcat(tileBrush.Transform.Value.ToSKMatrix());
+                var origin = tileBrush.TransformOrigin.ToPixels(targetSize);
+                var offset = Matrix.CreateTranslation(origin);
+                var transform = (-offset) * tileBrush.Transform.Value * (offset);
+
+                paintTransform = paintTransform.PreConcat(transform.ToSKMatrix());
             }
 
             using (var shader = image.ToShader(tileX, tileY, paintTransform))

@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <TextBox Text="Sample"
@@ -87,6 +89,7 @@
                                       SelectionEnd="{TemplateBinding SelectionEnd}"
                                       TextAlignment="{TemplateBinding TextAlignment}"
                                       TextWrapping="{TemplateBinding TextWrapping}"
+                                      LineHeight="{TemplateBinding LineHeight}"
                                       PasswordChar="{TemplateBinding PasswordChar}"
                                       RevealPassword="{TemplateBinding RevealPassword}"
                                       SelectionBrush="{TemplateBinding SelectionBrush}"
@@ -168,7 +171,7 @@
     <Setter Property="InnerRightContent">
       <Template>
         <ToggleButton Classes="passwordBoxRevealButton"
-                      IsChecked="{CompiledBinding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
+                      IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
       </Template>
     </Setter>
   </Style>

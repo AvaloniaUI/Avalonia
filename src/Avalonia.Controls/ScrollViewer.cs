@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -11,6 +12,8 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control which scrolls its content if the content is bigger than the space available.
     /// </summary>
+    [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
+    [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>

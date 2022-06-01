@@ -77,6 +77,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
+    [TemplatePart("PART_PaneRoot", typeof(Panel))]
     [PseudoClasses(":open", ":closed")]
     [PseudoClasses(":compactoverlay", ":compactinline", ":overlay", ":inline")]
     [PseudoClasses(":left", ":right")]
@@ -137,7 +138,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PaneTemplate"/> property.
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> PaneTemplateProperty =
-            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate>(nameof(PaneTemplate));
+            AvaloniaProperty.Register<SplitView, IDataTemplate>(nameof(PaneTemplate));
 
         /// <summary>
         /// Defines the <see cref="UseLightDismissOverlayMode"/> property

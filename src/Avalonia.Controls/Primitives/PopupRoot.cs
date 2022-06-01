@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
@@ -8,7 +6,6 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -17,7 +14,12 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
-        private readonly TopLevel _parent;
+        /// <summary>
+        /// Defines the <see cref="Transform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Transform?> TransformProperty =
+            AvaloniaProperty.Register<PopupRoot, Transform?>(nameof(Transform));
+
         private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
@@ -47,13 +49,22 @@ namespace Avalonia.Controls.Primitives
         public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver? dependencyResolver)
             : base(impl, dependencyResolver)
         {
-            _parent = parent;
+            ParentTopLevel = parent;
         }
 
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
         public new IPopupImpl? PlatformImpl => (IPopupImpl?)base.PlatformImpl;               
+
+        /// <summary>
+        /// Gets or sets a transform that will be applied to the popup.
+        /// </summary>
+        public Transform? Transform
+        {
+            get => GetValue(TransformProperty);
+            set => SetValue(TransformProperty, value);
+        }
 
         /// <summary>
         /// Gets the parent control in the event route.
@@ -73,6 +84,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IStyleHost? IStyleHost.StylingParent => Parent;
 
+        public TopLevel ParentTopLevel { get; }
+
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -91,8 +104,8 @@ namespace Avalonia.Controls.Primitives
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
-            _positionerParameters.ConfigurePosition(_parent, target,
-                placement, offset, anchor, gravity, constraintAdjustment, rect);
+            _positionerParameters.ConfigurePosition(ParentTopLevel, target,
+                placement, offset, anchor, gravity, constraintAdjustment, rect, FlowDirection);
 
             if (_positionerParameters.Size != default)
                 UpdatePosition();
@@ -102,27 +115,6 @@ namespace Avalonia.Controls.Primitives
 
         IVisual IPopupHost.HostedVisualTreeRoot => this;
         
-        public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
-            StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
-            StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty)
-        {
-            var bindings = new List<IDisposable>();
-
-            void Bind(AvaloniaProperty what, AvaloniaProperty to) => bindings.Add(this.Bind(what, popup[~to]));
-            Bind(WidthProperty, widthProperty);
-            Bind(MinWidthProperty, minWidthProperty);
-            Bind(MaxWidthProperty, maxWidthProperty);
-            Bind(HeightProperty, heightProperty);
-            Bind(MinHeightProperty, minHeightProperty);
-            Bind(MaxHeightProperty, maxHeightProperty);
-            Bind(TopmostProperty, topmostProperty);
-            return Disposable.Create(() =>
-            {
-                foreach (var x in bindings)
-                    x.Dispose();
-            });
-        }
-
         protected override Size MeasureOverride(Size availableSize)
         {
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;

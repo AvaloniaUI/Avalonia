@@ -8,6 +8,7 @@ using System.Reflection;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -17,7 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
         private readonly IAvaloniaObject _avaloniaObject;
-        private IDictionary<object, List<PropertyViewModel>>? _propertyIndex;
+        private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
         private bool _snapshotStyles;
@@ -59,7 +60,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 var styleDiagnostics = styledElement.GetStyleDiagnostics();
 
-                foreach (var appliedStyle in styleDiagnostics.AppliedStyles)
+                // We need to place styles without activator first, such styles will be overwritten by ones with activators.
+                foreach (var appliedStyle in styleDiagnostics.AppliedStyles.OrderBy(s => s.HasActivator))
                 {
                     var styleSource = appliedStyle.Source;
 
@@ -87,7 +89,16 @@ namespace Avalonia.Diagnostics.ViewModels
                                 }
                                 else
                                 {
-                                    setterVm = new SetterViewModel(regularSetter.Property, setterValue);
+                                    var isBinding = IsBinding(setterValue);
+
+                                    if (isBinding)
+                                    {
+                                        setterVm = new BindingSetterViewModel(regularSetter.Property, setterValue);
+                                    }
+                                    else
+                                    {
+                                        setterVm = new SetterViewModel(regularSetter.Property, setterValue);
+                                    }
                                 }
 
                                 setters.Add(setterVm);
@@ -117,6 +128,19 @@ namespace Avalonia.Diagnostics.ViewModels
             return null;
         }
 
+        private bool IsBinding(object? value)
+        {
+            switch (value)
+            {
+                case Binding:
+                case CompiledBindingExtension:
+                case TemplateBinding:
+                    return true;
+            }
+
+            return false;
+        }
+
         public TreePageViewModel TreePage { get; }
 
         public DataGridCollectionView? PropertiesView
@@ -132,31 +156,19 @@ namespace Avalonia.Diagnostics.ViewModels
         public object? SelectedEntity
         {
             get => _selectedEntity;
-            set
-            {
-                RaiseAndSetIfChanged(ref _selectedEntity, value);
-               
-            }
+            set => RaiseAndSetIfChanged(ref _selectedEntity, value);
         }
 
         public string? SelectedEntityName
         {
             get => _selectedEntityName;
-            set
-            {
-                RaiseAndSetIfChanged(ref _selectedEntityName, value);
-               
-            }
+            set => RaiseAndSetIfChanged(ref _selectedEntityName, value);
         }
         
         public string? SelectedEntityType
         {
             get => _selectedEntityType;
-            set
-            {
-                RaiseAndSetIfChanged(ref _selectedEntityType, value);
-               
-            }
+            set => RaiseAndSetIfChanged(ref _selectedEntityType, value);
         }
         
         public PropertyViewModel? SelectedProperty
@@ -461,9 +473,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 .Concat(GetClrProperties(o, _showImplementedInterfaces))
                 .OrderBy(x => x, PropertyComparer.Instance)
                 .ThenBy(x => x.Name)
-                .ToList();
+                .ToArray();
 
-            _propertyIndex = properties.GroupBy(x => x.Key).ToDictionary(x => x.Key, x => x.ToList());
+            _propertyIndex = properties.GroupBy(x => x.Key).ToDictionary(x => x.Key, x => x.ToArray());
 
             var view = new DataGridCollectionView(properties);
             view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
@@ -477,6 +489,31 @@ namespace Avalonia.Diagnostics.ViewModels
             else if (o is INotifyPropertyChanged inpc2)
             {
                 inpc2.PropertyChanged += ControlPropertyChanged;
+            }
+        }
+        
+        internal void SelectProperty(AvaloniaProperty property)
+        {
+            SelectedProperty = null;
+
+            if (SelectedEntity != _avaloniaObject)
+            {
+                NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString());    
+            }
+            
+            if (PropertiesView is null)
+            {
+                return;
+            }
+
+            foreach (object o in PropertiesView)
+            {
+                if (o is AvaloniaPropertyViewModel propertyVm && propertyVm.Property == property)
+                {
+                    SelectedProperty = propertyVm;
+                    
+                    break;
+                }
             }
         }
 

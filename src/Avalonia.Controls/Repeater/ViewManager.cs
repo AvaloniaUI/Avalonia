@@ -47,7 +47,7 @@ namespace Avalonia.Controls
                 if (madeAnchor != null)
                 {
                     var anchorVirtInfo = ItemsRepeater.TryGetVirtualizationInfo(madeAnchor);
-                    if (anchorVirtInfo.Index == index)
+                    if (anchorVirtInfo!.Index == index)
                     {
                         element = madeAnchor;
                     }
@@ -60,12 +60,12 @@ namespace Avalonia.Controls
             var virtInfo = ItemsRepeater.TryGetVirtualizationInfo(element);
             if (suppressAutoRecycle)
             {
-                virtInfo.AutoRecycleCandidate = false;
+                virtInfo!.AutoRecycleCandidate = false;
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} Not AutoRecycleCandidate:", virtInfo.Index);
             }
             else
             {
-                virtInfo.AutoRecycleCandidate = true;
+                virtInfo!.AutoRecycleCandidate = true;
                 virtInfo.KeepAlive = true;
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} AutoRecycleCandidate:", virtInfo.Index);
             }

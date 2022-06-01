@@ -222,7 +222,7 @@ namespace Avalonia.Collections
                 {
                     var e = ResetBehavior == ResetBehavior.Reset ?
                         EventArgsCache.ResetCollectionChanged :
-                        new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, _inner.ToList(), 0);
+                        new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, _inner.ToArray(), 0);
 
                     _inner.Clear();
 
@@ -394,7 +394,13 @@ namespace Avalonia.Collections
                         } while (en.MoveNext());
 
                         if (notificationItems is not null)
+                        {
                             NotifyAdd(notificationItems, index);
+                        }
+                        else
+                        {
+                            NotifyCountChanged();
+                        }
                     }
                 }
             }

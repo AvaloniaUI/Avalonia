@@ -2,8 +2,8 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
-             xmlns:pages="clr-namespace:ControlCatalog.Pages"
-             xmlns:models="clr-namespace:ControlCatalog.Models">
+             xmlns:models="clr-namespace:ControlCatalog.Models"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages">
   <Grid>
     <Grid.Styles>
       <Style Selector="TextBlock.h2">
@@ -42,6 +42,9 @@
       </TabItem>
       <TabItem Header="Clipboard">
         <pages:ClipboardPage />
+      </TabItem>
+      <TabItem Header="ColorPicker">
+        <pages:ColorPickerPage />
       </TabItem>
       <TabItem Header="ComboBox">
         <pages:ComboBoxPage />
@@ -145,11 +148,17 @@
       <TabItem Header="ToolTip">
         <pages:ToolTipPage />
       </TabItem>
+      <TabItem Header="TransitioningContentControl">
+        <pages:TransitioningContentControlPage />
+      </TabItem>
       <TabItem Header="TreeView">
         <pages:TreeViewPage />
       </TabItem>
       <TabItem Header="Viewbox">
         <pages:ViewboxPage />
+      </TabItem>
+      <TabItem Header="Native Embed">
+        <pages:NativeEmbedPage />
       </TabItem>
       <TabItem Header="Window Customizations">
         <pages:WindowCustomizationsPage />
@@ -185,6 +194,14 @@
                 <WindowTransparencyLevel>Blur</WindowTransparencyLevel>
                 <WindowTransparencyLevel>AcrylicBlur</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
+              </ComboBox.Items>
+            </ComboBox>
+            <ComboBox x:Name="FlowDirection"
+                      HorizontalAlignment="Stretch"
+                      SelectedIndex="0">
+              <ComboBox.Items>
+                <FlowDirection>LeftToRight</FlowDirection>
+                <FlowDirection>RightToLeft</FlowDirection>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"

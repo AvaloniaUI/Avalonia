@@ -1,7 +1,6 @@
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
-#include "window.h"
 
 static NSString* s_appTitle = @"Avalonia";
 
@@ -343,7 +342,7 @@ public:
         
         @autoreleasepool
         {
-            ::SetAppMenu(s_appTitle, appMenu);
+            ::SetAppMenu(appMenu);
             return S_OK;
         }
     }
@@ -428,7 +427,3 @@ AvnPoint ConvertPointY (AvnPoint p)
     return p;
 }
 
-CGFloat PrimaryDisplayHeight()
-{
-  return NSMaxY([[[NSScreen screens] firstObject] frame]);
-}

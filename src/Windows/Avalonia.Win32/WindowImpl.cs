@@ -21,12 +21,14 @@ using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.WinRT;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Metadata;
 
 namespace Avalonia.Win32
 {
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
+    [Unstable]
     public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
         ITopLevelImplWithNativeControlHost,
         ITopLevelImplWithTextInputMethod
@@ -459,7 +461,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
+        public IEnumerable<object> Surfaces => new object[] { (IPlatformNativeSurfaceHandle)Handle, _gl, _framebuffer };
 
         public PixelPoint Position
         {
@@ -1383,12 +1385,16 @@ namespace Avalonia.Win32
 
         public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
 
-        private class WindowImplPlatformHandle : IPlatformHandle
+        private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
         {
             private readonly WindowImpl _owner;
             public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;
             public IntPtr Handle => _owner.Hwnd;
             public string HandleDescriptor => PlatformConstants.WindowHandleType;
+
+            public PixelSize Size => PixelSize.FromSize(_owner.ClientSize, Scaling);
+
+            public double Scaling => _owner.RenderScaling;
         }
     }
 }

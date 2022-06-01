@@ -12,6 +12,18 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a time.
     /// </summary>
+    [TemplatePart("FirstColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("FirstPickerHost",         typeof(Border))]
+    [TemplatePart("FlyoutButton",            typeof(Button))]
+    [TemplatePart("FlyoutButtonContentGrid", typeof(Grid))]
+    [TemplatePart("HourTextBlock",           typeof(TextBlock))]
+    [TemplatePart("MinuteTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PeriodTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PickerPresenter",         typeof(TimePickerPresenter))]
+    [TemplatePart("Popup",                   typeof(Popup))]
+    [TemplatePart("SecondColumnDivider",     typeof(Rectangle))]
+    [TemplatePart("SecondPickerHost",        typeof(Border))]
+    [TemplatePart("ThirdPickerHost",         typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
@@ -26,13 +38,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Header"/> property
         /// </summary>
         public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
+            AvaloniaProperty.Register<TimePicker, object>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> property
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
+            AvaloniaProperty.Register<TimePicker, IDataTemplate>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property

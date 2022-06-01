@@ -62,6 +62,8 @@ namespace IntegrationTestApp
                 this.FindControl<ComboBox>("BasicComboBox").SelectedIndex = 0;
             if (source?.Name == "ListBoxSelectionClear")
                 this.FindControl<ListBox>("BasicListBox").SelectedIndex = -1;
+            if (source?.Name == "MenuClickedMenuItemReset")
+                this.FindControl<TextBlock>("ClickedMenuItem").Text = "None";
         }
     }
 }

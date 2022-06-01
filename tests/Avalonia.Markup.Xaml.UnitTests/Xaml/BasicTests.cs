@@ -16,6 +16,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Xml;
 using Xunit;
+using Avalonia.Controls.Documents;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -47,12 +48,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         public void Attached_Property_Is_Set()
         {
             var xaml =
-        @"<ContentControl xmlns='https://github.com/avaloniaui' TextBlock.FontSize='21'/>";
+        @"<ContentControl xmlns='https://github.com/avaloniaui' TextElement.FontSize='21'/>";
 
             var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
             Assert.NotNull(target);
-            Assert.Equal(21.0, TextBlock.GetFontSize(target));
+            Assert.Equal(21.0, TextElement.GetFontSize(target));
         }
 
         [Fact]
@@ -90,13 +91,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             {
                 var xaml =
-            @"<Window xmlns='https://github.com/avaloniaui' TextBlock.FontSize='{Binding}'/>";
+            @"<Window xmlns='https://github.com/avaloniaui' TextElement.FontSize='{Binding}'/>";
 
                 var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
                 target.DataContext = 21.0;
 
-                Assert.Equal(21.0, TextBlock.GetFontSize(target));
+                Assert.Equal(21.0, TextElement.GetFontSize(target));
             }
         }
 

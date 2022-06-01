@@ -252,6 +252,10 @@ namespace Avalonia.Controls
     /// drop-down that contains possible matches based on the input in the text
     /// box.
     /// </summary>
+    [TemplatePart(ElementPopup,            typeof(Popup))]
+    [TemplatePart(ElementSelector,         typeof(SelectingItemsControl))]
+    [TemplatePart(ElementSelectionAdapter, typeof(ISelectionAdapter))]
+    [TemplatePart(ElementTextBox,          typeof(TextBox))]
     [PseudoClasses(":dropdownopen")]
     public class AutoCompleteBox : TemplatedControl
     {
@@ -1342,12 +1346,16 @@ namespace Avalonia.Controls
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="value">The new binding value for the property.</param>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        /// <param name="state">The current data binding state.</param>
+        /// <param name="error">The current data binding error, if any.</param>
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == TextProperty || property == SelectedItemProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 
@@ -2180,7 +2188,7 @@ namespace Avalonia.Controls
             }
 
             // Store a local cached copy of the data
-            _items = newValue == null ? null : new List<object>(newValue.Cast<object>().ToList());
+            _items = newValue == null ? null : new List<object>(newValue.Cast<object>());
 
             // Clear and set the view on the selection adapter
             ClearView();
@@ -2239,7 +2247,7 @@ namespace Avalonia.Controls
                 ClearView();
                 if (Items != null)
                 {
-                    _items = new List<object>(Items.Cast<object>().ToList());
+                    _items = new List<object>(Items.Cast<object>());
                 }
             }
 
