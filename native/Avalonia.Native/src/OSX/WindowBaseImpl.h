@@ -38,7 +38,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual NSWindow *GetNSWindow() override;
 
-    virtual NSView *GetNSView() override;
+    virtual AvnView *GetNSView() override;
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
 

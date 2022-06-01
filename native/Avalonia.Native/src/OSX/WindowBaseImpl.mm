@@ -70,7 +70,7 @@ NSWindow *WindowBaseImpl::GetNSWindow() {
     return Window;
 }
 
-NSView *WindowBaseImpl::GetNSView() {
+AvnView *WindowBaseImpl::GetNSView() {
     return View;
 }
 
