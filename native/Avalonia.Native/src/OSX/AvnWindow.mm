@@ -68,7 +68,7 @@
     }
 }
 
-- (void)performClose:(id)sender
+- (void)performClose:(id _Nullable )sender
 {
     if([[self delegate] respondsToSelector:@selector(windowShouldClose:)])
     {
@@ -147,7 +147,7 @@
     }
 }
 
--(void) applyMenu:(AvnMenu *)menu
+-(void) applyMenu:(AvnMenu *_Nullable)menu
 {
     if(menu == nullptr)
     {
@@ -157,7 +157,7 @@
     _menu = menu;
 }
 
--(CLASS_NAME*)  initWithParent: (WindowBaseImpl*) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+-(CLASS_NAME*_Nonnull)  initWithParent: (WindowBaseImpl*_Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 {
     // https://jameshfisher.com/2020/07/10/why-is-the-contentrect-of-my-nswindow-ignored/
     // create nswindow with specific contentRect, otherwise we wont be able to resize the window
@@ -176,14 +176,15 @@
 
     _isExtended = false;
 
-#ifdef IS_NSPANEL
-    [self setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary];
-#endif
+    if(self.isDialog)
+    {
+        [self setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary];
+    }
 
     return self;
 }
 
-- (BOOL)windowShouldClose:(NSWindow *)sender
+- (BOOL)windowShouldClose:(NSWindow *_Nonnull)sender
 {
     auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
 
@@ -195,21 +196,28 @@
     return true;
 }
 
-- (void)windowDidChangeBackingProperties:(NSNotification *)notification
+- (void)windowDidChangeBackingProperties:(NSNotification *_Nonnull)notification
 {
     [self backingScaleFactor];
 }
 
 
 
-- (void)windowWillClose:(NSNotification *)notification
+- (void)windowWillClose:(NSNotification *_Nonnull)notification
 {
     _closed = true;
     if(_parent)
     {
         ComPtr<WindowBaseImpl> parent = _parent;
         _parent = NULL;
-        [self restoreParentWindow];
+        
+        auto window = dynamic_cast<WindowImpl*>(parent.getRaw());
+        
+        if(window != nullptr)
+        {
+            window->SetParent(nullptr);
+        }
+        
         parent->BaseEvents->Closed();
         [parent->View onClosed];
     }
@@ -220,17 +228,11 @@
     if(_canBecomeKeyWindow)
     {
         // If the window has a child window being shown as a dialog then don't allow it to become the key window.
-        for(NSWindow* uch in [self childWindows])
+        auto parent = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        
+        if(parent != nullptr)
         {
-            if (![uch conformsToProtocol:@protocol(AvnWindowProtocol)])
-            {
-                continue;
-            }
-
-            id <AvnWindowProtocol> ch = (id <AvnWindowProtocol>) uch;
-
-            if(ch.isDialog)
-                return false;
+            return parent->CanBecomeKeyWindow();
         }
 
         return true;
@@ -259,6 +261,10 @@
 -(void) setEnabled:(bool)enable
 {
     _isEnabled = enable;
+    
+    [[self standardWindowButton:NSWindowCloseButton] setEnabled:enable];
+    [[self standardWindowButton:NSWindowMiniaturizeButton] setEnabled:enable];
+    [[self standardWindowButton:NSWindowZoomButton] setEnabled:enable];
 }
 
 -(void)becomeKeyWindow
@@ -273,17 +279,12 @@
     [super becomeKeyWindow];
 }
 
--(void) restoreParentWindow;
+- (void)windowDidBecomeKey:(NSNotification *_Nonnull)notification
 {
-    auto parent = [self parentWindow];
-
-    if(parent != nil)
-    {
-        [parent removeChildWindow:self];
-    }
+    _parent->BringToFront();
 }
 
-- (void)windowDidMiniaturize:(NSNotification *)notification
+- (void)windowDidMiniaturize:(NSNotification *_Nonnull)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
@@ -293,7 +294,7 @@
     }
 }
 
-- (void)windowDidDeminiaturize:(NSNotification *)notification
+- (void)windowDidDeminiaturize:(NSNotification *_Nonnull)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
@@ -303,7 +304,7 @@
     }
 }
 
-- (void)windowDidResize:(NSNotification *)notification
+- (void)windowDidResize:(NSNotification *_Nonnull)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
@@ -313,7 +314,7 @@
     }
 }
 
-- (void)windowWillExitFullScreen:(NSNotification *)notification
+- (void)windowWillExitFullScreen:(NSNotification *_Nonnull)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
@@ -323,7 +324,7 @@
     }
 }
 
-- (void)windowDidExitFullScreen:(NSNotification *)notification
+- (void)windowDidExitFullScreen:(NSNotification *_Nonnull)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
@@ -346,7 +347,7 @@
     }
 }
 
-- (void)windowWillEnterFullScreen:(NSNotification *)notification
+- (void)windowWillEnterFullScreen:(NSNotification *_Nonnull)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
@@ -356,7 +357,7 @@
     }
 }
 
-- (void)windowDidEnterFullScreen:(NSNotification *)notification
+- (void)windowDidEnterFullScreen:(NSNotification *_Nonnull)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
@@ -367,7 +368,7 @@
     }
 }
 
-- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
+- (BOOL)windowShouldZoom:(NSWindow *_Nonnull)window toFrame:(NSRect)newFrame
 {
     return true;
 }
@@ -378,11 +379,13 @@
         _parent->BaseEvents->Deactivated();
 
     [self showAppMenuOnly];
+    
+    [self invalidateShadow];
 
     [super resignKeyWindow];
 }
 
-- (void)windowDidMove:(NSNotification *)notification
+- (void)windowDidMove:(NSNotification *_Nonnull)notification
 {
     AvnPoint position;
 
@@ -414,7 +417,7 @@
     return pt;
 }
 
-- (void)sendEvent:(NSEvent *)event
+- (void)sendEvent:(NSEvent *_Nonnull)event
 {
     [super sendEvent:event];
 
@@ -437,8 +440,10 @@
 
                     _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint32>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
                 }
+                
+                _parent->BringToFront();
             }
-                break;
+            break;
 
             case NSEventTypeMouseEntered:
             {

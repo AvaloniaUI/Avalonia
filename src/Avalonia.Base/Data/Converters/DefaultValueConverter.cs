@@ -33,7 +33,14 @@ namespace Avalonia.Data.Converters
 
             if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d && d.Method.GetParameters().Length <= 1)
             {
-                return new MethodToCommandConverter(d);
+                if (d.Method.IsPrivate == false)
+                {
+                    return new MethodToCommandConverter(d);
+                }
+                else
+                {
+                    return new BindingNotification(new InvalidCastException("You can't bind to private methods!"), BindingErrorType.Error);
+                }
             }
 
             if (TypeUtilities.TryConvert(targetType, value, culture, out var result))
