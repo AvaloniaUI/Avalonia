@@ -23,7 +23,7 @@ namespace Avalonia.Web.Blazor
                 InvokeAsync<string>("navigator.clipboard.writeText",text);
         }
 
-        public Task ClearAsync() => Task.CompletedTask;
+        public async Task ClearAsync() => await SetTextAsync("");
 
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
