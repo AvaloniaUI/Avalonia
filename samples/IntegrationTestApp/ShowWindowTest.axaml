@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="IntegrationTestApp.ShowWindowTest"
+        Name="SecondaryWindow"
         Title="Show Window Test">
   <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
     <Button Name="CloseWindow" Grid.Row="0" Click="CloseWindow_Click">Close</Button>
