@@ -448,6 +448,11 @@ namespace Avalonia.Controls
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu)
             {
+                if (contextMenu._popup?.Parent == control)
+                {
+                    ((ISetLogicalParent)contextMenu._popup).SetParent(null);
+                }
+
                 contextMenu.Close();
             }
         }
