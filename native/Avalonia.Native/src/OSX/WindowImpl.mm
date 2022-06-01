@@ -139,6 +139,8 @@ void WindowImpl::BringToFront()
         [Window orderFront:nullptr];
     }
     
+    [Window invalidateShadow];
+    
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
         (*iterator)->BringToFront();
