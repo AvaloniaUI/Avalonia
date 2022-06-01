@@ -176,9 +176,10 @@
 
     _isExtended = false;
 
-#ifdef IS_NSPANEL
-    [self setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary];
-#endif
+    if(self.isDialog)
+    {
+        [self setCollectionBehavior:NSWindowCollectionBehaviorCanJoinAllSpaces|NSWindowCollectionBehaviorFullScreenAuxiliary];
+    }
 
     return self;
 }
@@ -260,6 +261,10 @@
 -(void) setEnabled:(bool)enable
 {
     _isEnabled = enable;
+    
+    [[self standardWindowButton:NSWindowCloseButton] setEnabled:enable];
+    [[self standardWindowButton:NSWindowMiniaturizeButton] setEnabled:enable];
+    [[self standardWindowButton:NSWindowZoomButton] setEnabled:enable];
 }
 
 -(void)becomeKeyWindow
