@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
-    public class TemplatedControl : Control, ITemplatedControl
+    public class TemplatedControl : Control, IThemed, ITemplatedControl
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -85,6 +85,12 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<IControlTemplate?> TemplateProperty =
             AvaloniaProperty.Register<TemplatedControl, IControlTemplate?>(nameof(Template));
+
+        /// <summary>
+        /// Defines the <see cref="Theme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> ThemeProperty =
+            AvaloniaProperty.Register<TemplatedControl, ControlTheme?>(nameof(Theme));
 
         /// <summary>
         /// Defines the IsTemplateFocusTarget attached property.
@@ -229,6 +235,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets the theme to be applied to the control.
+        /// </summary>
+        public ControlTheme? Theme
+        {
+            get { return GetValue(ThemeProperty); }
+            set { SetValue(ThemeProperty, value); }
+        }
+
+        /// <summary>
         /// Gets the value of the IsTemplateFocusTargetProperty attached property on a control.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -363,6 +378,14 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         protected virtual void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ThemeProperty)
+                InvalidateStyles();
         }
 
         /// <summary>

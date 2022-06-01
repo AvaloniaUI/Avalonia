@@ -109,7 +109,7 @@ namespace Avalonia.Styling
             set => _styles[index] = value;
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
+        public SelectorMatchResult TryAttach(IStyleable target, object? host)
         {
             _cache ??= new StyleCache();
             return _cache.TryAttach(this, target, host);

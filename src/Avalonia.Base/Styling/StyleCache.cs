@@ -12,7 +12,7 @@ namespace Avalonia.Styling
     /// </remarks>
     internal class StyleCache : Dictionary<Type, List<IStyle>?>
     {
-        public SelectorMatchResult TryAttach(IList<IStyle> styles, IStyleable target, IStyleHost? host)
+        public SelectorMatchResult TryAttach(IList<IStyle> styles, IStyleable target, object? host)
         {
             if (TryGetValue(target.StyleKey, out var cached))
             {

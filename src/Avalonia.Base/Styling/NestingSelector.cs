@@ -15,9 +15,9 @@ namespace Avalonia.Styling
 
         protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
-            if (parent is Style s && s.Selector is Selector selector)
+            if (parent is StyleBase s && s.HasSelector)
             {
-                return selector.Match(control, (parent as Style)?.Parent, subscribe);
+                return s.Match(control, null, subscribe);
             }
 
             throw new InvalidOperationException(

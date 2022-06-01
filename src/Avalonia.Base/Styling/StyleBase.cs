@@ -64,12 +64,14 @@ namespace Avalonia.Styling
         bool IResourceNode.HasResources => _resources?.Count > 0;
         IReadOnlyList<IStyle> IStyle.Children => (IReadOnlyList<IStyle>?)_children ?? Array.Empty<IStyle>();
 
+        internal abstract bool HasSelector { get; }
+
         public void Add(ISetter setter) => Setters.Add(setter);
         public void Add(IStyle style) => Children.Add(style);
 
         public event EventHandler? OwnerChanged;
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
+        public SelectorMatchResult TryAttach(IStyleable target, object? host)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
 
@@ -77,7 +79,7 @@ namespace Avalonia.Styling
 
             if (_setters?.Count > 0 || _animations?.Count > 0)
             {
-                var match = Matches(target, host);
+                var match = Match(target, host, subscribe: true);
 
                 if (match.IsMatch)
                 {
@@ -106,7 +108,19 @@ namespace Avalonia.Styling
             return _resources?.TryGetResource(key, out result) ?? false;
         }
 
-        protected abstract SelectorMatch Matches(IStyleable target, IStyleHost? host);
+        /// <summary>
+        /// Evaluates the style's selector against the specified target element.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="host">The element that hosts the style.</param>
+        /// <param name="subscribe">
+        /// Whether the match should subscribe to changes in order to track the match over time,
+        /// or simply return an immediate result.
+        /// </param>
+        /// <returns>
+        /// A <see cref="SelectorMatchResult"/> describing how the style matches the control.
+        /// </returns>
+        internal abstract SelectorMatch Match(IStyleable control, object? host, bool subscribe);
 
         internal virtual void SetParent(StyleBase? parent) => Parent = parent;
 

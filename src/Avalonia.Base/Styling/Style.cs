@@ -28,6 +28,8 @@ namespace Avalonia.Styling
         /// </summary>
         public Selector? Selector { get; set; }
 
+        internal override bool HasSelector => Selector is not null;
+
         /// <summary>
         /// Returns a string representation of the style.
         /// </summary>
@@ -44,10 +46,10 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override SelectorMatch Matches(IStyleable target, IStyleHost? host)
+        internal override SelectorMatch Match(IStyleable control, object? host, bool subscribe)
         {
-            return Selector?.Match(target, Parent) ??
-                (target == host ?
+            return Selector?.Match(control, Parent, subscribe) ??
+                (control == host ?
                     SelectorMatch.AlwaysThisInstance :
                     SelectorMatch.NeverThisInstance);
         }
