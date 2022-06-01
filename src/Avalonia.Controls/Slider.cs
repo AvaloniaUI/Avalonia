@@ -194,7 +194,7 @@ namespace Avalonia.Controls
 
             if (_track != null)
             {
-                _track.IgnoreThumbDrag = true;
+                _track.IsThumbDragHandled = true;
             }
 
             if (_decreaseButton != null)

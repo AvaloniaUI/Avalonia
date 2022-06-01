@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Track, bool>(nameof(IsDirectionReversed));
 
         public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
-            AvaloniaProperty.Register<Track, bool>(nameof(IgnoreThumbDrag));
+            AvaloniaProperty.Register<Track, bool>(nameof(IsThumbDragHandled));
 
         private double _minimum;
         private double _maximum = 100.0;
@@ -118,7 +118,7 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(IsDirectionReversedProperty, value); }
         }
 
-        public bool IgnoreThumbDrag
+        public bool IsThumbDragHandled
         {
             get { return GetValue(IgnoreThumbDragProperty); }
             set { SetValue(IgnoreThumbDragProperty, value); }
@@ -442,7 +442,7 @@ namespace Avalonia.Controls.Primitives
 
         private void ThumbDragged(object sender, VectorEventArgs e)
         {
-            if (IgnoreThumbDrag)
+            if (IsThumbDragHandled)
                 return;
                 
             Value = MathUtilities.Clamp(
