@@ -8,6 +8,17 @@ namespace Avalonia.Styling
     public class ControlTheme : StyleBase
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="ControlTheme"/> class.
+        /// </summary>
+        public ControlTheme() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ControlTheme"/> class.
+        /// </summary>
+        /// <param name="targetType">The value for <see cref="TargetType"/>.</param>
+        public ControlTheme(Type targetType) => TargetType = targetType;
+
+        /// <summary>
         /// Gets or sets the type for which this control theme is intended.
         /// </summary>
         public Type? TargetType { get; set; }
@@ -22,6 +33,11 @@ namespace Avalonia.Styling
             return control.StyleKey == TargetType ?
                 SelectorMatch.AlwaysThisType :
                 SelectorMatch.NeverThisType;
+        }
+
+        internal override void SetParent(StyleBase? parent)
+        {
+            throw new InvalidOperationException("ControlThemes cannot be added as a nested style.");
         }
     }
 }
