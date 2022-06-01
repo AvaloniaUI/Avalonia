@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
+using SeleniumExtras.PageObjects;
 using Xunit;
 using Xunit.Sdk;
 
@@ -20,6 +22,79 @@ namespace Avalonia.IntegrationTests.Appium
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("Window");
             tab.Click();
+        }
+        
+        [PlatformFact(SkipOnWindows = true)]
+        public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent()
+        {
+            var mainWindowHandle = GetCurrentWindowHandleHack();
+            
+            try
+            {
+                var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
+                var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
+                var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+                var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+
+                var mainWindow =
+                    _session.FindElementByAccessibilityId("MainWindow");
+                
+                
+                
+                sizeTextBox.SendKeys("200, 100");
+
+                modeComboBox.Click();
+                _session.FindElementByName(ShowWindowMode.Modal.ToString()).SendClick();
+
+                locationComboBox.Click();
+                _session.FindElementByName(WindowStartupLocation.CenterOwner.ToString()).SendClick();
+
+                showButton.Click();
+
+                var secondaryWindow = _session.FindElementByAccessibilityId("SecondaryWindow");
+
+                mainWindow.Click();
+                
+                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
+
+                int i = 0;
+                int mainWindowIndex = 0;
+                int secondaryWindowIndex = 0;
+                
+                foreach (var window in windows)
+                {
+                    i++;
+                    
+                    var child = window.FindElementByXPath("XCUIElementTypeWindow");
+
+                    switch (child.GetAttribute("identifier"))
+                    {
+                        case "MainWindow":
+                            mainWindowIndex = i;
+                            break;
+                            
+                        case "SecondaryWindow":
+                            secondaryWindowIndex = i;
+                            break;
+                    }
+
+                }
+                
+                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(2, mainWindowIndex);
+
+                SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
+            }
+            finally
+            {
+                try
+                {
+                    var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
+                    closeButton.Click();
+                    SwitchToMainWindowHack(mainWindowHandle);
+                }
+                catch { }
+            }
         }
 
         [PlatformFact(SkipOnWindows = true)]
