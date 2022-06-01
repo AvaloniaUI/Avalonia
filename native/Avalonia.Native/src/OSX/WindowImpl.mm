@@ -9,6 +9,7 @@
 #include "WindowProtocol.h"
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
+    _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
@@ -19,6 +20,7 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
+    _parent = nullptr;
     WindowEvents = events;
 }
 
@@ -60,6 +62,11 @@ void WindowImpl::OnInitialiseNSWindow(){
         [GetWindowProtocol() setIsExtended:true];
         SetExtendClientArea(true);
     }
+    
+    if(_parent != nullptr)
+    {
+        SetParent(_parent);
+    }
 }
 
 HRESULT WindowImpl::Show(bool activate, bool isDialog) {
@@ -89,26 +96,66 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        if (parent == nullptr)
-            return E_POINTER;
+        if(_parent != nullptr)
+        {
+            _parent->_children.remove(this);
+            auto parent = _parent;
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                parent->BringToFront();
+            });
+        }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
-        if (cparent == nullptr)
-            return E_INVALIDARG;
+        
+        _parent = cparent;
+        
+        if(_parent != nullptr && Window != nullptr){
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
 
-        // If one tries to show a child window with a minimized parent window, then the parent window will be
-        // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
-        // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
-        if (cparent->WindowState() == Minimized)
-            cparent->SetWindowState(Normal);
-
-        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-        [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
-
-        UpdateStyle();
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+                
+            cparent->_children.push_back(this);
+                
+            UpdateStyle();
+        }
 
         return S_OK;
     }
+}
+
+void WindowImpl::BringToFront()
+{
+    if(IsDialog())
+    {
+        Activate();
+    }
+    else
+    {
+        [Window orderFront:nullptr];
+    }
+    
+    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+    {
+        (*iterator)->BringToFront();
+    }
+}
+
+bool WindowImpl::CanBecomeKeyWindow()
+{
+    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+    {
+        if((*iterator)->IsDialog())
+        {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 void WindowImpl::StartStateTransition() {
@@ -522,7 +569,7 @@ bool WindowImpl::IsDialog() {
 }
 
 NSWindowStyleMask WindowImpl::GetStyle() {
-    unsigned long s = this->_isDialog ? NSWindowStyleMaskDocModalWindow : NSWindowStyleMaskBorderless;
+    unsigned long s = NSWindowStyleMaskBorderless;
 
     switch (_decorations) {
         case SystemDecorationsNone:
@@ -534,7 +581,7 @@ NSWindowStyleMask WindowImpl::GetStyle() {
             break;
 
         case SystemDecorationsFull:
-            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskBorderless;
+            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable;
 
             if (_canResize) {
                 s = s | NSWindowStyleMaskResizable;
@@ -542,7 +589,7 @@ NSWindowStyleMask WindowImpl::GetStyle() {
             break;
     }
 
-    if ([Window parentWindow] == nullptr) {
+    if (!IsDialog()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
