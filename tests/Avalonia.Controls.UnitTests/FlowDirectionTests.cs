@@ -17,7 +17,23 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void HasMirrorTransform_Of_Children_Is_Updated_After_Change()
+        public void HasMirrorTransform_Of_LTR_Children_Should_Be_True_For_RTL_Parent()
+        {
+            Control child;
+            var target = new Decorator
+            {
+                FlowDirection = FlowDirection.RightToLeft,
+                Child = child = new Control()
+            };
+
+            child.FlowDirection = FlowDirection.LeftToRight;
+
+            Assert.True(target.HasMirrorTransform);
+            Assert.True(child.HasMirrorTransform);  
+        }
+
+        [Fact]
+        public void HasMirrorTransform_Of_Children_Is_Updated_After_Parent_Changeed()
         {
             Control child;
             var target = new Decorator
