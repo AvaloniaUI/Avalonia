@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -39,8 +40,6 @@ namespace Avalonia.IntegrationTests.Appium
                 var mainWindow =
                     _session.FindElementByAccessibilityId("MainWindow");
                 
-                
-                
                 sizeTextBox.SendKeys("200, 100");
 
                 modeComboBox.Click();
@@ -51,37 +50,15 @@ namespace Avalonia.IntegrationTests.Appium
 
                 showButton.Click();
 
-                var secondaryWindow = _session.FindElementByAccessibilityId("SecondaryWindow");
-
                 mainWindow.Click();
                 
                 var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
 
-                int i = 0;
-                int mainWindowIndex = 0;
-                int secondaryWindowIndex = 0;
+                int mainWindowIndex = windows.GetWindowOrder("MainWindow");
+                int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
                 
-                foreach (var window in windows)
-                {
-                    i++;
-                    
-                    var child = window.FindElementByXPath("XCUIElementTypeWindow");
-
-                    switch (child.GetAttribute("identifier"))
-                    {
-                        case "MainWindow":
-                            mainWindowIndex = i;
-                            break;
-                            
-                        case "SecondaryWindow":
-                            secondaryWindowIndex = i;
-                            break;
-                    }
-
-                }
-                
-                Assert.Equal(1, secondaryWindowIndex);
-                Assert.Equal(2, mainWindowIndex);
+                Assert.Equal(0, secondaryWindowIndex);
+                Assert.Equal(1, mainWindowIndex);
 
                 SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
             }
@@ -291,6 +268,15 @@ namespace Avalonia.IntegrationTests.Appium
             NonOwned,
             Owned,
             Modal
+        }
+    }
+
+    static class Extensions
+    {
+        public static int GetWindowOrder(this IReadOnlyCollection<AppiumWebElement> elements, string identifier)
+        {
+            return elements.TakeWhile(x =>
+                x.FindElementByXPath("XCUIElementTypeWindow")?.GetAttribute("identifier") != identifier).Count();
         }
     }
 }
