@@ -30,24 +30,12 @@ void WindowImpl::HideOrShowTrafficLights() {
         return;
     }
 
-    for (id subview in Window.contentView.superview.subviews) {
-        if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")]) {
-            NSView *titlebarView = [subview subviews][0];
-            for (id button in titlebarView.subviews) {
-                if ([button isKindOfClass:[NSButton class]]) {
-                    if (_isClientAreaExtended) {
-                        auto wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-
-                        [button setHidden:!wantsChrome];
-                    } else {
-                        [button setHidden:(_decorations != SystemDecorationsFull)];
-                    }
-
-                    [button setWantsLayer:true];
-                }
-            }
-        }
-    }
+    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+    bool hasTrafficLights = _isClientAreaExtended ? !wantsChrome : _decorations != SystemDecorationsFull;
+    
+    [[Window standardWindowButton:NSWindowCloseButton] setHidden:hasTrafficLights];
+    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:hasTrafficLights];
+    [[Window standardWindowButton:NSWindowZoomButton] setHidden:hasTrafficLights];
 }
 
 void WindowImpl::OnInitialiseNSWindow(){
