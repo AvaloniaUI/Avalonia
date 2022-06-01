@@ -100,6 +100,11 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
         if(_parent != nullptr)
         {
             _parent->_children.remove(this);
+            auto parent = _parent;
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                parent->BringToFront();
+            });
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
