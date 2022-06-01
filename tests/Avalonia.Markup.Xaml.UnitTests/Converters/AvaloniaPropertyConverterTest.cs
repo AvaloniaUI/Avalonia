@@ -137,6 +137,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 get { throw new NotImplementedException(); }
             }
 
+            public ControlTheme Theme
+            {
+                get { throw new NotImplementedException(); }
+            }
+
             public void DetachStyles()
             {
                 throw new NotImplementedException();

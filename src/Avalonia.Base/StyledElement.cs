@@ -12,8 +12,6 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -55,6 +53,12 @@ namespace Avalonia
                 nameof(TemplatedParent),
                 o => o.TemplatedParent,
                 (o ,v) => o.TemplatedParent = v);
+        
+        /// <summary>
+        /// Defines the <see cref="Theme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> ThemeProperty =
+            AvaloniaProperty.Register<StyledElement, ControlTheme?>(nameof(Theme));
 
         private int _initCount;
         private string? _name;
@@ -228,6 +232,15 @@ namespace Avalonia
         {
             get => _templatedParent;
             internal set => SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the theme to be applied to the element.
+        /// </summary>
+        public ControlTheme? Theme
+        {
+            get { return GetValue(ThemeProperty); }
+            set { SetValue(ThemeProperty, value); }
         }
 
         /// <summary>
@@ -588,6 +601,14 @@ namespace Avalonia
         /// </summary>
         protected virtual void OnInitialized()
         {
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ThemeProperty)
+                InvalidateStyles();
         }
 
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
