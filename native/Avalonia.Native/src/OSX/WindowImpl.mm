@@ -590,7 +590,7 @@ NSWindowStyleMask WindowImpl::GetStyle() {
             break;
     }
 
-    if ([Window parentWindow] == nullptr) {
+    if (!IsDialog()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
