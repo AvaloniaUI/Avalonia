@@ -22,6 +22,63 @@ namespace Avalonia.IntegrationTests.Appium
             tab.Click();
         }
 
+        [PlatformFact(SkipOnWindows = true)]
+        public void OSX_Parent_Window_Has_Disabled_ChromeButtons_When_Modal_Dialog_Shown()
+        {
+            var mainWindowHandle = GetCurrentWindowHandleHack();
+            
+            try
+            {
+                var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
+                var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
+                var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+                var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+
+                var closeButton =
+                    _session.FindElementByXPath(
+                        "/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeButton[1]");
+                
+                var zoomButton =
+                    _session.FindElementByXPath(
+                        "/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeButton[2]");
+                
+                var miniturizeButton =
+                    _session.FindElementByXPath(
+                        "/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeButton[3]");
+                
+                
+                Assert.True(closeButton.Enabled);
+                Assert.True(zoomButton.Enabled);
+                Assert.True(miniturizeButton.Enabled);
+                
+                sizeTextBox.SendKeys("400, 400");
+
+                modeComboBox.Click();
+                _session.FindElementByName(ShowWindowMode.Modal.ToString()).SendClick();
+
+                locationComboBox.Click();
+                _session.FindElementByName(WindowStartupLocation.CenterOwner.ToString()).SendClick();
+
+                showButton.Click();
+                
+                SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
+                
+                Assert.False(closeButton.Enabled);
+                Assert.False(zoomButton.Enabled);
+                Assert.False(miniturizeButton.Enabled);
+            }
+            finally
+            {
+                try
+                {
+                    var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
+                    closeButton.Click();
+                    SwitchToMainWindowHack(mainWindowHandle);
+                }
+                catch { }
+            }
+        }
+
         [Theory]
         [MemberData(nameof(StartupLocationData))]
         public void StartupLocation(string? size, ShowWindowMode mode, WindowStartupLocation location)
@@ -52,7 +109,7 @@ namespace Avalonia.IntegrationTests.Appium
                 var position = PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text);
                 var screenRect = PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text);
                 var scaling = double.Parse(_session.FindElementByAccessibilityId("Scaling").Text);
-
+                
                 Assert.True(frameSize.Width >= clientSize.Width, "Expected frame width >= client width.");
                 Assert.True(frameSize.Height > clientSize.Height, "Expected frame height > client height.");
 
