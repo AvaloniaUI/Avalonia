@@ -142,6 +142,7 @@ namespace ControlCatalog.Pages
         private Window CreateSampleWindow()
         {
             Button button;
+            Button dialogButton;
             
             var window = new Window
             {
@@ -158,6 +159,12 @@ namespace ControlCatalog.Pages
                             HorizontalAlignment = HorizontalAlignment.Center,
                             Content = "Click to close",
                             IsDefault = true
+                        }),
+                        (dialogButton = new Button
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Content = "Dialog",
+                            IsDefault = false
                         })
                     }
                 },
@@ -165,6 +172,12 @@ namespace ControlCatalog.Pages
             };
 
             button.Click += (_, __) => window.Close();
+            dialogButton.Click += (_, __) =>
+            {
+                var dialog = CreateSampleWindow();
+                dialog.Height = 200;
+                dialog.ShowDialog(window);
+            };
 
             return window;
         }
