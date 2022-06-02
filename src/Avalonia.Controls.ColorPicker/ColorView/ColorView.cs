@@ -5,6 +5,7 @@ using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -12,6 +13,7 @@ namespace Avalonia.Controls
     /// Presents a color for user editing using a spectrum, palette and component sliders.
     /// </summary>
     [TemplatePart("PART_HexTextBox", typeof(TextBox))]
+    [TemplatePart("PART_TabControl", typeof(TabControl))]
     public partial class ColorView : TemplatedControl
     {
         /// <summary>
@@ -20,7 +22,8 @@ namespace Avalonia.Controls
         public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
         // XAML template parts
-        private TextBox? _hexTextBox;
+        private TextBox?    _hexTextBox;
+        private TabControl? _tabControl;
 
         private ObservableCollection<Color> _customPaletteColors = new ObservableCollection<Color>();
         private ColorToHexConverter colorToHexConverter = new ColorToHexConverter();
@@ -31,7 +34,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ColorView() : base()
         {
-            this.CustomPalette = new FluentColorPalette();
+            CustomPalette = new FluentColorPalette();
         }
 
         /// <summary>
@@ -66,6 +69,77 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Validates the selected subview/tab taking into account the visibility of each subview/tab
+        /// as well as the current selection.
+        /// </summary>
+        private void ValidateSelectedTab()
+        {
+            if (_tabControl != null &&
+                _tabControl.Items != null)
+            {
+                // Determine if any item is visible
+                bool isAnyItemVisible = false;
+                foreach (var item in _tabControl.Items)
+                {
+                    if (item is Control control &&
+                        control.IsVisible)
+                    {
+                        isAnyItemVisible = true;
+                        break;
+                    }
+                }
+
+                if (isAnyItemVisible)
+                {
+                    object? selectedItem = null;
+
+                    if (_tabControl.SelectedItem == null &&
+                        _tabControl.ItemCount > 0)
+                    {
+                        // As a failsafe, forcefully select the first item
+                        foreach (var item in _tabControl.Items)
+                        {
+                            selectedItem = item;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        selectedItem = _tabControl.SelectedItem;
+                    }
+
+                    if (selectedItem is Control selectedControl &&
+                        selectedControl.IsVisible == false)
+                    {
+                        // Select the first visible item instead
+                        foreach (var item in _tabControl.Items)
+                        {
+                            if (item is Control control &&
+                                control.IsVisible)
+                            {
+                                selectedItem = item;
+                                break;
+                            }
+                        }
+                    }
+
+                    _tabControl.SelectedItem = selectedItem;
+                    _tabControl.IsVisible = true;
+                }
+                else
+                {
+                    // Special case when all items are hidden
+                    // If TabControl ever properly supports no selected item /
+                    // all items hidden this can be removed
+                    _tabControl.SelectedItem = null;
+                    _tabControl.IsVisible = false;
+                }
+            }
+
+            return;
+        }
+
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -76,6 +150,8 @@ namespace Avalonia.Controls
             }
 
             _hexTextBox = e.NameScope.Find<TextBox>("PART_HexTextBox");
+            _tabControl = e.NameScope.Find<TabControl>("PART_TabControl");
+
             SetColorToHexTextBox();
 
             if (_hexTextBox != null)
@@ -85,6 +161,7 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
+            ValidateSelectedTab();
         }
 
         /// <inheritdoc/>
@@ -142,6 +219,18 @@ namespace Avalonia.Controls
                         }
                     }
                 }
+            }
+            else if (change.Property == IsColorComponentsVisibleProperty ||
+                     change.Property == IsColorPaletteVisibleProperty ||
+                     change.Property == IsColorSpectrumVisibleProperty)
+            {
+                // When the property changed notification is received here the visibility
+                // of individual tab items has not yet been updated though the bindings.
+                // Therefore, the validation is delayed until after bindings update.
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ValidateSelectedTab();
+                }, DispatcherPriority.Background);
             }
 
             base.OnPropertyChanged(change);

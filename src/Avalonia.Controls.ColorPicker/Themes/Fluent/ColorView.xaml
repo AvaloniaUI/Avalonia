@@ -109,22 +109,29 @@
                   BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                   BorderThickness="0,1,0,0" />-->
 
-          <TabControl Grid.Row="0"
+          <TabControl x:Name="PART_TabControl"
+                      Grid.Row="0"
                       Height="338"
                       Width="350">
             <TabControl.Resources>
               <Thickness x:Key="TabItemMargin">0,0,0,0</Thickness>
             </TabControl.Resources>
             <TabControl.Styles>
-              <Style Selector="TabItem">
-                <Setter Property="Padding" Value="0" />
+              <Style Selector="TabControl">
+                <Setter Property="ItemsPanel">
+                  <Setter.Value>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Columns="0"
+                                   Rows="1" />
+                    </ItemsPanelTemplate>
+                  </Setter.Value>
+                </Setter>
               </Style>
             </TabControl.Styles>
             <!-- Spectrum Tab -->
             <TabItem IsVisible="{TemplateBinding IsColorSpectrumVisible}">
               <TabItem.Header>
-                <Border Width="116"
-                        Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewSpectrumIconGeometry}" />
@@ -181,8 +188,7 @@
             <!-- Palette Tab -->
             <TabItem IsVisible="{TemplateBinding IsColorPaletteVisible}">
               <TabItem.Header>
-                <Border Width="116"
-                        Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewPaletteIconGeometry}" />
@@ -257,8 +263,7 @@
             <!-- Components Tab -->
             <TabItem IsVisible="{TemplateBinding IsColorComponentsVisible}">
               <TabItem.Header>
-                <Border Width="116"
-                        Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewComponentsIconGeometry}" />
