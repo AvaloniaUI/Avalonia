@@ -8,6 +8,8 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
+#nullable enable
+
 namespace Avalonia.Base.UnitTests.Styling;
 
 public class StyledElementTests_Theming
@@ -46,6 +48,40 @@ public class StyledElementTests_Theming
         }
 
         [Fact]
+        public void Theme_Is_Detached_From_Template_Controls_When_Theme_Property_Cleared()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+
+            var theme = new ControlTheme
+            {
+                TargetType = typeof(ThemedControl),
+                Children =
+                {
+                    new Style(x => x.Nesting().Template().OfType<Canvas>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Canvas.BackgroundProperty, Brushes.Red),
+                        }
+                    },
+                }
+            };
+
+            var target = CreateTarget(theme);
+            target.Template = new FuncControlTemplate<ThemedControl>((o, n) => new Canvas());
+
+            var root = CreateRoot(target);
+
+            var canvas = Assert.IsType<Canvas>(target.VisualChild);
+            Assert.Equal(canvas.Background, Brushes.Red);
+
+            target.Theme = null;
+
+            Assert.IsType<Canvas>(target.VisualChild);
+            Assert.Null(canvas.Background);
+        }
+
+        [Fact]
         public void Theme_Is_Applied_On_Layout_After_Theme_Property_Changes()
         {
             using var app = UnitTestApplication.Start(TestServices.RealStyler);
@@ -64,11 +100,11 @@ public class StyledElementTests_Theming
             Assert.Equal(border.Background, Brushes.Red);
         }
 
-        private static ThemedControl CreateTarget()
+        private static ThemedControl CreateTarget(ControlTheme? theme = null)
         {
             return new ThemedControl
             {
-                Theme = CreateTheme(),
+                Theme = theme ?? CreateTheme(),
             };
         }
 
@@ -132,33 +168,32 @@ public class StyledElementTests_Theming
 
     private static ControlTheme CreateTheme()
     {
-        var template = new FuncControlTemplate<ThemedControl>((o, n) =>
-            new Border { Name = "PART_Border" });
+        var template = new FuncControlTemplate<ThemedControl>((o, n) => new Border());
 
         return new ControlTheme
         {
             TargetType = typeof(ThemedControl),
             Setters =
-        {
-            new Setter(ThemedControl.TemplateProperty, template),
-        },
+            {
+                new Setter(ThemedControl.TemplateProperty, template),
+            },
             Children =
-        {
-            new Style(x => x.Nesting().Template().OfType<Border>())
             {
-                Setters =
+                new Style(x => x.Nesting().Template().OfType<Border>())
                 {
-                    new Setter(Border.BackgroundProperty, Brushes.Red),
-                }
-            },
-            new Style(x => x.Nesting().Class("foo").Template().OfType<Border>())
-            {
-                Setters =
+                    Setters =
+                    {
+                        new Setter(Border.BackgroundProperty, Brushes.Red),
+                    }
+                },
+                new Style(x => x.Nesting().Class("foo").Template().OfType<Border>())
                 {
-                    new Setter(Border.BackgroundProperty, Brushes.Green),
-                }
-            },
-        }
+                    Setters =
+                    {
+                        new Setter(Border.BackgroundProperty, Brushes.Green),
+                    }
+                },
+            }
         };
     }
 
