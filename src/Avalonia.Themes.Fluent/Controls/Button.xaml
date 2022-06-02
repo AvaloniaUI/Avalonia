@@ -82,7 +82,8 @@
         <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushDisabled}" />
         <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
       </Style>
-    </Style>  </Style>
+    </Style>
+  </Style>
 
   <Style Selector="Button, RepeatButton, ToggleButton, DropDownButton">
     <Setter Property="RenderTransform" Value="none" />

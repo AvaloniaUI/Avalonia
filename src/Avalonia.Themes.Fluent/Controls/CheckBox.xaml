@@ -292,5 +292,6 @@
       <Style Selector="^ /template/ Path#CheckGlyph">
         <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundIndeterminateDisabled}" />
       </Style>
-    </Style>  </Style>
+    </Style>
+  </Style>
 </Style>
