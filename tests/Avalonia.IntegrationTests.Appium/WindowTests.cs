@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Interactions;
 using SeleniumExtras.PageObjects;
 using Xunit;
 using Xunit.Sdk;
@@ -50,7 +52,7 @@ namespace Avalonia.IntegrationTests.Appium
                 {
                     SwitchToNewWindowHack(mainWindow);
                     var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
-                    closeButton.SendClick();
+                    closeButton.Click();
                 }
                 catch { }
             });
@@ -74,6 +76,43 @@ namespace Avalonia.IntegrationTests.Appium
 
                     int mainWindowIndex = windows.GetWindowOrder("MainWindow");
                     int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
+
+                    Assert.Equal(0, secondaryWindowIndex);
+                    Assert.Equal(1, mainWindowIndex);
+                }
+            }
+            finally
+            {
+                SwitchToMainWindowHack(mainWindowHandle);
+            }
+        }
+        
+        [PlatformFact(SkipOnWindows = true)]
+        public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_Clicking_Resize_Grip()
+        {
+            var mainWindowHandle = GetCurrentWindowHandleHack();
+            
+            var mainWindow =
+                _session.FindWindowOuter("MainWindow");
+
+            try
+            {
+                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                {
+                    new Actions(_session)
+                        .MoveToElement(mainWindow, 100, 1)
+                        .ClickAndHold()
+                        .Perform();
+
+                    var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
+
+                    int mainWindowIndex = windows.GetWindowOrder("MainWindow");
+                    int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
+                    
+                    new Actions(_session)
+                        .MoveToElement(mainWindow, 100, 1)
+                        .Release()
+                        .Perform();
 
                     Assert.Equal(0, secondaryWindowIndex);
                     Assert.Equal(1, mainWindowIndex);
