@@ -25,7 +25,7 @@ namespace IntegrationTestApp
             this.GetControl<TextBox>("FrameSize").Text = $"{FrameSize}";
             this.GetControl<TextBox>("Position").Text = $"{Position}";
             this.GetControl<TextBox>("ScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
-            this.GetControl<TextBox>("Scaling").Text = $"{((IRenderRoot)this).RenderScaling}"; // TODO Use DesktopScaling from WindowImpl.
+            this.GetControl<TextBox>("Scaling").Text = $"{PlatformImpl?.DesktopScaling}";
 
             if (Owner is not null)
             {

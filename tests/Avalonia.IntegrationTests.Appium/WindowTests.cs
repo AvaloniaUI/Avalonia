@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using OpenQA.Selenium;
@@ -24,53 +25,117 @@ namespace Avalonia.IntegrationTests.Appium
             var tab = tabs.FindElementByName("Window");
             tab.Click();
         }
+
+        private IDisposable OpenWindow(ShowWindowMode mode, WindowStartupLocation location, int width = 200, int height = 100)
+        {
+            var mainWindow = GetCurrentWindowHandleHack();
+            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
+            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
+            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+    
+            sizeTextBox.SendKeys($"{width}, {height}");
+
+            modeComboBox.Click();
+            _session.FindElementByName(mode.ToString()).SendClick();
+
+            locationComboBox.Click();
+            _session.FindElementByName(location.ToString()).SendClick();
+
+            showButton.Click();
+            
+            return Disposable.Create(() =>
+            {
+                try
+                {
+                    SwitchToNewWindowHack(mainWindow);
+                    var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
+                    closeButton.SendClick();
+                }
+                catch { }
+            });
+        }
         
         [PlatformFact(SkipOnWindows = true)]
         public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent()
         {
             var mainWindowHandle = GetCurrentWindowHandleHack();
             
+            var mainWindow =
+                _session.FindElementByAccessibilityId("MainWindow");
+
             try
             {
-                var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-                var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-                var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-                var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                {
+                    mainWindow.Click();
 
-                var mainWindow =
-                    _session.FindElementByAccessibilityId("MainWindow");
-                
-                sizeTextBox.SendKeys("200, 100");
+                    var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
 
-                modeComboBox.Click();
-                _session.FindElementByName(ShowWindowMode.Modal.ToString()).SendClick();
+                    int mainWindowIndex = windows.GetWindowOrder("MainWindow");
+                    int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
 
-                locationComboBox.Click();
-                _session.FindElementByName(WindowStartupLocation.CenterOwner.ToString()).SendClick();
+                    Assert.Equal(0, secondaryWindowIndex);
+                    Assert.Equal(1, mainWindowIndex);
+                }
+            }
+            finally
+            {
+                SwitchToMainWindowHack(mainWindowHandle);
+            }
+        }
+        
+        [PlatformFact(SkipOnWindows = true)]
+        public void OSX_WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent()
+        {
+            var mainWindowHandle = GetCurrentWindowHandleHack();
+            
+            var mainWindow =
+                _session.FindElementByAccessibilityId("MainWindow");
 
-                showButton.Click();
+            try
+            {
+                using (OpenWindow(ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
+                {
+                    mainWindow.Click();
 
+                    var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
+
+                    int mainWindowIndex = windows.GetWindowOrder("MainWindow");
+                    int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
+
+                    Assert.Equal(0, secondaryWindowIndex);
+                    Assert.Equal(1, mainWindowIndex);
+                }
+            }
+            finally
+            {
+                SwitchToMainWindowHack(mainWindowHandle);
+            }
+        }
+        
+        [PlatformFact(SkipOnWindows = true)]
+        public void OSX_WindowOrder_NonOwned_Window_Does_Not_Stay_InFront_Of_Parent()
+        {
+            var mainWindow =
+                _session.FindElementByAccessibilityId("MainWindow");
+
+            using (OpenWindow(ShowWindowMode.NonOwned, WindowStartupLocation.CenterOwner, 1400))
+            {
                 mainWindow.Click();
                 
+                var secondaryWindow =
+                    _session.FindElementByAccessibilityId("SecondaryWindow");
+
                 var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
 
                 int mainWindowIndex = windows.GetWindowOrder("MainWindow");
                 int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
-                
-                Assert.Equal(0, secondaryWindowIndex);
-                Assert.Equal(1, mainWindowIndex);
 
-                SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
-            }
-            finally
-            {
-                try
-                {
-                    var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
-                    closeButton.Click();
-                    SwitchToMainWindowHack(mainWindowHandle);
-                }
-                catch { }
+                Assert.Equal(1, secondaryWindowIndex);
+                Assert.Equal(0, mainWindowIndex);
+                
+                secondaryWindow.SendClick();
             }
         }
 
@@ -81,53 +146,54 @@ namespace Avalonia.IntegrationTests.Appium
             
             try
             {
-                var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-                var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-                var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-                var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+                var window = _session.FindWindowOuter("MainWindow");
 
-                var closeButton =
-                    _session.FindElementByXPath(
-                        "/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeButton[1]");
-                
-                var zoomButton =
-                    _session.FindElementByXPath(
-                        "/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeButton[2]");
-                
-                var miniturizeButton =
-                    _session.FindElementByXPath(
-                        "/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypeButton[3]");
-                
+                var (closeButton, zoomButton, miniturizeButton) 
+                    = window.GetChromeButtons();
                 
                 Assert.True(closeButton.Enabled);
                 Assert.True(zoomButton.Enabled);
                 Assert.True(miniturizeButton.Enabled);
-                
-                sizeTextBox.SendKeys("400, 400");
 
-                modeComboBox.Click();
-                _session.FindElementByName(ShowWindowMode.Modal.ToString()).SendClick();
+                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                {
+                    SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
 
-                locationComboBox.Click();
-                _session.FindElementByName(WindowStartupLocation.CenterOwner.ToString()).SendClick();
-
-                showButton.Click();
-                
-                SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
-                
-                Assert.False(closeButton.Enabled);
-                Assert.False(zoomButton.Enabled);
-                Assert.False(miniturizeButton.Enabled);
+                    Assert.False(closeButton.Enabled);
+                    Assert.False(zoomButton.Enabled);
+                    Assert.False(miniturizeButton.Enabled);
+                }
             }
             finally
             {
-                try
+                SwitchToMainWindowHack(mainWindowHandle);
+            }
+        }
+        
+        [PlatformFact(SkipOnWindows = true)]
+        public void OSX_Minimize_Button_Disabled_Modal_Dialog()
+        {
+            var mainWindowHandle = GetCurrentWindowHandleHack();
+            
+            try
+            {
+                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
                 {
-                    var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
-                    closeButton.Click();
-                    SwitchToMainWindowHack(mainWindowHandle);
+                    var secondaryWindow = _session.FindWindowOuter("SecondaryWindow");
+
+                    var (closeButton, zoomButton, miniturizeButton) 
+                        = secondaryWindow.GetChromeButtons();
+                    
+                    Assert.True(closeButton.Enabled);
+                    Assert.True(zoomButton.Enabled);
+                    Assert.False(miniturizeButton.Enabled);
+                    
+                    SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
                 }
-                catch { }
+            }
+            finally
+            {
+                SwitchToMainWindowHack(mainWindowHandle);
             }
         }
 
@@ -257,6 +323,13 @@ namespace Avalonia.IntegrationTests.Appium
                 if (Math.Abs(expected.Y - actual.Y) > 10)
                     throw new EqualException(expected, actual);
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                if (Math.Abs(expected.X - actual.X) > 15)
+                    throw new EqualException(expected, actual);
+                if (Math.Abs(expected.Y - actual.Y) > 15)
+                    throw new EqualException(expected, actual);
+            }
             else
             {
                 Assert.Equal(expected, actual);
@@ -277,6 +350,35 @@ namespace Avalonia.IntegrationTests.Appium
         {
             return elements.TakeWhile(x =>
                 x.FindElementByXPath("XCUIElementTypeWindow")?.GetAttribute("identifier") != identifier).Count();
+        }
+
+        public static AppiumWebElement? FindWindowInner(this AppiumDriver<AppiumWebElement> session, string identifier)
+        {
+            return session.FindElementsByXPath("XCUIElementTypeWindow")
+                .FirstOrDefault(x => x.GetAttribute("identifier") == identifier);
+        }
+        
+        public static AppiumWebElement? FindWindowOuter(this AppiumDriver<AppiumWebElement> session, string identifier)
+        {
+            var windows = session.FindElementsByXPath("XCUIElementTypeWindow");
+                
+            var window = windows.FirstOrDefault(x=>x.FindElementsByXPath("XCUIElementTypeWindow").Any(x => x.GetAttribute("identifier") == identifier));
+
+            return window;
+        }
+
+        public static (AppiumWebElement? closeButton, AppiumWebElement? zoomButton, AppiumWebElement? miniturizeButton) GetChromeButtons (this AppiumWebElement outerWindow)
+        {
+            var closeButton =
+                outerWindow.FindElementByXPath("XCUIElementTypeButton[1]");
+                
+            var zoomButton =
+                outerWindow.FindElementByXPath("XCUIElementTypeButton[2]");
+                
+            var miniturizeButton =
+                outerWindow.FindElementByXPath("XCUIElementTypeButton[3]");
+
+            return (closeButton, zoomButton, miniturizeButton);
         }
     }
 }
