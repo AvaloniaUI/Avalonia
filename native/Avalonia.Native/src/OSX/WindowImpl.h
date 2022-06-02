@@ -13,6 +13,7 @@
 class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
 {
 private:
+    bool _isEnabled;
     bool _canResize;
     bool _fullScreenActive;
     SystemDecorations _decorations;
