@@ -564,6 +564,11 @@ bool WindowImpl::IsDialog() {
 
 NSWindowStyleMask WindowImpl::GetStyle() {
     unsigned long s = NSWindowStyleMaskBorderless;
+    
+    if(_actualWindowState == FullScreen)
+    {
+        s |= NSWindowStyleMaskFullScreen;
+    }
 
     switch (_decorations) {
         case SystemDecorationsNone:
