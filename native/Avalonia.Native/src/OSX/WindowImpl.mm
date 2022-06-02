@@ -9,6 +9,7 @@
 #include "WindowProtocol.h"
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
+    _isEnabled = true;
     _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;
@@ -75,7 +76,9 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
     START_COM_CALL;
 
     @autoreleasepool {
+        _isEnabled = enable;
         [GetWindowProtocol() setEnabled:enable];
+        UpdateStyle();
         return S_OK;
     }
 }
@@ -573,7 +576,7 @@ NSWindowStyleMask WindowImpl::GetStyle() {
         case SystemDecorationsFull:
             s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable;
 
-            if (_canResize) {
+            if (_canResize && _isEnabled) {
                 s = s | NSWindowStyleMaskResizable;
             }
             break;
