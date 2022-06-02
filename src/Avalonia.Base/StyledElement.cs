@@ -71,6 +71,7 @@ namespace Avalonia
         private List<IStyleInstance>? _appliedStyles;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
+        private bool _hasPromotedTheme;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -239,8 +240,8 @@ namespace Avalonia
         /// </summary>
         public ControlTheme? Theme
         {
-            get { return GetValue(ThemeProperty); }
-            set { SetValue(ThemeProperty, value); }
+            get => GetValue(ThemeProperty);
+            set => SetValue(ThemeProperty, value);
         }
 
         /// <summary>
@@ -315,6 +316,7 @@ namespace Avalonia
         /// <inheritdoc/>
         IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
 
+
         /// <inheritdoc/>
         public virtual void BeginInit()
         {
@@ -354,10 +356,15 @@ namespace Avalonia
                 }
                 finally
                 {
+                    _styled = true;
                     EndBatchUpdate();
                 }
 
-                _styled = true;
+                if (_hasPromotedTheme)
+                {
+                    _hasPromotedTheme = false;
+                    ClearValue(ThemeProperty);
+                }
             }
 
             return _styled;
@@ -608,7 +615,19 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
+            {
+                // Changing the theme detaches all styles, meaning that if the theme property was
+                // set via a style, it will get cleared! To work around this, if the value was
+                // applied at less than local value priority then promote the value to local value
+                // priority until styling is re-applied.
+                if (change.Priority > BindingPriority.LocalValue)
+                {
+                    Theme = change.GetNewValue<ControlTheme?>();
+                    _hasPromotedTheme = true;
+                }
+
                 InvalidateStyles();
+            }
         }
 
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)

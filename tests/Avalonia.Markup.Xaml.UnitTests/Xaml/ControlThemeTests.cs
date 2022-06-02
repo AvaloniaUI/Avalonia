@@ -38,6 +38,42 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact]
+        public void ControlTheme_Can_Be_Set_In_Style()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
+    <Window.Resources>
+        {ControlThemeXaml}
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector='u|TestTemplatedControl'>
+            <Setter Property='Theme' Value='{{StaticResource MyTheme}}'/>
+        </Style>
+    </Window.Styles>
+
+    <u:TestTemplatedControl/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = Assert.IsType<TestTemplatedControl>(window.Content);
+
+                window.LayoutManager.ExecuteInitialLayoutPass();
+
+                Assert.NotNull(button.Template);
+
+                var child = Assert.Single(button.GetVisualChildren());
+                var border = Assert.IsType<Border>(child);
+
+                Assert.Equal(Brushes.Red, border.Background);
+            }
+        }
+
         private const string ControlThemeXaml = @"
 <ControlTheme x:Key='MyTheme' TargetType='u:TestTemplatedControl'>
     <Setter Property='Template'>
