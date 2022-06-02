@@ -21,7 +21,7 @@ WindowBaseImpl::~WindowBaseImpl() {
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
+WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel) {
     _shown = false;
     _inResize = false;
     BaseEvents = events;
@@ -36,8 +36,10 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
 
-    Window = nullptr;
     lastMenu = nullptr;
+    
+    CreateNSWindow(usePanel);
+    InitialiseNSWindow();
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -68,7 +70,7 @@ NSWindow *WindowBaseImpl::GetNSWindow() {
     return Window;
 }
 
-NSView *WindowBaseImpl::GetNSView() {
+AvnView *WindowBaseImpl::GetNSView() {
     return View;
 }
 
@@ -88,7 +90,6 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        CreateNSWindow(isDialog);
         InitialiseNSWindow();
 
         if(hasPosition)
@@ -143,8 +144,6 @@ HRESULT WindowBaseImpl::Hide() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window orderOut:Window];
-
-            [GetWindowProtocol() restoreParentWindow];
         }
 
         return S_OK;
@@ -558,6 +557,8 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
             CleanNSWindow();
 
             Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
+            
+            [Window setHidesOnDeactivate:false];
         }
     } else {
         if (![Window isKindOfClass:[AvnWindow class]]) {
@@ -585,6 +586,7 @@ void WindowBaseImpl::InitialiseNSWindow() {
 
         [Window setOpaque:false];
         
+        [Window setHasShadow:true];
         [Window invalidateShadow];
 
         if (lastMenu != nullptr) {
@@ -606,6 +608,11 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
     }
 
     return (id <AvnWindowProtocol>) Window;
+}
+
+void WindowBaseImpl::BringToFront()
+{
+    // do nothing.
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)

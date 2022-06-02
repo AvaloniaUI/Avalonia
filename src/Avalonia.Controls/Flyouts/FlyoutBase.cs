@@ -175,7 +175,8 @@ namespace Avalonia.Controls.Primitives
 
             IsOpen = false;
             Popup.IsOpen = false;
-
+            ((ISetLogicalParent)Popup).SetParent(null);
+            
             // Ensure this isn't active
             _transientDisposable?.Dispose();
             _transientDisposable = null;

@@ -631,7 +631,11 @@ namespace Avalonia.Controls
                 return finalSize;
             }
 
-            _constraint = new Size(finalSize.Width, double.PositiveInfinity);
+            var scale = LayoutHelper.GetLayoutScale(this);
+
+            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+
+            _constraint = new Size(finalSize.Deflate(padding).Width, double.PositiveInfinity);
 
             _textLayout = null;
 

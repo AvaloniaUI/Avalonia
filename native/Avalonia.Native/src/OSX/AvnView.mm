@@ -222,7 +222,7 @@
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
-    bool triggerInputWhenDisabled = type != Move;
+    bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
 
     if([self ignoreUserInput: triggerInputWhenDisabled])
     {
