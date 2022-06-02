@@ -84,6 +84,7 @@ namespace Avalonia.IntegrationTests.Appium
             finally
             {
                 SwitchToMainWindowHack(mainWindowHandle);
+                _session.ResetApp();
             }
         }
         
@@ -121,6 +122,41 @@ namespace Avalonia.IntegrationTests.Appium
             finally
             {
                 SwitchToMainWindowHack(mainWindowHandle);
+                _session.ResetApp();
+            }
+        }
+        
+        [PlatformFact(SkipOnWindows = true)]
+        public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_In_Fullscreen()
+        {
+            var mainWindowHandle = GetCurrentWindowHandleHack();
+            
+            var mainWindow =
+                _session.FindWindowOuter("MainWindow");
+
+            var buttons = mainWindow.GetChromeButtons();
+            
+            buttons.zoomButton.Click();
+
+            Task.Delay(500).Wait();
+
+            try
+            {
+                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                {
+                    var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
+
+                    int mainWindowIndex = windows.GetWindowOrder("MainWindow");
+                    int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
+
+                    Assert.Equal(0, secondaryWindowIndex);
+                    Assert.Equal(1, mainWindowIndex);
+                }
+            }
+            finally
+            {
+                SwitchToMainWindowHack(mainWindowHandle);
+                _session.ResetApp();
             }
         }
         
@@ -150,31 +186,39 @@ namespace Avalonia.IntegrationTests.Appium
             finally
             {
                 SwitchToMainWindowHack(mainWindowHandle);
+                _session.ResetApp();
             }
         }
-        
+
         [PlatformFact(SkipOnWindows = true)]
         public void OSX_WindowOrder_NonOwned_Window_Does_Not_Stay_InFront_Of_Parent()
         {
             var mainWindow =
                 _session.FindElementByAccessibilityId("MainWindow");
 
-            using (OpenWindow(ShowWindowMode.NonOwned, WindowStartupLocation.CenterOwner, 1400))
+            try
             {
-                mainWindow.Click();
-                
-                var secondaryWindow =
-                    _session.FindElementByAccessibilityId("SecondaryWindow");
+                using (OpenWindow(ShowWindowMode.NonOwned, WindowStartupLocation.CenterOwner, 1400))
+                {
+                    mainWindow.Click();
 
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
+                    var secondaryWindow =
+                        _session.FindElementByAccessibilityId("SecondaryWindow");
 
-                int mainWindowIndex = windows.GetWindowOrder("MainWindow");
-                int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
+                    var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
 
-                Assert.Equal(1, secondaryWindowIndex);
-                Assert.Equal(0, mainWindowIndex);
-                
-                secondaryWindow.SendClick();
+                    int mainWindowIndex = windows.GetWindowOrder("MainWindow");
+                    int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
+
+                    Assert.Equal(1, secondaryWindowIndex);
+                    Assert.Equal(0, mainWindowIndex);
+
+                    secondaryWindow.SendClick();
+                }
+            }
+            finally
+            {
+                _session.ResetApp();
             }
         }
 
@@ -206,6 +250,7 @@ namespace Avalonia.IntegrationTests.Appium
             finally
             {
                 SwitchToMainWindowHack(mainWindowHandle);
+                _session.ResetApp();
             }
         }
         
@@ -233,6 +278,7 @@ namespace Avalonia.IntegrationTests.Appium
             finally
             {
                 SwitchToMainWindowHack(mainWindowHandle);
+                _session.ResetApp();
             }
         }
 
