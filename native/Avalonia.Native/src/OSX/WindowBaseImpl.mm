@@ -98,6 +98,8 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
+        [Window setContentSize:lastSize];
+        
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
@@ -300,8 +302,7 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
             if (!_shown) {
                 BaseEvents->Resized(AvnSize{x, y}, reason);
             }
-
-            if(Window != nullptr) {
+            else if(Window != nullptr) {
                 [Window setContentSize:lastSize];
                 [Window invalidateShadow];
             }
