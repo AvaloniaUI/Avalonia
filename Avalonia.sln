@@ -97,6 +97,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\DevAnalyzers.props = build\DevAnalyzers.props
 		build\EmbedXaml.props = build\EmbedXaml.props
 		build\HarfBuzzSharp.props = build\HarfBuzzSharp.props
+		build\ImageSharp.props = build\ImageSharp.props
 		build\JetBrains.Annotations.props = build\JetBrains.Annotations.props
 		build\JetBrains.dotMemoryUnit.props = build\JetBrains.dotMemoryUnit.props
 		build\Microsoft.CSharp.props = build\Microsoft.CSharp.props
@@ -117,7 +118,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\System.Memory.props = build\System.Memory.props
 		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
 		build\XUnit.props = build\XUnit.props
-		build\ImageSharp.props = build\ImageSharp.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6FAF79-58B4-482F-9122-0668C346364C}"
@@ -178,8 +178,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.FreeDesktop", "src\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj", "{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.DataGrid.UnitTests", "tests\Avalonia.Controls.DataGrid.UnitTests\Avalonia.Controls.DataGrid.UnitTests.csproj", "{351337F5-D66F-461B-A957-4EF60BDB4BA6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeEmbedSample", "samples\interop\NativeEmbedSample\NativeEmbedSample.csproj", "{3C84E04B-36CF-4D0D-B965-C26DD649D1F3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Fluent", "src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj", "{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}"
 EndProject
@@ -419,6 +417,10 @@ Global
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ECC012A-8837-4AE2-9BDA-3E2857898727}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ECC012A-8837-4AE2-9BDA-3E2857898727}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ECC012A-8837-4AE2-9BDA-3E2857898727}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ECC012A-8837-4AE2-9BDA-3E2857898727}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -552,7 +554,6 @@ Global
 		{D775DECB-4E00-4ED5-A75A-5FCE58ADFF0B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{351337F5-D66F-461B-A957-4EF60BDB4BA6} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
-		{3C84E04B-36CF-4D0D-B965-C26DD649D1F3} = {A0CC0258-D18C-4AB3-854F-7101680FC3F9}
 		{909A8CBD-7D0E-42FD-B841-022AD8925820} = {8B6A8209-894F-4BA1-B880-965FD453982C}
 		{11BE52AF-E2DD-4CF0-B19A-05285ACAF571} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{BC594FD5-4AF2-409E-A1E6-04123F54D7C5} = {9B9E3891-2366-4253-A952-D08BCEB71098}

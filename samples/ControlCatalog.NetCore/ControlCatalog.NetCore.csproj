@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunNativeAotCompilation)' == 'true'">
@@ -13,6 +14,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\Avalonia.X11\NativeDialogs\Gtk.cs" Link="NativeControls\Gtk\Gtk.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="NativeControls\Gtk\nodes.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Headless.Vnc\Avalonia.Headless.Vnc.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
@@ -20,6 +31,8 @@
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
+    <!-- For native controls test -->
+    <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(RunNativeAotCompilation)' == 'true'">
@@ -32,6 +45,7 @@
   <PropertyGroup>
     <!-- For Microsoft.CodeAnalysis -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <Import Project="..\..\build\SampleApp.props" />

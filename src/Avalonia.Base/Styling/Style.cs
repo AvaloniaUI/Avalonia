@@ -94,7 +94,6 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the style's setters.
         /// </summary>
-        [Content]
         public IList<ISetter> Setters => _setters ??= new List<ISetter>();
 
         /// <summary>
@@ -106,6 +105,9 @@ namespace Avalonia.Styling
         IReadOnlyList<IStyle> IStyle.Children => (IReadOnlyList<IStyle>?)_children ?? Array.Empty<IStyle>();
 
         public event EventHandler? OwnerChanged;
+
+        public void Add(ISetter setter) => Setters.Add(setter);
+        public void Add(IStyle style) => Children.Add(style);
 
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
