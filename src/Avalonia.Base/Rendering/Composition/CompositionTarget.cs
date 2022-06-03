@@ -79,30 +79,33 @@ namespace Avalonia.Rendering.Composition
                 return false;
             if (!TryTransformTo(visual, ref point))
                 return false;
-            if (point.X >= 0 && point.Y >= 0 && point.X <= visual.Size.X && point.Y <= visual.Size.Y)
-            {
-                bool success = false;
-                // Hit-test the current node
-                if (visual.HitTest(point, filter))
-                {
-                    result.Add(visual);
-                    success = true;
-                }
-                
-                // Inspect children too
-                if(visual is CompositionContainerVisual cv)
-                    for (var c = cv.Children.Count - 1; c >= 0; c--)
-                    {
-                        var ch = cv.Children[c];
-                        var hit = HitTestCore(ch, point, result, filter);
-                        if (hit)
-                            return true;
-                    }
 
-                return success;
+            if (visual.ClipToBounds
+                && (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
+                return false;
+            if (visual.Clip?.FillContains(point) == false)
+                return false;
+
+            bool success = false;
+            // Hit-test the current node
+            if (visual.HitTest(point, filter))
+            {
+                result.Add(visual);
+                success = true;
             }
 
-            return false;
+            // Inspect children too
+            if (visual is CompositionContainerVisual cv)
+                for (var c = cv.Children.Count - 1; c >= 0; c--)
+                {
+                    var ch = cv.Children[c];
+                    var hit = HitTestCore(ch, point, result, filter);
+                    if (hit)
+                        return true;
+                }
+
+            return success;
+
         }
 
         public void RequestRedraw() => RegisterForSerialization();
