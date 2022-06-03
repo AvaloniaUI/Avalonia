@@ -32,11 +32,11 @@ void WindowImpl::HideOrShowTrafficLights() {
     }
 
     bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations != SystemDecorationsFull;
+    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
     
-    [[Window standardWindowButton:NSWindowCloseButton] setHidden:hasTrafficLights];
-    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:hasTrafficLights];
-    [[Window standardWindowButton:NSWindowZoomButton] setHidden:hasTrafficLights];
+    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
 }
 
 void WindowImpl::OnInitialiseNSWindow(){
