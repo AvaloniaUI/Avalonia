@@ -221,7 +221,7 @@ namespace Avalonia.Controls.Primitives
                 ((ISetLogicalParent)Popup).SetParent(null);
             }
 
-            if (Popup.PlacementTarget != placementTarget)
+            if (Popup.Parent == null || Popup.PlacementTarget != placementTarget)
             {
                 Popup.PlacementTarget = Target = placementTarget;
                 ((ISetLogicalParent)Popup).SetParent(placementTarget);
