@@ -233,12 +233,12 @@ namespace Avalonia.Web.Blazor
 
         private void OnKeyDown(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnKeyUp(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnInput(ChangeEventArgs e)

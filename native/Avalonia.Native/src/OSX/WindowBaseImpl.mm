@@ -90,8 +90,6 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        InitialiseNSWindow();
-
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
