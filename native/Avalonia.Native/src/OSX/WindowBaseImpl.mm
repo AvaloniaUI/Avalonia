@@ -567,11 +567,6 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
     }
 }
 
-void WindowBaseImpl::OnInitialiseNSWindow()
-{
-    
-}
-
 void WindowBaseImpl::InitialiseNSWindow() {
     if(Window != nullptr) {
         [Window setContentView:StandardContainer];
@@ -594,8 +589,6 @@ void WindowBaseImpl::InitialiseNSWindow() {
                 [GetWindowProtocol() showWindowMenuWithAppMenu];
             }
         }
-        
-        OnInitialiseNSWindow();
     }
 }
 
