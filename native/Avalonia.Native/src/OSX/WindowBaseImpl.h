@@ -106,8 +106,6 @@ protected:
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
-                           
-    virtual void OnInitialiseNSWindow ();
 
 private:
     void CreateNSWindow (bool isDialog);
