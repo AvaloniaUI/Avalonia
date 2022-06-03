@@ -92,15 +92,13 @@ namespace Avalonia.Rendering.Composition.Server
         public void SubscribeToInvalidation(int member, IAnimationInstance animation)
         {
             ref var store = ref GetStoreFromOffset(member);
-            if (store.Subscribers.AddRef(animation))
-                Activate();
+            store.Subscribers.AddRef(animation);
         }
 
         public void UnsubscribeFromInvalidation(int member, IAnimationInstance animation)
         {
             ref var store = ref GetStoreFromOffset(member);
-            if (store.Subscribers.ReleaseRef(animation))
-                Deactivate();
+            store.Subscribers.ReleaseRef(animation);
         }
 
         public virtual int? GetFieldOffset(string fieldName) => null;
