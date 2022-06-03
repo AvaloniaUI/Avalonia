@@ -35,9 +35,9 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var matrix = new Matrix(1, 2, 3, 0, 1, 4, 5, 6, 0);
             var inverted = matrix.Invert();
-            var expected = new Matrix(-24, 18, 5, 20, -15, -4, -5, 4, 1);
 
-            Assert.Equal(expected, inverted);
+            Assert.Equal(matrix * inverted, Matrix.Identity);
+            Assert.Equal(inverted * matrix, Matrix.Identity);
         }
 
         [Fact]
