@@ -222,6 +222,13 @@ namespace Avalonia.Controls
                     StopListeningForDefault(inputElement);
                 }
             }
+            if (IsCancel)
+            {
+                if (e.Root is IInputElement inputElement)
+                {
+                    StopListeningForCancel(inputElement);
+                }
+            }
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
