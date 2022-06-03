@@ -39,7 +39,16 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     lastMenu = nullptr;
     
     CreateNSWindow(usePanel);
-    InitialiseNSWindow();
+    
+    [Window setContentView:StandardContainer];
+    [Window setStyleMask:NSWindowStyleMaskBorderless];
+    [Window setBackingType:NSBackingStoreBuffered];
+
+    [Window setContentMinSize:lastMinSize];
+    [Window setContentMaxSize:lastMaxSize];
+
+    [Window setOpaque:false];
+    [Window setHasShadow:true];
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -90,6 +99,8 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
+        [Window setContentSize:lastSize];
+        
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
@@ -292,8 +303,7 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
             if (!_shown) {
                 BaseEvents->Resized(AvnSize{x, y}, reason);
             }
-
-            if(Window != nullptr) {
+            else if(Window != nullptr) {
                 [Window setContentSize:lastSize];
                 [Window invalidateShadow];
             }
@@ -565,31 +575,6 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
             CleanNSWindow();
 
             Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
-        }
-    }
-}
-
-void WindowBaseImpl::InitialiseNSWindow() {
-    if(Window != nullptr) {
-        [Window setContentView:StandardContainer];
-        [Window setStyleMask:NSWindowStyleMaskBorderless];
-        [Window setBackingType:NSBackingStoreBuffered];
-
-        [Window setContentSize:lastSize];
-        [Window setContentMinSize:lastMinSize];
-        [Window setContentMaxSize:lastMaxSize];
-
-        [Window setOpaque:false];
-        
-        [Window setHasShadow:true];
-        [Window invalidateShadow];
-
-        if (lastMenu != nullptr) {
-            [GetWindowProtocol() applyMenu:lastMenu];
-
-            if ([Window isKeyWindow]) {
-                [GetWindowProtocol() showWindowMenuWithAppMenu];
-            }
         }
     }
 }
