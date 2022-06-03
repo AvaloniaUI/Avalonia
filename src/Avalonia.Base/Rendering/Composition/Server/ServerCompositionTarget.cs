@@ -93,12 +93,6 @@ namespace Avalonia.Rendering.Composition.Server
             _redrawRequested = false;
             using (var targetContext = _renderTarget.CreateDrawingContext(null))
             {
-                // This is a hack to safely dispose layer created by some other render target
-                // because we can only dispose layers with the corresponding GPU context being
-                // active on the current thread
-                while (Compositor.LayersToDispose.Count > 0)
-                    Compositor.LayersToDispose.Dequeue().Dispose();
-
                 var layerSize = Size * Scaling;
                 if (layerSize != _layerSize || _layer == null)
                 {
@@ -164,14 +158,20 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Dispose()
         {
+            if(_disposed)
+                return;
             _disposed = true;
-            if (_layer != null)
+            using (_compositor.GpuContext?.EnsureCurrent())
             {
-                Compositor.LayersToDispose.Enqueue(_layer);
-                _layer = null;
+                if (_layer != null)
+                {
+                    _layer.Dispose();
+                    _layer = null;
+                }
+
+                _renderTarget?.Dispose();
+                _renderTarget = null;
             }
-            _renderTarget?.Dispose();
-            _renderTarget = null;
         }
 
         public void AddVisual(ServerCompositionVisual visual)

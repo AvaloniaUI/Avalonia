@@ -103,8 +103,12 @@ namespace Avalonia.X11
                     GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
             }
 
+            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            if (gl != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGpu>().ToConstant(gl);
+
             if (options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!);
+                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
 
         }
 

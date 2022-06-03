@@ -180,15 +180,15 @@ namespace Avalonia.Win32
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
 
-            Win32GlManager.Initialize();
+            var gl = Win32GlManager.Initialize();
 
             _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
-            
+
             if (Options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>());
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
         }
 
         public bool HasMessages()

@@ -20,10 +20,12 @@ namespace Avalonia.Rendering.Composition.Server
         private List<IAnimationInstance> _animationsToUpdate = new();
         private BatchStreamObjectPool<object?> _batchObjectPool;
         private BatchStreamMemoryPool _batchMemoryPool;
-        public Queue<IDrawingContextLayerImpl> LayersToDispose { get; } = new();
+        public IPlatformGpuContext? GpuContext { get; }
 
-        public ServerCompositor(IRenderLoop renderLoop, BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
+        public ServerCompositor(IRenderLoop renderLoop, IPlatformGpu? platformGpu,
+            BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
         {
+            GpuContext = platformGpu?.PrimaryContext;
             _renderLoop = renderLoop;
             _batchObjectPool = batchObjectPool;
             _batchMemoryPool = batchMemoryPool;

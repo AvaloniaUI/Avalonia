@@ -2,12 +2,14 @@ using System;
 using System.Linq;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 
 namespace Avalonia.Win32.OpenGl
 {
     class WglPlatformOpenGlInterface : IPlatformOpenGlInterface
     {
         public WglContext PrimaryContext { get; }
+        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
         IGlContext IPlatformOpenGlInterface.PrimaryContext => PrimaryContext;
         public IGlContext CreateSharedContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, PrimaryContext);
 

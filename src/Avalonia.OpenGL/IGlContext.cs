@@ -1,8 +1,9 @@
 using System;
+using Avalonia.Platform;
 
 namespace Avalonia.OpenGL
 {
-    public interface IGlContext : IDisposable
+    public interface IGlContext : IPlatformGpuContext
     {
         GlVersion Version { get; }
         GlInterface GlInterface { get; }

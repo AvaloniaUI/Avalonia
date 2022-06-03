@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 
 namespace Avalonia.X11.Glx
 {
@@ -14,6 +15,7 @@ namespace Avalonia.X11.Glx
         public IGlContext CreateSharedContext() => Display.CreateContext(PrimaryContext);
         public GlxContext DeferredContext { get; private set; }
         public IGlContext PrimaryContext => DeferredContext;
+        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
 
         public static bool TryInitialize(X11Info x11, IList<GlVersion> glProfiles)
         {

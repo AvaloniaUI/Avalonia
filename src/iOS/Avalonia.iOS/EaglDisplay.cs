@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 using OpenGLES;
 
 namespace Avalonia.iOS
@@ -9,6 +10,7 @@ namespace Avalonia.iOS
     {
         public IGlContext PrimaryContext => Context;
         public IGlContext CreateSharedContext() => throw new NotSupportedException();
+        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
         public bool CanShareContexts => false;
         public bool CanCreateContexts => false;
         public IGlContext CreateContext() => throw new System.NotSupportedException();

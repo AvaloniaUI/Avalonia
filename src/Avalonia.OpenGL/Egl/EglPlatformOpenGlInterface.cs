@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Logging;
+using Avalonia.Platform;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
@@ -12,6 +13,7 @@ namespace Avalonia.OpenGL.Egl
         
         public EglContext PrimaryEglContext { get; }
         public IGlContext PrimaryContext => PrimaryEglContext;
+        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
         
         public EglPlatformOpenGlInterface(EglDisplay display)
         {

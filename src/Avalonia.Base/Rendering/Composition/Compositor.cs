@@ -24,9 +24,9 @@ namespace Avalonia.Rendering.Composition
         internal ServerCompositor Server => _server;
         internal CompositionEasingFunction DefaultEasing { get; }
         
-        public Compositor(IRenderLoop loop)
+        public Compositor(IRenderLoop loop, IPlatformGpu? gpu)
         {
-            _server = new ServerCompositor(loop, _batchObjectPool, _batchMemoryPool);
+            _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
             _implicitBatchCommit = ImplicitBatchCommit;
             DefaultEasing = new CubicBezierEasingFunction(this,
                 new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f));
