@@ -257,7 +257,6 @@ namespace Avalonia.Base.UnitTests.Styling
             parent.Children.Add(child);
         }
 
-
         [Fact]
         public void Nesting_Not_Class_Matches()
         {
