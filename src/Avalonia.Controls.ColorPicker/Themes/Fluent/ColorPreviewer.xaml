@@ -32,12 +32,12 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{StaticResource CheckeredBackgroundBrush}" />
-            <Border x:Name="AccentDec2Border"
+            <Border x:Name="PART_AccentDecrement2Border"
                     Grid.Column="0"
                     CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
                     Tag="-2"
                     Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='-2'}" />
-            <Border x:Name="AccentDec1Border"
+            <Border x:Name="PART_AccentDecrement1Border"
                     Grid.Column="1"
                     Tag="-1"
                     Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='-1'}" />
@@ -55,11 +55,11 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{StaticResource CheckeredBackgroundBrush}" />
-            <Border x:Name="AccentInc1Border"
+            <Border x:Name="PART_AccentIncrement1Border"
                     Grid.Column="0"
                     Tag="1"
                     Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='1'}" />
-            <Border x:Name="AccentInc2Border"
+            <Border x:Name="PART_AccentIncrement2Border"
                     Grid.Column="1"
                     CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
                     Tag="2"
