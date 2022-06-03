@@ -54,7 +54,7 @@ namespace Avalonia.Controls
 
                 // Re-apply the hex value
                 // This ensure the hex color value is always valid and formatted correctly
-                _hexTextBox.Text = colorToHexConverter.Convert(Color, typeof(string), null, CultureInfo.CurrentCulture) as string;
+                SetColorToHexTextBox();
             }
         }
 
@@ -225,7 +225,7 @@ namespace Avalonia.Controls
                      change.Property == IsColorSpectrumVisibleProperty)
             {
                 // When the property changed notification is received here the visibility
-                // of individual tab items has not yet been updated though the bindings.
+                // of individual tab items has not yet been updated through the bindings.
                 // Therefore, the validation is delayed until after bindings update.
                 Dispatcher.UIThread.Post(() =>
                 {
