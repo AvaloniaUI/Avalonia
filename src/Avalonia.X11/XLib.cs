@@ -542,6 +542,18 @@ namespace Avalonia.X11
         public static extern int XRRQueryExtension (IntPtr dpy,
             out int event_base_return,
             out int error_base_return);
+        
+        [DllImport(libX11Ext)]
+        public static extern Status XSyncInitialize(IntPtr dpy, out int event_base_return, out int error_base_return);
+
+        [DllImport(libX11Ext)]
+        public static extern IntPtr XSyncCreateCounter(IntPtr dpy, XSyncValue initialValue);
+        
+        [DllImport(libX11Ext)]
+        public static extern int XSyncDestroyCounter(IntPtr dpy, IntPtr counter);
+        
+        [DllImport(libX11Ext)]
+        public static extern int XSyncSetCounter(IntPtr dpy, IntPtr counter, XSyncValue value);
 
         [DllImport(libX11Randr)]
         public static extern int XRRQueryVersion(IntPtr dpy,
@@ -626,6 +638,11 @@ namespace Avalonia.X11
             public int height;
             public int bw;
             public int d;
+        }
+        
+        public struct XSyncValue {
+            public int Hi;
+            public uint Lo;
         }
 
         public static bool XGetGeometry(IntPtr display, IntPtr window, out XGeometry geo)
