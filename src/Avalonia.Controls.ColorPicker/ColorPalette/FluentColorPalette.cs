@@ -104,12 +104,6 @@ namespace Avalonia.Controls
         };
 
         /// <summary>
-        /// Gets the index of the default shade of colors in this palette.
-        /// This has little meaning in this palette as colors are not strictly separated by shade.
-        /// </summary>
-        public const int DefaultShadeIndex = 0;
-
-        /// <summary>
         /// Gets the total number of colors in this palette.
         /// A color is not necessarily a single value and may be composed of several shades.
         /// This has little meaning in this palette as colors are not strictly separated.
