@@ -26,16 +26,12 @@ private:
     PopupImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         WindowEvents = events;
+        [Window setLevel:NSPopUpMenuWindowLevel];
     }
 protected:
     virtual NSWindowStyleMask GetStyle() override
     {
         return NSWindowStyleMaskBorderless;
-    }
-    
-    virtual void OnInitialiseNSWindow () override
-    {
-        [Window setLevel:NSPopUpMenuWindowLevel];
     }
 
 public:
