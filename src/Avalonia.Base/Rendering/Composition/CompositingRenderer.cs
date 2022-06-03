@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Collections;
+using Avalonia.Collections.Pooled;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
@@ -100,26 +101,74 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
             return;
         var compositionChildren = v.CompositionVisual.Children;
         var visualChildren = (AvaloniaList<IVisual>)v.GetVisualChildren();
+        
+        PooledList<(IVisual visual, int index)>? sortedChildren = null;
+        if (v.HasNonUniformZIndexChildren && visualChildren.Count > 1)
+        {
+            sortedChildren = new (visualChildren.Count);
+            for (var c = 0; c < visualChildren.Count; c++) 
+                sortedChildren.Add((visualChildren[c], c));
+            
+            // Regular Array.Sort is unstable, we need to provide indices as well to avoid reshuffling elements.
+            sortedChildren.Sort(static (lhs, rhs) =>
+            {
+                var result = lhs.visual.ZIndex.CompareTo(rhs.visual.ZIndex);
+                return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
+            });
+        }
+
         if (compositionChildren.Count == visualChildren.Count)
         {
             bool mismatch = false;
-            for(var c=0; c<visualChildren.Count; c++)
-                if(!object.ReferenceEquals(compositionChildren[c], ((Visual)visualChildren[c]).CompositionVisual))
+            if (v.HasNonUniformZIndexChildren)
+            {
+                
+                
+            }
+
+            if (sortedChildren != null)
+                for (var c = 0; c < visualChildren.Count; c++)
                 {
-                    mismatch = true;
-                    break;
+                    if (!ReferenceEquals(compositionChildren[c], ((Visual)sortedChildren[c].visual).CompositionVisual))
+                    {
+                        mismatch = true;
+                        break;
+                    }
                 }
-            
-            if(!mismatch)
+            else
+                for (var c = 0; c < visualChildren.Count; c++)
+                    if (!ReferenceEquals(compositionChildren[c], ((Visual)visualChildren[c]).CompositionVisual))
+                    {
+                        mismatch = true;
+                        break;
+                    }
+
+
+            if (!mismatch)
+            {
+                sortedChildren?.Dispose();
                 return;
+            }
         }
+        
         compositionChildren.Clear();
-        foreach (var ch in v.GetVisualChildren())
+        if (sortedChildren != null)
         {
-            var compositionChild = ((Visual)ch).CompositionVisual;
-            if (compositionChild != null)
-                compositionChildren.Add(compositionChild);
+            foreach (var ch in sortedChildren)
+            {
+                var compositionChild = ((Visual)ch.visual).CompositionVisual;
+                if (compositionChild != null)
+                    compositionChildren.Add(compositionChild);
+            }
+            sortedChildren.Dispose();
         }
+        else
+            foreach (var ch in v.GetVisualChildren())
+            {
+                var compositionChild = ((Visual)ch).CompositionVisual;
+                if (compositionChild != null)
+                    compositionChildren.Add(compositionChild);
+            }
     }
     
     private void Update()

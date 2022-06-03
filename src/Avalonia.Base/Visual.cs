@@ -293,6 +293,8 @@ namespace Avalonia
 
         internal CompositionDrawListVisual? CompositionVisual { get; private set; }
         
+        public bool HasNonUniformZIndexChildren { get; private set; }
+
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
         /// </summary>
@@ -444,6 +446,9 @@ namespace Avalonia
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
+
+            if (ZIndex != 0 && this.GetVisualParent() is Visual parent)
+                parent.HasNonUniformZIndexChildren = true;
 
             var visualChildren = VisualChildren;
 
@@ -611,6 +616,9 @@ namespace Avalonia
         {
             var sender = e.Sender as IVisual;
             var parent = sender?.VisualParent;
+            if (sender?.ZIndex != 0 && parent is Visual parentVisual)
+                parentVisual.HasNonUniformZIndexChildren = true;
+            
             sender?.InvalidateVisual();
             parent?.VisualRoot?.Renderer?.RecalculateChildren(parent);
         }
