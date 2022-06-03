@@ -26,6 +26,7 @@ namespace Avalonia.Rendering.Composition.Server
         private bool _redrawRequested;
         private bool _disposed;
         private HashSet<ServerCompositionVisual> _attachedVisuals = new();
+        private Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
 
 
         public ReadbackIndices Readback { get; } = new();
@@ -80,6 +81,12 @@ namespace Avalonia.Rendering.Composition.Server
             
             // Update happens in a separate phase to extend dirty rect if needed
             Root.Update(this, Matrix4x4.Identity);
+
+            while (_adornerUpdateQueue.Count > 0)
+            {
+                var adorner = _adornerUpdateQueue.Dequeue();
+                adorner.Update(this, adorner.AdornedVisual?.GlobalTransformMatrix ?? Matrix4x4.Identity);
+            }
             
             Readback.CompleteWrite(Revision);
 
@@ -108,7 +115,7 @@ namespace Avalonia.Rendering.Composition.Server
                     {
                         context.PushClip(_dirtyRect);
                         context.Clear(Colors.Transparent);
-                        Root.Render(new CompositorDrawingContextProxy(context, visualBrushHelper), Root.CombinedTransformMatrix);
+                        Root.Render(new CompositorDrawingContextProxy(context, visualBrushHelper));
                         context.PopClip();
                     }
                 }
@@ -147,6 +154,7 @@ namespace Avalonia.Rendering.Composition.Server
         {
             var snapped = SnapToDevicePixels(rect, Scaling);
             _dirtyRect = _dirtyRect.Union(snapped);
+            _redrawRequested = true;
         }
 
         public void Invalidate()
@@ -176,6 +184,10 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
+            if(visual.IsVisibleInFrame)
+                AddDirtyRect(visual.TransformedBounds);
         }
+
+        public void EnqueueAdornerUpdate(ServerCompositionVisual visual) => _adornerUpdateQueue.Enqueue(visual);
     }
 }

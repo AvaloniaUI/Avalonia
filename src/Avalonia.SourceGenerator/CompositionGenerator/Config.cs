@@ -110,6 +110,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         public bool Animated { get; set; }
         [XmlAttribute]
         public bool InternalSet { get; set; }
+        [XmlAttribute]
+        public bool Internal { get; set; }
     }
 
     public class GAnimationType

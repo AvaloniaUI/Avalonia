@@ -6,11 +6,10 @@ namespace Avalonia.Rendering.Composition.Server
 {
     internal partial class ServerCompositionSolidColorVisual
     {
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
+        protected override void RenderCore(CompositorDrawingContextProxy canvas)
         {
-            canvas.Transform = MatrixUtils.ToMatrix(transform);
             canvas.DrawRectangle(new ImmutableSolidColorBrush(Color), null, new RoundedRect(new Rect(new Size(Size))));
-            base.RenderCore(canvas, transform);
+            base.RenderCore(canvas);
         }
     }
 }

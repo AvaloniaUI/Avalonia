@@ -470,7 +470,7 @@ namespace Avalonia
         {
             if (CompositionVisual == null || CompositionVisual.Compositor != compositor)
                 CompositionVisual = new CompositionDrawListVisual(compositor,
-                    new ServerCompositionDrawListVisual(compositor.Server), this);
+                    new ServerCompositionDrawListVisual(compositor.Server, this), this);
             return CompositionVisual;
         }
 

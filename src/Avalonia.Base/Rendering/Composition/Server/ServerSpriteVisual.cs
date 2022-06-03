@@ -6,7 +6,7 @@ namespace Avalonia.Rendering.Composition.Server
     internal partial class ServerCompositionSpriteVisual
     {
 
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
+        protected override void RenderCore(CompositorDrawingContextProxy canvas)
         {
             if (Brush != null)
             {
@@ -14,7 +14,7 @@ namespace Avalonia.Rendering.Composition.Server
                 //canvas.FillRect((Vector2)Size, (ICbBrush)Brush.Brush!);
             }
 
-            base.RenderCore(canvas, transform);
+            base.RenderCore(canvas);
         }
     }
 }

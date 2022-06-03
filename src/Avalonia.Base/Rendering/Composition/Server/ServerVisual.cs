@@ -8,17 +8,18 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private bool _isDirty;
         private bool _isBackface;
-        protected virtual void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
+        protected virtual void RenderCore(CompositorDrawingContextProxy canvas)
         {
             
         }
         
-        public void Render(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
+        public void Render(CompositorDrawingContextProxy canvas)
         {
             if(Visible == false)
                 return;
             if(Opacity == 0)
                 return;
+            var transform = GlobalTransformMatrix;
             canvas.PreTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
             if (Opacity != 1)
@@ -29,8 +30,9 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PushGeometryClip(Clip);
             
             //TODO: Check clip
-            RenderCore(canvas, transform);
+            RenderCore(canvas);
             
+            // Hack to force invalidation of SKMatrix
             canvas.PreTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
             
@@ -60,7 +62,9 @@ namespace Avalonia.Rendering.Composition.Server
         public virtual void Update(ServerCompositionTarget root, Matrix4x4 transform)
         {
             // Calculate new parent-relative transform
-            CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, TransformMatrix,
+            CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint,
+                // HACK: Ignore RenderTransform set by the adorner layer
+                AdornedVisual != null ? Matrix4x4.Identity : TransformMatrix,
                 Scale, RotationAngle, Orientation, Offset);
             
             var newTransform = CombinedTransformMatrix * transform;

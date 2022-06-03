@@ -378,7 +378,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             return client
                     .AddMembers(DeclareField(prop.Type, fieldName))
                     .AddMembers(PropertyDeclaration(propType, prop.Name)
-                        .AddModifiers(SyntaxKind.PublicKeyword)
+                        .AddModifiers(prop.Internal ? SyntaxKind.InternalKeyword : SyntaxKind.PublicKeyword)
                         .AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
                                 Block(ReturnStatement(IdentifierName(fieldName)))),

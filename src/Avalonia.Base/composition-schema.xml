@@ -22,6 +22,7 @@
         <Property Name="Orientation" Type="Quaternion" DefaultValue="Quaternion.Identity" Animated="true"/>
         <Property Name="Scale" Type="Vector3" DefaultValue="new Vector3(1, 1, 1)" Animated="true"/>
         <Property Name="TransformMatrix" Type="Matrix4x4" DefaultValue="Matrix4x4.Identity" Animated="true"/>
+        <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
     </Object>
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
     <List Name="CompositionVisualCollection" ItemType="CompositionVisual" CustomCtor="true"/>

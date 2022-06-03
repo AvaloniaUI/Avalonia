@@ -11,10 +11,16 @@ namespace Avalonia.Rendering.Composition.Server;
 
 internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisual
 {
+#if DEBUG
+    public readonly Visual UiVisual;
+#endif
     private CompositionDrawList? _renderCommands;
     
-    public ServerCompositionDrawListVisual(ServerCompositor compositor) : base(compositor)
+    public ServerCompositionDrawListVisual(ServerCompositor compositor, Visual v) : base(compositor)
     {
+#if DEBUG
+        UiVisual = v;
+#endif
     }
 
     Rect? _contentBounds;
@@ -47,12 +53,19 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         base.DeserializeChangesCore(reader, commitedAt);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Matrix4x4 transform)
+    protected override void RenderCore(CompositorDrawingContextProxy canvas)
     {
         if (_renderCommands != null)
         {
             _renderCommands.Render(canvas);
         }
-        base.RenderCore(canvas, transform);
+        base.RenderCore(canvas);
     }
+    
+#if DEBUG
+    public override string ToString()
+    {
+        return UiVisual.GetType().ToString();
+    }
+#endif
 }
