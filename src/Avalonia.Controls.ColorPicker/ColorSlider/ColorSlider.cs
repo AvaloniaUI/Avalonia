@@ -139,12 +139,12 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         private void SetColorToSliderValues()
         {
-            var hsvColor = HsvColor;
-            var rgbColor = Color;
             var component = ColorComponent;
 
             if (ColorModel == ColorModel.Hsva)
             {
+                var hsvColor = HsvColor;
+
                 if (IsRoundingEnabled)
                 {
                     hsvColor = RoundComponentValues(hsvColor);
@@ -177,6 +177,8 @@ namespace Avalonia.Controls.Primitives
             }
             else
             {
+                var rgbColor = Color;
+
                 switch (component)
                 {
                     case ColorComponent.Alpha:
@@ -211,13 +213,12 @@ namespace Avalonia.Controls.Primitives
             HsvColor hsvColor = new HsvColor();
             Color rgbColor = new Color();
             double sliderPercent = Value / (Maximum - Minimum);
-
-            var baseHsvColor = HsvColor;
-            var baseRgbColor = Color;
             var component = ColorComponent;
 
             if (ColorModel == ColorModel.Hsva)
             {
+                var baseHsvColor = HsvColor;
+
                 switch (component)
                 {
                     case ColorComponent.Alpha:
@@ -246,6 +247,8 @@ namespace Avalonia.Controls.Primitives
             }
             else
             {
+                var baseRgbColor = Color;
+
                 byte componentValue = Convert.ToByte(MathUtilities.Clamp(sliderPercent * 255, 0, 255));
 
                 switch (component)
