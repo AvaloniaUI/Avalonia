@@ -99,6 +99,8 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         }
 
         UpdateStyle();
+        
+        [Window invalidateShadow];
 
         if (ShouldTakeFocusOnShow() && activate) {
             [Window orderFront:Window];
