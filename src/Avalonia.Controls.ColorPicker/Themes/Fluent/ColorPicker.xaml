@@ -36,7 +36,7 @@
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       Margin="1,1,0,1" />
-              <Border Background="{Binding HsvColor, ElementName=FlyoutColorView, Converter={StaticResource ToBrush}, Mode=OneWay}"
+              <Border Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrush}}"
                       CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
@@ -49,13 +49,13 @@
                 - CustomPaletteColors
               -->
               <ColorView x:Name="FlyoutColorView"
-                         Color="{Binding $parent[ColorPicker].Color, Mode=TwoWay}"
-                         ColorModel="{Binding $parent[ColorPicker].ColorModel, Mode=TwoWay}"
+                         Color="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                         ColorModel="{Binding ColorModel, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ColorSpectrumComponents="{TemplateBinding ColorSpectrumComponents}"
                          ColorSpectrumShape="{TemplateBinding ColorSpectrumShape}"
                          CustomPaletteColumnCount="{TemplateBinding CustomPaletteColumnCount}"
                          CustomPalette="{TemplateBinding CustomPalette}"
-                         HsvColor="{Binding $parent[ColorPicker].HsvColor, Mode=TwoWay}"
+                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          IsAlphaEnabled="{TemplateBinding IsAlphaEnabled}"
                          IsAlphaVisible="{TemplateBinding IsAlphaVisible}"
                          IsColorComponentsVisible="{TemplateBinding IsColorComponentsVisible}"
