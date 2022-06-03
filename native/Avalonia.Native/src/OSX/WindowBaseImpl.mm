@@ -90,8 +90,6 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        InitialiseNSWindow();
-
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
@@ -569,11 +567,6 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
     }
 }
 
-void WindowBaseImpl::OnInitialiseNSWindow()
-{
-    
-}
-
 void WindowBaseImpl::InitialiseNSWindow() {
     if(Window != nullptr) {
         [Window setContentView:StandardContainer];
@@ -596,8 +589,6 @@ void WindowBaseImpl::InitialiseNSWindow() {
                 [GetWindowProtocol() showWindowMenuWithAppMenu];
             }
         }
-        
-        OnInitialiseNSWindow();
     }
 }
 

@@ -10,6 +10,7 @@
 #include "WindowProtocol.h"
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
+    _isEnabled = true;
     _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;
@@ -23,6 +24,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastTitle = @"";
     _parent = nullptr;
     WindowEvents = events;
+    
+    OnInitialiseNSWindow();
 }
 
 void WindowImpl::HideOrShowTrafficLights() {
@@ -31,15 +34,16 @@ void WindowImpl::HideOrShowTrafficLights() {
     }
 
     bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = _isClientAreaExtended ? !wantsChrome : _decorations != SystemDecorationsFull;
+    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
     
-    [[Window standardWindowButton:NSWindowCloseButton] setHidden:hasTrafficLights];
-    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:hasTrafficLights];
-    [[Window standardWindowButton:NSWindowZoomButton] setHidden:hasTrafficLights];
+    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
 }
 
 void WindowImpl::OnInitialiseNSWindow(){
     [GetWindowProtocol() setCanBecomeKeyWindow:true];
+    
     [Window disableCursorRects];
     [Window setTabbingMode:NSWindowTabbingModeDisallowed];
     [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -76,7 +80,9 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
     START_COM_CALL;
 
     @autoreleasepool {
+        _isEnabled = enable;
         [GetWindowProtocol() setEnabled:enable];
+        UpdateStyle();
         return S_OK;
     }
 }
@@ -88,11 +94,8 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
         if(_parent != nullptr)
         {
             _parent->_children.remove(this);
-            auto parent = _parent;
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                parent->BringToFront();
-            });
+            _parent->BringToFront();
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
@@ -119,20 +122,23 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
 
 void WindowImpl::BringToFront()
 {
-    if(IsDialog())
+    if(Window != nullptr)
     {
-        Activate();
-    }
-    else
-    {
-        [Window orderFront:nullptr];
-    }
-    
-    [Window invalidateShadow];
-    
-    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
-    {
-        (*iterator)->BringToFront();
+        if(IsDialog())
+        {
+            Activate();
+        }
+        else
+        {
+            [Window orderFront:nullptr];
+        }
+        
+        [Window invalidateShadow];
+        
+        for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+        {
+            (*iterator)->BringToFront();
+        }
     }
 }
 
@@ -561,6 +567,11 @@ bool WindowImpl::IsDialog() {
 
 NSWindowStyleMask WindowImpl::GetStyle() {
     unsigned long s = NSWindowStyleMaskBorderless;
+    
+    if(_actualWindowState == FullScreen)
+    {
+        s |= NSWindowStyleMaskFullScreen;
+    }
 
     switch (_decorations) {
         case SystemDecorationsNone:
@@ -574,7 +585,7 @@ NSWindowStyleMask WindowImpl::GetStyle() {
         case SystemDecorationsFull:
             s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable;
 
-            if (_canResize) {
+            if (_canResize && _isEnabled) {
                 s = s | NSWindowStyleMaskResizable;
             }
             break;
