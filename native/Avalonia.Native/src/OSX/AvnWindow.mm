@@ -33,6 +33,7 @@
     bool _isEnabled;
     bool _canBecomeKeyWindow;
     bool _isExtended;
+    bool _isTransitioningToFullScreen;
     AvnMenu* _menu;
 }
 
@@ -175,6 +176,7 @@
     [self setBackgroundColor: [NSColor clearColor]];
 
     _isExtended = false;
+    _isTransitioningToFullScreen = false;
 
     if(self.isDialog)
     {
@@ -349,6 +351,7 @@
 
 - (void)windowWillEnterFullScreen:(NSNotification *_Nonnull)notification
 {
+    _isTransitioningToFullScreen = true;
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
     if(parent != nullptr)
@@ -359,6 +362,7 @@
 
 - (void)windowDidEnterFullScreen:(NSNotification *_Nonnull)notification
 {
+    _isTransitioningToFullScreen = false;
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
 
     if(parent != nullptr)
@@ -441,7 +445,10 @@
                     _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, static_cast<uint32>([event timestamp] * 1000), AvnInputModifiersNone, point, delta);
                 }
                 
-                _parent->BringToFront();
+                if(!_isTransitioningToFullScreen)
+                {
+                    _parent->BringToFront();
+                }
             }
             break;
 
