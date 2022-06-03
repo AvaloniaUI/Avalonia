@@ -284,6 +284,14 @@
 - (void)windowDidBecomeKey:(NSNotification *_Nonnull)notification
 {
     _parent->BringToFront();
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @try {
+        [self invalidateShadow];
+        }
+        @finally{
+        }
+    });
 }
 
 - (void)windowDidMiniaturize:(NSNotification *_Nonnull)notification
