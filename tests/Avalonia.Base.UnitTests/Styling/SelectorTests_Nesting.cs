@@ -257,6 +257,30 @@ namespace Avalonia.Base.UnitTests.Styling
             parent.Children.Add(child);
         }
 
+
+        [Fact]
+        public void Nesting_Not_Class_Matches()
+        {
+            var control = new Control1 { Classes = { "foo" } };
+            Style nested;
+            var parent = new Style(x => x.OfType<Control1>())
+            {
+                Children =
+                {
+                    (nested = new Style(x => x.Nesting().Not(y => y.Class("foo")))),
+                }
+            };
+
+            var match = nested.Selector.Match(control, parent);
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+
+            var sink = new ActivatorSink(match.Activator);
+
+            Assert.False(sink.Active);
+            control.Classes.Clear();
+            Assert.True(sink.Active);
+        }
+
         public class Control1 : Control
         {
         }
