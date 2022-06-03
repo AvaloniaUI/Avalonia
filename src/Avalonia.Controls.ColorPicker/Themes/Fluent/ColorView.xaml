@@ -12,7 +12,7 @@
     <pc:ThirdComponentConverter x:Key="ThirdComponent" />
     <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayName" />
     <converters:ColorToHexConverter x:Key="ColorToHex" />
-    <converters:EnumToBooleanConverter x:Key="EnumToBoolean" />
+    <converters:EnumToBoolConverter x:Key="EnumToBool" />
     <globalization:NumberFormatInfo x:Key="ComponentNumberFormatInfo" NumberDecimalDigits="0" />
     <x:Double x:Key="ColorViewTabStripHeight">48</x:Double>
     <!-- Fluent UI System Icons : ic_fluent_inking_tool_20_regular.svg -->
@@ -351,12 +351,12 @@
                                  Grid.Column="0"
                                  Content="RGB"
                                  CornerRadius="4,0,0,4"
-                                 IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=TwoWay}" />
+                                 IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=TwoWay}" />
                     <RadioButton x:Name="HsvRadioButton"
                                  Grid.Column="1"
                                  Content="HSV"
                                  CornerRadius="0,4,4,0"
-                                 IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=TwoWay}" />
+                                 IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=TwoWay}" />
                   </Grid>
                   <Grid x:Name="HexInputGrid"
                         Grid.Column="2"
@@ -403,11 +403,11 @@
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
                                FontWeight="SemiBold"
                                Text="R"
-                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}"/>
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}"/>
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
                                FontWeight="SemiBold"
                                Text="H"
-                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
                   </Panel>
                 </Border>
                 <NumericUpDown x:Name="Component1NumericUpDown"
@@ -451,11 +451,11 @@
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
                                FontWeight="SemiBold"
                                Text="G"
-                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}" />
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}" />
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
                                FontWeight="SemiBold"
                                Text="S"
-                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
                   </Panel>
                 </Border>
                 <NumericUpDown x:Name="Component2NumericUpDown"
@@ -499,11 +499,11 @@
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
                                FontWeight="SemiBold"
                                Text="B"
-                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}" />
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Rgba}, Mode=OneWay}" />
                     <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
                                FontWeight="SemiBold"
                                Text="V"
-                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolean}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
+                               IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static local:ColorModel.Hsva}, Mode=OneWay}" />
                   </Panel>
                 </Border>
                 <NumericUpDown x:Name="Component3NumericUpDown"

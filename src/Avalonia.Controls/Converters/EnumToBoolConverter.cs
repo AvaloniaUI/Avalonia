@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Converters
     /// <remarks>
     /// This converter is useful to enable binding of radio buttons with a selected enum value.
     /// </remarks>
-    public class EnumToBooleanConverter : IValueConverter
+    public class EnumToBoolConverter : IValueConverter
     {
         /// <inheritdoc/>
         public object? Convert(
@@ -44,14 +44,13 @@ namespace Avalonia.Controls.Converters
             object? parameter,
             CultureInfo culture)
         {
-            if (value is bool boolValue)
+            if (value is bool boolValue &&
+                boolValue == true)
             {
-                return boolValue ? parameter : BindingOperations.DoNothing;
+                return parameter;
             }
-            else
-            {
-                return BindingOperations.DoNothing;
-            }
+
+            return BindingOperations.DoNothing;
         }
     }
 }
