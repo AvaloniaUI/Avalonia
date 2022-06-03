@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
@@ -64,43 +65,14 @@ namespace Avalonia.Styling
         bool IResourceNode.HasResources => _resources?.Count > 0;
         IReadOnlyList<IStyle> IStyle.Children => (IReadOnlyList<IStyle>?)_children ?? Array.Empty<IStyle>();
 
-        internal abstract bool HasSelector { get; }
+        internal bool HasSettersOrAnimations => _setters?.Count > 0 || _animations?.Count > 0;
 
         public void Add(ISetter setter) => Setters.Add(setter);
         public void Add(IStyle style) => Children.Add(style);
 
         public event EventHandler? OwnerChanged;
 
-        public SelectorMatchResult TryAttach(IStyleable target, object? host)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-
-            var result = SelectorMatchResult.NeverThisType;
-
-            if (_setters?.Count > 0 || _animations?.Count > 0)
-            {
-                var match = Match(target, host, subscribe: true);
-
-                if (match.IsMatch)
-                {
-                    var instance = new StyleInstance(this, target, _setters, _animations, match.Activator);
-                    target.StyleApplied(instance);
-                    instance.Start();
-                }
-
-                result = match.Result;
-            }
-
-            if (_children is not null)
-            {
-                _childCache ??= new StyleCache();
-                var childResult = _childCache.TryAttach(_children, target, host);
-                if (childResult > result)
-                    result = childResult;
-            }
-
-            return result;
-        }
+        public abstract SelectorMatchResult TryAttach(IStyleable target, object? host);
 
         public bool TryGetResource(object key, out object? result)
         {
@@ -108,19 +80,20 @@ namespace Avalonia.Styling
             return _resources?.TryGetResource(key, out result) ?? false;
         }
 
-        /// <summary>
-        /// Evaluates the style's selector against the specified target element.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="host">The element that hosts the style.</param>
-        /// <param name="subscribe">
-        /// Whether the match should subscribe to changes in order to track the match over time,
-        /// or simply return an immediate result.
-        /// </param>
-        /// <returns>
-        /// A <see cref="SelectorMatchResult"/> describing how the style matches the control.
-        /// </returns>
-        internal abstract SelectorMatch Match(IStyleable control, object? host, bool subscribe);
+        internal void Attach(IStyleable target, IStyleActivator? activator)
+        {
+            var instance = new StyleInstance(this, target, _setters, _animations, activator);
+            target.StyleApplied(instance);
+            instance.Start();
+        }
+
+        internal SelectorMatchResult TryAttachChildren(IStyleable target, object? host)
+        {
+            if (_children is null || _children.Count == 0)
+                return SelectorMatchResult.NeverThisType;
+            _childCache ??= new StyleCache();
+            return _childCache.TryAttach(_children, target, host);
+        }
 
         internal virtual void SetParent(StyleBase? parent) => Parent = parent;
 

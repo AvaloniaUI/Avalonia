@@ -28,10 +28,10 @@ public class StyledElementTests_Theming
             Assert.NotNull(target.Template);
 
             var border = Assert.IsType<Border>(target.VisualChild);
-            Assert.Equal(border.Background, Brushes.Red);
+            Assert.Equal(Brushes.Red, border.Background);
 
             target.Classes.Add("foo");
-            Assert.Equal(border.Background, Brushes.Green);
+            Assert.Equal(Brushes.Green, border.Background);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ public class StyledElementTests_Theming
             var root = CreateRoot(target);
 
             var canvas = Assert.IsType<Canvas>(target.VisualChild);
-            Assert.Equal(canvas.Background, Brushes.Red);
+            Assert.Equal(Brushes.Red, canvas.Background);
 
             target.Theme = null;
 
@@ -97,7 +97,28 @@ public class StyledElementTests_Theming
 
             var border = Assert.IsType<Border>(target.VisualChild);
             Assert.NotNull(target.Template);
-            Assert.Equal(border.Background, Brushes.Red);
+            Assert.Equal(Brushes.Red, border.Background);
+        }
+
+        [Fact]
+        public void BasedOn_Theme_Is_Applied_When_Attached_To_Logical_Tree()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = CreateTarget(CreateDerivedTheme());
+
+            Assert.Null(target.Template);
+
+            var root = CreateRoot(target);
+            Assert.NotNull(target.Template);
+            Assert.Equal(Brushes.Blue, target.BorderBrush);
+
+            var border = Assert.IsType<Border>(target.VisualChild);
+            Assert.Equal(Brushes.Red, border.Background);
+            Assert.Equal(Brushes.Yellow, border.BorderBrush);
+
+            target.Classes.Add("foo");
+            Assert.Equal(Brushes.Green, border.Background);
+            Assert.Equal(Brushes.Cyan, border.BorderBrush);
         }
 
         private static ThemedControl CreateTarget(ControlTheme? theme = null)
@@ -191,6 +212,36 @@ public class StyledElementTests_Theming
                     Setters =
                     {
                         new Setter(Border.BackgroundProperty, Brushes.Green),
+                    }
+                },
+            }
+        };
+    }
+
+    private static ControlTheme CreateDerivedTheme()
+    {
+        return new ControlTheme
+        {
+            TargetType = typeof(ThemedControl),
+            BasedOn = CreateTheme(),
+            Setters =
+            {
+                new Setter(Border.BorderBrushProperty, Brushes.Blue),
+            },
+            Children =
+            {
+                new Style(x => x.Nesting().Template().OfType<Border>())
+                {
+                    Setters =
+                    {
+                        new Setter(Border.BorderBrushProperty, Brushes.Yellow),
+                    }
+                },
+                new Style(x => x.Nesting().Class("foo").Template().OfType<Border>())
+                {
+                    Setters =
+                    {
+                        new Setter(Border.BorderBrushProperty, Brushes.Cyan),
                     }
                 },
             }

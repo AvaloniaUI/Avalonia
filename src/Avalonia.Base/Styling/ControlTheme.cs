@@ -23,16 +23,32 @@ namespace Avalonia.Styling
         /// </summary>
         public Type? TargetType { get; set; }
 
-        internal override bool HasSelector => TargetType is not null;
+        /// <summary>
+        /// Gets or sets a control theme that is the basis of the current theme.
+        /// </summary>
+        public ControlTheme? BasedOn { get; set; }
 
-        internal override SelectorMatch Match(IStyleable control, object? host, bool subscribe)
+        public override SelectorMatchResult TryAttach(IStyleable target, object? host)
         {
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
             if (TargetType is null)
                 throw new InvalidOperationException("ControlTheme has no TargetType.");
 
-            return control.StyleKey == TargetType ?
-                SelectorMatch.AlwaysThisType :
-                SelectorMatch.NeverThisType;
+            var result = BasedOn?.TryAttach(target, host) ?? SelectorMatchResult.NeverThisType;
+
+            if (HasSettersOrAnimations && target.StyleKey == TargetType)
+            {
+                Attach(target, null);
+                result = SelectorMatchResult.AlwaysThisType;
+            }
+
+            var childResult = TryAttachChildren(target, host);
+
+            if (childResult > result)
+                result = childResult;
+
+            return result;
         }
 
         internal override void SetParent(StyleBase? parent)

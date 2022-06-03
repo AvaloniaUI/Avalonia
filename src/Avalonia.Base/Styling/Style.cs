@@ -28,7 +28,32 @@ namespace Avalonia.Styling
         /// </summary>
         public Selector? Selector { get; set; }
 
-        internal override bool HasSelector => Selector is not null;
+        public override SelectorMatchResult TryAttach(IStyleable target, object? host)
+        {
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
+            var result = SelectorMatchResult.NeverThisType;
+
+            if (HasSettersOrAnimations)
+            {
+                var match = Selector?.Match(target, Parent, true) ??
+                    (target == host ?
+                        SelectorMatch.AlwaysThisInstance :
+                        SelectorMatch.NeverThisInstance);
+
+                if (match.IsMatch)
+                    Attach(target, match.Activator);
+
+                result = match.Result;
+            }
+
+            var childResult = TryAttachChildren(target, host);
+
+            if (childResult > result)
+                result = childResult;
+
+            return result;
+        }
 
         /// <summary>
         /// Returns a string representation of the style.
@@ -44,14 +69,6 @@ namespace Avalonia.Styling
             {
                 return "Style";
             }
-        }
-
-        internal override SelectorMatch Match(IStyleable control, object? host, bool subscribe)
-        {
-            return Selector?.Match(control, Parent, subscribe) ??
-                (control == host ?
-                    SelectorMatch.AlwaysThisInstance :
-                    SelectorMatch.NeverThisInstance);
         }
 
         internal override void SetParent(StyleBase? parent)
