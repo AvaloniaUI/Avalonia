@@ -24,6 +24,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastTitle = @"";
     _parent = nullptr;
     WindowEvents = events;
+    
+    OnInitialiseNSWindow();
 }
 
 void WindowImpl::HideOrShowTrafficLights() {
@@ -41,6 +43,7 @@ void WindowImpl::HideOrShowTrafficLights() {
 
 void WindowImpl::OnInitialiseNSWindow(){
     [GetWindowProtocol() setCanBecomeKeyWindow:true];
+    
     [Window disableCursorRects];
     [Window setTabbingMode:NSWindowTabbingModeDisallowed];
     [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
