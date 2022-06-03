@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         private const double MaxHue = 359;
 
-        private bool disableUpdates = false;
+        protected bool ignorePropertyChanged = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.
@@ -135,7 +135,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <remarks>
         /// Warning: This will trigger property changed updates.
-        /// Consider using <see cref="disableUpdates"/> externally.
+        /// Consider using <see cref="ignorePropertyChanged"/> externally.
         /// </remarks>
         private void SetColorToSliderValues()
         {
@@ -341,7 +341,7 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (disableUpdates)
+            if (ignorePropertyChanged)
             {
                 base.OnPropertyChanged(change);
                 return;
@@ -350,7 +350,7 @@ namespace Avalonia.Controls.Primitives
             // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
-                disableUpdates = true;
+                ignorePropertyChanged = true;
 
                 HsvColor = Color.ToHsv();
 
@@ -362,21 +362,21 @@ namespace Avalonia.Controls.Primitives
                     change.GetOldValue<Color>(),
                     change.GetNewValue<Color>()));
 
-                disableUpdates = false;
+                ignorePropertyChanged = false;
             }
             else if (change.Property == ColorModelProperty)
             {
-                disableUpdates = true;
+                ignorePropertyChanged = true;
 
                 SetColorToSliderValues();
                 UpdateBackground();
                 UpdatePseudoClasses();
 
-                disableUpdates = false;
+                ignorePropertyChanged = false;
             }
             else if (change.Property == HsvColorProperty)
             {
-                disableUpdates = true;
+                ignorePropertyChanged = true;
 
                 Color = HsvColor.ToRgb();
 
@@ -388,7 +388,7 @@ namespace Avalonia.Controls.Primitives
                     change.GetOldValue<HsvColor>().ToRgb(),
                     change.GetNewValue<HsvColor>().ToRgb()));
 
-                disableUpdates = false;
+                ignorePropertyChanged = false;
             }
             else if (change.Property == IsRoundingEnabledProperty)
             {
@@ -402,7 +402,7 @@ namespace Avalonia.Controls.Primitives
                      change.Property == MinimumProperty ||
                      change.Property == MaximumProperty)
             {
-                disableUpdates = true;
+                ignorePropertyChanged = true;
 
                 Color oldColor = Color;
                 (var color, var hsvColor) = GetColorFromSliderValues();
@@ -421,7 +421,7 @@ namespace Avalonia.Controls.Primitives
                 UpdatePseudoClasses();
                 OnColorChanged(new ColorChangedEventArgs(oldColor, Color));
 
-                disableUpdates = false;
+                ignorePropertyChanged = false;
             }
 
             base.OnPropertyChanged(change);

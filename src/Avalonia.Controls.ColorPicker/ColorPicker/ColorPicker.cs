@@ -12,5 +12,14 @@ namespace Avalonia.Controls
     /// </summary>
     public class ColorPicker : ColorView
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ColorPicker"/> class.
+        /// </summary>
+        public ColorPicker() : base()
+        {
+            // Completely ignore property changes here
+            // The ColorView in the control template is responsible to manage this
+            base.ignorePropertyChanged = true;
+        }
     }
 }

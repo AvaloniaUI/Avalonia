@@ -27,7 +27,7 @@ namespace Avalonia.Controls
 
         private ObservableCollection<Color> _customPaletteColors = new ObservableCollection<Color>();
         private ColorToHexConverter colorToHexConverter = new ColorToHexConverter();
-        private bool disableUpdates = false;
+        protected bool ignorePropertyChanged = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorView"/> class.
@@ -167,7 +167,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if (disableUpdates)
+            if (ignorePropertyChanged)
             {
                 base.OnPropertyChanged(change);
                 return;
@@ -176,7 +176,7 @@ namespace Avalonia.Controls
             // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
-                disableUpdates = true;
+                ignorePropertyChanged = true;
 
                 HsvColor = Color.ToHsv();
                 SetColorToHexTextBox();
@@ -185,11 +185,11 @@ namespace Avalonia.Controls
                     change.GetOldValue<Color>(),
                     change.GetNewValue<Color>()));
 
-                disableUpdates = false;
+                ignorePropertyChanged = false;
             }
             else if (change.Property == HsvColorProperty)
             {
-                disableUpdates = true;
+                ignorePropertyChanged = true;
 
                 Color = HsvColor.ToRgb();
                 SetColorToHexTextBox();
@@ -198,7 +198,7 @@ namespace Avalonia.Controls
                     change.GetOldValue<HsvColor>().ToRgb(),
                     change.GetNewValue<HsvColor>().ToRgb()));
 
-                disableUpdates = false;
+                ignorePropertyChanged = false;
             }
             else if (change.Property == CustomPaletteProperty)
             {
