@@ -126,14 +126,14 @@ namespace Avalonia.Rendering.Composition.Server
 
         partial void OnRootChanging()
         {
-            if(Root != null)
-                Deactivate();
+            if (Root != null)
+                Root.RemoveVisual(this);
         }
         
         partial void OnRootChanged()
         {
             if (Root != null)
-                Activate();
+                Root.AddVisual(this);
         }
         
         protected override void ValuesInvalidated()

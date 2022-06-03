@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using Avalonia.Media;
@@ -24,6 +25,7 @@ namespace Avalonia.Rendering.Composition.Server
         private IDrawingContextLayerImpl? _layer;
         private bool _redrawRequested;
         private bool _disposed;
+        private HashSet<ServerCompositionVisual> _attachedVisuals = new();
 
 
         public ReadbackIndices Readback { get; } = new();
@@ -39,9 +41,17 @@ namespace Avalonia.Rendering.Composition.Server
         partial void OnIsEnabledChanged()
         {
             if (IsEnabled)
+            {
                 _compositor.AddCompositionTarget(this);
+                foreach (var v in _attachedVisuals)
+                    v.Activate();
+            }
             else
+            {
                 _compositor.RemoveCompositionTarget(this);
+                foreach (var v in _attachedVisuals)
+                    v.Deactivate();
+            }
         }
         
         partial void DeserializeChangesExtra(BatchStreamReader c)
@@ -154,6 +164,18 @@ namespace Avalonia.Rendering.Composition.Server
             }
             _renderTarget?.Dispose();
             _renderTarget = null;
+        }
+
+        public void AddVisual(ServerCompositionVisual visual)
+        {
+            if (_attachedVisuals.Add(visual) && IsEnabled)
+                visual.Activate();
+        }
+
+        public void RemoveVisual(ServerCompositionVisual visual)
+        {
+            if (_attachedVisuals.Remove(visual) && IsEnabled)
+                visual.Deactivate();
         }
     }
 }
