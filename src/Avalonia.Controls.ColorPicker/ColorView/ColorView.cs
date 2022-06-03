@@ -73,7 +73,10 @@ namespace Avalonia.Controls
         /// Validates the selected subview/tab taking into account the visibility of each subview/tab
         /// as well as the current selection.
         /// </summary>
-        private void ValidateSelectedTab()
+        /// <remarks>
+        /// Derived controls may re-implement this based on their default style / control template.
+        /// </remarks>
+        protected virtual void ValidateSelectedTab()
         {
             if (_tabControl != null &&
                 _tabControl.Items != null)
@@ -135,6 +138,8 @@ namespace Avalonia.Controls
                     _tabControl.SelectedItem = null;
                     _tabControl.IsVisible = false;
                 }
+
+                SelectedTabIndex = _tabControl.SelectedIndex;
             }
 
             return;
@@ -227,6 +232,15 @@ namespace Avalonia.Controls
                 // When the property changed notification is received here the visibility
                 // of individual tab items has not yet been updated through the bindings.
                 // Therefore, the validation is delayed until after bindings update.
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ValidateSelectedTab();
+                }, DispatcherPriority.Background);
+            }
+            else if (change.Property == SelectedTabIndexProperty)
+            {
+                // Again, it is necessary to wait for the SelectedTabIndex value to
+                // be applied to the TabControl through binding before validation occurs.
                 Dispatcher.UIThread.Post(() =>
                 {
                     ValidateSelectedTab();

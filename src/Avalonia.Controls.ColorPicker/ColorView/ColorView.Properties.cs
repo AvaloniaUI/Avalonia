@@ -8,7 +8,6 @@ namespace Avalonia.Controls
     /// <inheritdoc/>
     public partial class ColorView
     {
-        // SelectedTabIndex
         // IsColorModelSelectorVisible
         // IsComponentSliderVisible
 
@@ -197,6 +196,14 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ColorView, int>(
                 nameof(MinValue),
                 0);
+
+        /// <summary>
+        /// Defines the <see cref="SelectedTabIndex"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> SelectedTabIndexProperty =
+            AvaloniaProperty.Register<ColorView, int>(
+                nameof(SelectedTabIndex),
+                (int)ColorViewTab.Spectrum);
 
         /// <summary>
         /// Defines the <see cref="ShowAccentColors"/> property.
@@ -411,6 +418,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(MinValueProperty);
             set => SetValue(MinValueProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the index of the selected subview/tab.
+        /// </summary>
+        public int SelectedTabIndex
+        {
+            get => GetValue(SelectedTabIndexProperty);
+            set => SetValue(SelectedTabIndexProperty, value);
         }
 
         /// <inheritdoc cref="ColorPreviewer.ShowAccentColors"/>
