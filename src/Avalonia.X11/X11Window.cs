@@ -46,6 +46,9 @@ namespace Avalonia.X11
         private IntPtr _handle;
         private IntPtr _xic;
         private IntPtr _renderHandle;
+        private IntPtr _xSyncCounter;
+        private XSyncValue _xSyncValue;
+        private XSyncState _xSyncState = 0;
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
         private double? _scalingOverride;
@@ -53,6 +56,14 @@ namespace Avalonia.X11
         private TransparencyHelper _transparencyHelper;
         private RawEventGrouper _rawEventGrouper;
         private bool _useRenderWindow = false;
+
+        enum XSyncState
+        {
+            None,
+            WaitConfigure,
+            WaitPaint
+        }
+        
         public X11Window(AvaloniaX11Platform platform, IWindowImpl popupParent)
         {
             _platform = platform;
@@ -191,6 +202,16 @@ namespace Avalonia.X11
                 NativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
             NativeControlHost = new X11NativeControlHost(_platform, this);
             InitializeIme();
+            
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
+                PropertyMode.Replace, new[] { _x11.Atoms.WM_DELETE_WINDOW, _x11.Atoms._NET_WM_SYNC_REQUEST }, 2);
+
+            if (_x11.HasXSync)
+            {
+                _xSyncCounter = XSyncCreateCounter(_x11.Display, _xSyncValue);
+                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_SYNC_REQUEST_COUNTER,
+                    _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
+            }
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -386,15 +407,7 @@ namespace Avalonia.X11
                      (ev.type == XEventName.VisibilityNotify &&
                       ev.VisibilityEvent.state < 2))
             {
-                if (!_triggeredExpose)
-                {
-                    _triggeredExpose = true;
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        _triggeredExpose = false;
-                        DoPaint();
-                    }, DispatcherPriority.Render);
-                }
+                EnqueuePaint();
             }
             else if (ev.type == XEventName.FocusIn)
             {
@@ -506,6 +519,11 @@ namespace Avalonia.X11
                 if (_useRenderWindow)
                     XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
                         ev.ConfigureEvent.height);
+                if (_xSyncState == XSyncState.WaitConfigure)
+                {
+                    _xSyncState = XSyncState.WaitPaint;
+                    EnqueuePaint();
+                }
             }
             else if (ev.type == XEventName.DestroyNotify 
                      && ev.DestroyWindowEvent.window == _handle)
@@ -521,7 +539,12 @@ namespace Avalonia.X11
                         if (Closing?.Invoke() != true)
                             Dispose();
                     }
-
+                    else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
+                    {
+                        _xSyncValue.Lo = new UIntPtr(ev.ClientMessageEvent.ptr3.ToPointer()).ToUInt32();
+                        _xSyncValue.Hi = ev.ClientMessageEvent.ptr4.ToInt32();
+                        _xSyncState = XSyncState.WaitConfigure;
+                    }
                 }
             }
             else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
@@ -733,9 +756,27 @@ namespace Avalonia.X11
             ScheduleInput(mev, ref ev);
         }
 
+        void EnqueuePaint()
+        {
+            if (!_triggeredExpose)
+            {
+                _triggeredExpose = true;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _triggeredExpose = false;
+                    DoPaint();
+                }, DispatcherPriority.Render);
+            }
+        }
+        
         void DoPaint()
         {
             Paint?.Invoke(new Rect());
+            if (_xSyncCounter != IntPtr.Zero && _xSyncState == XSyncState.WaitPaint)
+            {
+                _xSyncState = XSyncState.None;
+                XSyncSetCounter(_x11.Display, _xSyncCounter, _xSyncValue);
+            }
         }
         
         public void Invalidate(Rect rect)
@@ -780,6 +821,12 @@ namespace Avalonia.X11
             {
                 XDestroyIC(_xic);
                 _xic = IntPtr.Zero;
+            }
+
+            if (_xSyncCounter != IntPtr.Zero)
+            {
+                XSyncDestroyCounter(_x11.Display, _xSyncCounter);
+                _xSyncCounter = IntPtr.Zero;
             }
             
             if (_handle != IntPtr.Zero)

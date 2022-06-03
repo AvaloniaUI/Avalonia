@@ -2,8 +2,8 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
-             xmlns:pages="clr-namespace:ControlCatalog.Pages"
-             xmlns:models="clr-namespace:ControlCatalog.Models">
+             xmlns:models="clr-namespace:ControlCatalog.Models"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages">
   <Grid>
     <Grid.Styles>
       <Style Selector="TextBlock.h2">
@@ -159,6 +159,9 @@
       </TabItem>
       <TabItem Header="Viewbox">
         <pages:ViewboxPage />
+      </TabItem>
+      <TabItem Header="Native Embed">
+        <pages:NativeEmbedPage />
       </TabItem>
       <TabItem Header="Window Customizations">
         <pages:WindowCustomizationsPage />

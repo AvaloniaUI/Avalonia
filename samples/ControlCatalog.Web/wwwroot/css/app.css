@@ -44,47 +44,13 @@ a, .btn-link {
     z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
-
-.canvas-container {
-    opacity:1;
-    background-color:#ccc;
-    position:fixed;
-    width:100%;
-    height:100%;
-    top:0px;
-    left:0px;
-    z-index:500;
-}
-
-canvas
-{
-    opacity:1;
-    background-color:#ccc;
-    position:fixed;
-    width:100%;
-    height:100%;
-    top:0px;
-    left:0px;
-    z-index:500;
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
 }
 
 #app, .page {
     height: 100%;
-}
-
-.overlay{
-    opacity:0.0;
-    background-color:#ccc;
-    position:fixed;
-    width:100vw;
-    height:100vh;
-    top:0px;
-    left:0px;
-    z-index:1000;
 }

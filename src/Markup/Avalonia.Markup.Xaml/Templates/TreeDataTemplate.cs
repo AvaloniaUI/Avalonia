@@ -11,6 +11,7 @@ namespace Avalonia.Markup.Xaml.Templates
 {
     public class TreeDataTemplate : ITreeDataTemplate
     {
+        [DataType]
         public Type DataType { get; set; }
 
         [Content]
