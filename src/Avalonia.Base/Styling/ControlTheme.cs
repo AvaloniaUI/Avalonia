@@ -37,7 +37,7 @@ namespace Avalonia.Styling
 
             var result = BasedOn?.TryAttach(target, host) ?? SelectorMatchResult.NeverThisType;
 
-            if (HasSettersOrAnimations && target.StyleKey == TargetType)
+            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(target.StyleKey))
             {
                 Attach(target, null);
                 result = SelectorMatchResult.AlwaysThisType;

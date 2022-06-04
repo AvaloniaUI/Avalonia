@@ -35,6 +35,27 @@ public class StyledElementTests_Theming
         }
 
         [Fact]
+        public void Theme_Is_Applied_To_Derived_Class_When_Attached_To_Logical_Tree()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = new DerivedThemedControl
+            {
+                Theme = CreateTheme(),
+            };
+
+            Assert.Null(target.Template);
+
+            var root = CreateRoot(target);
+            Assert.NotNull(target.Template);
+
+            var border = Assert.IsType<Border>(target.VisualChild);
+            Assert.Equal(Brushes.Red, border.Background);
+
+            target.Classes.Add("foo");
+            Assert.Equal(Brushes.Green, border.Background);
+        }
+
+        [Fact]
         public void Theme_Is_Detached_When_Theme_Property_Cleared()
         {
             using var app = UnitTestApplication.Start(TestServices.RealStyler);
@@ -251,5 +272,9 @@ public class StyledElementTests_Theming
     private class ThemedControl : TemplatedControl
     {
         public IVisual? VisualChild => VisualChildren?.SingleOrDefault();
+    }
+
+    private class DerivedThemedControl : ThemedControl
+    {
     }
 }
