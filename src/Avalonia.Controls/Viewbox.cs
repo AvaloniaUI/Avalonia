@@ -168,6 +168,8 @@ namespace Avalonia.Controls
 
                         if (_child is not null)
                             VisualChildren.Add(_child);
+
+                        InvalidateMeasure();
                     }
                 }
             }
