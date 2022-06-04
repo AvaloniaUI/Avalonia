@@ -53,21 +53,43 @@ namespace Avalonia.Controls
         /// Event raised when an element wishes to be scrolled into view.
         /// </summary>
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
-            RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
+            RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>(
+                "RequestBringIntoView",
+                RoutingStrategies.Bubble);
 
         /// <summary>
         /// Provides event data for the <see cref="ContextRequested"/> event.
         /// </summary>
         public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
-            RoutedEvent.Register<Control, ContextRequestedEventArgs>(nameof(ContextRequested),
+            RoutedEvent.Register<Control, ContextRequestedEventArgs>(
+                nameof(ContextRequested),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         
+        /// <summary>
+        /// Defines the <see cref="Loaded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> LoadedEvent =
+            RoutedEvent.Register<Control, RoutedEventArgs>(
+                nameof(Loaded),
+                RoutingStrategies.Direct);
+
+        /// <summary>
+        /// Defines the <see cref="Unloaded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> UnloadedEvent =
+            RoutedEvent.Register<Control, RoutedEventArgs>(
+                nameof(Unloaded),
+                RoutingStrategies.Direct);
+
         /// <summary>
         /// Defines the <see cref="FlowDirection"/> property.
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
-            AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(nameof(FlowDirection), inherits: true);
+            AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(
+                nameof(FlowDirection),
+                inherits: true);
 
+        private bool _isLoaded = false;
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
@@ -109,6 +131,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets a value indicating whether the control is fully constructed in the visual tree.
+        /// </summary>
+        /// <remarks>
+        /// This is set to true while raising the <see cref="Loaded"/> event.
+        /// </remarks>
+        public bool IsLoaded => _isLoaded;
+
+        /// <summary>
         /// Gets or sets a user-defined object attached to the control.
         /// </summary>
         public object? Tag
@@ -133,6 +163,34 @@ namespace Avalonia.Controls
         {
             add => AddHandler(ContextRequestedEvent, value);
             remove => RemoveHandler(ContextRequestedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when the control has been fully constructed in the visual tree.
+        /// </summary>
+        /// <remarks>
+        /// This event is guaranteed to occur after the control template is applied and references
+        /// to objects created after the template is applied are available. This makes it different
+        /// from OnAttachedToVisualTree which doesn't have these references. This event occurs at the
+        /// latest possible time in the control creation lifetime.
+        /// </remarks>
+        public event EventHandler<RoutedEventArgs>? Loaded
+        {
+            add => AddHandler(LoadedEvent, value);
+            remove => RemoveHandler(LoadedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when the control is removed from the visual tree.
+        /// </summary>
+        /// <remarks>
+        /// This is API symmetrical with <see cref="Loaded"/> and exists for compatibility with other
+        /// XAML frameworks; however, it behaves the same as OnDetachedFromVisualTree.
+        /// </remarks>
+        public event EventHandler<RoutedEventArgs>? Unloaded
+        {
+            add => AddHandler(UnloadedEvent, value);
+            remove => RemoveHandler(UnloadedEvent, value);
         }
 
         public new IControl? Parent => (IControl?)base.Parent;
@@ -215,6 +273,49 @@ namespace Avalonia.Controls
         /// <returns>The control that receives the focus adorner.</returns>
         protected virtual IControl? GetTemplateFocusTarget() => this;
 
+        /// <summary>
+        /// Invoked as the first step of marking the control as loaded and raising the
+        /// <see cref="Loaded"/> event.
+        /// </summary>
+        internal void OnLoadedCore()
+        {
+            _isLoaded = true;
+            OnLoaded();
+        }
+
+        /// <summary>
+        /// Invoked as the first step of marking the control as unloaded and raising the
+        /// <see cref="Unloaded"/> event.
+        /// </summary>
+        internal void OnUnloadedCore()
+        {
+            if (_isLoaded)
+            {
+                _isLoaded = false;
+                OnUnloaded();
+            }
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="Loaded"/> event.
+        /// </summary>
+        protected virtual void OnLoaded()
+        {
+            var eventArgs = new RoutedEventArgs(LoadedEvent);
+            eventArgs.Source = null;
+            RaiseEvent(eventArgs);
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="Unloaded"/> event.
+        /// </summary>
+        protected virtual void OnUnloaded()
+        {
+            var eventArgs = new RoutedEventArgs(UnloadedEvent);
+            eventArgs.Source = null;
+            RaiseEvent(eventArgs);
+        }
+
         /// <inheritdoc/>
         protected sealed override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
@@ -227,6 +328,8 @@ namespace Avalonia.Controls
         protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTreeCore(e);
+
+            OnUnloaded();
         }
 
         /// <inheritdoc/>
@@ -324,7 +427,9 @@ namespace Avalonia.Controls
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.OpenContextMenu;
 
                 if (keymap is null)
+                {
                     return;
+                }
 
                 var matches = false;
 
