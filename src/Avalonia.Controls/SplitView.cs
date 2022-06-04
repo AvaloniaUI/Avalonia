@@ -138,7 +138,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PaneTemplate"/> property.
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> PaneTemplateProperty =
-            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate>(nameof(PaneTemplate));
+            AvaloniaProperty.Register<SplitView, IDataTemplate>(nameof(PaneTemplate));
 
         /// <summary>
         /// Defines the <see cref="UseLightDismissOverlayMode"/> property

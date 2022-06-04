@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -10,6 +11,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Defines input-related functionality for a control.
     /// </summary>
+    [NotClientImplementable]
     public interface IInputElement : IInteractive, IVisual
     {
         /// <summary>

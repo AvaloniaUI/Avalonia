@@ -3,12 +3,14 @@ using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines the interface through which drawing occurs.
     /// </summary>
+    [Unstable]
     public interface IDrawingContextImpl : IDisposable
     {
         /// <summary>

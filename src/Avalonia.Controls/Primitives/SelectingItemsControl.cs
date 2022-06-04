@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
 
         /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
@@ -111,14 +111,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, SelectionChangedEventArgs>(
-                "SelectionChanged",
+                nameof(SelectionChanged),
                 RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="WrapSelection"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> WrapSelectionProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
 
         private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;

@@ -1,11 +1,13 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using HarfBuzzSharp;
 using SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
+    [Unstable]
     public class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
         private bool _isDisposed;

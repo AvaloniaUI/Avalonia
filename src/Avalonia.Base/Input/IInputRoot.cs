@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Input
 {
     /// <summary>
     /// Defines the interface for top-level input elements.
     /// </summary>
+    [NotClientImplementable]
     public interface IInputRoot : IInputElement
     {
         /// <summary>

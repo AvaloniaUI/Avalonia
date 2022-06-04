@@ -83,7 +83,7 @@ ComPtr<IAvnApplicationEvents> _events;
     }
 }
 
-// This is needed for certain embedded controls
+// This is needed for certain embedded controls DO NOT REMOVE..
 - (BOOL) isHandlingSendEvent
 {
     return _isHandlingSendEvent;
@@ -93,7 +93,6 @@ ComPtr<IAvnApplicationEvents> _events;
 {
     _isHandlingSendEvent = handlingSendEvent;
 }
-
 @end
 
 extern void InitializeAvnApp(IAvnApplicationEvents* events)

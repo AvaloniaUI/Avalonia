@@ -617,5 +617,35 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
             }
         }
+
+        [Fact]
+        public void Can_Use_Nested_Styles()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border'>
+            <Style Selector='^.foo'>
+                <Setter Property='Background' Value='Red'/>
+            </Style>
+        </Style>
+    </Window.Styles>
+    <StackPanel>
+        <Border Name='foo'/>
+    </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var foo = window.FindControl<Border>("foo");
+
+                Assert.Null(foo.Background);
+
+                foo.Classes.Add("foo");
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
+            }
+        }
     }
 }

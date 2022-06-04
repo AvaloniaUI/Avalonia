@@ -8,7 +8,6 @@ using Avalonia.Dialogs;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 #pragma warning disable 4014
-
 namespace ControlCatalog.Pages
 {
     public class DialogsPage : UserControl
@@ -22,7 +21,7 @@ namespace ControlCatalog.Pages
 
             string lastSelectedDirectory = null;
 
-            List<FileDialogFilter> GetFilters()
+            List<FileDialogFilter>? GetFilters()
             {
                 if (this.FindControl<CheckBox>("UseFilters").IsChecked != true)
                     return null;
@@ -42,13 +41,17 @@ namespace ControlCatalog.Pages
 
             this.FindControl<Button>("OpenFile").Click += async delegate
             {
+                // Almost guaranteed to exist
+                var fullPath = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName;
+                var initialFileName = fullPath == null ? null : System.IO.Path.GetFileName(fullPath);
+                var initialDirectory = fullPath == null ? null : System.IO.Path.GetDirectoryName(fullPath);
+
                 var result = await new OpenFileDialog()
                 {
                     Title = "Open file",
                     Filters = GetFilters(),
-                    Directory = lastSelectedDirectory,
-                    // Almost guaranteed to exist
-                    InitialFileName = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName
+                    Directory = initialDirectory,
+                    InitialFileName = initialFileName
                 }.ShowAsync(GetWindow());
                 results.Items = result;
                 resultsVisible.IsVisible = result?.Any() == true;
@@ -84,7 +87,12 @@ namespace ControlCatalog.Pages
                     Title = "Select folder",
                     Directory = lastSelectedDirectory,
                 }.ShowAsync(GetWindow());
-                lastSelectedDirectory = result;
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    lastSelectedDirectory = result;
+                }
+
                 results.Items = new [] { result };
                 resultsVisible.IsVisible = result != null;
             };
@@ -143,6 +151,7 @@ namespace ControlCatalog.Pages
         private Window CreateSampleWindow()
         {
             Button button;
+            Button dialogButton;
             
             var window = new Window
             {
@@ -159,6 +168,12 @@ namespace ControlCatalog.Pages
                             HorizontalAlignment = HorizontalAlignment.Center,
                             Content = "Click to close",
                             IsDefault = true
+                        }),
+                        (dialogButton = new Button
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Content = "Dialog",
+                            IsDefault = false
                         })
                     }
                 },
@@ -166,6 +181,12 @@ namespace ControlCatalog.Pages
             };
 
             button.Click += (_, __) => window.Close();
+            dialogButton.Click += (_, __) =>
+            {
+                var dialog = CreateSampleWindow();
+                dialog.Height = 200;
+                dialog.ShowDialog(window);
+            };
 
             return window;
         }

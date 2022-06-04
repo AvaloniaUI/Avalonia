@@ -247,10 +247,10 @@ namespace Avalonia.Base.UnitTests.Input
                 new[]
                 {
                         ((object?)decorator, "PointerEnter"),
-                        (decorator, "PointerMove"),
+                        (decorator, "PointerMoved"),
                         (decorator, "PointerLeave"),
                         (canvas, "PointerEnter"),
-                        (canvas, "PointerMove")
+                        (canvas, "PointerMoved")
                 },
                 result);
         }

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
@@ -7,6 +8,7 @@ namespace Avalonia.Input
     /// Receives input from the windowing subsystem and dispatches it to interested parties
     /// for processing.
     /// </summary>
+    [NotClientImplementable]
     public interface IInputManager
     {
         /// <summary>

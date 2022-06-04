@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using HarfBuzzSharp;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    [Unstable]
     public class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
         private bool _isDisposed;
