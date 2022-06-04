@@ -279,8 +279,11 @@ namespace Avalonia.Controls
         /// </summary>
         internal void OnLoadedCore()
         {
-            _isLoaded = true;
-            OnLoaded();
+            if (_isLoaded == false)
+            {
+                _isLoaded = true;
+                OnLoaded();
+            }
         }
 
         /// <summary>
