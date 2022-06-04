@@ -7,6 +7,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -173,6 +174,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
+            Popup.RegisterOrUnregisterPopup((Popup.PlacementTarget!.GetVisualRoot() as TopLevel)!, false, _showMode);
             IsOpen = false;
             Popup.IsOpen = false;
             ((ISetLogicalParent)Popup).SetParent(null);
@@ -238,7 +240,9 @@ namespace Avalonia.Controls.Primitives
             var showMode = ShowMode;
             
             // Ensures popup only auto-focuses content if we have Standard ShowM ode
-            Popup.ManagesFocus = showMode == FlyoutShowMode.Standard; 
+            Popup.ManagesFocus = showMode == FlyoutShowMode.Standard;
+
+            Popup.RegisterOrUnregisterPopup((placementTarget.GetVisualRoot() as TopLevel)!, true, showMode);
 
             PositionPopup(showAtPointer);
             IsOpen = Popup.IsOpen = true;

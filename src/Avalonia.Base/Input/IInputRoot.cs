@@ -1,4 +1,5 @@
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -31,6 +32,8 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the associated FocusManager
         /// </summary>
-        IFocusManager FocusManager { get; }
+        FocusManager FocusManager { get; }
+
+        IOverlayHost? OverlayHost { get; }
     }
 }

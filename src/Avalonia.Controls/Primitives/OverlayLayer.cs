@@ -7,11 +7,20 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayLayer : Canvas, ICustomSimpleHitTest
+    public class OverlayLayer : Canvas, ICustomSimpleHitTest, IOverlayHost
     {
-        private readonly List<Popup> _registeredPopups = new List<Popup>();
+        private readonly List<OverlayRegistrationInfo> _registeredPopups = new List<OverlayRegistrationInfo>();
+
+        static OverlayLayer()
+        {
+            // Explicitly disable focus from entering the overlay layer.
+            // Focus manager will manually search this and enforce "Cycle" behavior, but we don't want
+            // tabbing from main window content to suddenly end up in an overlay
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<OverlayLayer>(KeyboardNavigationMode.None);
+        }
 
         public Size AvailableSize { get; private set; }
+
         public static OverlayLayer? GetOverlayLayer(IVisual visual)
         {
             foreach(var v in visual.GetVisualAncestors())
@@ -44,19 +53,42 @@ namespace Avalonia.Controls.Primitives
             return base.ArrangeOverride(finalSize);
         }
 
-        public void RegisterWindowedPopup(Popup p)
+        public void RegisterOverlay(Popup p, FlyoutShowMode? flyoutShowMode)
         {
-            _registeredPopups.Add(p);
+            if (flyoutShowMode.HasValue)
+            {
+                // This is flyout
+                _registeredPopups.Add(new OverlayRegistrationInfo
+                {
+                    Popup = p,
+                    TreatAsLightDismiss = flyoutShowMode == FlyoutShowMode.Standard
+                });
+            }
+            else
+            {
+                _registeredPopups.Add(new OverlayRegistrationInfo
+                {
+                    Popup = p,
+                    TreatAsLightDismiss = p.IsLightDismissEnabled
+                });
+            }
             Debug.WriteLine($"Popup registered; total {_registeredPopups.Count}");
         }
 
-        public void UnregisterWindowedPopup(Popup p)
+        public void UnregisterOverlay(Popup p)
         {
-            _registeredPopups.Remove(p);
+            for (int i = _registeredPopups.Count - 1; i >= 0; i--)
+            {
+                if (_registeredPopups[i].Popup == p)
+                {
+                    _registeredPopups.RemoveAt(i);
+                    break;
+                }
+            }
             Debug.WriteLine($"Popup Unregistered; total {_registeredPopups.Count}");
         }
 
-        public IInputElement? GetTopMostLightDismissElement()
+        public IInputElement? GetTopmostLightDismissElement()
         {
             // Windowed popups take priority since they're 'above' the window
             // List is in order the popup was shown, so last item should be
@@ -66,9 +98,9 @@ namespace Avalonia.Controls.Primitives
                 var ct = _registeredPopups.Count;
                 for (int i = ct - 1; i >= 0; i--)
                 {
-                    if(_registeredPopups[i].IsLightDismissEnabled)
+                    if(_registeredPopups[i].TreatAsLightDismiss)
                     {
-                        return _registeredPopups[i];
+                        return _registeredPopups[i].Popup;
                     }    
                 }
             }
@@ -85,6 +117,12 @@ namespace Avalonia.Controls.Primitives
             }
 
             return null;
+        }
+
+        private struct OverlayRegistrationInfo
+        {
+            public Popup Popup;
+            public bool TreatAsLightDismiss;
         }
     }
 }

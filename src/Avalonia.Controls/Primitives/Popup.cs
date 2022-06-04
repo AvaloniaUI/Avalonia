@@ -16,6 +16,7 @@ using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -23,7 +24,7 @@ namespace Avalonia.Controls.Primitives
     /// Displays a popup window.
     /// </summary>
 #pragma warning disable CS0612 // Type or member is obsolete
-    public class Popup : Control, IVisualTreeHost, IPopupHostProvider, IInteractive
+    public class Popup : Control, IVisualTreeHost, IPopupHostProvider, IInteractive, IOverlayVisual
 #pragma warning restore CS0612 // Type or member is obsolete
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
@@ -392,6 +393,8 @@ namespace Avalonia.Controls.Primitives
         IInteractive? IInteractive.InteractiveParent => Host is PopupRoot pr ? pr.ParentTopLevel : 
             (Host as IVisual)?.VisualRoot as IInteractive;
 
+        IInputElement? IOverlayVisual.OverlayRoot => (Host?.Presenter as IInputElement) ?? (Child as IInputElement);
+
         /// <summary>
         /// Stores the element focused when the popup opens so it can be restored later
         /// </summary>
@@ -552,9 +555,9 @@ namespace Avalonia.Controls.Primitives
 
             // Register Windowed popups with the OverlayLayer of the owning TopLevel
             // This is so FocusManager knows they exist and are treated in the same scope
-            if (popupHost is PopupRoot)
+            if (ManagesFocus && popupHost is PopupRoot)
             {
-                RegisterOrUnregisterPopup(topLevel, true);
+                RegisterOrUnregisterPopup(topLevel, true, null);
             }
 
             var current = FocusManager.GetFocusedElement();
@@ -824,9 +827,9 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (Host is PopupRoot)
+            if (ManagesFocus && Host is PopupRoot)
             {
-                RegisterOrUnregisterPopup(_openState.TopLevel, false);
+                RegisterOrUnregisterPopup(_openState.TopLevel, false, null);
             }            
 
             LastFocusedElement = null;
@@ -1012,7 +1015,7 @@ namespace Avalonia.Controls.Primitives
             return new IgnoreIsOpenScope(this);
         }
 
-        private void RegisterOrUnregisterPopup(TopLevel topLevel, bool register)
+        internal void RegisterOrUnregisterPopup(TopLevel topLevel, bool register, FlyoutShowMode? flyoutShowMode)
         {
             OverlayLayer? overlayLayer = null;
             if (!(topLevel is PopupRoot))
@@ -1046,11 +1049,11 @@ namespace Avalonia.Controls.Primitives
 
             if (register)
             {
-                overlayLayer?.RegisterWindowedPopup(this);
+                overlayLayer?.RegisterOverlay(this, flyoutShowMode);
             }
             else
             {
-                overlayLayer?.UnregisterWindowedPopup(this);
+                overlayLayer?.UnregisterOverlay(this);
             }
         }
 
