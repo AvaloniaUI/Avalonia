@@ -661,7 +661,7 @@ namespace Avalonia.Input
             // Enforce an explicit cycle within popups
             // Particularly important for overlay popups so focus doesn't move back to 
             // main app content
-            if ((e as ILogical) is IOverlayVisual)
+            if (e is IOverlayVisual)
             {
                 return KeyboardNavigationMode.Cycle;
             }

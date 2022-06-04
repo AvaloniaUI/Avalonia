@@ -7,8 +7,8 @@ namespace Avalonia.VisualTree
     [NotClientImplementable]
     public interface IOverlayVisual
     {
-        bool IsLightDismissEnabled { get; }
+       // bool IsLightDismissEnabled { get; }
 
-        IInputElement? OverlayRoot { get; }
+        //IInputElement? OverlayRoot { get; }
     }
 }

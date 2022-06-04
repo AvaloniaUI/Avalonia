@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Primitives
     /// Displays a popup window.
     /// </summary>
 #pragma warning disable CS0612 // Type or member is obsolete
-    public class Popup : Control, IVisualTreeHost, IPopupHostProvider, IInteractive, IOverlayVisual
+    public class Popup : Control, IVisualTreeHost, IPopupHostProvider, IInteractive
 #pragma warning restore CS0612 // Type or member is obsolete
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
@@ -392,8 +392,6 @@ namespace Avalonia.Controls.Primitives
 
         IInteractive? IInteractive.InteractiveParent => Host is PopupRoot pr ? pr.ParentTopLevel : 
             (Host as IVisual)?.VisualRoot as IInteractive;
-
-        IInputElement? IOverlayVisual.OverlayRoot => (Host?.Presenter as IInputElement) ?? (Child as IInputElement);
 
         /// <summary>
         /// Stores the element focused when the popup opens so it can be restored later

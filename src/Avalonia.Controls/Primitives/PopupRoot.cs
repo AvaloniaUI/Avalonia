@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost, IInputRoot
+    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost, IInputRoot, IOverlayVisual
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.Primitives
 
         public TopLevel ParentTopLevel { get; }
 
-        IFocusManager IInputRoot.FocusManager
+        FocusManager IInputRoot.FocusManager
         {
             get
             {
