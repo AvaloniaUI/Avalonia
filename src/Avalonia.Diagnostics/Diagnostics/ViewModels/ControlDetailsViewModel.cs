@@ -67,8 +67,15 @@ namespace Avalonia.Diagnostics.ViewModels
 
                     var setters = new List<SetterViewModel>();
 
-                    if (styleSource is Style style)
+                    if (styleSource is StyleBase style)
                     {
+                        var selector = style switch
+                        {
+                            Style s => s.Selector?.ToString(),
+                            ControlTheme t => t.TargetType?.Name.ToString(),
+                            _ => null,
+                        };
+
                         foreach (var setter in style.Setters)
                         {
                             if (setter is Setter regularSetter
@@ -105,7 +112,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             }
                         }
 
-                        AppliedStyles.Add(new StyleViewModel(appliedStyle, style.Selector?.ToString() ?? "No selector", setters));
+                        AppliedStyles.Add(new StyleViewModel(appliedStyle, selector ?? "No selector", setters));
                     }
                 }
 

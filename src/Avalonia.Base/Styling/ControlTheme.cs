@@ -51,6 +51,14 @@ namespace Avalonia.Styling
             return result;
         }
 
+        public override string ToString()
+        {
+            if (TargetType is not null)
+                return "ControlTheme: " + TargetType.Name;
+            else
+                return "ControlTheme";
+        }
+
         internal override void SetParent(StyleBase? parent)
         {
             throw new InvalidOperationException("ControlThemes cannot be added as a nested style.");
