@@ -45,12 +45,12 @@ namespace ControlCatalog.ViewModels
         public List<Bitmap> Images { get; } = new List<Bitmap>();
 
 
-        private Bitmap? _SelectedImage;
+        private Bitmap _SelectedImage;
 
         /// <summary>
         /// Gets or Sets the selected image
         /// </summary>
-        public Bitmap? SelectedImage
+        public Bitmap SelectedImage
         {
             get { return _SelectedImage; }
             set { this.RaiseAndSetIfChanged(ref _SelectedImage, value); }
@@ -293,7 +293,7 @@ namespace ControlCatalog.ViewModels
         /// <remarks>
         /// Any one of the parameters may be null, but not both.
         /// </remarks>
-        private static IVisual GetVisualParent(IVisual? from, IVisual? to)
+        private static IVisual GetVisualParent(IVisual from, IVisual to)
         {
             var p1 = (from ?? to)!.VisualParent;
             var p2 = (to ?? from)!.VisualParent;
