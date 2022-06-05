@@ -100,7 +100,7 @@ namespace Avalonia
                 unsetValue: unsetValue,
                 defaultBindingMode: defaultBindingMode,
                 enableDataValidation: enableDataValidation,
-                updateSourceTrigger: updateSourceTrigger);
+                defaultUpdateSourceTrigger: updateSourceTrigger);
 
             metadata.Merge(GetMetadata<TOwner>(), this);
 
@@ -142,7 +142,7 @@ namespace Avalonia
                 unsetValue: unsetValue,
                 defaultBindingMode: defaultBindingMode,
                 enableDataValidation: enableDataValidation,
-                updateSourceTrigger: updateSourceTrigger);
+                defaultUpdateSourceTrigger: updateSourceTrigger);
 
             metadata.Merge(GetMetadata<TOwner>(), this);
 

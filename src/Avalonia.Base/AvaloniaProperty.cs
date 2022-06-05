@@ -364,7 +364,7 @@ namespace Avalonia
                 unsetValue: unsetValue,
                 defaultBindingMode: defaultBindingMode,
                 enableDataValidation: enableDataValidation,
-                updateSourceTrigger: updateSourceTrigger);
+                defaultUpdateSourceTrigger: updateSourceTrigger);
 
             var result = new DirectProperty<TOwner, TValue>(
                 name,
