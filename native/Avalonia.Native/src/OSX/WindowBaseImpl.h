@@ -106,13 +106,10 @@ protected:
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
-                           
-    virtual void OnInitialiseNSWindow ();
 
 private:
     void CreateNSWindow (bool isDialog);
     void CleanNSWindow ();
-    void InitialiseNSWindow ();
 
     NSCursor *cursor;
     ComPtr<IAvnGlContext> _glContext;

@@ -18,4 +18,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <PropertyGroup Label="Warnings">
+    <NoWarn Condition="'$(NoWarn)' == ''">CA1416</NoWarn>
+    <NoWarn Condition="'$(NoWarn)' != ''">$(NoWarn),CA1416</NoWarn>
+  </PropertyGroup>
 </Project>
