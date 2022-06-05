@@ -51,7 +51,7 @@ namespace Avalonia.Data
             {
                 metadata ??= property.GetMetadata(target.GetType());
 
-                updateSourceTrigger = metadata.UpdateSourceTrigger;
+                updateSourceTrigger = metadata.DefaultUpdateSourceTrigger;
             }
 
             switch (mode)

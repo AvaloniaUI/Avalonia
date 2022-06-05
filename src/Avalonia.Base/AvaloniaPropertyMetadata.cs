@@ -33,7 +33,10 @@ namespace Avalonia
             }
         }
 
-        public UpdateSourceTrigger UpdateSourceTrigger
+        /// <summary>
+        /// 
+        /// </summary>
+        public UpdateSourceTrigger DefaultUpdateSourceTrigger
         {
             get
             {
@@ -58,7 +61,7 @@ namespace Avalonia
 
             if (_updateSourceTrigger == UpdateSourceTrigger.Default)
             {
-                _updateSourceTrigger = baseMetadata.UpdateSourceTrigger;
+                _updateSourceTrigger = baseMetadata.DefaultUpdateSourceTrigger;
             }
         }
     }
