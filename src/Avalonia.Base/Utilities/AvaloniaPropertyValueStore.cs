@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Utilities
@@ -8,166 +7,197 @@ namespace Avalonia.Utilities
     /// Stores values with <see cref="AvaloniaProperty"/> as key.
     /// </summary>
     /// <typeparam name="TValue">Stored value type.</typeparam>
-    internal sealed class AvaloniaPropertyValueStore<TValue>
+    internal struct AvaloniaPropertyValueStore<TValue>
     {
-        // The last item in the list is always int.MaxValue.
-        private static readonly Entry[] s_emptyEntries = { new Entry { PropertyId = int.MaxValue, Value = default! } };
-        
-        private Entry[] _entries;
+        private Entry[]? _entries;
+        private int _entryCount;
 
         public AvaloniaPropertyValueStore()
         {
-            _entries = s_emptyEntries;
+            _entries = null;
+            _entryCount = 0;
+            IsInitializing = false;
+            InitialSize = 4;
         }
 
-        public int Count => _entries.Length - 1;
-        public TValue this[int index] => _entries[index].Value;
+        public int Count => _entryCount;
+        
+        public bool IsInitializing { get; set; }
 
-        private (int, bool) TryFindEntry(int propertyId)
+        public int InitialSize { get; set; }
+
+        public TValue this[int index] => _entries![index].Value;
+
+        private EntryIndex LookupEntry(int propertyId)
         {
-            if (_entries.Length <= 12)
+            int checkIndex;
+            int iLo = 0;
+            int iHi = _entryCount;
+
+            if (iHi <= 0)
             {
-                // For small lists, we use an optimized linear search. Since the last item in the list
-                // is always int.MaxValue, we can skip a conditional branch in each iteration.
-                // By unrolling the loop, we can skip another unconditional branch in each iteration.
-
-                if (_entries[0].PropertyId >= propertyId)
-                    return (0, _entries[0].PropertyId == propertyId);
-                if (_entries[1].PropertyId >= propertyId)
-                    return (1, _entries[1].PropertyId == propertyId);
-                if (_entries[2].PropertyId >= propertyId)
-                    return (2, _entries[2].PropertyId == propertyId);
-                if (_entries[3].PropertyId >= propertyId)
-                    return (3, _entries[3].PropertyId == propertyId);
-                if (_entries[4].PropertyId >= propertyId)
-                    return (4, _entries[4].PropertyId == propertyId);
-                if (_entries[5].PropertyId >= propertyId)
-                    return (5, _entries[5].PropertyId == propertyId);
-                if (_entries[6].PropertyId >= propertyId)
-                    return (6, _entries[6].PropertyId == propertyId);
-                if (_entries[7].PropertyId >= propertyId)
-                    return (7, _entries[7].PropertyId == propertyId);
-                if (_entries[8].PropertyId >= propertyId)
-                    return (8, _entries[8].PropertyId == propertyId);
-                if (_entries[9].PropertyId >= propertyId)
-                    return (9, _entries[9].PropertyId == propertyId);
-                if (_entries[10].PropertyId >= propertyId)
-                    return (10, _entries[10].PropertyId == propertyId);
-            }
-            else
-            {
-                int low = 0;
-                int high = _entries.Length;
-                int id;
-
-                while (high - low > 3)
-                {
-                    int pivot = (high + low) / 2;
-                    id = _entries[pivot].PropertyId;
-
-                    if (propertyId == id)
-                        return (pivot, true);
-
-                    if (propertyId <= id)
-                        high = pivot;
-                    else
-                        low = pivot + 1;
-                }
-
-                do
-                {
-                    id = _entries[low].PropertyId;
-
-                    if (id == propertyId)
-                        return (low, true);
-
-                    if (id > propertyId)
-                        break;
-
-                    ++low;
-                }
-                while (low < high);
+                return new EntryIndex(0, found: false);
             }
 
-            return (0, false);
+            // Do a binary search to find the value
+            while (iHi - iLo > 3)
+            {
+                int iPv = (iHi + iLo) / 2;
+                checkIndex = _entries![iPv].PropertyId;
+
+                if (propertyId == checkIndex)
+                {
+                    return new EntryIndex(iPv, found: true);
+                }
+
+                if (propertyId <= checkIndex)
+                {
+                    iHi = iPv;
+                }
+                else
+                {
+                    iLo = iPv + 1;
+                }
+            }
+
+            // Now we only have three values to search; switch to a linear search
+            do
+            {
+                checkIndex = _entries![iLo].PropertyId;
+
+                if (checkIndex == propertyId)
+                {
+                    return new EntryIndex(iLo, found: true);
+                }
+
+                if (checkIndex > propertyId)
+                {
+                    // we've gone past the targetIndex - return not found
+                    break;
+                }
+
+                iLo++;
+            } while (iLo < iHi);
+
+            return new EntryIndex(iLo, found: false);
         }
 
         public bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
         {
-            (int index, bool found) = TryFindEntry(property.Id);
-            if (!found)
+            var entryIndex = LookupEntry(property.Id);
+            
+            if (!entryIndex.Found)
             {
                 value = default;
                 return false;
             }
 
-            value = _entries[index].Value;
+            value = _entries![entryIndex.Index].Value;
+            
             return true;
+        }
+
+        private void InsertEntry(Entry entry, int entryIndex)
+        {
+            if (_entryCount > 0)
+            {
+                if (_entryCount == _entries!.Length)
+                {
+                    // We want to have more aggressive resizing when initializing.
+                    var growthFactor = IsInitializing ? 2.0 : 1.2;
+                    
+                    var newSize = (int)(_entryCount * growthFactor);
+
+                    if (newSize == _entryCount)
+                    {
+                        newSize++;
+                    }
+
+                    var destEntries = new Entry[newSize];
+
+                    Array.Copy(_entries, 0, destEntries, 0, entryIndex);
+
+                    destEntries[entryIndex] = entry;
+                    
+                    Array.Copy(_entries, entryIndex, destEntries, entryIndex + 1, _entryCount - entryIndex);
+                    
+                    _entries = destEntries;
+                }
+                else
+                {
+                    Array.Copy(
+                        _entries,
+                        entryIndex,
+                        _entries,
+                        entryIndex + 1,
+                        _entryCount - entryIndex);
+
+                    _entries[entryIndex] = entry;
+                }
+            }
+            else
+            {
+                if (_entries is null)
+                {
+                    _entries = new Entry[InitialSize];
+                }
+                
+                _entries[0] = entry;
+            }
+
+            _entryCount++;
         }
 
         public void AddValue(AvaloniaProperty property, TValue value)
         {
-            Entry[] entries = new Entry[_entries.Length + 1];
+            var propertyId = property.Id;
+            var index = LookupEntry(propertyId);
 
-            for (int i = 0; i < _entries.Length; ++i)
-            {
-                if (_entries[i].PropertyId > property.Id)
-                {
-                    if (i > 0)
-                    {
-                        Array.Copy(_entries, 0, entries, 0, i);
-                    }
-
-                    entries[i] = new Entry { PropertyId = property.Id, Value = value };
-                    Array.Copy(_entries, i, entries, i + 1, _entries.Length - i);
-                    break;
-                }
-            }
-
-            _entries = entries;
+            InsertEntry(new Entry(propertyId, value), index.Index);
         }
 
         public void SetValue(AvaloniaProperty property, TValue value)
         {
-            _entries[TryFindEntry(property.Id).Item1].Value = value;
+            var propertyId = property.Id;
+            var entryIndex = LookupEntry(propertyId);
+            
+            _entries![entryIndex.Index] = new Entry(propertyId, value);
         }
 
         public void Remove(AvaloniaProperty property)
         {
-            var (index, found) = TryFindEntry(property.Id);
+            var entry = LookupEntry(property.Id);
 
-            if (found)
+            if (!entry.Found) return;
+            
+            Array.Copy(_entries!, entry.Index + 1, _entries!, entry.Index, _entryCount - entry.Index - 1);
+
+            _entryCount--;
+            _entries![_entryCount] = default;
+        }
+
+        private readonly struct EntryIndex
+        {
+            public readonly int Index;
+            public readonly bool Found;
+
+            public EntryIndex(int index, bool found)
             {
-                var newLength = _entries.Length - 1;
-                
-                // Special case - one element left means that value store is empty so we can just reuse our "empty" array.
-                if (newLength == 1)
-                {
-                    _entries = s_emptyEntries;
-                    
-                    return;
-                }
-                
-                var entries = new Entry[newLength];
-
-                int ix = 0;
-
-                for (int i = 0; i < _entries.Length; ++i)
-                {
-                    if (i != index)
-                    {
-                        entries[ix++] = _entries[i];
-                    }
-                }
-
-                _entries = entries;
+                Index = index;
+                Found = found;
             }
         }
 
-        private struct Entry
+        private readonly struct Entry
         {
-            internal int PropertyId;
-            internal TValue Value;
+            public readonly int PropertyId;
+            public readonly TValue Value;
+
+            public Entry(int propertyId, TValue value)
+            {
+                PropertyId = propertyId;
+                Value = value;
+            }
         }
     }
 }

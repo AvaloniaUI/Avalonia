@@ -24,13 +24,19 @@ namespace Avalonia
     internal class ValueStore
     {
         private readonly AvaloniaObject _owner;
-        private readonly AvaloniaPropertyValueStore<IValue> _values;
+        private AvaloniaPropertyValueStore<IValue> _values;
         private BatchUpdate? _batchUpdate;
 
         public ValueStore(AvaloniaObject owner)
         {
             _owner = owner;
             _values = new AvaloniaPropertyValueStore<IValue>();
+        }
+
+        public bool IsInitializing
+        {
+            get => _values.IsInitializing;
+            set => _values.IsInitializing = value;
         }
 
         public void BeginBatchUpdate()
@@ -381,7 +387,7 @@ namespace Avalonia
 
         private class BatchUpdate
         {
-            private ValueStore _owner;
+            private readonly ValueStore _owner;
             private List<Notification>? _notifications;
             private int _batchUpdateCount;
             private int _iterator = -1;
@@ -408,7 +414,7 @@ namespace Avalonia
                 if (--_batchUpdateCount > 0)
                     return false;
 
-                var values = _owner._values;
+                ref var values = ref _owner._values;
 
                 // First call EndBatchUpdate on all bindings. This should cause the active binding to be subscribed
                 // but notifications will still not be raised because the owner ValueStore will still have a reference
