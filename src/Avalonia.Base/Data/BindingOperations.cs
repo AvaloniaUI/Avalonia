@@ -67,7 +67,6 @@ namespace Avalonia.Data
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
 
                     var targetPropertyObservable = new TargetPropertyObservable(
-                            binding,
                             target, 
                             property, 
                             updateSourceTrigger);
@@ -116,7 +115,6 @@ namespace Avalonia.Data
                     return Observable.CombineLatest(
                             binding.Observable,
                             new TargetPropertyObservable(
-                                binding,
                                 target,
                                 property,
                                 updateSourceTrigger),
@@ -131,19 +129,15 @@ namespace Avalonia.Data
 
         private sealed class TargetPropertyObservable : SingleSubscriberObservableBase<object?>
         {
-            private readonly InstancedBinding _binding;
             private readonly WeakReference<IAvaloniaObject> _target;
             private readonly AvaloniaProperty _property;
             private readonly UpdateSourceTrigger _updateSourceTrigger;
-            private IDisposable? _explicitUpdateSubscription;
 
             public TargetPropertyObservable(
-                InstancedBinding binding,
                 IAvaloniaObject target,
                 AvaloniaProperty property,
                 UpdateSourceTrigger updateSourceTrigger)
             {
-                _binding = binding;
                 _target = new WeakReference<IAvaloniaObject>(target);
                 _property = property;
                 _updateSourceTrigger = updateSourceTrigger;
@@ -164,14 +158,6 @@ namespace Avalonia.Data
                 }
             }
 
-            private void OnExplicitUpdateRequested(InstancedBinding.ExplicitUpdateMode updateMode)
-            {
-                if (updateMode == InstancedBinding.ExplicitUpdateMode.Source)
-                {
-                    PublishNext();
-                }
-            }
-
             private void PublishNext()
             {
                 if (_target.TryGetTarget(out var target))
@@ -188,15 +174,10 @@ namespace Avalonia.Data
                 {
                     target.PropertyChanged -= OnTargetPropertyChanged;
                 }
-
-                _explicitUpdateSubscription?.Dispose();
             }
 
             protected override void Subscribed()
             {
-                _explicitUpdateSubscription =
-                    _binding.ExplicitUpdateRequested.Subscribe(OnExplicitUpdateRequested);
-
                 if (_updateSourceTrigger is
                     UpdateSourceTrigger.Default or
                     UpdateSourceTrigger.PropertyChanged or

@@ -1,30 +1,21 @@
 using System;
 using System.Reactive.Subjects;
-using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
     /// <summary>
-    /// Holds the result of calling <see cref="IBinding.Initiate"/>.
+    /// Holds the result of calling <see cref="IBinding.Initiate" />.
     /// </summary>
     /// <remarks>
-    /// Whereas an <see cref="IBinding"/> holds a description of a binding such as "Bind to the X
-    /// property on a control's DataContext"; this class represents a binding that has been 
-    /// *instanced* by calling <see cref="IBinding.Initiate(IAvaloniaObject, AvaloniaProperty, object, bool)"/>
+    /// Whereas an <see cref="IBinding" /> holds a description of a binding such as "Bind to the X
+    /// property on a control's DataContext"; this class represents a binding that has been
+    /// *instanced* by calling <see cref="IBinding.Initiate(IAvaloniaObject, AvaloniaProperty, object, bool)" />
     /// on a target object.
     /// </remarks>
     public class InstancedBinding
     {
-        private SingleSubscriberSubject<ExplicitUpdateMode>? _explicitUpdateSubject;
-
-        internal enum ExplicitUpdateMode
-        {
-            Source,
-            Target
-        }
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
+        /// Initializes a new instance of the <see cref="InstancedBinding" /> class.
         /// </summary>
         /// <param name="subject">The binding source.</param>
         /// <param name="mode">The binding mode.</param>
@@ -32,11 +23,12 @@ namespace Avalonia.Data
         /// <param name="updateSourceTrigger"></param>
         /// <remarks>
         /// This constructor can be used to create any type of binding and as such requires an
-        /// <see cref="ISubject{Object}"/> as the binding source because this is the only binding
+        /// <see cref="ISubject{T}" /> as the binding source because this is the only binding
         /// source which can be used for all binding modes. If you wish to create an instance with
         /// something other than a subject, use one of the static creation methods on this class.
         /// </remarks>
-        public InstancedBinding(ISubject<object?> subject, BindingMode mode, BindingPriority priority, UpdateSourceTrigger updateSourceTrigger)
+        public InstancedBinding(ISubject<object?> subject, BindingMode mode, BindingPriority priority,
+            UpdateSourceTrigger updateSourceTrigger)
         {
             Contract.Requires<ArgumentNullException>(subject != null);
 
@@ -46,7 +38,8 @@ namespace Avalonia.Data
             UpdateSourceTrigger = updateSourceTrigger;
         }
 
-        private InstancedBinding(object? value, BindingMode mode, BindingPriority priority, UpdateSourceTrigger updateSourceTrigger)
+        private InstancedBinding(object? value, BindingMode mode, BindingPriority priority,
+            UpdateSourceTrigger updateSourceTrigger)
         {
             Mode = mode;
             Priority = priority;
@@ -60,7 +53,6 @@ namespace Avalonia.Data
         public BindingMode Mode { get; }
 
         /// <summary>
-        /// 
         /// </summary>
         public UpdateSourceTrigger UpdateSourceTrigger { get; }
 
@@ -75,55 +67,29 @@ namespace Avalonia.Data
         public object? Value { get; }
 
         /// <summary>
-        /// Gets the <see cref="Value"/> as an observable.
+        /// Gets the <see cref="Value" /> as an observable.
         /// </summary>
         public IObservable<object?>? Observable => Value as IObservable<object?>;
 
         /// <summary>
-        /// Gets the <see cref="Value"/> as a subject.
+        /// Gets the <see cref="Value" /> as a subject.
         /// </summary>
         public ISubject<object?>? Subject => Value as ISubject<object?>;
-
-        internal IObservable<ExplicitUpdateMode> ExplicitUpdateRequested
-        {
-            get
-            {
-                _explicitUpdateSubject ??= new SingleSubscriberSubject<ExplicitUpdateMode>();
-
-                return _explicitUpdateSubject;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void UpdateSource()
-        {
-            _explicitUpdateSubject?.OnNext(ExplicitUpdateMode.Source);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void UpdateTarget()
-        {
-            _explicitUpdateSubject?.OnNext(ExplicitUpdateMode.Target);
-        }
 
         /// <summary>
         /// Creates a new one-time binding with a fixed value.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the binding.</param>
-        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        /// <returns>An <see cref="InstancedBinding" /> instance.</returns>
         public static InstancedBinding OneTime(
             object value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             return new InstancedBinding(
-                value, 
-                BindingMode.OneTime, 
-                priority, 
+                value,
+                BindingMode.OneTime,
+                priority,
                 UpdateSourceTrigger.Default);
         }
 
@@ -132,7 +98,7 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="observable">The source observable.</param>
         /// <param name="priority">The priority of the binding.</param>
-        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        /// <returns>An <see cref="InstancedBinding" /> instance.</returns>
         public static InstancedBinding OneTime(
             IObservable<object?> observable,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -140,8 +106,8 @@ namespace Avalonia.Data
             _ = observable ?? throw new ArgumentNullException(nameof(observable));
 
             return new InstancedBinding(
-                observable, 
-                BindingMode.OneTime, 
+                observable,
+                BindingMode.OneTime,
                 priority,
                 UpdateSourceTrigger.Default);
         }
@@ -151,7 +117,7 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="observable">The source observable.</param>
         /// <param name="priority">The priority of the binding.</param>
-        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        /// <returns>An <see cref="InstancedBinding" /> instance.</returns>
         public static InstancedBinding OneWay(
             IObservable<object?> observable,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -159,8 +125,8 @@ namespace Avalonia.Data
             _ = observable ?? throw new ArgumentNullException(nameof(observable));
 
             return new InstancedBinding(
-                observable, 
-                BindingMode.OneWay, 
+                observable,
+                BindingMode.OneWay,
                 priority,
                 UpdateSourceTrigger.Default);
         }
@@ -171,7 +137,7 @@ namespace Avalonia.Data
         /// <param name="subject">The binding source.</param>
         /// <param name="priority">The priority of the binding.</param>
         /// <param name="updateSourceTrigger"></param>
-        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        /// <returns>An <see cref="InstancedBinding" /> instance.</returns>
         public static InstancedBinding OneWayToSource(
             ISubject<object?> subject,
             BindingPriority priority = BindingPriority.LocalValue,
@@ -180,9 +146,9 @@ namespace Avalonia.Data
             _ = subject ?? throw new ArgumentNullException(nameof(subject));
 
             return new InstancedBinding(
-                subject, 
-                BindingMode.OneWayToSource, 
-                priority, 
+                subject,
+                BindingMode.OneWayToSource,
+                priority,
                 updateSourceTrigger);
         }
 
@@ -192,7 +158,7 @@ namespace Avalonia.Data
         /// <param name="subject">The binding source.</param>
         /// <param name="priority">The priority of the binding.</param>
         /// <param name="updateSourceTrigger"></param>
-        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        /// <returns>An <see cref="InstancedBinding" /> instance.</returns>
         public static InstancedBinding TwoWay(
             ISubject<object?> subject,
             BindingPriority priority = BindingPriority.LocalValue,
@@ -202,22 +168,22 @@ namespace Avalonia.Data
 
             return new InstancedBinding(
                 subject,
-                BindingMode.TwoWay, 
-                priority, 
+                BindingMode.TwoWay,
+                priority,
                 updateSourceTrigger);
         }
 
         /// <summary>
-        /// Creates a copy of the <see cref="InstancedBinding"/> with a different priority.
+        /// Creates a copy of the <see cref="InstancedBinding" /> with a different priority.
         /// </summary>
         /// <param name="priority">The priority of the binding.</param>
-        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        /// <returns>An <see cref="InstancedBinding" /> instance.</returns>
         public InstancedBinding WithPriority(BindingPriority priority)
         {
             return new InstancedBinding(
-                Value, 
-                Mode, 
-                priority, 
+                Value,
+                Mode,
+                priority,
                 UpdateSourceTrigger);
         }
     }
