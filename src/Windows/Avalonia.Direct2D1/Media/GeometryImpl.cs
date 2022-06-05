@@ -1,4 +1,5 @@
 using Avalonia.Logging;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using SharpDX.Direct2D1;
 
@@ -7,6 +8,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// The platform-specific interface for <see cref="Avalonia.Media.Geometry"/>.
     /// </summary>
+    [Unstable]
     public abstract class GeometryImpl : IGeometryImpl
     {
         private const float ContourApproximation = 0.0001f;

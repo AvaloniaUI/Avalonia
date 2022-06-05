@@ -89,6 +89,7 @@
                                       SelectionEnd="{TemplateBinding SelectionEnd}"
                                       TextAlignment="{TemplateBinding TextAlignment}"
                                       TextWrapping="{TemplateBinding TextWrapping}"
+                                      LineHeight="{TemplateBinding LineHeight}"
                                       PasswordChar="{TemplateBinding PasswordChar}"
                                       RevealPassword="{TemplateBinding RevealPassword}"
                                       SelectionBrush="{TemplateBinding SelectionBrush}"

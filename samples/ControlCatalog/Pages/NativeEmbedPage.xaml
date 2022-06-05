@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:ControlCatalog.Pages"
+             d:DesignHeight="800"
+             d:DesignWidth="400"
+             x:Class="ControlCatalog.Pages.NativeEmbedPage">
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="Test">
+        <MenuItem Header="SubMenu">
+          <MenuItem Header="Item 1"/>
+          <MenuItem Header="Item 2"/>
+          <MenuItem Header="Item 3"/>
+        </MenuItem>
+        <MenuItem Header="Item 1"/>
+        <MenuItem Header="Item 2"/>
+        <MenuItem Header="Item 3"/>
+      </MenuItem>
+    </Menu>
+    <DockPanel DockPanel.Dock="Top">
+      <Button DockPanel.Dock="Right" Click="ShowPopupDelay">Show popup (delay)</Button>
+      <Button DockPanel.Dock="Right" Click="ShowPopup">Show popup</Button>
+      <Border DockPanel.Dock="Right" Background="#c0c0c0">
+        <ToolTip.Tip>
+          <ToolTip>
+            <TextBlock>Text</TextBlock>
+          </ToolTip>
+        </ToolTip.Tip>
+        <TextBlock VerticalAlignment="Center">Tooltip</TextBlock>
+      </Border>
+      <TextBox Text="Lorem ipsum dolor sit amet"/>
+
+    </DockPanel>
+    <Grid ColumnDefinitions="*,5,*"
+          RowDefinitions="*,5,*">
+      <Grid.Styles>
+        <Style Selector="DockPanel#FirstPanel:not(.mobile), DockPanel#SecondPanel:not(.mobile)">
+          <Setter Property="Grid.RowSpan" Value="3" />
+        </Style>
+        <Style Selector="DockPanel#SecondPanel:not(.mobile)">
+          <Setter Property="Grid.Column" Value="2" />
+        </Style>
+
+        <Style Selector="DockPanel#FirstPanel.mobile, DockPanel#SecondPanel.mobile">
+          <Setter Property="Grid.ColumnSpan" Value="3" />
+        </Style>
+        <Style Selector="DockPanel#SecondPanel.mobile">
+          <Setter Property="Grid.Row" Value="2" />
+        </Style>
+      </Grid.Styles>
+
+      <DockPanel x:Name="FirstPanel">
+        <CheckBox x:Name="firstVisible" DockPanel.Dock="Top"
+                  IsChecked="True" Content="Visible" />
+        <local:EmbedSample IsVisible="{Binding #firstVisible.IsChecked}"/>
+      </DockPanel>
+      <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+      <GridSplitter Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1" Height="5" VerticalAlignment="Stretch" />
+      <DockPanel x:Name="SecondPanel">
+        <CheckBox x:Name="secondVisible" DockPanel.Dock="Top"
+                  IsChecked="True" Content="Visible" />
+        <local:EmbedSample IsSecond="True" IsVisible="{Binding #secondVisible.IsChecked}"/>
+      </DockPanel>
+    </Grid>
+  </DockPanel>
+</UserControl>

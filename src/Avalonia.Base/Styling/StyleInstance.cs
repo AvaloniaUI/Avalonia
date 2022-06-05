@@ -11,10 +11,10 @@ namespace Avalonia.Styling
     /// <summary>
     /// A <see cref="Style"/> which has been instanced on a control.
     /// </summary>
-    internal class StyleInstance : IStyleInstance, IStyleActivatorSink
+    internal sealed class StyleInstance : IStyleInstance, IStyleActivatorSink
     {
-        private readonly List<ISetterInstance>? _setters;
-        private readonly List<IDisposable>? _animations;
+        private readonly ISetterInstance[]? _setters;
+        private readonly IDisposable[]? _animations;
         private readonly IStyleActivator? _activator;
         private readonly Subject<bool>? _animationTrigger;
 
@@ -30,41 +30,42 @@ namespace Avalonia.Styling
             _activator = activator;
             IsActive = _activator is null;
 
-            if (setters is object)
+            if (setters is not null)
             {
                 var setterCount = setters.Count;
 
-                _setters = new List<ISetterInstance>(setterCount);
+                _setters = new ISetterInstance[setterCount];
 
                 for (var i = 0; i < setterCount; ++i)
                 {
-                    _setters.Add(setters[i].Instance(Target));
+                    _setters[i] = setters[i].Instance(Target);
                 }
             }
 
-            if (animations is object && target is Animatable animatable)
+            if (animations is not null && target is Animatable animatable)
             {
                 var animationsCount = animations.Count;
 
-                _animations = new List<IDisposable>(animationsCount);
+                _animations = new IDisposable[animationsCount];
                 _animationTrigger = new Subject<bool>();
 
                 for (var i = 0; i < animationsCount; ++i)
                 {
-                    _animations.Add(animations[i].Apply(animatable, null, _animationTrigger));
+                    _animations[i] = animations[i].Apply(animatable, null, _animationTrigger);
                 }
             }
         }
 
+        public bool HasActivator => _activator is not null;
         public bool IsActive { get; private set; }
         public IStyle Source { get; }
         public IStyleable Target { get; }
 
         public void Start()
         {
-            var hasActivator = _activator is object;
+            var hasActivator = HasActivator;
 
-            if (_setters is object)
+            if (_setters is not null)
             {
                 foreach (var setter in _setters)
                 {
@@ -76,7 +77,7 @@ namespace Avalonia.Styling
             {
                 _activator!.Subscribe(this, 0);
             }
-            else if (_animationTrigger != null)
+            else if (_animationTrigger is not null)
             {
                 _animationTrigger.OnNext(true);
             }
@@ -84,7 +85,7 @@ namespace Avalonia.Styling
 
         public void Dispose()
         {
-            if (_setters is object)
+            if (_setters is not null)
             {
                 foreach (var setter in _setters)
                 {
@@ -92,11 +93,11 @@ namespace Avalonia.Styling
                 }
             }
 
-            if (_animations is object)
+            if (_animations is not null)
             {
-                foreach (var subscripion in _animations)
+                foreach (var subscription in _animations)
                 {
-                    subscripion.Dispose();
+                    subscription.Dispose();
                 }
             }
 
@@ -111,7 +112,7 @@ namespace Avalonia.Styling
 
                 _animationTrigger?.OnNext(value);
 
-                if (_setters is object)
+                if (_setters is not null)
                 {
                     if (IsActive)
                     {

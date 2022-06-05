@@ -16,7 +16,7 @@ namespace Avalonia.Skia
         {
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
-            var bidiLevel = options.BidLevel;
+            var bidiLevel = options.BidiLevel;
             var culture = options.Culture;
 
             using (var buffer = new Buffer())
@@ -27,18 +27,13 @@ namespace Avalonia.Skia
                 
                 buffer.GuessSegmentProperties();
 
-                buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
+                buffer.Direction = Direction.LeftToRight; //Always shape LeftToRight
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
 
                 var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
 
                 font.Shape(buffer);
-
-                if (buffer.Direction == Direction.RightToLeft)
-                {
-                    buffer.Reverse();
-                }
 
                 font.GetScale(out var scaleX, out _);
 

@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlacementRect"/> property.
         /// </summary>
         public static readonly StyledProperty<Rect?> PlacementRectProperty =
-            AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
+            Popup.PlacementRectProperty.AddOwner<ContextMenu>();
 
         /// <summary>
         /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
@@ -450,6 +450,11 @@ namespace Avalonia.Controls
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu)
             {
+                if (contextMenu._popup?.Parent == control)
+                {
+                    ((ISetLogicalParent)contextMenu._popup).SetParent(null);
+                }
+
                 contextMenu.Close();
             }
         }

@@ -4,8 +4,6 @@ using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 
-#nullable enable
-
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -14,9 +12,11 @@ namespace Avalonia.Styling
     public class Style : AvaloniaObject, IStyle, IResourceProvider
     {
         private IResourceHost? _owner;
+        private StyleChildren? _children;
         private IResourceDictionary? _resources;
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
+        private StyleCache? _childCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -34,6 +34,14 @@ namespace Avalonia.Styling
             Selector = selector(null);
         }
 
+        /// <summary>
+        /// Gets the children of the style.
+        /// </summary>
+        public IList<IStyle> Children => _children ??= new(this);
+
+        /// <summary>
+        /// Gets the <see cref="StyledElement"/> or Application that hosts the style.
+        /// </summary>
         public IResourceHost? Owner
         {
             get => _owner;
@@ -46,6 +54,11 @@ namespace Avalonia.Styling
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the parent style if this style is hosted in a <see cref="Style.Children"/> collection.
+        /// </summary>
+        public Style? Parent { get; private set; }
 
         /// <summary>
         /// Gets or sets a dictionary of style resources.
@@ -81,7 +94,6 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the style's setters.
         /// </summary>
-        [Content]
         public IList<ISetter> Setters => _setters ??= new List<ISetter>();
 
         /// <summary>
@@ -90,15 +102,18 @@ namespace Avalonia.Styling
         public IList<IAnimation> Animations => _animations ??= new List<IAnimation>();
 
         bool IResourceNode.HasResources => _resources?.Count > 0;
-        IReadOnlyList<IStyle> IStyle.Children => Array.Empty<IStyle>();
+        IReadOnlyList<IStyle> IStyle.Children => (IReadOnlyList<IStyle>?)_children ?? Array.Empty<IStyle>();
 
         public event EventHandler? OwnerChanged;
+
+        public void Add(ISetter setter) => Setters.Add(setter);
+        public void Add(IStyle style) => Children.Add(style);
 
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
 
-            var match = Selector is object ? Selector.Match(target) :
+            var match = Selector is object ? Selector.Match(target, Parent) :
                 target == host ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
 
             if (match.IsMatch && (_setters is object || _animations is object))
@@ -108,7 +123,17 @@ namespace Avalonia.Styling
                 instance.Start();
             }
 
-            return match.Result;
+            var result = match.Result;
+
+            if (_children is not null)
+            {
+                _childCache ??= new StyleCache();
+                var childResult = _childCache.TryAttach(_children, target, host);
+                if (childResult > result)
+                    result = childResult;
+            }
+
+            return result;
         }
 
         public bool TryGetResource(object key, out object? result)
@@ -155,6 +180,19 @@ namespace Avalonia.Styling
                 Owner = null;
                 _resources?.RemoveOwner(owner);
             }
+        }
+
+        internal void SetParent(Style? parent)
+        {
+            if (parent?.Selector is not null)
+            {
+                if (Selector is null)
+                    throw new InvalidOperationException("Child styles must have a selector.");
+                if (!Selector.HasValidNestingSelector())
+                    throw new InvalidOperationException("Child styles must have a nesting selector.");
+            }
+
+            Parent = parent;
         }
     }
 }

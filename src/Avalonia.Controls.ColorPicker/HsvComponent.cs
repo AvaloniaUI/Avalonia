@@ -13,12 +13,20 @@ namespace Avalonia.Controls
     public enum HsvComponent
     {
         /// <summary>
+        /// The Alpha component.
+        /// </summary>
+        /// <remarks>
+        /// Also see: <see cref="HsvColor.A"/>
+        /// </remarks>
+        Alpha = 0,
+
+        /// <summary>
         /// The Hue component.
         /// </summary>
         /// <remarks>
         /// Also see: <see cref="HsvColor.H"/>
         /// </remarks>
-        Hue,
+        Hue = 1,
 
         /// <summary>
         /// The Saturation component.
@@ -26,7 +34,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Also see: <see cref="HsvColor.S"/>
         /// </remarks>
-        Saturation,
+        Saturation = 2,
 
         /// <summary>
         /// The Value component.
@@ -34,14 +42,6 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Also see: <see cref="HsvColor.V"/>
         /// </remarks>
-        Value,
-
-        /// <summary>
-        /// The Alpha component.
-        /// </summary>
-        /// <remarks>
-        /// Also see: <see cref="HsvColor.A"/>
-        /// </remarks>
-        Alpha
+        Value = 3
     };
 }

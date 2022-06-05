@@ -105,7 +105,7 @@ namespace Avalonia.Controls.Primitives
                     }
                     else
                     {
-                        child.Arrange(new Rect(finalSize));
+                        ArrangeChild((Control) child, finalSize);
                     }
                 }
             }

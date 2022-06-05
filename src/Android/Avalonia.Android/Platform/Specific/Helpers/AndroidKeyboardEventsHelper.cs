@@ -30,7 +30,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return DispatchKeyEventInternal(e, out callBase);
         }
 
-        string? UnicodeTextInput(KeyEvent keyEvent)
+        string UnicodeTextInput(KeyEvent keyEvent)
         {
             return keyEvent.Action == KeyEventActions.Multiple
                 && keyEvent.RepeatCount == 0

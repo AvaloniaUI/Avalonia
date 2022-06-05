@@ -1,12 +1,12 @@
 using System;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Layout
 {
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
+    [NotClientImplementable]
     public interface ILayoutManager : IDisposable
     {
         /// <summary>

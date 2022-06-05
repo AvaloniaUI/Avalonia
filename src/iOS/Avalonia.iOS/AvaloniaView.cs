@@ -43,7 +43,7 @@ namespace Avalonia.iOS
             MultipleTouchEnabled = true;
         }
 
-        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod
+        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
         {
             private readonly AvaloniaView _view;
             public AvaloniaView View => _view;
@@ -51,6 +51,7 @@ namespace Avalonia.iOS
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
+                NativeControlHost = new NativeControlHostImpl(_view);
             }
 
             public void Dispose()
@@ -112,6 +113,7 @@ namespace Avalonia.iOS
                 new AcrylicPlatformCompensationLevels();
 
             public ITextInputMethodImpl? TextInputMethod => _view;
+            public INativeControlHostImpl NativeControlHost { get; }
         }
 
         [Export("layerClass")]
