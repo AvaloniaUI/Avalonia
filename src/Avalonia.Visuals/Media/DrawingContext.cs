@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
@@ -8,6 +10,77 @@ using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
 {
+    internal static class RenderValidationExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this double d)
+        {
+            return !(double.IsNaN(d) || double.IsInfinity(d));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this Point p)
+        {
+            return p.X.IsRenderValid() && p.Y.IsRenderValid();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this Rect r)
+        {
+            return r.X.IsRenderValid() && r.Y.IsRenderValid() && r.Width.IsRenderValid() && r.Height.IsRenderValid();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this RoundedRect r)
+        {
+            return r.Rect.IsRenderValid() && r.RadiiBottomLeft.IsRenderValid() && r.RadiiBottomRight.IsRenderValid()
+                && r.RadiiTopLeft.IsRenderValid() && r.RadiiTopRight.IsRenderValid();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this Vector v)
+        {
+            return v.Length.IsRenderValid() && v.X.IsRenderValid() && v.Y.IsRenderValid();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this IPen p)
+        {
+            return p.Thickness.IsRenderValid() && p.MiterLimit.IsRenderValid();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this GlyphRun g)
+        {
+            return g.Size.IsRenderValid() && g.FontRenderingEmSize.IsRenderValid();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this Size s)
+        {
+            return s.Width.IsRenderValid() && s.Height.IsRenderValid();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this BoxShadow bs)
+        {
+            return bs.OffsetX.IsRenderValid() && bs.OffsetY.IsRenderValid() && bs.Blur.IsRenderValid() && bs.Spread.IsRenderValid();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this BoxShadows bs)
+        {
+            foreach (var shadow in bs)
+            {
+                if (!shadow.IsRenderValid())
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
     public sealed class DrawingContext : IDisposable
     {
         private readonly bool _ownsImpl;
@@ -96,7 +169,14 @@ namespace Avalonia.Media
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
+            if (sourceRect.IsRenderValid() && destRect.IsRenderValid())
+            {
+                source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+            }
         }
 
         /// <summary>
@@ -109,7 +189,14 @@ namespace Avalonia.Media
         {
             if (PenIsVisible(pen))
             {
-                PlatformImpl.DrawLine(pen, p1, p2);
+                if (pen.IsRenderValid() && p1.IsRenderValid() && p2.IsRenderValid())
+                {
+                    PlatformImpl.DrawLine(pen, p1, p2);
+                }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+                }
             }
         }
 
@@ -175,7 +262,15 @@ namespace Avalonia.Media
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
 
-            PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadows);
+            if ((pen is null || (pen != null && pen.IsRenderValid())) && rect.IsRenderValid() &&
+                radiusX.IsRenderValid() && radiusY.IsRenderValid() && boxShadows.IsRenderValid())
+            {
+                PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadows);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+            }
         }
 
         /// <summary>
@@ -213,7 +308,14 @@ namespace Avalonia.Media
             var width = radiusX * 2;
             var height = radiusY * 2;
 
-            PlatformImpl.DrawEllipse(brush, pen, new Rect(originX, originY, width, height));
+            if (originX.IsRenderValid() && originY.IsRenderValid() && width.IsRenderValid() && height.IsRenderValid())
+            {
+                PlatformImpl.DrawEllipse(brush, pen, new Rect(originX, originY, width, height));
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+            }
         }
 
         /// <summary>
@@ -234,7 +336,14 @@ namespace Avalonia.Media
 
             if (foreground != null)
             {
-                PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
+                if (origin.IsRenderValid())
+                {
+                    PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
+                }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+                }
             }
         }
 
@@ -321,7 +430,15 @@ namespace Avalonia.Media
 
         public PushedState PushClip(RoundedRect clip)
         {
-            PlatformImpl.PushClip(clip);
+            if (clip.IsRenderValid())
+            {
+                PlatformImpl.PushClip(clip);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+            }
+
             return new PushedState(this, PushedState.PushedStateType.Clip);
         }
 
@@ -332,7 +449,15 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public PushedState PushClip(Rect clip)
         {
-            PlatformImpl.PushClip(clip);
+            if (clip.IsRenderValid())
+            {
+                PlatformImpl.PushClip(clip);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+            }
+
             return new PushedState(this, PushedState.PushedStateType.Clip);
         }
 
@@ -356,7 +481,15 @@ namespace Avalonia.Media
         public PushedState PushOpacity(double opacity)
         //TODO: Eliminate platform-specific push opacity call
         {
-            PlatformImpl.PushOpacity(opacity);
+            if (opacity.IsRenderValid())
+            {
+                PlatformImpl.PushOpacity(opacity);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+            }
+
             return new PushedState(this, PushedState.PushedStateType.Opacity);
         }
 
@@ -370,7 +503,15 @@ namespace Avalonia.Media
         /// <returns>A disposable to undo the opacity mask.</returns>
         public PushedState PushOpacityMask(IBrush mask, Rect bounds)
         {
-            PlatformImpl.PushOpacityMask(mask, bounds);
+            if (bounds.IsRenderValid())
+            {
+                PlatformImpl.PushOpacityMask(mask, bounds);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.DrawingContext)?.Log(this, "Invalid Draw Parameters");
+            }
+
             return new PushedState(this, PushedState.PushedStateType.OpacityMask);
         }
 
