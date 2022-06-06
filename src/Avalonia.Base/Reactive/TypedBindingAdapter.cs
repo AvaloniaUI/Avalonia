@@ -30,13 +30,15 @@ namespace Avalonia.Reactive
             }
             catch (InvalidCastException e)
             {
+                var unwrappedValue = value.HasValue ? value.Value : null;
+                
                 Logger.TryGet(LogEventLevel.Error, LogArea.Binding)?.Log(
                     _target,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
                     _property.Name,
                     _property.PropertyType,
-                    value.Value,
-                    value.Value?.GetType());
+                    unwrappedValue,
+                    unwrappedValue?.GetType());
                 PublishNext(BindingValue<T>.BindingError(e));
             }
         }

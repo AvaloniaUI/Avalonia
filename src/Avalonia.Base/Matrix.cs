@@ -450,13 +450,13 @@ namespace Avalonia
             
             inverted = new Matrix(
                 (_m22 * _m33 - _m32 * _m23) * invdet,
-                (_m13 * _m31 - _m12 * _m33) * invdet,
+                (_m13 * _m32 - _m12 * _m33) * invdet,
                 (_m12 * _m23 - _m13 * _m22) * invdet,
                 (_m23 * _m31 - _m21 * _m33) * invdet,
                 (_m11 * _m33 - _m13 * _m31) * invdet,
                 (_m21 * _m13 - _m11 * _m23) * invdet,
                 (_m21 * _m32 - _m31 * _m22) * invdet,
-                (_m21 * _m12 - _m11 * _m32) * invdet,
+                (_m31 * _m12 - _m11 * _m32) * invdet,
                 (_m11 * _m22 - _m21 * _m12) * invdet
                 );
             

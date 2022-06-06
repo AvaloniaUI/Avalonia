@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
@@ -174,7 +172,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                 WeakEvents.CollectionChanged.Unsubscribe(incc, this);
         }
         
-        public void OnEvent(object? sender, WeakEvent ev, NotifyCollectionChangedEventArgs args)
+        public void OnEvent(object sender, WeakEvent ev, NotifyCollectionChangedEventArgs args)
         {
             if (ShouldNotifyListeners(args))
             {

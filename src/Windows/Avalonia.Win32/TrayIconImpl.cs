@@ -195,7 +195,7 @@ namespace Avalonia.Win32
                 ShowActivated = true;
             }
 
-            private void TrayPopupRoot_Deactivated(object sender, EventArgs e)
+            private void TrayPopupRoot_Deactivated(object? sender, EventArgs e)
             {
                 Close();
             }

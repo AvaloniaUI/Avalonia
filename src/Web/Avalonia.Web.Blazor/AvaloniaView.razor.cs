@@ -57,27 +57,23 @@ namespace Avalonia.Web.Blazor
             return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
         }
         
-        private void OnTouchCancel(TouchEventArgs e)
+        private void OnPointerCancel(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
-            }
-        }
-
-        private void OnTouchMove(TouchEventArgs e)
-        {
-            foreach (var touch in e.ChangedTouches)
-            {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
             }
         }
 
         private void OnPointerMove(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            if (e.PointerType != "touch")
+            if (e.PointerType == "touch")
+            {
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
+            }
+            else
             {
                 _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
@@ -170,22 +166,6 @@ namespace Avalonia.Web.Blazor
 
             if ((e.Buttons & 4L) == 4)
                 modifiers |= RawInputModifiers.MiddleMouseButton;
-
-            return modifiers;
-        }
-
-        private static RawInputModifiers GetModifiers(TouchEventArgs e)
-        {
-            var modifiers = RawInputModifiers.None;
-
-            if (e.CtrlKey)
-                modifiers |= RawInputModifiers.Control;
-            if (e.AltKey)
-                modifiers |= RawInputModifiers.Alt;
-            if (e.ShiftKey)
-                modifiers |= RawInputModifiers.Shift;
-            if (e.MetaKey)
-                modifiers |= RawInputModifiers.Meta;
 
             return modifiers;
         }
