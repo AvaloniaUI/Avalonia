@@ -54,11 +54,6 @@ void WindowImpl::OnInitialiseNSWindow(){
         [GetWindowProtocol() setIsExtended:true];
         SetExtendClientArea(true);
     }
-    
-    if(_parent != nullptr)
-    {
-        SetParent(_parent);
-    }
 }
 
 HRESULT WindowImpl::Show(bool activate, bool isDialog) {
