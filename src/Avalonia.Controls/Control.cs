@@ -332,7 +332,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTreeCore(e);
 
-            OnUnloaded();
+            OnUnloadedCore();
         }
 
         /// <inheritdoc/>
@@ -341,6 +341,17 @@ namespace Avalonia.Controls
             base.OnAttachedToVisualTree(e);
 
             InvalidateMirrorTransform();
+        }
+
+        /// <inheritdoc/>
+        public override void Render(DrawingContext context)
+        {
+            if (_isLoaded == false)
+            {
+                OnLoadedCore();
+            }
+
+            base.Render(context);
         }
 
         /// <inheritdoc/>
