@@ -24,6 +24,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastTitle = @"";
     _parent = nullptr;
     WindowEvents = events;
+    
+    OnInitialiseNSWindow();
 }
 
 void WindowImpl::HideOrShowTrafficLights() {
@@ -32,15 +34,16 @@ void WindowImpl::HideOrShowTrafficLights() {
     }
 
     bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = _isClientAreaExtended ? !wantsChrome : _decorations != SystemDecorationsFull;
+    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
     
-    [[Window standardWindowButton:NSWindowCloseButton] setHidden:hasTrafficLights];
-    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:hasTrafficLights];
-    [[Window standardWindowButton:NSWindowZoomButton] setHidden:hasTrafficLights];
+    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
 }
 
 void WindowImpl::OnInitialiseNSWindow(){
     [GetWindowProtocol() setCanBecomeKeyWindow:true];
+    
     [Window disableCursorRects];
     [Window setTabbingMode:NSWindowTabbingModeDisallowed];
     [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -51,11 +54,6 @@ void WindowImpl::OnInitialiseNSWindow(){
     {
         [GetWindowProtocol() setIsExtended:true];
         SetExtendClientArea(true);
-    }
-    
-    if(_parent != nullptr)
-    {
-        SetParent(_parent);
     }
 }
 
