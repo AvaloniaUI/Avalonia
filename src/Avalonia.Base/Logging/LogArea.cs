@@ -44,10 +44,5 @@ namespace Avalonia.Logging
         /// The log event comes from X11Platform.
         /// </summary>
         public const string X11Platform = nameof(X11Platform);
-        
-        /// <summary>
-        /// The log event comes from Drawing Context calls.
-        /// </summary>
-        public const string DrawingContext = "DrawingContext";
     }
 }
