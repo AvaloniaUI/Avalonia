@@ -1012,10 +1012,18 @@ namespace Avalonia.Controls
                 SizeToContent = sizeToContent;
             }
 
-            Width = clientSize.Width;
-            Height = clientSize.Height;
+            // Setting width and height queues a layout pass.
+            if (LayoutManager is LayoutManager m)
+            {
+                using (m.BlockQueuing())
+                {
+                    Width = clientSize.Width;
+                    Height = clientSize.Height;
 
-            base.HandleResized(clientSize, reason);
+                    // base.HandleResize does a layout pass. but doesnt delete the queued ones.
+                    base.HandleResized(clientSize, reason);
+                }
+            }
         }
 
         /// <summary>

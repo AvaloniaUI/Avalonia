@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -315,9 +316,17 @@ namespace Avalonia.Layout
             }
         }
 
+        private bool _blocked;
+        public IDisposable BlockQueuing()
+        {
+            _blocked = true;
+
+            return Disposable.Create(() => _blocked = false);
+        }
+
         private void QueueLayoutPass()
         {
-            if (!_queued && !_running)
+            if (!_queued && !_running && !_blocked)
             {
                 Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
                 _queued = true;
