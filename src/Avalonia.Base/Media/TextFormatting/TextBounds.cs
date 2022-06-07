@@ -10,20 +10,27 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Constructing TextBounds object
         /// </summary>
-        internal TextBounds(Rect bounds, FlowDirection flowDirection)
+        internal TextBounds(Rect bounds, FlowDirection flowDirection, IList<TextRunBounds> runBounds)
         {
             Rectangle = bounds;
             FlowDirection = flowDirection;
+            TextRunBounds = runBounds;
         }
 
         /// <summary>
         /// Bounds rectangle
         /// </summary>
-        public Rect Rectangle { get; }
+        public Rect Rectangle { get; internal set; }
 
         /// <summary>
         /// Text flow direction inside the boundary rectangle
         /// </summary>
         public FlowDirection FlowDirection { get; }
+
+        /// <summary>
+        /// Get a list of run bounding rectangles
+        /// </summary>
+        /// <returns>Array of text run bounds</returns>
+        public IList<TextRunBounds> TextRunBounds { get; }
     }
 }

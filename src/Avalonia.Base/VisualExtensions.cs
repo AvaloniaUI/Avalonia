@@ -101,6 +101,13 @@ namespace Avalonia
 
             while (v != ancestor)
             {
+                // this should be calculated BEFORE renderTransform
+                if (v.HasMirrorTransform)
+                {
+                    var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, v.Bounds.Width, 0);
+                    result *= mirrorMatrix;
+                }
+
                 if (v.RenderTransform?.Value != null)
                 {
                     var origin = v.RenderTransformOrigin.ToPixels(v.Bounds.Size);
@@ -108,12 +115,6 @@ namespace Avalonia
                     var renderTransform = (-offset) * v.RenderTransform.Value * (offset);
 
                     result *= renderTransform;
-                }
-
-                if (v.HasMirrorTransform)
-                {
-                    var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, v.Bounds.Width, 0);
-                    result *= mirrorMatrix;
                 }
 
                 var topLeft = v.Bounds.TopLeft;
