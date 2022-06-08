@@ -300,6 +300,12 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+
+            // Separate handler for focus events
+            PointerPressedEvent.AddClassHandler(
+                typeof(IInputElement),
+                new EventHandler<RoutedEventArgs>(OnPreviewPointerPressed),
+                RoutingStrategies.Tunnel);
         }
 
         public InputElement()
@@ -674,18 +680,33 @@ namespace Avalonia.Input
                 throw new InvalidOperationException("Unable to find IInputRoot or FocusManager from current element.");
             }
 
-            root.FocusManager.SetFocusedElement(this, focusState);
+            root.FocusManager.SetFocusedElement(this, state: focusState);
         }
 
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
+            // Tree is still connected here, store the visual root now so we can use it below
+            var visualRoot = VisualRoot;
+
             base.OnDetachedFromVisualTreeCore(e);
 
-            if (IsFocused)
+            // TODO_FOCUS: Is this problematic if
+            //             A) Multiple items are removed at once
+            //             B) The entire tree is removed (window/toplevel closing)
+            if (IsFocused && visualRoot is IInputRoot root)
             {
-                // TODO_FOCUS
-                //FocusManager.Instance?.Focus(null);
+                // From UWP Test, it looks like behavior is to reset to the first focusable 
+                // element in the focus root if an element is removed while focused
+                var first = FocusManager.FindFirstFocusableElement(root);
+                if (first != null)
+                {
+                    root.FocusManager.SetFocusedElement(first, allowCancelling: false);
+                }
+                else
+                {
+                    root.FocusManager.SetFocusedElement(null, allowCancelling: false);
+                }
             }
         }
 
@@ -844,7 +865,6 @@ namespace Avalonia.Input
         private static void IsEnabledChanged(AvaloniaPropertyChangedEventArgs e)
         {
             ((InputElement)e.Sender).UpdateIsEffectivelyEnabled();
-            // TODO_FOCUS: Adjust focus if lost focus
         }
 
         /// <summary>
@@ -888,6 +908,36 @@ namespace Avalonia.Input
 
                 child?.UpdateIsEffectivelyEnabled(this);
             }
+
+            if (!IsEffectivelyEnabled && IsFocused && !AllowFocusWhenDisabled)
+            {
+                // Test from UWP show it moves to next element by default. So we'll
+                // check forward first, then backward
+                NavigationDirection direction = NavigationDirection.Next;
+                var next = FocusManager.FindNextElement(direction);
+
+                if (next == null)
+                {
+                    direction = NavigationDirection.Previous;
+                    next = FocusManager.FindNextElement(direction);
+                }
+
+                var focusMgr = FocusManager.GetFocusManagerFromElement(this);
+                if (focusMgr == null)
+                    return;
+
+                // Move focus to an enabled element, prevent cancelling this focus action,
+                // but still allow user to redirect focus to another element
+                if (next != null)
+                {
+                    focusMgr.SetFocusedElement(next, direction, FocusState.Programmatic, 
+                        allowCancelling: false, allowRedirecting: true);
+                }
+                else
+                {
+                    focusMgr.SetFocusedElement(null, allowCancelling: false, allowRedirecting: true);
+                }
+            }
         }
 
         private void UpdatePseudoClasses(bool? isFocused, bool? isPointerOver)
@@ -901,6 +951,40 @@ namespace Avalonia.Input
             if (isPointerOver.HasValue)
             {
                 PseudoClasses.Set(":pointerover", isPointerOver.Value);
+            }
+        }
+
+        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
+        {
+            if (sender is null)
+                return;
+
+            var ev = (PointerPressedEventArgs)e;
+            var visual = (IVisual)sender;
+
+            if (sender == e.Source && ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+            {
+                IVisual? element = ev.Pointer?.Captured ?? e.Source as IInputElement;
+
+                var fm = FocusManager.GetFocusManagerFromElement(element as IInputElement);
+                if (fm == null)
+                {
+                    return;
+                }
+
+                while (element != null)
+                {
+                    if (element is IInputElement inputElement && FocusManager.IsFocusable(inputElement))
+                    {
+                        fm.SetFocusedElement(inputElement,
+                            state: FocusState.Pointer,
+                            keyModifiers: ev.KeyModifiers);
+
+                        break;
+                    }
+
+                    element = element.VisualParent;
+                }
             }
         }
     }
