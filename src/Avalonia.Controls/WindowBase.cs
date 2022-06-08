@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -219,7 +220,11 @@ namespace Avalonia.Controls
         {
             ClientSize = clientSize;
             FrameSize = PlatformImpl?.FrameSize;
-            LayoutManager.ExecuteLayoutPass();
+            
+            // Setting ClientSize and Width / Height above caused ExecuteLayoutPass to be queued.
+            // Instead of explicitly calling LayoutManager.ExecuteLayoutPass here, we clear the job queue.
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+            
             Renderer?.Resized(clientSize);
         }
 
