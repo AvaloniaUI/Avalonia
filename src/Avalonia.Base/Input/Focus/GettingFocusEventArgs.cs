@@ -8,10 +8,11 @@ namespace Avalonia.Input
     /// </summary>
     public class GettingFocusEventArgs : RoutedEventArgs
     {
-        internal GettingFocusEventArgs(bool canCancel = true)
+        internal GettingFocusEventArgs(bool canCancel = true, bool canRedirect = true)
         {
             RoutedEvent = InputElement.GettingFocusEvent;
             _canCancelFocusChange = canCancel;
+            _canRedirectFocusChange = canRedirect;
         }
 
         /// <summary>
@@ -64,6 +65,16 @@ namespace Avalonia.Input
         public Guid CorrelationID { get; set; }
 
         /// <summary>
+        /// Gets the keymodifiers state when the focus event began
+        /// </summary>
+        /// <remarks>
+        /// Note that KeyModifiers will only be set if the focus event originated
+        /// from a keyboard or pointer device. Programmatic focus events will always
+        /// be <see cref="KeyModifiers.None"/>
+        /// </remarks>
+        public KeyModifiers KeyModifiers { get; internal set; }
+
+        /// <summary>
         /// Attempts to cancel the ongoing focus action
         /// </summary>
         /// <returns>True if the focus action is cancelled; otherwise, false</returns>
@@ -86,7 +97,7 @@ namespace Avalonia.Input
         /// <returns>True if the focus action is redirected; otherwise, false</returns>
         public bool TrySetNewFocusedElement(IInputElement element)
         {
-            if (!_canCancelFocusChange)
+            if (!_canRedirectFocusChange)
             {
                 return false;
             }
@@ -96,6 +107,7 @@ namespace Avalonia.Input
         }
 
         private bool _canCancelFocusChange;
+        private bool _canRedirectFocusChange;
         private bool _cancelled;
     }
 }
