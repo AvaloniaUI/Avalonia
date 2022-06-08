@@ -220,11 +220,7 @@ namespace Avalonia.Controls
         {
             ClientSize = clientSize;
             FrameSize = PlatformImpl?.FrameSize;
-            
-            // Setting ClientSize and Width / Height above caused ExecuteLayoutPass to be queued.
-            // Instead of explicitly calling LayoutManager.ExecuteLayoutPass here, we clear the job queue.
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
-            
+            LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
 
