@@ -13,7 +13,6 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
