@@ -31,8 +31,8 @@
         Keyboard,
 
         /// <summary>
-        /// Game controller/remote input device
+        /// Controller/remote input device, currently unused
         /// </summary>
-        GameController
+        Controller
     }
 }
