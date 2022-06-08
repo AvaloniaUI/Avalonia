@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -30,54 +29,13 @@ namespace Avalonia.Input
         /// focus might move before bubbling is complete
         /// </summary>
         public static event EventHandler<FocusManagerLostFocusEventArgs>? LostFocus;
-
-        static FocusManager()
-        {
-            // Would this be better suited in TopLevel or InputElement rather than here?
-            InputElement.PointerPressedEvent.AddClassHandler(
-                typeof(IInputElement),
-                new EventHandler<RoutedEventArgs>(OnPreviewPointerPressed),
-                RoutingStrategies.Tunnel);
-        }
-
-        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
-        {
-            if (sender is null)
-                return;
-
-            var ev = (PointerPressedEventArgs)e;
-            var visual = (IVisual)sender;
-
-            if (sender == e.Source && ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
-            {
-                IVisual? element = ev.Pointer?.Captured ?? e.Source as IInputElement;
-
-                var fm = GetFocusManagerFromElement(element as IInputElement);
-                if (fm == null)
-                {
-                    return;
-                }
-
-                while (element != null)
-                {
-                    if (element is IInputElement inputElement && IsFocusable(inputElement))
-                    {
-                        fm.SetFocusedElement(inputElement, state: FocusState.Pointer);
-
-                        break;
-                    }
-
-                    element = element.VisualParent;
-                }
-            }
-        }
-
+        
         /// <summary>
         /// Retreieves the element in the active UI that has focus
         /// </summary>
         public static IInputElement? GetFocusedElement()
         {
-            return (_activeFocusRoot?.FocusManager as FocusManager)?.FocusedElement;
+            return _activeFocusRoot?.FocusManager?.FocusedElement;
         }
 
         /// <summary>
@@ -177,8 +135,14 @@ namespace Avalonia.Input
         /// <returns>true if focus moved; otherwise, false</returns>
         public static bool TryMoveFocus(NavigationDirection focusNavigationDirection)
         {
-            var root = _activeFocusRoot ?? ResolveInitialFocusRoot();
-            var currentFM = root.FocusManager as FocusManager;
+            // User called this before any inputroot is connected, throw
+            if (_activeFocusRoot == null)
+            {
+                ThrowIOEForFocusManagerNotConnected();
+            }
+
+            var root = _activeFocusRoot!;
+            var currentFM = root.FocusManager;
 
             var result = FindNextElementInternal(focusNavigationDirection);
 
@@ -238,8 +202,8 @@ namespace Avalonia.Input
             if (element == null)
                 return null;
 
-            var fm = ((element.VisualRoot as IInputRoot)?.FocusManager as FocusManager) ??
-                element.FindAncestorOfType<IInputRoot>()?.FocusManager as FocusManager;
+            var fm = (element.VisualRoot as IInputRoot)?.FocusManager ??
+                element.FindAncestorOfType<IInputRoot>()?.FocusManager;
 
             if (fm == null)
             {
@@ -247,32 +211,6 @@ namespace Avalonia.Input
             }
 
             return fm;
-
-            //var root = element.VisualRoot;
-
-            //// PopupRoot shouldn't be a TopLevel, but because it is, has a FocusManager instance with it
-            //// inherited from TopLevel. But we want all windowed Popups to be treated in the same "tree" as the window
-            //// its associated with, so if the visual root of the current element is a Popup,
-            //// we need to find the TopLevel its attached to
-            //if (root is PopupRoot pr)
-            //{
-            //    // Search up the logical tree to find the parent TopLevel that owns the Popup
-            //    var tl = pr.FindLogicalAncestorOfType<TopLevel>();
-            //    if (tl != null)
-            //    {
-            //        return tl.FocusManager;
-            //    }
-
-            //    // TODO: if this fail, probably should try to brute force it checking open windows on desktop or 
-            //    // MainView on single app lifetime, find the OverlayLayer, and seeing if we can find the associated
-            //    // windowed popup in its registry
-            //}
-            //else if (root is TopLevel tl)
-            //{
-            //    return tl.FocusManager;
-            //}
-
-            return null;
         }
 
         internal static FocusState GetActualFocusState(FocusInputDeviceKind lastInputType, FocusState state)
@@ -283,7 +221,7 @@ namespace Avalonia.Input
             switch (lastInputType)
             {
                 case FocusInputDeviceKind.Keyboard:
-                case FocusInputDeviceKind.GameController: // Not implemented, but we'll include it anyway
+                case FocusInputDeviceKind.Controller: // Not implemented, but we'll include it anyway
                     return FocusState.Keyboard;
 
                 default:
@@ -291,37 +229,20 @@ namespace Avalonia.Input
             }
         }
 
-        internal static IInputRoot ResolveInitialFocusRoot()
-        {
-            // This should rarely be needed, but just in case TopLevel hasn't set focus or user has
-            // cleared focus to 'null', we need to make sure we can find a root to move focus in
-            //var app = Application.Current!.ApplicationLifetime;
-            //IInputRoot? root = null;
-            //if (app is IClassicDesktopStyleApplicationLifetime cdl)
-            //{
-            //    root = cdl.MainWindow;
-            //}
-            //else if (app is ISingleViewApplicationLifetime sal)
-            //{
-            //    root = sal.MainView?.FindAncestorOfType<IInputRoot>(true);
-            //}
-
-            //if (root == null)
-            //{
-            //    throw new InvalidOperationException("Unable to find a valid IInputRoot for initial focus");
-            //}
-
-            return null!;// root;
-        }
-
         // TODO_FOCUS: In future, if non-IInputElement focusable items are supported, this return type should change
         private static IInputElement? FindNextElementInternal(NavigationDirection direction)
-        {
+        {            
             var currentFocus = GetFocusedElement();
 
             if (currentFocus == null)
             {
-                var root = _activeFocusRoot ?? ResolveInitialFocusRoot();
+                // User called this before any inputroot is connected, throw
+                if (_activeFocusRoot == null)
+                {
+                    ThrowIOEForFocusManagerNotConnected();
+                }
+
+                var root = _activeFocusRoot;
                 switch (direction)
                 {
                     // If no focus exists yet, we'll use normal tab stop behavior regardless of direction
@@ -330,12 +251,12 @@ namespace Avalonia.Input
                     case NavigationDirection.Next:
                     case NavigationDirection.Right:
                     case NavigationDirection.Down:
-                        return TabNavigation.GetFirstTabInGroup(root);
+                        return TabNavigation.GetFirstTabInGroup(root!);
 
                     case NavigationDirection.Previous:
                     case NavigationDirection.Left:
                     case NavigationDirection.Up:
-                        return TabNavigation.GetLastTabInGroup(root);
+                        return TabNavigation.GetLastTabInGroup(root!);
                 }
 
                 throw new ArgumentException("Invalid NavigationDirection provided");
@@ -371,17 +292,10 @@ namespace Avalonia.Input
             // if a focus action has not occurred yet
             if (scope == null)
             {
+                // User called this before any inputroot is connected, throw
                 if (_activeFocusRoot == null)
                 {
-                    _activeFocusRoot = ResolveInitialFocusRoot();
-
-                    // If _activeFocusRoot is still null, user called this too early in app lifetime as no views
-                    // exist yet
-                    if (_activeFocusRoot == null)
-                    {
-                        throw new InvalidOperationException("Search scope is not specified and no " +
-                            "active focus scope is currently available");
-                    }
+                    ThrowIOEForFocusManagerNotConnected();
                 }
 
                 scope = _activeFocusRoot;
@@ -406,7 +320,10 @@ namespace Avalonia.Input
                 }
             }
 
-            return scope;
+            return scope!;
         }
+
+        private static void ThrowIOEForFocusManagerNotConnected() =>
+            throw new InvalidOperationException("Attempted to set or move focus before any input root is connected");
     }    
 }

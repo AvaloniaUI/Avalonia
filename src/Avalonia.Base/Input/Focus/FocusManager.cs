@@ -22,7 +22,8 @@ namespace Avalonia.Input
         public FocusState FocusedElementState => _focusedElementState;
 
         internal void SetFocusedElement(IInputElement? element, NavigationDirection direction = NavigationDirection.Next,
-            FocusState state = FocusState.Programmatic, bool allowCancelling = true)
+            FocusState state = FocusState.Programmatic, KeyModifiers keyModifiers = KeyModifiers.None, 
+            bool allowCancelling = true, bool allowRedirecting = true)
         {
             if (_isChangingFocus)
             {
@@ -71,14 +72,15 @@ namespace Avalonia.Input
 
 
                 // Now that we know we're changing focus, start by raising LosingFocus event
-                var losingArgs = new LosingFocusEventArgs(allowCancelling)
+                var losingArgs = new LosingFocusEventArgs(allowCancelling, allowRedirecting)
                 {
                     CorrelationID = focusChangeID,
                     NewFocusedElement = element,
                     OldFocusedElement = _focusedElement,
                     Direction = direction,
                     FocusState = state,
-                    InputDevice = lastInputType
+                    InputDevice = lastInputType,
+                    KeyModifiers = keyModifiers
                 };
 
                 var result = RaiseLosingFocusEvents(losingArgs);
@@ -90,14 +92,15 @@ namespace Avalonia.Input
                     return;
                 }
 
-                var gettingArgs = new GettingFocusEventArgs(allowCancelling)
+                var gettingArgs = new GettingFocusEventArgs(allowCancelling, allowRedirecting)
                 {
                     CorrelationID = focusChangeID,
                     NewFocusedElement = losingArgs.NewFocusedElement,
                     OldFocusedElement = _focusedElement,
                     Direction = direction,
                     FocusState = state,
-                    InputDevice = lastInputType
+                    InputDevice = lastInputType,
+                    KeyModifiers = keyModifiers
                 };
 
                 result = RaiseGettingFocusEvents(gettingArgs);
@@ -137,9 +140,6 @@ namespace Avalonia.Input
             }
         }
 
-        //void IFocusManager.SetFocusedElement(IInputElement? element, FocusState state) =>
-        //    SetFocusedElement(element, state: state);
-
         /// <summary>
         /// Clears the focus on a specific TopLevel when activating a different TopLevel
         /// (switching Windows)
@@ -154,7 +154,7 @@ namespace Avalonia.Input
                 LastFocusState = _focusedElementState
             };
 
-            ((FocusManager)root.FocusManager).SetFocusedElement(null, state: FocusState.Unfocused, allowCancelling: false);
+            root.FocusManager.SetFocusedElement(null, state: FocusState.Unfocused, allowCancelling: false);
         }
 
         /// <summary>
