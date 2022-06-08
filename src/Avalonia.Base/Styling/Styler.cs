@@ -11,10 +11,10 @@ namespace Avalonia.Styling
             // If the control has a themed templated parent then first apply the styles from
             // the templated parent theme.
             if (target.TemplatedParent is IStyleable styleableParent)
-                styleableParent.Theme?.TryAttach(target, styleableParent);
+                styleableParent.GetEffectiveTheme()?.TryAttach(target, styleableParent);
 
             // Next apply the control theme.
-            target.Theme?.TryAttach(target, target);
+            target.GetEffectiveTheme()?.TryAttach(target, target);
 
             // Apply styles from the rest of the tree.
             if (target is IStyleHost styleHost)

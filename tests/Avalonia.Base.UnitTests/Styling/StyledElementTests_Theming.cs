@@ -158,6 +158,49 @@ public class StyledElementTests_Theming
         }
     }
 
+    public class ImplicitTheme
+    {
+        [Fact]
+        public void Implicit_Theme_Is_Applied_When_Attached_To_Logical_Tree()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = CreateTarget();
+            var root = CreateRoot(target);
+            Assert.NotNull(target.Template);
+
+            var border = Assert.IsType<Border>(target.VisualChild);
+            Assert.Equal(Brushes.Red, border.Background);
+
+            target.Classes.Add("foo");
+            Assert.Equal(Brushes.Green, border.Background);
+        }
+
+        [Fact]
+        public void Implicit_Theme_Is_Cleared_When_Removed_From_Logical_Tree()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = CreateTarget();
+            var root = CreateRoot(target);
+            
+            Assert.NotNull(((IStyleable)target).GetEffectiveTheme());
+
+            root.Child = null;
+
+            Assert.Null(((IStyleable)target).GetEffectiveTheme());
+        }
+
+        private static ThemedControl CreateTarget() => new ThemedControl();
+
+        private static TestRoot CreateRoot(IControl child)
+        {
+            var result = new TestRoot();
+            result.Resources.Add(typeof(ThemedControl), CreateTheme());
+            result.Child = child;
+            result.LayoutManager.ExecuteInitialLayoutPass();
+            return result;
+        }
+    }
+
     public class ThemeFromStyle
     {
         [Fact]

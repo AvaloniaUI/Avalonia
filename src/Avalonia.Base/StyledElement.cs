@@ -60,6 +60,7 @@ namespace Avalonia
         public static readonly StyledProperty<ControlTheme?> ThemeProperty =
             AvaloniaProperty.Register<StyledElement, ControlTheme?>(nameof(Theme));
 
+        private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
         private string? _name;
         private readonly Classes _classes = new Classes();
@@ -72,6 +73,7 @@ namespace Avalonia
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
         private bool _hasPromotedTheme;
+        private ControlTheme? _implicitTheme;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -495,6 +497,31 @@ namespace Avalonia
             };
         }
 
+        ControlTheme? IStyleable.GetEffectiveTheme()
+        {
+            var theme = Theme;
+
+            // Explitly set Theme property takes precedence.
+            if (theme is not null)
+                return theme;
+
+            // If the Theme property is not set, try to find a ControlTheme resource with our StyleKey.
+            if (_implicitTheme is null)
+            {
+                var key = ((IStyleable)this).StyleKey;
+
+                if (this.TryFindResource(key, out var value) && value is ControlTheme t)
+                    _implicitTheme = t;
+                else
+                    _implicitTheme = s_invalidTheme;
+            }
+
+            if (_implicitTheme != s_invalidTheme)
+                return _implicitTheme;
+
+            return null;
+        }
+
         void IStyleable.StyleApplied(IStyleInstance instance)
         {
             instance = instance ?? throw new ArgumentNullException(nameof(instance));
@@ -736,6 +763,7 @@ namespace Avalonia
             if (_logicalRoot != null)
             {
                 _logicalRoot = null;
+                _implicitTheme = null;
                 DetachStyles();
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);

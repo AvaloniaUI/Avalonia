@@ -27,9 +27,9 @@ namespace Avalonia.Styling
         ITemplatedControl? TemplatedParent { get; }
 
         /// <summary>
-        /// Gets the theme to be applied to the control.
+        /// Gets the effective theme for the control as used by the syling system.
         /// </summary>
-        public ControlTheme? Theme { get; }
+        ControlTheme? GetEffectiveTheme();
 
         /// <summary>
         /// Notifies the element that a style has been applied.
