@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -165,7 +166,7 @@ namespace Avalonia.Controls
             if (Presenter is IChildIndexProvider innerProvider)
             {
                 innerProvider.ChildIndexChanged += PresenterChildIndexChanged;
-                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
             }
         }
 
@@ -335,13 +336,18 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ItemsControlAutomationPeer(this);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ItemCountProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<int>());
+                UpdatePseudoClasses(change.GetNewValue<int>());
             }
         }
 
@@ -502,7 +508,6 @@ namespace Avalonia.Controls
             do
             {
                 result = container.GetControl(direction, c, wrap);
-                from = from ?? result;
 
                 if (result != null &&
                     result.Focusable &&
@@ -513,7 +518,7 @@ namespace Avalonia.Controls
                 }
 
                 c = result;
-            } while (c != null && c != from);
+            } while (c != null && c != from && direction != NavigationDirection.First && direction != NavigationDirection.Last);
 
             return null;
         }

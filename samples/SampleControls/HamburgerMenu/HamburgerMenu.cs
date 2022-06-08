@@ -43,14 +43,13 @@ namespace ControlSamples
             _splitView = e.NameScope.Find<SplitView>("PART_NavigationPane");
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == BoundsProperty && _splitView is not null)
             {
-                var oldBounds = change.OldValue.GetValueOrDefault<Rect>();
-                var newBounds = change.NewValue.GetValueOrDefault<Rect>();
+                var (oldBounds, newBounds) = change.GetOldAndNewValue<Rect>();
                 EnsureSplitViewMode(oldBounds, newBounds);
             }
         }

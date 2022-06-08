@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -13,29 +12,28 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
-            CultureInfo culture, sbyte bidiLevel)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidiLevel;
+            var culture = options.Culture;
+
             using (var buffer = new Buffer())
             {
-                buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
+                buffer.AddUtf16(text.Buffer.Span, text.BufferOffset, text.Length);
 
                 MergeBreakPair(buffer);
                 
                 buffer.GuessSegmentProperties();
 
-                buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
+                buffer.Direction = Direction.LeftToRight; //Always shape LeftToRight
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
 
                 var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
 
                 font.Shape(buffer);
-
-                if (buffer.Direction == Direction.RightToLeft)
-                {
-                    buffer.Reverse();
-                }
 
                 font.GetScale(out var scaleX, out _);
 
@@ -55,11 +53,20 @@ namespace Avalonia.Skia
 
                     var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                    var glyphCluster = (int)sourceInfo.Cluster;
+                    var glyphCluster = (int)(sourceInfo.Cluster);
 
                     var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
+
+                    if(glyphIndex == 0 && text.Buffer.Span[glyphCluster] == '\t')
+                    {
+                        glyphIndex = typeface.GetGlyph(' ');
+
+                        glyphAdvance = options.IncrementalTabWidth > 0 ? 
+                            options.IncrementalTabWidth : 
+                            4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
+                    }
 
                     var targetInfo = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
 

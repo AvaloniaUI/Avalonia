@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
+using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using JetBrains.dotMemoryUnit;
@@ -24,9 +26,50 @@ namespace Avalonia.LeakTests
     [DotMemoryUnit(FailIfRunWithoutSupport = false)]
     public class ControlTests
     {
+        // Need to have the collection as field, so GC will not free it
+        private readonly ObservableCollection<string> _observableCollection = new();
+        
         public ControlTests(ITestOutputHelper atr)
         {
             DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
+        }
+
+ 
+        [Fact]
+        public void DataGrid_Is_Freed()
+        {
+            using (Start())
+            {
+                // When attached to INotifyCollectionChanged, DataGrid will subscribe to it's events, potentially causing leak
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new DataGrid
+                        {
+                            Items = _observableCollection
+                        }
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that DataGrid gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<DataGrid>(window.Presenter.Child);
+
+                    // Clear the content and ensure the DataGrid is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<DataGrid>()).ObjectsCount));
+            }
         }
 
         [Fact]
@@ -496,7 +539,7 @@ namespace Avalonia.LeakTests
                 
                 AttachShowAndDetachContextMenu(window);
 
-                Mock.Get(ValidatingWindowImpl.Unwrap(window.PlatformImpl)).Invocations.Clear();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -541,7 +584,7 @@ namespace Avalonia.LeakTests
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
-                Mock.Get(ValidatingWindowImpl.Unwrap(window.PlatformImpl)).Invocations.Clear();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -619,13 +662,95 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ElementName_Binding_In_DataTemplate_Is_Freed()
+        {
+            using (Start())
+            {
+                var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
+                NameScope ns;
+                TextBox tb;
+                ListBox lb;
+                var window = new Window
+                {
+                    [NameScope.NameScopeProperty] = ns = new NameScope(),
+                    Width = 100,
+                    Height = 100,
+                    Content = new StackPanel
+                    {
+                        Children =
+                        {
+                            (tb = new TextBox
+                            {
+                                Name = "tb",
+                                Text = "foo",
+                            }),
+                            (lb = new ListBox
+                            {
+                                Items = items,
+                                ItemTemplate = new FuncDataTemplate<int>((_, _) =>
+                                    new Canvas
+                                    {
+                                        Width = 10,
+                                        Height = 10,
+                                        [!Control.TagProperty] = new Binding
+                                        {
+                                            ElementName = "tb",
+                                            Path = "Text",
+                                            NameScope = new WeakReference<INameScope>(ns),
+                                        }
+                                    })
+                            }),
+                        }
+                    }
+                };
+
+                tb.RegisterInNameScope(ns);
+
+                window.Show();
+                window.LayoutManager.ExecuteInitialLayoutPass();
+
+                void AssertInitialItemState()
+                {
+                    var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
+                    var canvas0 = (Canvas)item0.Presenter.Child;
+                    Assert.Equal("foo", canvas0.Tag);
+                }
+               
+                Assert.Equal(10, lb.ItemContainerGenerator.Containers.Count());
+                AssertInitialItemState();
+
+                items.Clear();
+                window.LayoutManager.ExecuteLayoutPass();
+
+                Assert.Empty(lb.ItemContainerGenerator.Containers);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow.With(
-                focusManager: new FocusManager(),
-                keyboardDevice: () => new KeyboardDevice(),
-                inputManager: new InputManager()));
+            void Cleanup()
+            {
+                // KeyboardDevice holds a reference to the focused item.
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                
+                // Empty the dispatcher queue.
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            return new CompositeDisposable
+            {
+                Disposable.Create(Cleanup),
+                UnitTestApplication.Start(TestServices.StyledWindow.With(
+                    focusManager: new FocusManager(),
+                    keyboardDevice: () => new KeyboardDevice(),
+                    inputManager: new InputManager()))
+            };
         }
+
 
         private class Node
         {

@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
+﻿using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -9,9 +7,12 @@ namespace Avalonia.UnitTests
 {
     public class MockTextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
-            CultureInfo culture, sbyte bidiLevel)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidiLevel;
+
             var shapedBuffer = new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
 
             for (var i = 0; i < shapedBuffer.Length;)
@@ -21,7 +22,7 @@ namespace Avalonia.UnitTests
 
                 var glyphIndex = typeface.GetGlyph(codepoint);
 
-                shapedBuffer[i] = new GlyphInfo(glyphIndex, glyphCluster);
+                shapedBuffer[i] = new GlyphInfo(glyphIndex, glyphCluster, 10);
 
                 i += count;
             }

@@ -1,6 +1,5 @@
 #include "common.h"
 #include "cursor.h"
-#include <map>
 
 class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorFactory>
 {

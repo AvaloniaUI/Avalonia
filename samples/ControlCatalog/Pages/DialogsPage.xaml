@@ -20,7 +20,7 @@
                  Text="Window dialogs" />
       <Button Name="DecoratedWindow">Decorated _window</Button>
       <Button Name="DecoratedWindowDialog">Decorated w_indow (dialog)</Button>
-      <Button Name="Dialog">_Dialog</Button>
+      <Button Name="Dialog" ToolTip.Tip="Shows a dialog">_Dialog</Button>
       <Button Name="DialogNoTaskbar">Dialog (_No taskbar icon)</Button>
       <Button Name="OwnedWindow">Own_ed window</Button>
       <Button Name="OwnedWindowNoTaskbar">Owned window (No tas_kbar icon)</Button>

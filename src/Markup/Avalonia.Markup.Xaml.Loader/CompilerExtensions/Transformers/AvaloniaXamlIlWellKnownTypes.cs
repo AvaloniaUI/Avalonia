@@ -28,6 +28,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType Transitions { get; }
         public IXamlType AssignBindingAttribute { get; }
         public IXamlType DependsOnAttribute { get; }
+        public IXamlType DataTypeAttribute { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
         public IXamlType IStyledElement { get; }
@@ -73,6 +74,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlConstructor MatrixFullConstructor { get; }
         public IXamlType CornerRadius { get; }
         public IXamlConstructor CornerRadiusFullConstructor { get; }
+        public IXamlType RelativeUnit { get; }
+        public IXamlType RelativePoint { get; }
+        public IXamlConstructor RelativePointFullConstructor { get; }
         public IXamlType GridLength { get; }
         public IXamlConstructor GridLengthConstructorValueType { get; }
         public IXamlType Color { get; }
@@ -90,6 +94,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ImmutableSolidColorBrush { get; }
         public IXamlConstructor ImmutableSolidColorBrushConstructorColor { get; }
         public IXamlType TypeUtilities { get; }
+        public IXamlType TextDecorationCollection { get; }
+        public IXamlType TextDecorations { get; }
+        public IXamlType TextTrimming { get; }
+        public IXamlType ISetter { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -113,6 +121,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");
             AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
+            DataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DataTypeAttribute");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
@@ -139,7 +148,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             NameScopeSetNameScope = NameScope.GetMethod(new FindMethodMethodSignature("SetNameScope",
                 XamlIlTypes.Void, StyledElement, INameScope)
             { IsStatic = true });
-            AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", XamlIlTypes.Void,
+            AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", IDisposable,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
             IPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
             ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
@@ -179,6 +188,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             (Matrix, MatrixFullConstructor) = GetNumericTypeInfo("Avalonia.Matrix", XamlIlTypes.Double, 6);
             (CornerRadius, CornerRadiusFullConstructor) = GetNumericTypeInfo("Avalonia.CornerRadius", XamlIlTypes.Double, 4);
 
+            RelativeUnit = cfg.TypeSystem.GetType("Avalonia.RelativeUnit");
+            RelativePoint = cfg.TypeSystem.GetType("Avalonia.RelativePoint");
+            RelativePointFullConstructor = RelativePoint.GetConstructor(new List<IXamlType> { XamlIlTypes.Double, XamlIlTypes.Double, RelativeUnit });
+
             GridLength = cfg.TypeSystem.GetType("Avalonia.Controls.GridLength");
             GridLengthConstructorValueType = GridLength.GetConstructor(new List<IXamlType> { XamlIlTypes.Double, cfg.TypeSystem.GetType("Avalonia.Controls.GridUnitType") });
             Color = cfg.TypeSystem.GetType("Avalonia.Media.Color");
@@ -201,6 +214,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ImmutableSolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.Immutable.ImmutableSolidColorBrush");
             ImmutableSolidColorBrushConstructorColor = ImmutableSolidColorBrush.GetConstructor(new List<IXamlType> { UInt });
             TypeUtilities = cfg.TypeSystem.GetType("Avalonia.Utilities.TypeUtilities");
+            TextDecorationCollection = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorationCollection");
+            TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
+            TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
+            ISetter = cfg.TypeSystem.GetType("Avalonia.Styling.ISetter");
         }
     }
 

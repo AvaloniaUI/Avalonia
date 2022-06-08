@@ -1,10 +1,12 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Platform
 {
     /// <summary>
     /// Describes a Drive's properties.
     /// </summary>
+    [Unstable]
     public class MountedVolumeInfo : IEquatable<MountedVolumeInfo>
     {
         public string? VolumeLabel { get; set; }

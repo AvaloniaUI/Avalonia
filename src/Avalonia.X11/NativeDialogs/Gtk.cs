@@ -195,7 +195,10 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GtkName)]
         public static extern void gtk_file_chooser_set_current_name(IntPtr chooser, Utf8Buffer file);
-        
+
+        [DllImport(GtkName)]
+        public static extern void gtk_file_chooser_set_current_folder(IntPtr chooser, Utf8Buffer file);
+
         [DllImport(GtkName)]
         public static extern IntPtr gtk_file_filter_new();
         

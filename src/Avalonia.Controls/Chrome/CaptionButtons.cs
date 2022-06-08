@@ -8,6 +8,10 @@ namespace Avalonia.Controls.Chrome
     /// <summary>
     /// Draws window minimize / maximize / close buttons in a <see cref="TitleBar"/> when managed client decorations are enabled.
     /// </summary>
+    [TemplatePart("PART_CloseButton",      typeof(Panel))]
+    [TemplatePart("PART_RestoreButton",    typeof(Panel))]
+    [TemplatePart("PART_MinimiseButton",   typeof(Panel))]
+    [TemplatePart("PART_FullScreenButton", typeof(Panel))]
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class CaptionButtons : TemplatedControl
     {

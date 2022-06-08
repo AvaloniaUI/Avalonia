@@ -1,7 +1,9 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IRuntimePlatform
     {
         IDisposable StartSystemTimer(TimeSpan interval, Action tick);
@@ -9,6 +11,7 @@ namespace Avalonia.Platform
         IUnmanagedBlob AllocBlob(int size);
     }
 
+    [Unstable]
     public interface IUnmanagedBlob : IDisposable
     {
         IntPtr Address { get; }
@@ -17,6 +20,7 @@ namespace Avalonia.Platform
         
     }
 
+    [Unstable]
     public struct RuntimePlatformInfo
     {
         public OperatingSystemType OperatingSystem { get; set; }
@@ -29,6 +33,7 @@ namespace Avalonia.Platform
         public bool IsUnix { get; set; }
     }
 
+    [Unstable]
     public enum OperatingSystemType
     {
         Unknown,

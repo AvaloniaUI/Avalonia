@@ -6,6 +6,7 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Input;
@@ -18,6 +19,7 @@ using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 
 namespace Avalonia.Controls.Remote.Server
 {
+    [Unstable]
     public class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
