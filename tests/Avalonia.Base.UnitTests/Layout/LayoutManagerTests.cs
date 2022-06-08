@@ -430,7 +430,7 @@ namespace Avalonia.Base.UnitTests.Layout
             var root = new LayoutTestRoot { Child = control };
 
             int layoutCount = 0;
-            root.LayoutUpdated += (sender, args) => layoutCount++;
+            root.LayoutUpdated += (_, _) => layoutCount++;
 
             root.LayoutManager.InvalidateArrange(control);
             root.LayoutManager.ExecuteInitialLayoutPass();
