@@ -50,7 +50,7 @@ namespace Avalonia.Input
             // Touch,           [supported*]
             // Pen,             [not supported yet?]
             // Keyboard,        [supported]
-            // GameController   [not supported]
+            // Controller   [not supported]
 
             // RawInputEventArgs types
             //  RawDragEvent -> Ignore, keep existing input type
@@ -63,16 +63,16 @@ namespace Avalonia.Input
             {
                     LastInputDeviceType = FocusInputDeviceKind.Keyboard;
             }
-            else if (e is RawTouchEventArgs)
-            {
-                // TODO: When pen vs. touch is properly supported, make sure to separate here
-                LastInputDeviceType = FocusInputDeviceKind.Touch;
-            }
             // If doing drag-drop, preserve the last input type, otherwise we mark it as mouse
-            else if (!(e is RawDragEvent))
+            else if (e is RawPointerEventArgs pArgs)
             {
-                // TODO: If gamepad/controller/remote support is ever added, separate here
-                LastInputDeviceType = FocusInputDeviceKind.Mouse;
+                // TODO: Add Pen support here when available, and controller too?
+                LastInputDeviceType = pArgs.Device switch
+                {
+                    TouchDevice => FocusInputDeviceKind.Touch,
+                    // PenDevice => FocusInputDeviceKind.Pen,
+                    _ => FocusInputDeviceKind.Mouse
+                };
             }
         }
     }
