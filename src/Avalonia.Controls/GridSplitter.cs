@@ -60,6 +60,7 @@ namespace Avalonia.Controls
         private static readonly Cursor s_rowSplitterCursor = new Cursor(StandardCursorType.SizeNorthSouth);
 
         private ResizeData? _resizeData;
+        private double _scaling = 1;
 
         /// <summary>
         /// Indicates whether the Splitter resizes the Columns, Rows, or Both.
@@ -348,6 +349,12 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _scaling = e.Root.RenderScaling;
+        }
+
         protected override void OnPointerEnter(PointerEventArgs e)
         {
             base.OnPointerEnter(e);
@@ -630,13 +637,17 @@ namespace Avalonia.Controls
             {
                 double actualLength1 = GetActualLength(definition1);
                 double actualLength2 = GetActualLength(definition2);
+                double pixelLength = 1 / _scaling;
+                double epsilon = pixelLength + LayoutHelper.LayoutEpsilon;
 
                 // When splitting, Check to see if the total pixels spanned by the definitions 
-                // is the same as before starting resize. If not cancel the drag.
+                // is the same as before starting resize. If not cancel the drag. We need to account for
+                // layout rounding here, so ignore differences of less than a device pixel to avoid problems
+                // that WPF has, such as https://stackoverflow.com/questions/28464843.
                 if (_resizeData.SplitBehavior == SplitBehavior.Split &&
                     !MathUtilities.AreClose(
                         actualLength1 + actualLength2,
-                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, LayoutHelper.LayoutEpsilon))
+                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, epsilon))
                 {
                     CancelResize();
 
