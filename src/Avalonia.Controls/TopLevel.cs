@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -14,6 +15,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -92,6 +94,7 @@ namespace Avalonia.Controls
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private FocusManager _focusManager;
+        private OverlayLayer? _overlayLayer;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -319,7 +322,20 @@ namespace Avalonia.Controls
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
-        IFocusManager IInputRoot.FocusManager => _focusManager;
+        FocusManager IInputRoot.FocusManager => _focusManager;
+
+        IOverlayHost? IInputRoot.OverlayHost
+        {
+            get
+            {
+                if (_overlayLayer == null)
+                {
+                    _overlayLayer = OverlayLayer.GetOverlayLayer(this);
+                }
+
+                return _overlayLayer;
+            }
+        }
 
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
@@ -547,8 +563,6 @@ namespace Avalonia.Controls
 
         private void HandleTopLevelKeyDown(object? sender, KeyEventArgs e)
         {
-            // TODO_FOCUS
-
             var current = FocusManager.GetFocusedElement();
 
             if (current != null && e.Key == Key.Tab)
@@ -556,11 +570,19 @@ namespace Avalonia.Controls
                 var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
                     NavigationDirection.Next : NavigationDirection.Previous;
 
-                var result = FocusManager.TryMoveFocus(direction);
-                if (!result)
+                var result = FocusManager.FindNextElement(direction);
+
+                if (result != null)
                 {
-                    // TODO_FOCUS: Raise NoFocusCandidateFound event
+                    _focusManager.SetFocusedElement(result, direction,
+                        FocusState.Keyboard, e.KeyModifiers);                    
                 }
+                else
+                {
+                    var currentFocus = FocusManager.GetFocusedElement();
+
+                    RaiseEvent(new RoutedEventArgs(NoFocusCandidateFoundEvent, currentFocus ?? this));
+                }                
 
                 e.Handled = true;
             }
