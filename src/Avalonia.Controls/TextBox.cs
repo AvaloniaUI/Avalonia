@@ -53,6 +53,9 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
+            
+        public static readonly StyledProperty<bool> IgnoreChangesWhileEditingProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(IgnoreChangesWhileEditing));
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
@@ -275,6 +278,12 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsReadOnlyProperty);
             set => SetValue(IsReadOnlyProperty, value);
+        }
+        
+        public bool IgnoreChangesWhileEditing
+        {
+            get => GetValue(IgnoreChangesWhileEditingProperty);
+            set => SetValue(IgnoreChangesWhileEditingProperty, value);
         }
 
         public char PasswordChar
@@ -1501,7 +1510,9 @@ namespace Avalonia.Controls
             {
                 try
                 {
-                    _ignoreTextChanges = true;
+                    if (IgnoreChangesWhileEditing == true)
+                        _ignoreTextChanges = true;
+                        
                     SetAndRaise(TextProperty, ref _text, value);
                 }
                 finally
