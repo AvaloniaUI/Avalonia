@@ -55,7 +55,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
             
         public static readonly StyledProperty<bool> IgnoreChangesWhileEditingProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(IgnoreChangesWhileEditing));
+            AvaloniaProperty.Register<TextBox, bool>(nameof(IgnoreChangesWhileEditing), true);
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
