@@ -54,7 +54,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             public GlyphRunGeometryControl()
             {
-                var glyphTypeface = Typeface.Default.GlyphTypeface;
+                var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
 
                 var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
 
