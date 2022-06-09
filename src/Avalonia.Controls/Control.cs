@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -325,6 +326,8 @@ namespace Avalonia.Controls
             base.OnAttachedToVisualTreeCore(e);
 
             InitializeIfNeeded();
+
+            Dispatcher.UIThread.Post(() => OnLoadedCore(), DispatcherPriority.Loaded);
         }
 
         /// <inheritdoc/>
@@ -341,17 +344,6 @@ namespace Avalonia.Controls
             base.OnAttachedToVisualTree(e);
 
             InvalidateMirrorTransform();
-        }
-
-        /// <inheritdoc/>
-        public override void Render(DrawingContext context)
-        {
-            if (_isLoaded == false)
-            {
-                OnLoadedCore();
-            }
-
-            base.Render(context);
         }
 
         /// <inheritdoc/>
