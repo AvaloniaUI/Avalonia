@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
 
 // ReSharper disable InconsistentNaming
-namespace Avalonia.PlatformSupport
+namespace Avalonia.Platform.Internal
 {
     class UnixLoader : IDynamicLibraryLoader
     {
@@ -16,25 +16,6 @@ namespace Avalonia.PlatformSupport
             private static extern IntPtr dlsym(IntPtr handle, string symbol);
 
             [DllImport("libdl.so.2")]
-            private static extern IntPtr dlerror();
-
-            public static void Init()
-            {
-                DlOpen = dlopen;
-                DlSym = dlsym;
-                DlError = dlerror;
-            }
-        }
-
-        static class AndroidImports
-        {
-            [DllImport("libdl.so")]
-            private static extern IntPtr dlopen(string path, int flags);
-
-            [DllImport("libdl.so")]
-            private static extern IntPtr dlsym(IntPtr handle, string symbol);
-
-            [DllImport("libdl.so")]
             private static extern IntPtr dlerror();
 
             public static void Init()
@@ -77,10 +58,6 @@ namespace Avalonia.PlatformSupport
             Marshal.FreeHGlobal(buffer);
             if (unixName == "Darwin")
                 OsXImports.Init();
-#if NET6_0_OR_GREATER
-            else if (OperatingSystem.IsAndroid())
-                AndroidImports.Init();
-#endif
             else
                 LinuxImports.Init();
         }
@@ -135,6 +112,39 @@ namespace Avalonia.PlatformSupport
             return ptr;
         }
     }
+
+#if NET6_0_OR_GREATER
+    internal class Net6Loader : IDynamicLibraryLoader
+    {
+        public IntPtr LoadLibrary(string dll)
+        {
+            try
+            {
+                return NativeLibrary.Load(dll);
+            }
+            catch (Exception ex)
+            {
+                throw new DynamicLibraryLoaderException("Error loading " + dll, ex);
+            }
+        }
+
+        public IntPtr GetProcAddress(IntPtr dll, string proc, bool optional)
+        {
+            try
+            {
+                if (optional)
+                {
+                    return NativeLibrary.TryGetExport(dll, proc, out var address) ? address : default;
+                }
+                return NativeLibrary.GetExport(dll, proc);
+            }
+            catch (Exception ex)
+            {
+                throw new DynamicLibraryLoaderException("Error " + dll, ex);
+            }
+        }
+    }
+#endif
     
     internal class NotSupportedLoader : IDynamicLibraryLoader
     {

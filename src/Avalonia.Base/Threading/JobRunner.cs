@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 
@@ -81,9 +82,9 @@ namespace Avalonia.Threading
         /// <param name="action">The method to call.</param>
         /// <param name="parameter">The parameter of method to call.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
-        internal void Post<T>(Action<T> action, T parameter, DispatcherPriority priority)
+        internal void Post(SendOrPostCallback action, object? parameter, DispatcherPriority priority)
         {
-            AddJob(new Job<T>(action, parameter, priority, true));
+            AddJob(new JobWithArg(action, parameter, priority, true));
         }
 
         /// <summary>
@@ -207,11 +208,10 @@ namespace Avalonia.Threading
         /// <summary>
         /// A typed job to run.
         /// </summary>
-        /// <typeparam name="T">Type of job parameter</typeparam>
-        private sealed class Job<T> : IJob
+        private sealed class JobWithArg : IJob
         {
-            private readonly Action<T> _action;
-            private readonly T _parameter;
+            private readonly SendOrPostCallback _action;
+            private readonly object? _parameter;
             private readonly TaskCompletionSource<bool>? _taskCompletionSource;
 
             /// <summary>
@@ -222,7 +222,7 @@ namespace Avalonia.Threading
             /// <param name="priority">The job priority.</param>
             /// <param name="throwOnUiThread">Do not wrap exception in TaskCompletionSource</param>
 
-            public Job(Action<T> action, T parameter, DispatcherPriority priority, bool throwOnUiThread)
+            public JobWithArg(SendOrPostCallback action, object? parameter, DispatcherPriority priority, bool throwOnUiThread)
             {
                 _action = action;
                 _parameter = parameter;

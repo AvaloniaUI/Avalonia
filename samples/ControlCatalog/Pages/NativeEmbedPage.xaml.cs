@@ -79,6 +79,8 @@ namespace ControlCatalog.Pages
     public interface INativeDemoControl
     {
         /// <param name="isSecond">Used to specify which control should be displayed as a demo</param>
+        /// <param name="parent"></param>
+        /// <param name="createDefault"></param>
         IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault);
     }
 }
