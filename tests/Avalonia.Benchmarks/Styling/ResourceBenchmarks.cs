@@ -1,7 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Platform;
-using Avalonia.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;

@@ -25,8 +25,6 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests
 #endif
 {
-    using Avalonia.PlatformSupport;
-
     public class TestBase
     {
 #if AVALONIA_SKIA
