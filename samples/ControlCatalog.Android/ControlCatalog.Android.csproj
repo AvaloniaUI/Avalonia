@@ -20,10 +20,13 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release' and '$(TF_BUILD)' == ''">
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>False</DebugSymbols>
+    <UseInterpreter>False</UseInterpreter>
     <RunAOTCompilation>True</RunAOTCompilation>
     <EnableLLVM>True</EnableLLVM>
-    <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
+    <AndroidAotAdditionalArguments>no-write-symbols,nodebug</AndroidAotAdditionalArguments>
+    <AndroidAotMode>Hybrid</AndroidAotMode>
+    <AndroidGenerateJniMarshalMethods>True</AndroidGenerateJniMarshalMethods>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
