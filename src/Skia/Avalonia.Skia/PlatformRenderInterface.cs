@@ -70,7 +70,6 @@ namespace Avalonia.Skia
             }
 
             var fontRenderingEmSize = (float)glyphRun.FontRenderingEmSize;
-            var glyphs = glyphRun.GlyphIndices.ToArray();
             var skFont = new SKFont(glyphTypeface.Typeface, fontRenderingEmSize)
             {
                 Size = fontRenderingEmSize,
@@ -79,15 +78,19 @@ namespace Avalonia.Skia
                 LinearMetrics = true
             };
 
-            SKPath path = null;
+            SKPath path = new SKPath();
             var matrix = SKMatrix.Identity;
 
-            skFont.GetGlyphPaths(glyphs, (p, m) =>
-            {
-                matrix = m;
+            var currentX = 0f;
 
-                path = p;
-            });
+            foreach (var glyph in glyphRun.GlyphIndices)
+            {
+                var p = skFont.GetGlyphPath(glyph);
+
+                path.AddPath(p, currentX, 0);
+
+                currentX += p.Bounds.Right;
+            }
 
             scale = Matrix.CreateScale(matrix.ScaleX, matrix.ScaleY);
 
