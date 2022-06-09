@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Base class for menu controls.
     /// </summary>
-    public abstract class MenuBase : SelectingItemsControl, IFocusScope, IMenu
+    public abstract class MenuBase : SelectingItemsControl, IMenu
     {
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.

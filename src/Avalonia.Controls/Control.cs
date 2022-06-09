@@ -238,32 +238,42 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
 
-            if (IsFocused &&
-                (e.NavigationMethod == NavigationMethod.Tab ||
-                 e.NavigationMethod == NavigationMethod.Directional))
+            if (IsFocused)
             {
-                var adornerLayer = AdornerLayer.GetAdornerLayer(this);
-
-                if (adornerLayer != null)
+                if (FocusState == FocusState.Keyboard)
                 {
-                    if (_focusAdorner == null)
-                    {
-                        var template = GetValue(FocusAdornerProperty);
+                    var adornerLayer = AdornerLayer.GetAdornerLayer(this);
 
-                        if (template != null)
+                    if (adornerLayer != null)
+                    {
+                        if (_focusAdorner == null)
                         {
-                            _focusAdorner = template.Build();
+                            var template = GetValue(FocusAdornerProperty);
+
+                            if (template != null)
+                            {
+                                _focusAdorner = template.Build();
+                            }
+                        }
+
+                        if (_focusAdorner != null && GetTemplateFocusTarget() is Visual target)
+                        {
+                            AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
+                            adornerLayer.Children.Add(_focusAdorner);
                         }
                     }
-
-                    if (_focusAdorner != null && GetTemplateFocusTarget() is Visual target)
+                }
+                else
+                {
+                    if (_focusAdorner?.Parent != null)
                     {
-                        AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
-                        adornerLayer.Children.Add(_focusAdorner);
+                        var adornerLayer = (IPanel)_focusAdorner.Parent;
+                        adornerLayer.Children.Remove(_focusAdorner);
+                        _focusAdorner = null;
                     }
                 }
             }

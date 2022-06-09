@@ -699,7 +699,7 @@ namespace Avalonia.Controls
         {
             IControl? focusedElement = null;
 
-            var child = FocusManager.Instance?.Current;
+            var child = FocusManager.GetFocusedElement();
 
             if (child != null)
             {

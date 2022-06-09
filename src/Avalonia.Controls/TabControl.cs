@@ -12,6 +12,7 @@ using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -201,11 +202,11 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (FocusState == FocusState.Keyboard)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }

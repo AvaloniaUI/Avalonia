@@ -184,7 +184,7 @@ namespace Avalonia.Controls
 
         Type IStyleable.StyleKey => typeof(TextBox);
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
