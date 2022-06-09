@@ -60,7 +60,6 @@ namespace Avalonia.Controls
         private static readonly Cursor s_rowSplitterCursor = new Cursor(StandardCursorType.SizeNorthSouth);
 
         private ResizeData? _resizeData;
-        private double _scaling = 1;
 
         /// <summary>
         /// Indicates whether the Splitter resizes the Columns, Rows, or Both.
@@ -222,7 +221,8 @@ namespace Avalonia.Controls
                     ShowsPreview = showsPreview,
                     ResizeDirection = resizeDirection,
                     SplitterLength = Math.Min(Bounds.Width, Bounds.Height),
-                    ResizeBehavior = GetEffectiveResizeBehavior(resizeDirection)
+                    ResizeBehavior = GetEffectiveResizeBehavior(resizeDirection),
+                    Scaling = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1,
                 };
 
                 // Store the rows and columns to resize on drag events.
@@ -347,12 +347,6 @@ namespace Avalonia.Controls
                 // Get constraints on preview's translation.
                 GetDeltaConstraints(out _resizeData.MinChange, out _resizeData.MaxChange);
             }
-        }
-
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            _scaling = e.Root.RenderScaling;
         }
 
         protected override void OnPointerEnter(PointerEventArgs e)
@@ -637,7 +631,7 @@ namespace Avalonia.Controls
             {
                 double actualLength1 = GetActualLength(definition1);
                 double actualLength2 = GetActualLength(definition2);
-                double pixelLength = 1 / _scaling;
+                double pixelLength = 1 / _resizeData.Scaling;
                 double epsilon = pixelLength + LayoutHelper.LayoutEpsilon;
 
                 // When splitting, Check to see if the total pixels spanned by the definitions 
@@ -809,6 +803,9 @@ namespace Avalonia.Controls
             // The minimum of Width/Height of Splitter.  Used to ensure splitter 
             // isn't hidden by resizing a row/column smaller than the splitter.
             public double SplitterLength;
+
+            // The current layout scaling factor.
+            public double Scaling;
         }
     }
 
