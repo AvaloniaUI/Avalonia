@@ -56,9 +56,6 @@ namespace Avalonia.Input
     {
         IInputElement? FocusedElement { get; }
 
-        void SetFocusedElement(
-            IInputElement? element, 
-            NavigationMethod method,
-            KeyModifiers modifiers);
+        void SetFocusedElement(IInputElement? element);
     }
 }

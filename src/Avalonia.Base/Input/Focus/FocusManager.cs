@@ -129,7 +129,17 @@ namespace Avalonia.Input
                 RaiseLostFocusEvent(gettingArgs.OldFocusedElement, focusChangeID);
                 RaiseGotFocusEvent(_focusedElement, focusChangeID);
 
-                // TODO_FOCUS: probably can merge this logic from KeyboardDevice into FocusManager
+
+                if (_focusedElement != null &&
+                    (!_focusedElement.IsAttachedToVisualTree ||
+                    _activeFocusRoot != _focusedElement?.VisualRoot as IInputRoot) &&
+                    _activeFocusRoot != null)
+                {
+                    ClearChildrenFocusWithin(_activeFocusRoot, true);
+                }
+
+                SetIsFocusWithin(gettingArgs.OldFocusedElement, _focusedElement);
+
                 KeyboardDevice.Instance?.SetFocusedElement(_focusedElement);
 
                 // TODO_FOCUS: There's probably a UIA focus event or notification we need to raise here too
@@ -305,6 +315,101 @@ namespace Avalonia.Input
             {
                 GotFocus?.Invoke(this, new FocusManagerGotFocusEventArgs(id, element));
             });
+        }
+
+        private void ClearFocusWithinAncestors(IInputElement? element)
+        {
+            var el = element;
+
+            while (el != null)
+            {
+                if (el is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = false;
+                }
+
+                el = (IInputElement?)el.VisualParent;
+            }
+        }
+
+        private void ClearFocusWithin(IInputElement element, bool clearRoot)
+        {
+            foreach (var visual in element.VisualChildren)
+            {
+                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
+                {
+                    ClearFocusWithin(el, true);
+                    break;
+                }
+            }
+
+            if (clearRoot)
+            {
+                if (element is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = false;
+                }
+            }
+        }
+
+        private void SetIsFocusWithin(IInputElement? oldElement, IInputElement? newElement)
+        {
+            if (newElement == null && oldElement != null)
+            {
+                ClearFocusWithinAncestors(oldElement);
+                return;
+            }
+
+            IInputElement? branch = null;
+
+            var el = newElement;
+
+            while (el != null)
+            {
+                if (el.IsKeyboardFocusWithin)
+                {
+                    branch = el;
+                    break;
+                }
+
+                el = el.VisualParent as IInputElement;
+            }
+
+            el = oldElement;
+
+            if (el != null && branch != null)
+            {
+                ClearFocusWithin(branch, false);
+            }
+
+            el = newElement;
+
+            while (el != null && el != branch)
+            {
+                if (el is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = true;
+                }
+
+                el = el.VisualParent as IInputElement;
+            }
+        }
+
+        private void ClearChildrenFocusWithin(IInputElement element, bool clearRoot)
+        {
+            foreach (var visual in element.VisualChildren)
+            {
+                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
+                {
+                    ClearChildrenFocusWithin(el, true);
+                    break;
+                }
+            }
+
+            if (clearRoot && element is InputElement ie)
+            {
+                ie.IsKeyboardFocusWithin = false;
+            }
         }
 
         private struct RestoreFocusInfo
