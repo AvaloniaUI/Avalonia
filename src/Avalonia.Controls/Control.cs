@@ -132,7 +132,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets a value indicating whether the control is fully constructed in the visual tree.
+        /// Gets a value indicating whether the control is fully constructed in the visual tree
+        /// and both layout and render are complete.
         /// </summary>
         /// <remarks>
         /// This is set to true while raising the <see cref="Loaded"/> event.
@@ -167,13 +168,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Occurs when the control has been fully constructed in the visual tree.
+        /// Occurs when the control has been fully constructed in the visual tree and both
+        /// layout and render are complete.
         /// </summary>
         /// <remarks>
         /// This event is guaranteed to occur after the control template is applied and references
         /// to objects created after the template is applied are available. This makes it different
         /// from OnAttachedToVisualTree which doesn't have these references. This event occurs at the
-        /// latest possible time in the control creation lifetime.
+        /// latest possible time in the control creation life-cycle.
         /// </remarks>
         public event EventHandler<RoutedEventArgs>? Loaded
         {
