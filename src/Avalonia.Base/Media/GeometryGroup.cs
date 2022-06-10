@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Metadata;
+﻿using Avalonia.Metadata;
 using Avalonia.Platform;
 
 #nullable enable
@@ -13,8 +10,8 @@ namespace Avalonia.Media
     /// </summary>
     public class GeometryGroup : Geometry
     {
-        public static readonly DirectProperty<GeometryGroup, GeometryCollection?> ChildrenProperty =
-            AvaloniaProperty.RegisterDirect<GeometryGroup, GeometryCollection?> (
+        public static readonly DirectProperty<GeometryGroup, GeometryCollection> ChildrenProperty =
+            AvaloniaProperty.RegisterDirect<GeometryGroup, GeometryCollection> (
                 nameof(Children),
                 o => o.Children,
                 (o, v) => o.Children = v);
@@ -22,20 +19,28 @@ namespace Avalonia.Media
         public static readonly StyledProperty<FillRule> FillRuleProperty =
             AvaloniaProperty.Register<GeometryGroup, FillRule>(nameof(FillRule));
 
-        private GeometryCollection? _children;
-        private bool _childrenSet;
+        private GeometryCollection _children = new GeometryCollection();
 
         /// <summary>
         /// Gets or sets the collection that contains the child geometries.
         /// </summary>
         [Content]
-        public GeometryCollection? Children
+        public GeometryCollection Children
         {
-            get => _children ??= (!_childrenSet ? new GeometryCollection() : null);
+            get => _children;
             set
             {
+                if(_children is GeometryCollection)
+                {
+                    _children.Parent = null;
+                }
+
+                if (value is GeometryCollection)
+                {
+                    value.Parent = this;
+                }
+
                 SetAndRaise(ChildrenProperty, ref _children, value);
-                _childrenSet = true;
             }
         }
 
@@ -52,16 +57,21 @@ namespace Avalonia.Media
         public override Geometry Clone()
         {
             var result = new GeometryGroup { FillRule = FillRule, Transform = Transform };
-            if (_children?.Count > 0)
+
+            if (_children.Count > 0)
+            {
                 result.Children = new GeometryCollection(_children);
+            }
+              
             return result;
         }
 
         protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            if (_children?.Count > 0)
+            if (_children.Count > 0)
             {
                 var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+
                 return factory.CreateGeometryGroup(FillRule, _children);
             }
 
@@ -72,10 +82,18 @@ namespace Avalonia.Media
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ChildrenProperty || change.Property == FillRuleProperty)
+            switch (change.Property.Name)
             {
-                InvalidateGeometry();
+                case nameof(FillRule):                   
+                case nameof(Children):
+                    InvalidateGeometry();
+                    break;
             }
+        }
+
+        internal void Invalidate()
+        {
+            InvalidateGeometry();
         }
     }
 }

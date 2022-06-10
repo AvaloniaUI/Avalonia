@@ -62,7 +62,7 @@ namespace Avalonia.Skia
             return new CombinedGeometryImpl(combineMode, g1, g2);
         }
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             if (glyphRun.GlyphTypeface.PlatformImpl is not GlyphTypefaceImpl glyphTypeface)
             {
@@ -79,20 +79,28 @@ namespace Avalonia.Skia
             };
 
             SKPath path = new SKPath();
-            var matrix = SKMatrix.Identity;
 
-            var currentX = 0f;
+            var (currentX, currentY) = glyphRun.BaselineOrigin;
 
-            foreach (var glyph in glyphRun.GlyphIndices)
+            for (var i = 0; i < glyphRun.GlyphIndices.Count; i++)
             {
-                var p = skFont.GetGlyphPath(glyph);
+                var glyph = glyphRun.GlyphIndices[i];
+                var glyphPath = skFont.GetGlyphPath(glyph);
 
-                path.AddPath(p, currentX, 0);
+                if (!glyphPath.IsEmpty)
+                {
+                    path.AddPath(glyphPath, (float)currentX, (float)currentY);
+                }
 
-                currentX += p.Bounds.Right;
+                if (glyphRun.GlyphAdvances != null)
+                {
+                    currentX += glyphRun.GlyphAdvances[i];
+                }
+                else
+                {
+                    currentX += glyphPath.Bounds.Right;
+                }
             }
-
-            scale = Matrix.CreateScale(matrix.ScaleX, matrix.ScaleY);
 
             return new StreamGeometryImpl(path);
         }

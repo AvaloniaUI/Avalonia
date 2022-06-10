@@ -22,5 +22,23 @@ namespace Avalonia.Visuals.UnitTests.Media
 
             Assert.Null(target.Children);
         }
+
+        [Fact]
+        public void Childrend_Change_Should_Raise_Changed()
+        {
+            var target = new GeometryGroup();
+
+            var children = new GeometryCollection();
+
+            target.Children = children;
+
+            var isCalled = false;
+
+            target.Changed += (s, e) => isCalled = true;
+
+            children.Add(new StreamGeometry());
+
+            Assert.True(isCalled);
+        }
     }
 }
