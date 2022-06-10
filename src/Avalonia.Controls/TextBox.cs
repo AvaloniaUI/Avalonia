@@ -54,9 +54,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
             
-        public static readonly StyledProperty<bool> IgnoreChangesWhileEditingProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(IgnoreChangesWhileEditing));
-
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
 
@@ -199,7 +196,6 @@ namespace Avalonia.Controls
         private TextBoxTextInputMethodClient _imClient = new TextBoxTextInputMethodClient();
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
-        private bool _ignoreTextChanges;
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
@@ -280,12 +276,6 @@ namespace Avalonia.Controls
             set => SetValue(IsReadOnlyProperty, value);
         }
         
-        public bool IgnoreChangesWhileEditing
-        {
-            get => GetValue(IgnoreChangesWhileEditingProperty);
-            set => SetValue(IgnoreChangesWhileEditingProperty, value);
-        }
-
         public char PasswordChar
         {
             get => GetValue(PasswordCharProperty);
@@ -377,21 +367,17 @@ namespace Avalonia.Controls
             get => _text;
             set
             {
-                if (!_ignoreTextChanges)
-                {
-                    var caretIndex = CaretIndex;
-                    var selectionStart = SelectionStart;
-                    var selectionEnd = SelectionEnd;
+                var caretIndex = CaretIndex;
+                var selectionStart = SelectionStart;
+                var selectionEnd = SelectionEnd;
                     
-                    CaretIndex = CoerceCaretIndex(caretIndex, value);
-                    SelectionStart = CoerceCaretIndex(selectionStart, value);
-                    SelectionEnd = CoerceCaretIndex(selectionEnd, value);
-
-                    if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
-                    {
-                        _undoRedoHelper.Clear();
-                        SnapshotUndoRedo(); // so we always have an initial state
-                    }
+                CaretIndex = CoerceCaretIndex(caretIndex, value);
+                SelectionStart = CoerceCaretIndex(selectionStart, value);
+                SelectionEnd = CoerceCaretIndex(selectionEnd, value);
+                if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
+                {
+                    _undoRedoHelper.Clear();
+                    SnapshotUndoRedo(); // so we always have an initial state
                 }
             }
         }
@@ -745,32 +731,23 @@ namespace Avalonia.Controls
             {
                 var oldText = _text;
 
-                _ignoreTextChanges = true;
-
-                try
-                {
-                    DeleteSelection(false);
-                    var caretIndex = CaretIndex;
-                    text = Text ?? string.Empty;
-                    SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
-                    ClearSelection();
+                DeleteSelection(false);
+                var caretIndex = CaretIndex;
+                text = Text ?? string.Empty;
+                SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
+                ClearSelection();
                     
-                    if (IsUndoEnabled)
-                    {
-                        _undoRedoHelper.DiscardRedo();
-                    }
-
-                    if (_text != oldText)
-                    {
-                        RaisePropertyChanged(TextProperty, oldText, _text);
-                    }
-                    
-                    CaretIndex = caretIndex + input.Length;
-                }
-                finally
+                if (IsUndoEnabled)
                 {
-                    _ignoreTextChanges = false;
+                    _undoRedoHelper.DiscardRedo();
                 }
+
+                if (_text != oldText)
+                {
+                    RaisePropertyChanged(TextProperty, oldText, _text);
+                }
+                    
+                CaretIndex = caretIndex + input.Length;
             }
         }
 
@@ -1508,17 +1485,7 @@ namespace Avalonia.Controls
         {
             if (raiseTextChanged)
             {
-                try
-                {
-                    if (IgnoreChangesWhileEditing == true)
-                        _ignoreTextChanges = true;
-                        
-                    SetAndRaise(TextProperty, ref _text, value);
-                }
-                finally
-                {
-                    _ignoreTextChanges = false;
-                }
+                SetAndRaise(TextProperty, ref _text, value);
             }
             else
             {
