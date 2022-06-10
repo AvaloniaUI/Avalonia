@@ -14,16 +14,6 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Children_Can_Be_Set_To_Null()
-        {
-            var target = new GeometryGroup();
-
-            target.Children = null;
-
-            Assert.Null(target.Children);
-        }
-
-        [Fact]
         public void Children_Change_Should_Raise_Changed()
         {
             var target = new GeometryGroup();
