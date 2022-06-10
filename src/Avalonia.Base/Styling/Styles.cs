@@ -26,6 +26,11 @@ namespace Avalonia.Styling
         {
             _styles.ResetBehavior = ResetBehavior.Remove;
             _styles.CollectionChanged += OnCollectionChanged;
+            _styles.Validate = i =>
+            {
+                if (i is ControlTheme)
+                    throw new InvalidOperationException("ControlThemes cannot be added to a Styles collection.");
+            };
         }
 
         public Styles(IResourceHost owner)

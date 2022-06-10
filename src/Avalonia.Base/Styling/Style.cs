@@ -77,8 +77,13 @@ namespace Avalonia.Styling
             {
                 if (Selector is null)
                     throw new InvalidOperationException("Child styles must have a selector.");
-                if (!Selector.HasValidNestingSelector())
-                    throw new InvalidOperationException("Child styles must have a nesting selector.");
+                Selector.ValidateNestingSelector(false);
+            }
+            else if (parent is ControlTheme)
+            {
+                if (Selector is null)
+                    throw new InvalidOperationException("Child styles must have a selector.");
+                Selector.ValidateNestingSelector(true);
             }
 
             base.SetParent(parent);
