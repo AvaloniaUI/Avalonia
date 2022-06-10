@@ -14,12 +14,20 @@ namespace Avalonia.Media
             AvaloniaProperty.RegisterDirect<GeometryGroup, GeometryCollection> (
                 nameof(Children),
                 o => o.Children,
-                SetChildren);
+                (o, v)=> o.Children = v);
 
         public static readonly StyledProperty<FillRule> FillRuleProperty =
             AvaloniaProperty.Register<GeometryGroup, FillRule>(nameof(FillRule));
 
-        private GeometryCollection _children = new GeometryCollection();
+        private GeometryCollection _children;
+
+        public GeometryGroup()
+        {
+            _children = new GeometryCollection
+            {
+                Parent = this
+            };
+        }
 
         /// <summary>
         /// Gets or sets the collection that contains the child geometries.
@@ -30,7 +38,8 @@ namespace Avalonia.Media
             get => _children;
             set
             {
-                SetAndRaise(ChildrenProperty, ref _children, value);
+                OnChildrenChanged(_children, value);
+                SetAndRaise(ChildrenProperty, ref _children, value);             
             }
         }
 
@@ -56,13 +65,11 @@ namespace Avalonia.Media
             return result;
         }
 
-        private static void SetChildren(GeometryGroup geometryGroup, GeometryCollection children)
+        protected void OnChildrenChanged(GeometryCollection oldChildren, GeometryCollection newChildren)
         {
-            geometryGroup.Children.Parent = null;
+            oldChildren.Parent = null;
 
-            children.Parent = geometryGroup;
-
-            geometryGroup.Children = children;
+            newChildren.Parent = this;
         }
 
         protected override IGeometryImpl? CreateDefiningGeometry()

@@ -24,7 +24,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Childrend_Change_Should_Raise_Changed()
+        public void Children_Change_Should_Raise_Changed()
         {
             var target = new GeometryGroup();
 
