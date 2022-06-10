@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 
@@ -17,7 +18,7 @@ namespace Avalonia.Styling
         IStyle,
         IResourceProvider
     {
-        private readonly AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
+        private readonly AvaloniaList<IStyle> _styles = new();
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
         private StyleCache? _cache;
@@ -62,16 +63,18 @@ namespace Avalonia.Styling
             {
                 value = value ?? throw new ArgumentNullException(nameof(Resources));
 
-                if (Owner is object)
+                var currentOwner = Owner;
+
+                if (currentOwner is not null)
                 {
-                    _resources?.RemoveOwner(Owner);
+                    _resources?.RemoveOwner(currentOwner);
                 }
 
                 _resources = value;
 
-                if (Owner is object)
+                if (currentOwner is not null)
                 {
-                    _resources.AddOwner(Owner);
+                    _resources.AddOwner(currentOwner);
                 }
             }
         }
@@ -89,7 +92,7 @@ namespace Avalonia.Styling
 
                 foreach (var i in this)
                 {
-                    if (i is IResourceProvider p && p.HasResources)
+                    if (i is IResourceProvider { HasResources: true })
                     {
                         return true;
                     }
@@ -188,9 +191,9 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         void IResourceProvider.AddOwner(IResourceHost owner)
         {
-            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            ArgumentNullException.ThrowIfNull(owner);
 
-            if (Owner != null)
+            if (Owner is not null)
             {
                 throw new InvalidOperationException("The Styles already has a owner.");
             }
@@ -210,7 +213,7 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         void IResourceProvider.RemoveOwner(IResourceHost owner)
         {
-            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            ArgumentNullException.ThrowIfNull(owner);
 
             if (Owner == owner)
             {
@@ -227,70 +230,72 @@ namespace Avalonia.Styling
             }
         }
 
+        private static IReadOnlyList<T> ToReadOnlyList<T>(ICollection list)
+        {
+            if (list is IReadOnlyList<T> readOnlyList)
+            {
+                return readOnlyList;
+            }
+
+            var result = new T[list.Count];
+            list.CopyTo(result, 0);
+            return result;
+        }
+
+        private static void InternalAdd(IList items, IResourceHost owner, ref StyleCache? cache)
+        {
+            foreach (var resourceProvider in items.OfType<IResourceProvider>())
+            {
+                resourceProvider.AddOwner(owner);
+            }
+
+            if (items.Count > 0)
+            {
+                cache = null;
+            }
+
+            (owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
+        }
+
+        private static void InternalRemove(IList items, IResourceHost owner, ref StyleCache? cache)
+        {
+            foreach (var resourceProvider in items.OfType<IResourceProvider>())
+            {
+                resourceProvider.RemoveOwner(owner);
+            }
+
+            if (items.Count > 0)
+            {
+                cache = null;
+            }
+
+            (owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));
+        }
+
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            static IReadOnlyList<T> ToReadOnlyList<T>(IList list)
+            if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                if (list is IReadOnlyList<T>)
-                {
-                    return (IReadOnlyList<T>)list;
-                }
-                else
-                {
-                    var result = new T[list.Count];
-                    list.CopyTo(result, 0);
-                    return result;
-                }
+                throw new InvalidOperationException("Reset should not be called on Styles.");
             }
 
-            void Add(IList items)
+            var currentOwner = Owner;
+
+            if (currentOwner is not null)
             {
-                for (var i = 0; i < items.Count; ++i)
+                switch (e.Action)
                 {
-                    var style = (IStyle)items[i]!;
-
-                    if (Owner is object && style is IResourceProvider resourceProvider)
-                    {
-                        resourceProvider.AddOwner(Owner);
-                    }
-
-                    _cache = null;
+                    case NotifyCollectionChangedAction.Add:
+                        InternalAdd(e.NewItems!, currentOwner, ref _cache);
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        InternalRemove(e.OldItems!, currentOwner, ref _cache);
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        InternalRemove(e.OldItems!, currentOwner, ref _cache);
+                        InternalAdd(e.NewItems!, currentOwner, ref _cache);
+                        break;
                 }
-
-                (Owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
-            }
-
-            void Remove(IList items)
-            {
-                for (var i = 0; i < items.Count; ++i)
-                {
-                    var style = (IStyle)items[i]!;
-
-                    if (Owner is object && style is IResourceProvider resourceProvider)
-                    {
-                        resourceProvider.RemoveOwner(Owner);
-                    }
-
-                    _cache = null;
-                }
-
-                (Owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));
-            }
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    Add(e.NewItems!);
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldItems!);
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    Remove(e.OldItems!);
-                    Add(e.NewItems!);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    throw new InvalidOperationException("Reset should not be called on Styles.");
             }
 
             CollectionChanged?.Invoke(this, e);
