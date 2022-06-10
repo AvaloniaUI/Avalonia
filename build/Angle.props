@@ -1,0 +1,5 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.18905.20220610" />
+  </ItemGroup>
+</Project>
