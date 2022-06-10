@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Threading;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
@@ -420,6 +421,23 @@ namespace Avalonia.Base.UnitTests.Layout
 
             Assert.Equal(new Size(200, 200), control.Bounds.Size);
             Assert.Equal(new Size(200, 200), control.DesiredSize);
+        }
+        
+        [Fact]
+        public void LayoutManager_Execute_Layout_Pass_Should_Clear_Queued_LayoutPasses()
+        {
+            var control = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = control };
+
+            int layoutCount = 0;
+            root.LayoutUpdated += (_, _) => layoutCount++;
+
+            root.LayoutManager.InvalidateArrange(control);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+            
+            Assert.Equal(1, layoutCount);
         }
     }
 }
