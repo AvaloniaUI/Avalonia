@@ -191,7 +191,7 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         void IResourceProvider.AddOwner(IResourceHost owner)
         {
-            ArgumentNullException.ThrowIfNull(owner);
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
             if (Owner is not null)
             {
@@ -213,7 +213,7 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         void IResourceProvider.RemoveOwner(IResourceHost owner)
         {
-            ArgumentNullException.ThrowIfNull(owner);
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
             if (Owner == owner)
             {
