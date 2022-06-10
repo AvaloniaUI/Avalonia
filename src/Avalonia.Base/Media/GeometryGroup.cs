@@ -29,12 +29,8 @@ namespace Avalonia.Media
         {
             get => _children;
             set
-            {             
-                _children.Parent = null;
-
+            {
                 SetAndRaise(ChildrenProperty, ref _children, value);
-
-                _children.Parent = this;
             }
         }
 
