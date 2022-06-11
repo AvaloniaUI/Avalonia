@@ -628,11 +628,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
         <Style Selector='Border'>
-            <Style.Children>
-                <Style Selector='^.foo'>
-                    <Setter Property='Background' Value='Red'/>
-                </Style>
-            </Style.Children>
+            <Style Selector='^.foo'>
+                <Setter Property='Background' Value='Red'/>
+            </Style>
         </Style>
     </Window.Styles>
     <StackPanel>

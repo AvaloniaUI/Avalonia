@@ -218,7 +218,7 @@ namespace Avalonia.Controls.Primitives
             if (YearView != null)
             {
                 var childCount = Calendar.RowsPerYear * Calendar.ColumnsPerYear;
-                var children = new List<IControl>(childCount);
+                using var children = new PooledList<IControl>(childCount);
 
                 EventHandler<PointerPressedEventArgs> monthCalendarButtonMouseDown = Month_CalendarButtonMouseDown;
                 EventHandler<PointerReleasedEventArgs> monthCalendarButtonMouseUp = Month_CalendarButtonMouseUp;

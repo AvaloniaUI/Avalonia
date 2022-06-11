@@ -14,7 +14,7 @@ namespace ControlCatalog.ViewModels
 
         public ItemsRepeaterPageViewModel()
         {
-            Items = CreateItems();
+            _items = CreateItems();
         }
 
         public ObservableCollection<Item> Items
@@ -23,12 +23,12 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _items, value);
         }
 
-        public Item SelectedItem { get; set; }
+        public Item? SelectedItem { get; set; }
 
         public void AddItem()
         {
             var index = SelectedItem != null ? Items.IndexOf(SelectedItem) : -1;
-            Items.Insert(index + 1, new Item(index + 1) { Text = $"New Item {_newItemIndex++}" });
+            Items.Insert(index + 1, new Item(index + 1, $"New Item {_newItemIndex++}"));
         }
 
         public void RemoveItem()
@@ -66,19 +66,20 @@ namespace ControlCatalog.ViewModels
             _newGenerationIndex++;
 
             return new ObservableCollection<Item>(
-                Enumerable.Range(1, 100000).Select(i => new Item(i)
-                {
-                    Text = $"Item {i.ToString()} {suffix}"
-                }));
+                Enumerable.Range(1, 100000).Select(i => new Item(i, $"Item {i.ToString()} {suffix}")));
         }
 
         public class Item : ViewModelBase
         {
             private double _height = double.NaN;
 
-            public Item(int index) => Index = index;
+            public Item(int index, string text)
+            {
+                Index = index;
+                Text = text;
+            }
             public int Index { get; }
-            public string Text { get; set; }
+            public string Text { get; }
             
             public double Height 
             {

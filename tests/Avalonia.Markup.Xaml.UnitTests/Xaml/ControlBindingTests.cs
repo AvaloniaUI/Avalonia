@@ -74,18 +74,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'>
     <DockPanel>
         <TabStrip Name='strip' DockPanel.Dock='Top' Items='{Binding Items}' SelectedIndex='0'>
-          <TabStrip.DataTemplates>
+          <TabStrip.ItemTemplate>
             <DataTemplate>
               <TextBlock Text='{Binding Header}'/>
             </DataTemplate>
-          </TabStrip.DataTemplates>
+          </TabStrip.ItemTemplate>
         </TabStrip>
         <Carousel Name='carousel' Items='{Binding Items}' SelectedIndex='{Binding #strip.SelectedIndex}'>
-          <Carousel.DataTemplates>
+          <Carousel.ItemTemplate>
             <DataTemplate>
               <TextBlock Text='{Binding Detail}'/>
             </DataTemplate>
-          </Carousel.DataTemplates>
+          </Carousel.ItemTemplate>
         </Carousel>
     </DockPanel>
 </Window>";
