@@ -17,6 +17,7 @@ using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.UnitTests;
+using JetBrains.Annotations;
 using XamlX;
 using Xunit;
 
@@ -1527,7 +1528,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [TemplateContent]
         public object Content { get; set; }
 
-        public bool Match(object data) => FancyDataType.IsInstanceOfType(data);
+        public bool Match(object data) => FancyDataType?.IsInstanceOfType(data) ?? true;
 
         public IControl Build(object data) => TemplateContent.Load(Content)?.Control;
     }
