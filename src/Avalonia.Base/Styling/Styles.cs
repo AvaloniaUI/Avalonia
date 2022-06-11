@@ -242,34 +242,40 @@ namespace Avalonia.Styling
             return result;
         }
 
-        private static void InternalAdd(IList items, IResourceHost owner, ref StyleCache? cache)
+        private static void InternalAdd(IList items, IResourceHost? owner, ref StyleCache? cache)
         {
-            foreach (var resourceProvider in items.OfType<IResourceProvider>())
+            if (owner is not null)
             {
-                resourceProvider.AddOwner(owner);
+                foreach (var resourceProvider in items.OfType<IResourceProvider>())
+                {
+                    resourceProvider.AddOwner(owner);
+                }
+
+                (owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
             }
 
             if (items.Count > 0)
             {
                 cache = null;
             }
-
-            (owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
         }
 
-        private static void InternalRemove(IList items, IResourceHost owner, ref StyleCache? cache)
+        private static void InternalRemove(IList items, IResourceHost? owner, ref StyleCache? cache)
         {
-            foreach (var resourceProvider in items.OfType<IResourceProvider>())
+            if (owner is not null)
             {
-                resourceProvider.RemoveOwner(owner);
+                foreach (var resourceProvider in items.OfType<IResourceProvider>())
+                {
+                    resourceProvider.RemoveOwner(owner);
+                }
+
+                (owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));
             }
 
             if (items.Count > 0)
             {
                 cache = null;
             }
-
-            (owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));
         }
 
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -281,21 +287,18 @@ namespace Avalonia.Styling
 
             var currentOwner = Owner;
 
-            if (currentOwner is not null)
+            switch (e.Action)
             {
-                switch (e.Action)
-                {
-                    case NotifyCollectionChangedAction.Add:
-                        InternalAdd(e.NewItems!, currentOwner, ref _cache);
-                        break;
-                    case NotifyCollectionChangedAction.Remove:
-                        InternalRemove(e.OldItems!, currentOwner, ref _cache);
-                        break;
-                    case NotifyCollectionChangedAction.Replace:
-                        InternalRemove(e.OldItems!, currentOwner, ref _cache);
-                        InternalAdd(e.NewItems!, currentOwner, ref _cache);
-                        break;
-                }
+                case NotifyCollectionChangedAction.Add:
+                    InternalAdd(e.NewItems!, currentOwner, ref _cache);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    InternalRemove(e.OldItems!, currentOwner, ref _cache);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    InternalRemove(e.OldItems!, currentOwner, ref _cache);
+                    InternalAdd(e.NewItems!, currentOwner, ref _cache);
+                    break;
             }
 
             CollectionChanged?.Invoke(this, e);
