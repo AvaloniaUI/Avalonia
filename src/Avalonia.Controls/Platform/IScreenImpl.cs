@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IScreenImpl
     {
         int ScreenCount { get; }

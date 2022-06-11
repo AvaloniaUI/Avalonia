@@ -72,5 +72,8 @@
     <TabItem Header="Brushes">
       <pages:BrushesPage />
     </TabItem>
+    <TabItem Header="3D Transformation">
+      <pages:Transform3DPage />
+    </TabItem>
   </controls:HamburgerMenu>
 </Window>

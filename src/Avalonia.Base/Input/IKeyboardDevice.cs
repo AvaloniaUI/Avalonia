@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
@@ -55,6 +56,7 @@ namespace Avalonia.Input
         PenBarrelButton = 2048
     }
 
+    [NotClientImplementable]
     public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
     {
         IInputElement? FocusedElement { get; }

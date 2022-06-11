@@ -1,3 +1,5 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Input
 {
     /// <summary>
@@ -6,6 +8,7 @@ namespace Avalonia.Input
     /// <remarks>
     /// Some devices, for instance, touchscreen might generate a pointer on each physical contact.
     /// </remarks>
+    [NotClientImplementable]
     public interface IPointer
     {
         /// <summary>

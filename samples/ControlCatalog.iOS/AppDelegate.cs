@@ -13,6 +13,13 @@ namespace ControlCatalog
     [Register("AppDelegate")]
     public partial class AppDelegate : AvaloniaAppDelegate<App>
     {
-        
+        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
+        {
+            return base.CustomizeAppBuilder(builder)
+                .AfterSetup(_ =>
+                {
+                    Pages.EmbedSample.Implementation = new EmbedSampleIOS();
+                });
+        }
     }
 }

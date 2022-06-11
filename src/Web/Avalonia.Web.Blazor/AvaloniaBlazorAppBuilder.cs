@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Platform;
-using Avalonia.PlatformSupport;
 
 namespace Avalonia.Web.Blazor
 {

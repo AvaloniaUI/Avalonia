@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 using JetBrains.Annotations;
 
@@ -50,6 +51,7 @@ namespace Avalonia.Platform
     /// This interface is the common interface to <see cref="IWindowImpl"/> and
     /// <see cref="IPopupImpl"/>.
     /// </remarks>
+    [Unstable]
     public interface ITopLevelImpl : IDisposable
     {
         /// <summary>

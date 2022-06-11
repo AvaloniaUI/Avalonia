@@ -79,8 +79,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
 
         public static readonly StyledProperty<int> MaxLinesProperty =
-      AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
-
+            AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
+        
         public static readonly DirectProperty<TextBox, string?> TextProperty =
             TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
                 o => o.Text,
@@ -105,6 +105,12 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
+        
+        /// <summary>
+        /// Defines see <see cref="TextPresenter.LineHeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LineHeightProperty =
+            TextBlock.LineHeightProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
@@ -154,15 +160,15 @@ namespace Avalonia.Controls
 
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CopyingToClipboard", RoutingStrategies.Bubble);
+                nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "CuttingToClipboard", RoutingStrategies.Bubble);
+                nameof(CuttingToClipboard), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
-                "PastingFromClipboard", RoutingStrategies.Bubble);
+                nameof(PastingFromClipboard), RoutingStrategies.Bubble);
 
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -239,23 +245,19 @@ namespace Avalonia.Controls
 
         public bool AcceptsReturn
         {
-            get { return GetValue(AcceptsReturnProperty); }
-            set { SetValue(AcceptsReturnProperty, value); }
+            get => GetValue(AcceptsReturnProperty);
+            set => SetValue(AcceptsReturnProperty, value);
         }
 
         public bool AcceptsTab
         {
-            get { return GetValue(AcceptsTabProperty); }
-            set { SetValue(AcceptsTabProperty, value); }
+            get => GetValue(AcceptsTabProperty);
+            set => SetValue(AcceptsTabProperty, value);
         }
 
         public int CaretIndex
         {
-            get
-            {
-                return _caretIndex;
-            }
-
+            get => _caretIndex;
             set
             {
                 value = CoerceCaretIndex(value);
@@ -271,8 +273,8 @@ namespace Avalonia.Controls
 
         public bool IsReadOnly
         {
-            get { return GetValue(IsReadOnlyProperty); }
-            set { SetValue(IsReadOnlyProperty, value); }
+            get => GetValue(IsReadOnlyProperty);
+            set => SetValue(IsReadOnlyProperty, value);
         }
 
         public char PasswordChar
@@ -301,11 +303,7 @@ namespace Avalonia.Controls
 
         public int SelectionStart
         {
-            get
-            {
-                return _selectionStart;
-            }
-
+            get => _selectionStart;
             set
             {
                 value = CoerceCaretIndex(value);
@@ -325,11 +323,7 @@ namespace Avalonia.Controls
 
         public int SelectionEnd
         {
-            get
-            {
-                return _selectionEnd;
-            }
-
+            get => _selectionEnd;
             set
             {
                 value = CoerceCaretIndex(value);
@@ -349,20 +343,29 @@ namespace Avalonia.Controls
 
         public int MaxLength
         {
-            get { return GetValue(MaxLengthProperty); }
-            set { SetValue(MaxLengthProperty, value); }
+            get => GetValue(MaxLengthProperty);
+            set => SetValue(MaxLengthProperty, value);
         }
 
         public int MaxLines
         {
-            get { return GetValue(MaxLinesProperty); }
-            set { SetValue(MaxLinesProperty, value); }
+            get => GetValue(MaxLinesProperty);
+            set => SetValue(MaxLinesProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets or sets the line height.
+        /// </summary>
+        public double LineHeight
+        {
+            get { return GetValue(LineHeightProperty); }
+            set { SetValue(LineHeightProperty, value); }
         }
 
         [Content]
         public string? Text
         {
-            get { return _text; }
+            get => _text;
             set
             {
                 if (!_ignoreTextChanges)
@@ -386,7 +389,7 @@ namespace Avalonia.Controls
 
         public string SelectedText
         {
-            get { return GetSelection(); }
+            get => GetSelection();
             set
             {
                 if (string.IsNullOrEmpty(value))
@@ -407,8 +410,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -416,50 +419,58 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
         public TextAlignment TextAlignment
         {
-            get { return GetValue(TextAlignmentProperty); }
-            set { SetValue(TextAlignmentProperty, value); }
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
+        /// property is not yet set.
+        /// </summary>
         public string? Watermark
         {
-            get { return GetValue(WatermarkProperty); }
-            set { SetValue(WatermarkProperty, value); }
+            get => GetValue(WatermarkProperty);
+            set => SetValue(WatermarkProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="Watermark"/> will still be shown above the
+        /// <see cref="Text"/> even after a text value is set.
+        /// </summary>
         public bool UseFloatingWatermark
         {
-            get { return GetValue(UseFloatingWatermarkProperty); }
-            set { SetValue(UseFloatingWatermarkProperty, value); }
+            get => GetValue(UseFloatingWatermarkProperty);
+            set => SetValue(UseFloatingWatermarkProperty, value);
         }
 
         public object InnerLeftContent
         {
-            get { return GetValue(InnerLeftContentProperty); }
-            set { SetValue(InnerLeftContentProperty, value); }
+            get => GetValue(InnerLeftContentProperty);
+            set => SetValue(InnerLeftContentProperty, value);
         }
 
         public object InnerRightContent
         {
-            get { return GetValue(InnerRightContentProperty); }
-            set { SetValue(InnerRightContentProperty, value); }
+            get => GetValue(InnerRightContentProperty);
+            set => SetValue(InnerRightContentProperty, value);
         }
 
         public bool RevealPassword
         {
-            get { return GetValue(RevealPasswordProperty); }
-            set { SetValue(RevealPasswordProperty, value); }
+            get => GetValue(RevealPasswordProperty);
+            set => SetValue(RevealPasswordProperty, value);
         }
 
         public TextWrapping TextWrapping
         {
-            get { return GetValue(TextWrappingProperty); }
-            set { SetValue(TextWrappingProperty, value); }
+            get => GetValue(TextWrappingProperty);
+            set => SetValue(TextWrappingProperty, value);
         }
 
         /// <summary>
@@ -467,8 +478,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string NewLine
         {
-            get { return _newLine; }
-            set { SetAndRaise(NewLineProperty, ref _newLine, value); }
+            get => _newLine;
+            set => SetAndRaise(NewLineProperty, ref _newLine, value);
         }
 
         /// <summary>
@@ -484,8 +495,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanCut
         {
-            get { return _canCut; }
-            private set { SetAndRaise(CanCutProperty, ref _canCut, value); }
+            get => _canCut;
+            private set => SetAndRaise(CanCutProperty, ref _canCut, value);
         }
 
         /// <summary>
@@ -493,8 +504,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanCopy
         {
-            get { return _canCopy; }
-            private set { SetAndRaise(CanCopyProperty, ref _canCopy, value); }
+            get => _canCopy;
+            private set => SetAndRaise(CanCopyProperty, ref _canCopy, value);
         }
 
         /// <summary>
@@ -502,8 +513,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanPaste
         {
-            get { return _canPaste; }
-            private set { SetAndRaise(CanPasteProperty, ref _canPaste, value); }
+            get => _canPaste;
+            private set => SetAndRaise(CanPasteProperty, ref _canPaste, value);
         }
 
         /// <summary>
@@ -511,13 +522,13 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsUndoEnabled
         {
-            get { return GetValue(IsUndoEnabledProperty); }
-            set { SetValue(IsUndoEnabledProperty, value); }
+            get => GetValue(IsUndoEnabledProperty);
+            set => SetValue(IsUndoEnabledProperty, value);
         }
 
         public int UndoLimit
         {
-            get { return _undoRedoHelper.Limit; }
+            get => _undoRedoHelper.Limit;
             set
             {
                 if (_undoRedoHelper.Limit != value)
@@ -1539,7 +1550,7 @@ namespace Avalonia.Controls
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
-            get { return new UndoRedoState(Text, CaretIndex); }
+            get => new UndoRedoState(Text, CaretIndex);
             set
             {
                 Text = value.Text;

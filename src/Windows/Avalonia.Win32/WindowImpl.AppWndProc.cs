@@ -84,6 +84,12 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_DESTROY:
                     {
                         UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
+                        
+                        // We need to release IMM context and state to avoid leaks.
+                        if (Imm32InputMethod.Current.HWND == _hwnd)
+                        {
+                            Imm32InputMethod.Current.ClearLanguageAndWindow();
+                        }
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines the main platform-specific interface for the rendering subsystem.
     /// </summary>
+    [Unstable]
     public interface IPlatformRenderInterface
     {
         /// <summary>
@@ -55,6 +57,14 @@ namespace Avalonia.Platform
         /// <param name="g2">The second geometry.</param>
         /// <returns>A combined geometry.</returns>
         IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2);
+
+        /// <summary>
+        /// Created a geometry implementation for the glyph run.
+        /// </summary>
+        /// <param name="glyphRun">The glyph run to build a geometry from.</param>
+        /// <param name="scale">The scaling of the produces geometry.</param>
+        /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
+        IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale);
 
         /// <summary>
         /// Creates a renderer.

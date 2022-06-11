@@ -22,7 +22,7 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
         
-        private MenuPageViewModel _model;
+        private MenuPageViewModel? _model;
         protected override void OnDataContextChanged(EventArgs e)
         {
             if (_model != null)
