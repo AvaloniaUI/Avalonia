@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 
@@ -246,9 +245,12 @@ namespace Avalonia.Styling
         {
             if (owner is not null)
             {
-                foreach (var resourceProvider in items.OfType<IResourceProvider>())
+                for (var i = 0; i < items.Count; ++i)
                 {
-                    resourceProvider.AddOwner(owner);
+                    if (items[i] is IResourceProvider provider)
+                    {
+                        provider.AddOwner(owner);
+                    }
                 }
 
                 (owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
@@ -264,9 +266,12 @@ namespace Avalonia.Styling
         {
             if (owner is not null)
             {
-                foreach (var resourceProvider in items.OfType<IResourceProvider>())
+                for (var i = 0; i < items.Count; ++i)
                 {
-                    resourceProvider.RemoveOwner(owner);
+                    if (items[i] is IResourceProvider provider)
+                    {
+                        provider.RemoveOwner(owner);
+                    }
                 }
 
                 (owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));
