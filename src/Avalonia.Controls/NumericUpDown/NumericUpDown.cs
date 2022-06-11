@@ -107,8 +107,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, decimal> ValueProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, decimal>(nameof(Value), updown => updown.Value,
+        public static readonly DirectProperty<NumericUpDown, decimal?> ValueProperty =
+            AvaloniaProperty.RegisterDirect<NumericUpDown, decimal?>(nameof(Value), updown => updown.Value,
                 (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Avalonia.Controls
 
         private IDisposable? _textBoxTextChangedSubscription;
 
-        private decimal _value;
+        private decimal? _value;
         private string? _text;
         private bool _internalValueSet;
         private bool _clipValueToMinMax;
@@ -277,7 +277,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the value.
         /// </summary>
-        public decimal Value
+        public decimal? Value
         {
             get { return _value; }
             set
@@ -351,7 +351,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnLostFocus(RoutedEventArgs e)
         {
-            CommitInput();
+            CommitInput(true);
             base.OnLostFocus(e);
         }
 
@@ -489,9 +489,9 @@ namespace Avalonia.Controls
             {
                 SetValidSpinDirection();
             }
-            if (ClipValueToMinMax)
+            if (ClipValueToMinMax && Value.HasValue)
             {
-                Value = MathUtilities.Clamp(Value, Minimum, Maximum);
+                Value = MathUtilities.Clamp(Value.Value, Minimum, Maximum);
             }
         }
 
@@ -506,9 +506,9 @@ namespace Avalonia.Controls
             {
                 SetValidSpinDirection();
             }
-            if (ClipValueToMinMax)
+            if (ClipValueToMinMax && Value.HasValue)
             {
-                Value = MathUtilities.Clamp(Value, Minimum, Maximum);
+                Value = MathUtilities.Clamp(Value.Value, Minimum, Maximum);
             }
         }
 
@@ -530,7 +530,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        protected virtual void OnValueChanged(decimal oldValue, decimal newValue)
+        protected virtual void OnValueChanged(decimal? oldValue, decimal? newValue)
         {
             if (!_internalValueSet && IsInitialized)
             {
@@ -573,7 +573,7 @@ namespace Avalonia.Controls
         /// Called when the <see cref="Value"/> property has to be coerced.
         /// </summary>
         /// <param name="baseValue">The value.</param>
-        protected virtual decimal OnCoerceValue(decimal baseValue)
+        protected virtual decimal? OnCoerceValue(decimal? baseValue)
         {
             return baseValue;
         }
@@ -607,7 +607,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        protected virtual void RaiseValueChangedEvent(decimal oldValue, decimal newValue)
+        protected virtual void RaiseValueChangedEvent(decimal? oldValue, decimal? newValue)
         {
             var e = new NumericUpDownValueChangedEventArgs(ValueChangedEvent, oldValue, newValue);
             RaiseEvent(e);
@@ -616,9 +616,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Converts the formatted text to a value.
         /// </summary>
-        private decimal ConvertTextToValue(string text)
+        private decimal? ConvertTextToValue(string? text)
         {
-            decimal result = 0;
+            decimal? result = null;
 
             if (string.IsNullOrEmpty(text))
             {
@@ -635,9 +635,9 @@ namespace Avalonia.Controls
 
             result = ConvertTextToValueCore(currentValueText, text);
 
-            if (ClipValueToMinMax)
+            if (ClipValueToMinMax && result.HasValue)
             {
-                return MathUtilities.Clamp(result, Minimum, Maximum);
+                return MathUtilities.Clamp(result.Value, Minimum, Maximum);
             }
 
             ValidateMinMax(result);
@@ -649,7 +649,7 @@ namespace Avalonia.Controls
         /// Converts the value to formatted text.
         /// </summary>
         /// <returns></returns>
-        private string ConvertValueToText()
+        private string? ConvertValueToText()
         {
             //Manage FormatString of type "{}{0:N2} °" (in xaml) or "{0:N2} °" in code-behind.
             if (FormatString.Contains("{0"))
@@ -657,7 +657,7 @@ namespace Avalonia.Controls
                 return string.Format(NumberFormat, FormatString, Value);
             }
 
-            return Value.ToString(FormatString, NumberFormat);
+            return Value?.ToString(FormatString, NumberFormat);
         }
 
         /// <summary>
@@ -665,7 +665,16 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnIncrement()
         {
-            var result = Value + Increment;
+            decimal result;
+            if (Value.HasValue)
+            {
+                result = Value.Value + Increment;
+            }
+            else
+            {
+                result = Minimum;
+            }
+            
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
@@ -674,7 +683,17 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnDecrement()
         {
-            var result = Value - Increment;
+            decimal result;
+            
+            if (Value.HasValue)
+            {
+                result = Value.Value - Increment;
+            }
+            else
+            {
+                result = Maximum;
+            }
+            
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
@@ -688,6 +707,11 @@ namespace Avalonia.Controls
             // Zero increment always prevents spin.
             if (Increment != 0 && !IsReadOnly)
             {
+                if (!Value.HasValue)
+                {
+                    validDirections = ValidSpinDirections.Increase | ValidSpinDirections.Decrease;
+                }
+                
                 if (Value < Maximum)
                 {
                     validDirections = validDirections | ValidSpinDirections.Increase;
@@ -825,13 +849,13 @@ namespace Avalonia.Controls
         {
             if (e.Sender is NumericUpDown upDown)
             {
-                var oldValue = (decimal)e.OldValue!;
-                var newValue = (decimal)e.NewValue!;
+                var oldValue = (decimal?)e.OldValue;
+                var newValue = (decimal?)e.NewValue;
                 upDown.OnValueChanged(oldValue, newValue);
             }
         }
 
-        private void SetValueInternal(decimal value)
+        private void SetValueInternal(decimal? value)
         {
             _internalValueSet = true;
             try
@@ -946,9 +970,9 @@ namespace Avalonia.Controls
             remove { RemoveHandler(ValueChangedEvent, value); }
         }
 
-        private bool CommitInput()
+        private bool CommitInput(bool forceTextUpdate = false)
         {
-            return SyncTextAndValueProperties(true, Text);
+            return SyncTextAndValueProperties(true, Text, forceTextUpdate);
         }
 
         /// <summary>
@@ -978,28 +1002,24 @@ namespace Avalonia.Controls
             {
                 if (updateValueFromText)
                 {
-                    if (!string.IsNullOrEmpty(text))
+                    try
                     {
-                        try
+                        var newValue = ConvertTextToValue(text);
+                        if (!Equals(newValue, Value))
                         {
-                            var newValue = ConvertTextToValue(text);
-                            if (!Equals(newValue, Value))
-                            {
-                                SetValueInternal(newValue);
-                            }
+                            SetValueInternal(newValue);
                         }
-                        catch
-                        {
-                            parsedTextIsValid = false;
-                        }
+                    }
+                    catch
+                    {
+                        parsedTextIsValid = false;
                     }
                 }
 
                 // Do not touch the ongoing text input from user.
                 if (!_isTextChangedFromUI)
                 {
-                    var keepEmpty = !forceTextUpdate && string.IsNullOrEmpty(Text);
-                    if (!keepEmpty)
+                    if (forceTextUpdate)
                     {
                         var newText = ConvertValueToText();
                         if (!Equals(Text, newText))
@@ -1036,10 +1056,15 @@ namespace Avalonia.Controls
             return parsedTextIsValid;
         }
 
-        private decimal ConvertTextToValueCore(string currentValueText, string text)
+        private decimal? ConvertTextToValueCore(string? currentValueText, string? text)
         {
             decimal result;
 
+            if (string.IsNullOrEmpty(text))
+            {
+                return null;
+            }
+            
             if (IsPercent(FormatString))
             {
                 result = ParsePercent(text, NumberFormat);
@@ -1052,7 +1077,7 @@ namespace Avalonia.Controls
                     var shouldThrow = true;
 
                     // Check if CurrentValueText is also failing => it also contains special characters. ex : 90°
-                    if (!decimal.TryParse(currentValueText, ParsingNumberStyle, NumberFormat, out var _))
+                    if (!string.IsNullOrEmpty(currentValueText) && !decimal.TryParse(currentValueText, ParsingNumberStyle, NumberFormat, out var _))
                     {
                         // extract non-digit characters
                         var currentValueTextSpecialCharacters = currentValueText.Where(c => !char.IsDigit(c));
@@ -1082,8 +1107,12 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private void ValidateMinMax(decimal value)
+        private void ValidateMinMax(decimal? value)
         {
+            if (!value.HasValue)
+            {
+                return;
+            }
             if (value < Minimum)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be greater than Minimum value of {0}", Minimum));

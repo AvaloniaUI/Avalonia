@@ -602,7 +602,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         private class EndOfLineTextSource : ITextSource
         {
-            public TextRun? GetTextRun(int textSourceIndex)
+            public TextRun GetTextRun(int textSourceIndex)
             {
                 return new TextEndOfLine();
             }
@@ -617,7 +617,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 _text = text;
             }
             
-            public TextRun? GetTextRun(int textSourceIndex)
+            public TextRun GetTextRun(int textSourceIndex)
             {
                 if (textSourceIndex >= _text.Length + TextRun.DefaultTextSourceLength + _text.Length)
                 {

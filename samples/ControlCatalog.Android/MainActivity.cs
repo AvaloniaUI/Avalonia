@@ -10,7 +10,11 @@ namespace ControlCatalog.Android
     {
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
-            return base.CustomizeAppBuilder(builder);
+            return base.CustomizeAppBuilder(builder)
+                .AfterSetup(_ =>
+                {
+                    Pages.EmbedSample.Implementation = new EmbedSampleAndroid();
+                });
         }
     }
 }

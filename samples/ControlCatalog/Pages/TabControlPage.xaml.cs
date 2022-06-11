@@ -52,7 +52,7 @@ namespace ControlCatalog.Pages
 
         private IBitmap LoadBitmap(string uri)
         {
-            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assets = AvaloniaLocator.Current!.GetService<IAssetLoader>()!;
             return new Bitmap(assets.Open(new Uri(uri)));
         }
 
@@ -60,7 +60,7 @@ namespace ControlCatalog.Pages
         {
             private Dock _tabPlacement;
 
-            public TabItemViewModel[] Tabs { get; set; }
+            public TabItemViewModel[]? Tabs { get; set; }
 
             public Dock TabPlacement
             {
@@ -71,10 +71,10 @@ namespace ControlCatalog.Pages
 
         private class TabItemViewModel
         {
-            public string Header { get; set; }
-            public string Text { get; set; }
-            public IBitmap Image { get; set; }
-            public bool IsEnabled { get; set; } = true;           
+            public string? Header { get; set; }
+            public string? Text { get; set; }
+            public IBitmap? Image { get; set; }
+            public bool IsEnabled { get; set; } = true;
         }
     }
 }
