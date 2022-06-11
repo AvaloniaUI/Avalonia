@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.UnitTests;
@@ -130,6 +131,26 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Same(viewModel, target.DataContext);
                 Assert.Same(viewModel.Child, target.Presenter.DataContext);
                 Assert.Same(viewModel.Child.Child, canvas.DataContext);
+            }
+        }
+        
+        [Fact]
+        public void DataTemplates_Without_Type_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:sys='clr-namespace:System;assembly=netstandard'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.DataTemplates>
+        <DataTemplate>
+            <Canvas Name='foo'/>
+        </DataTemplate>
+    </Window.DataTemplates>
+    <ContentControl Name='target' Content='Foo'/>
+</Window>";
+                Assert.Throws<InvalidOperationException>(() => (Window)AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
     }
