@@ -159,6 +159,34 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
 
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        {
+            if (glyphRun.GlyphTypeface.PlatformImpl is not GlyphTypefaceImpl glyphTypeface)
+            {
+                throw new InvalidOperationException("PlatformImpl can't be null.");
+            }
+
+            var pathGeometry = new SharpDX.Direct2D1.PathGeometry(Direct2D1Factory);
+
+            using (var sink = pathGeometry.Open())
+            {
+                var glyphs = new short[glyphRun.GlyphIndices.Count];
+
+                for (int i = 0; i < glyphRun.GlyphIndices.Count; i++)
+                {
+                    glyphs[i] = (short)glyphRun.GlyphIndices[i];
+                }
+
+                glyphTypeface.FontFace.GetGlyphRunOutline((float)glyphRun.FontRenderingEmSize, glyphs, null, null, false, !glyphRun.IsLeftToRight, sink);
+
+                sink.Close();
+            }
+
+            scale = Matrix.Identity;
+
+            return new StreamGeometryImpl(pathGeometry);
+        }      
+
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {
