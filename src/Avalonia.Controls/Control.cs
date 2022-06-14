@@ -96,7 +96,7 @@ namespace Avalonia.Controls
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
-        private HashSet<Control> _loadedQueue = new HashSet<Control>();
+        private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
