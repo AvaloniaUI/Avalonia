@@ -83,7 +83,7 @@ namespace Avalonia.X11
             XVisualInfo? visualInfo = null;
 
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
-            _useRenderWindow = glfeature != null;
+            //_useRenderWindow = glfeature != null;
             
             var glx = glfeature as GlxPlatformOpenGlInterface;
             if (glx != null)
