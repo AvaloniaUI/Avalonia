@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
@@ -91,9 +92,11 @@ namespace Avalonia.Controls
                 inherits: true);
 
         private bool _isLoaded = false;
+        private bool _isLoadedProcessingRequested = false;
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
+        private HashSet<Control> _loadedQueue = new HashSet<Control>();
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -329,7 +332,28 @@ namespace Avalonia.Controls
 
             InitializeIfNeeded();
 
-            Dispatcher.UIThread.Post(() => OnLoadedCore(), DispatcherPriority.Loaded);
+            // Note: This code is not multi-threaded ready and assumes to run only on the UIThread
+            if (_isLoaded == false)
+            {
+                _loadedQueue.Add(this);
+
+                if (_isLoadedProcessingRequested == false)
+                {
+                    _isLoadedProcessingRequested = true;
+
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        foreach (var item in _loadedQueue)
+                        {
+                            item?.OnLoadedCore();
+                        }
+
+                        _loadedQueue.Clear();
+                        _isLoadedProcessingRequested = false;
+                    },
+                    DispatcherPriority.Loaded);
+                }
+            }
         }
 
         /// <inheritdoc/>
