@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Avalonia.Platform;
-using Avalonia.PlatformSupport.Internal;
+using Avalonia.Platform.Internal;
 using Avalonia.Utilities;
 
-namespace Avalonia.PlatformSupport
+namespace Avalonia.Platform
 {
     /// <summary>
     /// Loads assets compiled into the application binary.

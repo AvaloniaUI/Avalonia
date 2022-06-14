@@ -15,15 +15,15 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
             DataContext = new ContextPageViewModel();
 
-            var customContextRequestedBorder = this.FindControl<Border>("CustomContextRequestedBorder");
+            var customContextRequestedBorder = this.Get<Border>("CustomContextRequestedBorder");
             customContextRequestedBorder.AddHandler(ContextRequestedEvent, CustomContextRequested, RoutingStrategies.Tunnel);
 
-            var cancellableContextBorder = this.FindControl<Border>("CancellableContextBorder");
+            var cancellableContextBorder = this.Get<Border>("CancellableContextBorder");
             cancellableContextBorder.ContextMenu!.ContextMenuClosing += ContextFlyoutPage_Closing;
             cancellableContextBorder.ContextMenu!.ContextMenuOpening += ContextFlyoutPage_Opening;
         }
 
-        private ContextPageViewModel _model;
+        private ContextPageViewModel? _model;
         protected override void OnDataContextChanged(EventArgs e)
         {
             if (_model != null)

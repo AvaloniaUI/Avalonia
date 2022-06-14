@@ -31,20 +31,21 @@ namespace Avalonia.Android
             
             CustomizeAppBuilder(builder);
 
-            View = new AvaloniaView(this);
-            SetContentView(View);
 
             var lifetime = new SingleViewLifetime();
-            lifetime.View = View;
 
             builder.AfterSetup(x =>
             {
                 _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
 
+                View = new AvaloniaView(this);
                 if (_viewModel.Content != null)
                 {
                     View.Content = _viewModel.Content;
                 }
+
+                SetContentView(View);
+                lifetime.View = View;
 
                 View.Prepare();
             });
