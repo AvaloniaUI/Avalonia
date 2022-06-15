@@ -336,7 +336,12 @@ namespace Avalonia.Controls
             // Note: This code is not multi-threaded ready and assumes to run only on the UIThread
             if (_isLoaded == false)
             {
-                bool isAdded = _loadedQueue.Add(this);
+                bool isAdded = false;
+
+                lock (_loadedQueue)
+                {
+                    isAdded = _loadedQueue.Add(this);
+                }
 
                 if (isAdded &&
                     _isLoadedProcessingRequested == false)
@@ -345,12 +350,19 @@ namespace Avalonia.Controls
 
                     Dispatcher.UIThread.Post(static () =>
                     {
-                        foreach (var item in _loadedQueue)
+                        // Lock is required here since there is a possibility of the
+                        // "Collection was modified; enumeration operation may not execute." exception.
+                        // This may happen when new controls are added within the Loaded callback/event.
+                        lock (_loadedQueue)
                         {
-                            item?.OnLoadedCore();
+                            foreach (var item in _loadedQueue)
+                            {
+                                item?.OnLoadedCore();
+                            }
+
+                            _loadedQueue.Clear();
                         }
 
-                        _loadedQueue.Clear();
                         _isLoadedProcessingRequested = false;
                     },
                     DispatcherPriority.Loaded);
