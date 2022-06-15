@@ -336,9 +336,10 @@ namespace Avalonia.Controls
             // Note: This code is not multi-threaded ready and assumes to run only on the UIThread
             if (_isLoaded == false)
             {
-                _loadedQueue.Add(this);
+                bool isAdded = _loadedQueue.Add(this);
 
-                if (_isLoadedProcessingRequested == false)
+                if (isAdded &&
+                    _isLoadedProcessingRequested == false)
                 {
                     _isLoadedProcessingRequested = true;
 
