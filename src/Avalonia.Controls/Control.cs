@@ -301,6 +301,13 @@ namespace Avalonia.Controls
         {
             if (_isLoaded)
             {
+                // Remove from the loaded event queue here as a failsafe in case the control
+                // is detached before the dispatcher runs the Loaded jobs.
+                lock (_loadedQueue)
+                {
+                    _loadedQueue.Remove(this);
+                }
+
                 _isLoaded = false;
                 OnUnloaded();
             }
