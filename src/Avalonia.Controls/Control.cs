@@ -91,12 +91,13 @@ namespace Avalonia.Controls
                 nameof(FlowDirection),
                 inherits: true);
 
+        private static bool _isLoadedProcessingRequested = false;
+        private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
+
         private bool _isLoaded = false;
-        private bool _isLoadedProcessingRequested = false;
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
         private AutomationPeer? _automationPeer;
-        private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -341,7 +342,7 @@ namespace Avalonia.Controls
                 {
                     _isLoadedProcessingRequested = true;
 
-                    Dispatcher.UIThread.Post(() =>
+                    Dispatcher.UIThread.Post(static () =>
                     {
                         foreach (var item in _loadedQueue)
                         {
