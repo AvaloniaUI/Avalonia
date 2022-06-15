@@ -704,10 +704,6 @@ namespace Avalonia.Controls
             PlatformImpl?.Show(ShowActivated, false);
             Renderer?.Start();
             OnOpened(EventArgs.Empty);
-
-            // Window must manually raise Loaded/Unloaded events as it is a visual root and
-            // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
-            OnLoadedCore();
         }
 
         /// <summary>
@@ -797,11 +793,6 @@ namespace Avalonia.Controls
                 });
 
             OnOpened(EventArgs.Empty);
-
-            // Window must manually raise Loaded/Unloaded events as it is a visual root and
-            // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
-            OnLoadedCore();
-
             return result.Task;
         }
 
@@ -992,10 +983,6 @@ namespace Avalonia.Controls
             }
 
             Owner = null;
-
-            // Window must manually raise Loaded/Unloaded events as it is a visual root and
-            // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
-            OnUnloadedCore();
         }
 
         [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
