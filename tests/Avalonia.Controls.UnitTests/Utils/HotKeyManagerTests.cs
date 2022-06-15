@@ -12,6 +12,7 @@ using Moq;
 using Xunit;
 using Avalonia.Input.Raw;
 using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
@@ -92,6 +93,8 @@ namespace Avalonia.Controls.UnitTests.Utils
                     tl.ApplyTemplate();
                 })();
 
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 // The button should be collected since it's detached from the listbox
                 GC.Collect();
@@ -154,7 +157,10 @@ namespace Avalonia.Controls.UnitTests.Utils
                 
                 keyGestures.Clear();
                 lm.ExecuteLayoutPass();
-                
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 // The button should be collected since it's detached from the listbox
                 GC.Collect();
                 GC.WaitForPendingFinalizers();

@@ -67,6 +67,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<DataGrid>()).ObjectsCount));
             }
@@ -99,6 +102,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -141,6 +147,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
@@ -179,6 +188,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -215,6 +227,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -260,6 +275,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -351,6 +369,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
             }
@@ -383,6 +404,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
@@ -420,6 +444,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TabItem>()).ObjectsCount));
@@ -496,6 +523,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
@@ -536,8 +566,11 @@ namespace Avalonia.LeakTests
                     initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
                     initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
                 });
-                
+
                 AttachShowAndDetachContextMenu(window);
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
@@ -580,9 +613,12 @@ namespace Avalonia.LeakTests
                     initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
                     initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
                 });
-                
+
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
@@ -623,6 +659,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Path>()).ObjectsCount));
 
@@ -656,6 +695,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
@@ -724,6 +766,9 @@ namespace Avalonia.LeakTests
                 window.LayoutManager.ExecuteLayoutPass();
 
                 Assert.Empty(lb.ItemContainerGenerator.Containers);
+
+                // Process all Loaded events to free control reference
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
