@@ -3,7 +3,7 @@ using SkiaSharp;
 
 namespace Avalonia.Web.Blazor
 {
-    internal class BlazorSkiaSurface
+    internal class BlazorSkiaSurface : IBlazorSkiaSurface
     {
         public BlazorSkiaSurface(GRContext context, SKHtmlCanvasInterop.GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling, GRSurfaceOrigin origin)
         {
