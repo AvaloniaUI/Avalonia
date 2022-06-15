@@ -121,7 +121,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             throw new NotImplementedException();
         }
