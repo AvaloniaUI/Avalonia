@@ -218,24 +218,14 @@ namespace Avalonia.Media.TextFormatting
                         return Math.Max(0, (paragraphWidth - width) / 2);
 
                     case TextAlignment.Right:
-                        return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
+                        return flowDirection == FlowDirection.LeftToRight ? Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace) : 0;
 
-                    default:
-                        return 0;
+                    case TextAlignment.Left:
+                        return flowDirection == FlowDirection.LeftToRight ? 0 : Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
                 }
             }
-
-            switch (textAlignment)
-            {
-                case TextAlignment.Center:
-                    return Math.Max(0, (paragraphWidth - width) / 2);
-
-                case TextAlignment.Right:
-                    return 0;
-
-                default:
-                    return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
-            }
+   
+            return 0;
         }
     }
 }

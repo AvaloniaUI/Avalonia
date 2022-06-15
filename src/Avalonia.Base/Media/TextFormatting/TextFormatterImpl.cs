@@ -431,9 +431,9 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
-                    case DrawableTextRun drawableTextRun:
+                    default:
                         {
-                            textRuns.Add(drawableTextRun);
+                            textRuns.Add(textRun);
                             break;
                         }
                 }

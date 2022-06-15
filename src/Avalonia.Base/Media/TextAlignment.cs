@@ -19,5 +19,10 @@ namespace Avalonia.Media
         /// The text is right-aligned.
         /// </summary>
         Right,
+
+        /// <summary>
+        /// The text is layed out so each line is stretched to an equal width.
+        /// </summary>
+        Justify
     }
 }

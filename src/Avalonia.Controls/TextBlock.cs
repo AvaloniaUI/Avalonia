@@ -748,14 +748,14 @@ namespace Avalonia.Controls
             {
                 if (textSourceIndex > _text.Length)
                 {
-                    return null;
+                    return new TextEndOfParagraph();
                 }
 
                 var runText = _text.Skip(textSourceIndex);
 
                 if (runText.IsEmpty)
                 {
-                    return null;
+                    return new TextEndOfParagraph();
                 }
 
                 return new TextCharacters(runText, _defaultProperties);
