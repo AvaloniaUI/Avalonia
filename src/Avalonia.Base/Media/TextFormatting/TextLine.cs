@@ -15,7 +15,7 @@ namespace Avalonia.Media.TextFormatting
         /// The contained text runs.
         /// </value>
         public abstract IReadOnlyList<TextRun> TextRuns { get; }
-        
+
         public abstract int FirstTextSourceIndex { get; }
 
         public abstract int Length { get; }
@@ -75,7 +75,7 @@ namespace Avalonia.Media.TextFormatting
         /// The number of newline characters.
         /// </returns>
         public abstract int NewLineLength { get; }
-        
+
         /// <summary>
         /// Gets the distance that black pixels extend beyond the bottom alignment edge of a line.
         /// </summary>
@@ -192,40 +192,5 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textLength">number of characters of the specified range</param>
         /// <returns>an array of bounding rectangles.</returns>
         public abstract IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceCharacterIndex, int textLength);
-        
-        /// <summary>
-        /// Gets the text line offset x.
-        /// </summary>
-        /// <param name="width">The line width.</param>
-        /// <param name="widthIncludingTrailingWhitespace">The paragraph width including whitespace.</param>
-        /// <param name="paragraphWidth">The paragraph width.</param>
-        /// <param name="textAlignment">The text alignment.</param>
-        /// <param name="flowDirection">The flow direction of the line.</param>
-        /// <returns>The paragraph offset.</returns>
-        internal static double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace,
-            double paragraphWidth, TextAlignment textAlignment, FlowDirection flowDirection)
-        {
-            if (double.IsPositiveInfinity(paragraphWidth))
-            {
-                return 0;
-            }
-
-            if (flowDirection == FlowDirection.LeftToRight)
-            {
-                switch (textAlignment)
-                {
-                    case TextAlignment.Center:
-                        return Math.Max(0, (paragraphWidth - width) / 2);
-
-                    case TextAlignment.Right:
-                        return flowDirection == FlowDirection.LeftToRight ? Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace) : 0;
-
-                    case TextAlignment.Left:
-                        return flowDirection == FlowDirection.LeftToRight ? 0 : Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
-                }
-            }
-   
-            return 0;
-        }
     }
 }

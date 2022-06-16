@@ -21,7 +21,25 @@ namespace Avalonia.Media
         Right,
 
         /// <summary>
-        /// The text is layed out so each line is stretched to an equal width.
+        /// The beginning of the text is aligned to the edge of the available space.
+        /// </summary>
+        Start,
+
+        /// <summary>
+        /// The end of the text is aligned to the edge of the available space.
+        /// </summary>
+        End,
+
+        /// <summary>
+        /// Text alignment is inferred from the text content.
+        /// </summary>
+        /// <remarks>
+        /// When the TextAlignment property is set to DetectFromContent, alignment is inferred from the text content of the control. For example, English text is left aligned, and Arabic text is right aligned.
+        /// </remarks>
+        DetectFromContent,
+
+        /// <summary>
+        /// Text is justified within the available space.
         /// </summary>
         Justify
     }
