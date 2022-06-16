@@ -62,9 +62,8 @@ namespace Avalonia.Platform
         /// Created a geometry implementation for the glyph run.
         /// </summary>
         /// <param name="glyphRun">The glyph run to build a geometry from.</param>
-        /// <param name="scale">The scaling of the produces geometry.</param>
         /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
-        IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale);
+        IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun);
 
         /// <summary>
         /// Creates a renderer.
