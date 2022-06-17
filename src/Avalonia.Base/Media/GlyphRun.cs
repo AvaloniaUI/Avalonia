@@ -202,15 +202,9 @@ namespace Avalonia.Media
         {
             var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-            var geometryImpl = platformRenderInterface.BuildGlyphRunGeometry(this, out var scale);
+            var geometryImpl = platformRenderInterface.BuildGlyphRunGeometry(this);
 
-            var geometry = new PlatformGeometry(geometryImpl);
-
-            var transform = new MatrixTransform(Matrix.CreateTranslation(geometry.Bounds.Left, -geometry.Bounds.Top) * scale);
-
-            geometry.Transform = transform;
-
-            return geometry;
+            return new PlatformGeometry(geometryImpl);
         }
 
         /// <summary>
