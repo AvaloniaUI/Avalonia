@@ -404,6 +404,10 @@ namespace Avalonia.Media.TextFormatting
                 {
                     endOfLine = textEndOfLine;
 
+                    textSourceLength += textEndOfLine.TextSourceLength;
+
+                    textRuns.Add(textRun);
+
                     break;
                 }
 
