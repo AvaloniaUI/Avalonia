@@ -70,7 +70,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -106,7 +106,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -150,7 +150,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -191,7 +191,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -231,7 +231,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -279,7 +279,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -372,7 +372,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -408,7 +408,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -448,7 +448,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -526,7 +526,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -572,7 +572,7 @@ namespace Avalonia.LeakTests
 
                 AttachShowAndDetachContextMenu(window);
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
@@ -620,7 +620,7 @@ namespace Avalonia.LeakTests
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
@@ -662,7 +662,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -699,7 +699,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -770,7 +770,7 @@ namespace Avalonia.LeakTests
 
                 Assert.Empty(lb.ItemContainerGenerator.Containers);
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -809,7 +809,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
@@ -869,7 +869,7 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
-                // Process all Loaded events to free control reference
+                // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>

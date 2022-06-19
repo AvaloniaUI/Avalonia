@@ -91,9 +91,20 @@ namespace Avalonia.Controls
                 nameof(FlowDirection),
                 inherits: true);
 
-        private static bool _isLoadedProcessingRequested = false;
-        private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
+        // Note the following:
+        // _loadedQueue :
+        //   Is the queue where any control will be added to indicate that its loaded
+        //   event should be scheduled and called later.
+        // _loadedProcessingQueue :
+        //   Contains a copied snapshot of the _loadedQueue at the time when processing
+        //   starts and individual events are being fired. This was needed to avoid
+        //   exceptions if new controls were added in the Loaded event itself.
 
+        private static bool _isLoadedProcessing = false;
+        private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
+        private static readonly HashSet<Control> _loadedProcessingQueue = new HashSet<Control>();
+
+        private bool _isAttachedToVisualTree = false;
         private bool _isLoaded = false;
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
@@ -281,12 +292,55 @@ namespace Avalonia.Controls
         protected virtual IControl? GetTemplateFocusTarget() => this;
 
         /// <summary>
+        /// Schedules <see cref="OnLoadedCore"/> to be called for this control.
+        /// For performance, it will be queued with other controls.
+        /// </summary>
+        internal void ScheduleOnLoadedCore()
+        {
+            // Note: This code is not multi-threaded ready and assumes to run only on the UIThread
+            if (_isLoaded == false)
+            {
+                bool isAdded = _loadedQueue.Add(this);
+
+                if (isAdded)
+                {
+                    _isLoadedProcessing = true;
+
+                    Dispatcher.UIThread.Post(static () =>
+                    {
+                        // Copy the loaded queue for processing
+                        // There was a possibility of the "Collection was modified; enumeration operation may not execute."
+                        // exception when only a single hash set was used. This could happen when new controls are added
+                        // within the Loaded callback/event itself. To fix this, two hash sets are used and while one is
+                        // being processed the other accepts adding new controls to process next.
+                        _loadedProcessingQueue.Clear();
+                        foreach (Control control in _loadedQueue)
+                        {
+                            _loadedProcessingQueue.Add(control);
+                        }
+                        _loadedQueue.Clear();
+
+                        foreach (Control control in _loadedProcessingQueue)
+                        {
+                            control.OnLoadedCore();
+                        }
+
+                        _loadedProcessingQueue.Clear();
+                        _isLoadedProcessing = false;
+                    },
+                    DispatcherPriority.Loaded);
+                }
+            }
+        }
+
+        /// <summary>
         /// Invoked as the first step of marking the control as loaded and raising the
         /// <see cref="Loaded"/> event.
         /// </summary>
         internal void OnLoadedCore()
         {
-            if (_isLoaded == false)
+            if (_isLoaded == false &&
+                _isAttachedToVisualTree)
             {
                 _isLoaded = true;
                 OnLoaded();
@@ -303,10 +357,7 @@ namespace Avalonia.Controls
             {
                 // Remove from the loaded event queue here as a failsafe in case the control
                 // is detached before the dispatcher runs the Loaded jobs.
-                lock (_loadedQueue)
-                {
-                    _loadedQueue.Remove(this);
-                }
+                _loadedQueue.Remove(this);
 
                 _isLoaded = false;
                 OnUnloaded();
@@ -337,50 +388,18 @@ namespace Avalonia.Controls
         protected sealed override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTreeCore(e);
+            _isAttachedToVisualTree = true;
 
             InitializeIfNeeded();
 
-            // Note: This code is not multi-threaded ready and assumes to run only on the UIThread
-            if (_isLoaded == false)
-            {
-                bool isAdded = false;
-
-                lock (_loadedQueue)
-                {
-                    isAdded = _loadedQueue.Add(this);
-                }
-
-                if (isAdded &&
-                    _isLoadedProcessingRequested == false)
-                {
-                    _isLoadedProcessingRequested = true;
-
-                    Dispatcher.UIThread.Post(static () =>
-                    {
-                        // Lock is required here since there is a possibility of the
-                        // "Collection was modified; enumeration operation may not execute." exception.
-                        // This may happen when new controls are added within the Loaded callback/event.
-                        lock (_loadedQueue)
-                        {
-                            foreach (var item in _loadedQueue)
-                            {
-                                item?.OnLoadedCore();
-                            }
-
-                            _loadedQueue.Clear();
-                        }
-
-                        _isLoadedProcessingRequested = false;
-                    },
-                    DispatcherPriority.Loaded);
-                }
-            }
+            ScheduleOnLoadedCore();
         }
 
         /// <inheritdoc/>
         protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTreeCore(e);
+            _isAttachedToVisualTree = false;
 
             OnUnloadedCore();
         }

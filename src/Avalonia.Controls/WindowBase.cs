@@ -200,7 +200,7 @@ namespace Avalonia.Controls
         {
             // Window must manually raise Loaded/Unloaded events as it is a visual root and
             // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
-            OnLoadedCore();
+            ScheduleOnLoadedCore();
 
             base.OnOpened(e);
         }
