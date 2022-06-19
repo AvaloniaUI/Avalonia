@@ -23,24 +23,26 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [Fact]
         public async Task Should_Render_GlyphRun_Geometry()
         {
-            Decorator target = new Decorator
+            var control = new GlyphRunGeometryControl
             {
-                Padding = new Thickness(8),
-                Width = 200,
-                Height = 100,
-                Child = new GlyphRunGeometryControl
+                [TextElement.ForegroundProperty] = new LinearGradientBrush
                 {
-                    [TextElement.ForegroundProperty] = new LinearGradientBrush
-                    {
-                        StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
-                        EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
-                        GradientStops =
+                    StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
+                    EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
+                    GradientStops =
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
                         }
-                    }
                 }
+            };
+
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 190,
+                Height = 120,
+                Child = control
             };
 
             await RenderToFile(target);
@@ -50,8 +52,6 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         public class GlyphRunGeometryControl : Control
         {
-            private readonly Geometry _geometry;
-
             public GlyphRunGeometryControl()
             {
                 var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
@@ -62,19 +62,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
                 var glyphRun = new GlyphRun(glyphTypeface, 100, characters, glyphIndices);
 
-                _geometry = glyphRun.BuildGeometry();
+                Geometry = glyphRun.BuildGeometry();
             }
 
-            protected override Size MeasureOverride(Size availableSize)
-            {
-                return _geometry.Bounds.Size;
-            }
+           public Geometry Geometry { get; }
 
             public override void Render(DrawingContext context)
             {
                 var foreground = TextElement.GetForeground(this);
 
-                context.DrawGeometry(foreground, null, _geometry);
+                context.DrawGeometry(foreground, null, Geometry);
             }
         }
     }

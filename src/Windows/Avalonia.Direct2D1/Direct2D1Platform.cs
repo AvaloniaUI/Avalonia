@@ -13,6 +13,7 @@ using Avalonia.Media.Imaging;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
 using TextAlignment = Avalonia.Media.TextAlignment;
+using SharpDX.Mathematics.Interop;
 
 namespace Avalonia
 {
@@ -159,7 +160,7 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             if (glyphRun.GlyphTypeface.PlatformImpl is not GlyphTypefaceImpl glyphTypeface)
             {
@@ -182,10 +183,23 @@ namespace Avalonia.Direct2D1
                 sink.Close();
             }
 
-            scale = Matrix.Identity;
+            var (baselineOriginX, baselineOriginY) = glyphRun.BaselineOrigin;
 
-            return new StreamGeometryImpl(pathGeometry);
-        }      
+            var transformedGeometry = new SharpDX.Direct2D1.TransformedGeometry(
+                Direct2D1Factory,
+                pathGeometry,
+                new RawMatrix3x2(1.0f, 0.0f, 0.0f, 1.0f, (float)baselineOriginX, (float)baselineOriginY));
+
+            return new TransformedGeometryWrapper(transformedGeometry);
+        }
+
+        private class TransformedGeometryWrapper : GeometryImpl
+        {
+            public TransformedGeometryWrapper(SharpDX.Direct2D1.TransformedGeometry geometry) : base(geometry)
+            {
+
+            }
+        }
 
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)

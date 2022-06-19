@@ -117,7 +117,7 @@ namespace Avalonia.Benchmarks
             return new NullGlyphRun();
         }
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             throw new NotImplementedException();
         }
