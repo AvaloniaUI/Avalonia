@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
+    [Unstable]
     public class ScreenImpl : IScreenImpl
     {
         public int ScreenCount
@@ -69,6 +72,44 @@ namespace Avalonia.Win32
         public void InvalidateScreensCache()
         {
             _allScreens = null;
+        }
+
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            var handle = window.Handle.Handle;
+
+            var monitor = MonitorFromWindow(handle, MONITOR.MONITOR_DEFAULTTONULL);
+
+            return FindScreenByHandle(monitor);
+        }
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            var monitor = MonitorFromPoint(new POINT
+            {
+                X = point.X,
+                Y = point.Y
+            }, MONITOR.MONITOR_DEFAULTTONULL);
+
+            return FindScreenByHandle(monitor);
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            var monitor = MonitorFromRect(new RECT
+            {
+                left = rect.TopLeft.X,
+                top = rect.TopLeft.Y,
+                right = rect.TopRight.X,
+                bottom = rect.BottomRight.Y
+            }, MONITOR.MONITOR_DEFAULTTONULL);
+
+            return FindScreenByHandle(monitor);
+        }
+
+        private Screen FindScreenByHandle(IntPtr handle)
+        {
+            return AllScreens.Cast<WinScreen>().FirstOrDefault(m => m.Handle == handle);
         }
     }
 }

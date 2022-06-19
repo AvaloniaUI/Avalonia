@@ -66,6 +66,8 @@ namespace Avalonia.Controls
             set { SetValue(StretchDirectionProperty, value); }
         }
 
+        protected override bool BypassFlowDirectionPolicies => true;
+        
         /// <summary>
         /// Renders the control.
         /// </summary>

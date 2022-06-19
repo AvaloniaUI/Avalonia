@@ -13,7 +13,7 @@
                                   CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
                                   Content="{TemplateBinding Content}"
                                   Extent="{TemplateBinding Extent, Mode=TwoWay}"
-                                  Margin="{TemplateBinding Padding}"
+                                  Padding="{TemplateBinding Padding}"
                                   Offset="{TemplateBinding Offset, Mode=TwoWay}"
                                   Viewport="{TemplateBinding Viewport, Mode=TwoWay}"
                                   IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">

@@ -107,7 +107,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushPointerOver}" />
   </Style>
   <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeViewItemForegroundPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundPointerOver}" />
   </Style>
 
   <!--  Pressed state  -->
@@ -116,7 +116,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushPressed}" />
   </Style>
   <Style Selector="TreeViewItem:pressed /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeViewItemForegroundPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundPressed}" />
   </Style>
 
   <!--  Disabled state  -->
@@ -125,7 +125,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushDisabled}" />
   </Style>
   <Style Selector="TreeViewItem:disabled /template/ Border#PART_LayoutRoot > ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeViewItemForegroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundDisabled}" />
   </Style>
 
   <!--  Selected state  -->
@@ -134,7 +134,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushSelected}" />
   </Style>
   <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot > ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeViewItemForegroundSelected}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelected}" />
   </Style>
 
   <!--  Selected PointerOver state  -->
@@ -143,7 +143,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushSelectedPointerOver}" />
   </Style>
   <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPointerOver}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPointerOver}" />
   </Style>
 
   <!--  Selected Pressed state  -->
@@ -152,7 +152,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushSelectedPressed}" />
   </Style>
   <Style Selector="TreeViewItem:pressed:selected /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPressed}" />
   </Style>
 
   <!--  Disabled Selected state  -->
@@ -161,7 +161,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushSelectedDisabled}" />
   </Style>
   <Style Selector="TreeViewItem:disabled:selected /template/ Border#PART_LayoutRoot > ContentPresenter#PART_HeaderPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedDisabled}" />
   </Style>
 
   <!--  ExpandCollapseChevron Group states  -->

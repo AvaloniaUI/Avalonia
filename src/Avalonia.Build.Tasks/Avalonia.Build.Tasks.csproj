@@ -62,31 +62,40 @@
       <Compile Include="../Avalonia.Base/Utilities/StyleClassParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Thickness.cs">
+      <Compile Include="../Avalonia.Base/Thickness.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Size.cs">
+      <Compile Include="../Avalonia.Base/Size.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Vector.cs">
+      <Compile Include="../Avalonia.Base/Vector.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Point.cs">
+      <Compile Include="../Avalonia.Base/Point.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Matrix.cs">
+      <Compile Include="../Avalonia.Base/Matrix.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/CornerRadius.cs">
+      <Compile Include="../Avalonia.Base/CornerRadius.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Media/Color.cs">
+      <Compile Include="../Avalonia.Base/Media/Color.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Avalonia.Visuals/Media/KnownColors.cs">
+      <Compile Include="../Avalonia.Base/Media/HslColor.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/Media/HsvColor.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/Media/KnownColors.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Avalonia.Controls/GridLength.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/RelativePoint.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
@@ -94,5 +103,6 @@
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.2" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
+      <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     </ItemGroup>
 </Project>

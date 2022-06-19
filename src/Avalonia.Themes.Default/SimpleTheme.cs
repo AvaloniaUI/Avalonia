@@ -44,7 +44,7 @@ namespace Avalonia.Themes.Default
             InitStyles(_baseUri);
         }
 
-        public event EventHandler OwnerChanged
+        public event EventHandler? OwnerChanged
         {
             add
             {
@@ -116,7 +116,7 @@ namespace Avalonia.Themes.Default
             return false;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             if (change.Property == ModeProperty)

@@ -206,7 +206,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -216,15 +216,15 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsVisibleProperty)
             {
-                _impl?.SetIsVisible(change.NewValue.GetValueOrDefault<bool>());
+                _impl?.SetIsVisible(change.GetNewValue<bool>());
             }
             else if (change.Property == ToolTipTextProperty)
             {
-                _impl?.SetToolTipText(change.NewValue.GetValueOrDefault<string?>());
+                _impl?.SetToolTipText(change.GetNewValue<string?>());
             }
             else if (change.Property == MenuProperty)
             {
-                _impl?.MenuExporter?.SetNativeMenu(change.NewValue.GetValueOrDefault<NativeMenu>());
+                _impl?.MenuExporter?.SetNativeMenu(change.GetNewValue<NativeMenu?>());
             }
         }
 

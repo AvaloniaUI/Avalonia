@@ -13,12 +13,14 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A drop-down list control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
     public class ComboBox : SelectingItemsControl
     {
         /// <summary>
@@ -180,6 +182,25 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             this.UpdateSelectionBoxItem(SelectedItem);
+        }
+
+        // Because the SelectedItem isn't connected to the visual tree
+        public override void InvalidateMirrorTransform()
+        {
+            base.InvalidateMirrorTransform();
+
+            if (SelectedItem is Control selectedControl)
+            {
+                selectedControl.InvalidateMirrorTransform();
+
+                foreach (var visual in selectedControl.GetVisualDescendants())
+                {
+                    if (visual is Control childControl)
+                    {
+                        childControl.InvalidateMirrorTransform();
+                    }
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -432,42 +453,18 @@ namespace Avalonia.Controls
 
         private void SelectNext()
         {
-            int next = SelectedIndex + 1;
-
-            if (next >= ItemCount)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
-                {
-                    next = 0;
-                }
-                else
-                {
-                    return;
-                }
+                MoveSelection(NavigationDirection.Next, WrapSelection);
             }
-
-
-
-            SelectedIndex = next;
         }
 
         private void SelectPrev()
         {
-            int prev = SelectedIndex - 1;
-
-            if (prev < 0)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
-                {
-                    prev = ItemCount - 1;
-                }
-                else
-                {
-                    return;
-                }
+                MoveSelection(NavigationDirection.Previous, WrapSelection);
             }
-
-            SelectedIndex = prev;
         }
     }
 }

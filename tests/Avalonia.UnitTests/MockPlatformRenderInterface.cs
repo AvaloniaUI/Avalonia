@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Moq;
 
 namespace Avalonia.UnitTests
@@ -120,6 +120,13 @@ namespace Avalonia.UnitTests
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             return Mock.Of<IGlyphRunImpl>();
+        }
+
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        {
+            scale = Matrix.Identity;
+
+            return Mock.Of<IGeometryImpl>();
         }
 
         public bool SupportsIndividualRoundRects { get; set; }

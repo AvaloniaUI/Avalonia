@@ -1,8 +1,10 @@
+using System;
 using Avalonia.Collections;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -69,6 +71,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Border, PenLineJoin>(nameof(BorderLineJoin), PenLineJoin.Miter);
 
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
+        private Thickness? _layoutThickness;
+        private double _scale;
 
         /// <summary>
         /// Initializes static members of the <see cref="Border"/> class.
@@ -86,6 +90,18 @@ namespace Avalonia.Controls
                 BorderDashOffsetProperty,
                 BoxShadowProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            switch (change.Property.Name)
+            {
+                case nameof(UseLayoutRounding):
+                case nameof(BorderThickness):
+                    _layoutThickness = null;
+                    break;
+            }
         }
 
         /// <summary>
@@ -169,13 +185,43 @@ namespace Avalonia.Controls
             set => SetValue(BoxShadowProperty, value);
         }
 
+        private Thickness LayoutThickness
+        {
+            get
+            {
+                VerifyScale();
+
+                if (_layoutThickness == null)
+                {
+                    var borderThickness = BorderThickness;
+
+                    if (UseLayoutRounding)
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+
+                    _layoutThickness = borderThickness;
+                }
+
+                return _layoutThickness.Value;
+            }
+        }
+
+        private void VerifyScale()
+        {
+            var currentScale = LayoutHelper.GetLayoutScale(this);
+            if (MathUtilities.AreClose(currentScale, _scale))
+                return;
+
+            _scale = currentScale;
+            _layoutThickness = null;
+        }
+
         /// <summary>
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+            _borderRenderHelper.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow, BorderDashOffset, BorderLineCap, BorderLineJoin, BorderDashArray);
         }
 

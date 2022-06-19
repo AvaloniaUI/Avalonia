@@ -42,6 +42,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that lets the user select from a range of values by moving a Thumb control along a Track.
     /// </summary>
+    [TemplatePart("PART_DecreaseButton", typeof(Button))]
+    [TemplatePart("PART_IncreaseButton", typeof(Button))]
+    [TemplatePart("PART_Track",          typeof(Track))]
     [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {
@@ -73,7 +76,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TickPlacement"/> property.
         /// </summary>
         public static readonly StyledProperty<TickPlacement> TickPlacementProperty =
-            AvaloniaProperty.Register<TickBar, TickPlacement>(nameof(TickPlacement), 0d);
+            AvaloniaProperty.Register<Slider, TickPlacement>(nameof(TickPlacement), 0d);
 
         /// <summary>
         /// Defines the <see cref="TicksProperty"/> property.
@@ -194,7 +197,7 @@ namespace Avalonia.Controls
 
             if (_track != null)
             {
-                _track.IsThumbDragHandled = true;
+                _track.IgnoreThumbDrag = true;
             }
 
             if (_decreaseButton != null)
@@ -358,21 +361,24 @@ namespace Avalonia.Controls
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == ValueProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
         }
 

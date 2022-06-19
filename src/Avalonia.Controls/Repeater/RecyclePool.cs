@@ -80,8 +80,8 @@ namespace Avalonia.Controls
             return null;
         }
 
-        internal string GetReuseKey(IControl element) => element.GetValue(ReuseKeyProperty);
-        internal void SetReuseKey(IControl element, string value) => element.SetValue(ReuseKeyProperty, value);
+        internal string GetReuseKey(IControl element) => ((Control)element).GetValue(ReuseKeyProperty);
+        internal void SetReuseKey(IControl element, string value) => ((Control)element).SetValue(ReuseKeyProperty, value);
 
         private IPanel? EnsureOwnerIsPanelOrNull(IControl? owner)
         {

@@ -49,6 +49,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
                     else if (child is XamlPropertyAssignmentNode pa)
                     {
+                        var templateDataTypeAttribute = context.GetAvaloniaTypes().DataTypeAttribute;
+                        
                         if (pa.Property.Name == "DataContext"
                             && pa.Property.DeclaringType.Equals(context.GetAvaloniaTypes().StyledElement)
                             && pa.Values[0] is XamlMarkupExtensionNode ext
@@ -56,8 +58,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         {
                             inferredDataContextTypeNode = ParseDataContext(context, on, obj);
                         }
-                        else if(context.GetAvaloniaTypes().DataTemplate.IsAssignableFrom(on.Type.GetClrType())
-                            && pa.Property.Name == "DataType"
+                        else if(pa.Property.CustomAttributes.Any(a => a.Type == templateDataTypeAttribute)
                             && pa.Values[0] is XamlTypeExtensionNode dataTypeNode)
                         {
                             inferredDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on, dataTypeNode.Value.GetClrType());

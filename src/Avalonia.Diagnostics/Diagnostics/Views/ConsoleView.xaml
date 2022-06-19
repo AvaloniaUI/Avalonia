@@ -11,7 +11,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}">
             <DockPanel Margin="{TemplateBinding Padding}">
-              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0">></TextBlock>
+              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0"></TextBlock>
               <TextPresenter Name="PART_TextPresenter"
                              Text="{TemplateBinding Text, Mode=TwoWay}"
                              CaretIndex="{TemplateBinding CaretIndex}"
@@ -44,7 +44,7 @@
         <DataTemplate>
           <StackPanel Orientation="Vertical">
             <DockPanel>
-              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0">></TextBlock>
+              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0"></TextBlock>
               <TextBlock Text="{Binding Input}"/>
             </DockPanel>
             <TextBlock Foreground="{Binding Foreground}" Text="{Binding Output}"/>

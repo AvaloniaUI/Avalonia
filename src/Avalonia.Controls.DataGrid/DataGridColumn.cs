@@ -192,14 +192,14 @@ namespace Avalonia.Controls
             set => SetValue(IsVisibleProperty, value);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == IsVisibleProperty)
             {
                 OwningGrid?.OnColumnVisibleStateChanging(this);
-                var isVisible = (change as AvaloniaPropertyChangedEventArgs<bool>).NewValue.Value;
+                var isVisible = change.GetNewValue<bool>();
 
                 if (_headerCell != null)
                 {

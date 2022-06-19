@@ -4,7 +4,7 @@ using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Benchmarks
 {
@@ -115,6 +115,11 @@ namespace Avalonia.Benchmarks
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             return new NullGlyphRun();
+        }
+
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        {
+            throw new NotImplementedException();
         }
 
         public bool SupportsIndividualRoundRects => true;

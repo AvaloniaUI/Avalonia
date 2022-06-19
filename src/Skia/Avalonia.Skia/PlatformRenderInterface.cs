@@ -10,7 +10,7 @@ using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -35,6 +35,9 @@ namespace Avalonia.Skia
             var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
             if (gl != null) 
                 _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
+
+            //TODO: SKFont crashes when disposed in finalizer so we keep it alive
+            GC.SuppressFinalize(s_font);
         }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
@@ -57,6 +60,41 @@ namespace Avalonia.Skia
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
         {
             return new CombinedGeometryImpl(combineMode, g1, g2);
+        }
+
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        {
+            if (glyphRun.GlyphTypeface.PlatformImpl is not GlyphTypefaceImpl glyphTypeface)
+            {
+                throw new InvalidOperationException("PlatformImpl can't be null.");
+            }
+
+            var fontRenderingEmSize = (float)glyphRun.FontRenderingEmSize;
+            var skFont = new SKFont(glyphTypeface.Typeface, fontRenderingEmSize)
+            {
+                Size = fontRenderingEmSize,
+                Edging = SKFontEdging.Antialias,
+                Hinting = SKFontHinting.None,
+                LinearMetrics = true
+            };
+
+            SKPath path = new SKPath();
+            var matrix = SKMatrix.Identity;
+
+            var currentX = 0f;
+
+            foreach (var glyph in glyphRun.GlyphIndices)
+            {
+                var p = skFont.GetGlyphPath(glyph);
+
+                path.AddPath(p, currentX, 0);
+
+                currentX += p.Bounds.Right;
+            }
+
+            scale = Matrix.CreateScale(matrix.ScaleX, matrix.ScaleY);
+
+            return new StreamGeometryImpl(path);
         }
 
         /// <inheritdoc />

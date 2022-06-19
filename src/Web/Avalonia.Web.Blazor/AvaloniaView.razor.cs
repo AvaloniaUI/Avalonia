@@ -1,5 +1,6 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
@@ -18,14 +19,16 @@ namespace Avalonia.Web.Blazor
         private EmbeddableControlRoot _topLevel;
 
         // Interop
-        private SKHtmlCanvasInterop _interop = null!;
-        private SizeWatcherInterop _sizeWatcher = null!;
-        private DpiWatcherInterop _dpiWatcher = null!;
-        private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null!;
-        private InputHelperInterop _inputHelper = null!;
-        private InputHelperInterop _canvasHelper = null!;
+        private SKHtmlCanvasInterop? _interop = null;
+        private SizeWatcherInterop? _sizeWatcher = null;
+        private DpiWatcherInterop? _dpiWatcher = null;
+        private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null;
+        private InputHelperInterop? _inputHelper = null;
+        private InputHelperInterop? _canvasHelper = null;
+        private NativeControlHostInterop? _nativeControlHost = null;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
+        private ElementReference _nativeControlsContainer;
         private double _dpi = 1;
         private SKSize _canvasSize = new (100, 100);
 
@@ -49,89 +52,91 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        private void OnTouchStart(TouchEventArgs e)
+        internal INativeControlHostImpl GetNativeControlHostImpl()
         {
-            foreach (var touch in e.ChangedTouches)
+            return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
+        }
+        
+        private void OnPointerCancel(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
+        {
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
             }
         }
 
-        private void OnTouchEnd(TouchEventArgs e)
+        private void OnPointerMove(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
+            }
+            else
+            {
+                _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
         }
 
-        private void OnTouchCancel(TouchEventArgs e)
+        private void OnPointerUp(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
+            }
+            else
+            {
+                RawPointerEventType type = default;
+
+                switch (e.Button)
+                {
+                    case 0:
+                        type = RawPointerEventType.LeftButtonUp;
+                        break;
+
+                    case 1:
+                        type = RawPointerEventType.MiddleButtonUp;
+                        break;
+
+                    case 2:
+                        type = RawPointerEventType.RightButtonUp;
+                        break;
+                }
+
+                _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
         }
 
-        private void OnTouchMove(TouchEventArgs e)
+        private void OnPointerDown(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
             }
-        }
-
-        private void OnMouseMove(MouseEventArgs e)
-        {
-            _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
-        }
-
-        private void OnMouseUp(MouseEventArgs e)
-        {
-            RawPointerEventType type = default;
-
-            switch (e.Button)
+            else
             {
-                case 0:
-                    type = RawPointerEventType.LeftButtonUp;
-                    break;
+                RawPointerEventType type = default;
 
-                case 1:
-                    type = RawPointerEventType.MiddleButtonUp;
-                    break;
+                switch (e.Button)
+                {
+                    case 0:
+                        type = RawPointerEventType.LeftButtonDown;
+                        break;
 
-                case 2:
-                    type = RawPointerEventType.RightButtonUp;
-                    break;
+                    case 1:
+                        type = RawPointerEventType.MiddleButtonDown;
+                        break;
+
+                    case 2:
+                        type = RawPointerEventType.RightButtonDown;
+                        break;
+                }
+
+                _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
-
-            _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
-        }
-
-        private void OnMouseDown(MouseEventArgs e)
-        {
-            RawPointerEventType type = default;
-
-            switch (e.Button)
-            {
-                case 0:
-                    type = RawPointerEventType.LeftButtonDown;
-                    break;
-
-                case 1:
-                    type = RawPointerEventType.MiddleButtonDown;
-                    break;
-
-                case 2:
-                    type = RawPointerEventType.RightButtonDown;
-                    break;
-            }
-
-            _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
         }
 
         private void OnWheel(WheelEventArgs e)
@@ -165,23 +170,7 @@ namespace Avalonia.Web.Blazor
             return modifiers;
         }
 
-        private static RawInputModifiers GetModifiers(TouchEventArgs e)
-        {
-            var modifiers = RawInputModifiers.None;
-
-            if (e.CtrlKey)
-                modifiers |= RawInputModifiers.Control;
-            if (e.AltKey)
-                modifiers |= RawInputModifiers.Alt;
-            if (e.ShiftKey)
-                modifiers |= RawInputModifiers.Shift;
-            if (e.MetaKey)
-                modifiers |= RawInputModifiers.Meta;
-
-            return modifiers;
-        }
-
-        private static RawInputModifiers GetModifiers(MouseEventArgs e)
+        private static RawInputModifiers GetModifiers(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
             var modifiers = RawInputModifiers.None;
 
@@ -224,12 +213,12 @@ namespace Avalonia.Web.Blazor
 
         private void OnKeyDown(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnKeyUp(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnInput(ChangeEventArgs e)
@@ -243,7 +232,7 @@ namespace Avalonia.Web.Blazor
                 }
             }
 
-            _inputHelper.Clear();
+            _inputHelper?.Clear();
         }
 
         [Parameter(CaptureUnmatchedValues = true)]
@@ -253,6 +242,8 @@ namespace Avalonia.Web.Blazor
         {
             if (firstRender)
             {
+                AvaloniaLocator.CurrentMutable.Bind<IJSInProcessRuntime>().ToConstant((IJSInProcessRuntime)Js);
+
                 _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
                 _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
 
@@ -263,6 +254,8 @@ namespace Avalonia.Web.Blazor
                     _inputHelper.SetCursor(x); //macOS
                     _canvasHelper.SetCursor(x); //windows
                 };
+
+                _nativeControlHost = await NativeControlHostInterop.ImportAsync(Js, _nativeControlsContainer);
 
                 Console.WriteLine("starting html canvas setup");
                 _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
@@ -319,9 +312,9 @@ namespace Avalonia.Web.Blazor
 
         public void Dispose()
         {
-            _dpiWatcher.Unsubscribe(OnDpiChanged);
-            _sizeWatcher.Dispose();
-            _interop.Dispose();
+            _dpiWatcher?.Unsubscribe(OnDpiChanged);
+            _sizeWatcher?.Dispose();
+            _interop?.Dispose();
         }
 
         private void ForceBlit()
@@ -345,7 +338,7 @@ namespace Avalonia.Web.Blazor
             {
                 _dpi = newDpi;
 
-                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                _interop!.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -359,7 +352,7 @@ namespace Avalonia.Web.Blazor
             {
                 _canvasSize = newSize;
 
-                _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                _interop!.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -367,10 +360,17 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        public void SetActive(bool active)
+        public void SetClient(ITextInputMethodClient? client)
         {
+            if (_inputHelper is null)
+            {
+                return;
+            }
+
             _inputHelper.Clear();
 
+            var active = client is { };
+            
             if (active)
             {
                 _inputHelper.Show();
@@ -386,13 +386,13 @@ namespace Avalonia.Web.Blazor
         {
         }
 
-        public void SetOptions(TextInputOptionsQueryEventArgs options)
+        public void SetOptions(TextInputOptions options)
         {
         }
 
         public void Reset()
         {
-            _inputHelper.Clear();
+            _inputHelper?.Clear();
         }
     }
 }

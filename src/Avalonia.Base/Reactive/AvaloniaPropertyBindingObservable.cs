@@ -51,7 +51,7 @@ namespace Avalonia.Reactive
             {
                 if (e is AvaloniaPropertyChangedEventArgs<T> typedArgs)
                 {
-                    var newValue = e.Sender.GetValue(typedArgs.Property);
+                    var newValue = e.Sender.GetValue<T>(typedArgs.Property);
 
                     if (!_value.HasValue || !EqualityComparer<T>.Default.Equals(newValue, _value.Value))
                     {

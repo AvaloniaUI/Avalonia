@@ -7,7 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Headless
 {
@@ -112,6 +112,13 @@ namespace Avalonia.Headless
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             return new HeadlessGlyphRunStub();
+        }
+
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        {
+            scale = Matrix.Identity;
+
+            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
         }
 
         class HeadlessGeometryStub : IGeometryImpl

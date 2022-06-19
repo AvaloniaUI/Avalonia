@@ -18,9 +18,9 @@ namespace ControlCatalog
         {
             AvaloniaXamlLoader.Load(this);
 
-            var sideBar = this.FindControl<TabControl>("Sidebar");
+            var sideBar = this.Get<TabControl>("Sidebar");
 
-            if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
+            if (AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo().IsDesktop == true)
             {
                 IList tabItems = ((IList)sideBar.Items);
                 tabItems.Add(new TabItem()
@@ -36,7 +36,7 @@ namespace ControlCatalog
 
             }
 
-            var themes = this.Find<ComboBox>("Themes");
+            var themes = this.Get<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
                 if (themes.SelectedItem is CatalogTheme theme)
@@ -49,7 +49,8 @@ namespace ControlCatalog
                             App.Fluent.Mode = FluentThemeMode.Light;
                         }
                         Application.Current.Styles[0] = App.Fluent;
-                        Application.Current.Styles[1] = App.DataGridFluent;
+                        Application.Current.Styles[1] = App.ColorPickerFluent;
+                        Application.Current.Styles[2] = App.DataGridFluent;
                     }
                     else if (theme == CatalogTheme.FluentDark)
                     {
@@ -59,24 +60,36 @@ namespace ControlCatalog
                             App.Fluent.Mode = FluentThemeMode.Dark;
                         }
                         Application.Current.Styles[0] = App.Fluent;
-                        Application.Current.Styles[1] = App.DataGridFluent;
+                        Application.Current.Styles[1] = App.ColorPickerFluent;
+                        Application.Current.Styles[2] = App.DataGridFluent;
                     }
                     else if (theme == CatalogTheme.DefaultLight)
                     {
                         App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Light;
                         Application.Current.Styles[0] = App.DefaultLight;
-                        Application.Current.Styles[1] = App.DataGridDefault;
+                        Application.Current.Styles[1] = App.ColorPickerDefault;
+                        Application.Current.Styles[2] = App.DataGridDefault;
                     }
                     else if (theme == CatalogTheme.DefaultDark)
                     {
                         App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Dark;
                         Application.Current.Styles[0] = App.DefaultDark;
-                        Application.Current.Styles[1] = App.DataGridDefault;
+                        Application.Current.Styles[1] = App.ColorPickerDefault;
+                        Application.Current.Styles[2] = App.DataGridDefault;
                     }
                 }
             };
 
-            var decorations = this.Find<ComboBox>("Decorations");
+            var flowDirections = this.Get<ComboBox>("FlowDirection");
+            flowDirections.SelectionChanged += (sender, e) =>
+            {
+                if (flowDirections.SelectedItem is FlowDirection flowDirection)
+                {
+                    this.FlowDirection = flowDirection;
+                }
+            };
+
+            var decorations = this.Get<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {
                 if (VisualRoot is Window window
@@ -86,8 +99,8 @@ namespace ControlCatalog
                 }
             };
 
-            var transparencyLevels = this.Find<ComboBox>("TransparencyLevels");
-            IDisposable backgroundSetter = null, paneBackgroundSetter = null;
+            var transparencyLevels = this.Get<ComboBox>("TransparencyLevels");
+            IDisposable? backgroundSetter = null, paneBackgroundSetter = null;
             transparencyLevels.SelectionChanged += (sender, e) =>
             {
                 backgroundSetter?.Dispose();
@@ -105,7 +118,7 @@ namespace ControlCatalog
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            var decorations = this.Find<ComboBox>("Decorations");
+            var decorations = this.Get<ComboBox>("Decorations");
             if (VisualRoot is Window window)
                 decorations.SelectedIndex = (int)window.SystemDecorations;
         }

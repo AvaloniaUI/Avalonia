@@ -865,6 +865,35 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Should_Fullfill_MaxLines_Contraint()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABC",
+                    MaxLines = 1,
+                    AcceptsReturn= true
+                };
+
+                target.Measure(Size.Infinity);
+
+                AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
+
+                var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                clipboard.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
+
+                RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
+                clipboard.ClearAsync().GetAwaiter().GetResult();
+
+                RaiseTextEvent(target, Environment.NewLine);
+
+                Assert.Equal("ABC", target.Text);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),

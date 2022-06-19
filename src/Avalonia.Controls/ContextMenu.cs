@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlacementRect"/> property.
         /// </summary>
         public static readonly StyledProperty<Rect?> PlacementRectProperty =
-            AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
+            Popup.PlacementRectProperty.AddOwner<ContextMenu>();
 
         /// <summary>
         /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
@@ -241,13 +241,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == WindowManagerAddShadowHintProperty && _popup != null)
             {
-                _popup.WindowManagerAddShadowHint = change.NewValue.GetValueOrDefault<bool>();
+                _popup.WindowManagerAddShadowHint = change.GetNewValue<bool>();
             }
         }
 
@@ -351,6 +351,11 @@ namespace Avalonia.Controls
                 ? PlacementMode.Bottom
                 : PlacementMode;
 
+            //Position of the line below is really important. 
+            //All styles are being applied only when control has logical parent.
+            //Line below will add ContextMenu as child to the Popup and this will trigger styles and they would be applied.
+            //If you will move line below somewhere else it may cause that ContextMenu will behave differently from what you are expecting.
+            _popup.Child = this;
             _popup.PlacementTarget = placementTarget;
             _popup.HorizontalOffset = HorizontalOffset;
             _popup.VerticalOffset = VerticalOffset;
@@ -359,7 +364,6 @@ namespace Avalonia.Controls
             _popup.PlacementGravity = PlacementGravity;
             _popup.PlacementRect = PlacementRect;
             _popup.WindowManagerAddShadowHint = WindowManagerAddShadowHint;
-            _popup.Child = this;
             IsOpen = true;
             _popup.IsOpen = true;
 
@@ -446,6 +450,11 @@ namespace Avalonia.Controls
             if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu)
             {
+                if (contextMenu._popup?.Parent == control)
+                {
+                    ((ISetLogicalParent)contextMenu._popup).SetParent(null);
+                }
+
                 contextMenu.Close();
             }
         }

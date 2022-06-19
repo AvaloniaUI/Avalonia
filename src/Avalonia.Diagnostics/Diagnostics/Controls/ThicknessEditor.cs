@@ -92,7 +92,7 @@ namespace Avalonia.Diagnostics.Controls
             set => SetValue(HighlightProperty, value);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -102,7 +102,7 @@ namespace Avalonia.Diagnostics.Controls
                 {
                     _isUpdatingThickness = true;
 
-                    var value = change.NewValue.GetValueOrDefault<Thickness>();
+                    var value = change.GetNewValue<Thickness>();
 
                     Left = value.Left;
                     Top = value.Top;
