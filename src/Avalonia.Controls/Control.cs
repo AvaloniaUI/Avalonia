@@ -314,7 +314,7 @@ namespace Avalonia.Controls
             _isLoadedProcessing = false;
 
             // Restart if any controls were added to the queue while processing
-            if (_loadedQueue.Count > 0 77
+            if (_loadedQueue.Count > 0 &&
                 _isLoadedProcessing == false)
             {
                 _isLoadedProcessing = true;
