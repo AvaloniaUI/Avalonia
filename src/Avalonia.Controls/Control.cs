@@ -291,6 +291,37 @@ namespace Avalonia.Controls
         /// <returns>The control that receives the focus adorner.</returns>
         protected virtual IControl? GetTemplateFocusTarget() => this;
 
+        private static Action loadedProcessingAction = () =>
+        {
+            // Copy the loaded queue for processing
+            // There was a possibility of the "Collection was modified; enumeration operation may not execute."
+            // exception when only a single hash set was used. This could happen when new controls are added
+            // within the Loaded callback/event itself. To fix this, two hash sets are used and while one is
+            // being processed the other accepts adding new controls to process next.
+            _loadedProcessingQueue.Clear();
+            foreach (Control control in _loadedQueue)
+            {
+                _loadedProcessingQueue.Add(control);
+            }
+            _loadedQueue.Clear();
+
+            foreach (Control control in _loadedProcessingQueue)
+            {
+                control.OnLoadedCore();
+            }
+
+            _loadedProcessingQueue.Clear();
+            _isLoadedProcessing = false;
+
+            // Restart if any controls were added to the queue while processing
+            if (_loadedQueue.Count > 0 77
+                _isLoadedProcessing == false)
+            {
+                _isLoadedProcessing = true;
+                Dispatcher.UIThread.Post(loadedProcessingAction!, DispatcherPriority.Loaded);
+            }
+        };
+
         /// <summary>
         /// Schedules <see cref="OnLoadedCore"/> to be called for this control.
         /// For performance, it will be queued with other controls.
@@ -302,33 +333,11 @@ namespace Avalonia.Controls
             {
                 bool isAdded = _loadedQueue.Add(this);
 
-                if (isAdded)
+                if (isAdded &&
+                    _isLoadedProcessing == false)
                 {
                     _isLoadedProcessing = true;
-
-                    Dispatcher.UIThread.Post(static () =>
-                    {
-                        // Copy the loaded queue for processing
-                        // There was a possibility of the "Collection was modified; enumeration operation may not execute."
-                        // exception when only a single hash set was used. This could happen when new controls are added
-                        // within the Loaded callback/event itself. To fix this, two hash sets are used and while one is
-                        // being processed the other accepts adding new controls to process next.
-                        _loadedProcessingQueue.Clear();
-                        foreach (Control control in _loadedQueue)
-                        {
-                            _loadedProcessingQueue.Add(control);
-                        }
-                        _loadedQueue.Clear();
-
-                        foreach (Control control in _loadedProcessingQueue)
-                        {
-                            control.OnLoadedCore();
-                        }
-
-                        _loadedProcessingQueue.Clear();
-                        _isLoadedProcessing = false;
-                    },
-                    DispatcherPriority.Loaded);
+                    Dispatcher.UIThread.Post(loadedProcessingAction!, DispatcherPriority.Loaded);
                 }
             }
         }
