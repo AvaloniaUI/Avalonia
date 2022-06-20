@@ -1,4 +1,4 @@
-﻿namespace Avalonia.PlatformSupport.Internal;
+﻿namespace Avalonia.Platform.Internal;
 
 internal static class Constants
 {

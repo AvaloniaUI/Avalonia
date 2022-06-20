@@ -298,14 +298,15 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
-            lastSize = NSSize {x, y};
+            if(x != lastSize.width || y != lastSize.height) {
+                lastSize = NSSize{x, y};
 
-            if (!_shown) {
-                BaseEvents->Resized(AvnSize{x, y}, reason);
-            }
-            else if(Window != nullptr) {
-                [Window setContentSize:lastSize];
-                [Window invalidateShadow];
+                if (!_shown) {
+                    BaseEvents->Resized(AvnSize{x, y}, reason);
+                } else if (Window != nullptr) {
+                    [Window setContentSize:lastSize];
+                    [Window invalidateShadow];
+                }
             }
         }
         @finally {
