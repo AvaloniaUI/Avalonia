@@ -122,10 +122,8 @@ namespace Avalonia.UnitTests
             return Mock.Of<IGlyphRunImpl>();
         }
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            scale = Matrix.Identity;
-
             return Mock.Of<IGeometryImpl>();
         }
 
