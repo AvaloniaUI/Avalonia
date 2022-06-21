@@ -58,14 +58,65 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             {
                 PairedBracketTypes = biDiPairedBracketTypeEntries, BiDiClasses = biDiClassEntries
             };
+
+            var trie = biDiTrieBuilder.Freeze();
+
+            GenerateTrieClass("BiDi", trie);
             
             using (var stream = File.Create("Generated\\BiDi.trie"))
             {
-                var trie = biDiTrieBuilder.Freeze();
-
                 trie.Save(stream);
 
                 return trie;
+            }
+        }
+
+        public static void GenerateTrieClass(string name, UnicodeTrie trie)
+        {
+            var stream = new MemoryStream();
+
+            trie.Save(stream);
+
+            using (var fileStream = File.Create($"Generated\\{name}.trie.cs"))
+            using (var writer = new StreamWriter(fileStream))
+            {
+                writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
+                writer.WriteLine("{");
+                writer.WriteLine($"   internal static class {name}Trie");
+                writer.WriteLine("    {");
+                writer.WriteLine("        public static readonly byte[] Data =");
+                writer.WriteLine("        {");
+
+                stream.Position = 0;
+
+                writer.Write("            ");
+
+                while (true)
+                {
+                    var b = stream.ReadByte();
+
+                    if(b == -1)
+                    {
+                        break;
+                    }
+                    
+                    writer.Write(b.ToString());
+
+                    writer.Write(',');
+
+                    if (stream.Position % 100 == 0)
+                    {
+                        writer.Write(Environment.NewLine);
+
+                        writer.Write("            ");
+
+                        continue;
+                    }
+                }
+
+                writer.WriteLine("        };");              
+                writer.WriteLine("    }");
+                writer.WriteLine("}");
             }
         }
 
@@ -105,10 +156,12 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 LineBreakClasses = lineBreakClassEntries
             };
 
+            var trie = unicodeDataTrieBuilder.Freeze();
+
+            GenerateTrieClass("UnicodeData", trie);
+
             using (var stream = File.Create("Generated\\UnicodeData.trie"))
             {
-                var trie = unicodeDataTrieBuilder.Freeze();
-
                 trie.Save(stream);
                 
                 return trie;

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -35,9 +36,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         static UnicodeData()
         {
-            s_unicodeDataTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.UnicodeData.trie")!);
-            s_graphemeBreakTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.GraphemeBreak.trie")!);
-            s_biDiTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.BiDi.trie")!);
+            s_unicodeDataTrie = new UnicodeTrie(new MemoryStream(UnicodeDataTrie.Data));
+            s_graphemeBreakTrie = new UnicodeTrie(new MemoryStream(GraphemeBreakTrie.Data));
+            s_biDiTrie = new UnicodeTrie(new MemoryStream(BiDiTrie.Data));
         }
 
         /// <summary>
