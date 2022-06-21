@@ -8,7 +8,6 @@ using Avalonia.Controls;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
-using SeleniumExtras.PageObjects;
 using Xunit;
 using Xunit.Sdk;
 
@@ -28,36 +27,33 @@ namespace Avalonia.IntegrationTests.Appium
             tab.Click();
         }
 
-        private IDisposable OpenWindow(ShowWindowMode mode, WindowStartupLocation location, int width = 200, int height = 100)
+        [Theory]
+        [MemberData(nameof(StartupLocationData))]
+        public void StartupLocation(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
         {
-            var mainWindow = GetCurrentWindowHandleHack();
-            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
-    
-            sizeTextBox.SendKeys($"{width}, {height}");
+            using var window = OpenWindow(size, mode, location);
+            var clientSize = Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text);
+            var frameSize = Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text);
+            var position = PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text);
+            var screenRect = PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text);
+            var scaling = double.Parse(_session.FindElementByAccessibilityId("Scaling").Text);
 
-            modeComboBox.Click();
-            _session.FindElementByName(mode.ToString()).SendClick();
+            Assert.True(frameSize.Width >= clientSize.Width, "Expected frame width >= client width.");
+            Assert.True(frameSize.Height > clientSize.Height, "Expected frame height > client height.");
 
-            locationComboBox.Click();
-            _session.FindElementByName(location.ToString()).SendClick();
+            var frameRect = new PixelRect(position, PixelSize.FromSize(frameSize, scaling));
 
-            showButton.Click();
-            
-            return Disposable.Create(() =>
+            switch (location)
             {
-                try
-                {
-                    SwitchToNewWindowHack(mainWindow);
-                    var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
-                    closeButton.Click();
-                }
-                catch { }
-            });
+                case WindowStartupLocation.CenterScreen:
+                    {
+                        var expected = screenRect.CenterRect(frameRect);
+                        AssertCloseEnough(expected.Position, frameRect.Position);
+                        break;
+                    }
+            }
         }
-        
+
         [PlatformFact(SkipOnWindows = true)]
         public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent()
         {
@@ -68,7 +64,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             try
             {
-                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
                 {
                     mainWindow.Click();
 
@@ -98,7 +94,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             try
             {
-                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
                 {
                     new Actions(_session)
                         .MoveToElement(mainWindow, 100, 1)
@@ -142,7 +138,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             try
             {
-                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
                 {
                     var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
 
@@ -170,7 +166,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             try
             {
-                using (OpenWindow(ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
+                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
                 {
                     mainWindow.Click();
 
@@ -198,7 +194,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             try
             {
-                using (OpenWindow(ShowWindowMode.NonOwned, WindowStartupLocation.CenterOwner, 1400))
+                using (OpenWindow(new PixelSize(1400, 100), ShowWindowMode.NonOwned, WindowStartupLocation.CenterOwner))
                 {
                     mainWindow.Click();
 
@@ -238,7 +234,7 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.True(zoomButton.Enabled);
                 Assert.True(miniturizeButton.Enabled);
 
-                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
                 {
                     SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
 
@@ -261,7 +257,7 @@ namespace Avalonia.IntegrationTests.Appium
             
             try
             {
-                using (OpenWindow(ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
                 {
                     var secondaryWindow = _session.FindWindowOuter("SecondaryWindow");
 
@@ -281,69 +277,11 @@ namespace Avalonia.IntegrationTests.Appium
                 _session.ResetApp();
             }
         }
-
-        [Theory]
-        [MemberData(nameof(StartupLocationData))]
-        public void StartupLocation(string? size, ShowWindowMode mode, WindowStartupLocation location)
-        {
-            var mainWindowHandle = GetCurrentWindowHandleHack();
-
-            try
-            {
-                var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-                var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-                var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-                var showButton = _session.FindElementByAccessibilityId("ShowWindow");
-
-                if (size is not null)
-                    sizeTextBox.SendKeys(size);
-
-                modeComboBox.Click();
-                _session.FindElementByName(mode.ToString()).SendClick();
-
-                locationComboBox.Click();
-                _session.FindElementByName(location.ToString()).SendClick();
-
-                showButton.Click();
-                SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
-
-                var clientSize = Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text);
-                var frameSize = Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text);
-                var position = PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text);
-                var screenRect = PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text);
-                var scaling = double.Parse(_session.FindElementByAccessibilityId("Scaling").Text);
-                
-                Assert.True(frameSize.Width >= clientSize.Width, "Expected frame width >= client width.");
-                Assert.True(frameSize.Height > clientSize.Height, "Expected frame height > client height.");
-
-                var frameRect = new PixelRect(position, PixelSize.FromSize(frameSize, scaling));
-
-                switch (location)
-                {
-                    case WindowStartupLocation.CenterScreen:
-                        {
-                            var expected = screenRect.CenterRect(frameRect);
-                            AssertCloseEnough(expected.Position, frameRect.Position);
-                            break;
-                        }
-                }
-            }
-            finally
-            {
-                try
-                {
-                    var closeButton = _session.FindElementByAccessibilityId("CloseWindow");
-                    closeButton.Click();
-                    SwitchToMainWindowHack(mainWindowHandle);
-                }
-                catch { }
-            }
-        }
         
-        public static TheoryData<string?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
+        public static TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
         {
-            var sizes = new[] { null, "400,300" };
-            var data = new TheoryData<string?, ShowWindowMode, WindowStartupLocation>();
+            var sizes = new PixelSize?[] { null, new PixelSize(400, 300) };
+            var data = new TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation>();
 
             foreach (var size in sizes)
             {
@@ -419,6 +357,26 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 Assert.Equal(expected, actual);
             }
+        }
+
+        private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
+        {
+            var mainWindow = GetCurrentWindowHandleHack();
+            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
+            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
+            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+
+            if (size.HasValue)
+                sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
+
+            modeComboBox.Click();
+            _session.FindElementByName(mode.ToString()).SendClick();
+
+            locationComboBox.Click();
+            _session.FindElementByName(location.ToString()).SendClick();
+
+            return showButton.OpenWindowWithClick();
         }
 
         public enum ShowWindowMode
