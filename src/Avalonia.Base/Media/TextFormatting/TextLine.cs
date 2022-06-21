@@ -16,8 +16,14 @@ namespace Avalonia.Media.TextFormatting
         /// </value>
         public abstract IReadOnlyList<TextRun> TextRuns { get; }
 
+        /// <summary>
+        /// Gets the first TextSource position of the current line.
+        /// </summary>
         public abstract int FirstTextSourceIndex { get; }
 
+        /// <summary>
+        /// Gets the total number of TextSource positions of the current line.
+        /// </summary>
         public abstract int Length { get; }
 
         /// <summary>
@@ -56,7 +62,7 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a value that indicates whether content of the line overflows the specified paragraph width.
         /// </summary>
         /// <returns>
-        /// <c>true</c>, it the line overflows the specified paragraph width; otherwise, <c>false</c>.
+        /// <c>true</c>, the line overflows the specified paragraph width; otherwise, <c>false</c>.
         /// </returns>
         public abstract bool HasOverflowed { get; }
 
@@ -148,6 +154,15 @@ namespace Avalonia.Media.TextFormatting
         /// A <see cref="TextLine"/> value that represents a collapsed line that can be displayed.
         /// </returns>
         public abstract TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList);
+
+        /// <summary>
+        /// Create a justified line based on justification text properties.
+        /// </summary>
+        /// <param name="justificationProperties">An object that represent the justification text properties.</param>
+        /// <returns>
+        /// A <see cref="TextLine"/> value that represents a justified line that can be displayed.
+        /// </returns>
+        public abstract void Justify(JustificationProperties justificationProperties);
 
         /// <summary>
         /// Gets the character hit corresponding to the specified distance from the beginning of the line.
