@@ -34,7 +34,6 @@ namespace Avalonia.Controls
         /// </summary>
         public ColorView() : base()
         {
-            CustomPalette = new FluentColorPalette();
         }
 
         /// <summary>

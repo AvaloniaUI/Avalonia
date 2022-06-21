@@ -81,6 +81,9 @@
 
   <Style Selector="ColorView">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="CustomPalette">
+      <local:FluentColorPalette />
+    </Setter>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid RowDefinitions="Auto,Auto">
