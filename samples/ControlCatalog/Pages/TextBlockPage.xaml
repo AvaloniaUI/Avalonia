@@ -118,7 +118,7 @@
         </StackPanel>
       </Border>
       <Border>
-        <TextBlock Margin="10" TextWrapping="Wrap">
+        <RichTextBlock Margin="10" TextWrapping="Wrap">
           This <Span FontWeight="Bold">is</Span> a
           <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
           with <Span TextDecorations="Underline">several</Span>
@@ -126,7 +126,7 @@
           <Span Foreground="Blue">
             using a <Bold>variety</Bold> of <Italic>styles</Italic>
           </Span>.
-        </TextBlock>
+        </RichTextBlock>
       </Border>
     </WrapPanel>
   </StackPanel>

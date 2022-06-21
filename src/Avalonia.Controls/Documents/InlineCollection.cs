@@ -12,37 +12,53 @@ namespace Avalonia.Controls.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>
     {
-        private readonly IInlineHost? _host;
+        private ILogical? _parent;
+        private IInlineHost? _inlineHost;
         private string? _text = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InlineCollection"/> class.
         /// </summary>
-        public InlineCollection(ILogical parent) : this(parent, null) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InlineCollection"/> class.
-        /// </summary>
-        internal InlineCollection(ILogical parent, IInlineHost? host = null) : base(0)
+        public InlineCollection()
         {
-            _host = host;
-
             ResetBehavior = ResetBehavior.Remove;
             
             this.ForEachItem(
                 x =>
                 {
-                    ((ISetLogicalParent)x).SetParent(parent);
-                    x.InlineHost = host;
-                    host?.Invalidate();
+                    ((ISetLogicalParent)x).SetParent(Parent);
+                    x.InlineHost = InlineHost;
+                    Invalidate();
                 },
                 x =>
                 {
                     ((ISetLogicalParent)x).SetParent(null);
-                    x.InlineHost = host;
-                    host?.Invalidate();
+                    x.InlineHost = InlineHost;
+                    Invalidate();
                 },
                 () => throw new NotSupportedException());         
+        }
+
+        internal ILogical? Parent 
+        {
+            get => _parent;
+            set
+            {
+                _parent = value;
+              
+                OnParentChanged(value);
+            }
+        }
+
+        internal IInlineHost? InlineHost
+        {
+            get => _inlineHost;
+            set
+            {
+                _inlineHost = value;
+
+                OnInlineHostChanged(value);
+            }
         }
 
         public bool HasComplexContent => Count > 0;
@@ -57,14 +73,16 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
+                return _text;
+
                 if (!HasComplexContent)
                 {
                     return _text;
                 }
-                
+
                 var builder = new StringBuilder();
 
-                foreach(var inline in this)
+                foreach (var inline in this)
                 {
                     inline.AppendText(builder);
                 }
@@ -100,7 +118,7 @@ namespace Avalonia.Controls.Documents
             }
             else
             {
-                _text += text;
+                _text = text;
             }
         }
 
@@ -136,14 +154,30 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         protected void Invalidate()
         {
-            if(_host != null)
+            if(InlineHost != null)
             {
-                _host.Invalidate();
+                InlineHost.Invalidate();
             }
 
             Invalidated?.Invoke(this, EventArgs.Empty);
         }
 
         private void Invalidate(object? sender, EventArgs e) => Invalidate();
+
+        private void OnParentChanged(ILogical? parent)
+        {
+            foreach(var child in this)
+            {
+                ((ISetLogicalParent)child).SetParent(parent);
+            }
+        }
+
+        private void OnInlineHostChanged(IInlineHost? inlineHost)
+        {
+            foreach (var child in this)
+            {
+                child.InlineHost = inlineHost;
+            }
+        }
     }
 }

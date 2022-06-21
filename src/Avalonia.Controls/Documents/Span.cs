@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Documents
 {
@@ -14,25 +13,42 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
-        public static readonly DirectProperty<Span, InlineCollection> InlinesProperty =
-            AvaloniaProperty.RegisterDirect<Span, InlineCollection>(
-                nameof(Inlines),
-                o => o.Inlines);
+        public static readonly StyledProperty<InlineCollection> InlinesProperty =
+            AvaloniaProperty.Register<Span, InlineCollection>(
+                nameof(Inlines));
 
-        /// <summary>
-        /// Initializes a new instance of a Span element.
-        /// </summary>
         public Span()
         {
-            Inlines = new InlineCollection(this);
-            Inlines.Invalidated += (s, e) => InlineHost?.Invalidate();
+            Inlines = new InlineCollection
+            {
+                Parent = this
+            };
         }
 
         /// <summary>
         /// Gets or sets the inlines.
-        /// </summary>
-        [Content]
-        public InlineCollection Inlines { get; }
+        /// </summary>        
+        public InlineCollection Inlines
+        {
+            get => GetValue(InlinesProperty);
+            set => SetValue(InlinesProperty, value);
+        }
+
+        public void Add(Inline inline)
+        {
+            if (Inlines is not null)
+            {
+                Inlines.Add(inline);
+            }
+        }
+
+        public void Add(string text)
+        {
+            if (Inlines is not null)
+            {
+                Inlines.Add(text);
+            }
+        }
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
@@ -52,7 +68,7 @@ namespace Avalonia.Controls.Documents
                     var textCharacters = new TextCharacters(text.AsMemory(), textRunProperties);
 
                     textRuns.Add(textCharacters);
-                }          
+                }
             }
         }
 
@@ -69,6 +85,46 @@ namespace Avalonia.Controls.Documents
             if (Inlines.Text is string text)
             {
                 stringBuilder.Append(text);
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            switch (change.Property.Name)
+            {
+                case nameof(InlinesProperty):
+                    OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
+                    InlineHost?.Invalidate();
+                    break;
+            }
+        }
+
+        internal override void OnInlinesHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+            base.OnInlinesHostChanged(oldValue, newValue);
+
+            if(Inlines is not null)
+            {
+                Inlines.InlineHost = newValue;
+            }
+        }
+
+        private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
+        {
+            if (oldValue is not null)
+            {
+                oldValue.Parent = null;
+                oldValue.InlineHost = null;
+                oldValue.Invalidated -= (s, e) => InlineHost?.Invalidate();
+            }
+
+            if (newValue is not null)
+            {
+                newValue.Parent = this;
+                newValue.InlineHost = InlineHost;
+                newValue.Invalidated += (s, e) => InlineHost?.Invalidate();
             }
         }
     }

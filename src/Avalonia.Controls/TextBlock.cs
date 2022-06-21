@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
@@ -14,7 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    public class TextBlock : Control, IInlineHost
+    public class TextBlock : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -102,14 +101,6 @@ namespace Avalonia.Controls
                 (o, v) => o.Text = v);
 
         /// <summary>
-        /// Defines the <see cref="Inlines"/> property.
-        /// </summary>
-        public static readonly DirectProperty<TextBlock, InlineCollection> InlinesProperty =
-            AvaloniaProperty.RegisterDirect<TextBlock, InlineCollection>(
-                nameof(Inlines),
-                o => o.Inlines);
-
-        /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly AttachedProperty<TextAlignment> TextAlignmentProperty =
@@ -137,6 +128,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
             AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
 
+        private string? _text;
         private TextLayout? _textLayout;
         private Size _constraint;
 
@@ -151,21 +143,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TextBlock"/> class.
-        /// </summary>
-        public TextBlock()
-        {
-            Inlines = new InlineCollection(this, this);
-        }
-
-        /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
         public TextLayout TextLayout
         {
             get
             {
-                return _textLayout ?? (_textLayout = CreateTextLayout(_constraint, Text));
+                return _textLayout ??= CreateTextLayout(_constraint, Text);
             }
         }
 
@@ -192,27 +176,12 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Text
         {
-            get => Inlines.Text;
+            get => _text;
             set
             {
-                var old = Text;
-
-                if (value == old)
-                {
-                    return;
-                }
-
-                Inlines.Text = value;
-
-                RaisePropertyChanged(TextProperty, old, value);
+                SetAndRaise(TextProperty, ref _text, value);
             }
         }
-
-        /// <summary>
-        /// Gets the inlines.
-        /// </summary>
-        [Content]
-        public InlineCollection Inlines { get; }
 
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.
@@ -331,6 +300,11 @@ namespace Avalonia.Controls
         {
             get { return (double)GetValue(BaselineOffsetProperty); }
             set { SetValue(BaselineOffsetProperty, value); }
+        }
+
+        public void Add(string text)
+        {
+            Text = text;
         }
 
         /// <summary>
@@ -559,26 +533,8 @@ namespace Avalonia.Controls
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
                 defaultProperties, TextWrapping, LineHeight, 0);
 
-            ITextSource textSource;
-
-            if (Inlines.HasComplexContent)
-            {
-                var textRuns = new List<TextRun>();
-
-                foreach (var inline in Inlines)
-                {
-                    inline.BuildTextRun(textRuns);
-                }
-
-                textSource = new InlinesTextSource(textRuns);
-            }
-            else
-            {
-                textSource = new SimpleTextSource((text ?? "").AsMemory(), defaultProperties);
-            }
-
             return new TextLayout(
-                textSource,
+                new SimpleTextSource((text ?? "").AsMemory(), defaultProperties),
                 paragraphProperties,
                 TextTrimming,
                 constraint.Width,
@@ -599,11 +555,6 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!Inlines.HasComplexContent && string.IsNullOrEmpty(Text))
-            {
-                return new Size();
-            }
-
             var scale = LayoutHelper.GetLayoutScale(this);
 
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
@@ -683,57 +634,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void InlinesChanged(object? sender, EventArgs e)
-        {
-            InvalidateTextLayout();
-        }
-
-        void IInlineHost.AddVisualChild(IControl child)
-        {
-            if (child.VisualParent == null)
-            {
-                VisualChildren.Add(child);
-            }            
-        }
-
-        void IInlineHost.Invalidate()
-        {
-            InvalidateTextLayout();
-        }
-
-        private readonly struct InlinesTextSource : ITextSource
-        {
-            private readonly IReadOnlyList<TextRun> _textRuns;
-
-            public InlinesTextSource(IReadOnlyList<TextRun> textRuns)
-            {
-                _textRuns = textRuns;
-            }
-
-            public TextRun? GetTextRun(int textSourceIndex)
-            {
-                var currentPosition = 0;
-
-                foreach (var textRun in _textRuns)
-                {
-                    if(textRun.TextSourceLength == 0)
-                    {
-                        continue;
-                    }
-
-                    if(currentPosition >= textSourceIndex)
-                    {
-                        return textRun;
-                    }
-
-                    currentPosition += textRun.TextSourceLength;
-                }
-
-                return null;
-            }
-        }
-
-        private readonly struct SimpleTextSource : ITextSource
+        protected readonly struct SimpleTextSource : ITextSource
         {
             private readonly ReadOnlySlice<char> _text;
             private readonly TextRunProperties _defaultProperties;
