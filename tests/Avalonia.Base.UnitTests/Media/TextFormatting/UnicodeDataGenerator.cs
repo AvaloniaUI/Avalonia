@@ -80,11 +80,12 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             using (var fileStream = File.Create($"Generated\\{name}.trie.cs"))
             using (var writer = new StreamWriter(fileStream))
             {
+                writer.WriteLine("using System;");
                 writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
                 writer.WriteLine("{");
                 writer.WriteLine($"   internal static class {name}Trie");
                 writer.WriteLine("    {");
-                writer.WriteLine("        public static readonly byte[] Data =");
+                writer.WriteLine("        public static ReadOnlySpan<byte> Data => new byte[]");
                 writer.WriteLine("        {");
 
                 stream.Position = 0;
