@@ -44,7 +44,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.Equal(10, count);
         }
 
-        [Fact(/*Skip = "Only run when we update the trie."*/)]
+        [Fact(Skip = "Only run when we update the trie.")]
         public void Should_Generate_Trie()
         {
             GraphemeBreakClassTrieGenerator.Execute();
