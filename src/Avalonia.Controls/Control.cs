@@ -314,8 +314,7 @@ namespace Avalonia.Controls
             _isLoadedProcessing = false;
 
             // Restart if any controls were added to the queue while processing
-            if (_loadedQueue.Count > 0 &&
-                _isLoadedProcessing == false)
+            if (_loadedQueue.Count > 0)
             {
                 _isLoadedProcessing = true;
                 Dispatcher.UIThread.Post(loadedProcessingAction!, DispatcherPriority.Loaded);
@@ -328,7 +327,6 @@ namespace Avalonia.Controls
         /// </summary>
         internal void ScheduleOnLoadedCore()
         {
-            // Note: This code is not multi-threaded ready and assumes to run only on the UIThread
             if (_isLoaded == false)
             {
                 bool isAdded = _loadedQueue.Add(this);
