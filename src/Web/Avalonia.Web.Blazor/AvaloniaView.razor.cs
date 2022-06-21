@@ -56,90 +56,87 @@ namespace Avalonia.Web.Blazor
         {
             return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
         }
-
-        private void OnTouchStart(TouchEventArgs e)
+        
+        private void OnPointerCancel(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
             }
         }
 
-        private void OnTouchEnd(TouchEventArgs e)
+        private void OnPointerMove(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
+            }
+            else
+            {
+                _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
         }
 
-        private void OnTouchCancel(TouchEventArgs e)
+        private void OnPointerUp(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
+            }
+            else
+            {
+                RawPointerEventType type = default;
+
+                switch (e.Button)
+                {
+                    case 0:
+                        type = RawPointerEventType.LeftButtonUp;
+                        break;
+
+                    case 1:
+                        type = RawPointerEventType.MiddleButtonUp;
+                        break;
+
+                    case 2:
+                        type = RawPointerEventType.RightButtonUp;
+                        break;
+                }
+
+                _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
         }
 
-        private void OnTouchMove(TouchEventArgs e)
+        private void OnPointerDown(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
             }
-        }
-
-        private void OnMouseMove(MouseEventArgs e)
-        {
-            _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
-        }
-
-        private void OnMouseUp(MouseEventArgs e)
-        {
-            RawPointerEventType type = default;
-
-            switch (e.Button)
+            else
             {
-                case 0:
-                    type = RawPointerEventType.LeftButtonUp;
-                    break;
+                RawPointerEventType type = default;
 
-                case 1:
-                    type = RawPointerEventType.MiddleButtonUp;
-                    break;
+                switch (e.Button)
+                {
+                    case 0:
+                        type = RawPointerEventType.LeftButtonDown;
+                        break;
 
-                case 2:
-                    type = RawPointerEventType.RightButtonUp;
-                    break;
+                    case 1:
+                        type = RawPointerEventType.MiddleButtonDown;
+                        break;
+
+                    case 2:
+                        type = RawPointerEventType.RightButtonDown;
+                        break;
+                }
+
+                _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
-
-            _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
-        }
-
-        private void OnMouseDown(MouseEventArgs e)
-        {
-            RawPointerEventType type = default;
-
-            switch (e.Button)
-            {
-                case 0:
-                    type = RawPointerEventType.LeftButtonDown;
-                    break;
-
-                case 1:
-                    type = RawPointerEventType.MiddleButtonDown;
-                    break;
-
-                case 2:
-                    type = RawPointerEventType.RightButtonDown;
-                    break;
-            }
-
-            _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
         }
 
         private void OnWheel(WheelEventArgs e)
@@ -173,23 +170,7 @@ namespace Avalonia.Web.Blazor
             return modifiers;
         }
 
-        private static RawInputModifiers GetModifiers(TouchEventArgs e)
-        {
-            var modifiers = RawInputModifiers.None;
-
-            if (e.CtrlKey)
-                modifiers |= RawInputModifiers.Control;
-            if (e.AltKey)
-                modifiers |= RawInputModifiers.Alt;
-            if (e.ShiftKey)
-                modifiers |= RawInputModifiers.Shift;
-            if (e.MetaKey)
-                modifiers |= RawInputModifiers.Meta;
-
-            return modifiers;
-        }
-
-        private static RawInputModifiers GetModifiers(MouseEventArgs e)
+        private static RawInputModifiers GetModifiers(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
             var modifiers = RawInputModifiers.None;
 
@@ -232,12 +213,12 @@ namespace Avalonia.Web.Blazor
 
         private void OnKeyDown(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnKeyUp(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, GetModifiers(e));
+            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnInput(ChangeEventArgs e)

@@ -21,14 +21,14 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BrushProperty =
-            AvaloniaProperty.Register<GeometryDrawing, IBrush>(nameof(Brush), Brushes.Transparent);
+        public static readonly StyledProperty<IBrush?> BrushProperty =
+            AvaloniaProperty.Register<GeometryDrawing, IBrush?>(nameof(Brush), Brushes.Transparent);
 
         /// <summary>
         /// Defines the <see cref="Pen"/> property.
         /// </summary>
-        public static readonly StyledProperty<Pen> PenProperty =
-            AvaloniaProperty.Register<GeometryDrawing, Pen>(nameof(Pen));
+        public static readonly StyledProperty<Pen?> PenProperty =
+            AvaloniaProperty.Register<GeometryDrawing, Pen?>(nameof(Pen));
 
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Media.Geometry"/> that describes the shape of this <see cref="GeometryDrawing"/>.
@@ -43,7 +43,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Media.IBrush"/> used to fill the interior of the shape described by this <see cref="GeometryDrawing"/>.
         /// </summary>
-        public IBrush Brush
+        public IBrush? Brush
         {
             get => GetValue(BrushProperty);
             set => SetValue(BrushProperty, value);
@@ -52,7 +52,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the <see cref="Avalonia.Media.IPen"/> used to stroke this <see cref="GeometryDrawing"/>.
         /// </summary>
-        public IPen Pen
+        public IPen? Pen
         {
             get => GetValue(PenProperty);
             set => SetValue(PenProperty, value);
@@ -68,7 +68,8 @@ namespace Avalonia.Media
 
         public override Rect GetBounds()
         {
-            return Geometry?.GetRenderBounds(s_boundsPen) ?? Rect.Empty;
+            IPen pen = Pen ?? s_boundsPen;
+			return Geometry?.GetRenderBounds(pen) ?? Rect.Empty;
         }
     }
 }

@@ -237,7 +237,7 @@ namespace ControlCatalog.Models
             yield return new Country("Zimbabwe", "SUB-SAHARAN AFRICA", 12236805, 390580, 31.3, 0, 0, 67.69, 1900, 90.7, 26.8, 28.01, 21.84);
         }
 
-        static IReadOnlyList<Country> _all;
+        static IReadOnlyList<Country>? _all;
 
         public static IReadOnlyList<Country> All
         {
