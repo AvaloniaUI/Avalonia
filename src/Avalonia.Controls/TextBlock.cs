@@ -113,7 +113,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly AttachedProperty<TextAlignment> TextAlignmentProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, TextAlignment>(nameof(TextAlignment), 
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, TextAlignment>(
+                nameof(TextAlignment), 
+                defaultValue: TextAlignment.Start,
                 inherits: true);
 
         /// <summary>
