@@ -114,10 +114,8 @@ namespace Avalonia.Headless
             return new HeadlessGlyphRunStub();
         }
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun, out Matrix scale)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            scale = Matrix.Identity;
-
             return new HeadlessGeometryStub(new Rect(glyphRun.Size));
         }
 
