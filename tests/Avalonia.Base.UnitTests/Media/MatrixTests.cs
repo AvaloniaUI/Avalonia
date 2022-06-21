@@ -31,6 +31,16 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void Invert_Should_Work()
+        {
+            var matrix = new Matrix(1, 2, 3, 0, 1, 4, 5, 6, 0);
+            var inverted = matrix.Invert();
+
+            Assert.Equal(matrix * inverted, Matrix.Identity);
+            Assert.Equal(inverted * matrix, Matrix.Identity);
+        }
+
+        [Fact]
         public void Can_Decompose_Translation()
         {
             var matrix = Matrix.CreateTranslation(5, 10);

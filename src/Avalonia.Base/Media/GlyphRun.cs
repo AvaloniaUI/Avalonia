@@ -195,6 +195,19 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Obtains geometry for the glyph run.
+        /// </summary>
+        /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
+        public Geometry BuildGeometry()
+        {
+            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+
+            var geometryImpl = platformRenderInterface.BuildGlyphRunGeometry(this);
+
+            return new PlatformGeometry(geometryImpl);
+        }
+
+        /// <summary>
         /// Retrieves the offset from the leading edge of the <see cref="GlyphRun"/>
         /// to the leading or trailing edge of a caret stop containing the specified character hit.
         /// </summary>
