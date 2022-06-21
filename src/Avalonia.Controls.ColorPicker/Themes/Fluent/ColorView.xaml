@@ -116,7 +116,7 @@
                       Grid.Row="0"
                       Height="338"
                       Width="350"
-                      SelectedIndex="{Binding SelectedTabIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                      SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
             <TabControl.Resources>
               <Thickness x:Key="TabItemMargin">0,0,0,0</Thickness>
             </TabControl.Resources>

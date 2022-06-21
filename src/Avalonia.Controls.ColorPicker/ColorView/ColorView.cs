@@ -69,13 +69,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Validates the selected subview/tab taking into account the visibility of each subview/tab
+        /// Validates the tab/panel/page selection taking into account the visibility of each item
         /// as well as the current selection.
         /// </summary>
         /// <remarks>
-        /// Derived controls may re-implement this based on their default style / control template.
+        /// Derived controls may re-implement this based on their default style / control template
+        /// and any specialized selection needs.
         /// </remarks>
-        protected virtual void ValidateSelectedTab()
+        protected virtual void ValidateSelection()
         {
             if (_tabControl != null &&
                 _tabControl.Items != null)
@@ -138,7 +139,16 @@ namespace Avalonia.Controls
                     _tabControl.IsVisible = false;
                 }
 
-                SelectedTabIndex = _tabControl.SelectedIndex;
+                // Note that if externally the SelectedIndex is set to 4 or something
+                // outside the valid range, the TabControl will ignore it and replace it
+                // with a valid SelectedIndex. This however is not propagated back through
+                // the TwoWay binding in the control template so the SelectedIndex and
+                // SelectedIndex become out of sync.
+                //
+                // The work-around for this is done here where SelectedIndex is forcefully
+                // synchronized with whatever the TabControl property value is. This is
+                // possible since selection validation is already done by this method.
+                SelectedIndex = _tabControl.SelectedIndex;
             }
 
             return;
@@ -165,7 +175,7 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
-            ValidateSelectedTab();
+            ValidateSelection();
         }
 
         /// <inheritdoc/>
@@ -233,16 +243,16 @@ namespace Avalonia.Controls
                 // Therefore, the validation is delayed until after bindings update.
                 Dispatcher.UIThread.Post(() =>
                 {
-                    ValidateSelectedTab();
+                    ValidateSelection();
                 }, DispatcherPriority.Background);
             }
-            else if (change.Property == SelectedTabIndexProperty)
+            else if (change.Property == SelectedIndexProperty)
             {
-                // Again, it is necessary to wait for the SelectedTabIndex value to
+                // Again, it is necessary to wait for the SelectedIndex value to
                 // be applied to the TabControl through binding before validation occurs.
                 Dispatcher.UIThread.Post(() =>
                 {
-                    ValidateSelectedTab();
+                    ValidateSelection();
                 }, DispatcherPriority.Background);
             }
 

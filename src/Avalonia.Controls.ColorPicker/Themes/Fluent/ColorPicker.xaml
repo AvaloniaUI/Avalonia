@@ -71,6 +71,7 @@
                          MinHue="{TemplateBinding MinHue}"
                          MinSaturation="{TemplateBinding MinSaturation}"
                          MinValue="{TemplateBinding MinValue}"
+                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ShowAccentColors="{TemplateBinding ShowAccentColors}" />
             </Flyout>
           </DropDownButton.Flyout>

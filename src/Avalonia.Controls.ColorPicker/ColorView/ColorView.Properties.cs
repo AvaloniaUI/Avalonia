@@ -198,11 +198,11 @@ namespace Avalonia.Controls
                 0);
 
         /// <summary>
-        /// Defines the <see cref="SelectedTabIndex"/> property.
+        /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
-        public static readonly StyledProperty<int> SelectedTabIndexProperty =
+        public static readonly StyledProperty<int> SelectedIndexProperty =
             AvaloniaProperty.Register<ColorView, int>(
-                nameof(SelectedTabIndex),
+                nameof(SelectedIndex),
                 (int)ColorViewTab.Spectrum);
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the color components subview/tab is visible.
+        /// Gets or sets a value indicating whether the color components tab/panel/page (subview) is visible.
         /// </summary>
         public bool IsColorComponentsVisible
         {
@@ -315,7 +315,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the color palette subview/tab is visible.
+        /// Gets or sets a value indicating whether the color palette tab/panel/page (subview) is visible.
         /// </summary>
         public bool IsColorPaletteVisible
         {
@@ -337,7 +337,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the color spectrum subview/tab is visible.
+        /// Gets or sets a value indicating whether the color spectrum tab/panel/page (subview) is visible.
         /// </summary>
         public bool IsColorSpectrumVisible
         {
@@ -421,12 +421,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the index of the selected subview/tab.
+        /// Gets or sets the index of the selected tab/panel/page (subview).
         /// </summary>
-        public int SelectedTabIndex
+        public int SelectedIndex
         {
-            get => GetValue(SelectedTabIndexProperty);
-            set => SetValue(SelectedTabIndexProperty, value);
+            get => GetValue(SelectedIndexProperty);
+            set => SetValue(SelectedIndexProperty, value);
         }
 
         /// <inheritdoc cref="ColorPreviewer.ShowAccentColors"/>
