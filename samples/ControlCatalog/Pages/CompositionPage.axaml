@@ -12,7 +12,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.DataTemplates>
-                    <DataTemplate>
+                    <DataTemplate DataType="pages:CompositionPageColorItem">
                         <Border 
                             pages:CompositionPage.EnableAnimations="True"
                             Padding="10" BorderBrush="Gray" BorderThickness="2"
