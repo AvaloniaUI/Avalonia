@@ -189,12 +189,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
-        /// Gets a per-thread instance that can be re-used as often
-        /// as necessary.
-        /// </summary>
-        public static ThreadLocal<BidiAlgorithm> Instance { get; } = new ThreadLocal<BidiAlgorithm>(() => new BidiAlgorithm());
-
-        /// <summary>
         /// Gets the resolved levels.
         /// </summary>
         public ArraySlice<sbyte> ResolvedLevels => _resolvedLevels;

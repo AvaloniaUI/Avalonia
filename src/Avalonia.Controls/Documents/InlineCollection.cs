@@ -73,8 +73,6 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
-                return _text;
-
                 if (!HasComplexContent)
                 {
                     return _text;

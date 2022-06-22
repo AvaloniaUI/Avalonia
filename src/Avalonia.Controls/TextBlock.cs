@@ -128,8 +128,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
             AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
 
-        private string? _text;
-        private TextLayout? _textLayout;
+        protected string? _text;
+        protected TextLayout? _textLayout;
         private Size _constraint;
 
         /// <summary>
@@ -572,9 +572,11 @@ namespace Avalonia.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if(finalSize.Width < TextLayout.Bounds.Width)
+            var textWidth = Math.Ceiling(TextLayout.Bounds.Width);
+
+            if(finalSize.Width < textWidth)
             {
-                finalSize = finalSize.WithWidth(TextLayout.Bounds.Width);
+                finalSize = finalSize.WithWidth(textWidth);
             }
 
             if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
@@ -586,7 +588,7 @@ namespace Avalonia.Controls
 
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
-            _constraint = new Size(finalSize.Deflate(padding).Width, double.PositiveInfinity);
+            _constraint = new Size(Math.Ceiling(finalSize.Deflate(padding).Width), double.PositiveInfinity);
 
             _textLayout = null;
 

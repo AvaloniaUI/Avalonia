@@ -177,7 +177,7 @@ namespace Avalonia.Media.TextFormatting
 
             }
 
-            var biDi = BidiAlgorithm.Instance.Value!;
+            var biDi = new BidiAlgorithm();
 
             biDi.Process(biDiData);
 

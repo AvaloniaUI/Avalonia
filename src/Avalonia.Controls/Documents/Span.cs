@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Documents
 {
@@ -27,27 +28,12 @@ namespace Avalonia.Controls.Documents
 
         /// <summary>
         /// Gets or sets the inlines.
-        /// </summary>        
+        /// </summary>
+        [Content]
         public InlineCollection Inlines
         {
             get => GetValue(InlinesProperty);
             set => SetValue(InlinesProperty, value);
-        }
-
-        public void Add(Inline inline)
-        {
-            if (Inlines is not null)
-            {
-                Inlines.Add(inline);
-            }
-        }
-
-        public void Add(string text)
-        {
-            if (Inlines is not null)
-            {
-                Inlines.Add(text);
-            }
         }
 
         internal override void BuildTextRun(IList<TextRun> textRuns)

@@ -62,47 +62,5 @@ namespace Avalonia.Controls.UnitTests
 
             renderer.Verify(x => x.AddDirty(target), Times.Once);
         }
-
-        [Fact]
-        public void Changing_InlinesCollection_Should_Invalidate_Measure()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var target = new TextBlock();
-
-                target.Measure(Size.Infinity);
-           
-                Assert.True(target.IsMeasureValid);
-           
-                target.Inlines.Add(new Run("Hello"));
-           
-                Assert.False(target.IsMeasureValid);
-           
-                target.Measure(Size.Infinity);
-           
-                Assert.True(target.IsMeasureValid);
-            }
-        }
-        
-        [Fact]
-        public void Changing_Inlines_Properties_Should_Invalidate_Measure()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var target = new TextBlock();
-
-                var inline = new Run("Hello");
-                
-                target.Inlines.Add(inline);
-
-                target.Measure(Size.Infinity);
-           
-                Assert.True(target.IsMeasureValid);
-
-                inline.Text = "1337";
-                
-                Assert.False(target.IsMeasureValid);
-            }
-        }
     }
 }
