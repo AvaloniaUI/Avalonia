@@ -30,7 +30,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl
         // Nothing to do here since we allocate no unmanaged resources.
     }
 
-    public void BeginUpdate(CompositionDrawList list)
+    public void BeginUpdate(CompositionDrawList? list)
     {
         _builder.Reset(list);
         _drawOperationIndex = 0;
@@ -373,12 +373,12 @@ internal class CompositionDrawingContext : IDrawingContextImpl
                 // be attached to the same composition target) like UWP does.
                 // Render-able visuals shouldn't be dangling unattached
                 (visual as IVisualBrushInitialize)?.EnsureInitialized();
-
-                var drawList = new CompositionDrawList() { Size = visual.Bounds.Size };
+                
                 var recorder = new CompositionDrawingContext();
-                recorder.BeginUpdate(drawList);
+                recorder.BeginUpdate(null);
                 ImmediateRenderer.Render(visual, new DrawingContext(recorder));
-                recorder.EndUpdate();
+                var drawList = recorder.EndUpdate();
+                drawList.Size = visual.Bounds.Size;
 
                 return drawList;
             }

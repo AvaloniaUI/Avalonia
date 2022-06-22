@@ -115,7 +115,7 @@ namespace Avalonia.Rendering.Composition.Server
                 }
 
                 targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1, new Rect(_layerSize),
-                    new Rect(_layerSize));
+                    new Rect(Size));
                 
                 
                 if (DrawDirtyRects)
