@@ -37,6 +37,7 @@ namespace Avalonia.DesignerSupport
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
                 var loaded = loader.Load(stream, localAsm, null, baseUri, true);
                 var style = loaded as IStyle;
+                var resources = loaded as ResourceDictionary;
                 if (style != null)
                 {
                     var substitute = Design.GetPreviewWith((AvaloniaObject)style);
@@ -55,6 +56,27 @@ namespace Avalonia.DesignerSupport
                                 new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
                                 new TextBlock {Text = "</Design.PreviewWith>"},
                                 new TextBlock {Text = "before setters in your first Style"}
+                            }
+                        };
+                }
+                else if (resources != null)
+                {
+                    var substitute = Design.GetPreviewWith(resources);
+                    if (substitute != null)
+                    {
+                        substitute.Resources.MergedDictionaries.Add(resources);
+                        control = substitute;
+                    }
+                    else
+                        control = new StackPanel
+                        {
+                            Children =
+                            {
+                                new TextBlock {Text = "ResourceDictionaries can't be previewed without Design.PreviewWith. Add"},
+                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                                new TextBlock {Text = "</Design.PreviewWith>"},
+                                new TextBlock {Text = "in your resource dictionary"}
                             }
                         };
                 }
