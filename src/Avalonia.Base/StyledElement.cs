@@ -652,6 +652,10 @@ namespace Avalonia
                     Theme = change.GetNewValue<ControlTheme?>();
                     _hasPromotedTheme = true;
                 }
+                else if (_hasPromotedTheme && change.Priority == BindingPriority.LocalValue)
+                {
+                    _hasPromotedTheme = false;
+                }
 
                 InvalidateStyles();
             }

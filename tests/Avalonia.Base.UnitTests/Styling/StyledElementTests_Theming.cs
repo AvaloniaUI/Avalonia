@@ -257,6 +257,47 @@ public class StyledElementTests_Theming
             Assert.Null(target.Template);
         }
 
+        [Fact]
+        public void Theme_Can_Be_Set_To_LocalValue_While_Updating_Due_To_Style_Class()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = CreateTarget();
+            var theme1 = CreateTheme();
+            var theme2 = new ControlTheme(typeof(ThemedControl));
+            var theme3 = new ControlTheme(typeof(ThemedControl));
+            var root = new TestRoot()
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<ThemedControl>())
+                    {
+                        Setters = { new Setter(StyledElement.ThemeProperty, theme1) }
+                    },
+                    new Style(x => x.OfType<ThemedControl>().Class("bar"))
+                    {
+                        Setters = { new Setter(StyledElement.ThemeProperty, theme2) }
+                    },
+                }
+            };
+
+            root.Child = target;
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Same(theme1, target.Theme);
+            Assert.NotNull(target.Template);
+
+            target.Classes.Add("bar");
+
+            // At this point, theme2 has been promoted to a local value internally in StyledElement;
+            // make sure that setting a new local value here doesn't cause it to be cleared when we
+            // do a layout pass because StyledElement thinks its clearing the promoted theme.
+            target.Theme = theme3;
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Same(target.Theme, theme3);
+        }
+
         private static ThemedControl CreateTarget()
         {
             return new ThemedControl();
