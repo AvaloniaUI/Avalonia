@@ -15,6 +15,19 @@ namespace Avalonia.IntegrationTests.Appium
         public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
             element.FindElementsByXPath("*/*");
 
+        public static (AppiumWebElement close, AppiumWebElement minimize, AppiumWebElement maximize) GetChromeButtons(this AppiumWebElement window)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                var closeButton = window.FindElementByXPath("//XCUIElementTypeButton[1]");
+                var fullscreenButton = window.FindElementByXPath("//XCUIElementTypeButton[2]");
+                var minimizeButton = window.FindElementByXPath("//XCUIElementTypeButton[3]");
+                return (closeButton, minimizeButton, fullscreenButton);
+            }
+
+            throw new NotSupportedException("GetChromeButtons not supported on this platform.");
+        }
+
         public static string GetComboBoxValue(this AppiumWebElement element)
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
@@ -57,14 +70,15 @@ namespace Avalonia.IntegrationTests.Appium
         public static IDisposable OpenWindowWithClick(this AppiumWebElement element)
         {
             var session = element.WrappedDriver;
-            var oldHandle = session.CurrentWindowHandle;
-            var oldHandles = session.WindowHandles.ToList();
-            var oldChildWindows = session.FindElements(By.XPath("//Window"));
-
-            element.Click();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                var oldHandle = session.CurrentWindowHandle;
+                var oldHandles = session.WindowHandles.ToList();
+                var oldChildWindows = session.FindElements(By.XPath("//Window"));
+
+                element.Click();
+
                 var newHandle = session.WindowHandles.Except(oldHandles).SingleOrDefault();
 
                 if (newHandle is not null)
@@ -94,14 +108,22 @@ namespace Avalonia.IntegrationTests.Appium
             }
             else
             {
-                var newHandle = session.CurrentWindowHandle;
+                var oldWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                var oldWindowTitles = oldWindows.ToDictionary(x => x.Text);
+                
+                element.Click();
 
-                Assert.NotEqual(oldHandle, newHandle);
-
+                var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                var newWindowTitles = newWindows.ToDictionary(x => x.Text);
+                var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
+                var newWindow = (AppiumWebElement)newWindowTitles[newWindowTitle]; 
+                
                 return Disposable.Create(() =>
                 {
-                    session.Close();
-                    session.SwitchTo().Window(oldHandle);
+                    // TODO: We should be able to use Cmd+W here but Avalonia apps don't seem to have this shortcut
+                    // set up by default.
+                    var (close, _, _) = newWindow.GetChromeButtons();
+                    close!.Click();
                 });
             }
         }

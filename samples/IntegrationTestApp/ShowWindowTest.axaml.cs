@@ -34,7 +34,5 @@ namespace IntegrationTestApp
                 ownerRect.Text = $"{owner.Position}, {owner.FrameSize}";
             }
         }
-
-        private void CloseWindow_Click(object sender, RoutedEventArgs e) => Close();
     }
 }

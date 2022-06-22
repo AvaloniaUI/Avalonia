@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
@@ -82,6 +83,16 @@ namespace IntegrationTestApp
             }
         }
         
+        private void SendToBack()
+        {
+            var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+
+            foreach (var window in lifetime.Windows)
+            {
+                window.Activate();
+            }
+        }
+        
         private void MenuClicked(object? sender, RoutedEventArgs e)
         {
             var clickedMenuItemTextBlock = this.FindControl<TextBlock>("ClickedMenuItem");
@@ -102,6 +113,10 @@ namespace IntegrationTestApp
                 this.FindControl<TextBlock>("ClickedMenuItem").Text = "None";
             if (source?.Name == "ShowWindow")
                 ShowWindow();
+            if (source?.Name == "SendToBack")
+                SendToBack();
+            if (source?.Name == "ExitFullscreen")
+                WindowState = WindowState.Normal;
         }
     }
 }

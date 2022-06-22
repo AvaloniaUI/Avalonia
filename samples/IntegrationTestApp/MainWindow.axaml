@@ -110,6 +110,8 @@
             <ComboBoxItem>CenterOwner</ComboBoxItem>
           </ComboBox>
           <Button Name="ShowWindow">Show Window</Button>
+          <Button Name="SendToBack">Send to Back</Button>
+          <Button Name="ExitFullscreen">Exit Fullscreen</Button>
         </StackPanel>
       </TabItem>
     </TabControl>

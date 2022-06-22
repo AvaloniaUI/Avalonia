@@ -4,8 +4,6 @@
         Name="SecondaryWindow"
         Title="Show Window Test">
   <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-    <Button Name="CloseWindow" Grid.Row="0" Click="CloseWindow_Click">Close</Button>
-
     <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
     <TextBox Name="ClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"/>
     
