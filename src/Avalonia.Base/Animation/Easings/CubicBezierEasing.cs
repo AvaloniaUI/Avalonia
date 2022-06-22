@@ -1,6 +1,4 @@
 using System;
-using Avalonia.Rendering.Composition;
-using Avalonia.Rendering.Composition.Utils;
 
 namespace Avalonia.Animation.Easings;
 
