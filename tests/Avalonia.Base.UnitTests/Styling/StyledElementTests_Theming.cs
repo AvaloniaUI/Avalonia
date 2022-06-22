@@ -82,7 +82,7 @@ public class StyledElementTests_Theming
                     {
                         Setters =
                         {
-                            new Setter(Canvas.BackgroundProperty, Brushes.Red),
+                            new Setter(Panel.BackgroundProperty, Brushes.Red),
                         }
                     },
                 }
@@ -224,6 +224,39 @@ public class StyledElementTests_Theming
             Assert.Equal(border.Background, Brushes.Green);
         }
 
+        [Fact]
+        public void Theme_Can_Be_Changed_By_Style_Class()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = CreateTarget();
+            var theme1 = CreateTheme();
+            var theme2 = new ControlTheme(typeof(ThemedControl));
+            var root = new TestRoot()
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<ThemedControl>())
+                    {
+                        Setters = { new Setter(StyledElement.ThemeProperty, theme1) }
+                    },
+                    new Style(x => x.OfType<ThemedControl>().Class("bar"))
+                    {
+                        Setters = { new Setter(StyledElement.ThemeProperty, theme2) }
+                    },
+                }
+            };
+
+            root.Child = target;
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Same(theme1, target.Theme);
+            Assert.NotNull(target.Template);
+
+            target.Classes.Add("bar");
+            Assert.Same(theme2, target.Theme);
+            Assert.Null(target.Template);
+        }
+
         private static ThemedControl CreateTarget()
         {
             return new ThemedControl();
@@ -234,15 +267,12 @@ public class StyledElementTests_Theming
             var result = new TestRoot()
             {
                 Styles =
-            {
-                new Style(x => x.OfType<ThemedControl>())
                 {
-                    Setters =
+                    new Style(x => x.OfType<ThemedControl>())
                     {
-                        new Setter(TemplatedControl.ThemeProperty, CreateTheme())
+                        Setters = { new Setter(StyledElement.ThemeProperty, CreateTheme()) }
                     }
                 }
-            }
             };
 
             result.Child = child;
@@ -260,23 +290,17 @@ public class StyledElementTests_Theming
             TargetType = typeof(ThemedControl),
             Setters =
             {
-                new Setter(ThemedControl.TemplateProperty, template),
+                new Setter(TemplatedControl.TemplateProperty, template),
             },
             Children =
             {
                 new Style(x => x.Nesting().Template().OfType<Border>())
                 {
-                    Setters =
-                    {
-                        new Setter(Border.BackgroundProperty, Brushes.Red),
-                    }
+                    Setters = { new Setter(Border.BackgroundProperty, Brushes.Red) }
                 },
                 new Style(x => x.Nesting().Class("foo").Template().OfType<Border>())
                 {
-                    Setters =
-                    {
-                        new Setter(Border.BackgroundProperty, Brushes.Green),
-                    }
+                    Setters = { new Setter(Border.BackgroundProperty, Brushes.Green) }
                 },
             }
         };
@@ -296,17 +320,11 @@ public class StyledElementTests_Theming
             {
                 new Style(x => x.Nesting().Template().OfType<Border>())
                 {
-                    Setters =
-                    {
-                        new Setter(Border.BorderBrushProperty, Brushes.Yellow),
-                    }
+                    Setters = { new Setter(Border.BorderBrushProperty, Brushes.Yellow) }
                 },
                 new Style(x => x.Nesting().Class("foo").Template().OfType<Border>())
                 {
-                    Setters =
-                    {
-                        new Setter(Border.BorderBrushProperty, Brushes.Cyan),
-                    }
+                    Setters = { new Setter(Border.BorderBrushProperty, Brushes.Cyan) }
                 },
             }
         };
