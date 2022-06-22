@@ -1,7 +1,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ProjectReference 
-      Include="$(MSBuildThisFileDirectory)/../src/Avalonia.SourceGenerator/Avalonia.SourceGenerator.csproj" 
+      Include="$(MSBuildThisFileDirectory)/../src/tools/DevGenerators/DevGenerators.csproj"
       OutputItemType="Analyzer" 
       ReferenceOutputAssembly="false"
       PrivateAssets="all" />
