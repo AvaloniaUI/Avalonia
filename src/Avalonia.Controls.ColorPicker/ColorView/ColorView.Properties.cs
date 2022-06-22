@@ -45,30 +45,6 @@ namespace Avalonia.Controls
                 ColorSpectrumShape.Box);
 
         /// <summary>
-        /// Defines the <see cref="CustomPaletteColors"/> property.
-        /// </summary>
-        public static readonly DirectProperty<ColorView, ObservableCollection<Color>> CustomPaletteColorsProperty =
-            AvaloniaProperty.RegisterDirect<ColorView, ObservableCollection<Color>>(
-                nameof(CustomPaletteColors),
-                o => o.CustomPaletteColors);
-
-        /// <summary>
-        /// Defines the <see cref="CustomPaletteColumnCount"/> property.
-        /// </summary>
-        public static readonly StyledProperty<int> CustomPaletteColumnCountProperty =
-            AvaloniaProperty.Register<ColorView, int>(
-                nameof(CustomPaletteColumnCount),
-                4);
-
-        /// <summary>
-        /// Defines the <see cref="CustomPalette"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IColorPalette?> CustomPaletteProperty =
-            AvaloniaProperty.Register<ColorView, IColorPalette?>(
-                nameof(CustomPalette),
-                null);
-
-        /// <summary>
         /// Defines the <see cref="HsvColor"/> property.
         /// </summary>
         public static readonly StyledProperty<HsvColor> HsvColorProperty =
@@ -198,6 +174,30 @@ namespace Avalonia.Controls
                 0);
 
         /// <summary>
+        /// Defines the <see cref="PaletteColors"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ColorView, ObservableCollection<Color>> PaletteColorsProperty =
+            AvaloniaProperty.RegisterDirect<ColorView, ObservableCollection<Color>>(
+                nameof(PaletteColors),
+                o => o.PaletteColors);
+
+        /// <summary>
+        /// Defines the <see cref="PaletteColumnCount"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> PaletteColumnCountProperty =
+            AvaloniaProperty.Register<ColorView, int>(
+                nameof(PaletteColumnCount),
+                4);
+
+        /// <summary>
+        /// Defines the <see cref="Palette"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IColorPalette?> PaletteProperty =
+            AvaloniaProperty.Register<ColorView, IColorPalette?>(
+                nameof(Palette),
+                null);
+
+        /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
         public static readonly StyledProperty<int> SelectedIndexProperty =
@@ -243,35 +243,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(ColorSpectrumShapeProperty);
             set => SetValue(ColorSpectrumShapeProperty, value);
-        }
-
-        /// <summary>
-        /// Gets the list of custom palette colors.
-        /// </summary>
-        public ObservableCollection<Color> CustomPaletteColors
-        {
-            get => _customPaletteColors;
-        }
-
-        /// <summary>
-        /// Gets or sets the number of colors in each row (section) of the custom color palette.
-        /// Within a standard palette, rows are shades and columns are colors.
-        /// </summary>
-        public int CustomPaletteColumnCount
-        {
-            get => GetValue(CustomPaletteColumnCountProperty);
-            set => SetValue(CustomPaletteColumnCountProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the custom color palette.
-        /// This will automatically set <see cref="CustomPaletteColors"/> and <see cref="CustomPaletteColumnCount"/>
-        /// overwriting any existing values.
-        /// </summary>
-        public IColorPalette? CustomPalette
-        {
-            get => GetValue(CustomPaletteProperty);
-            set => SetValue(CustomPaletteProperty, value);
         }
 
         /// <inheritdoc cref="ColorSpectrum.HsvColor"/>
@@ -418,6 +389,51 @@ namespace Avalonia.Controls
         {
             get => GetValue(MinValueProperty);
             set => SetValue(MinValueProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the list of individual colors in the palette.
+        /// </summary>
+        /// <remarks>
+        /// This is not commonly set manually. Instead, it should be set automatically by
+        /// providing an <see cref="IColorPalette"/> to the <see cref="Palette"/> property.
+        /// <br/><br/>
+        /// Also note that this property is what should be bound in the control template.
+        /// <see cref="Palette"/> is too high-level to use on its own.
+        /// </remarks>
+        public ObservableCollection<Color> PaletteColors
+        {
+            get => _paletteColors;
+        }
+
+        /// <summary>
+        /// Gets or sets the number of colors in each row (section) of the color palette.
+        /// Within a standard palette, rows are shades and columns are colors.
+        /// </summary>
+        /// <remarks>
+        /// This is not commonly set manually. Instead, it should be set automatically by
+        /// providing an <see cref="IColorPalette"/> to the <see cref="Palette"/> property.
+        /// <br/><br/>
+        /// Also note that this property is what should be bound in the control template.
+        /// <see cref="Palette"/> is too high-level to use on its own.
+        /// </remarks>
+        public int PaletteColumnCount
+        {
+            get => GetValue(PaletteColumnCountProperty);
+            set => SetValue(PaletteColumnCountProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the color palette.
+        /// </summary>
+        /// <remarks>
+        /// This will automatically set both <see cref="PaletteColors"/> and
+        /// <see cref="PaletteColumnCount"/> overwriting any existing values.
+        /// </remarks>
+        public IColorPalette? Palette
+        {
+            get => GetValue(PaletteProperty);
+            set => SetValue(PaletteProperty, value);
         }
 
         /// <summary>

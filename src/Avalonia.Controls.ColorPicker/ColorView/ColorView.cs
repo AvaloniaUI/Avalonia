@@ -25,7 +25,7 @@ namespace Avalonia.Controls
         private TextBox?    _hexTextBox;
         private TabControl? _tabControl;
 
-        private ObservableCollection<Color> _customPaletteColors = new ObservableCollection<Color>();
+        private ObservableCollection<Color> _paletteColors = new ObservableCollection<Color>();
         private ColorToHexConverter colorToHexConverter = new ColorToHexConverter();
         protected bool ignorePropertyChanged = false;
 
@@ -214,22 +214,22 @@ namespace Avalonia.Controls
 
                 ignorePropertyChanged = false;
             }
-            else if (change.Property == CustomPaletteProperty)
+            else if (change.Property == PaletteProperty)
             {
-                IColorPalette? palette = CustomPalette;
+                IColorPalette? palette = Palette;
 
                 // Any custom palette change must be automatically synced with the
                 // bound properties controlling the palette grid
                 if (palette != null)
                 {
-                    CustomPaletteColumnCount = palette.ColorCount;
-                    CustomPaletteColors.Clear();
+                    PaletteColumnCount = palette.ColorCount;
+                    PaletteColors.Clear();
 
                     for (int shadeIndex = 0; shadeIndex < palette.ShadeCount; shadeIndex++)
                     {
                         for (int colorIndex = 0; colorIndex < palette.ColorCount; colorIndex++)
                         {
-                            CustomPaletteColors.Add(palette.GetColor(colorIndex, shadeIndex));
+                            PaletteColors.Add(palette.GetColor(colorIndex, shadeIndex));
                         }
                     }
                 }

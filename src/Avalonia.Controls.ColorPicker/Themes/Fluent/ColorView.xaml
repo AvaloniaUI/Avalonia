@@ -81,7 +81,7 @@
 
   <Style Selector="ColorView">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="CustomPalette">
+    <Setter Property="Palette">
       <local:FluentColorPalette />
     </Setter>
     <Setter Property="Template">
@@ -198,7 +198,7 @@
                             Data="{DynamicResource ColorViewPaletteIconGeometry}" />
                 </Border>
               </TabItem.Header>
-              <ListBox Items="{TemplateBinding CustomPaletteColors}"
+              <ListBox Items="{TemplateBinding PaletteColors}"
                        SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                        UseLayoutRounding="False"
                        Margin="12">
@@ -259,7 +259,7 @@
                 </ListBox.ItemTemplate>
                 <ListBox.ItemsPanel>
                   <ItemsPanelTemplate>
-                    <UniformGrid Columns="{Binding $parent[ColorView].CustomPaletteColumnCount}" />
+                    <UniformGrid Columns="{Binding $parent[ColorView].PaletteColumnCount}" />
                   </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
               </ListBox>
