@@ -44,7 +44,7 @@ namespace Avalonia.Themes.Default
             InitStyles(_baseUri);
         }
 
-        public event EventHandler OwnerChanged
+        public event EventHandler? OwnerChanged
         {
             add
             {

@@ -1,12 +1,13 @@
 using System;
 using System.Reflection;
-using Avalonia.PlatformSupport.Internal;
+using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Moq;
 using Xunit;
 
-namespace Avalonia.PlatformSupport.UnitTests;
+namespace Avalonia.Base.UnitTests;
 
-public class AssetLoaderTests
+public class AssetLoaderTests : IDisposable
 {
     public class MockAssembly : Assembly {}
 
@@ -14,7 +15,7 @@ public class AssetLoaderTests
 
     private const string AssemblyNameWithNonAscii = "Какое-то-название";
 
-    static AssetLoaderTests()
+    public AssetLoaderTests()
     {
         var resolver = Mock.Of<IAssemblyDescriptorResolver>();
 
@@ -38,7 +39,7 @@ public class AssetLoaderTests
         Assert.Equal(AssemblyNameWithWhitespace, assemblyActual?.FullName);
     }
 
-    [Fact]
+    [Fact(Skip = "RegisterResUriParsers breaks this test. See https://github.com/AvaloniaUI/Avalonia/issues/2555.")]
     public void AssemblyName_With_Non_ASCII_Should_Load_Avares()
     {
         var uri = new Uri($"avares://{AssemblyNameWithNonAscii}/Assets/something");
@@ -58,5 +59,10 @@ public class AssetLoaderTests
         var descriptor = Mock.Of<IAssemblyDescriptor>();
         Mock.Get(descriptor).Setup(x => x.Assembly).Returns(assembly);
         return descriptor;
+    }
+
+    public void Dispose()
+    {
+        AssetLoader.SetAssemblyDescriptorResolver(new AssemblyDescriptorResolver());
     }
 }

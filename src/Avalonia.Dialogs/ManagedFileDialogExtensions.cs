@@ -8,7 +8,7 @@ namespace Avalonia.Dialogs
 {
     public static class ManagedFileDialogExtensions
     {
-        private class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
+        internal class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
         {
             async Task<string[]> Show(SystemDialog d, Window parent, ManagedFileDialogOptions options = null)
             {
@@ -141,7 +141,7 @@ namespace Avalonia.Dialogs
 
         public static Task<string[]> ShowManagedAsync(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions options = null) => ShowManagedAsync<Window>(dialog, parent, options);
-        
+
         public static Task<string[]> ShowManagedAsync<TWindow>(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions options = null) where TWindow : Window, new()
         {

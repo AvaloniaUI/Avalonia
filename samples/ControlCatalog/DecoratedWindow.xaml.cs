@@ -15,7 +15,7 @@ namespace ControlCatalog
 
         void SetupSide(string name, StandardCursorType cursor, WindowEdge edge)
         {
-            var ctl = this.FindControl<Control>(name);
+            var ctl = this.Get<Control>(name);
             ctl.Cursor = new Cursor(cursor);
             ctl.PointerPressed += (i, e) =>
             {
@@ -26,7 +26,7 @@ namespace ControlCatalog
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            this.FindControl<Control>("TitleBar").PointerPressed += (i, e) =>
+            this.Get<Control>("TitleBar").PointerPressed += (i, e) =>
             {
                 PlatformImpl?.BeginMoveDrag(e);
             };
@@ -38,12 +38,12 @@ namespace ControlCatalog
             SetupSide("TopRight", StandardCursorType.TopRightCorner, WindowEdge.NorthEast);
             SetupSide("BottomLeft", StandardCursorType.BottomLeftCorner, WindowEdge.SouthWest);
             SetupSide("BottomRight", StandardCursorType.BottomRightCorner, WindowEdge.SouthEast);
-            this.FindControl<Button>("MinimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
-            this.FindControl<Button>("MaximizeButton").Click += delegate
+            this.Get<Button>("MinimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
+            this.Get<Button>("MaximizeButton").Click += delegate
             {
                 WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
             };
-            this.FindControl<Button>("CloseButton").Click += delegate
+            this.Get<Button>("CloseButton").Click += delegate
             {
                 Close();
             };
