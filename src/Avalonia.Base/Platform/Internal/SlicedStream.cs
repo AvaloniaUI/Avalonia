@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Avalonia.PlatformSupport.Internal;
+namespace Avalonia.Platform.Internal;
 
 internal class SlicedStream : Stream
 {

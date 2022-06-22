@@ -9,7 +9,7 @@ namespace ControlCatalog.ViewModels
 {
     public class ContextPageViewModel
     {
-        public Control View { get; set; }
+        public Control? View { get; set; }
         public ContextPageViewModel()
         {
             OpenCommand = MiniCommand.CreateFromTask(Open);

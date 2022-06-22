@@ -42,7 +42,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         bool IResourceNode.HasResources => Loaded.HasResources;
 
-        public event EventHandler OwnerChanged
+        public event EventHandler? OwnerChanged
         {
             add => Loaded.OwnerChanged += value;
             remove => Loaded.OwnerChanged -= value;
@@ -52,7 +52,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
             if (!_isLoading)
             {
-                return Loaded.TryGetResource(key, out value);                
+                return Loaded.TryGetResource(key, out value);
             }
 
             value = null;

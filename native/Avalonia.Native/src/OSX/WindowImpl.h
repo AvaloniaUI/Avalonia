@@ -93,8 +93,6 @@ BEGIN_INTERFACE_MAP()
 
     virtual bool IsDialog() override;
     
-    virtual void OnInitialiseNSWindow() override;
-    
     virtual void BringToFront () override;
     
     bool CanBecomeKeyWindow ();
@@ -103,6 +101,7 @@ protected:
     virtual NSWindowStyleMask GetStyle() override;
 
 private:
+    void OnInitialiseNSWindow();
     NSString *_lastTitle;
 };
 

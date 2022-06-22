@@ -16,5 +16,10 @@ namespace Avalonia.Platform.Interop
         {
             
         }
+        
+        public DynamicLibraryLoaderException(string message, Exception innerException) : base(message, innerException)
+        {
+            
+        }
     }
 }

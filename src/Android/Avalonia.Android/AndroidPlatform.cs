@@ -61,8 +61,6 @@ namespace Avalonia.Android
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
-            SkiaPlatform.Initialize();
-
             if (options.UseGpu)
             {
                 EglPlatformOpenGlInterface.TryInitialize();
