@@ -43,6 +43,8 @@ namespace Avalonia.Rendering
             }
         }
 
+        public bool RunsInBackground => true;
+
         void LoopProc()
         {
             var lastTick = _st.Elapsed;

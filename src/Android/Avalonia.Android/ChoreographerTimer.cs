@@ -29,6 +29,9 @@ namespace Avalonia.Android
             _thread = new Thread(Loop);
             _thread.Start();
         }
+        
+        
+        public bool RunsInBackground => true;
 
         public event Action<TimeSpan> Tick
         {

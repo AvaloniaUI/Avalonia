@@ -27,5 +27,7 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="i">The update task.</param>
         void Remove(IRenderLoopTask i);
+        
+        bool RunsInBackground { get; }
     }
 }

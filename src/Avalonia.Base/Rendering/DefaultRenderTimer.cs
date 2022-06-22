@@ -59,6 +59,8 @@ namespace Avalonia.Rendering
             }
         }
 
+        public bool RunsInBackground => true;
+
         /// <summary>
         /// Starts the timer.
         /// </summary>

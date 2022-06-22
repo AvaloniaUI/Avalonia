@@ -28,6 +28,8 @@ namespace Avalonia.iOS
         }
 
         public Thread TimerThread { get;  }
+        
+        public bool RunsInBackground => true;
 
         private void OnLinkTick()
         {

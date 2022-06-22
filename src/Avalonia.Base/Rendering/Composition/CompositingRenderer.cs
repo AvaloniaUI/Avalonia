@@ -232,7 +232,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
     {
         Update();
         _target.RequestRedraw();
-        if(RenderOnlyOnRenderThread)
+        if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground)
             Compositor.RequestCommitAsync().Wait();
         else
             _target.ImmediateUIThreadRender();
@@ -249,9 +249,11 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
     {
         Stop();
         _target.Dispose();
+        
         // Wait for the composition batch to be applied and rendered to guarantee that
         // render target is not used anymore and can be safely disposed
-        _compositor.RequestCommitAsync().Wait();
+        if (Compositor.Loop.RunsInBackground)
+            _compositor.RequestCommitAsync().Wait();
     }
 
 

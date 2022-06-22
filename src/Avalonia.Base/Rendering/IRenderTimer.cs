@@ -18,5 +18,10 @@ namespace Avalonia.Rendering
         /// switch execution to the right thread.
         /// </remarks>
         event Action<TimeSpan> Tick;
+
+        /// <summary>
+        /// Indicates if the timer ticks on a non-UI thread
+        /// </summary>
+        bool RunsInBackground { get; }
     }
 }

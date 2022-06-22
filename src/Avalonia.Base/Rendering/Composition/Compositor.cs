@@ -15,6 +15,7 @@ namespace Avalonia.Rendering.Composition
 {
     public partial class Compositor
     {
+        internal IRenderLoop Loop { get; }
         private ServerCompositor _server;
         private bool _implicitBatchCommitQueued;
         private Action _implicitBatchCommit;
@@ -26,6 +27,7 @@ namespace Avalonia.Rendering.Composition
         
         public Compositor(IRenderLoop loop, IPlatformGpu? gpu)
         {
+            Loop = loop;
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
             _implicitBatchCommit = ImplicitBatchCommit;
             DefaultEasing = new CubicBezierEasingFunction(this,
@@ -58,11 +60,6 @@ namespace Avalonia.Rendering.Composition
             batch.CommitedAt = Server.Clock.Elapsed;
             _server.EnqueueBatch(batch);
             return batch.Completed;
-        }
-
-        public void Dispose()
-        {
-            
         }
 
         public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
