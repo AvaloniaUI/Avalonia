@@ -54,7 +54,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent()
         {
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
@@ -73,7 +73,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
         
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_Clicking_Resize_Grip()
         {
             var mainWindow = _session.FindWindowOuter("MainWindow");
@@ -100,7 +100,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
         
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_In_Fullscreen()
         {
             var mainWindow = _session.FindWindowOuter("MainWindow");
@@ -129,7 +129,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
         
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void OSX_WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent()
         {
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
@@ -148,7 +148,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void OSX_WindowOrder_NonOwned_Window_Does_Not_Stay_InFront_Of_Parent()
         {
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
@@ -173,7 +173,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void OSX_Parent_Window_Has_Disabled_ChromeButtons_When_Modal_Dialog_Shown()
         {
             var mainWindowHandle = GetCurrentWindowHandleHack();
@@ -196,7 +196,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
         
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void OSX_Minimize_Button_Disabled_Modal_Dialog()
         {
             var mainWindowHandle = GetCurrentWindowHandleHack();
