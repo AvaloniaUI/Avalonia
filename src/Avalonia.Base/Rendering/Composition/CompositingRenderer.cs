@@ -209,20 +209,17 @@ public class CompositingRenderer : IRendererWithCompositor
             
             var renderTransform = Matrix.Identity;
 
+            if (visual.HasMirrorTransform) 
+                renderTransform = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
+
             if (visual.RenderTransform != null)
             {
                 var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                 var offset = Matrix.CreateTranslation(origin);
-                renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
+                renderTransform *= (-offset) * visual.RenderTransform.Value * (offset);
             }
 
-            
 
-            if (visual.HasMirrorTransform)
-            {
-                var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
-                renderTransform *= mirrorMatrix;
-            }
 
             comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
 
