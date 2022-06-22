@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
@@ -176,10 +177,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PaletteColors"/> property.
         /// </summary>
-        public static readonly DirectProperty<ColorView, ObservableCollection<Color>> PaletteColorsProperty =
-            AvaloniaProperty.RegisterDirect<ColorView, ObservableCollection<Color>>(
+        public static readonly StyledProperty<IEnumerable<Color>?> PaletteColorsProperty =
+            AvaloniaProperty.Register<ColorView, IEnumerable<Color>?>(
                 nameof(PaletteColors),
-                o => o.PaletteColors);
+                null);
 
         /// <summary>
         /// Defines the <see cref="PaletteColumnCount"/> property.
@@ -392,7 +393,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the list of individual colors in the palette.
+        /// Gets or sets the collection of individual colors in the palette.
         /// </summary>
         /// <remarks>
         /// This is not commonly set manually. Instead, it should be set automatically by
@@ -401,9 +402,10 @@ namespace Avalonia.Controls
         /// Also note that this property is what should be bound in the control template.
         /// <see cref="Palette"/> is too high-level to use on its own.
         /// </remarks>
-        public ObservableCollection<Color> PaletteColors
+        public IEnumerable<Color>? PaletteColors
         {
-            get => _paletteColors;
+            get => GetValue(PaletteColorsProperty);
+            set => SetValue(PaletteColorsProperty, value);
         }
 
         /// <summary>

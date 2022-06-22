@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using Avalonia.Controls.Converters;
@@ -223,15 +224,17 @@ namespace Avalonia.Controls
                 if (palette != null)
                 {
                     PaletteColumnCount = palette.ColorCount;
-                    PaletteColors.Clear();
 
+                    List<Color> newPaletteColors = new List<Color>();
                     for (int shadeIndex = 0; shadeIndex < palette.ShadeCount; shadeIndex++)
                     {
                         for (int colorIndex = 0; colorIndex < palette.ColorCount; colorIndex++)
                         {
-                            PaletteColors.Add(palette.GetColor(colorIndex, shadeIndex));
+                            newPaletteColors.Add(palette.GetColor(colorIndex, shadeIndex));
                         }
                     }
+
+                    PaletteColors = newPaletteColors;
                 }
             }
             else if (change.Property == IsColorComponentsVisibleProperty ||
