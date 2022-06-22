@@ -6,6 +6,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition
 {
+    /// <summary>
+    /// Represents the composition output (e. g. a window, embedded control, entire screen)
+    /// </summary>
     public partial class CompositionTarget
     {
         partial void OnRootChanged()
@@ -20,6 +23,12 @@ namespace Avalonia.Rendering.Composition
                 Root.Root = null;
         }
         
+        /// <summary>
+        /// Attempts to perform a hit-tst
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         public PooledList<CompositionVisual>? TryHitTest(Point point, Func<IVisual, bool>? filter)
         {
             Server.Readback.NextRead();
@@ -30,6 +39,10 @@ namespace Avalonia.Rendering.Composition
             return res;
         }
 
+        /// <summary>
+        /// Attempts to transform a point to a particular CompositionVisual coordinate space
+        /// </summary>
+        /// <returns></returns>
         public Point? TryTransformToVisual(CompositionVisual visual, Point point)
         {
             if (visual.Root != this)
@@ -108,8 +121,14 @@ namespace Avalonia.Rendering.Composition
 
         }
 
+        /// <summary>
+        /// Registers the composition target for explicit redraw
+        /// </summary>
         public void RequestRedraw() => RegisterForSerialization();
 
+        /// <summary>
+        /// Performs composition directly on the UI thread 
+        /// </summary>
         internal void ImmediateUIThreadRender()
         {
             Compositor.RequestCommitAsync();

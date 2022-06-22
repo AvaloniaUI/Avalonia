@@ -10,6 +10,9 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 namespace Avalonia.Rendering.Composition;
 
+/// <summary>
+/// An IDrawingContextImpl implementation that builds <see cref="CompositionDrawList"/>
+/// </summary>
 internal class CompositionDrawingContext : IDrawingContextImpl
 {
     private CompositionDrawListBuilder _builder = new();

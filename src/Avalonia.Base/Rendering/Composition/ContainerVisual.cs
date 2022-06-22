@@ -2,6 +2,9 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition
 {
+    /// <summary>
+    /// A node in the visual tree that can have children.
+    /// </summary>
     public partial class CompositionContainerVisual : CompositionVisual
     {
         public CompositionVisualCollection Children { get; private set; } = null!;

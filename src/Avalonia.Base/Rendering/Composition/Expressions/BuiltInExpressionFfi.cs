@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Rendering.Composition.Animations;
-using Avalonia.Rendering.Composition.Utils;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
+    /// <summary>
+    /// Built-in functions for Foreign Function Interface available from composition animation expressions
+    /// </summary>
     internal class BuiltInExpressionFfi : IExpressionForeignFunctionInterface
     {
         private readonly DelegateExpressionFfi _registry;
@@ -26,7 +29,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
         static float SmoothStep(float edge0, float edge1, float x)
         {
-            var t = MathExt.Clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+            var t = MathUtilities.Clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
             return t * t * (3.0f - 2.0f * t);
         }
 
@@ -72,7 +75,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 {"ATan", (float f) => (float) Math.Atan(f)},
                 {"Ceil", (float f) => (float) Math.Ceiling(f)},
 
-                {"Clamp", (float a1, float a2, float a3) => MathExt.Clamp(a1, a2, a3)},
+                {"Clamp", (float a1, float a2, float a3) => MathUtilities.Clamp(a1, a2, a3)},
                 {"Clamp", (Vector2 a1, Vector2 a2, Vector2 a3) => Vector2.Clamp(a1, a2, a3)},
                 {"Clamp", (Vector3 a1, Vector3 a2, Vector3 a3) => Vector3.Clamp(a1, a2, a3)},
                 {"Clamp", (Vector4 a1, Vector4 a2, Vector4 a3) => Vector4.Clamp(a1, a2, a3)},
@@ -96,10 +99,10 @@ namespace Avalonia.Rendering.Composition.Expressions
                 },
                 {
                     "ColorRGB", (float a, float r, float g, float b) => Avalonia.Media.Color.FromArgb(
-                        (byte) MathExt.Clamp(a, 0, 255),
-                        (byte) MathExt.Clamp(r, 0, 255),
-                        (byte) MathExt.Clamp(g, 0, 255),
-                        (byte) MathExt.Clamp(b, 0, 255)
+                        (byte) MathUtilities.Clamp(a, 0, 255),
+                        (byte) MathUtilities.Clamp(r, 0, 255),
+                        (byte) MathUtilities.Clamp(g, 0, 255),
+                        (byte) MathUtilities.Clamp(b, 0, 255)
                     )
                 },
 

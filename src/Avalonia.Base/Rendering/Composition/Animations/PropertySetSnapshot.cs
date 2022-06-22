@@ -3,6 +3,9 @@ using Avalonia.Rendering.Composition.Expressions;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
+    /// <summary>
+    /// A snapshot of properties used by an animation
+    /// </summary>
     internal class PropertySetSnapshot : IExpressionParameterCollection, IExpressionObject
     {
         private readonly Dictionary<string, Value> _dic;

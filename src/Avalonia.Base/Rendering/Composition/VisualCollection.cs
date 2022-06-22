@@ -3,6 +3,9 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition
 {
+    /// <summary>
+    /// A collection of CompositionVisual objects
+    /// </summary>
     public partial class CompositionVisualCollection : CompositionObject
     {
         private CompositionVisual _owner;

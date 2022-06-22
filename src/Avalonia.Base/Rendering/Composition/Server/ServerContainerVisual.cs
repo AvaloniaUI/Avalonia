@@ -3,6 +3,11 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition.Server
 {
+    /// <summary>
+    /// Server-side counterpart of <see cref="CompositionContainerVisual"/>.
+    /// Mostly propagates update and render calls, but is also responsible
+    /// for updating adorners in deferred manner
+    /// </summary>
     internal partial class ServerCompositionContainerVisual : ServerCompositionVisual
     {
         public ServerCompositionVisualCollection Children { get; private set; } = null!;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
+using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
@@ -13,6 +14,10 @@ using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition
 {
+    /// <summary>
+    /// The Compositor class manages communication between UI-thread and render-thread parts of the composition engine.
+    /// It also serves as a factory to create UI-thread parts of various composition objects 
+    /// </summary>
     public partial class Compositor
     {
         internal IRenderLoop Loop { get; }
@@ -23,22 +28,38 @@ namespace Avalonia.Rendering.Composition
         private BatchStreamMemoryPool _batchMemoryPool = new();
         private List<CompositionObject> _objectsForSerialization = new();
         internal ServerCompositor Server => _server;
-        internal CompositionEasingFunction DefaultEasing { get; }
-        
+        internal IEasing DefaultEasing { get; }
+        private List<Action>? _invokeOnNextCommit;
+        private readonly Stack<List<Action>> _invokeListPool = new();
+
+        /// <summary>
+        /// Creates a new compositor on a specified render loop that would use a particular GPU
+        /// </summary>
+        /// <param name="loop"></param>
+        /// <param name="gpu"></param>
         public Compositor(IRenderLoop loop, IPlatformGpu? gpu)
         {
             Loop = loop;
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
             _implicitBatchCommit = ImplicitBatchCommit;
-            DefaultEasing = new CubicBezierEasingFunction(this,
-                new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f));
+
+            DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
         }
 
+        /// <summary>
+        /// Creates a new CompositionTarget
+        /// </summary>
+        /// <param name="renderTargetFactory">A factory method to create IRenderTarget to be called from the render thread</param>
+        /// <returns></returns>
         public CompositionTarget CreateCompositionTarget(Func<IRenderTarget> renderTargetFactory)
         {
             return new CompositionTarget(this, new ServerCompositionTarget(_server, renderTargetFactory));
         }
 
+        /// <summary>
+        /// Requests pending changes in the composition objects to be serialized and sent to the render thread
+        /// </summary>
+        /// <returns>A task that completes when sent changes are applied and rendered on the render thread</returns>
         public Task RequestCommitAsync()
         {
             var batch = new Batch();
@@ -59,64 +80,25 @@ namespace Avalonia.Rendering.Composition
             
             batch.CommitedAt = Server.Clock.Elapsed;
             _server.EnqueueBatch(batch);
+            if (_invokeOnNextCommit != null) 
+                ScheduleCommitCallbacks(batch.Completed);
+            
             return batch.Completed;
+        }
+
+        async void ScheduleCommitCallbacks(Task task)
+        {
+            var list = _invokeOnNextCommit;
+            _invokeOnNextCommit = null;
+            await task;
+            foreach (var i in list!)
+                i();
+            list.Clear();
+            _invokeListPool.Push(list);
         }
 
         public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
         
-        public CompositionSolidColorVisual CreateSolidColorVisual() => new CompositionSolidColorVisual(this, 
-            new ServerCompositionSolidColorVisual(_server));
-
-        public CompositionSolidColorVisual CreateSolidColorVisual(Avalonia.Media.Color color)
-        {
-            var v = new CompositionSolidColorVisual(this, new ServerCompositionSolidColorVisual(_server));
-            v.Color = color;
-            return v;
-        }
-
-        public CompositionSpriteVisual CreateSpriteVisual() => new CompositionSpriteVisual(this, new ServerCompositionSpriteVisual(_server));
-
-        public CompositionLinearGradientBrush CreateLinearGradientBrush() 
-            => new CompositionLinearGradientBrush(this, new ServerCompositionLinearGradientBrush(_server));
-
-        public CompositionColorGradientStop CreateColorGradientStop()
-            => new CompositionColorGradientStop(this, new ServerCompositionColorGradientStop(_server));
-
-        public CompositionColorGradientStop CreateColorGradientStop(float offset, Avalonia.Media.Color color)
-        {
-            var stop = CreateColorGradientStop();
-            stop.Offset = offset;
-            stop.Color = color;
-            return stop;
-        }
-
-        // We want to make it 100% async later
-        /*
-        public CompositionBitmapSurface LoadBitmapSurface(Stream stream)
-        {
-            var bmp = _server.Backend.LoadCpuMemoryBitmap(stream);
-            return new CompositionBitmapSurface(this, bmp);
-        }
-
-        public async Task<CompositionBitmapSurface> LoadBitmapSurfaceAsync(Stream stream)
-        {
-            var bmp = await Task.Run(() => _server.Backend.LoadCpuMemoryBitmap(stream));
-            return new CompositionBitmapSurface(this, bmp);
-        }
-        */
-        public CompositionColorBrush CreateColorBrush(Avalonia.Media.Color color) =>
-            new CompositionColorBrush(this, new ServerCompositionColorBrush(_server)) {Color = color};
-
-        public CompositionSurfaceBrush CreateSurfaceBrush() =>
-            new CompositionSurfaceBrush(this, new ServerCompositionSurfaceBrush(_server));
-
-        /*
-        public CompositionGaussianBlurEffectBrush CreateGaussianBlurEffectBrush() =>
-            new CompositionGaussianBlurEffectBrush(this, new ServerCompositionGaussianBlurEffectBrush(_server));
-
-        public CompositionBackdropBrush CreateBackdropBrush() =>
-            new CompositionBackdropBrush(this, new ServerCompositionBackdropBrush(Server));*/
-
         public ExpressionAnimation CreateExpressionAnimation() => new ExpressionAnimation(this);
 
         public ExpressionAnimation CreateExpressionAnimation(string expression) => new ExpressionAnimation(this)
@@ -146,6 +128,12 @@ namespace Avalonia.Rendering.Composition
         {
             _objectsForSerialization.Add(compositionObject);
             QueueImplicitBatchCommit();
+        }
+
+        internal void InvokeOnNextCommit(Action action)
+        {
+            _invokeOnNextCommit ??= _invokeListPool.Count > 0 ? _invokeListPool.Pop() : new();
+            _invokeOnNextCommit.Add(action);
         }
     }
 }

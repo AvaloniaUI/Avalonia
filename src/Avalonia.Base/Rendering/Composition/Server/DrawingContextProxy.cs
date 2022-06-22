@@ -8,6 +8,13 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
+/// <summary>
+/// A bunch of hacks to make the existing rendering operations and IDrawingContext
+/// to work with composition rendering infrastructure.
+/// 1) Keeps and applies the transform of the current visual since drawing operations think that
+/// they have information about the full render transform (they are not)
+/// 2) Keeps the draw list for the VisualBrush contents of the current drawing operation.
+/// </summary>
 internal class CompositorDrawingContextProxy : IDrawingContextImpl
 {
     private IDrawingContextImpl _impl;

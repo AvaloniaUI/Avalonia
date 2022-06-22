@@ -7,6 +7,9 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
+    /// <summary>
+    /// Foreign function interface for composition animations based on calling delegates
+    /// </summary>
     internal class DelegateExpressionFfi : IExpressionForeignFunctionInterface, IEnumerable
     {
         struct FfiRecord

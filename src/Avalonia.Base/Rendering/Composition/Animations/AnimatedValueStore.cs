@@ -7,10 +7,15 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
+    /// <summary>
+    /// This is the first element of both animated and non-animated value stores.
+    /// It's used to propagate property invalidation to subscribers 
+    /// </summary>
+    
     internal struct ServerObjectSubscriptionStore
     {
         public bool IsValid;
-        public RefTrackingDictionary<IAnimationInstance> Subscribers;
+        public RefTrackingDictionary<IAnimationInstance>? Subscribers;
 
         public void Invalidate()
         {
@@ -23,6 +28,10 @@ namespace Avalonia.Rendering.Composition.Animations
         }
     }
 
+    /// <summary>
+    /// The value store for non-animated values that can still be referenced by animations.
+    /// Simply stores the value and notifies subscribers
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     internal struct ServerValueStore<T>
     {
@@ -43,7 +52,12 @@ namespace Avalonia.Rendering.Composition.Animations
             }
         }
     }
-
+    
+    /// <summary>
+    /// Value store for potentially animated values. Can hold both direct value and animation instance.
+    /// Is also responsible for activating/deactivating the animation when container object is activated/deactivated 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [StructLayout(LayoutKind.Sequential)]
     internal struct ServerAnimatedValueStore<T> where T : struct
     {
@@ -52,8 +66,6 @@ namespace Avalonia.Rendering.Composition.Animations
         private IAnimationInstance? _animation;
         private T _direct;
         private T? _lastAnimated;
-
-        public T Direct => _direct;
 
         public T GetAnimated(ServerCompositor compositor)
         {

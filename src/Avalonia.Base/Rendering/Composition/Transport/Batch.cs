@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Rendering.Composition.Transport
 {
+    /// <summary>
+    /// Represents a group of serialized changes from the UI thread to be atomically applied at the render thread
+    /// </summary>
     internal class Batch
     {
         private static long _nextSequenceId = 1;

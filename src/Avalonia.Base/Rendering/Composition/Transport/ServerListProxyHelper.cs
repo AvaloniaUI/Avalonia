@@ -4,6 +4,11 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Transport
 {
+    /// <summary>
+    /// A helper class used from generated UI-thread-side collections of composition objects.
+    /// </summary>
+    // NOTE: This should probably be a base class since TServer isn't used anymore and it was the reason why 
+    // it couldn't be exposed as a base class
     class ServerListProxyHelper<TClient, TServer> : IList<TClient>
         where TServer : ServerObject
         where TClient : CompositionObject

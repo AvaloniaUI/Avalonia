@@ -8,6 +8,9 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
+/// <summary>
+/// An FPS counter helper that can draw itself on the render thread
+/// </summary>
 internal class FpsCounter
 {
     private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
@@ -17,6 +20,7 @@ internal class FpsCounter
     private TimeSpan _lastFpsUpdate;
     const int FirstChar = 32;
     const int LastChar = 126;
+    // ASCII chars
     private GlyphRun[] _runs = new GlyphRun[LastChar - FirstChar + 1];
     
     public FpsCounter(GlyphTypeface typeface)

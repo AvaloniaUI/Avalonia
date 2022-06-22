@@ -1,9 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Animation.Easings;
 using Avalonia.Rendering.Composition.Expressions;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
+    
+    /// <summary>
+    /// Collection of composition animation key frames
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     class KeyFrames<T> : List<KeyFrame<T>>, IKeyFrames
     {
         void Validate(float key)
@@ -14,8 +20,7 @@ namespace Avalonia.Rendering.Composition.Animations
                 throw new ArgumentException("Key frame key " + key + " is less than the previous one");
         }
         
-        public void InsertExpressionKeyFrame(float normalizedProgressKey, string value,
-            CompositionEasingFunction easingFunction)
+        public void InsertExpressionKeyFrame(float normalizedProgressKey, string value, IEasing easingFunction)
         {
             Validate(normalizedProgressKey);
             Add(new KeyFrame<T>
@@ -26,7 +31,7 @@ namespace Avalonia.Rendering.Composition.Animations
             });
         }
 
-        public void Insert(float normalizedProgressKey, T value, CompositionEasingFunction easingFunction)
+        public void Insert(float normalizedProgressKey, T value, IEasing easingFunction)
         {
             Validate(normalizedProgressKey);
             Add(new KeyFrame<T>
@@ -47,7 +52,7 @@ namespace Avalonia.Rendering.Composition.Animations
                 {
                     Expression = f.Expression,
                     Value = f.Value,
-                    EasingFunction = f.EasingFunction.Snapshot(),
+                    EasingFunction = f.EasingFunction,
                     Key = f.NormalizedProgressKey
                 };
             }
@@ -55,26 +60,30 @@ namespace Avalonia.Rendering.Composition.Animations
         }
     }
 
+    /// <summary>
+    /// Composition animation key frame
+    /// </summary>
     struct KeyFrame<T>
     {
         public float NormalizedProgressKey;
         public T Value;
         public Expression Expression;
-        public CompositionEasingFunction EasingFunction;
+        public IEasing EasingFunction;
     }
     
+    /// <summary>
+    /// Server-side composition animation key frame
+    /// </summary>
     struct ServerKeyFrame<T>
     {
         public T Value;
         public Expression? Expression;
-        public IEasingFunction EasingFunction;
+        public IEasing EasingFunction;
         public float Key;
     }
-
     
-
     interface IKeyFrames
     {
-        public void InsertExpressionKeyFrame(float normalizedProgressKey, string value, CompositionEasingFunction easingFunction);
+        public void InsertExpressionKeyFrame(float normalizedProgressKey, string value, IEasing easingFunction);
     }
 }

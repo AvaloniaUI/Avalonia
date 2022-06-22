@@ -34,7 +34,7 @@ namespace Avalonia.Rendering.Composition
         private KeyFrames<{a.Type}> _keyFrames = new KeyFrames<{a.Type}>();
         private protected override IKeyFrames KeyFrames => _keyFrames;
 
-        public void InsertKeyFrame(float normalizedProgressKey, {a.Type} value, CompositionEasingFunction easingFunction)
+        public void InsertKeyFrame(float normalizedProgressKey, {a.Type} value, Avalonia.Animation.Easings.IEasing easingFunction)
         {{
             _keyFrames.Insert(normalizedProgressKey, value, easingFunction);
         }}

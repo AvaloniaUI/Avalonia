@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Animation;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
+    /// <summary>
+    /// Server-side counterpart of KeyFrameAnimation with values baked-in
+    /// </summary>
     class KeyFrameAnimationInstance<T> : AnimationInstanceBase, IAnimationInstance where T : struct
     {
         private readonly IInterpolator<T> _interpolator;
@@ -12,7 +16,7 @@ namespace Avalonia.Rendering.Composition.Animations
         private readonly ExpressionVariant? _finalValue;
         private readonly AnimationDelayBehavior _delayBehavior;
         private readonly TimeSpan _delayTime;
-        private readonly AnimationDirection _direction;
+        private readonly PlaybackDirection _direction;
         private readonly TimeSpan _duration;
         private readonly AnimationIterationBehavior _iterationBehavior;
         private readonly int _iterationCount;
@@ -27,7 +31,7 @@ namespace Avalonia.Rendering.Composition.Animations
             PropertySetSnapshot snapshot, ExpressionVariant? finalValue,
             ServerObject target,
             AnimationDelayBehavior delayBehavior, TimeSpan delayTime,
-            AnimationDirection direction, TimeSpan duration,
+            PlaybackDirection direction, TimeSpan duration,
             AnimationIterationBehavior iterationBehavior,
             int iterationCount, AnimationStopBehavior stopBehavior) : base(target, snapshot)
         {
@@ -96,11 +100,11 @@ namespace Avalonia.Rendering.Composition.Animations
             elapsed = TimeSpan.FromTicks(elapsed.Ticks % _duration.Ticks);
 
             var reverse =
-                _direction == AnimationDirection.Alternate
+                _direction == PlaybackDirection.Alternate
                     ? !evenIterationNumber
-                    : _direction == AnimationDirection.AlternateReverse
+                    : _direction == PlaybackDirection.AlternateReverse
                         ? evenIterationNumber
-                        : _direction == AnimationDirection.Reverse;
+                        : _direction == PlaybackDirection.Reverse;
 
             var iterationProgress = elapsed.TotalSeconds / _duration.TotalSeconds;
             if (reverse)
@@ -128,7 +132,7 @@ namespace Avalonia.Rendering.Composition.Animations
 
             var keyProgress = Math.Max(0, Math.Min(1, (iterationProgress - left.Key) / (right.Key - left.Key)));
 
-            var easedKeyProgress = right.EasingFunction.Ease((float) keyProgress);
+            var easedKeyProgress = (float)right.EasingFunction.Ease(keyProgress);
             if (float.IsNaN(easedKeyProgress) || float.IsInfinity(easedKeyProgress))
                 return currentValue;
             

@@ -1,5 +1,10 @@
 namespace Avalonia.Rendering.Composition.Server
 {
+    /// <summary>
+    /// A helper class used to manage the current slots for writing data from the render thread
+    /// and reading it from the UI thread.
+    /// Used mostly by hit-testing which needs to know the last transform of the visual
+    /// </summary>
     internal class ReadbackIndices
     {
         private readonly object _lock = new object();

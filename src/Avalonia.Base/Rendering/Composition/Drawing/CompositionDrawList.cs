@@ -6,6 +6,9 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
+/// <summary>
+/// A list of serialized drawing commands
+/// </summary>
 internal class CompositionDrawList : PooledList<IRef<IDrawOperation>>
 {
     public Size? Size { get; set; }
@@ -47,6 +50,9 @@ internal class CompositionDrawList : PooledList<IRef<IDrawOperation>>
     }
 }
 
+/// <summary>
+/// An helper class for building <see cref="CompositionDrawList"/>
+/// </summary>
 internal class CompositionDrawListBuilder
 {
     private CompositionDrawList? _operations;

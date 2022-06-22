@@ -5,6 +5,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition
 {
+    /// <summary>
+    /// The base visual object in the composition visual hierarchy.
+    /// </summary>
     public abstract partial class CompositionVisual
     {
         private IBrush? _opacityMask;

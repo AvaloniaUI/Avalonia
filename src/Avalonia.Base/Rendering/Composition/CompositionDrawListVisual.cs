@@ -7,12 +7,23 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
 
+
+/// <summary>
+/// A composition visual that holds a list of drawing commands issued by <see cref="Avalonia.Visual"/>
+/// </summary>
 internal class CompositionDrawListVisual : CompositionContainerVisual
 {
+    /// <summary>
+    /// The associated <see cref="Avalonia.Visual"/>
+    /// </summary>
     public Visual Visual { get; }
 
     private bool _drawListChanged;
     private CompositionDrawList? _drawList;
+    
+    /// <summary>
+    /// The list of drawing commands
+    /// </summary>
     public CompositionDrawList? DrawList
     {
         get => _drawList;

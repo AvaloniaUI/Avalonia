@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Utilities;
 
+/// <summary>
+/// Maintains a set of objects with reference counts
+/// </summary>
 internal class RefTrackingDictionary<TKey> : Dictionary<TKey, int> where TKey : class
 {
     /// <summary>

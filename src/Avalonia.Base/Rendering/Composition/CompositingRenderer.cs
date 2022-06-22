@@ -13,7 +13,10 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
 
-public class CompositingRenderer : RendererBase, IRendererWithCompositor
+/// <summary>
+/// A renderer that utilizes <see cref="Avalonia.Rendering.Composition.Compositor"/> to render the visual tree 
+/// </summary>
+public class CompositingRenderer : IRendererWithCompositor
 {
     private readonly IRenderRoot _root;
     private readonly Compositor _compositor;
@@ -24,9 +27,10 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
     private readonly CompositionTarget _target;
     private bool _queuedUpdate;
     private Action _update;
+    private Action _invalidateScene;
 
     /// <summary>
-    /// Forces the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered
+    /// Asks the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered.
     /// </summary>
     public bool RenderOnlyOnRenderThread { get; set; } = true;
 
@@ -39,20 +43,24 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
         _target = compositor.CreateCompositionTarget(root.CreateRenderTarget);
         _target.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
         _update = Update;
+        _invalidateScene = InvalidateScene;
     }
 
+    /// <inheritdoc/>
     public bool DrawFps
     {
         get => _target.DrawFps;
         set => _target.DrawFps = value;
     }
-
+    
+    /// <inheritdoc/>
     public bool DrawDirtyRects
     {
         get => _target.DrawDirtyRects;
         set => _target.DrawDirtyRects = value;
     }
 
+    /// <inheritdoc/>
     public event EventHandler<SceneInvalidatedEventArgs>? SceneInvalidated;
 
     void QueueUpdate()
@@ -62,12 +70,15 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
         _queuedUpdate = true;
         Dispatcher.UIThread.Post(_update, DispatcherPriority.Composition);
     }
+    
+    /// <inheritdoc/>
     public void AddDirty(IVisual visual)
     {
         _dirty.Add((Visual)visual);
         QueueUpdate();
     }
 
+    /// <inheritdoc/>
     public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
     {
         var res = _target.TryHitTest(p, filter);
@@ -84,12 +95,14 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
         }
     }
 
+    /// <inheritdoc/>
     public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool>? filter)
     {
         // TODO: Optimize
         return HitTest(p, root, filter).FirstOrDefault();
     }
 
+    /// <inheritdoc/>
     public void RecalculateChildren(IVisual visual)
     {
         _recalculateChildren.Add((Visual)visual);
@@ -172,7 +185,10 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
                     compositionChildren.Add(compositionChild);
             }
     }
-    
+
+    private void InvalidateScene() =>
+        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
+
     private void Update()
     {
         _queuedUpdate = false;
@@ -223,6 +239,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
         _recalculateChildren.Clear();
         _target.Size = _root.ClientSize;
         _target.Scaling = _root.RenderScaling;
+        Compositor.InvokeOnNextCommit(_invalidateScene);
     }
     
     public void Resized(Size size)
@@ -257,6 +274,8 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
             _compositor.RequestCommitAsync().Wait();
     }
 
-
+    /// <summary>
+    /// The associated <see cref="Avalonia.Rendering.Composition.Compositor"/> object
+    /// </summary>
     public Compositor Compositor => _compositor;
 }

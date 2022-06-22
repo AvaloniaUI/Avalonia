@@ -111,7 +111,7 @@ public partial class CompositionPage : UserControl
     {
         if (_implicitAnimations == null)
         {
-            var compositor = ElementCompositionPreview.GetElementVisual(this)!.Compositor;
+            var compositor = ElementComposition.GetElementVisual(this)!.Compositor;
 
             var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
             offsetAnimation.Target = "Offset";
@@ -143,11 +143,11 @@ public partial class CompositionPage : UserControl
             return;
         }
 
-        if (ElementCompositionPreview.GetElementVisual(page) == null)
+        if (ElementComposition.GetElementVisual(page) == null)
             return;
 
         page.EnsureImplicitAnimations();
-        ElementCompositionPreview.GetElementVisual((Visual)border.GetVisualParent()).ImplicitAnimations =
+        ElementComposition.GetElementVisual((Visual)border.GetVisualParent()).ImplicitAnimations =
             page._implicitAnimations;
     }
 

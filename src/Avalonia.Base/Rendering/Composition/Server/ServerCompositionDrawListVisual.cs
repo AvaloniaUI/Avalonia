@@ -9,9 +9,13 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server;
 
+/// <summary>
+/// Server-side counterpart of <see cref="CompositionDrawListVisual"/>
+/// </summary>
 internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisual
 {
 #if DEBUG
+    // This is needed for debugging purposes so we could see inspect the associated visual from debugger
     public readonly Visual UiVisual;
 #endif
     private CompositionDrawList? _renderCommands;

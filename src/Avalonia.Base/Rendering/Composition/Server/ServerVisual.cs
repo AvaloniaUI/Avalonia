@@ -4,7 +4,13 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server
 {
-    unsafe partial class ServerCompositionVisual : ServerObject
+    /// <summary>
+    /// Server-side <see cref="CompositionVisual"/> counterpart.
+    /// Is responsible for computing the transformation matrix, for applying various visual
+    /// properties before calling visual-specific drawing code and for notifying the
+    /// <see cref="ServerCompositionTarget"/> for new dirty rects
+    /// </summary>
+    partial class ServerCompositionVisual : ServerObject
     {
         private bool _isDirty;
         private bool _isBackface;
@@ -51,7 +57,10 @@ namespace Avalonia.Rendering.Composition.Server
         
         private ReadbackData _readback0, _readback1, _readback2;
 
-
+        /// <summary>
+        /// Obtains "readback" data - the data that is sent from the render thread to the UI thread
+        /// in non-blocking manner. Used mostly by hit-testing
+        /// </summary>
         public ref ReadbackData GetReadback(int idx)
         {
             if (idx == 0)
@@ -119,6 +128,9 @@ namespace Avalonia.Rendering.Composition.Server
 
         }
         
+        /// <summary>
+        /// Data that can be read from the UI thread
+        /// </summary>
         public struct ReadbackData
         {
             public Matrix4x4 Matrix;
@@ -126,7 +138,6 @@ namespace Avalonia.Rendering.Composition.Server
             public long TargetId;
             public bool Visible;
         }
-
         
         partial void DeserializeChangesExtra(BatchStreamReader c)
         {

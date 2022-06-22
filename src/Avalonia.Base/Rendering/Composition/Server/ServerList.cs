@@ -4,6 +4,10 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server
 {
+    /// <summary>
+    /// A server-side list container capable of receiving changes from the UI thread
+    /// Right now it's quite dumb since it always receives the full list
+    /// </summary>
     class ServerList<T> : ServerObject where T : ServerObject
     {
         public List<T> List { get; } = new List<T>();

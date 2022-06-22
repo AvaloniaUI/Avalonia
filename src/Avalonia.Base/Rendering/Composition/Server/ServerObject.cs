@@ -9,6 +9,10 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server
 {
+    /// <summary>
+    /// Server-side <see cref="CompositionObject" /> counterpart.
+    /// Is responsible for animation activation and invalidation
+    /// </summary>
     internal abstract class ServerObject : IExpressionObject
     {
         public ServerCompositor Compositor { get; }
@@ -92,13 +96,15 @@ namespace Avalonia.Rendering.Composition.Server
         public void SubscribeToInvalidation(int member, IAnimationInstance animation)
         {
             ref var store = ref GetStoreFromOffset(member);
+            if (store.Subscribers == null)
+                store.Subscribers = new();
             store.Subscribers.AddRef(animation);
         }
 
         public void UnsubscribeFromInvalidation(int member, IAnimationInstance animation)
         {
             ref var store = ref GetStoreFromOffset(member);
-            store.Subscribers.ReleaseRef(animation);
+            store.Subscribers?.ReleaseRef(animation);
         }
 
         public virtual int? GetFieldOffset(string fieldName) => null;

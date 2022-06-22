@@ -6,6 +6,17 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
+    /// <summary>
+    /// A collection of animations triggered when a condition is met.
+    /// </summary>
+    /// <remarks>
+    /// Implicit animations let you drive animations by specifying trigger conditions rather than requiring the manual definition of animation behavior.
+    /// They help decouple animation start logic from core app logic. You define animations and the events that should trigger these animations.
+    /// Currently the only available trigger is animated property change.
+    ///
+    /// When expression is used in ImplicitAnimationCollection a special keyword `this.FinalValue` will represent
+    /// the final value of the animated property that was changed 
+    /// </remarks>
     public class ImplicitAnimationCollection : CompositionObject, IDictionary<string, ICompositionAnimationBase>
     {
         private Dictionary<string, ICompositionAnimationBase> _inner = new Dictionary<string, ICompositionAnimationBase>();

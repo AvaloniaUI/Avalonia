@@ -5,6 +5,10 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
+    
+    /// <summary>
+    /// Server-side counterpart of <see cref="ExpressionAnimation"/> with values baked-in.
+    /// </summary>
     internal class ExpressionAnimationInstance : AnimationInstanceBase, IAnimationInstance
     {
         private readonly Expression _expression;

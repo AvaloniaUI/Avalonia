@@ -10,6 +10,10 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server
 {
+    /// <summary>
+    /// Server-side counterpart of the <see cref="CompositionTarget"/>
+    /// That's the place where we update visual transforms, track dirty rects and actually do rendering
+    /// </summary>
     internal partial class ServerCompositionTarget : IDisposable
     {
         private readonly ServerCompositor _compositor;
@@ -172,6 +176,7 @@ namespace Avalonia.Rendering.Composition.Server
                 _renderTarget?.Dispose();
                 _renderTarget = null;
             }
+            _compositor.RemoveCompositionTarget(this);
         }
 
         public void AddVisual(ServerCompositionVisual visual)

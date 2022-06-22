@@ -8,6 +8,12 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server
 {
+    /// <summary>
+    /// Server-side counterpart of the <see cref="Compositor"/>.
+    /// 1) manages deserialization of changes received from the UI thread
+    /// 2) triggers animation ticks
+    /// 3) asks composition targets to render themselves
+    /// </summary>
     internal class ServerCompositor : IRenderLoopTask
     {
         private readonly IRenderLoop _renderLoop;

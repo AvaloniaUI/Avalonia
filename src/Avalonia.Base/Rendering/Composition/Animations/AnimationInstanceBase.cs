@@ -5,6 +5,11 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations;
 
+
+/// <summary>
+/// The base class for both key-frame and expression animation instances
+/// Is responsible for activation tracking and for subscribing to properties used in dependencies
+/// </summary>
 internal abstract class AnimationInstanceBase : IAnimationInstance
 {
     private List<(ServerObject obj, int member)>? _trackedObjects;

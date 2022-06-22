@@ -2,6 +2,7 @@
 // Ported from Chromium project https://github.com/chromium/chromium/blob/374d31b7704475fa59f7b2cb836b3b68afdc3d79/ui/gfx/geometry/cubic_bezier.cc
 
 using System;
+using Avalonia.Utilities;
 
 // ReSharper disable CompareOfFloatsByEqualityOperator
 // ReSharper disable CommentTypo
@@ -10,8 +11,11 @@ using System;
 // ReSharper disable UnusedMember.Global
 #pragma warning disable 649
 
-namespace Avalonia.Rendering.Composition.Utils
+namespace Avalonia.Animation.Easings
 {
+    /// <summary>
+    /// Represents a cubic bezier curve and can compute Y coordinate for a given X
+    /// </summary>
     internal unsafe struct CubicBezier
     {
         const int CUBIC_BEZIER_SPLINE_SAMPLES = 11;
@@ -284,7 +288,7 @@ namespace Avalonia.Rendering.Composition.Utils
 
         public readonly double SlopeWithEpsilon(double x, double epsilon)
         {
-            x = MathExt.Clamp(x, 0.0, 1.0);
+            x = MathUtilities.Clamp(x, 0.0, 1.0);
             double t = SolveCurveX(x, epsilon);
             double dx = SampleCurveDerivativeX(t);
             double dy = SampleCurveDerivativeY(t);

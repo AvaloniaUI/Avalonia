@@ -7,6 +7,15 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition
 {
+    /// <summary>
+    /// <see cref="CompositionPropertySet"/>s are <see cref="CompositionObject"/>s that allow storage of key values pairs
+    /// that can be shared across the application and are not tied to the lifetime of another composition object.
+    /// <see cref="CompositionPropertySet"/>s are most commonly used with animations, where they maintain key-value pairs
+    /// that are referenced to drive portions of composition animations. <see cref="CompositionPropertySet"/>s
+    /// provide the ability to insert key-value pairs or retrieve a value for a given key.
+    /// <see cref="CompositionPropertySet"/> does not support a delete function – ensure you use <see cref="CompositionPropertySet"/>
+    /// to store values that will be shared across the application.
+    /// </summary>
     public class CompositionPropertySet : CompositionObject
     {
         private readonly Dictionary<string, ExpressionVariant> _variants = new Dictionary<string, ExpressionVariant>();

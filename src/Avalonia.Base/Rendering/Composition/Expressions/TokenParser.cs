@@ -3,6 +3,9 @@ using System.Globalization;
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
+    /// <summary>
+    /// Helper class for composition expression parser
+    /// </summary>
     internal ref struct TokenParser
     {
         private ReadOnlySpan<char> _s;

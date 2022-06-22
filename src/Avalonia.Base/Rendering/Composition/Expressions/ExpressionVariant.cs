@@ -22,6 +22,9 @@ namespace Avalonia.Rendering.Composition.Expressions
         Color
     }
 
+    /// <summary>
+    /// A VARIANT type used in expression animations. Can represent multiple value types
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     internal struct ExpressionVariant
     {

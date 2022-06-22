@@ -6,8 +6,16 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition
 {
+    /// <summary>
+    /// Base class of the composition API representing a node in the visual tree structure.
+    /// Composition objects are the visual tree structure on which all other features of the composition API use and build on.
+    /// The API allows developers to define and create one or many <see cref="CompositionVisual" /> objects each representing a single node in a Visual tree.
+    /// </summary>
     public abstract class CompositionObject : IDisposable
     {
+        /// <summary>
+        /// The collection of implicit animations attached to this object.
+        /// </summary>
         public ImplicitAnimationCollection? ImplicitAnimations { get; set; }
         internal CompositionObject(Compositor compositor, ServerObject server)
         {
@@ -15,6 +23,9 @@ namespace Avalonia.Rendering.Composition
             Server = server;
         }
         
+        /// <summary>
+        /// The associated Compositor
+        /// </summary>
         public Compositor Compositor { get; }
         internal ServerObject Server { get; }
         public bool IsDisposed { get; private set; }
@@ -29,14 +40,22 @@ namespace Avalonia.Rendering.Composition
             IsDisposed = true;
         }
 
+        /// <summary>
+        /// Connects an animation with the specified property of the object and starts the animation.
+        /// </summary>
         public void StartAnimation(string propertyName, CompositionAnimation animation)
             => StartAnimation(propertyName, animation, null);
         
-        internal virtual void StartAnimation(string propertyName, CompositionAnimation animation, ExpressionVariant? finalValue = null)
+        internal virtual void StartAnimation(string propertyName, CompositionAnimation animation, ExpressionVariant? finalValue)
         {
             throw new ArgumentException("Unknown property " + propertyName);
         }
 
+        /// <summary>
+        /// Starts an animation group.
+        /// The StartAnimationGroup method on CompositionObject lets you start CompositionAnimationGroup.
+        /// All the animations in the group will be started at the same time on the object.
+        /// </summary>
         public void StartAnimationGroup(ICompositionAnimationBase grp)
         {
             if (grp is CompositionAnimation animation)

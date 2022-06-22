@@ -6,6 +6,9 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
+    /// <summary>
+    /// A parsed composition expression
+    /// </summary>
     internal abstract class Expression
     {
         public abstract ExpressionType Type { get; }
