@@ -189,6 +189,7 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
             comp.Opacity = (float)visual.Opacity;
             comp.ClipToBounds = visual.ClipToBounds;
             comp.Clip = visual.Clip?.PlatformImpl;
+            comp.OpacityMask = visual.OpacityMask;
             
             var renderTransform = Matrix.Identity;
 

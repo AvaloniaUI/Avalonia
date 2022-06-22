@@ -6,13 +6,15 @@
     <Using>Avalonia.Rendering.Composition.Animations</Using>
     
     <Manual Name="Avalonia.Platform.IGeometryImpl" Passthrough="true"/>
+    <Manual Name="Avalonia.Media.IBrush" Passthrough="true"/>
     <Manual Name="ICompositionSurface" ServerName="ServerCompositionSurface" />
     <Object Name="CompositionVisual" Abstract="true">
         <Property Name="Root" Type="CompositionTarget?" InternalSet="true" />
         <Property Name="Parent" Type="CompositionVisual?" InternalSet="true"  />
         <Property Name="Visible" Type="bool" Animated="true" DefaultValue="true"/>
         <Property Name="Opacity" Type="float" Animated="true" DefaultValue="1"/>
-        <Property Name="Clip" Type="Avalonia.Platform.IGeometryImpl?" />
+        
+        <Property Name="Clip" Type="Avalonia.Platform.IGeometryImpl?" Internal="true" />
         <Property Name="ClipToBounds" Type="bool" Animated="true" DefaultValue="true"/>
         <Property Name="Offset" Type="Vector3" Animated="true"/>
         <Property Name="Size" Type="Vector2" Animated="true"/>
@@ -23,6 +25,7 @@
         <Property Name="Scale" Type="Vector3" DefaultValue="new Vector3(1, 1, 1)" Animated="true"/>
         <Property Name="TransformMatrix" Type="Matrix4x4" DefaultValue="Matrix4x4.Identity" Animated="true"/>
         <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
+        <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IBrush?" Internal="true" />
     </Object>
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
     <List Name="CompositionVisualCollection" ItemType="CompositionVisual" CustomCtor="true"/>

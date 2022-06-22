@@ -1,11 +1,14 @@
 using System;
 using System.Numerics;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition
 {
     public abstract partial class CompositionVisual
     {
+        private IBrush? _opacityMask;
+
         private protected virtual void OnRootChangedCore()
         {
         }
@@ -14,6 +17,16 @@ namespace Avalonia.Rendering.Composition
 
         partial void OnParentChanged() => Root = Parent?.Root;
 
+        public IBrush? OpacityMask
+        {
+            get => _opacityMask;
+            set
+            {
+                if (_opacityMask == value)
+                    return;
+                OpacityMaskBrush = (_opacityMask = value)?.ToImmutable();
+            }
+        }
 
         internal Matrix4x4? TryGetServerTransform()
         {

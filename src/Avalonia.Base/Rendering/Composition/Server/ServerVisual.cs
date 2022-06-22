@@ -24,10 +24,13 @@ namespace Avalonia.Rendering.Composition.Server
             canvas.Transform = Matrix.Identity;
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity);
+            var boundsRect = new Rect(new Size(Size.X, Size.Y));
             if(ClipToBounds)
-                canvas.PushClip(new Rect(new Size(Size.X, Size.Y)));
+                canvas.PushClip(boundsRect);
             if (Clip != null) 
                 canvas.PushGeometryClip(Clip);
+            if(OpacityMaskBrush != null)
+                canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
             
             //TODO: Check clip
             RenderCore(canvas);
@@ -35,7 +38,9 @@ namespace Avalonia.Rendering.Composition.Server
             // Hack to force invalidation of SKMatrix
             canvas.PreTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
-            
+
+            if (OpacityMaskBrush != null)
+                canvas.PopOpacityMask();
             if (Clip != null)
                 canvas.PopGeometryClip();
             if (ClipToBounds)
