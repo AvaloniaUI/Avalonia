@@ -20,6 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
         private List<IAnimationInstance> _animationsToUpdate = new();
         private BatchStreamObjectPool<object?> _batchObjectPool;
         private BatchStreamMemoryPool _batchMemoryPool;
+        private object _lock = new object();
         public IPlatformGpuContext? GpuContext { get; }
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGpu? platformGpu,
@@ -88,7 +89,15 @@ namespace Avalonia.Rendering.Composition.Server
         {
         }
 
-        void IRenderLoopTask.Render()
+        public void Render()
+        {
+            lock (_lock)
+            {
+                RenderCore();
+            }
+        }
+        
+        private void RenderCore()
         {
             ApplyPendingBatches();
             

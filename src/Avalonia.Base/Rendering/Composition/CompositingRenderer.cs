@@ -17,7 +17,6 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
 {
     private readonly IRenderRoot _root;
     private readonly Compositor _compositor;
-    private readonly IDeferredRendererLock? _rendererLock;
     CompositionDrawingContext _recorder = new();
     DrawingContext _recordingContext;
     private HashSet<Visual> _dirty = new();
@@ -26,14 +25,17 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
     private bool _queuedUpdate;
     private Action _update;
 
+    /// <summary>
+    /// Forces the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered
+    /// </summary>
+    public bool RenderOnlyOnRenderThread { get; set; } = true;
+
     public CompositingRenderer(IRenderRoot root,
-        Compositor compositor, 
-        IDeferredRendererLock? rendererLock = null)
+        Compositor compositor)
     {
         _root = root;
         _compositor = compositor;
         _recordingContext = new DrawingContext(_recorder);
-        _rendererLock = rendererLock ?? new ManagedDeferredRendererLock();
         _target = compositor.CreateCompositionTarget(root.CreateRenderTarget);
         _target.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
         _update = Update;
@@ -228,10 +230,12 @@ public class CompositingRenderer : RendererBase, IRendererWithCompositor
 
     public void Paint(Rect rect)
     {
-        // We render only on the render thread for now
         Update();
         _target.RequestRedraw();
-        Compositor.RequestCommitAsync().Wait();
+        if(RenderOnlyOnRenderThread)
+            Compositor.RequestCommitAsync().Wait();
+        else
+            _target.ImmediateUIThreadRender();
     }
 
     public void Start() => _target.IsEnabled = true;

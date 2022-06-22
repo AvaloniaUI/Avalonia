@@ -8,6 +8,8 @@ using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using JetBrains.Annotations;
 
 namespace Avalonia.Native
 {
@@ -21,6 +23,7 @@ namespace Avalonia.Native
         static extern IntPtr CreateAvaloniaNative();
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
+        [CanBeNull] internal static Compositor Compositor { get; private set; }
 
         public Size DoubleClickSize => new Size(4, 4);
 
@@ -101,6 +104,7 @@ namespace Avalonia.Native
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
             }
 
+            var renderLoop = new RenderLoop();
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
@@ -110,7 +114,7 @@ namespace Avalonia.Native
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderLoop>().ToConstant(renderLoop)
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
@@ -124,18 +128,26 @@ namespace Avalonia.Native
             hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
             hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-
+            
             if (_options.UseGpu)
             {
                 try
                 {
-                    AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>()
-                        .ToConstant(_platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay()));
+                    _platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay());
+                    AvaloniaLocator.CurrentMutable
+                        .Bind<IPlatformOpenGlInterface>().ToConstant(_platformGl)
+                        .Bind<IPlatformGpu>().ToConstant(_platformGl);
+
                 }
                 catch (Exception)
                 {
                     // ignored
                 }
+            }
+            
+            if (_options.UseDeferredRendering && _options.UseCompositor)
+            {
+                Compositor = new Compositor(renderLoop, _platformGl);
             }
         }
 

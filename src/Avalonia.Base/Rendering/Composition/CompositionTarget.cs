@@ -109,5 +109,11 @@ namespace Avalonia.Rendering.Composition
         }
 
         public void RequestRedraw() => RegisterForSerialization();
+
+        internal void ImmediateUIThreadRender()
+        {
+            Compositor.RequestCommitAsync();
+            Compositor.Server.Render();
+        }
     }
 }
