@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -20,7 +21,7 @@ namespace Avalonia.Controls
     /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
     /// tracking the window <see cref="TopLevel.ClientSize"/> and <see cref="IsActive"/> state.
     /// </remarks>
-    public class WindowBase : TopLevel
+    public class WindowBase : TopLevel, IFocusScope
     {
         /// <summary>
         /// Defines the <see cref="IsActive"/> property.
@@ -44,6 +45,8 @@ namespace Avalonia.Controls
         private bool _isActive;
         private bool _ignoreVisibilityChange;
         private WindowBase? _owner;
+        private readonly FocusManager _focusManager;
+        private OverlayLayer? _overlayLayer;
 
         static WindowBase()
         {
@@ -60,6 +63,7 @@ namespace Avalonia.Controls
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
+            _focusManager = new FocusManager(this);
             Screens = new Screens(impl.Screen);
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
@@ -113,6 +117,21 @@ namespace Avalonia.Controls
         {
             get { return GetValue(TopmostProperty); }
             set { SetValue(TopmostProperty, value); }
+        }
+
+        FocusManager IFocusScope.FocusManager => _focusManager;
+
+        IOverlayHost? IFocusScope.OverlayHost
+        {
+            get
+            {
+                if (_overlayLayer == null)
+                {
+                    _overlayLayer = OverlayLayer.GetOverlayLayer(this);
+                }
+
+                return _overlayLayer;
+            }
         }
 
         /// <summary>
@@ -193,11 +212,8 @@ namespace Avalonia.Controls
             try
             {
                 IsVisible = false;
-                
-                if (this is IFocusScope scope)
-                {
-                    FocusManager.Instance?.RemoveFocusScope(scope);
-                }
+
+                _focusManager.RemoveFocusRoot(this);
                 
                 base.HandleClosed();
             }
@@ -283,12 +299,7 @@ namespace Avalonia.Controls
         {
             Activated?.Invoke(this, EventArgs.Empty);
 
-            var scope = this as IFocusScope;
-
-            if (scope != null)
-            {
-                FocusManager.Instance?.SetFocusScope(scope);
-            }
+            _focusManager.TryRestoreFocus();
 
             IsActive = true;
         }

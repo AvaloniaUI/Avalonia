@@ -66,7 +66,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
+    public class Window : WindowBase, IStyleable, ILayoutRoot
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
