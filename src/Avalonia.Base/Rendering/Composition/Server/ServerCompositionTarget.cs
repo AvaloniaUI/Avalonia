@@ -118,6 +118,7 @@ namespace Avalonia.Rendering.Composition.Server
                     }
                 }
 
+                targetContext.Clear(Colors.Transparent);
                 targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1, new Rect(_layerSize),
                     new Rect(Size));
                 
