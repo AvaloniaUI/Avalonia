@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Automation.Peers;
@@ -12,6 +11,7 @@ using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -172,6 +172,13 @@ namespace Avalonia.Controls
                     ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
                 SelectedContentTemplate = container?.ContentTemplate;
                 SelectedContent = container?.Content;
+
+                // Move the focus into the new TabPage
+                if (ContentPart != null)
+                {
+                    var tryFocus = FocusManager.FindFirstFocusableElement(ContentPart);
+                    tryFocus?.Focus();
+                }
             }
         }
 
@@ -201,11 +208,11 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (FocusState == FocusState.Keyboard)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
