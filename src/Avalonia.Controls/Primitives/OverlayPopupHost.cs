@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -22,11 +23,14 @@ namespace Avalonia.Controls.Primitives
         private ManagedPopupPositioner _positioner;
         private Point _lastRequestedPosition;
         private bool _shown;
+        private FocusManager _focusManager;
 
         public OverlayPopupHost(OverlayLayer overlayLayer)
         {
             _overlayLayer = overlayLayer;
             _positioner = new ManagedPopupPositioner(this);
+
+            _focusManager = new FocusManager(this);
         }
 
         public void SetChild(IControl? control)
@@ -50,6 +54,11 @@ namespace Avalonia.Controls.Primitives
             get => false;
             set { /* Not currently supported in overlay popups */ }
         }
+
+        FocusManager IFocusScope.FocusManager => _focusManager;
+
+        // OverlayLayer in Popups can't have their own OverlayLayer, so return null
+        IOverlayHost? IFocusScope.OverlayHost => null;
 
         public void Dispose() => Hide();
 

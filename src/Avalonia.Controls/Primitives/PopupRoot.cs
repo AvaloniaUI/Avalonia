@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -20,7 +21,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Transform?> TransformProperty =
             AvaloniaProperty.Register<PopupRoot, Transform?>(nameof(Transform));
 
-        private PopupPositionerParameters _positionerParameters;        
+        private PopupPositionerParameters _positionerParameters;
+        private FocusManager _focusManager;
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -50,6 +52,7 @@ namespace Avalonia.Controls.Primitives
             : base(impl, dependencyResolver)
         {
             ParentTopLevel = parent;
+            _focusManager = new FocusManager(this);
         }
 
         /// <summary>
@@ -85,6 +88,11 @@ namespace Avalonia.Controls.Primitives
         IStyleHost? IStyleHost.StylingParent => Parent;
 
         public TopLevel ParentTopLevel { get; }
+
+        FocusManager IFocusScope.FocusManager => _focusManager;
+
+        // OverlayLayer in Popups can't have their own OverlayLayer, so return null
+        IOverlayHost? IFocusScope.OverlayHost => null;
 
         /// <inheritdoc/>
         public void Dispose()

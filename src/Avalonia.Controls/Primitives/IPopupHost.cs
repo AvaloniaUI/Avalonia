@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// on an <see cref="OverlayLayer"/>.
     /// </remarks>
     [NotClientImplementable]
-    public interface IPopupHost : IDisposable, IFocusScope
+    public interface IPopupHost : IDisposable, IFocusScope, IOverlayVisual
     {
         /// <summary>
         /// Gets or sets the fixed width of the popup.

@@ -15,7 +15,6 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Avalonia.Media;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -373,6 +372,11 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets whether this Popup is associated with a Flyout
+        /// </summary>
+        internal bool IsFlyout { get; set; }
+
+        /// <summary>
         /// Gets the root of the popup window.
         /// </summary>
         IVisual? IVisualTreeHost.Root => _openState?.PopupHost.HostedVisualTreeRoot;
@@ -530,7 +534,79 @@ namespace Avalonia.Controls.Primitives
 
             Opened?.Invoke(this, EventArgs.Empty);
 
+            // Register windowed, non-flyout popups
+            if (popupHost is PopupRoot && !IsFlyout)
+            {
+                RegisterOrUnregisterPopup(topLevel, true, null);
+            }
+
+            if (!IsFlyout)
+            {
+                SetFocus();
+            }
+
             _popupHostChangedHandler?.Invoke(Host);
+        }
+
+        internal void RegisterOrUnregisterPopup(IInputElement anchor, bool register, FlyoutShowMode? showMode)
+        {
+            OverlayLayer? overlayLayer = null;
+
+            if (!(anchor is PopupRoot))
+            {
+                // Single popup, anchor is the owning TopLevel
+                overlayLayer = OverlayLayer.GetOverlayLayer(anchor);
+            }
+            else
+            {
+                // This is a cascading popup. Search up the Logical tree here to find the root
+                // element this Popup is attached to
+                var tl = (anchor as ILogical)!.LogicalParent;
+
+                while (tl != null)
+                {
+                    if (tl is IFocusScope fs && !(tl is PopupRoot))
+                    {
+                        break;
+                    }
+
+                    tl = tl.LogicalParent;
+                }
+
+                if (tl is IVisual v)
+                {
+                    overlayLayer = OverlayLayer.GetOverlayLayer(v);
+                } 
+            }
+
+            if (register)
+            {
+                overlayLayer?.RegisterOverlay(this, showMode);
+            }
+            else
+            {
+                overlayLayer?.UnregisterOverlay(this);
+            }
+        }
+
+        internal void SetFocus()
+        {
+            var host = Host!;
+            // OverlayPopupHost creates its content very late, but we need everything now to find
+            // a focus candidate, so force the layout pass to ensure the popup's content exists
+            if (host is OverlayPopupHost oph &&
+                (host.Presenter == null || !host.Presenter.IsMeasureValid))
+            {
+                (oph.GetVisualRoot() as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
+            }
+
+            host.FocusManager.TryRestoreFocus();
+        }
+
+        internal void ClearFocus()
+        {
+            // Closing the popup so remove it as a focus root
+            Host!.FocusManager.RemoveFocusRoot(Host!);
         }
 
         /// <summary>
@@ -746,6 +822,19 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
+            if (!IsFlyout && Host is PopupRoot)
+            {
+                RegisterOrUnregisterPopup(_openState.TopLevel, false, null);
+            }
+
+            // Call clear focus for overlay popups. Since PopupRoot inherits
+            // from WindowBase, closing the window handle will close that
+            // focus scope out so we don't need to do it here
+            if (Host is OverlayPopupHost)
+            {
+                ClearFocus();
+            }            
+
             _openState.Dispose();
             _openState = null;
 
@@ -757,36 +846,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
-
-            var focusCheck = FocusManager.Instance?.Current;
-
-            // Focus is set to null as part of popup closing, so we only want to
-            // set focus to PlacementTarget if this is the case
-            if (focusCheck == null)
-            {
-                if (PlacementTarget != null)
-                {
-                    var e = (IControl?)PlacementTarget;
-
-                    while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
-                    {
-                        e = e.Parent;
-                    }
-
-                    if (e is object)
-                    {
-                        FocusManager.Instance?.Focus(e);
-                    }
-                }
-                else
-                {
-                    var anc = this.FindLogicalAncestorOfType<IControl>();
-                    if (anc != null)
-                    {
-                        FocusManager.Instance?.Focus(anc);
-                    }
-                }
-            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)
