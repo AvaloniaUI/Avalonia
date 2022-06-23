@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Input.Navigation
+namespace Avalonia.Input
 {
     /// <summary>
     /// The implementation for default tab navigation.
@@ -21,7 +19,7 @@ namespace Avalonia.Input.Navigation
 
             if (e == null)
             {
-                if (IsTabStop(container))
+                if (FocusManager.IsFocusable(container))
                     return container;
 
                 // Using ActiveElement if set
@@ -116,7 +114,7 @@ namespace Avalonia.Input.Navigation
                         var firstTabElement = GetNextTabInGroup(null, container, tabbingType);
                         if (firstTabElement == null)
                         {
-                            if (IsTabStop(container))
+                            if (FocusManager.IsFocusable(container))
                                 return container;
                             if (goDownOnly)
                                 return null;
@@ -138,7 +136,7 @@ namespace Avalonia.Input.Navigation
                         return null;
 
                     // FocusedElement should not be e otherwise we will delegate focus to the same element
-                    if (IsTabStop(container))
+                    if (FocusManager.IsFocusable(container))
                         return container;
 
                     return GetPrevTab(container, null, false);
@@ -157,7 +155,7 @@ namespace Avalonia.Input.Navigation
 
                 // At this point nextTabElement is TabStop or TabGroup
                 // In case it is a TabStop only return the element
-                if (IsTabStop(nextTabElement) && !IsGroup(nextTabElement))
+                if (FocusManager.IsFocusable(nextTabElement) && !IsGroup(nextTabElement))
                     return nextTabElement;
 
                 // Avoid the endless loop here
@@ -175,7 +173,7 @@ namespace Avalonia.Input.Navigation
             if (tabbingType == KeyboardNavigationMode.Contained)
                 return null;
 
-            if (e != container && IsTabStop(container))
+            if (e != container && FocusManager.IsFocusable(container))
                 return container;
 
             // If end of the subtree is reached or there no other elements above
@@ -200,32 +198,35 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? FocusedElement(IInputElement e)
+        public static IInputElement? FocusedElement(IInputElement e)
         {
             var iie = e;
             // Focus delegation is enabled only if keyboard focus is outside the container
             if (iie != null && !iie.IsKeyboardFocusWithin)
             {
-                var focusedElement = (FocusManager.Instance as FocusManager)?.GetFocusedElement(e);
-                if (focusedElement != null)
-                {
-                    if (!IsFocusScope(e))
-                    {
-                        // Verify if focusedElement is a visual descendant of e
-                        if (focusedElement is IVisual visualFocusedElement &&
-                            visualFocusedElement != e &&
-                            e.IsVisualAncestorOf(visualFocusedElement))
-                        {
-                            return focusedElement;
-                        }
-                    }
-                }
+                // TODO_FOCUS:
+                // No idea what this does, but doesn't seem to have an effect leaving this commented
+
+                //var focusedElement = (FocusManager.Instance as FocusManager)?.GetFocusedElement(e);
+                //if (focusedElement != null)
+                //{
+                //    if (!IsFocusScope(e))
+                //    {
+                //        // Verify if focusedElement is a visual descendant of e
+                //        if (focusedElement is IVisual visualFocusedElement &&
+                //            visualFocusedElement != e &&
+                //            e.IsVisualAncestorOf(visualFocusedElement))
+                //        {
+                //            return focusedElement;
+                //        }
+                //    }
+                //}
             }
 
             return null;
         }
 
-        private static IInputElement? GetFirstChild(IInputElement e)
+        public static IInputElement? GetFirstChild(IInputElement e)
         {
             // If the element has a FocusedElement it should be its first child
             if (FocusedElement(e) is IInputElement focusedElement)
@@ -261,7 +262,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetLastChild(IInputElement e)
+        public static IInputElement? GetLastChild(IInputElement e)
         {
             // If the element has a FocusedElement it should be its last child
             if (FocusedElement(e) is IInputElement focusedElement)
@@ -299,7 +300,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetFirstTabInGroup(IInputElement container)
+        public static IInputElement? GetFirstTabInGroup(IInputElement container)
         {
             IInputElement? firstTabElement = null;
             int minIndexFirstTab = int.MinValue;
@@ -321,7 +322,7 @@ namespace Avalonia.Input.Navigation
             return firstTabElement;
         }
 
-        private static IInputElement? GetLastInTree(IInputElement container)
+        public static IInputElement? GetLastInTree(IInputElement container)
         {
             IInputElement? result;
             IInputElement? c = container;
@@ -338,7 +339,7 @@ namespace Avalonia.Input.Navigation
             return result;
         }
 
-        private static IInputElement? GetLastTabInGroup(IInputElement container)
+        public static IInputElement? GetLastTabInGroup(IInputElement container)
         {
             IInputElement? lastTabElement = null;
             int maxIndexFirstTab = int.MaxValue;
@@ -360,7 +361,7 @@ namespace Avalonia.Input.Navigation
             return lastTabElement;
         }
 
-        private static IInputElement? GetNextInTree(IInputElement e, IInputElement container)
+        public static IInputElement? GetNextInTree(IInputElement e, IInputElement container)
         {
             IInputElement? result = null;
 
@@ -383,7 +384,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetNextSibling(IInputElement e)
+        public static IInputElement? GetNextSibling(IInputElement e)
         {
             if (GetParent(e) is IVisual parentAsVisual && e is IVisual elementAsVisual)
             {
@@ -411,7 +412,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetNextTabInGroup(IInputElement? e, IInputElement container, KeyboardNavigationMode tabbingType)
+        public static IInputElement? GetNextTabInGroup(IInputElement? e, IInputElement container, KeyboardNavigationMode tabbingType)
         {
             // None groups: Tab navigation is not supported
             if (tabbingType == KeyboardNavigationMode.None)
@@ -433,7 +434,7 @@ namespace Avalonia.Input.Navigation
             return GetNextTabWithNextIndex(e, container, tabbingType);
         }
 
-        private static IInputElement? GetNextTabWithSameIndex(IInputElement e, IInputElement container)
+        public static IInputElement? GetNextTabWithSameIndex(IInputElement e, IInputElement container)
         {
             var elementTabPriority = KeyboardNavigation.GetTabIndex(e);
             var currElement = e;
@@ -448,7 +449,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetNextTabWithNextIndex(IInputElement e, IInputElement container, KeyboardNavigationMode tabbingType)
+        public static IInputElement? GetNextTabWithNextIndex(IInputElement e, IInputElement container, KeyboardNavigationMode tabbingType)
         {
             // Find the next min index in the tree
             // min (index>currentTabIndex)
@@ -488,7 +489,7 @@ namespace Avalonia.Input.Navigation
             return nextTabElement;
         }
 
-        private static IInputElement? GetPrevTabInGroup(IInputElement? e, IInputElement container, KeyboardNavigationMode tabbingType)
+        public static IInputElement? GetPrevTabInGroup(IInputElement? e, IInputElement container, KeyboardNavigationMode tabbingType)
         {
             // None groups: Tab navigation is not supported
             if (tabbingType == KeyboardNavigationMode.None)
@@ -513,7 +514,7 @@ namespace Avalonia.Input.Navigation
             return GetPrevTabWithPrevIndex(e, container, tabbingType);
         }
 
-        private static IInputElement? GetPrevTabWithSameIndex(IInputElement e, IInputElement container)
+        public static IInputElement? GetPrevTabWithSameIndex(IInputElement e, IInputElement container)
         {
             int elementTabPriority = KeyboardNavigation.GetTabIndex(e);
             var currElement = GetPreviousInTree(e, container);
@@ -528,7 +529,7 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetPrevTabWithPrevIndex(IInputElement e, IInputElement container, KeyboardNavigationMode tabbingType)
+        public static IInputElement? GetPrevTabWithPrevIndex(IInputElement e, IInputElement container, KeyboardNavigationMode tabbingType)
         {
             // Find the next max index in the tree
             // max (index<currentTabIndex)
@@ -569,7 +570,7 @@ namespace Avalonia.Input.Navigation
             return nextTabElement;
         }
 
-        private static IInputElement? GetPreviousInTree(IInputElement e, IInputElement container)
+        public static IInputElement? GetPreviousInTree(IInputElement e, IInputElement container)
         {
             if (e == container)
                 return null;
@@ -587,7 +588,7 @@ namespace Avalonia.Input.Navigation
                 return GetParent(e);
         }
 
-        private static IInputElement? GetPreviousSibling(IInputElement e)
+        public static IInputElement? GetPreviousSibling(IInputElement e)
         {
             if (GetParent(e) is IVisual parentAsVisual && e is IVisual elementAsVisual)
             {
@@ -608,14 +609,14 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
-        private static IInputElement? GetActiveElement(IInputElement e)
+        public static IInputElement? GetActiveElement(IInputElement e)
         {
             return ((AvaloniaObject)e).GetValue(KeyboardNavigation.TabOnceActiveElementProperty);
         }
 
-        private static IInputElement GetGroupParent(IInputElement e) => GetGroupParent(e, false);
+        public static IInputElement GetGroupParent(IInputElement e) => GetGroupParent(e, false);
 
-        private static IInputElement GetGroupParent(IInputElement element, bool includeCurrent)
+        public static IInputElement GetGroupParent(IInputElement element, bool includeCurrent)
         {
             var result = element; // Keep the last non null element
             var e = element;
@@ -643,7 +644,7 @@ namespace Avalonia.Input.Navigation
             return result;
         }
 
-        private static IInputElement? GetParent(IInputElement e)
+        public static IInputElement? GetParent(IInputElement e)
         {
             // For Visual - go up the visual parent chain until we find Visual.
             if (e is IVisual v)
@@ -653,22 +654,24 @@ namespace Avalonia.Input.Navigation
             throw new NotSupportedException();
         }
 
-        private static KeyboardNavigationMode GetKeyNavigationMode(IInputElement e)
+        public static KeyboardNavigationMode GetKeyNavigationMode(IInputElement e)
         {
+            // Enforces Cycle behavior in popups or other overlay elements
+            // As we don't want focus moving back into main window if a popup
+            // or dialog (in the OverlayLayer) is focused
+            if (e is IOverlayVisual)
+            {
+                return KeyboardNavigationMode.Cycle;
+            }
+
             return ((AvaloniaObject)e).GetValue(KeyboardNavigation.TabNavigationProperty);
         }
 
-        private static bool IsFocusScope(IInputElement e) => FocusManager.GetIsFocusScope(e) || GetParent(e) == null;
-        private static bool IsGroup(IInputElement e) => GetKeyNavigationMode(e) != KeyboardNavigationMode.Continue;
+        public static bool IsGroup(IInputElement e) => GetKeyNavigationMode(e) != KeyboardNavigationMode.Continue;
 
-        private static bool IsTabStop(IInputElement e)
-        {
-            if (e is InputElement ie)
-                return ie.Focusable && KeyboardNavigation.GetIsTabStop(ie) && ie.IsVisible && ie.IsEnabled;
-            return false;
-        }
 
-        private static bool IsTabStopOrGroup(IInputElement e) => IsTabStop(e) || IsGroup(e);
-        private static bool IsVisibleAndEnabled(IInputElement e) => e.IsVisible && e.IsEnabled;
+        public static bool IsTabStopOrGroup(IInputElement e) => FocusManager.IsFocusable(e) || IsGroup(e);
+
+        public static bool IsVisibleAndEnabled(IInputElement e) => e.IsVisible && e.IsEnabled;
     }
 }
