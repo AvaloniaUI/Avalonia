@@ -13,7 +13,7 @@ namespace Avalonia.Rendering.Composition;
 /// <summary>
 /// An IDrawingContextImpl implementation that builds <see cref="CompositionDrawList"/>
 /// </summary>
-internal class CompositionDrawingContext : IDrawingContextImpl
+internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
 {
     private CompositionDrawListBuilder _builder = new();
     private int _drawOperationIndex;

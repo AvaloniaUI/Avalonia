@@ -15,7 +15,7 @@ namespace Avalonia.Rendering.Composition.Server;
 /// they have information about the full render transform (they are not)
 /// 2) Keeps the draw list for the VisualBrush contents of the current drawing operation.
 /// </summary>
-internal class CompositorDrawingContextProxy : IDrawingContextImpl
+internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
 {
     private IDrawingContextImpl _impl;
     private readonly VisualBrushRenderer _visualBrushRenderer;
@@ -169,5 +169,11 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl
                     cmd.Item.Render(context);
             }
         }
+    }
+
+    public void DrawRectangle(IExperimentalAcrylicMaterial material, RoundedRect rect)
+    {
+        if (_impl is IDrawingContextWithAcrylicLikeSupport acrylic) 
+            acrylic.DrawRectangle(material, rect);
     }
 }
