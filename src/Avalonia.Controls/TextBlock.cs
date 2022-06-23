@@ -130,7 +130,7 @@ namespace Avalonia.Controls
 
         protected string? _text;
         protected TextLayout? _textLayout;
-        private Size _constraint;
+        protected Size _constraint;
 
         /// <summary>
         /// Initializes static members of the <see cref="TextBlock"/> class.
@@ -149,7 +149,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                return _textLayout ??= CreateTextLayout(_constraint, Text);
+                return _textLayout ??= CreateTextLayout(_text);
             }
         }
 
@@ -176,11 +176,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Text
         {
-            get => _text;
-            set
-            {
-                SetAndRaise(TextProperty, ref _text, value);
-            }
+            get => GetText();
+            set => SetText(value);
         }
 
         /// <summary>
@@ -300,11 +297,6 @@ namespace Avalonia.Controls
         {
             get { return (double)GetValue(BaselineOffsetProperty); }
             set { SetValue(BaselineOffsetProperty, value); }
-        }
-
-        public void Add(string text)
-        {
-            Text = text;
         }
 
         /// <summary>
@@ -481,6 +473,10 @@ namespace Avalonia.Controls
             control.SetValue(MaxLinesProperty, maxLines);
         }
 
+        public void Add(string text)
+        {
+            _text = text;
+        }
 
         /// <summary>
         /// Renders the <see cref="TextBlock"/> to a drawing context.
@@ -516,13 +512,21 @@ namespace Avalonia.Controls
             TextLayout.Draw(context, new Point(padding.Left, top));
         }
 
+        protected virtual string? GetText()
+        {
+            return _text;
+        }
+
+        protected virtual void SetText(string? text)
+        {
+            SetAndRaise(TextProperty, ref _text, text);
+        }
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        /// <param name="constraint">The constraint of the text.</param>
-        /// <param name="text">The text to format.</param>
         /// <returns>A <see cref="TextLayout"/> object.</returns>
-        protected virtual TextLayout CreateTextLayout(Size constraint, string? text)
+        protected virtual TextLayout CreateTextLayout(string? text)
         {
             var defaultProperties = new GenericTextRunProperties(
                 new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
@@ -537,8 +541,8 @@ namespace Avalonia.Controls
                 new SimpleTextSource((text ?? "").AsMemory(), defaultProperties),
                 paragraphProperties,
                 TextTrimming,
-                constraint.Width,
-                constraint.Height,
+                _constraint.Width,
+                _constraint.Height,
                 maxLines: MaxLines,
                 lineHeight: LineHeight);
         }

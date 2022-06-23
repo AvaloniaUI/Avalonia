@@ -13,6 +13,7 @@
         </Span>.
       </RichTextBlock>
       <TextBox Text="{Binding #txtBlock.SelectedText}"/>
+      <TextBlock Text="{Binding #txtBlock.Text}"/>
     </StackPanel>
   </Border>
 </Window>

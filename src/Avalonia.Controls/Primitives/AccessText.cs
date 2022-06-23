@@ -79,9 +79,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override TextLayout CreateTextLayout(Size constraint, string? text)
+        protected override TextLayout CreateTextLayout(string? text)
         {
-            return base.CreateTextLayout(constraint, RemoveAccessKeyMarker(text));
+            return base.CreateTextLayout(RemoveAccessKeyMarker(text));
         }
 
         /// <inheritdoc/>

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -56,6 +57,16 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<RichTextBlock, InlineCollection>(
                 nameof(Inlines));
 
+        public static readonly DirectProperty<TextBox, bool> CanCopyProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(
+                nameof(CanCopy),
+                o => o.CanCopy);
+
+        public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
+            RoutedEvent.Register<RichTextBlock, RoutedEventArgs>(
+                nameof(CopyingToClipboard), RoutingStrategies.Bubble);
+
+        private bool _canCopy;
         private int _caretIndex;
         private int _selectionStart;
         private int _selectionEnd;
@@ -75,7 +86,7 @@ namespace Avalonia.Controls
                 InlineHost = this
             };
         }
-
+       
         public IBrush? SelectionBrush
         {
             get => GetValue(SelectionBrushProperty);
@@ -156,50 +167,43 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Creates the <see cref="TextLayout"/> used to render the text.
+        /// Property for determining if the Copy command can be executed.
         /// </summary>
-        /// <param name="constraint">The constraint of the text.</param>
-        /// <param name="text">The text to format.</param>
-        /// <returns>A <see cref="TextLayout"/> object.</returns>
-        protected override TextLayout CreateTextLayout(Size constraint, string? text)
+        public bool CanCopy
         {
-            var defaultProperties = new GenericTextRunProperties(
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-                FontSize,
-                TextDecorations,
-                Foreground);
+            get => _canCopy;
+            private set => SetAndRaise(CanCopyProperty, ref _canCopy, value);
+        }
 
-            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0);
+        public event EventHandler<RoutedEventArgs>? CopyingToClipboard
+        {
+            add => AddHandler(CopyingToClipboardEvent, value);
+            remove => RemoveHandler(CopyingToClipboardEvent, value);
+        }
 
-            ITextSource textSource;
-
-            var inlines = Inlines;
-
-            if (inlines is not null && inlines.HasComplexContent)
+        public async void Copy()
+        {
+            if (_canCopy || !IsTextSelectionEnabled)
             {
-                var textRuns = new List<TextRun>();
-
-                foreach (var inline in inlines)
-                {
-                    inline.BuildTextRun(textRuns);
-                }
-
-                textSource = new InlinesTextSource(textRuns);
-            }
-            else
-            {
-                textSource = new SimpleTextSource((text ?? "").AsMemory(), defaultProperties);
+                return;
             }
 
-            return new TextLayout(
-                textSource,
-                paragraphProperties,
-                TextTrimming,
-                constraint.Width,
-                constraint.Height,
-                maxLines: MaxLines,
-                lineHeight: LineHeight);
+            var text = GetSelection();
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            var eventArgs = new RoutedEventArgs(CopyingToClipboardEvent);
+
+            RaiseEvent(eventArgs);
+
+            if (!eventArgs.Handled)
+            {
+                await ((IClipboard)AvaloniaLocator.Current.GetRequiredService(typeof(IClipboard)))
+                    .SetTextAsync(text);
+            }
         }
 
         public override void Render(DrawingContext context)
@@ -236,7 +240,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var text = Inlines.Text ?? Text;
+            var text = Text;
 
             SelectionStart = 0;
             SelectionEnd = text?.Length ?? 0;
@@ -255,11 +259,98 @@ namespace Avalonia.Controls
             SelectionEnd = SelectionStart;
         }
 
+
+        protected override string? GetText()
+        {
+            return _text ?? Inlines.Text;
+        }
+
+        protected override void SetText(string? text)
+        {
+            var oldValue = _text ?? Inlines?.Text;
+
+            if (Inlines is not null && Inlines.HasComplexContent)
+            {
+                Inlines.Text = text;
+
+                _text = null;
+            }
+            else
+            {
+                _text = text;
+            }
+
+            RaisePropertyChanged(TextProperty, oldValue, text);
+        }
+
+        /// <summary>
+        /// Creates the <see cref="TextLayout"/> used to render the text.
+        /// </summary>
+        /// <returns>A <see cref="TextLayout"/> object.</returns>
+        protected override TextLayout CreateTextLayout(string? text)
+        {
+            var defaultProperties = new GenericTextRunProperties(
+                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                FontSize,
+                TextDecorations,
+                Foreground);
+
+            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
+                defaultProperties, TextWrapping, LineHeight, 0);
+
+            ITextSource textSource;
+
+            var inlines = Inlines;
+
+            if (inlines is not null && inlines.HasComplexContent)
+            {
+                var textRuns = new List<TextRun>();
+
+                foreach (var inline in inlines)
+                {
+                    inline.BuildTextRun(textRuns);
+                }
+
+                textSource = new InlinesTextSource(textRuns);
+            }
+            else
+            {
+                textSource = new SimpleTextSource((text ?? "").AsMemory(), defaultProperties);
+            }
+
+            return new TextLayout(
+                textSource,
+                paragraphProperties,
+                TextTrimming,
+                _constraint.Width,
+                _constraint.Height,
+                maxLines: MaxLines,
+                lineHeight: LineHeight);
+        }
+
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
 
             ClearSelection();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            var handled = false;
+            var modifiers = e.KeyModifiers;
+            var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
+
+            bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+
+            if (Match(keymap.Copy))
+            {              
+                Copy();
+                
+                handled = true;
+            }
+
+            e.Handled = handled;            
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -269,20 +360,21 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var text = Inlines.Text;
+            var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
             if (text != null && clickInfo.Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(this);
 
-                var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-
-                var hit = TextLayout.HitTestPoint(point);
+                var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);         
 
                 var oldIndex = CaretIndex;
+
+                var hit = TextLayout.HitTestPoint(point);
                 var index = hit.TextPosition;
-                CaretIndex = index;
+
+                SetAndRaise(CaretIndexProperty, ref _caretIndex, index);
 
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
@@ -368,7 +460,7 @@ namespace Avalonia.Controls
                                           caretIndex >= firstSelection && caretIndex <= lastSelection;
                 if (!didClickInSelection)
                 {
-                    _caretIndex = SelectionEnd = SelectionStart = caretIndex;
+                    CaretIndex = SelectionEnd = SelectionStart = caretIndex;
                 }
             }
 
@@ -389,29 +481,19 @@ namespace Avalonia.Controls
                     }
                 case nameof(TextProperty):
                     {
-                        OnTextChanged(change.OldValue as string, change.NewValue as string);
+                        InvalidateTextLayout();
                         break;
                     }
             }
         }
 
-        private void OnTextChanged(string? oldValue, string? newValue)
-        {
-            if (oldValue == newValue)
-            {
-                return;
-            }
-
-            if (Inlines is null)
-            {
-                return;
-            }
-
-            Inlines.Text = newValue;
-        }
-
         private string GetSelection()
         {
+            if (!IsTextSelectionEnabled)
+            {
+                return "";
+            }
+
             var text = Inlines.Text ?? Text;
 
             if (string.IsNullOrEmpty(text))

@@ -259,11 +259,11 @@ namespace Avalonia.Controls.Documents
             {
                 var oldValue = _inlineHost;
                 _inlineHost = value;
-                OnInlinesHostChanged(oldValue, value);
+                OnInlineHostChanged(oldValue, value);
             }
         }
 
-        internal virtual void OnInlinesHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        internal virtual void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
         {
 
         }

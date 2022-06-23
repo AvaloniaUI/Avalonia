@@ -136,7 +136,7 @@ namespace Avalonia.Controls.Documents
                     base.Add(new Run(_text));
                 }
                              
-                _text = string.Empty;
+                _text = null;
             }
             
             base.Add(item);
@@ -159,8 +159,6 @@ namespace Avalonia.Controls.Documents
 
             Invalidated?.Invoke(this, EventArgs.Empty);
         }
-
-        private void Invalidate(object? sender, EventArgs e) => Invalidate();
 
         private void OnParentChanged(ILogical? parent)
         {

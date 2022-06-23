@@ -67,10 +67,12 @@ namespace Avalonia.Controls.Documents
                     inline.AppendText(stringBuilder);
                 }
             }
-
-            if (Inlines.Text is string text)
+            else
             {
-                stringBuilder.Append(text);
+                if (Inlines.Text is string text)
+                {
+                    stringBuilder.Append(text);
+                }
             }
         }
 
@@ -87,9 +89,9 @@ namespace Avalonia.Controls.Documents
             }
         }
 
-        internal override void OnInlinesHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        internal override void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
         {
-            base.OnInlinesHostChanged(oldValue, newValue);
+            base.OnInlineHostChanged(oldValue, newValue);
 
             if(Inlines is not null)
             {

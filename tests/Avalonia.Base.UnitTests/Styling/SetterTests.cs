@@ -49,7 +49,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             setter.Instance(control).Start(false);
 
-            Assert.Equal("", control.Text);
+            Assert.Equal(null, control.Text);
         }
 
         [Fact]
