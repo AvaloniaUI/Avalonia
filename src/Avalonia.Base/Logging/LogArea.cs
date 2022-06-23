@@ -44,5 +44,10 @@ namespace Avalonia.Logging
         /// The log event comes from X11Platform.
         /// </summary>
         public const string X11Platform = nameof(X11Platform);
+
+        /// <summary>
+        /// The log event comes from the FocusManager
+        /// </summary>
+        public const string Focus = "Focus";
     }
 }
