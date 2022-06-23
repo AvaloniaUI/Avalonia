@@ -1,6 +1,7 @@
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -27,11 +28,11 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            if (FocusState == FocusState.Keyboard)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }

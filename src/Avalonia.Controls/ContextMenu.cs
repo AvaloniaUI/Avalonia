@@ -376,8 +376,9 @@ namespace Avalonia.Controls
 
         private void PopupOpened(object? sender, EventArgs e)
         {
-            _previousFocus = FocusManager.Instance?.Current;
-            Focus();
+            // TODO_FOCUS: check we don't need this anymore
+            //_previousFocus = FocusManager.Instance?.Current;
+            //Focus();
 
             _popupHostChangedHandler?.Invoke(_popup!.Host);
         }
@@ -405,8 +406,9 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup!).SetParent(null);
             }
 
+            // TODO_FOCUS: Check we don't need this anymore
             // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
-            FocusManager.Instance?.Focus(_previousFocus);
+            // FocusManager.Instance?.Focus(_previousFocus);
 
             RaiseEvent(new RoutedEventArgs
             {
