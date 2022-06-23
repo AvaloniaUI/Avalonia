@@ -223,7 +223,7 @@ public class CompositingRenderer : IRendererWithCompositor
 
             comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
 
-            _recorder.BeginUpdate(comp.DrawList ?? new CompositionDrawList());
+            _recorder.BeginUpdate(comp.DrawList);
             visual.Render(_recordingContext);
             comp.DrawList = _recorder.EndUpdate();
 

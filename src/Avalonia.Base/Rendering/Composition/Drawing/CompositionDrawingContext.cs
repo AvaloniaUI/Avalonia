@@ -344,7 +344,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
     private void Add<T>(T node) where T : class, IDrawOperation
     {
-        if (_drawOperationIndex < _builder!.DrawOperations.Count)
+        if (_drawOperationIndex < _builder.Count)
         {
             _builder.ReplaceDrawOperation(_drawOperationIndex, node);
         }
@@ -358,8 +358,8 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
     private IRef<T>? NextDrawAs<T>() where T : class, IDrawOperation
     {
-        return _drawOperationIndex < _builder!.DrawOperations.Count
-            ? _builder.DrawOperations[_drawOperationIndex] as IRef<T>
+        return _drawOperationIndex < _builder.Count
+            ? _builder.DrawOperations![_drawOperationIndex] as IRef<T>
             : null;
     }
     

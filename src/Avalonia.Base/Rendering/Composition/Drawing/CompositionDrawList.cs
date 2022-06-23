@@ -64,7 +64,8 @@ internal class CompositionDrawListBuilder
         _owns = false;
     }
 
-    public CompositionDrawList DrawOperations => _operations ?? new CompositionDrawList();
+    public int Count => _operations?.Count ?? 0;
+    public CompositionDrawList? DrawOperations => _operations;
 
     void MakeWritable(int atIndex)
     {
@@ -84,18 +85,18 @@ internal class CompositionDrawListBuilder
     public void ReplaceDrawOperation(int index, IDrawOperation node)
     {
         MakeWritable(index);
-        DrawOperations.Add(RefCountable.Create(node));
+        DrawOperations!.Add(RefCountable.Create(node));
     }
 
     public void AddDrawOperation(IDrawOperation node)
     {
-        MakeWritable(DrawOperations.Count);
-        DrawOperations.Add(RefCountable.Create(node));
+        MakeWritable(Count);
+        DrawOperations!.Add(RefCountable.Create(node));
     }
 
     public void TrimTo(int count)
     {
-        if (count < DrawOperations.Count)
-            DrawOperations.RemoveRange(count, DrawOperations.Count - count);
+        if (count < Count)
+            _operations!.RemoveRange(count, _operations.Count - count);
     }
 }
