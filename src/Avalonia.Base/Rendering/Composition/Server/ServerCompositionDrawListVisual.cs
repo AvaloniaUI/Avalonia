@@ -29,7 +29,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
 
     Rect? _contentBounds;
 
-    public override Rect ContentBounds
+    public override Rect OwnContentBounds
     {
         get
         {

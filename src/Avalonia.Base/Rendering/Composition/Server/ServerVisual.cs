@@ -1,4 +1,6 @@
+using System;
 using System.Numerics;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
 
@@ -13,6 +15,8 @@ namespace Avalonia.Rendering.Composition.Server
     partial class ServerCompositionVisual : ServerObject
     {
         private bool _isDirty;
+        private bool _isDirtyComposition;
+        private CompositionProperties _oldCompositionProperties;
         private bool _isBackface;
         protected virtual void RenderCore(CompositorDrawingContextProxy canvas)
         {
@@ -21,7 +25,8 @@ namespace Avalonia.Rendering.Composition.Server
         
         public void Render(CompositorDrawingContextProxy canvas)
         {
-            if(Visible == false)
+            _isDirtyComposition = false;
+            if(Visible == false || IsVisibleInFrame == false)
                 return;
             if(Opacity == 0)
                 return;
@@ -38,7 +43,6 @@ namespace Avalonia.Rendering.Composition.Server
             if(OpacityMaskBrush != null)
                 canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
             
-            //TODO: Check clip
             RenderCore(canvas);
             
             // Hack to force invalidation of SKMatrix
@@ -93,30 +97,34 @@ namespace Avalonia.Rendering.Composition.Server
             }
             
             var wasVisible = IsVisibleInFrame;
-            //TODO: check effective opacity too
-            IsVisibleInFrame = Visible && Opacity > 0 && !_isBackface;
+
+            EffectiveOpacity = Opacity * (Parent?.EffectiveOpacity ?? 1);
+            IsVisibleInFrame = Visible && EffectiveOpacity > 0.04 && !_isBackface;
 
             // Invalidate previous rect and queue new rect based on visibility
             if (positionChanged)
             {
                 if(wasVisible)
-                    Root!.AddDirtyRect(TransformedBounds);
+                    Root!.AddDirtyRect(TransformedOwnContentBounds);
 
                 if (IsVisibleInFrame)
                     _isDirty = true;
             }
+
+            if (wasVisible != IsVisibleInFrame)
+                _isDirty = true;
+
+            if (_parent.Value?._isDirtyComposition == true)
+                _isDirty = true;
             
             GlobalTransformMatrix = newTransform;
             //TODO: Cache
-            TransformedBounds = ContentBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
+            TransformedOwnContentBounds = OwnContentBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
             
-            if (!IsVisibleInFrame)
-                _isDirty = false;
-            else if (_isDirty)
-            {
-                Root!.AddDirtyRect(TransformedBounds);
-                _isDirty = false;
-            }
+            if (IsVisibleInFrame && _isDirty) 
+                Root!.AddDirtyRect(TransformedOwnContentBounds);
+
+            _isDirty = false;
             
             // Update readback indices
             var i = Root!.Readback;
@@ -126,6 +134,14 @@ namespace Avalonia.Rendering.Composition.Server
             readback.TargetId = Root.Id;
             readback.Visible = IsVisibleInFrame;
 
+            // Forcefully mark any children visuals are dirty if any of the composition
+            // properties were changed since the last update
+            var newProps = GetCompositionProperties();
+            if (!newProps.Equals(_oldCompositionProperties))
+            {
+                _isDirtyComposition = true;
+                _oldCompositionProperties = newProps;
+            }
         }
         
         /// <summary>
@@ -160,13 +176,38 @@ namespace Avalonia.Rendering.Composition.Server
         {
             _isDirty = true;
             if (IsVisibleInFrame)
-                Root?.AddDirtyRect(TransformedBounds);
+                Root?.AddDirtyRect(TransformedOwnContentBounds);
             else
                 Root?.Invalidate();
         }
+
+        struct CompositionProperties
+        {
+            public double EffectiveOpacity { get; set; }
+            public Vector2? ClipSize { get; set; }
+            public IGeometryImpl? Clip { get; set; }
+            public IBrush? OpacityMaskBrush { get; set; }
+
+            public bool Equals(CompositionProperties other) =>
+                EffectiveOpacity == other.EffectiveOpacity
+                && ClipSize == other.ClipSize
+                && Clip == other.Clip
+                && OpacityMaskBrush == other.OpacityMaskBrush;
+        }
+
+        private CompositionProperties GetCompositionProperties() => new CompositionProperties
+        {
+            EffectiveOpacity = EffectiveOpacity,
+            Clip = Clip,
+            ClipSize = ClipToBounds ? Size : null,
+            OpacityMaskBrush = OpacityMaskBrush
+        };
+        
+        
         public bool IsVisibleInFrame { get; set; }
-        public Rect TransformedBounds { get; set; }
-        public virtual Rect ContentBounds => new Rect(0, 0, Size.X, Size.Y);
+        public double EffectiveOpacity { get; set; }
+        public Rect TransformedOwnContentBounds { get; set; }
+        public virtual Rect OwnContentBounds => new Rect(0, 0, Size.X, Size.Y);
     }
 
 

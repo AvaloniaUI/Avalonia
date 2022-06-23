@@ -191,7 +191,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
             if(visual.IsVisibleInFrame)
-                AddDirtyRect(visual.TransformedBounds);
+                AddDirtyRect(visual.TransformedOwnContentBounds);
         }
 
         public void EnqueueAdornerUpdate(ServerCompositionVisual visual) => _adornerUpdateQueue.Enqueue(visual);
