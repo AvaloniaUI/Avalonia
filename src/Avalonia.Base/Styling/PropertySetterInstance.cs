@@ -18,7 +18,7 @@ namespace Avalonia.Styling
         private readonly DirectPropertyBase<T>? _directProperty;
         private readonly T _value;
         private IDisposable? _subscription;
-        private bool _isActive;
+        private State _state;
 
         public PropertySetterInstance(
             IStyleable target,
@@ -39,6 +39,8 @@ namespace Avalonia.Styling
             _directProperty = property;
             _value = value;
         }
+
+        private bool IsActive => _state == State.Active;
 
         public void Start(bool hasActivator)
         {
@@ -70,31 +72,35 @@ namespace Avalonia.Styling
 
         public void Activate()
         {
-            if (!_isActive)
+            if (!IsActive)
             {
-                _isActive = true;
+                _state = State.Active;
                 PublishNext();
             }
         }
 
         public void Deactivate()
         {
-            if (_isActive)
+            if (IsActive)
             {
-                _isActive = false;
+                _state = State.Inactive;
                 PublishNext();
             }
         }
 
         public override void Dispose()
         {
+            if (_state == State.Disposed)
+                return;
+            _state = State.Disposed;
+
             if (_subscription is object)
             {
                 var sub = _subscription;
                 _subscription = null;
                 sub.Dispose();
             }
-            else if (_isActive)
+            else if (IsActive)
             {
                 if (_styledProperty is object)
                 {
@@ -114,7 +120,14 @@ namespace Avalonia.Styling
 
         private void PublishNext()
         {
-            PublishNext(_isActive ? new BindingValue<T>(_value) : default);
+            PublishNext(IsActive ? new BindingValue<T>(_value) : default);
+        }
+
+        private enum State
+        {
+            Inactive,
+            Active,
+            Disposed,
         }
     }
 }

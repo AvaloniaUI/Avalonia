@@ -115,6 +115,11 @@ namespace Avalonia.Headless
             return new HeadlessGlyphRunStub();
         }
 
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+        }
+
         class HeadlessGeometryStub : IGeometryImpl
         {
             public HeadlessGeometryStub(Rect bounds)
