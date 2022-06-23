@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
-using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
@@ -24,6 +22,12 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly StyledProperty<bool> FocusableProperty =
             AvaloniaProperty.Register<InputElement, bool>(nameof(Focusable));
+
+        /// <summary>
+        /// Defines the <see cref="AllowFocusWhenDisabled"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> AllowFocusWhenDisabledProperty =
+            AvaloniaProperty.Register<InputElement, bool>(nameof(AllowFocusWhenDisabled));
 
         /// <summary>
         /// Defines the <see cref="IsEnabled"/> property.
@@ -60,6 +64,12 @@ namespace Avalonia.Input
             AvaloniaProperty.RegisterDirect<InputElement, bool>(nameof(IsFocused), o => o.IsFocused);
 
         /// <summary>
+        /// Defines the <see cref="FocusState"/> property
+        /// </summary>
+        public static readonly DirectProperty<InputElement, FocusState> FocusStateProperty =
+            AvaloniaProperty.RegisterDirect<InputElement, FocusState>(nameof(FocusState), x => x.FocusState);
+
+        /// <summary>
         /// Defines the <see cref="IsHitTestVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsHitTestVisibleProperty =
@@ -78,10 +88,76 @@ namespace Avalonia.Input
             KeyboardNavigation.IsTabStopProperty.AddOwner<InputElement>();
 
         /// <summary>
+        /// Defines the <see cref="XYFocusKeyboardNavigation"/> property
+        /// </summary>
+        public static readonly StyledProperty<XYFocusNavigationMode> XYFocusKeyboardNavigationProperty =
+            AvaloniaProperty.Register<InputElement, XYFocusNavigationMode>(nameof(XYFocusKeyboardNavigation));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusDown"/> property
+        /// </summary>
+        public static readonly StyledProperty<IInputElement?> XYFocusDownProperty =
+            AvaloniaProperty.Register<InputElement, IInputElement?>(nameof(XYFocusDown));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusDownStrategy"/> property
+        /// </summary>
+        public static readonly StyledProperty<XYFocusNavigationStrategy> XYFocusDownStrategyProperty =
+            AvaloniaProperty.Register<InputElement, XYFocusNavigationStrategy>(nameof(XYFocusDownStrategy));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusLeft"/> property
+        /// </summary>
+        public static readonly StyledProperty<IInputElement?> XYFocusLeftProperty =
+            AvaloniaProperty.Register<InputElement, IInputElement?>(nameof(XYFocusLeft));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusLeftStrategy"/> property
+        /// </summary>
+        public static readonly StyledProperty<XYFocusNavigationStrategy> XYFocusLeftStrategyProperty =
+            AvaloniaProperty.Register<InputElement, XYFocusNavigationStrategy>(nameof(XYFocusLeftStrategy));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusRight"/> property
+        /// </summary>
+        public static readonly StyledProperty<IInputElement?> XYFocusRightProperty =
+            AvaloniaProperty.Register<InputElement, IInputElement?>(nameof(XYFocusRight));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusRightStrategy"/> property
+        /// </summary>
+        public static readonly StyledProperty<XYFocusNavigationStrategy> XYFocusRightStrategyProperty =
+            AvaloniaProperty.Register<InputElement, XYFocusNavigationStrategy>(nameof(XYFocusRightStrategy));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusUp"/> property
+        /// </summary>
+        public static readonly StyledProperty<IInputElement?> XYFocusUpProperty =
+            AvaloniaProperty.Register<InputElement, IInputElement?>(nameof(XYFocusUp));
+
+        /// <summary>
+        /// Defines the <see cref="XYFocusUpStrategy"/> property
+        /// </summary>
+        public static readonly StyledProperty<XYFocusNavigationStrategy> XYFocusUpStrategyProperty =
+            AvaloniaProperty.Register<InputElement, XYFocusNavigationStrategy>(nameof(XYFocusUpStrategy));
+
+        /// <summary>
+        /// Defines the <see cref="GettingFocus"/> event
+        /// </summary>
+        public static readonly RoutedEvent<GettingFocusEventArgs> GettingFocusEvent =
+            RoutedEvent.Register<InputElement, GettingFocusEventArgs>(nameof(GettingFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="GotFocus"/> event.
         /// </summary>
-        public static readonly RoutedEvent<GotFocusEventArgs> GotFocusEvent =
-            RoutedEvent.Register<InputElement, GotFocusEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<RoutedEventArgs> GotFocusEvent =
+            RoutedEvent.Register<InputElement, RoutedEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="LosingFocus"/> event
+        /// </summary>
+        public static readonly RoutedEvent<LosingFocusEventArgs> LosingFocusEvent =
+            RoutedEvent.Register<InputElement, LosingFocusEventArgs>(nameof(LosingFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="LostFocus"/> event.
@@ -89,6 +165,11 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
             RoutedEvent.Register<InputElement, RoutedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="NoFocusCandidateFound"/> event
+        /// </summary>
+        public static readonly RoutedEvent<NoFocusCandidateFoundEventArgs> NoFocusCandidateFoundEvent =
+            RoutedEvent.Register<InputElement, NoFocusCandidateFoundEventArgs>(nameof(NoFocusCandidateFoundEvent), RoutingStrategies.Bubble);
         /// <summary>
         /// Defines the <see cref="KeyDown"/> event.
         /// </summary>
@@ -195,6 +276,7 @@ namespace Avalonia.Input
         private bool _isFocusVisible;
         private bool _isPointerOver;
         private GestureRecognizerCollection? _gestureRecognizers;
+        private FocusState _focusState;
 
         /// <summary>
         /// Initializes static members of the <see cref="InputElement"/> class.
@@ -203,6 +285,8 @@ namespace Avalonia.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
+            GettingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGettingFocus(e));
+            LosingFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLosingFocus(e));
             GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
             LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
@@ -215,6 +299,12 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+
+            // Separate tunneling handle-all handler for focus events
+            PointerPressedEvent.AddClassHandler(
+                typeof(IInputElement),
+                new EventHandler<RoutedEventArgs>(OnPreviewPointerPressed),
+                RoutingStrategies.Tunnel);
         }
 
         public InputElement()
@@ -222,13 +312,29 @@ namespace Avalonia.Input
             UpdatePseudoClasses(IsFocused, IsPointerOver);
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<GettingFocusEventArgs>? GettingFocus
+        {
+            add => AddHandler(GettingFocusEvent, value);
+            remove => RemoveHandler(GettingFocusEvent, value);
+        }
+
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        public event EventHandler<GotFocusEventArgs>? GotFocus
+        public event EventHandler<RoutedEventArgs>? GotFocus
         {
             add { AddHandler(GotFocusEvent, value); }
             remove { RemoveHandler(GotFocusEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs before the control loses focus
+        /// </summary>
+        public event EventHandler<LosingFocusEventArgs>? LosingFocus
+        {
+            add => AddHandler(LosingFocusEvent, value);
+            remove => RemoveHandler(LosingFocusEvent, value);
         }
 
         /// <summary>
@@ -238,6 +344,16 @@ namespace Avalonia.Input
         {
             add { AddHandler(LostFocusEvent, value); }
             remove { RemoveHandler(LostFocusEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when the user attempts to change focus (via keyboard) but focus is unable
+        /// to move because no focus candidate is found in the direction of movement
+        /// </summary>
+        public event EventHandler<NoFocusCandidateFoundEventArgs>? NoFocusCandidateFound
+        {
+            add => AddHandler(NoFocusCandidateFoundEvent, value);
+            remove => RemoveHandler(NoFocusCandidateFoundEvent, value);
         }
 
         /// <summary>
@@ -367,6 +483,13 @@ namespace Avalonia.Input
             set { SetValue(FocusableProperty, value); }
         }
 
+        /// <inheritdoc/>
+        public bool AllowFocusWhenDisabled
+        {
+            get => GetValue(AllowFocusWhenDisabledProperty);
+            set => SetValue(AllowFocusWhenDisabledProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether the control is enabled for user interaction.
         /// </summary>
@@ -401,6 +524,13 @@ namespace Avalonia.Input
         {
             get { return _isFocused; }
             private set { SetAndRaise(IsFocusedProperty, ref _isFocused, value); }
+        }
+
+        /// <inheritdoc/>
+        public FocusState FocusState
+        {
+            get => _focusState;
+            internal set => SetAndRaise(FocusStateProperty, ref _focusState, value);
         }
 
         /// <summary>
@@ -453,6 +583,69 @@ namespace Avalonia.Input
 
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
 
+        /// <inheritdoc/>
+        public XYFocusNavigationMode XYFocusKeyboardNavigation
+        {
+            get => GetValue(XYFocusKeyboardNavigationProperty);
+            set => SetValue(XYFocusKeyboardNavigationProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public IInputElement? XYFocusDown
+        {
+            get => GetValue(XYFocusDownProperty);
+            set => SetValue(XYFocusDownProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public XYFocusNavigationStrategy XYFocusDownStrategy
+        {
+            get => GetValue(XYFocusDownStrategyProperty);
+            set => SetValue(XYFocusDownStrategyProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public IInputElement? XYFocusLeft
+        {
+            get => GetValue(XYFocusLeftProperty);
+            set => SetValue(XYFocusLeftProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public XYFocusNavigationStrategy XYFocusLeftStrategy
+        {
+            get => GetValue(XYFocusLeftStrategyProperty);
+            set => SetValue(XYFocusLeftStrategyProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public IInputElement? XYFocusRight
+        {
+            get => GetValue(XYFocusRightProperty);
+            set => SetValue(XYFocusRightProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public XYFocusNavigationStrategy XYFocusRightStrategy
+        {
+            get => GetValue(XYFocusRightStrategyProperty);
+            set => SetValue(XYFocusRightStrategyProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public IInputElement? XYFocusUp
+        {
+            get => GetValue(XYFocusUpProperty);
+            set => SetValue(XYFocusUpProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public XYFocusNavigationStrategy XYFocusUpStrategy
+        {
+            get => GetValue(XYFocusUpStrategyProperty);
+            set => SetValue(XYFocusUpStrategyProperty, value);
+        }
+
         /// <summary>
         /// Allows a derived class to override the enabled state of the control.
         /// </summary>
@@ -472,17 +665,43 @@ namespace Avalonia.Input
         /// </summary>
         public void Focus()
         {
-            FocusManager.Instance?.Focus(this);
+            Focus(FocusState.Programmatic);
+        }
+
+        /// <summary>
+        /// Focuses the control with the given <see cref="FocusState"/>
+        /// </summary>
+        public void Focus(FocusState focusState)
+        {
+            var fm = FocusManager.GetFocusManagerFromElement(this);
+
+            fm.SetFocusedElement(this, state: focusState);
         }
 
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
+            // Tree is still connected here, store the visual root now so we can use it below
+            var focusRoot = this.FindAncestorOfType<IFocusScope>();
+
             base.OnDetachedFromVisualTreeCore(e);
 
-            if (IsFocused)
+            // TODO_FOCUS: Is this problematic if
+            //             A) Multiple items are removed at once
+            //             B) The entire tree is removed (window/toplevel closing)
+            if (IsFocused && focusRoot != null)
             {
-                FocusManager.Instance?.Focus(null);
+                // From UWP Test, it looks like behavior is to reset to the first focusable 
+                // element in the focus root if an element is removed while focused
+                var first = FocusManager.FindFirstFocusableElement(focusRoot as IInputElement);
+                if (first != null)
+                {
+                    focusRoot.FocusManager.SetFocusedElement(first, allowCancelling: false);
+                }
+                else
+                {
+                    focusRoot.FocusManager.SetFocusedElement(null, allowCancelling: false);
+                }
             }
         }
 
@@ -494,14 +713,32 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Called before the <see cref="GettingFocus"/> event occurs
+        /// </summary>
+        /// <param name="e">The event args</param>
+        protected virtual void OnGettingFocus(GettingFocusEventArgs e)
+        {
+
+        }
+
+        /// <summary>
         /// Called before the <see cref="GotFocus"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnGotFocus(GotFocusEventArgs e)
+        protected virtual void OnGotFocus(RoutedEventArgs e)
         {
             var isFocused = e.Source == this;
-            _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
+            _isFocusVisible = isFocused && FocusState == FocusState.Keyboard;
             IsFocused = isFocused;
+        }
+
+        /// <summary>
+        /// Called before the <see cref="LosingFocus"/> event occurs
+        /// </summary>
+        /// <param name="e">The event args</param>
+        protected virtual void OnLosingFocus(LosingFocusEventArgs e)
+        {
+
         }
 
         /// <summary>
@@ -674,6 +911,36 @@ namespace Avalonia.Input
 
                 child?.UpdateIsEffectivelyEnabled(this);
             }
+
+            // Handle focus change if this element is disabled and we don't allow
+            // focus while being disabled
+            if (!IsEffectivelyEnabled && IsFocused && !AllowFocusWhenDisabled)
+            {
+                // Test from UWP show it moves to next element by default. So we'll
+                // check forward first, then backward
+                NavigationDirection direction = NavigationDirection.Next;
+                var next = FocusManager.FindNextElement(direction);
+
+                if (next == null)
+                {
+                    direction = NavigationDirection.Previous;
+                    next = FocusManager.FindNextElement(direction);
+                }
+
+                var focusMgr = FocusManager.GetFocusManagerFromElement(this);
+                
+                // Move focus to an enabled element, prevent cancelling this focus action,
+                // but still allow user to redirect focus to another element
+                if (next != null)
+                {
+                    focusMgr.SetFocusedElement(next, direction, FocusState.Programmatic,
+                        allowCancelling: false, allowRedirecting: true);
+                }
+                else
+                {
+                    focusMgr.SetFocusedElement(null, allowCancelling: false, allowRedirecting: true);
+                }
+            }
         }
 
         private void UpdatePseudoClasses(bool? isFocused, bool? isPointerOver)
@@ -687,6 +954,40 @@ namespace Avalonia.Input
             if (isPointerOver.HasValue)
             {
                 PseudoClasses.Set(":pointerover", isPointerOver.Value);
+            }
+        }
+
+        private static void OnPreviewPointerPressed(object? sender, RoutedEventArgs e)
+        {
+            if (sender is null)
+                return;
+
+            var ev = (PointerPressedEventArgs)e;
+            var visual = (IVisual)sender;
+
+            if (sender == e.Source && ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+            {
+                IVisual? element = ev.Pointer?.Captured ?? e.Source as IInputElement;
+
+                var fm = FocusManager.GetFocusManagerFromElement((element as IInputElement)!);
+                if (fm == null)
+                {
+                    return;
+                }
+
+                while (element != null)
+                {
+                    if (element is IInputElement inputElement && FocusManager.IsFocusable(inputElement))
+                    {
+                        fm.SetFocusedElement(inputElement,
+                            state: FocusState.Pointer,
+                            keyModifiers: ev.KeyModifiers);
+
+                        break;
+                    }
+
+                    element = element.VisualParent;
+                }
             }
         }
     }
