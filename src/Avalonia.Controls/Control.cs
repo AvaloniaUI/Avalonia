@@ -238,13 +238,11 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
 
-            if (IsFocused &&
-                (e.NavigationMethod == NavigationMethod.Tab ||
-                 e.NavigationMethod == NavigationMethod.Directional))
+            if (IsFocused && FocusState == FocusState.Keyboard)
             {
                 var adornerLayer = AdornerLayer.GetAdornerLayer(this);
 
@@ -260,7 +258,10 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    if (_focusAdorner != null && GetTemplateFocusTarget() is Visual target)
+                    // TODO_FOCUS: Hack here checking _focusAdorner.Parent
+                    // Seems to not always be removed (problem especially in menus)
+                    if (_focusAdorner != null && GetTemplateFocusTarget() is Visual target
+                        && _focusAdorner.Parent == null)
                     {
                         AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
                         adornerLayer.Children.Add(_focusAdorner);

@@ -627,14 +627,14 @@ namespace Avalonia.Controls
             CanPaste = !IsReadOnly;
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
 
             // when navigating to a textbox via the tab key, select all text if
             //   1) this textbox is *not* a multiline textbox
             //   2) this textbox has any text to select
-            if (e.NavigationMethod == NavigationMethod.Tab &&
+            if (FocusState == FocusState.Keyboard &&
                 !AcceptsReturn &&
                 Text?.Length > 0)
             {

@@ -1434,7 +1434,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
         /// that contains the event data.</param>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
             FocusChanged(HasFocus());
@@ -1462,7 +1462,7 @@ namespace Avalonia.Controls
         /// otherwise, false.</returns>
         protected bool HasFocus()
         {
-            IVisual? focused = FocusManager.Instance?.Current;
+            IVisual? focused = FocusManager.GetFocusedElement();
 
             while (focused != null)
             {

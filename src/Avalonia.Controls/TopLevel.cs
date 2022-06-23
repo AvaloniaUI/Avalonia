@@ -93,7 +93,7 @@ namespace Avalonia.Controls
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
-
+        
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
         /// </summary>
@@ -535,14 +535,12 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (IVisual?)FocusManager.Instance?.Current;
-            if (focused == null)
-                return;
-            while (focused.VisualParent != null)
-                focused = focused.VisualParent;
-
-            if (focused == this)
-                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+            // When losing focus, clear the focus on this root and save the currently
+            // focused item but don't remove it as an eligible root in the FocusManager
+            if (this is IFocusScope scope)
+            {
+                scope.FocusManager.ClearFocus();
+            }
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
