@@ -173,10 +173,12 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
+            Popup.RegisterOrUnregisterPopup(Popup.PlacementTarget!, false, _showMode);
+           
             IsOpen = false;
             Popup.IsOpen = false;
             ((ISetLogicalParent)Popup).SetParent(null);
-            
+                        
             // Ensure this isn't active
             _transientDisposable?.Dispose();
             _transientDisposable = null;
@@ -242,23 +244,15 @@ namespace Avalonia.Controls.Primitives
             placementTarget.DetachedFromVisualTree += PlacementTarget_DetachedFromVisualTree;
             placementTarget.KeyUp += OnPlacementTargetOrPopupKeyUp;
 
-            if (ShowMode == FlyoutShowMode.Standard)
+            var showMode = ShowMode;
+
+            Popup.RegisterOrUnregisterPopup(placementTarget, true, showMode);
+
+            if (showMode == FlyoutShowMode.Standard)
             {
-                // Try and focus content inside Flyout
-                if (Popup.Child.Focusable)
-                {
-                    FocusManager.Instance?.Focus(Popup.Child);
-                }
-                else
-                {
-                    var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
-                    if (nextFocus != null)
-                    {
-                        FocusManager.Instance?.Focus(nextFocus);
-                    }
-                }
+                Popup.SetFocus();
             }
-            else if (ShowMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
+            else if (showMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
             {
                 _transientDisposable = InputManager.Instance?.Process.Subscribe(HandleTransientDismiss);
             }
@@ -359,6 +353,7 @@ namespace Avalonia.Controls.Primitives
             popup.WindowManagerAddShadowHint = false;
             popup.IsLightDismissEnabled = true;
             popup.OverlayDismissEventPassThrough = true;
+            popup.IsFlyout = true;
 
             popup.Opened += OnPopupOpened;
             popup.Closed += OnPopupClosed;
