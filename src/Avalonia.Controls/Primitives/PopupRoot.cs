@@ -94,6 +94,8 @@ namespace Avalonia.Controls.Primitives
         // OverlayLayer in Popups can't have their own OverlayLayer, so return null
         IOverlayHost? IFocusScope.OverlayHost => null;
 
+        protected override bool AutoFocusOnActivate => false;
+
         /// <inheritdoc/>
         public void Dispose()
         {

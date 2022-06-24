@@ -540,11 +540,6 @@ namespace Avalonia.Controls.Primitives
                 RegisterOrUnregisterPopup(topLevel, true, null);
             }
 
-            if (!IsFlyout)
-            {
-                SetFocus();
-            }
-
             _popupHostChangedHandler?.Invoke(Host);
         }
 
@@ -591,6 +586,10 @@ namespace Avalonia.Controls.Primitives
 
         internal void SetFocus()
         {
+            // This is called from FlyoutBase when a flyout is shown with ShowMode=Standard
+            // Popups shouldn't auto focus their content, instead controls using popups
+            // should direct focus into the popup as they need it
+
             var host = Host!;
             // OverlayPopupHost creates its content very late, but we need everything now to find
             // a focus candidate, so force the layout pass to ensure the popup's content exists
@@ -830,6 +829,9 @@ namespace Avalonia.Controls.Primitives
             // Call clear focus for overlay popups. Since PopupRoot inherits
             // from WindowBase, closing the window handle will close that
             // focus scope out so we don't need to do it here
+            // This is also ok to call even if focus was never directed into 
+            // the popup since FocusManager won't do anything if the specified
+            // root isn't in the registered list of roots
             if (Host is OverlayPopupHost)
             {
                 ClearFocus();

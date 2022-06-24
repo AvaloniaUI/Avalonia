@@ -135,6 +135,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Determines whether this window should automatically move focus
+        /// when HandleActivate is called
+        /// </summary>
+        /// <remarks>
+        /// For normal windows, this value is true. For PopupRoot, which inherits
+        /// from WindowBase, this value should be false to prevent popups from
+        /// automatically taking focus
+        /// </remarks>
+        protected virtual bool AutoFocusOnActivate => true;
+
+        /// <summary>
         /// Activates the window.
         /// </summary>
         public void Activate()
@@ -299,7 +310,10 @@ namespace Avalonia.Controls
         {
             Activated?.Invoke(this, EventArgs.Empty);
 
-            _focusManager.TryRestoreFocus();
+            if (AutoFocusOnActivate)
+            {
+                _focusManager.TryRestoreFocus();
+            }
 
             IsActive = true;
         }
