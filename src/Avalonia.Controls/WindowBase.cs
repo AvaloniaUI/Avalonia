@@ -225,8 +225,6 @@ namespace Avalonia.Controls
                 LayoutManager.ExecuteLayoutPass();
                 Renderer?.Resized(clientSize);
             }
-
-            System.Diagnostics.Debug.WriteLine($"HandleResized: ClientSize {ClientSize} | FrameSize {FrameSize}");
         }
 
         /// <summary>
