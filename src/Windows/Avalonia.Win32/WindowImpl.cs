@@ -22,6 +22,7 @@ using Avalonia.Win32.WinRT;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Metadata;
+using Avalonia.Platform.Storage;
 
 namespace Avalonia.Win32
 {
@@ -31,7 +32,8 @@ namespace Avalonia.Win32
     [Unstable]
     public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
         ITopLevelImplWithNativeControlHost,
-        ITopLevelImplWithTextInputMethod
+        ITopLevelImplWithTextInputMethod,
+        ITopLevelImplWithStorageProvider
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -152,6 +154,7 @@ namespace Avalonia.Win32
             }
 
             Screen = new ScreenImpl();
+            StorageProvider = new Win32StorageProvider(this);
 
             _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
             s_instances.Add(this);
@@ -1384,6 +1387,8 @@ namespace Avalonia.Win32
         }
 
         public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
+
+        public IStorageProvider StorageProvider { get; }
 
         private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
         {
