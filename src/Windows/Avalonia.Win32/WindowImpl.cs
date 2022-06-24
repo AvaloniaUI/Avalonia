@@ -209,7 +209,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.Primary)?.PixelDensity ?? 1;
+        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.Primary)?.PixelDensity ?? 1;
 
         public double RenderScaling => _scaling;
 
