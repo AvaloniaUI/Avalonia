@@ -4,10 +4,14 @@ using Android.Content.Res;
 using AndroidX.Lifecycle;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls;
+using Android.Runtime;
+using Android.App;
+using Android.Content;
+using System;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaActivity<TApp> : AppCompatActivity where TApp : Application, new()
+    public abstract class AvaloniaActivity : AppCompatActivity
     {
         internal class SingleViewLifetime : ISingleViewApplicationLifetime
         {
@@ -20,16 +24,15 @@ namespace Avalonia.Android
             }
         }
 
+        internal Action<int, Result, Intent> ActivityResult;
         internal AvaloniaView View;
         internal AvaloniaViewModel _viewModel;
 
-        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
+        protected abstract AppBuilder CreateAppBuilder();
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            var builder = AppBuilder.Configure<TApp>();
-            
-            CustomizeAppBuilder(builder);
+            var builder = CreateAppBuilder();
 
 
             var lifetime = new SingleViewLifetime();
@@ -78,6 +81,25 @@ namespace Avalonia.Android
             View.Content = null;
 
             base.OnDestroy();
+        }
+
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            ActivityResult?.Invoke(requestCode, resultCode, data);
+        }
+    }
+
+    public abstract class AvaloniaActivity<TApp> : AvaloniaActivity where TApp : Application, new()
+    {
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
+
+        protected override AppBuilder CreateAppBuilder()
+        {
+            var builder = AppBuilder.Configure<TApp>();
+
+            return CustomizeAppBuilder(builder);
         }
     }
 }

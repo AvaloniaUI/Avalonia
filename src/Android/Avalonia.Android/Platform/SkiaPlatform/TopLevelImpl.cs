@@ -7,6 +7,7 @@ using Android.Views.InputMethods;
 using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
+using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
@@ -16,11 +17,13 @@ using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo, ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
+        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -46,6 +49,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
+            StorageProvider = new AndroidStorageProvider((AvaloniaActivity)avaloniaView.Context);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -225,6 +229,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public ITextInputMethodImpl TextInputMethod => _textInputMethod;
 
         public INativeControlHostImpl NativeControlHost { get; }
+        
+        public IStorageProvider StorageProvider { get; }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
