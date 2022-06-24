@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.Input
@@ -51,9 +49,11 @@ namespace Avalonia.Input
 
                 // Another window (most likely) holds the current focus, but we're switching to a different one
                 // Clear the focus on that window before we continue here
-                if (ActiveFocusRoot != null && ActiveFocusRoot != _owner)
+                // But only do this if this isn't a focus clear operation (null element, unfocused state)
+                if (ActiveFocusRoot != null && ActiveFocusRoot != _owner &&
+                    (element != null && state != FocusState.Unfocused))
                 {
-                    ActiveFocusRoot.FocusManager.ClearFocus();
+                    ActiveFocusRoot.FocusManager.ClearFocus(focusChangeID, lastInputType);
                     Logger.TryGet(LogEventLevel.Debug, LogArea.Focus)?
                         .Log(nameof(FocusManager), "Focus root changed to {Root}", ActiveFocusRoot);
                 }
@@ -148,17 +148,8 @@ namespace Avalonia.Input
                 RaiseLostFocusEvent(gettingArgs.OldFocusedElement, focusChangeID);
                 RaiseGotFocusEvent(_focusedElement, focusChangeID);
 
-
-                if (_focusedElement != null &&
-                    (!_focusedElement.IsAttachedToVisualTree ||
-                    _owner != _focusedElement?.VisualRoot as IInputRoot))
-                {
-                    ClearChildrenFocusWithin((_owner as IInputElement)!, true);
-                }
-
-                SetIsFocusWithin(gettingArgs.OldFocusedElement, _focusedElement);
-
-                KeyboardDevice.Instance?.SetFocusedElement(_focusedElement);
+                HandleIsFocusWithin(gettingArgs.OldFocusedElement, 
+                    _focusedElement, true);               
 
                 // TODO_FOCUS: There's probably a UIA focus event or notification we need to raise here too
 
@@ -177,6 +168,9 @@ namespace Avalonia.Input
         /// </summary>
         internal void ClearFocus()
         {
+            // This is called for Platform losing focus (see TopLevel PlatformImpl_LostFocus)
+            // In this case we raise the full suite of events
+
             // Save the currently focused item in this FocusManager. If we're switching windows and we switch back
             // we want to restore the correct item. 
             if (_focusedElement != null)
@@ -190,8 +184,56 @@ namespace Avalonia.Input
 
             SetFocusedElement(null, 
                 state: FocusState.Unfocused, 
+                direction: NavigationDirection.None,
                 allowCancelling: false,
                 allowRedirecting: false);
+        }
+
+        /// <summary>
+        /// Clears focus in a scope as part of changing active focus roots (like focusing
+        /// another window or popup)
+        /// </summary>
+        private void ClearFocus(Guid focusChangeID, FocusInputDeviceKind lastInputType)
+        {            
+            if (_focusedElement == null)
+            {
+                _previousFocus = null;
+
+                // Scope didn't have a focused item - we can skip here
+                // This should generally not happen
+                return;
+            }
+
+            _previousFocus = new WeakReference<IInputElement>(_focusedElement);
+
+            // Since this path comes from focusing another scope we don't raise GettingFocus or GotFocus
+
+            var losingArgs = new LosingFocusEventArgs(false, false)
+            {
+                CorrelationID = focusChangeID,
+                NewFocusedElement = null,
+                OldFocusedElement = _focusedElement,
+                Direction = NavigationDirection.None,
+                FocusState = FocusState.Unfocused,
+                InputDevice = lastInputType,
+                // Ignoring key modifiers here since this is an explicit unfocus move
+                KeyModifiers = KeyModifiers.None
+            };
+
+            // We don't care about the result here since the event can't be cancelled
+            _ = RaiseLosingFocusEvents(losingArgs);
+
+            _focusedElement = null;
+            if (_focusedElement is InputElement oldFocusIE)
+            {
+                oldFocusIE.FocusState = FocusState.Unfocused;
+            }            
+
+            RaiseLostFocusEvent(null, focusChangeID);
+
+            // Clear FocusWithin state, but don't tell KeyboardDevice about the 
+            // focus change since we're just clearing this scope
+            HandleIsFocusWithin(losingArgs.OldFocusedElement, null, false);
         }
 
         /// <summary>
@@ -424,6 +466,22 @@ namespace Avalonia.Input
             {
                 GotFocus?.Invoke(this, new FocusManagerGotFocusEventArgs(id, element));
             });
+        }
+
+        private void HandleIsFocusWithin(IInputElement? oldElement, IInputElement? newElement,
+            bool setKeyboardDevice)
+        {
+            if (newElement != null &&
+                (!newElement.IsAttachedToVisualTree ||
+                _owner != newElement?.VisualRoot as IInputRoot))
+            {
+                ClearChildrenFocusWithin((_owner as IInputElement)!, true);
+            }
+
+            SetIsFocusWithin(oldElement, _focusedElement);
+
+            if (setKeyboardDevice)
+                KeyboardDevice.Instance?.SetFocusedElement(_focusedElement);
         }
 
         private void ClearFocusWithinAncestors(IInputElement? element)

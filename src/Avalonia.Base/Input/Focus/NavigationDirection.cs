@@ -54,6 +54,11 @@ namespace Avalonia.Input
         /// Move the focus down a page.
         /// </summary>
         PageDown,
+
+        /// <summary>
+        /// No direction, used for unfocusing
+        /// </summary>
+        None
     }
 
     public static class NavigationDirectionExtensions
