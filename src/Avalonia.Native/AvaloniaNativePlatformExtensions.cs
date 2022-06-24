@@ -43,7 +43,7 @@ namespace Avalonia
         /// <summary>
         /// Enables new compositing rendering with UWP-like API
         /// </summary>
-        public bool UseCompositor { get; set; }
+        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use GPU for rendering in your project. The default value is true.
