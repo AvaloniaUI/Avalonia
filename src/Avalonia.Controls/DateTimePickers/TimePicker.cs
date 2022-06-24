@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using System;
 using System.Globalization;
@@ -289,6 +290,9 @@ namespace Avalonia.Controls
 
             // The extra 5 px I think is related to default popup placement behavior
             _popup.VerticalOffset = deltaY + 5;
+
+            var firstFocus = FocusManager.FindFirstFocusableElement(_presenter);
+            firstFocus?.Focus();
         }
 
         private void OnDismissPicker(object? sender, EventArgs e)

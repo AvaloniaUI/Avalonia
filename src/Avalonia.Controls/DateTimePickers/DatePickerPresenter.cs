@@ -325,14 +325,6 @@ namespace Avalonia.Controls
                     OnDismiss();
                     e.Handled = true;
                     break;
-                case Key.Tab:
-                    if (FocusManager.Instance?.Current is IInputElement focus)
-                    {
-                        var nextFocus = KeyboardNavigationHandler.GetNext(focus, NavigationDirection.Next);
-                        KeyboardDevice.Instance?.SetFocusedElement(nextFocus, NavigationMethod.Tab, KeyModifiers.None);
-                        e.Handled = true;
-                    }
-                    break;
                 case Key.Enter:
                     Date = _syncDate;
                     OnConfirmed();
@@ -389,8 +381,6 @@ namespace Avalonia.Controls
             }
                 
             _suppressUpdateSelection = false;
-
-            SetInitialFocus();
         }
 
         private void SetGrid()
@@ -444,25 +434,6 @@ namespace Avalonia.Controls
             _spacer2!.IsVisible = isSpacer2Visible;
         }
 
-        private void SetInitialFocus()
-        {
-            int monthCol = MonthVisible ? Grid.GetColumn(_monthHost!) : int.MaxValue;
-            int dayCol = DayVisible ? Grid.GetColumn(_dayHost!) : int.MaxValue;
-            int yearCol = YearVisible ? Grid.GetColumn(_yearHost!) : int.MaxValue;
-
-            if (monthCol < dayCol && monthCol < yearCol)
-            {
-                KeyboardDevice.Instance?.SetFocusedElement(_monthSelector, NavigationMethod.Pointer, KeyModifiers.None);
-            }
-            else if (dayCol < monthCol && dayCol < yearCol)
-            {
-                KeyboardDevice.Instance?.SetFocusedElement(_daySelector, NavigationMethod.Pointer, KeyModifiers.None);
-            }
-            else if (yearCol < monthCol && yearCol < dayCol)
-            {
-                KeyboardDevice.Instance?.SetFocusedElement(_yearSelector, NavigationMethod.Pointer, KeyModifiers.None);
-            }
-        }
 
         private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)
         {

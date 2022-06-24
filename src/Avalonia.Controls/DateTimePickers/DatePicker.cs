@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using System;
@@ -429,6 +430,9 @@ namespace Avalonia.Controls
 
             // The extra 5 px I think is related to default popup placement behavior
             _popup.VerticalOffset = deltaY + 5;
+
+            var firstFocus = FocusManager.FindFirstFocusableElement(_presenter);
+            firstFocus?.Focus();
         }
 
         protected virtual void OnSelectedDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e)
