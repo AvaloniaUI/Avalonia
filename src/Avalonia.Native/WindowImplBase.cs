@@ -372,7 +372,10 @@ namespace Avalonia.Native
             if (_deferredRendering)
             {
                 if (AvaloniaNativePlatform.Compositor != null)
-                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor);
+                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor)
+                    {
+                        RenderOnlyOnRenderThread = false
+                    };
                 return new DeferredRenderer(root, loop);
             }
 
