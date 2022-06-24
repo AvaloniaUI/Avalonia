@@ -15,7 +15,6 @@ using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Threading;
 using JetBrains.Annotations;
 
 namespace Avalonia.LinuxFramebuffer
@@ -99,10 +98,8 @@ namespace Avalonia.LinuxFramebuffer
                     _topLevel = tl;
                     _topLevel.Renderer.Start();
 
-                    if (_topLevel is IFocusScope scope)
-                    {
-                        FocusManager.Instance?.SetFocusScope(scope);
-                    }
+                    var first = FocusManager.FindFirstFocusableElement(value);
+                    first?.Focus();
                 }
 
                 _topLevel.Content = value;
