@@ -8,6 +8,5 @@
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup.Xaml/Avalonia.Markup.Xaml.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.MicroCom/Avalonia.MicroCom.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.PlatformSupport/Avalonia.PlatformSupport.csproj" />
   </ItemGroup>
 </Project>

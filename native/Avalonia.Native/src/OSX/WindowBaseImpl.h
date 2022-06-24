@@ -110,7 +110,6 @@ protected:
 private:
     void CreateNSWindow (bool isDialog);
     void CleanNSWindow ();
-    void InitialiseNSWindow ();
 
     NSCursor *cursor;
     ComPtr<IAvnGlContext> _glContext;

@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Xaml.Styling
 
         IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
-        public event EventHandler OwnerChanged
+        public event EventHandler? OwnerChanged
         {
             add
             {

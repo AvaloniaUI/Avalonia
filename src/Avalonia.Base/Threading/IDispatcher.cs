@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalonia.Threading
@@ -25,6 +26,14 @@ namespace Avalonia.Threading
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
         void Post(Action action, DispatcherPriority priority = default);
+
+        /// <summary>
+        /// Posts an action that will be invoked on the dispatcher thread.
+        /// </summary>
+        /// <param name="action">The method.</param>
+        /// <param name="arg">The argument of method to call.</param>
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        void Post(SendOrPostCallback action, object? arg, DispatcherPriority priority = default);
 
         /// <summary>
         /// Invokes a action on the dispatcher thread.

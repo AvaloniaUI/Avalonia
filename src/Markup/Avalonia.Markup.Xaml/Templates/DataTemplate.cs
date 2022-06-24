@@ -5,7 +5,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    public class DataTemplate : IRecyclingDataTemplate
+    public class DataTemplate : IRecyclingDataTemplate, ITypedDataTemplate
     {
         [DataType]
         public Type DataType { get; set; }

@@ -309,6 +309,80 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(0, raised);
         }
+        
+        [Fact]
+        public void Button_IsDefault_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var target = new Button();
+                var window = new Window { Content = target };
+                window.Show();
+                
+                target.Click += (s, e) => ++raised;
+
+                target.IsDefault = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(0, raised);
+                
+                target.IsDefault = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(1, raised);
+
+                target.IsDefault = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(1, raised);
+                
+                target.IsDefault = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter));
+                Assert.Equal(2, raised);
+                
+                window.Content = null;
+                // To check if handler was raised on the button, when it's detached, we need to pass it as a source manually.
+                window.RaiseEvent(CreateKeyDownEvent(Key.Enter, target));
+                Assert.Equal(2, raised);
+            }
+        }
+        
+        [Fact]
+        public void Button_IsCancel_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var raised = 0;
+                var target = new Button();
+                var window = new Window { Content = target };
+                window.Show();
+                
+                target.Click += (s, e) => ++raised;
+
+                target.IsCancel = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(0, raised);
+                
+                target.IsCancel = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(1, raised);
+
+                target.IsCancel = false;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(1, raised);
+                
+                target.IsCancel = true;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape));
+                Assert.Equal(2, raised);
+                
+                window.Content = null;
+                window.RaiseEvent(CreateKeyDownEvent(Key.Escape, target));
+                Assert.Equal(2, raised);
+            }
+        }
+
+        private KeyEventArgs CreateKeyDownEvent(Key key, IInteractive source = null)
+        {
+            return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
+        }
 
         private class TestButton : Button, IRenderRoot
         {
