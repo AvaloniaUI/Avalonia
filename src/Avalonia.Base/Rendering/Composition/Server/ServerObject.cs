@@ -63,15 +63,15 @@ namespace Avalonia.Rendering.Composition.Server
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected int GetOffset<T>(ref T field) where T : struct
+        protected int GetOffset(ref ServerObjectSubscriptionStore field)
         {
-            return Unsafe.ByteOffset(ref Unsafe.As<uint, object>(ref _activationCount),
-                    ref Unsafe.As<T, object>(ref field))
+            return Unsafe.ByteOffset(ref _activationCount,
+                    ref Unsafe.As<ServerObjectSubscriptionStore, uint>(ref field))
                 .ToInt32();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref ServerObjectSubscriptionStore GetStoreFromOffset(int offset)
+        protected ref ServerObjectSubscriptionStore GetStoreFromOffset(int offset)
         {
 #if DEBUG
             if (offset == 0)

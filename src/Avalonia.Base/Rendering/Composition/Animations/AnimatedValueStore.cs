@@ -32,11 +32,9 @@ namespace Avalonia.Rendering.Composition.Animations
     /// The value store for non-animated values that can still be referenced by animations.
     /// Simply stores the value and notifies subscribers
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
     internal struct ServerValueStore<T>
     {
-        // HAS TO BE THE FIRST FIELD, accessed by field offset from ServerObject
-        private ServerObjectSubscriptionStore Subscriptions;
+        public ServerObjectSubscriptionStore Subscriptions;
         private T _value;
         public T Value
         {
@@ -61,8 +59,7 @@ namespace Avalonia.Rendering.Composition.Animations
     [StructLayout(LayoutKind.Sequential)]
     internal struct ServerAnimatedValueStore<T> where T : struct
     {
-        // HAS TO BE THE FIRST FIELD, accessed by field offset from ServerObject
-        private ServerObjectSubscriptionStore Subscriptions;
+        public ServerObjectSubscriptionStore Subscriptions;
         private IAnimationInstance? _animation;
         private T _direct;
         private T? _lastAnimated;

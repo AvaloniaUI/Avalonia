@@ -298,7 +298,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                     AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, IdentifierName(fieldOffsetName),
                         InvocationExpression(MemberAccess(IdentifierName(uninitializedObjectName), "GetOffset"),
                             ArgumentList(SingletonSeparatedList(Argument(
-                                RefExpression(MemberAccess(IdentifierName(uninitializedObjectName), fieldName)))))))));
+                                RefExpression(MemberAccess(MemberAccess(IdentifierName(uninitializedObjectName), fieldName), "Subscriptions")))))))));
                 
                 if (prop.DefaultValue != null)
                 {

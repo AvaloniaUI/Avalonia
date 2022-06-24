@@ -2,7 +2,9 @@ using System;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Transport;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Server
 {
