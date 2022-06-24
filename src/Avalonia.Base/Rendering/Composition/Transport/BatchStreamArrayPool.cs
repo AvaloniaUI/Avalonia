@@ -18,6 +18,9 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
     readonly int[] _usageStatistics = new int[10];
     int _usageStatisticsSlot;
 
+    public int CurrentUsage => _usage;
+    public int CurrentPool => _pool.Count;
+
     public BatchStreamPoolBase(bool needsFinalize, Action<Func<bool>>? startTimer = null)
     {
         if(!needsFinalize)
@@ -116,16 +119,16 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
 
 internal sealed class BatchStreamObjectPool<T> : BatchStreamPoolBase<T[]> where T : class?
 {
-    private readonly int _arraySize;
+    public int ArraySize { get; }
 
-    public BatchStreamObjectPool(int arraySize = 1024, Action<Func<bool>>? startTimer = null) : base(false, startTimer)
+    public BatchStreamObjectPool(int arraySize = 128, Action<Func<bool>>? startTimer = null) : base(false, startTimer)
     {
-        _arraySize = arraySize;
+        ArraySize = arraySize;
     }
     
     protected override T[] CreateItem()
     {
-        return new T[_arraySize];
+        return new T[ArraySize];
     }
 
     protected override void DestroyItem(T[] item)

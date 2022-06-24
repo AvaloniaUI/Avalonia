@@ -24,8 +24,8 @@ namespace Avalonia.Rendering.Composition.Server
         private List<ServerCompositionTarget> _activeTargets = new();
         private HashSet<IAnimationInstance> _activeAnimations = new();
         private List<IAnimationInstance> _animationsToUpdate = new();
-        private BatchStreamObjectPool<object?> _batchObjectPool;
-        private BatchStreamMemoryPool _batchMemoryPool;
+        internal BatchStreamObjectPool<object?> BatchObjectPool;
+        internal BatchStreamMemoryPool BatchMemoryPool;
         private object _lock = new object();
         public IPlatformGpuContext? GpuContext { get; }
 
@@ -34,8 +34,8 @@ namespace Avalonia.Rendering.Composition.Server
         {
             GpuContext = platformGpu?.PrimaryContext;
             _renderLoop = renderLoop;
-            _batchObjectPool = batchObjectPool;
-            _batchMemoryPool = batchMemoryPool;
+            BatchObjectPool = batchObjectPool;
+            BatchMemoryPool = batchMemoryPool;
             _renderLoop.Add(this);
         }
 
@@ -60,7 +60,7 @@ namespace Avalonia.Rendering.Composition.Server
                     batch = _batches.Dequeue();
                 }
 
-                using (var stream = new BatchStreamReader(batch.Changes, _batchMemoryPool, _batchObjectPool))
+                using (var stream = new BatchStreamReader(batch.Changes, BatchMemoryPool, BatchObjectPool))
                 {
                     while (!stream.IsObjectEof)
                     {

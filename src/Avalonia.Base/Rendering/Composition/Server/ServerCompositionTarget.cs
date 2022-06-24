@@ -134,10 +134,19 @@ namespace Avalonia.Rendering.Composition.Server
                         , null, _dirtyRect);
                 }
 
-                if(DrawFps)
-                    _fpsCounter.RenderFps(targetContext);
+                if (DrawFps)
+                {
+                    var nativeMem = ByteSizeHelper.ToString((ulong)(
+                        (Compositor.BatchMemoryPool.CurrentUsage + Compositor.BatchMemoryPool.CurrentPool)  *
+                                                    Compositor.BatchMemoryPool.BufferSize), false);
+                    var managedMem = ByteSizeHelper.ToString((ulong)(
+                        (Compositor.BatchObjectPool.CurrentUsage + Compositor.BatchObjectPool.CurrentPool) *
+                                                                     Compositor.BatchObjectPool.ArraySize *
+                                                                     IntPtr.Size), false);
+                    _fpsCounter.RenderFps(targetContext, $"M:{managedMem} / N:{nativeMem}");
+                }
+
                 _dirtyRect = Rect.Empty;
-                
             }
         }
 

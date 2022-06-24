@@ -1,10 +1,11 @@
 using System;
 
-namespace Avalonia.Dialogs
+namespace Avalonia.Utilities
 {
     internal static class ByteSizeHelper
     {
-        private const string formatTemplate = "{0}{1:0.#} {2}";
+        private const string formatTemplateSeparated = "{0}{1:0.#} {2}";
+        private const string formatTemplate = "{0}{1:0.#}{2}";
 
         private static readonly string[] Prefixes =
         {
@@ -19,11 +20,11 @@ namespace Avalonia.Dialogs
             "YB" 
         };
 
-        public static string ToString(ulong bytes)
+        public static string ToString(ulong bytes, bool separate)
         {
             if (bytes == 0)
             {
-                return string.Format(formatTemplate, null, 0, Prefixes[0]);
+                return string.Format(separate ? formatTemplateSeparated : formatTemplate, null, 0, Prefixes[0]);
             }
 
             var absSize = Math.Abs((double)bytes);

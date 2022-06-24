@@ -35,7 +35,7 @@ internal class FpsCounter
 
     public void FpsTick() => _framesThisSecond++;
 
-    public void RenderFps(IDrawingContextImpl context)
+    public void RenderFps(IDrawingContextImpl context, string aux)
     {
         var now = _stopwatch.Elapsed;
         var elapsed = now - _lastFpsUpdate;
@@ -50,7 +50,7 @@ internal class FpsCounter
             _lastFpsUpdate = now;
         }
 
-        var fpsLine = $"Frame #{_totalFrames:00000000} FPS: {_fps:000}";
+        var fpsLine = $"Frame #{_totalFrames:00000000} FPS: {_fps:000} " + aux;
         double width = 0;
         double height = 0;
         foreach (var ch in fpsLine)
