@@ -6,7 +6,9 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.iOS.Storage;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using CoreAnimation;
 using Foundation;
@@ -41,9 +43,10 @@ namespace Avalonia.iOS
             );
             _topLevelImpl.Surfaces = new[] {new EaglLayerSurface(l)};
             MultipleTouchEnabled = true;
+            AddSubviews(new UIView[] { new UIKit.UIButton(UIButtonType.InfoDark) });
         }
 
-        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
+        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
         {
             private readonly AvaloniaView _view;
             public AvaloniaView View => _view;
@@ -52,6 +55,7 @@ namespace Avalonia.iOS
             {
                 _view = view;
                 NativeControlHost = new NativeControlHostImpl(_view);
+                StorageProvider = new IOSStorageProvider(view);
             }
 
             public void Dispose()
@@ -113,7 +117,8 @@ namespace Avalonia.iOS
                 new AcrylicPlatformCompensationLevels();
 
             public ITextInputMethodImpl? TextInputMethod => _view;
-            public INativeControlHostImpl NativeControlHost { get; }
+            public INativeControlHostImpl NativeControlHost { get; }            
+            public IStorageProvider StorageProvider { get; }
         }
 
         [Export("layerClass")]
