@@ -53,7 +53,7 @@ namespace Avalonia.Rendering
                 var now = _st.Elapsed;
                 var timeTillNextTick = lastTick + _timeBetweenTicks - now;
                 if (timeTillNextTick.TotalMilliseconds > 1) Thread.Sleep(timeTillNextTick);
-                lastTick = now;
+                lastTick = now = _st.Elapsed;
                 lock (_lock)
                 {
                     if (_count == 0)
