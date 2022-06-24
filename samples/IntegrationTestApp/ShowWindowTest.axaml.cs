@@ -11,6 +11,7 @@ namespace IntegrationTestApp
         public ShowWindowTest()
         {
             InitializeComponent();
+            DataContext = this;
         }
 
         private void InitializeComponent()
@@ -21,9 +22,6 @@ namespace IntegrationTestApp
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-            this.GetControl<TextBox>("ClientSize").Text = $"{Width}, {Height}";
-            this.GetControl<TextBox>("FrameSize").Text = $"{FrameSize}";
-            this.GetControl<TextBox>("Position").Text = $"{Position}";
             this.GetControl<TextBox>("ScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
             this.GetControl<TextBox>("Scaling").Text = $"{PlatformImpl?.DesktopScaling}";
 
