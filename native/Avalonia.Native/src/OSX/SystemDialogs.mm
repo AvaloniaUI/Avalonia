@@ -1,5 +1,6 @@
 #include "common.h"
 #include "INSWindowHolder.h"
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemDialogs>
 {
@@ -7,6 +8,7 @@ public:
     FORWARD_IUNKNOWN()
     virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
                                      IAvnSystemDialogEvents* events,
+                                     bool allowMultiple,
                                      const char* title,
                                      const char* initialDirectory) override
     {
@@ -14,6 +16,7 @@ public:
         {
             auto panel = [NSOpenPanel openPanel];
             
+            panel.allowsMultipleSelection = allowMultiple;
             panel.canChooseDirectories = true;
             panel.canCreateDirectories = true;
             panel.canChooseFiles = false;
@@ -118,7 +121,15 @@ public:
                 {
                     auto allowedTypes = [filtersString componentsSeparatedByString:@";"];
                     
-                    panel.allowedFileTypes = allowedTypes;
+                    // Prefer allowedContentTypes if available
+                    if (@available(macOS 11.0, *))
+                    {
+                        panel.allowedContentTypes = ConvertToUTType(allowedTypes);
+                    }
+                    else
+                    {
+                        panel.allowedFileTypes = allowedTypes;
+                    }
                 }
             }
             
@@ -207,7 +218,18 @@ public:
                 {
                     auto allowedTypes = [filtersString componentsSeparatedByString:@";"];
                     
-                    panel.allowedFileTypes = allowedTypes;
+                    // Prefer allowedContentTypes if available
+                    if (@available(macOS 11.0, *))
+                    {
+                        panel.allowedContentTypes = ConvertToUTType(allowedTypes);
+                    }
+                    else
+                    {
+                        panel.allowedFileTypes = allowedTypes;
+                    }
+                    
+                    panel.allowsOtherFileTypes = false;
+                    panel.extensionHidden = false;
                 }
             }
             
@@ -249,6 +271,32 @@ public:
                 [panel beginWithCompletionHandler: handler];
             }
         }
+    }
+    
+private:
+    NSMutableArray* ConvertToUTType(NSArray<NSString*>* allowedTypes)
+    {
+        auto originalCount = [allowedTypes count];
+        auto mapped = [[NSMutableArray alloc] init];
+        
+        if (@available(macOS 11.0, *))
+        {
+            for (int i = 0; i < originalCount; i++)
+            {
+                auto utTypeStr = allowedTypes[i];
+                auto utType = [UTType typeWithIdentifier:utTypeStr];
+                if (utType == nil)
+                {
+                    utType = [UTType typeWithMIMEType:utTypeStr];
+                }
+                if (utType != nil)
+                {
+                    [mapped addObject:utType];
+                }
+            }
+        }
+
+        return mapped;
     }
 
 };

@@ -641,9 +641,10 @@ interface IAvnSystemDialogEvents : IUnknown
 interface IAvnSystemDialogs : IUnknown
 {
      void SelectFolderDialog(IAvnWindow* parentWindowHandle,
-                                     IAvnSystemDialogEvents* events,
-                                     [const] char* title,
-                                     [const] char* initialPath);
+                             IAvnSystemDialogEvents* events,
+                             bool allowMultiple,
+                             [const] char* title,
+                             [const] char* initialPath);
     
      void OpenFileDialog(IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,

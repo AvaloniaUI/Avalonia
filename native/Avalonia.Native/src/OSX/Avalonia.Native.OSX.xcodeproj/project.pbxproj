@@ -49,6 +49,7 @@
 		AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */; };
 		BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */ = {isa = PBXBuildFile; fileRef = BC11A5BC2608D58F0017BAD0 /* automation.h */; };
 		BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC11A5BD2608D58F0017BAD0 /* automation.mm */; };
+		ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -101,6 +102,7 @@
 		AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platformthreading.mm; sourceTree = "<group>"; };
 		BC11A5BC2608D58F0017BAD0 /* automation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = automation.h; sourceTree = "<group>"; };
 		BC11A5BD2608D58F0017BAD0 /* automation.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = automation.mm; sourceTree = "<group>"; };
+		ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */,
 				1A3E5EB023E9FE8300EDE661 /* QuartzCore.framework in Frameworks */,
 				1A3E5EAA23E9F26C00EDE661 /* IOSurface.framework in Frameworks */,
 				AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */,
@@ -122,6 +125,7 @@
 		AB661C1C2148230E00291242 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */,
 				522D5958258159C1006F7F7A /* Carbon.framework */,
 				1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */,
 				1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */,
