@@ -324,10 +324,16 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 .AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(
                     $"protected override void Deactivated(){{}}")!).WithBody(deactivatedBody));
             if (cl.Properties.Count > 0)
+            {
                 server = server.AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(
                             $"protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt){{}}")
                         !)
-                    .WithBody(deserializeMethodBody));
+                    .WithBody(ApplyDeserializeChangesEpilogue(deserializeMethodBody, cl)));
+                server = server.AddMembers(MethodDeclaration(ParseTypeName("void"), "OnFieldsDeserialized")
+                    .WithParameterList(ParameterList(SingletonSeparatedList(Parameter(Identifier("changed"))
+                        .WithType(ParseTypeName(ChangedFieldsTypeName(cl))))))
+                    .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon()));
+            }
 
             client = client.AddMembers(
                     MethodDeclaration(ParseTypeName("void"), "InitializeDefaults").WithBody(defaultsMethodBody))
@@ -544,6 +550,11 @@ base.DeserializeChangesCore(reader, commitedAt);
 DeserializeChangesExtra(reader);
 var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
 "));
+        }
+
+        private BlockSyntax ApplyDeserializeChangesEpilogue(BlockSyntax body, GClass cl)
+        {
+            return body.AddStatements(ParseStatement("OnFieldsDeserialized(changed);"));
         }
         
         BlockSyntax ApplyDeserializeField(BlockSyntax body, GClass cl, GProperty prop, string serverType, bool isObject)

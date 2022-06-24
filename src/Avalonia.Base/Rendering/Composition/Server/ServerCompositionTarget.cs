@@ -35,6 +35,7 @@ namespace Avalonia.Rendering.Composition.Server
 
 
         public ReadbackIndices Readback { get; } = new();
+        public int RenderedVisuals { get; set; }
 
         public ServerCompositionTarget(ServerCompositor compositor, Func<IRenderTarget> renderTargetFactory) :
             base(compositor)
@@ -85,12 +86,12 @@ namespace Avalonia.Rendering.Composition.Server
             Revision++;
             
             // Update happens in a separate phase to extend dirty rect if needed
-            Root.Update(this, Matrix4x4.Identity);
+            Root.Update(this);
 
             while (_adornerUpdateQueue.Count > 0)
             {
                 var adorner = _adornerUpdateQueue.Dequeue();
-                adorner.Update(this, adorner.AdornedVisual?.GlobalTransformMatrix ?? Matrix4x4.Identity);
+                adorner.Update(this);
             }
             
             Readback.CompleteWrite(Revision);
@@ -114,7 +115,7 @@ namespace Avalonia.Rendering.Composition.Server
                     {
                         context.PushClip(_dirtyRect);
                         context.Clear(Colors.Transparent);
-                        Root.Render(new CompositorDrawingContextProxy(context, visualBrushHelper));
+                        Root.Render(new CompositorDrawingContextProxy(context, visualBrushHelper), _dirtyRect);
                         context.PopClip();
                     }
                 }
@@ -143,8 +144,9 @@ namespace Avalonia.Rendering.Composition.Server
                         (Compositor.BatchObjectPool.CurrentUsage + Compositor.BatchObjectPool.CurrentPool) *
                                                                      Compositor.BatchObjectPool.ArraySize *
                                                                      IntPtr.Size), false);
-                    _fpsCounter.RenderFps(targetContext, $"M:{managedMem} / N:{nativeMem}");
+                    _fpsCounter.RenderFps(targetContext, $"M:{managedMem} / N:{nativeMem} R:{RenderedVisuals:0000}");
                 }
+                RenderedVisuals = 0;
 
                 _dirtyRect = Rect.Empty;
             }
@@ -163,6 +165,8 @@ namespace Avalonia.Rendering.Composition.Server
         
         public void AddDirtyRect(Rect rect)
         {
+            if(rect.IsEmpty)
+                return;
             var snapped = SnapToDevicePixels(rect, Scaling);
             _dirtyRect = _dirtyRect.Union(snapped);
             _redrawRequested = true;

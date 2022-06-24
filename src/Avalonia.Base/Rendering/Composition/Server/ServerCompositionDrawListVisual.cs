@@ -57,13 +57,13 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         base.DeserializeChangesCore(reader, commitedAt);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas)
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
     {
         if (_renderCommands != null)
         {
             _renderCommands.Render(canvas);
         }
-        base.RenderCore(canvas);
+        base.RenderCore(canvas, currentTransformedClip);
     }
     
 #if DEBUG

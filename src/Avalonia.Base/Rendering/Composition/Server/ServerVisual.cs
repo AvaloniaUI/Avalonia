@@ -16,22 +16,30 @@ namespace Avalonia.Rendering.Composition.Server
     /// </summary>
     partial class ServerCompositionVisual : ServerObject
     {
-        private bool _isDirty;
-        private bool _isDirtyComposition;
-        private CompositionProperties _oldCompositionProperties;
+        private bool _isDirtyForUpdate;
+        private Rect _oldOwnContentBounds;
         private bool _isBackface;
-        protected virtual void RenderCore(CompositorDrawingContextProxy canvas)
+        private Rect? _transformedClipBounds;
+        private Rect _combinedTransformedClipBounds;
+        
+        protected virtual void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
         {
             
         }
-        
-        public void Render(CompositorDrawingContextProxy canvas)
+
+        public void Render(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
         {
-            _isDirtyComposition = false;
             if(Visible == false || IsVisibleInFrame == false)
                 return;
             if(Opacity == 0)
                 return;
+
+            currentTransformedClip = currentTransformedClip.Intersect(_combinedTransformedClipBounds);
+            if(currentTransformedClip.IsEmpty)
+                return;
+
+            Root!.RenderedVisuals++;
+            
             var transform = GlobalTransformMatrix;
             canvas.PreTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
@@ -45,7 +53,7 @@ namespace Avalonia.Rendering.Composition.Server
             if(OpacityMaskBrush != null)
                 canvas.PushOpacityMask(OpacityMaskBrush, boundsRect);
             
-            RenderCore(canvas);
+            RenderCore(canvas, currentTransformedClip);
             
             // Hack to force invalidation of SKMatrix
             canvas.PreTransform = MatrixUtils.ToMatrix(transform);
@@ -76,18 +84,29 @@ namespace Avalonia.Rendering.Composition.Server
             return ref _readback2;
         }
         
-        public Matrix4x4 CombinedTransformMatrix { get; private set; }
+        public Matrix4x4 CombinedTransformMatrix { get; private set; } = Matrix4x4.Identity;
         public Matrix4x4 GlobalTransformMatrix { get; private set; }
 
-        public virtual void Update(ServerCompositionTarget root, Matrix4x4 transform)
+        public virtual void Update(ServerCompositionTarget root)
         {
-            // Calculate new parent-relative transform
-            CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint,
-                // HACK: Ignore RenderTransform set by the adorner layer
-                AdornedVisual != null ? Matrix4x4.Identity : TransformMatrix,
-                Scale, RotationAngle, Orientation, Offset);
+            if(Parent == null && Root == null)
+                return;
             
-            var newTransform = CombinedTransformMatrix * transform;
+            var wasVisible = IsVisibleInFrame;
+            
+            // Calculate new parent-relative transform
+            if (_combinedTransformDirty)
+            {
+                CombinedTransformMatrix = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint,
+                    // HACK: Ignore RenderTransform set by the adorner layer
+                    AdornedVisual != null ? Matrix4x4.Identity : TransformMatrix,
+                    Scale, RotationAngle, Orientation, Offset);
+                _combinedTransformDirty = false;
+            }
+
+            var parentTransform = (AdornedVisual ?? Parent)?.GlobalTransformMatrix ?? Matrix4x4.Identity;
+
+            var newTransform = CombinedTransformMatrix * parentTransform;
             
             // Check if visual was moved and recalculate face orientation
             var positionChanged = false;
@@ -97,36 +116,69 @@ namespace Avalonia.Rendering.Composition.Server
                     new Vector3(0, 0, float.PositiveInfinity), GlobalTransformMatrix).Z <= 0;
                 positionChanged = true;
             }
-            
-            var wasVisible = IsVisibleInFrame;
 
+            var oldTransformedContentBounds = TransformedOwnContentBounds;
+            var oldCombinedTransformedClipBounds = _combinedTransformedClipBounds;
+
+
+            if (_parent.Value?.IsDirtyComposition == true)
+            {
+                IsDirtyComposition = true;
+                _isDirtyForUpdate = true;
+            }
+
+            GlobalTransformMatrix = newTransform;
+            
+            var ownBounds = OwnContentBounds;
+            if (ownBounds != _oldOwnContentBounds || positionChanged)
+            {
+                _oldOwnContentBounds = ownBounds;
+                if (ownBounds.IsEmpty)
+                    TransformedOwnContentBounds = default;
+                else
+                    TransformedOwnContentBounds =
+                        ownBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
+            }
+
+            if (_clipSizeDirty || positionChanged)
+            {
+                _transformedClipBounds = ClipToBounds
+                    ? new Rect(new Size(Size.X, Size.Y))
+                        .TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix))
+                    : null;
+                
+                _clipSizeDirty = false;
+            }
+            
+            _combinedTransformedClipBounds = Parent?._combinedTransformedClipBounds ?? new Rect(Root!.Size);
+            if (_transformedClipBounds != null)
+                _combinedTransformedClipBounds = _combinedTransformedClipBounds.Intersect(_transformedClipBounds.Value);
+            
             EffectiveOpacity = Opacity * (Parent?.EffectiveOpacity ?? 1);
-            IsVisibleInFrame = Visible && EffectiveOpacity > 0.04 && !_isBackface;
+
+            IsVisibleInFrame = Visible && EffectiveOpacity > 0.04 && !_isBackface &&
+                               !_combinedTransformedClipBounds.IsEmpty;
+            
+            if (wasVisible != IsVisibleInFrame)
+                _isDirtyForUpdate = true;
 
             // Invalidate previous rect and queue new rect based on visibility
             if (positionChanged)
             {
                 if(wasVisible)
-                    Root!.AddDirtyRect(TransformedOwnContentBounds);
+                    AddDirtyRect(oldTransformedContentBounds.Intersect(oldCombinedTransformedClipBounds));
 
                 if (IsVisibleInFrame)
-                    _isDirty = true;
+                    _isDirtyForUpdate = true;
             }
-
-            if (wasVisible != IsVisibleInFrame)
-                _isDirty = true;
-
-            if (_parent.Value?._isDirtyComposition == true)
-                _isDirty = true;
             
-            GlobalTransformMatrix = newTransform;
-            //TODO: Cache
-            TransformedOwnContentBounds = OwnContentBounds.TransformToAABB(MatrixUtils.ToMatrix(GlobalTransformMatrix));
-            
-            if (IsVisibleInFrame && _isDirty) 
-                Root!.AddDirtyRect(TransformedOwnContentBounds);
+            // Invalidate new bounds
+            if (IsVisibleInFrame && _isDirtyForUpdate) 
+                AddDirtyRect(TransformedOwnContentBounds.Intersect(_combinedTransformedClipBounds));
 
-            _isDirty = false;
+            
+            
+            _isDirtyForUpdate = false;
             
             // Update readback indices
             var i = Root!.Readback;
@@ -135,15 +187,13 @@ namespace Avalonia.Rendering.Composition.Server
             readback.Matrix = CombinedTransformMatrix;
             readback.TargetId = Root.Id;
             readback.Visible = IsVisibleInFrame;
+        }
 
-            // Forcefully mark any children visuals are dirty if any of the composition
-            // properties were changed since the last update
-            var newProps = GetCompositionProperties();
-            if (!newProps.Equals(_oldCompositionProperties))
-            {
-                _isDirtyComposition = true;
-                _oldCompositionProperties = newProps;
-            }
+        void AddDirtyRect(Rect rc)
+        {
+            if(rc == Rect.Empty)
+                return;
+            Root?.AddDirtyRect(rc);
         }
         
         /// <summary>
@@ -176,36 +226,10 @@ namespace Avalonia.Rendering.Composition.Server
         
         protected override void ValuesInvalidated()
         {
-            _isDirty = true;
-            if (IsVisibleInFrame)
-                Root?.AddDirtyRect(TransformedOwnContentBounds);
-            else
-                Root?.Invalidate();
+            _isDirtyForUpdate = true;
+            Root?.Invalidate();
         }
 
-        struct CompositionProperties
-        {
-            public double EffectiveOpacity { get; set; }
-            public Vector2? ClipSize { get; set; }
-            public IGeometryImpl? Clip { get; set; }
-            public IBrush? OpacityMaskBrush { get; set; }
-
-            public bool Equals(CompositionProperties other) =>
-                EffectiveOpacity == other.EffectiveOpacity
-                && ClipSize == other.ClipSize
-                && Clip == other.Clip
-                && OpacityMaskBrush == other.OpacityMaskBrush;
-        }
-
-        private CompositionProperties GetCompositionProperties() => new CompositionProperties
-        {
-            EffectiveOpacity = EffectiveOpacity,
-            Clip = Clip,
-            ClipSize = ClipToBounds ? Size : null,
-            OpacityMaskBrush = OpacityMaskBrush
-        };
-        
-        
         public bool IsVisibleInFrame { get; set; }
         public double EffectiveOpacity { get; set; }
         public Rect TransformedOwnContentBounds { get; set; }

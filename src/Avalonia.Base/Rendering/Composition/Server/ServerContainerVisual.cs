@@ -12,26 +12,28 @@ namespace Avalonia.Rendering.Composition.Server
     {
         public ServerCompositionVisualCollection Children { get; private set; } = null!;
         
-        protected override void RenderCore(CompositorDrawingContextProxy canvas)
+        protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
         {
-            base.RenderCore(canvas);
+            base.RenderCore(canvas, currentTransformedClip);
 
             foreach (var ch in Children)
             {
-                ch.Render(canvas);
+                ch.Render(canvas, currentTransformedClip);
             }
         }
 
-        public override void Update(ServerCompositionTarget root, Matrix4x4 transform)
+        public override void Update(ServerCompositionTarget root)
         {
-            base.Update(root, transform);
+            base.Update(root);
             foreach (var child in Children)
             {
                 if (child.AdornedVisual != null)
                     root.EnqueueAdornerUpdate(child);
                 else
-                    child.Update(root, GlobalTransformMatrix);
+                    child.Update(root);
             }
+
+            IsDirtyComposition = false;
         }
 
         partial void Initialize()

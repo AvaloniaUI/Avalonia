@@ -81,7 +81,7 @@ namespace Avalonia.Rendering.Composition.Server
                 new IntPtr(offset)));
         }
 
-        public void NotifyAnimatedValueChanged(int offset)
+        public virtual void NotifyAnimatedValueChanged(int offset)
         {
             ref var store = ref GetStoreFromOffset(offset);
             store.Invalidate();
