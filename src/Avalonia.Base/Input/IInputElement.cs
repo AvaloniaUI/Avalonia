@@ -196,6 +196,12 @@ namespace Avalonia.Input
         void Focus(FocusState focusState);
 
         /// <summary>
+        /// Focuses the control with the given <see cref="FocusState"/> and
+        /// <see cref="KeyModifiers"/>
+        /// </summary>
+        void Focus(FocusState focusState, KeyModifiers keyModifiers);
+
+        /// <summary>
         /// Gets the key bindings for the element.
         /// </summary>
         List<KeyBinding> KeyBindings { get; }

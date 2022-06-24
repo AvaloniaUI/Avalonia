@@ -665,7 +665,7 @@ namespace Avalonia.Input
         /// </summary>
         public void Focus()
         {
-            Focus(FocusState.Programmatic);
+            Focus(FocusState.Programmatic, KeyModifiers.None);
         }
 
         /// <summary>
@@ -673,9 +673,17 @@ namespace Avalonia.Input
         /// </summary>
         public void Focus(FocusState focusState)
         {
+            Focus(focusState, KeyModifiers.None);
+        }
+
+        public void Focus(FocusState focusState, KeyModifiers keyModifiers)
+        {
             var fm = FocusManager.GetFocusManagerFromElement(this);
 
-            fm.SetFocusedElement(this, state: focusState);
+            fm.SetFocusedElement(this,
+                state: focusState,
+                direction: NavigationDirection.None,
+                keyModifiers: keyModifiers);
         }
 
         /// <inheritdoc/>
