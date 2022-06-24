@@ -348,6 +348,16 @@ namespace Avalonia.Controls
             ValueProperty.Changed.Subscribe(OnValueChanged);
         }
 
+        protected override void OnGettingFocus(GettingFocusEventArgs e)
+        {
+            base.OnGettingFocus(e);
+            if (e.NewFocusedElement == this && TextBox != null)
+            {
+                e.TrySetNewFocusedElement(TextBox);
+                e.Handled = true;
+            }
+        }
+
         /// <inheritdoc />
         protected override void OnLostFocus(RoutedEventArgs e)
         {

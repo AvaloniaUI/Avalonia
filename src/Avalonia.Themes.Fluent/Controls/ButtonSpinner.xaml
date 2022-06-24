@@ -92,7 +92,8 @@
                               Foreground="{TemplateBinding Foreground}"
                               BorderBrush="{TemplateBinding BorderBrush}"
                               Background="{TemplateBinding Background}"
-                              FontSize="{TemplateBinding FontSize}">
+                              FontSize="{TemplateBinding FontSize}"
+                              IsTabStop="False">
                   <Path Fill="{TemplateBinding Foreground}"
                         Width="16"
                         Height="8"
@@ -108,7 +109,8 @@
                               BorderBrush="{TemplateBinding BorderBrush}"
                               Background="{TemplateBinding Background}"
                               VerticalContentAlignment="Center"
-                              FontSize="{TemplateBinding FontSize}">
+                              FontSize="{TemplateBinding FontSize}"
+                              IsTabStop="False">
                   <Path Fill="{TemplateBinding Foreground}"
                         Width="16"
                         Height="8"

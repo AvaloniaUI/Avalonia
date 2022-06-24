@@ -44,7 +44,8 @@
                        AllowSpin="{TemplateBinding AllowSpin}"
                        ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}"
                        DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                       ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
+                       ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}"
+                       IsTabStop="False">
           <TextBox Name="PART_TextBox"
                    Background="Transparent"
                    BorderBrush="Transparent"
