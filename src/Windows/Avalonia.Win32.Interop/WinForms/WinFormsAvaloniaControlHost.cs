@@ -21,8 +21,9 @@ namespace Avalonia.Win32.Embedding
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             UnmanagedMethods.SetParent(WindowHandle, Handle);
             _root.Prepare();
-            if (_root.IsFocused)
-                FocusManager.Instance.Focus(null);
+            // TODO_FOCUS:
+            //if (_root.IsFocused)
+            //    FocusManager.Instance.Focus(null);
             _root.GotFocus += RootGotFocus;
 
             FixPosition();
