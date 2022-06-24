@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Avalonia.Controls;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Interactions;
 using Xunit;
 using Xunit.Sdk;
 
@@ -53,168 +47,6 @@ namespace Avalonia.IntegrationTests.Appium
                     }
             }
         }
-
-        [PlatformFact(TestPlatforms.MacOS)]
-        public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent()
-        {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
-
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
-            {
-                mainWindow.Click();
-
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-
-                int mainWindowIndex = windows.GetWindowOrder("MainWindow");
-                int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
-
-                Assert.Equal(0, secondaryWindowIndex);
-                Assert.Equal(1, mainWindowIndex);
-            }
-        }
-        
-        [PlatformFact(TestPlatforms.MacOS)]
-        public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_Clicking_Resize_Grip()
-        {
-            var mainWindow = _session.FindWindowOuter("MainWindow");
-
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
-            {
-                new Actions(_session)
-                    .MoveToElement(mainWindow, 100, 1)
-                    .ClickAndHold()
-                    .Perform();
-
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-
-                int mainWindowIndex = windows.GetWindowOrder("MainWindow");
-                int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
-                    
-                new Actions(_session)
-                    .MoveToElement(mainWindow, 100, 1)
-                    .Release()
-                    .Perform();
-
-                Assert.Equal(0, secondaryWindowIndex);
-                Assert.Equal(1, mainWindowIndex);
-            }
-        }
-        
-        [PlatformFact(TestPlatforms.MacOS)]
-        public void OSX_WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_In_Fullscreen()
-        {
-            var mainWindow = _session.FindWindowOuter("MainWindow");
-            var buttons = mainWindow.GetChromeButtons();
-            
-            buttons.maximize.Click();
-
-            Task.Delay(500).Wait();
-
-            try
-            {
-                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
-                {
-                    var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-
-                    int mainWindowIndex = windows.GetWindowOrder("MainWindow");
-                    int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
-
-                    Assert.Equal(0, secondaryWindowIndex);
-                    Assert.Equal(1, mainWindowIndex);
-                }
-            }
-            finally
-            {
-                _session.FindElementByAccessibilityId("ExitFullscreen").Click();
-            }
-        }
-        
-        [PlatformFact(TestPlatforms.MacOS)]
-        public void OSX_WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent()
-        {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
-
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
-            {
-                mainWindow.Click();
-
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-
-                int mainWindowIndex = windows.GetWindowOrder("MainWindow");
-                int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
-
-                Assert.Equal(0, secondaryWindowIndex);
-                Assert.Equal(1, mainWindowIndex);
-            }
-        }
-
-        [PlatformFact(TestPlatforms.MacOS)]
-        public void OSX_WindowOrder_NonOwned_Window_Does_Not_Stay_InFront_Of_Parent()
-        {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
-
-            using (OpenWindow(new PixelSize(1400, 100), ShowWindowMode.NonOwned, WindowStartupLocation.CenterOwner))
-            {
-                mainWindow.Click();
-
-                var secondaryWindow =
-                    _session.FindElementByAccessibilityId("SecondaryWindow");
-
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-
-                int mainWindowIndex = windows.GetWindowOrder("MainWindow");
-                int secondaryWindowIndex = windows.GetWindowOrder("SecondaryWindow");
-
-                Assert.Equal(1, secondaryWindowIndex);
-                Assert.Equal(0, mainWindowIndex);
-
-                var sendToBack = _session.FindElementByAccessibilityId("SendToBack");
-                sendToBack.Click();
-            }
-        }
-
-        [PlatformFact(TestPlatforms.MacOS)]
-        public void OSX_Parent_Window_Has_Disabled_ChromeButtons_When_Modal_Dialog_Shown()
-        {
-            var mainWindowHandle = GetCurrentWindowHandleHack();
-            var window = _session.FindWindowOuter("MainWindow");
-
-            var (closeButton, zoomButton, miniturizeButton) 
-                = window.GetChromeButtons();
-                
-            Assert.True(closeButton.Enabled);
-            Assert.True(zoomButton.Enabled);
-            Assert.True(miniturizeButton.Enabled);
-
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
-            {
-                SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
-
-                Assert.False(closeButton.Enabled);
-                Assert.False(zoomButton.Enabled);
-                Assert.False(miniturizeButton.Enabled);
-            }
-        }
-        
-        [PlatformFact(TestPlatforms.MacOS)]
-        public void OSX_Minimize_Button_Disabled_Modal_Dialog()
-        {
-            var mainWindowHandle = GetCurrentWindowHandleHack();
-            
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
-            {
-                var secondaryWindow = _session.FindWindowOuter("SecondaryWindow");
-
-                var (closeButton, zoomButton, miniaturizeButton)
-                    = secondaryWindow.GetChromeButtons();
-                    
-                Assert.True(closeButton.Enabled);
-                Assert.True(zoomButton.Enabled);
-                Assert.False(miniaturizeButton.Enabled);
-
-                SwitchToNewWindowHack(oldWindowHandle: mainWindowHandle);
-            }
-        }
         
         public static TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
         {
@@ -236,39 +68,6 @@ namespace Avalonia.IntegrationTests.Appium
             }
 
             return data;
-        }
-
-        private string? GetCurrentWindowHandleHack()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // HACK: WinAppDriver only seems to switch to a newly opened window if the window has an owner,
-                // otherwise the session remains targeting the previous window. Return the handle for the
-                // current window so we know which window to switch to when another is opened.
-                return _session.WindowHandles.Single();
-            }
-
-            return null;
-        }
-
-        private void SwitchToNewWindowHack(string? oldWindowHandle)
-        {
-            if (oldWindowHandle is not null)
-            {
-                var newWindowHandle = _session.WindowHandles.FirstOrDefault(x => x != oldWindowHandle);
-
-                // HACK: Looks like WinAppDriver only adds window handles for non-owned windows, but luckily
-                // non-owned windows is where we're having the problem, so if we find a window handle that
-                // isn't the main window handle then switch to it.
-                if (newWindowHandle is not null)
-                    _session.SwitchTo().Window(newWindowHandle);
-            }
-        }
-
-        private void SwitchToMainWindowHack(string? mainWindowHandle)
-        {
-            if (mainWindowHandle is not null)
-                _session.SwitchTo().Window(mainWindowHandle);
         }
 
         private static void AssertCloseEnough(PixelPoint expected, PixelPoint actual)
@@ -299,7 +98,6 @@ namespace Avalonia.IntegrationTests.Appium
 
         private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
         {
-            var mainWindow = GetCurrentWindowHandleHack();
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
@@ -322,30 +120,6 @@ namespace Avalonia.IntegrationTests.Appium
             NonOwned,
             Owned,
             Modal
-        }
-    }
-
-    static class Extensions
-    {
-        public static int GetWindowOrder(this IReadOnlyCollection<AppiumWebElement> elements, string identifier)
-        {
-            return elements.TakeWhile(x =>
-                x.FindElementByXPath("XCUIElementTypeWindow")?.GetAttribute("identifier") != identifier).Count();
-        }
-
-        public static AppiumWebElement? FindWindowInner(this AppiumDriver<AppiumWebElement> session, string identifier)
-        {
-            return session.FindElementsByXPath("XCUIElementTypeWindow")
-                .FirstOrDefault(x => x.GetAttribute("identifier") == identifier);
-        }
-        
-        public static AppiumWebElement? FindWindowOuter(this AppiumDriver<AppiumWebElement> session, string identifier)
-        {
-            var windows = session.FindElementsByXPath("XCUIElementTypeWindow");
-                
-            var window = windows.FirstOrDefault(x=>x.FindElementsByXPath("XCUIElementTypeWindow").Any(x => x.GetAttribute("identifier") == identifier));
-
-            return window;
         }
     }
 }
