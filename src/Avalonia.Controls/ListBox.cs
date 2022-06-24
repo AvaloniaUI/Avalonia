@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -128,17 +129,18 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
 
-            if (e.NavigationMethod == NavigationMethod.Directional)
+            // TODO_FOCUS:
+            if (FocusState == FocusState.Keyboard)
             {
-                e.Handled = UpdateSelectionFromEventSource(
-                    e.Source,
-                    true,
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control));
+                //e.Handled = UpdateSelectionFromEventSource(
+                //    e.Source,
+                //    true,
+                //    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                //    e.KeyModifiers.HasAllFlags(KeyModifiers.Control));
             }
         }
 

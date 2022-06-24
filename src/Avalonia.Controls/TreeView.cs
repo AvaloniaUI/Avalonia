@@ -412,15 +412,16 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
-            if (e.NavigationMethod == NavigationMethod.Directional)
-            {
-                e.Handled = UpdateSelectionFromEventSource(
-                    e.Source!,
-                    true,
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift));
-            }
+            // TODO_FOCUS:
+            //if (FocusState == FocusState.Keyboard)
+            //{
+            //    e.Handled = UpdateSelectionFromEventSource(
+            //        e.Source!,
+            //        true,
+            //        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift));
+            //}
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -438,7 +439,8 @@ namespace Avalonia.Controls
 
                     if (next != null)
                     {
-                        FocusManager.Instance?.Focus(next, NavigationMethod.Directional);
+                        next.Focus(FocusState.Keyboard);
+                        //FocusManager.Instance?.Focus(next, NavigationMethod.Directional);
                         e.Handled = true;
                     }
                 }

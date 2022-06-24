@@ -300,19 +300,19 @@ namespace Avalonia.Controls
         {
             if (!e.Handled)
             {
-                var focus = FocusManager.Instance;
+                var focus = FocusManager.GetFocusedElement();
                 var direction = e.Key.ToNavigationDirection();
                 var container = Presenter?.Panel as INavigableContainer;
 
                 if (container == null ||
-                    focus?.Current == null ||
+                    focus == null ||
                     direction == null ||
                     direction.Value.IsTab())
                 {
                     return;
                 }
 
-                IVisual? current = focus.Current;
+                IVisual? current = focus;
 
                 while (current != null)
                 {
@@ -322,7 +322,7 @@ namespace Avalonia.Controls
 
                         if (next != null)
                         {
-                            focus.Focus(next, NavigationMethod.Directional, e.KeyModifiers);
+                            next.Focus(FocusState.Keyboard, e.KeyModifiers);
                             e.Handled = true;
                         }
 
