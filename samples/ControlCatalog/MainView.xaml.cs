@@ -25,11 +25,6 @@ namespace ControlCatalog
                 IList tabItems = ((IList)sideBar.Items);
                 tabItems.Add(new TabItem()
                 {
-                    Header = "Dialogs",
-                    Content = new DialogsPage()
-                });
-                tabItems.Add(new TabItem()
-                {
                     Header = "Screens",
                     Content = new ScreenPage()
                 });
