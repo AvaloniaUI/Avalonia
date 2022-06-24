@@ -47,7 +47,7 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PushOpacity(Opacity);
             var boundsRect = new Rect(new Size(Size.X, Size.Y));
             if(ClipToBounds)
-                canvas.PushClip(boundsRect);
+                canvas.PushClip(Root!.SnapToDevicePixels(boundsRect));
             if (Clip != null) 
                 canvas.PushGeometryClip(Clip);
             if(OpacityMaskBrush != null)
@@ -162,22 +162,28 @@ namespace Avalonia.Rendering.Composition.Server
             if (wasVisible != IsVisibleInFrame)
                 _isDirtyForUpdate = true;
 
+            var dirtyOldBounds = false; 
             // Invalidate previous rect and queue new rect based on visibility
             if (positionChanged)
             {
-                if(wasVisible)
-                    AddDirtyRect(oldTransformedContentBounds.Intersect(oldCombinedTransformedClipBounds));
+                if (wasVisible)
+                    dirtyOldBounds = true;
 
                 if (IsVisibleInFrame)
                     _isDirtyForUpdate = true;
             }
             
             // Invalidate new bounds
-            if (IsVisibleInFrame && _isDirtyForUpdate) 
+            if (IsVisibleInFrame && _isDirtyForUpdate)
+            {
+                dirtyOldBounds = true;
                 AddDirtyRect(TransformedOwnContentBounds.Intersect(_combinedTransformedClipBounds));
+            }
 
-            
-            
+            if (dirtyOldBounds && wasVisible)
+                AddDirtyRect(oldTransformedContentBounds.Intersect(oldCombinedTransformedClipBounds));
+
+
             _isDirtyForUpdate = false;
             
             // Update readback indices

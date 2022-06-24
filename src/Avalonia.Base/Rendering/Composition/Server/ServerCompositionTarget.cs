@@ -152,6 +152,8 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
+        public Rect SnapToDevicePixels(Rect rect) => SnapToDevicePixels(rect, Scaling);
+        
         private static Rect SnapToDevicePixels(Rect rect, double scale)
         {
             return new Rect(
