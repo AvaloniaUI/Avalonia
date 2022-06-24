@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
@@ -102,7 +103,7 @@ namespace Avalonia.Rendering.Composition.Server
                 {
                     _layer?.Dispose();
                     _layer = null;
-                    _layer = targetContext.CreateLayer(layerSize);
+                    _layer = targetContext.CreateLayer(Size);
                     _layerSize = layerSize;
                 }
 
@@ -119,8 +120,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
 
                 targetContext.Clear(Colors.Transparent);
-                targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1, new Rect(_layerSize),
-                    new Rect(Size));
+                targetContext.Transform = Matrix.Identity;
+                targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1,
+                    new Rect(_layerSize),
+                    new Rect(Size), BitmapInterpolationMode.LowQuality);
                 
                 
                 if (DrawDirtyRects)
