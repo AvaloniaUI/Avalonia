@@ -407,10 +407,11 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
-            if(IsEnabled && _textBox != null && e.NavigationMethod == NavigationMethod.Tab)
+            // TODO_FOCUS:
+            if(IsEnabled && _textBox != null && FocusState == FocusState.Keyboard)
             {
                 _textBox.Focus();
                 var text = _textBox.Text;
@@ -430,7 +431,8 @@ namespace Avalonia.Controls
             _isPressed = false;
             UpdatePseudoClasses();
 
-            SetSelectedDate();
+            if (!_isDropDownOpen)
+                SetSelectedDate();
         }
 
         /// <inheritdoc/>
@@ -692,12 +694,14 @@ namespace Avalonia.Controls
         {
             if (_calendar != null)
             {
-                _calendar.Focus();
-
                 // Open the PopUp
                 _onOpenSelectedDate = SelectedDate;
                 _popUp!.IsOpen = true;
                 _isFlyoutOpen = _popUp!.IsOpen;
+
+                // TODO_FOCUS: This may not work with overlay popups without triggering
+                // the initial layout pass
+                _calendar.Focus();
 
                 UpdatePseudoClasses();
                 _calendar.ResetStates();
