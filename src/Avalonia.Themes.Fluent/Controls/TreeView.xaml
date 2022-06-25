@@ -7,6 +7,7 @@
   <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
   <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
   <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
+  <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
   <Setter Property="Template">
     <ControlTemplate>
       <Border BorderBrush="{TemplateBinding BorderBrush}"
