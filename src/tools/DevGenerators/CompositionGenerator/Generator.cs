@@ -153,18 +153,10 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             );
 
             var uninitializedObjectName = "dummy";
-            var serverStaticCtorBody = cl.Abstract
-                ? Block()
-                : Block(
-                    ParseStatement(
-                        $"var dummy = ({serverName})System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof({serverName}));"),
-                    ParseStatement($"System.GC.SuppressFinalize(dummy);"),
-                    ParseStatement("InitializeFieldOffsets(dummy);")
-                );
+            var serverStaticCtorBody = Block(
+                ParseStatement($"var dummy = GetOffsetDummy<{serverName}>();")
+            );
 
-            var initializeFieldOffsetsBody = cl.Inherits == null
-                ? Block()
-                : Block(ParseStatement($"Server{cl.Inherits}.InitializeFieldOffsets(dummy);"));
 
             var resetBody = Block();
             var startAnimationBody = Block();
@@ -294,11 +286,15 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 serverGetFieldOffsetBody = ApplyGetProperty(serverGetFieldOffsetBody, prop, fieldOffsetName);
 
                 server = server.AddMembers(DeclareField("int", fieldOffsetName, SyntaxKind.StaticKeyword));
-                initializeFieldOffsetsBody = initializeFieldOffsetsBody.AddStatements(ExpressionStatement(
+                serverStaticCtorBody = serverStaticCtorBody.AddStatements(ExpressionStatement(
                     AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, IdentifierName(fieldOffsetName),
-                        InvocationExpression(MemberAccess(IdentifierName(uninitializedObjectName), "GetOffset"),
-                            ArgumentList(SingletonSeparatedList(Argument(
-                                RefExpression(MemberAccess(MemberAccess(IdentifierName(uninitializedObjectName), fieldName), "Subscriptions")))))))));
+                        InvocationExpression(IdentifierName("GetOffset"),
+                            ArgumentList(SeparatedList(new[]
+                            {
+                                Argument(IdentifierName(uninitializedObjectName)),
+                                Argument(RefExpression(MemberAccess(
+                                    MemberAccess(IdentifierName(uninitializedObjectName), fieldName), "Subscriptions")))
+                            }))))));
                 
                 if (prop.DefaultValue != null)
                 {
@@ -312,11 +308,6 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             server = server.AddMembers(ConstructorDeclaration(serverName)
                 .WithModifiers(TokenList(Token(SyntaxKind.StaticKeyword)))
                 .WithBody(serverStaticCtorBody));
-            
-            server = server.AddMembers(
-                ((MethodDeclarationSyntax)ParseMemberDeclaration(
-                    $"protected static void InitializeFieldOffsets({serverName} dummy){{}}")!)
-                .WithBody(initializeFieldOffsetsBody));
 
             server = server
                 .AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(

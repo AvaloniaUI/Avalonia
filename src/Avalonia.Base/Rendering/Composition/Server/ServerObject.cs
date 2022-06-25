@@ -61,11 +61,28 @@ namespace Avalonia.Rendering.Composition.Server
         {
             
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected int GetOffset(ref ServerObjectSubscriptionStore field)
+
+        [StructLayout(LayoutKind.Sequential)]
+        protected class OffsetDummy
         {
-            return Unsafe.ByteOffset(ref _activationCount,
+#pragma warning disable CS0649
+            public FillerStruct Filler;
+#pragma warning restore CS0649
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        protected unsafe struct FillerStruct
+        {
+            public fixed byte FillerData[8192];
+        }
+
+        private static readonly object s_OffsetDummy = new OffsetDummy();
+        protected static T GetOffsetDummy<T>() where T : ServerObject => Unsafe.As<T>(s_OffsetDummy);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected static int GetOffset(ServerObject obj, ref ServerObjectSubscriptionStore field)
+        {
+            return Unsafe.ByteOffset(ref obj._activationCount,
                     ref Unsafe.As<ServerObjectSubscriptionStore, uint>(ref field))
                 .ToInt32();
         }
