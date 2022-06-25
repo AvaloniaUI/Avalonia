@@ -40,7 +40,8 @@
                             Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
                             ItemTemplate="{TemplateBinding ItemTemplate}"
-                            DockPanel.Dock="{TemplateBinding TabStripPlacement}"/>
+                            DockPanel.Dock="{TemplateBinding TabStripPlacement}"
+                            KeyboardNavigation.TabNavigation="Continue"/>
             <ContentPresenter Name="PART_SelectedContentHost"
                               Margin="{TemplateBinding Padding}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
