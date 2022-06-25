@@ -15,6 +15,7 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Avalonia.Media;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -22,7 +23,7 @@ namespace Avalonia.Controls.Primitives
     /// Displays a popup window.
     /// </summary>
 #pragma warning disable CS0612 // Type or member is obsolete
-    public class Popup : Control, IVisualTreeHost, IPopupHostProvider
+    public class Popup : Control, IVisualTreeHost, IPopupHostProvider, IInteractive
 #pragma warning restore CS0612 // Type or member is obsolete
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
@@ -382,6 +383,9 @@ namespace Avalonia.Controls.Primitives
         IVisual? IVisualTreeHost.Root => _openState?.PopupHost.HostedVisualTreeRoot;
 
         IPopupHost? IPopupHostProvider.PopupHost => Host;
+
+        IInteractive? IInteractive.InteractiveParent =>
+            PlacementTarget ?? this.FindLogicalAncestorOfType<IInteractive>();
 
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
         { 
