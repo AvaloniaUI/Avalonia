@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Primitives
 {
     public class VisualLayerManager : Decorator
     {
-        private const int AdornerZIndex = int.MaxValue - 100;
+        private const int AdornerZIndex = int.MaxValue - 90;
         private const int ChromeZIndex = int.MaxValue - 99;
         private const int LightDismissOverlayZIndex = int.MaxValue - 98;
         private const int OverlayZIndex = int.MaxValue - 97;
