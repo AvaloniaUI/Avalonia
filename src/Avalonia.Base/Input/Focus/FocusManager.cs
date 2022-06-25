@@ -243,7 +243,7 @@ namespace Avalonia.Input
         {
             Logger.TryGet(LogEventLevel.Debug, LogArea.Focus)?
                 .Log("", "TryRestoreFocus to " + _owner.ToString());
-            if (_previousFocus?.TryGetTarget(out var target) == true)
+            if (_previousFocus?.TryGetTarget(out var target) == true && target.IsAttachedToVisualTree)
             {
                 SetFocusedElement(target, state: FocusState.Programmatic);
             }

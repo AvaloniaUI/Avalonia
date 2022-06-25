@@ -226,6 +226,11 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
+            if (IsFocused)
+            {
+                RemoveFocusAdorner();
+            }
+
             base.OnDetachedFromVisualTreeCore(e);
         }
 
@@ -275,12 +280,7 @@ namespace Avalonia.Controls
         {
             base.OnLostFocus(e);
 
-            if (_focusAdorner?.Parent != null)
-            {
-                var adornerLayer = (IPanel)_focusAdorner.Parent;
-                adornerLayer.Children.Remove(_focusAdorner);
-                _focusAdorner = null;
-            }
+            RemoveFocusAdorner();
         }
 
         protected virtual AutomationPeer OnCreateAutomationPeer()
@@ -397,6 +397,16 @@ namespace Avalonia.Controls
             bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
 
             HasMirrorTransform = shouldApplyMirrorTransform;
+        }
+
+        private void RemoveFocusAdorner()
+        {
+            if (_focusAdorner?.Parent != null)
+            {
+                var adornerLayer = (IPanel)_focusAdorner.Parent;
+                adornerLayer.Children.Remove(_focusAdorner);
+                _focusAdorner = null;
+            }
         }
     }
 }

@@ -689,27 +689,15 @@ namespace Avalonia.Input
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            // Tree is still connected here, store the visual root now so we can use it below
-            var focusRoot = this.FindAncestorOfType<IFocusScope>();
-
             base.OnDetachedFromVisualTreeCore(e);
 
-            // TODO_FOCUS: Is this problematic if
-            //             A) Multiple items are removed at once
-            //             B) The entire tree is removed (window/toplevel closing)
-            if (IsFocused && focusRoot != null)
+            if (IsFocused)
             {
                 // From UWP Test, it looks like behavior is to reset to the first focusable 
                 // element in the focus root if an element is removed while focused
-                var first = FocusManager.FindFirstFocusableElement(focusRoot as IInputElement);
-                if (first != null)
-                {
-                    focusRoot.FocusManager.SetFocusedElement(first, allowCancelling: false);
-                }
-                else
-                {
-                    focusRoot.FocusManager.SetFocusedElement(null, allowCancelling: false);
-                }
+                FocusManager.ResetFocusForFocusedItemRemoved();
+                IsFocused = false;
+                FocusState = FocusState.Unfocused;
             }
         }
 

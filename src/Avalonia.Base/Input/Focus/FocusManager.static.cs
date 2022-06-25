@@ -217,6 +217,19 @@ namespace Avalonia.Input
             return fm;
         }
 
+        /// <summary>
+        /// Called when an IInputElement is detached from the VisualTree while focused
+        /// </summary>
+        internal static void ResetFocusForFocusedItemRemoved()
+        {
+            var focus = GetFocusedElement();
+            if (focus != null && !focus.IsAttachedToVisualTree)
+            {
+                var firstFocus = FindFirstFocusableElement(ActiveFocusRoot as IInputElement);
+                firstFocus?.Focus();
+            }
+        }
+
         internal static FocusState GetActualFocusState(FocusInputDeviceKind lastInputType, FocusState state)
         {
             if (state != FocusState.Programmatic)
