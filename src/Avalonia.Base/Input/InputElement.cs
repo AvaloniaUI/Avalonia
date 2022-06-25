@@ -680,7 +680,7 @@ namespace Avalonia.Input
         {
             var fm = FocusManager.GetFocusManagerFromElement(this);
 
-            fm.SetFocusedElement(this,
+            fm?.SetFocusedElement(this,
                 state: focusState,
                 direction: NavigationDirection.None,
                 keyModifiers: keyModifiers);
@@ -941,12 +941,12 @@ namespace Avalonia.Input
                 // but still allow user to redirect focus to another element
                 if (next != null)
                 {
-                    focusMgr.SetFocusedElement(next, direction, FocusState.Programmatic,
+                    focusMgr?.SetFocusedElement(next, direction, FocusState.Programmatic,
                         allowCancelling: false, allowRedirecting: true);
                 }
                 else
                 {
-                    focusMgr.SetFocusedElement(null, allowCancelling: false, allowRedirecting: true);
+                    focusMgr?.SetFocusedElement(null, allowCancelling: false, allowRedirecting: true);
                 }
             }
         }

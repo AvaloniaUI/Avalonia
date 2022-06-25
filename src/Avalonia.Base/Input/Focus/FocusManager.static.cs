@@ -200,14 +200,19 @@ namespace Avalonia.Input
             return true;
         }
 
-        internal static FocusManager GetFocusManagerFromElement(IInputElement element)
+        internal static FocusManager? GetFocusManagerFromElement(IInputElement element)
         {
             var fm = element.FindAncestorOfType<IFocusScope>()?.FocusManager;
 
-            if (fm == null)
-            {
-                throw new InvalidOperationException("Unable to find IInputRoot or FocusManager for given element");
-            }
+            // Ideally, this should never be null but DefaultMenuInteractionHandler attempts to focus
+            // the MenuBase in the KeyDown handler even when closing the popup - this causes this
+            // to return null. This should be fixed outside of FocusManager PR and remove nullable
+            // from method and restore the throw
+
+            //if (fm == null)
+            //{
+            //    throw new InvalidOperationException("Unable to find IInputRoot or FocusManager for given element");
+            //}
 
             return fm;
         }

@@ -51,7 +51,7 @@ namespace Avalonia.Input
                 {
                     var focusManager = FocusManager.GetFocusManagerFromElement(current);
 
-                    focusManager.SetFocusedElement(result, direction,
+                    focusManager?.SetFocusedElement(result, direction,
                         state: FocusState.Keyboard,
                         keyModifiers: e.KeyModifiers);
                     e.Handled = true;

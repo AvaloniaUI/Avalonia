@@ -55,7 +55,7 @@ namespace Avalonia.Input
                 {
                     ActiveFocusRoot.FocusManager.ClearFocus(focusChangeID, lastInputType);
                     Logger.TryGet(LogEventLevel.Debug, LogArea.Focus)?
-                        .Log(nameof(FocusManager), "Focus root changed to {Root}", ActiveFocusRoot);
+                        .Log(nameof(FocusManager), "Cleared focus in {Root}", ActiveFocusRoot);
                 }
 
                 // If the element passed in is the same as the currently focused element, don't follow through with this
@@ -154,7 +154,7 @@ namespace Avalonia.Input
                 // TODO_FOCUS: There's probably a UIA focus event or notification we need to raise here too
 
                 Logger.TryGet(LogEventLevel.Debug, LogArea.Focus)?
-                    .Log("FocusManager", "Focus successfully changed to {Element} in {Root}", _focusedElement, _owner);
+                    .Log("FocusManager", "Focus successfully changed to {Element} in {Root}\n\n", _focusedElement, _owner);
             }
             finally
             {
@@ -222,14 +222,14 @@ namespace Avalonia.Input
 
             // We don't care about the result here since the event can't be cancelled
             _ = RaiseLosingFocusEvents(losingArgs);
-
-            _focusedElement = null;
+                        
             if (_focusedElement is InputElement oldFocusIE)
             {
                 oldFocusIE.FocusState = FocusState.Unfocused;
-            }            
+            }
+            _focusedElement = null;
 
-            RaiseLostFocusEvent(null, focusChangeID);
+            RaiseLostFocusEvent(losingArgs.OldFocusedElement, focusChangeID);
 
             // Clear FocusWithin state, but don't tell KeyboardDevice about the 
             // focus change since we're just clearing this scope
@@ -240,7 +240,9 @@ namespace Avalonia.Input
         /// Attemps to restore focus when a focus scope is reactivated
         /// </summary>
         internal void TryRestoreFocus()
-        {            
+        {
+            Logger.TryGet(LogEventLevel.Debug, LogArea.Focus)?
+                .Log("", "TryRestoreFocus to " + _owner.ToString());
             if (_previousFocus?.TryGetTarget(out var target) == true)
             {
                 SetFocusedElement(target, state: FocusState.Programmatic);
