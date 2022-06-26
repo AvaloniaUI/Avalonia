@@ -418,7 +418,6 @@ namespace Avalonia.Headless
 
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
-                throw new NotImplementedException();
             }
 
             public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)

@@ -10,6 +10,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
@@ -52,7 +53,9 @@ namespace Avalonia.Headless
         public Action<double> ScalingChanged { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
-            => new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            => AvaloniaHeadlessPlatform.Compositor != null
+                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor)
+                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>());
 
         public void Invalidate(Rect rect)
         {
