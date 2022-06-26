@@ -134,7 +134,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
                 const string text = "👍 👍 👍 👍";
-                
+
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
                 var formatter = new TextFormatterImpl();
@@ -144,7 +144,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextParagraphProperties(defaultProperties));
 
                 Assert.Equal(1, textLine.TextRuns.Count);
-            } 
+            }
         }
 
         [Fact]
@@ -163,9 +163,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
-                
+
                 var firstRun = textLine.TextRuns[0];
-                
+
                 Assert.Equal(4, firstRun.Text.Length);
             }
         }
@@ -191,7 +191,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var textLine =
                         formatter.FormatLine(textSource, currentPosition, 1,
-                            new GenericTextParagraphProperties(defaultProperties, textWrap : TextWrapping.WrapWithOverflow));
+                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow));
 
                     if (text.Length - currentPosition > expectedCharactersPerLine)
                     {
@@ -347,8 +347,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [InlineData("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor",  
-            new []{ "Lorem ipsum ", "dolor sit amet, ", "consectetur ", "adipisicing elit, ", "sed do eiusmod "})]
+        [InlineData("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor",
+            new[] { "Lorem ipsum ", "dolor sit amet, ", "consectetur ", "adipisicing elit, ", "sed do eiusmod " })]
 
         [Theory]
         public void Should_Produce_Wrapped_And_Trimmed_Lines(string text, string[] expectedLines)
@@ -368,7 +368,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new ValueSpan<TextRunProperties>(28, 28,
                         new GenericTextRunProperties(new Typeface("Verdana", FontStyle.Italic),32))
                 };
-                
+
                 var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, styleSpans);
 
                 var formatter = new TextFormatterImpl();
@@ -389,19 +389,19 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (textLine.Width > 300 || currentHeight + textLine.Height > 240)
                     {
-                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] {TextTrimming.s_defaultEllipsisChar}), 300, defaultProperties));
+                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] { TextTrimming.s_defaultEllipsisChar }), 300, defaultProperties));
                     }
-                    
+
                     currentHeight += textLine.Height;
 
                     var currentText = text.Substring(textLine.FirstTextSourceIndex, textLine.Length);
-                    
+
                     Assert.Equal(expectedLines[currentLineIndex], currentText);
 
                     currentLineIndex++;
                 }
-                
-                Assert.Equal(expectedLines.Length,currentLineIndex);
+
+                Assert.Equal(expectedLines.Length, currentLineIndex);
             }
         }
 
@@ -412,11 +412,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [InlineData("0123456789", TextAlignment.Left, FlowDirection.RightToLeft)]
         [InlineData("0123456789", TextAlignment.Center, FlowDirection.RightToLeft)]
         [InlineData("0123456789", TextAlignment.Right, FlowDirection.RightToLeft)]
-        
+
         [InlineData("שנבגק", TextAlignment.Left, FlowDirection.RightToLeft)]
         [InlineData("שנבגק", TextAlignment.Center, FlowDirection.RightToLeft)]
         [InlineData("שנבגק", TextAlignment.Right, FlowDirection.RightToLeft)]
-        
+
         [Theory]
         public void Should_Align_TextLine(string text, TextAlignment textAlignment, FlowDirection flowDirection)
         {
@@ -426,44 +426,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var paragraphProperties = new GenericTextParagraphProperties(flowDirection, textAlignment, true, true,
                     defaultProperties, TextWrapping.NoWrap, 0, 0);
-                
+
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
                 var formatter = new TextFormatterImpl();
-                
+
                 var textLine =
                     formatter.FormatLine(textSource, 0, 100, paragraphProperties);
 
                 var expectedOffset = 0d;
 
-                if (flowDirection == FlowDirection.LeftToRight)
+                switch (textAlignment)
                 {
-                    switch (textAlignment)
-                    {
-                        case TextAlignment.Center:
-                            expectedOffset = 50 - textLine.Width / 2;
-                            break;
-                        case TextAlignment.Right:
-                            expectedOffset = 100 - textLine.WidthIncludingTrailingWhitespace;
-                            break;
-                    }
-                }
-                else
-                {
-                    switch (textAlignment)
-                    {
-                        case TextAlignment.Left:
-                            expectedOffset = 100 - textLine.WidthIncludingTrailingWhitespace;
-                            break;
-                        case TextAlignment.Center:
-                            expectedOffset = 50 - textLine.Width / 2;
-                            break;
-                    }
+                    case TextAlignment.Center:
+                        expectedOffset = 50 - textLine.Width / 2;
+                        break;
+                    case TextAlignment.Right:
+                        expectedOffset = 100 - textLine.WidthIncludingTrailingWhitespace;
+                        break;
                 }
 
                 Assert.Equal(expectedOffset, textLine.Start);
             }
         }
-        
+
         [Fact]
         public void Should_Wrap_Syriac()
         {
@@ -488,7 +473,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         formatter.FormatLine(textSource, textPosition, 50, paragraphProperties, lastBreak);
 
                     Assert.Equal(textLine.Length, textLine.TextRuns.Sum(x => x.TextSourceLength));
-                    
+
                     textPosition += textLine.Length;
 
                     lastBreak = textLine.TextLineBreak;
@@ -503,13 +488,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
                 var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
-                
+
                 var textSource = new SingleBufferTextSource("0123456789_0123456789_0123456789_0123456789", defaultProperties);
                 var formatter = new TextFormatterImpl();
-                
+
                 var textLine =
                     formatter.FormatLine(textSource, 0, 33, paragraphProperties);
-                
+
                 Assert.NotNull(textLine.TextLineBreak?.RemainingRuns);
             }
         }
@@ -524,12 +509,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var formatter = new TextFormatterImpl();
-                
+
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
                 var paragraphProperties =
                     new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.NoWrap);
-                
+
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
                 var expectedTextLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties),
@@ -548,16 +533,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                             new ValueSpan<TextRunProperties>(i, j,
                                 new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                         };
-                        
+
                         var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, spans);
-                
+
                         var textLine =
                             formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
-                        
+
                         var shapedRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
 
                         var actualGlyphs = shapedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
-                        
+
                         Assert.Equal(expectedGlyphs, actualGlyphs);
                     }
                 }
@@ -575,9 +560,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var textLine =
                     TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
-                
+
                 Assert.Equal(3, textLine.TextRuns.Count);
-                
+
                 Assert.True(textLine.TextRuns[1] is RectangleRun);
             }
         }
@@ -590,12 +575,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
                 var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
                 var textSource = new EndOfLineTextSource();
-                
+
                 var textLine =
                     TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
-                
+
                 Assert.NotNull(textLine.TextLineBreak);
-                
+
                 Assert.Equal(TextRun.DefaultTextSourceLength, textLine.Length);
             }
         }
@@ -616,7 +601,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 _text = text;
             }
-            
+
             public TextRun GetTextRun(int textSourceIndex)
             {
                 if (textSourceIndex >= _text.Length + TextRun.DefaultTextSourceLength + _text.Length)
