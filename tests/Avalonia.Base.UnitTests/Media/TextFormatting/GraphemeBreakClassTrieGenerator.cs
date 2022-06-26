@@ -16,10 +16,12 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 Directory.CreateDirectory("Generated");
             }
 
+            var trie = GenerateBreakTypeTrie();
+
+            UnicodeDataGenerator.GenerateTrieClass("GraphemeBreak", trie);
+
             using (var stream = File.Create("Generated\\GraphemeBreak.trie"))
             {
-                var trie = GenerateBreakTypeTrie();
-
                 trie.Save(stream);
             }
         }
