@@ -904,17 +904,20 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = 1;
             }
 
+            //using a default margin of 0 when using WinUiComp removes artefacts when resizing. See issue #8316
+            var defaultMargin = _isUsingComposition ? 0 : 1;
+
             MARGINS margins = new MARGINS();
-            margins.cxLeftWidth = 1;
-            margins.cxRightWidth = 1;
-            margins.cyBottomHeight = 1;
+            margins.cxLeftWidth = defaultMargin;
+            margins.cxRightWidth = defaultMargin;
+            margins.cyBottomHeight = defaultMargin;
 
             if (_extendTitleBarHint != -1)
             {
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : defaultMargin;
 
             if (WindowState == WindowState.Maximized)
             {
