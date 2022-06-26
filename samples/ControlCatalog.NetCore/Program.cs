@@ -56,10 +56,16 @@ namespace ControlCatalog.NetCore
                     .UseHeadless(new AvaloniaHeadlessPlatformOptions
                     {
                         UseHeadlessDrawing = true,
-                        UseComposition = false
+                        UseComposition = true
                     })
                     .AfterSetup(_ =>
                     {
+                        static Task LowPriorityDelay(int ms)
+                        {
+                            return Task.Delay(ms).ContinueWith(_ =>
+                                    Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background))
+                                .Unwrap();
+                        }
                         DispatcherTimer.RunOnce(async () =>
                         {
                             var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
@@ -71,7 +77,7 @@ namespace ControlCatalog.NetCore
                                     continue;
                                 Console.WriteLine("Selecting " + page.Header);
                                 tc.SelectedItem = page;
-                                await Task.Delay(50);
+                                await LowPriorityDelay(20);
                             }
                             Console.WriteLine("Selecting the first page");
                             tc.SelectedItem = tc.Items.OfType<object>().First();
