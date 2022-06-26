@@ -273,6 +273,12 @@ namespace Avalonia.Controls
                     }
                 }
             }
+            else
+            {
+                // GotFocus may be called again when changing from Keyboard -> Pointer state
+                // Make sure we remove the focus adorner in that case
+                RemoveFocusAdorner();
+            }
         }
 
         /// <inheritdoc/>
