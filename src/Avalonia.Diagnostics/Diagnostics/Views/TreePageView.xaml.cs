@@ -121,7 +121,7 @@ namespace Avalonia.Diagnostics.Views
 
             if (header != null)
             {
-                header.PointerEnter += AddAdorner;
+                header.PointerEntered += AddAdorner;
                 header.PointerLeave += RemoveAdorner;
             }
 

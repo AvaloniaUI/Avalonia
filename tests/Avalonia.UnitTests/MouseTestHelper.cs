@@ -107,7 +107,7 @@ namespace Avalonia.UnitTests
         
         public void Enter(IInteractive target)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnterEvent, target, _pointer, (IVisual)target, default,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnteredEvent, target, _pointer, (IVisual)target, default,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 

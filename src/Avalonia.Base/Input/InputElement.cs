@@ -128,16 +128,20 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="PointerEnter"/> event.
+        /// Defines the <see cref="PointerEntered"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerEnter), RoutingStrategies.Direct);
+        public static readonly RoutedEvent<PointerEventArgs> PointerEnteredEvent =
+            RoutedEvent.Register<InputElement, PointerEventArgs>(
+                nameof(PointerEntered),
+                RoutingStrategies.Direct);
 
         /// <summary>
         /// Defines the <see cref="PointerLeave"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerLeaveEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerLeave), RoutingStrategies.Direct);
+            RoutedEvent.Register<InputElement, PointerEventArgs>(
+                nameof(PointerLeave),
+                RoutingStrategies.Direct);
 
         /// <summary>
         /// Defines the <see cref="PointerMoved"/> event.
@@ -208,7 +212,7 @@ namespace Avalonia.Input
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
-            PointerEnterEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnterCore(e));
+            PointerEnteredEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnterCore(e));
             PointerLeaveEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerLeaveCore(e));
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
@@ -279,10 +283,10 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer enters the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs>? PointerEnter
+        public event EventHandler<PointerEventArgs>? PointerEntered
         {
-            add { AddHandler(PointerEnterEvent, value); }
-            remove { RemoveHandler(PointerEnterEvent, value); }
+            add { AddHandler(PointerEnteredEvent, value); }
+            remove { RemoveHandler(PointerEnteredEvent, value); }
         }
 
         /// <summary>
@@ -539,10 +543,10 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerEnter"/> event occurs.
+        /// Called before the <see cref="PointerEntered"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPointerEnter(PointerEventArgs e)
+        protected virtual void OnPointerEntered(PointerEventArgs e)
         {
         }
 
@@ -561,7 +565,9 @@ namespace Avalonia.Input
         protected virtual void OnPointerMoved(PointerEventArgs e)
         {
             if (_gestureRecognizers?.HandlePointerMoved(e) == true)
+            {
                 e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -571,7 +577,9 @@ namespace Avalonia.Input
         protected virtual void OnPointerPressed(PointerPressedEventArgs e)
         {
             if (_gestureRecognizers?.HandlePointerPressed(e) == true)
+            {
                 e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -581,7 +589,9 @@ namespace Avalonia.Input
         protected virtual void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (_gestureRecognizers?.HandlePointerReleased(e) == true)
+            {
                 e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -634,13 +644,13 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerEnter"/> event occurs.
+        /// Called before the <see cref="PointerEntered"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
         private void OnPointerEnterCore(PointerEventArgs e)
         {
             IsPointerOver = true;
-            OnPointerEnter(e);
+            OnPointerEntered(e);
         }
 
         /// <summary>

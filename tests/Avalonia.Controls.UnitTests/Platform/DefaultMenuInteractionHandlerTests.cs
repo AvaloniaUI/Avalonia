@@ -174,7 +174,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
-            public void PointerEnter_Opens_Item_When_Old_Item_Is_Open()
+            public void PointerEntered_Opens_Item_When_Old_Item_Is_Open()
             {
                 var target = new DefaultMenuInteractionHandler(false);
                 var menu = new Mock<IMenu>();
@@ -187,11 +187,11 @@ namespace Avalonia.Controls.UnitTests.Platform
                     x.IsTopLevel == true &&
                     x.HasSubMenu == true &&
                     x.Parent == menu.Object);
-                var e = CreateArgs(MenuItem.PointerEnterItemEvent, nextItem);
+                var e = CreateArgs(MenuItem.PointerEnteredItemEvent, nextItem);
 
                 menu.SetupGet(x => x.SelectedItem).Returns(item);
 
-                target.PointerEnter(nextItem, e);
+                target.PointerEntered(nextItem, e);
 
                 Mock.Get(item).Verify(x => x.Close());
                 menu.VerifySet(x => x.SelectedItem = nextItem);
@@ -382,31 +382,31 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
-            public void PointerEnter_Selects_Item()
+            public void PointerEntered_Selects_Item()
             {
                 var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
-                var e = CreateArgs(MenuItem.PointerEnterItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerEnteredItemEvent, item);
 
-                target.PointerEnter(item, e);
+                target.PointerEntered(item, e);
 
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = item);
                 Assert.False(e.Handled);
             }
 
             [Fact]
-            public void PointerEnter_Opens_Submenu_After_Delay()
+            public void PointerEntered_Opens_Submenu_After_Delay()
             {
                 var timer = new TestTimer();
                 var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
-                var e = CreateArgs(MenuItem.PointerEnterItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerEnteredItemEvent, item);
 
-                target.PointerEnter(item, e);
+                target.PointerEntered(item, e);
                 Mock.Get(item).Verify(x => x.Open(), Times.Never);
 
                 timer.Pulse();
@@ -416,7 +416,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
-            public void PointerEnter_Closes_Sibling_Submenu_After_Delay()
+            public void PointerEntered_Closes_Sibling_Submenu_After_Delay()
             {
                 var timer = new TestTimer();
                 var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
@@ -424,11 +424,11 @@ namespace Avalonia.Controls.UnitTests.Platform
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
                 var sibling = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true && x.IsSubMenuOpen == true);
-                var e = CreateArgs(MenuItem.PointerEnterItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerEnteredItemEvent, item);
 
                 Mock.Get(parentItem).SetupGet(x => x.SubItems).Returns(new[] { item, sibling });
 
-                target.PointerEnter(item, e);
+                target.PointerEntered(item, e);
                 Mock.Get(sibling).Verify(x => x.Close(), Times.Never);
 
                 timer.Pulse();
@@ -510,11 +510,11 @@ namespace Avalonia.Controls.UnitTests.Platform
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
                 var childItem = Mock.Of<IMenuItem>(x => x.Parent == item);
-                var enter = CreateArgs(MenuItem.PointerEnterItemEvent, item);
+                var enter = CreateArgs(MenuItem.PointerEnteredItemEvent, item);
                 var leave = CreateArgs(MenuItem.PointerLeaveItemEvent, item);
 
                 // Pointer enters item; item is selected.
-                target.PointerEnter(item, enter);
+                target.PointerEntered(item, enter);
                 Assert.True(timer.ActionIsQueued);
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = item);
                 Mock.Get(parentItem).Invocations.Clear();
@@ -532,7 +532,7 @@ namespace Avalonia.Controls.UnitTests.Platform
 
                 // Pointer enters child item; is selected.
                 enter.Source = childItem;
-                target.PointerEnter(childItem, enter);
+                target.PointerEntered(childItem, enter);
                 Mock.Get(item).VerifySet(x => x.SelectedItem = childItem);
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = item);
                 Mock.Get(item).Invocations.Clear();

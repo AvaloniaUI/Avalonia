@@ -195,7 +195,7 @@ namespace Avalonia.Input
             el = root.PointerOverElement = element;
             _lastPointer = (pointer, root.PointToScreen(position));
 
-            e.RoutedEvent = InputElement.PointerEnterEvent;
+            e.RoutedEvent = InputElement.PointerEnteredEvent;
 
             while (el != null && el != branch)
             {

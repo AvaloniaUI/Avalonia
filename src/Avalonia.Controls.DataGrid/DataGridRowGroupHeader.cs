@@ -375,7 +375,7 @@ namespace Avalonia.Controls
             ApplyHeaderStatus();
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
             if (IsEnabled)
             {
@@ -383,7 +383,7 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
         }
 
         protected override void OnPointerLeave(PointerEventArgs e)

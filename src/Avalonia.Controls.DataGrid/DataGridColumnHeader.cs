@@ -83,8 +83,8 @@ namespace Avalonia.Controls
         {
             PointerPressed += DataGridColumnHeader_PointerPressed;
             PointerReleased += DataGridColumnHeader_PointerReleased;
-            PointerMoved += DataGridColumnHeader_PointerMove;
-            PointerEnter += DataGridColumnHeader_PointerEnter;
+            PointerMoved += DataGridColumnHeader_PointerMoved;
+            PointerEntered += DataGridColumnHeader_PointerEntered;
             PointerLeave += DataGridColumnHeader_PointerLeave;
         }
 
@@ -452,7 +452,7 @@ namespace Avalonia.Controls
             SetDragCursor(mousePosition);
         }
 
-        private void DataGridColumnHeader_PointerEnter(object sender, PointerEventArgs e)
+        private void DataGridColumnHeader_PointerEntered(object sender, PointerEventArgs e)
         {
             if (!IsEnabled)
             {
@@ -506,7 +506,7 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
-        private void DataGridColumnHeader_PointerMove(object sender, PointerEventArgs e)
+        private void DataGridColumnHeader_PointerMoved(object sender, PointerEventArgs e)
         {
             if (OwningGrid == null || !IsEnabled)
             {

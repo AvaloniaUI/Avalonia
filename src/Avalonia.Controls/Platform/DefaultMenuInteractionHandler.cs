@@ -53,8 +53,8 @@ namespace Avalonia.Controls.Platform
             Menu.PointerPressed += PointerPressed;
             Menu.PointerReleased += PointerReleased;
             Menu.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
-            Menu.AddHandler(Avalonia.Controls.Menu.MenuOpenedEvent, this.MenuOpened);
-            Menu.AddHandler(MenuItem.PointerEnterItemEvent, PointerEnter);
+            Menu.AddHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
+            Menu.AddHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.AddHandler(MenuItem.PointerLeaveItemEvent, PointerLeave);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
 
@@ -89,8 +89,8 @@ namespace Avalonia.Controls.Platform
             Menu.PointerPressed -= PointerPressed;
             Menu.PointerReleased -= PointerReleased;
             Menu.RemoveHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
-            Menu.RemoveHandler(Avalonia.Controls.Menu.MenuOpenedEvent, this.MenuOpened);
-            Menu.RemoveHandler(MenuItem.PointerEnterItemEvent, PointerEnter);
+            Menu.RemoveHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
+            Menu.RemoveHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.RemoveHandler(MenuItem.PointerLeaveItemEvent, PointerLeave);
             Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
 
@@ -297,7 +297,7 @@ namespace Avalonia.Controls.Platform
             e.Handled = true;
         }
 
-        protected internal virtual void PointerEnter(object? sender, PointerEventArgs e)
+        protected internal virtual void PointerEntered(object? sender, PointerEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 

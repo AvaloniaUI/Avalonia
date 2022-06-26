@@ -128,7 +128,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_inputTarget != null)
             {
-                _inputTarget.PointerEnter += InputTarget_PointerEnter;
+                _inputTarget.PointerEntered += InputTarget_PointerEntered;
                 _inputTarget.PointerLeave += InputTarget_PointerLeave;
                 _inputTarget.PointerPressed += InputTarget_PointerPressed;
                 _inputTarget.PointerMoved += InputTarget_PointerMoved;
@@ -194,7 +194,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_inputTarget != null)
             {
-                _inputTarget.PointerEnter -= InputTarget_PointerEnter;
+                _inputTarget.PointerEntered -= InputTarget_PointerEntered;
                 _inputTarget.PointerLeave -= InputTarget_PointerLeave;
                 _inputTarget.PointerPressed -= InputTarget_PointerPressed;
                 _inputTarget.PointerMoved -= InputTarget_PointerMoved;
@@ -848,8 +848,8 @@ namespace Avalonia.Controls.Primitives
             UpdatePseudoClasses();
         }
 
-        /// <inheritdoc cref="InputElement.PointerEnter"/>
-        private void InputTarget_PointerEnter(object? sender, PointerEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerEntered"/>
+        private void InputTarget_PointerEntered(object? sender, PointerEventArgs args)
         {
             _isPointerOver = true;
             UpdatePseudoClasses();

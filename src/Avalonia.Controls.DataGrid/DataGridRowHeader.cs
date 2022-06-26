@@ -158,14 +158,14 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
             if (OwningRow != null)
             {
                 OwningRow.IsMouseOver = true;
             }
 
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
         }
         protected override void OnPointerLeave(PointerEventArgs e)
         {

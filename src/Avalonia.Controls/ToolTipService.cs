@@ -26,13 +26,13 @@ namespace Avalonia.Controls
 
             if (e.OldValue != null)
             {
-                control.PointerEnter -= ControlPointerEnter;
+                control.PointerEntered -= ControlPointerEntered;
                 control.PointerLeave -= ControlPointerLeave;
             }
 
             if (e.NewValue != null)
             {
-                control.PointerEnter += ControlPointerEnter;
+                control.PointerEntered += ControlPointerEntered;
                 control.PointerLeave += ControlPointerLeave;
             }
 
@@ -80,7 +80,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerEnter(object? sender, PointerEventArgs e)
+        private void ControlPointerEntered(object? sender, PointerEventArgs e)
         {
             StopTimer();
 

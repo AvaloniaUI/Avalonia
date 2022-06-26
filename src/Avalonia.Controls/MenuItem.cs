@@ -82,10 +82,10 @@ namespace Avalonia.Controls
             RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="PointerEnterItem"/> event.
+        /// Defines the <see cref="PointerEnteredItem"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerEnterItemEvent =
-            RoutedEvent.Register<MenuItem, PointerEventArgs>(nameof(PointerEnterItem), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<PointerEventArgs> PointerEnteredItemEvent =
+            RoutedEvent.Register<MenuItem, PointerEventArgs>(nameof(PointerEnteredItem), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerLeaveItem"/> event.
@@ -174,12 +174,12 @@ namespace Avalonia.Controls
         /// Occurs when the pointer enters a menu item.
         /// </summary>
         /// <remarks>
-        /// A bubbling version of the <see cref="InputElement.PointerEnter"/> event for menu items.
+        /// A bubbling version of the <see cref="InputElement.PointerEntered"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs>? PointerEnterItem
+        public event EventHandler<PointerEventArgs>? PointerEnteredItem
         {
-            add { AddHandler(PointerEnterItemEvent, value); }
-            remove { RemoveHandler(PointerEnterItemEvent, value); }
+            add { AddHandler(PointerEnteredItemEvent, value); }
+            remove { RemoveHandler(PointerEnteredItemEvent, value); }
         }
 
         /// <summary>
@@ -437,12 +437,12 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerEnterItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
