@@ -1,4 +1,156 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow"
+        xmlns:local="clr-namespace:Sandbox;assembly=Sandbox">
+
+  <Window.Styles>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="MinHeight" Value="23" />
+    </Style>
+  </Window.Styles>
+  
+  <Panel>
+    <TabControl Focusable="False">
+      <TabItem Focusable="False" Header="General">
+        <Panel>
+          <Button Content="This is a button" Name="Button1">
+            <Button.Flyout>
+              <Flyout>
+                <StackPanel Spacing="3">
+                  <Button Name="Button1FF" Content="Flyout Button1" />
+                  <Button Content="Flyout Button2" />
+                  <Button Content="Flyout Button3" />
+                  <Button Content="Flyout Button4" />
+                  <Button Content="Flyout Button5" />
+                </StackPanel>
+              </Flyout>
+            </Button.Flyout>
+          </Button>
+
+
+          <CalendarDatePicker HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+          <!--<TextBox HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 Name="TB" />
+        <Popup WindowManagerAddShadowHint="False"
+               IsOpen="{Binding #TB.IsFocused}"
+               PlacementTarget="{Binding ElementName=TB}"
+               PlacementMode="Bottom"
+               IsLightDismissEnabled="True">
+          <Button Content="ClickMe" />
+        </Popup>-->
+
+          <!--<NumericUpDown HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Value="0"
+                       Minimum="-100" Maximum="100" />-->
+          <!--<ComboBox HorizontalAlignment="Center"
+                 VerticalAlignment="Center">
+          <ComboBoxItem Content="Item 1" />
+          <ComboBoxItem Content="Item 2" />
+          <ComboBoxItem Content="Item 3" />
+          <ComboBoxItem Content="Item 4" />
+          <ComboBoxItem Content="Item 5" />
+        </ComboBox>-->
+
+          <Button Content="This is a button with MenuFlyout" Margin="0 100 0 0">
+            <Button.Flyout>
+              <MenuFlyout>
+                <MenuItem Header="MenuItem 1" />
+                <!--<MenuItem Header="MenuItem 2">
+                <MenuItem Header="MenuSubItem 1" />
+                <MenuItem Header="MenuSubItem 2" />
+                <MenuItem Header="MenuSubItem 3" />
+                <MenuItem Header="MenuSubItem 4" />
+              </MenuItem>-->
+                <MenuItem Header="MenuItem 3" />
+                <MenuItem Header="MenuItem 4" />
+                <MenuItem Header="MenuItem 5" />
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+
+          <Button Content="This is a button too" VerticalAlignment="Bottom" Name="Button2" />
+        </Panel>
+      </TabItem>
+      <TabItem Focusable="False" Header="TabIndex">
+        <Panel>
+          <Button TabIndex="0"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Top"
+                  Content="TabIndex 0" />
+
+          <Button TabIndex="10"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Top"
+                  Content="TabIndex 10" />
+
+          <Button TabIndex="15"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Bottom"
+                  Content="TabIndex 15" />
+
+          <Button TabIndex="30"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Bottom"
+                  Content="TabIndex 30" />
+
+          <Button TabIndex="50"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Content="TabIndex 50" />
+        </Panel>
+      </TabItem>
+      <TabItem Focusable="False" Header="AllowFocusWhenDisabled">
+        <StackPanel Spacing="10">
+          <TextBlock>
+            Hit F5 to toggle IsEnabled on "Button 2". If Button 2 is focused when disabled, focus should be directed to the next control
+          </TextBlock>
+          <Button Content="Button 1" />
+          <Button Content="Button 2" Name="ToggleFocusButton" />
+          <Button Content="I should still be focusable" IsEnabled="False" AllowFocusWhenDisabled="True" />
+          <Button Content="Button 4" />
+          <Button Content="Button 5" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Focusable="False" Header="Removed when Focused">
+        <StackPanel Spacing="10" Name="RemoveItemsStackPanel">
+          <TextBlock>
+            Hit F6 to remove the last control in this stack panel, moving focus to the first focusable item in the Window (Button 1)
+          </TextBlock>
+          <Button Content="Button 1" />
+          <Button Content="Button 2" />
+          <Button Content="Button 3" />
+          <Button Content="Button 4" />
+          <Button Content="Button 5" />
+          <Button Content="Button 6" />
+          <Button Content="Button 7" />
+          <Button Content="Button 8" />
+          <Button Content="Button 9" />
+          <Button Content="Button 10" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Focusable="False" Header="TabIndex ListBox (#7606)">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          
+          <Button Content="Button 1" TabIndex="1" />
+
+          <ListBox TabIndex="2">
+            <ListBoxItem Content="ListBoxItem 1" />
+            <ListBoxItem Content="ListBoxItem 2" />
+            <ListBoxItem Content="ListBoxItem 3"  />
+            <ListBoxItem Content="ListBoxItem 4" />
+            <ListBoxItem Content="ListBoxItem 5" />
+          </ListBox>
+
+          <Button Content="Button 1" TabIndex="3" />
+          
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+  </Panel>
+  
+  
 </Window>

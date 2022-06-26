@@ -10,6 +10,10 @@ namespace Sandbox
         public static AppBuilder BuildAvaloniaApp() =>
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .LogToTrace();
+            .With(new Win32PlatformOptions
+            {
+                OverlayPopups = true
+            })
+                .LogToTrace(Avalonia.Logging.LogEventLevel.Verbose, "Focus");
     }
 }
