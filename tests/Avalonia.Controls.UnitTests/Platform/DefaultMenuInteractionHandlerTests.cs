@@ -202,31 +202,31 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
-            public void PointerLeave_Deselects_Item_When_Menu_Not_Open()
+            public void PointerExited_Deselects_Item_When_Menu_Not_Open()
             {
                 var target = new DefaultMenuInteractionHandler(false);
                 var menu = new Mock<IMenu>();
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu.Object);
-                var e = CreateArgs(MenuItem.PointerLeaveItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerExitedItemEvent, item);
 
                 menu.SetupGet(x => x.SelectedItem).Returns(item);
-                target.PointerLeave(item, e);
+                target.PointerExited(item, e);
 
                 menu.VerifySet(x => x.SelectedItem = null);
                 Assert.False(e.Handled);
             }
 
             [Fact]
-            public void PointerLeave_Doesnt_Deselect_Item_When_Menu_Open()
+            public void PointerExited_Doesnt_Deselect_Item_When_Menu_Open()
             {
                 var target = new DefaultMenuInteractionHandler(false);
                 var menu = new Mock<IMenu>();
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu.Object);
-                var e = CreateArgs(MenuItem.PointerLeaveItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerExitedItemEvent, item);
 
                 menu.SetupGet(x => x.IsOpen).Returns(true);
                 menu.SetupGet(x => x.SelectedItem).Returns(item);
-                target.PointerLeave(item, e);
+                target.PointerExited(item, e);
 
                 menu.VerifySet(x => x.SelectedItem = null, Times.Never);
                 Assert.False(e.Handled);
@@ -438,48 +438,48 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
-            public void PointerLeave_Deselects_Item()
+            public void PointerExited_Deselects_Item()
             {
                 var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
-                var e = CreateArgs(MenuItem.PointerLeaveItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerExitedItemEvent, item);
 
                 Mock.Get(parentItem).SetupGet(x => x.SelectedItem).Returns(item);
-                target.PointerLeave(item, e);
+                target.PointerExited(item, e);
 
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = null);
                 Assert.False(e.Handled);
             }
 
             [Fact]
-            public void PointerLeave_Doesnt_Deselect_Sibling()
+            public void PointerExited_Doesnt_Deselect_Sibling()
             {
                 var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
                 var sibling = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
-                var e = CreateArgs(MenuItem.PointerLeaveItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerExitedItemEvent, item);
 
                 Mock.Get(parentItem).SetupGet(x => x.SelectedItem).Returns(sibling);
-                target.PointerLeave(item, e);
+                target.PointerExited(item, e);
 
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = null, Times.Never);
                 Assert.False(e.Handled);
             }
 
             [Fact]
-            public void PointerLeave_Doesnt_Deselect_Item_If_Pointer_Over_Submenu()
+            public void PointerExited_Doesnt_Deselect_Item_If_Pointer_Over_Submenu()
             {
                 var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true && x.IsPointerOverSubMenu == true);
-                var e = CreateArgs(MenuItem.PointerLeaveItemEvent, item);
+                var e = CreateArgs(MenuItem.PointerExitedItemEvent, item);
 
-                target.PointerLeave(item, e);
+                target.PointerExited(item, e);
 
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = null, Times.Never);
                 Assert.False(e.Handled);
@@ -511,7 +511,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
                 var childItem = Mock.Of<IMenuItem>(x => x.Parent == item);
                 var enter = CreateArgs(MenuItem.PointerEnteredItemEvent, item);
-                var leave = CreateArgs(MenuItem.PointerLeaveItemEvent, item);
+                var leave = CreateArgs(MenuItem.PointerExitedItemEvent, item);
 
                 // Pointer enters item; item is selected.
                 target.PointerEntered(item, enter);
@@ -526,7 +526,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 Mock.Get(item).Invocations.Clear();
 
                 // Pointer briefly exits item, but submenu remains open.
-                target.PointerLeave(item, leave);
+                target.PointerExited(item, leave);
                 Mock.Get(item).Verify(x => x.Close(), Times.Never);
                 Mock.Get(item).Invocations.Clear();
 

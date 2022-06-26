@@ -248,7 +248,7 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                         ((object?)decorator, nameof(InputElement.PointerEntered)),
                         (decorator, nameof(InputElement.PointerMoved)),
-                        (decorator, nameof(InputElement.PointerLeave)),
+                        (decorator, nameof(InputElement.PointerExited)),
                         (canvas, nameof(InputElement.PointerEntered)),
                         (canvas, nameof(InputElement.PointerMoved))
                 },
@@ -297,7 +297,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                    ((object?)canvas, nameof(InputElement.PointerLeave)),
+                    ((object?)canvas, nameof(InputElement.PointerExited)),
                     (decorator, nameof(InputElement.PointerEntered)),
                     (border, nameof(InputElement.PointerEntered)),
                 },
@@ -344,8 +344,8 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     ((object?)canvas, nameof(InputElement.PointerEntered), expectedPosition),
                     (root, nameof(InputElement.PointerEntered), expectedPosition),
-                    (canvas, nameof(InputElement.PointerLeave), expectedPosition),
-                    (root, nameof(InputElement.PointerLeave), expectedPosition)
+                    (canvas, nameof(InputElement.PointerExited), expectedPosition),
+                    (root, nameof(InputElement.PointerExited), expectedPosition)
                 },
                 result);
         }
@@ -431,8 +431,8 @@ namespace Avalonia.Base.UnitTests.Input
                 {
                     ((object?)canvas, nameof(InputElement.PointerEntered), lastClientPosition),
                     (root, nameof(InputElement.PointerEntered), lastClientPosition),
-                    (canvas, nameof(InputElement.PointerLeave), lastClientPosition),
-                    (root, nameof(InputElement.PointerLeave), lastClientPosition),
+                    (canvas, nameof(InputElement.PointerExited), lastClientPosition),
+                    (root, nameof(InputElement.PointerExited), lastClientPosition),
                 },
                 result);
         }
@@ -444,7 +444,7 @@ namespace Avalonia.Base.UnitTests.Input
             foreach (var c in controls)
             {
                 c.PointerEntered += handler;
-                c.PointerLeave += handler;
+                c.PointerExited += handler;
                 c.PointerMoved += handler;
             }
         }

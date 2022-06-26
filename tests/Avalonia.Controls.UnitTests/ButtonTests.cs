@@ -185,7 +185,7 @@ namespace Avalonia.Controls.UnitTests
             RaisePointerEntered(target);
             RaisePointerMove(target, new Point(50,50));
             RaisePointerPressed(target, 1, MouseButton.Left, new Point(50, 50));
-            RaisePointerLeave(target);
+            RaisePointerExited(target);
 
             Assert.Equal(_helper.Captured, target);
 
@@ -427,7 +427,7 @@ namespace Avalonia.Controls.UnitTests
             _helper.Enter(button);
         }
 
-        private void RaisePointerLeave(Button button)
+        private void RaisePointerExited(Button button)
         {
             _helper.Leave(button);
         }

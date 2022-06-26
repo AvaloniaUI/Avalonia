@@ -612,10 +612,10 @@ namespace Avalonia.Controls
             base.OnPointerEntered(e);
             IsMouseOver = true;
         }
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             IsMouseOver = false;
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         internal void ApplyCellsState()

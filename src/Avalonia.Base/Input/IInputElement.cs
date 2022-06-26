@@ -47,7 +47,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer leaves the control.
         /// </summary>
-        event EventHandler<PointerEventArgs>? PointerLeave;
+        event EventHandler<PointerEventArgs>? PointerExited;
 
         /// <summary>
         /// Occurs when the pointer is pressed over the control.

@@ -55,7 +55,7 @@ namespace Avalonia.Controls.Platform
             Menu.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
             Menu.AddHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
             Menu.AddHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
-            Menu.AddHandler(MenuItem.PointerLeaveItemEvent, PointerLeave);
+            Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
 
             _root = Menu.VisualRoot;
@@ -91,7 +91,7 @@ namespace Avalonia.Controls.Platform
             Menu.RemoveHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
             Menu.RemoveHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
             Menu.RemoveHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
-            Menu.RemoveHandler(MenuItem.PointerLeaveItemEvent, PointerLeave);
+            Menu.RemoveHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
 
             if (_root is InputElement inputRoot)
@@ -358,7 +358,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected internal virtual void PointerLeave(object? sender, PointerEventArgs e)
+        protected internal virtual void PointerExited(object? sender, PointerEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
 

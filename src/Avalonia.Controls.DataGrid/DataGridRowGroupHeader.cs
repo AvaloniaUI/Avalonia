@@ -386,7 +386,7 @@ namespace Avalonia.Controls
             base.OnPointerEntered(e);
         }
 
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             if (IsEnabled)
             {
@@ -394,7 +394,7 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         private void SetIsCheckedNoCallBack(bool value)

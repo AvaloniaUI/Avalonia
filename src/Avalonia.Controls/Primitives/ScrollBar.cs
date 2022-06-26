@@ -228,9 +228,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
 
             if (AllowAutoHide)
             {

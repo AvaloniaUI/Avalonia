@@ -27,13 +27,13 @@ namespace Avalonia.Controls
             if (e.OldValue != null)
             {
                 control.PointerEntered -= ControlPointerEntered;
-                control.PointerLeave -= ControlPointerLeave;
+                control.PointerExited -= ControlPointerExited;
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEntered += ControlPointerEntered;
-                control.PointerLeave += ControlPointerLeave;
+                control.PointerExited += ControlPointerExited;
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -101,7 +101,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ControlPointerLeave(object? sender, PointerEventArgs e)
+        private void ControlPointerExited(object? sender, PointerEventArgs e)
         {
             var control = (Control)sender!;
             Close(control);

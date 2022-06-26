@@ -136,11 +136,11 @@ namespace Avalonia.Input
                 RoutingStrategies.Direct);
 
         /// <summary>
-        /// Defines the <see cref="PointerLeave"/> event.
+        /// Defines the <see cref="PointerExited"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerLeaveEvent =
+        public static readonly RoutedEvent<PointerEventArgs> PointerExitedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>(
-                nameof(PointerLeave),
+                nameof(PointerExited),
                 RoutingStrategies.Direct);
 
         /// <summary>
@@ -212,8 +212,8 @@ namespace Avalonia.Input
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
-            PointerEnteredEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnterCore(e));
-            PointerLeaveEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerLeaveCore(e));
+            PointerEnteredEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnteredCore(e));
+            PointerExitedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerExitedCore(e));
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
@@ -292,10 +292,10 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer leaves the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs>? PointerLeave
+        public event EventHandler<PointerEventArgs>? PointerExited
         {
-            add { AddHandler(PointerLeaveEvent, value); }
-            remove { RemoveHandler(PointerLeaveEvent, value); }
+            add { AddHandler(PointerExitedEvent, value); }
+            remove { RemoveHandler(PointerExitedEvent, value); }
         }
 
         /// <summary>
@@ -551,10 +551,10 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerLeave"/> event occurs.
+        /// Called before the <see cref="PointerExited"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPointerLeave(PointerEventArgs e)
+        protected virtual void OnPointerExited(PointerEventArgs e)
         {
         }
 
@@ -647,20 +647,20 @@ namespace Avalonia.Input
         /// Called before the <see cref="PointerEntered"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private void OnPointerEnterCore(PointerEventArgs e)
+        private void OnPointerEnteredCore(PointerEventArgs e)
         {
             IsPointerOver = true;
             OnPointerEntered(e);
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerLeave"/> event occurs.
+        /// Called before the <see cref="PointerExited"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private void OnPointerLeaveCore(PointerEventArgs e)
+        private void OnPointerExitedCore(PointerEventArgs e)
         {
             IsPointerOver = false;
-            OnPointerLeave(e);
+            OnPointerExited(e);
         }
 
         /// <summary>

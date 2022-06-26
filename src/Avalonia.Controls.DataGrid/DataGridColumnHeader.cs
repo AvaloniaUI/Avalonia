@@ -85,7 +85,7 @@ namespace Avalonia.Controls
             PointerReleased += DataGridColumnHeader_PointerReleased;
             PointerMoved += DataGridColumnHeader_PointerMoved;
             PointerEntered += DataGridColumnHeader_PointerEntered;
-            PointerLeave += DataGridColumnHeader_PointerLeave;
+            PointerExited += DataGridColumnHeader_PointerExited;
         }
 
         private void OnAreSeparatorsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
@@ -464,7 +464,7 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
-        private void DataGridColumnHeader_PointerLeave(object sender, PointerEventArgs e)
+        private void DataGridColumnHeader_PointerExited(object sender, PointerEventArgs e)
         {
             if (!IsEnabled)
             {

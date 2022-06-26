@@ -122,7 +122,7 @@ namespace Avalonia.Diagnostics.Views
             if (header != null)
             {
                 header.PointerEntered += AddAdorner;
-                header.PointerLeave += RemoveAdorner;
+                header.PointerExited += RemoveAdorner;
             }
 
             item.TemplateApplied -= TreeViewItemTemplateApplied;
