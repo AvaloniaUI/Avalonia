@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
@@ -9,9 +8,6 @@ namespace Avalonia.Controls
     /// <inheritdoc/>
     public partial class ColorView
     {
-        // IsColorModelSelectorVisible
-        // IsComponentSliderVisible
-
         /// <summary>
         /// Defines the <see cref="Color"/> property.
         /// </summary>
@@ -79,6 +75,14 @@ namespace Avalonia.Controls
                 true);
 
         /// <summary>
+        /// Defines the <see cref="IsColorModelVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsColorModelVisibleProperty =
+            AvaloniaProperty.Register<ColorView, bool>(
+                nameof(IsColorModelVisible),
+                true);
+
+        /// <summary>
         /// Defines the <see cref="IsColorPaletteVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsColorPaletteVisibleProperty =
@@ -108,6 +112,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsColorSpectrumSliderVisibleProperty =
             AvaloniaProperty.Register<ColorView, bool>(
                 nameof(IsColorSpectrumSliderVisible),
+                true);
+
+        /// <summary>
+        /// Defines the <see cref="IsComponentSliderVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsComponentSliderVisibleProperty =
+            AvaloniaProperty.Register<ColorView, bool>(
+                nameof(IsComponentSliderVisible),
                 true);
 
         /// <summary>
@@ -287,6 +299,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the active color model indicator/selector is visible.
+        /// </summary>
+        public bool IsColorModelVisible
+        {
+            get => GetValue(IsColorModelVisibleProperty);
+            set => SetValue(IsColorModelVisibleProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the color palette tab/panel/page (subview) is visible.
         /// </summary>
         public bool IsColorPaletteVisible
@@ -325,6 +346,19 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsColorSpectrumSliderVisibleProperty);
             set => SetValue(IsColorSpectrumSliderVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether color component sliders are visible.
+        /// </summary>
+        /// <remarks>
+        /// All color components are controlled by this property but alpha can also be
+        /// controlled with <see cref="IsAlphaVisible"/>.
+        /// </remarks>
+        public bool IsComponentSliderVisible
+        {
+            get => GetValue(IsComponentSliderVisibleProperty);
+            set => SetValue(IsComponentSliderVisibleProperty, value);
         }
 
         /// <summary>

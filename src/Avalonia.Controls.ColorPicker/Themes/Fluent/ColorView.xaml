@@ -15,6 +15,8 @@
     <converters:EnumToBoolConverter x:Key="EnumToBool" />
     <globalization:NumberFormatInfo x:Key="ComponentNumberFormatInfo" NumberDecimalDigits="0" />
     <x:Double x:Key="ColorViewTabStripHeight">48</x:Double>
+    <x:Double x:Key="ComponentLabelWidth">30</x:Double>
+    <x:Double x:Key="ComponentTextInputWidth">80</x:Double>
     <!-- Fluent UI System Icons : ic_fluent_inking_tool_20_regular.svg -->
     <PathGeometry x:Key="ColorViewSpectrumIconGeometry">
       M3 2C3.27614 2 3.5 2.22386 3.5 2.5V5.5C3.5 5.77614 3.72386 6 4 6H16C16.2761 6 16.5 5.77614
@@ -273,7 +275,7 @@
                             Data="{DynamicResource ColorViewComponentsIconGeometry}" />
                 </Border>
               </TabItem.Header>
-              <Grid ColumnDefinitions="30,80,*"
+              <Grid ColumnDefinitions="Auto,Auto,*"
                     RowDefinitions="Auto,24,1*,1*,1*,1*,12"
                     Margin="12">
                 <!-- Top color model & Hex input -->
@@ -283,7 +285,8 @@
                       ColumnDefinitions="1*,12,1*">
                   <!-- Content RGB/HSV names are hard-coded and considered universal -->
                   <!-- RadioButtons are styled to look like a 'SegmentedControl' or 'ButtonGroup' -->
-                  <Grid ColumnDefinitions="1*,1*">
+                  <Grid ColumnDefinitions="1*,1*"
+                        IsVisible="{TemplateBinding IsColorModelVisible}">
                     <Grid.Styles>
                       <Style Selector="RadioButton">
                         <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
@@ -395,6 +398,7 @@
                 <Border Grid.Column="0"
                         Grid.Row="2"
                         Height="{Binding ElementName=Component1NumericUpDown, Path=Bounds.Height}"
+                        Width="{DynamicResource ComponentLabelWidth}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
                         BorderThickness="1,1,0,1"
@@ -419,7 +423,9 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
+                               Width="{DynamicResource ComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
+                               Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=Component1Slider}"
@@ -436,12 +442,13 @@
                                         ColorComponent="Component1"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center" />
+                                        VerticalAlignment="Center"
+                                        IsVisible="{TemplateBinding IsComponentSliderVisible}" />
                 <!-- Component 2 RGB:Green HSV:Saturation -->
                 <Border Grid.Column="0"
                         Grid.Row="3"
+                        Width="{DynamicResource ComponentLabelWidth}"
                         Height="{Binding ElementName=Component2NumericUpDown, Path=Bounds.Height}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
@@ -467,7 +474,9 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
+                               Width="{DynamicResource ComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
+                               Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=Component2Slider}"
@@ -484,12 +493,13 @@
                                         ColorComponent="Component2"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center" />
+                                        VerticalAlignment="Center"
+                                        IsVisible="{TemplateBinding IsComponentSliderVisible}" />
                 <!-- Component 3 RGB:Blue HSV:Value -->
                 <Border Grid.Column="0"
                         Grid.Row="4"
+                        Width="{DynamicResource ComponentLabelWidth}"
                         Height="{Binding ElementName=Component3NumericUpDown, Path=Bounds.Height}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
@@ -515,7 +525,9 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
+                               Width="{DynamicResource ComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
+                               Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=Component3Slider}"
@@ -532,12 +544,13 @@
                                         ColorComponent="Component3"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center" />
+                                        VerticalAlignment="Center"
+                                        IsVisible="{TemplateBinding IsComponentSliderVisible}" />
                 <!-- Alpha Component -->
                 <Border Grid.Column="0"
                         Grid.Row="5"
+                        Width="{DynamicResource ComponentLabelWidth}"
                         Height="{Binding ElementName=AlphaComponentNumericUpDown, Path=Bounds.Height}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
@@ -565,7 +578,9 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
+                               Width="{DynamicResource ComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
+                               Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=AlphaComponentSlider}"
@@ -590,10 +605,18 @@
                                         ColorComponent="Alpha"
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                        Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center"
-                                        IsVisible="{TemplateBinding IsAlphaVisible}" />
+                                        IsVisible="{TemplateBinding IsAlphaVisible}">
+                  <primitives:ColorSlider.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaVisible" />
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsComponentSliderVisible" />
+                    </MultiBinding>
+                  </primitives:ColorSlider.IsVisible>
+                </primitives:ColorSlider>
               </Grid>
             </TabItem>
           </TabControl>

@@ -1,7 +1,7 @@
 ﻿namespace Avalonia.Controls
 {
     /// <summary>
-    /// Defines a specific subview/tab within the <see cref="ColorView"/>.
+    /// Defines a specific tab/page (subview) within the <see cref="ColorView"/>.
     /// </summary>
     /// <remarks>
     /// This is indexed to match the default control template ordering.
