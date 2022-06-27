@@ -119,13 +119,16 @@ void WindowImpl::BringToFront()
 {
     if(Window != nullptr)
     {
-        if(IsDialog())
+        if (![Window isMiniaturized])
         {
-            Activate();
-        }
-        else
-        {
-            [Window orderFront:nullptr];
+            if(IsDialog())
+            {
+                Activate();
+            }
+            else
+            {
+                [Window orderFront:nullptr];
+            }
         }
         
         [Window invalidateShadow];
