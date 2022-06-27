@@ -187,11 +187,10 @@
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"
-                                        Margin="12,0,0,0">
+                                        Margin="12,0,0,0"
+                                        IsEnabled="{TemplateBinding IsAlphaEnabled}">
                   <primitives:ColorSlider.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                               Path="IsAlphaEnabled" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsAlphaVisible" />
                     </MultiBinding>
@@ -564,7 +563,8 @@
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
                         BorderThickness="1,1,0,1"
                         CornerRadius="4,0,0,4"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        IsEnabled="{TemplateBinding IsAlphaEnabled}">
                   <TextBlock x:Name="AlphaComponentTextBlock"
                              Foreground="{DynamicResource TextControlForegroundDisabled}"
                              FontWeight="SemiBold"
@@ -573,8 +573,6 @@
                              VerticalAlignment="Center" />
                   <Border.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                               Path="IsAlphaEnabled" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsAlphaVisible" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
@@ -595,11 +593,10 @@
                                NumberFormat="{StaticResource ComponentNumberFormatInfo}"
                                Minimum="{Binding Minimum, ElementName=AlphaComponentSlider}"
                                Maximum="{Binding Maximum, ElementName=AlphaComponentSlider}"
-                               Value="{Binding Value, ElementName=AlphaComponentSlider}">
+                               Value="{Binding Value, ElementName=AlphaComponentSlider}"
+                               IsEnabled="{TemplateBinding IsAlphaEnabled}">
                   <NumericUpDown.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                               Path="IsAlphaEnabled" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsAlphaVisible" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
@@ -618,11 +615,10 @@
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center">
+                                        VerticalAlignment="Center"
+                                        IsEnabled="{TemplateBinding IsAlphaEnabled}">
                   <primitives:ColorSlider.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
-                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                               Path="IsAlphaEnabled" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsAlphaVisible" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"

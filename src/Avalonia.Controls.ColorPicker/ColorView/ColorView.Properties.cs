@@ -270,7 +270,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a value indicating whether the alpha component is enabled.
         /// When disabled (set to false) the alpha component will be fixed to maximum and
-        /// editing controls hidden.
+        /// editing controls disabled.
         /// </summary>
         public bool IsAlphaEnabled
         {
@@ -357,7 +357,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <remarks>
         /// All color components are controlled by this property but alpha can also be
-        /// controlled with <see cref="IsAlphaEnabled"/> and <see cref="IsAlphaVisible"/>.
+        /// controlled with <see cref="IsAlphaVisible"/>.
         /// </remarks>
         public bool IsComponentSliderVisible
         {
@@ -370,7 +370,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <remarks>
         /// All color components are controlled by this property but alpha can also be
-        /// controlled with <see cref="IsAlphaEnabled"/> and <see cref="IsAlphaVisible"/>.
+        /// controlled with <see cref="IsAlphaVisible"/>.
         /// </remarks>
         public bool IsComponentTextInputVisible
         {
