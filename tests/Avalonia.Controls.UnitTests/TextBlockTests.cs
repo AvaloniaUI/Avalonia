@@ -20,13 +20,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Default_Text_Value_Should_Be_EmptyString()
+        public void Default_Text_Value_Should_Be_Null()
         {
             var textBlock = new TextBlock();
 
-            Assert.Equal(
-                "",
-                textBlock.Text);
+            Assert.Equal(null, textBlock.Text);
         }
 
         [Fact]
