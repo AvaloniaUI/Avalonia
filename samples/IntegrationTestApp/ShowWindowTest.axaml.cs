@@ -12,6 +12,7 @@ namespace IntegrationTestApp
         {
             InitializeComponent();
             DataContext = this;
+            PositionChanged += (s, e) => this.GetControl<TextBox>("Position").Text = $"{Position}";
         }
 
         private void InitializeComponent()
@@ -22,6 +23,7 @@ namespace IntegrationTestApp
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
+            this.GetControl<TextBox>("Position").Text = $"{Position}";
             this.GetControl<TextBox>("ScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
             this.GetControl<TextBox>("Scaling").Text = $"{PlatformImpl?.DesktopScaling}";
 

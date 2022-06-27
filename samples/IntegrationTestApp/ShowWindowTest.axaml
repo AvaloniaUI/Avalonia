@@ -13,8 +13,7 @@
              Text="{Binding FrameSize, Mode=OneWay}"/>
 
     <Label Grid.Column="0" Grid.Row="3">Position</Label>
-    <TextBox Name="Position" Grid.Column="1" Grid.Row="3" IsReadOnly="True"
-             Text="{Binding Position, Mode=OneWay}"/>
+    <TextBox Name="Position" Grid.Column="1" Grid.Row="3" IsReadOnly="True"/>
 
     <Label Grid.Column="0" Grid.Row="4">Owner Rect</Label>
     <TextBox Name="OwnerRect" Grid.Column="1" Grid.Row="4" IsReadOnly="True"/>
