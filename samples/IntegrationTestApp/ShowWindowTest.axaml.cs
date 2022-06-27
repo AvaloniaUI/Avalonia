@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -23,15 +24,16 @@ namespace IntegrationTestApp
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
+            var scaling = PlatformImpl!.DesktopScaling;
             this.GetControl<TextBox>("Position").Text = $"{Position}";
             this.GetControl<TextBox>("ScreenRect").Text = $"{Screens.ScreenFromVisual(this)?.WorkingArea}";
-            this.GetControl<TextBox>("Scaling").Text = $"{PlatformImpl?.DesktopScaling}";
+            this.GetControl<TextBox>("Scaling").Text = $"{scaling}";
 
             if (Owner is not null)
             {
                 var ownerRect = this.GetControl<TextBox>("OwnerRect");
                 var owner = (Window)Owner;
-                ownerRect.Text = $"{owner.Position}, {owner.FrameSize}";
+                ownerRect.Text = $"{owner.Position}, {PixelSize.FromSize(owner.FrameSize!.Value, scaling)}";
             }
         }
     }

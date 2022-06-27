@@ -24,10 +24,13 @@ namespace Avalonia.IntegrationTests.Appium
 
         [Theory]
         [MemberData(nameof(StartupLocationData))]
-        public void StartupLocation(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
+        public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location)
         {
             using var window = OpenWindow(size, mode, location);
             var info = GetWindowInfo();
+
+            if (size.HasValue)
+                Assert.Equal(size.Value, info.ClientSize);
 
             Assert.True(info.FrameSize.Width >= info.ClientSize.Width, "Expected frame width >= client width.");
             Assert.True(info.FrameSize.Height > info.ClientSize.Height, "Expected frame height > client height.");
@@ -37,11 +40,18 @@ namespace Avalonia.IntegrationTests.Appium
             switch (location)
             {
                 case WindowStartupLocation.CenterScreen:
-                    {
-                        var expected = info.ScreenRect.CenterRect(frameRect);
-                        AssertCloseEnough(expected.Position, frameRect.Position);
-                        break;
-                    }
+                {
+                    var expected = info.ScreenRect.CenterRect(frameRect);
+                    AssertCloseEnough(expected.Position, frameRect.Position);
+                    break;
+                }
+                case WindowStartupLocation.CenterOwner:
+                {
+                    Assert.NotNull(info.OwnerRect);
+                    var expected = info.OwnerRect!.Value.CenterRect(frameRect);
+                    AssertCloseEnough(expected.Position, frameRect.Position);
+                    break;
+                }
             }
         }
 
@@ -89,10 +99,10 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        public static TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
+        public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
         {
-            var sizes = new PixelSize?[] { null, new PixelSize(400, 300) };
-            var data = new TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation>();
+            var sizes = new Size?[] { null, new Size(400, 300) };
+            var data = new TheoryData<Size?, ShowWindowMode, WindowStartupLocation>();
 
             foreach (var size in sizes)
             {
@@ -137,7 +147,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
+        private IDisposable OpenWindow(Size? size, ShowWindowMode mode, WindowStartupLocation location)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
@@ -158,6 +168,12 @@ namespace Avalonia.IntegrationTests.Appium
 
         private WindowInfo GetWindowInfo()
         {
+            PixelRect? ReadOwnerRect()
+            {
+                var text = _session.FindElementByAccessibilityId("OwnerRect").Text;
+                return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
+            }
+
             var retry = 0;
 
             for (;;)
@@ -168,6 +184,7 @@ namespace Avalonia.IntegrationTests.Appium
                         Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text),
                         Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text),
                         PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text),
+                        ReadOwnerRect(),
                         PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
                         double.Parse(_session.FindElementByAccessibilityId("Scaling").Text));
                 }
@@ -191,6 +208,7 @@ namespace Avalonia.IntegrationTests.Appium
             Size ClientSize,
             Size FrameSize,
             PixelPoint Position,
+            PixelRect? OwnerRect,
             PixelRect ScreenRect,
             double Scaling);
     }
