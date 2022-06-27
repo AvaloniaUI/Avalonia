@@ -17,11 +17,27 @@ namespace Avalonia.IntegrationTests.Appium
 
         public WindowTests_MacOS(TestAppFixture fixture)
         {
+            var retry = 0;
+
             _session = fixture.Session;
 
-            var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Window");
-            tab.Click();
+            for (;;)
+            {
+                try
+                {
+                    var tabs = _session.FindElementByAccessibilityId("MainTabs");
+                    var tab = tabs.FindElementByName("Window");
+                    tab.Click();
+                    return;
+                }
+                catch (WebDriverException e) when (retry++ < 3)
+                {
+                    // MacOS sometimes seems to need a bit of time to get itself back in order after switching out
+                    // of fullscreen.
+                    Thread.Sleep(1000);
+                }
+            }
+
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
@@ -41,7 +57,7 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(1, mainWindowIndex);
             }
         }
-        
+
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_Clicking_Resize_Grip()
         {
@@ -57,7 +73,7 @@ namespace Avalonia.IntegrationTests.Appium
                 var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
                 var mainWindowIndex = GetWindowOrder(windows, "MainWindow");
                 var secondaryWindowIndex = GetWindowOrder(windows, "SecondaryWindow");
-                    
+
                 new Actions(_session)
                     .MoveToElement(mainWindow, 100, 1)
                     .Release()
@@ -67,13 +83,13 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(1, mainWindowIndex);
             }
         }
-        
+
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_In_Fullscreen()
         {
             var mainWindow = FindWindow(_session, "MainWindow");
             var buttons = mainWindow.GetChromeButtons();
-            
+
             buttons.maximize.Click();
 
             Thread.Sleep(500);
@@ -88,6 +104,8 @@ namespace Avalonia.IntegrationTests.Appium
 
                     Assert.Equal(0, secondaryWindowIndex);
                     Assert.Equal(1, mainWindowIndex);
+
+                    Thread.Sleep(5000);
                 }
             }
             finally
@@ -95,7 +113,7 @@ namespace Avalonia.IntegrationTests.Appium
                 _session.FindElementByAccessibilityId("ExitFullscreen").Click();
             }
         }
-        
+
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent()
         {
@@ -140,7 +158,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var window = FindWindow(_session, "MainWindow");
             var (closeButton, miniaturizeButton, zoomButton) = window.GetChromeButtons();
-                
+
             Assert.True(closeButton.Enabled);
             Assert.True(zoomButton.Enabled);
             Assert.True(miniaturizeButton.Enabled);
@@ -152,7 +170,7 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.False(miniaturizeButton.Enabled);
             }
         }
-        
+
         [PlatformFact(TestPlatforms.MacOS)]
         public void Minimize_Button_Is_Disabled_On_Modal_Dialog()
         {
@@ -160,7 +178,7 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 var secondaryWindow = FindWindow(_session, "SecondaryWindow");
                 var (closeButton, miniaturizeButton, zoomButton) = secondaryWindow.GetChromeButtons();
-                    
+
                 Assert.True(closeButton.Enabled);
                 Assert.True(zoomButton.Enabled);
                 Assert.False(miniaturizeButton.Enabled);
@@ -195,7 +213,7 @@ namespace Avalonia.IntegrationTests.Appium
         private static AppiumWebElement FindWindow(AppiumDriver<AppiumWebElement> session, string identifier)
         {
             var windows = session.FindElementsByXPath("XCUIElementTypeWindow");
-            return windows.First(x => 
+            return windows.First(x =>
                 x.FindElementsByXPath("XCUIElementTypeWindow")
                     .Any(y => y.GetAttribute("identifier") == identifier));
         }
