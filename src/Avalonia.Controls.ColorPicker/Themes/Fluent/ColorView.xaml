@@ -187,8 +187,16 @@
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"
-                                        Margin="12,0,0,0"
-                                        IsVisible="{TemplateBinding IsAlphaVisible}" />
+                                        Margin="12,0,0,0">
+                  <primitives:ColorSlider.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaEnabled" />
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaVisible" />
+                    </MultiBinding>
+                  </primitives:ColorSlider.IsVisible>
+                </primitives:ColorSlider>
               </Grid>
             </TabItem>
             <!-- Palette Tab -->
@@ -566,6 +574,8 @@
                   <Border.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaEnabled" />
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsAlphaVisible" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsComponentTextInputVisible" />
@@ -589,6 +599,8 @@
                   <NumericUpDown.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaEnabled" />
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsAlphaVisible" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsComponentTextInputVisible" />
@@ -610,6 +622,8 @@
                                         IsVisible="{TemplateBinding IsAlphaVisible}">
                   <primitives:ColorSlider.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                               Path="IsAlphaEnabled" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
                                Path="IsAlphaVisible" />
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"

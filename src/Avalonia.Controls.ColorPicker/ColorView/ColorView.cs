@@ -237,6 +237,12 @@ namespace Avalonia.Controls
                     PaletteColors = newPaletteColors;
                 }
             }
+            else if (change.Property == IsAlphaEnabledProperty)
+            {
+                // Manually coerce the HsvColor value
+                // (Color will be coerced automatically if HsvColor changes)
+                HsvColor = OnCoerceHsvColor(HsvColor);
+            }
             else if (change.Property == IsColorComponentsVisibleProperty ||
                      change.Property == IsColorPaletteVisibleProperty ||
                      change.Property == IsColorSpectrumVisibleProperty)
@@ -269,6 +275,66 @@ namespace Avalonia.Controls
         protected virtual void OnColorChanged(ColorChangedEventArgs e)
         {
             ColorChanged?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Color"/> property has to be coerced.
+        /// </summary>
+        /// <param name="value">The value to coerce.</param>
+        protected virtual Color OnCoerceColor(Color value)
+        {
+            if (IsAlphaEnabled == false)
+            {
+                return new Color(255, value.R, value.G, value.B);
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Called when the <see cref="HsvColor"/> property has to be coerced.
+        /// </summary>
+        /// <param name="value">The value to coerce.</param>
+        protected virtual HsvColor OnCoerceHsvColor(HsvColor value)
+        {
+            if (IsAlphaEnabled == false)
+            {
+                return new HsvColor(1.0, value.H, value.S, value.V);
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Coerces/validates the <see cref="Color"/> property value.
+        /// </summary>
+        /// <param name="instance">The <see cref="ColorView"/> instance.</param>
+        /// <param name="value">The value to coerce.</param>
+        /// <returns>The coerced/validated value.</returns>
+        private static Color CoerceColor(IAvaloniaObject instance, Color value)
+        {
+            if (instance is ColorView colorView)
+            {
+                return colorView.OnCoerceColor(value);
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Coerces/validates the <see cref="HsvColor"/> property value.
+        /// </summary>
+        /// <param name="instance">The <see cref="ColorView"/> instance.</param>
+        /// <param name="value">The value to coerce.</param>
+        /// <returns>The coerced/validated value.</returns>
+        private static HsvColor CoerceHsvColor(IAvaloniaObject instance, HsvColor value)
+        {
+            if (instance is ColorView colorView)
+            {
+                return colorView.OnCoerceHsvColor(value);
+            }
+
+            return value;
         }
 
         /// <summary>

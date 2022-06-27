@@ -15,7 +15,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ColorView, Color>(
                 nameof(Color),
                 Colors.White,
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay,
+                coerce: CoerceColor) ;
 
         /// <summary>
         /// Defines the <see cref="ColorModel"/> property.
@@ -48,7 +49,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ColorView, HsvColor>(
                 nameof(HsvColor),
                 Colors.White.ToHsv(),
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay,
+                coerce: CoerceHsvColor);
 
         /// <summary>
         /// Defines the <see cref="IsAlphaEnabled"/> property.
@@ -267,7 +269,8 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether the alpha component is enabled.
-        /// When disabled (set to false) the alpha component will be fixed to maximum.
+        /// When disabled (set to false) the alpha component will be fixed to maximum and
+        /// editing controls hidden.
         /// </summary>
         public bool IsAlphaEnabled
         {
@@ -277,7 +280,8 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether the alpha component editing controls
-        /// (both Slider and TextBox) are visible.
+        /// (Slider(s) and TextBox) are visible. When hidden, the existing alpha component
+        /// value is maintained.
         /// </summary>
         /// <remarks>
         /// Note that <see cref="IsComponentTextInputVisible"/> also controls the alpha
@@ -353,7 +357,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <remarks>
         /// All color components are controlled by this property but alpha can also be
-        /// controlled with <see cref="IsAlphaVisible"/>.
+        /// controlled with <see cref="IsAlphaEnabled"/> and <see cref="IsAlphaVisible"/>.
         /// </remarks>
         public bool IsComponentSliderVisible
         {
@@ -366,7 +370,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <remarks>
         /// All color components are controlled by this property but alpha can also be
-        /// controlled with <see cref="IsAlphaVisible"/>.
+        /// controlled with <see cref="IsAlphaEnabled"/> and <see cref="IsAlphaVisible"/>.
         /// </remarks>
         public bool IsComponentTextInputVisible
         {
