@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Interactions;
 using Xunit;
 using Xunit.Sdk;
 
@@ -87,8 +88,9 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal("Fullscreen", windowState.GetComboBoxValue());
 
                 current = GetWindowInfo();
-                Assert.True(current.ClientSize.Width >= current.ScreenRect.Width);
-                Assert.True(current.ClientSize.Height >= current.ScreenRect.Height);
+                var clientSize = PixelSize.FromSize(current.ClientSize, current.Scaling);
+                Assert.True(clientSize.Width >= current.ScreenRect.Width);
+                Assert.True(clientSize.Height >= current.ScreenRect.Height);
 
                 windowState.Click();
                 _session.FindElementByName("Normal").SendClick();
