@@ -350,6 +350,39 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void MirrorTransform_For_Control_With_RenderTransform_Should_Be_Correct()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 400,
+                    Height = 200,
+                    Child = border = new Border
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Background = Brushes.Red,
+                        Width = 100,
+                        RenderTransform = new ScaleTransform(0.5, 1),
+                        FlowDirection = FlowDirection.RightToLeft
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var expectedTransform = new Matrix(-1, 0, 0, 1, 100, 0) * Matrix.CreateScale(0.5, 1) * Matrix.CreateTranslation(25, 0);
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(expectedTransform, borderNode.Transform);
+            }
+        }
+
+        [Fact]
         public void Should_Update_Border_Background_Node()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -805,6 +838,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 Canvas canvas;
                 var tree = new TestRoot
                 {
+                    ClientSize = new Size(100, 100),
                     Child = decorator = new Decorator
                     {
                         Margin = new Thickness(0, 10, 0, 0),
