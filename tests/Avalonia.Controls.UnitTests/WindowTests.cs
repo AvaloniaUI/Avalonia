@@ -516,6 +516,8 @@ namespace Avalonia.Controls.UnitTests
 
             var screens = new Mock<IScreenImpl>();
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
@@ -714,6 +716,27 @@ namespace Avalonia.Controls.UnitTests
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
+                }
+            }
+
+            [Fact]
+            public void MaxWidth_And_MaxHeight_Should_Be_Respected_With_SizeToContent_WidthAndHeight()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new ChildControl();
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        MaxWidth = 300,
+                        MaxHeight = 700,
+                        Content = child,
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(new[] { new Size(300, 700) }, child.MeasureSizes);
                 }
             }
 

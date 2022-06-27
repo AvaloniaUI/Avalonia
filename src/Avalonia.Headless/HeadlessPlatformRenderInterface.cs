@@ -7,7 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Headless
 {
@@ -26,11 +26,6 @@ namespace Avalonia.Headless
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
-
-        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment, TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new HeadlessFormattedTextStub(text, constraint);
-        }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -117,6 +112,11 @@ namespace Avalonia.Headless
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             return new HeadlessGlyphRunStub();
+        }
+
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -354,11 +354,6 @@ namespace Avalonia.Headless
 
             }
 
-            public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-            {
-
-            }
-
             public IDrawingContextLayerImpl CreateLayer(Size size)
             {
                 return new HeadlessBitmapStub(size, new Vector(96, 96));
@@ -473,32 +468,6 @@ namespace Avalonia.Headless
             {
                 return new HeadlessDrawingContextStub();
             }
-        }
-
-        class HeadlessFormattedTextStub : IFormattedTextImpl
-        {
-            public HeadlessFormattedTextStub(string text, Size constraint)
-            {
-                Text = text;
-                Constraint = constraint;
-                Bounds = new Rect(Constraint.Constrain(new Size(50, 50)));
-            }
-
-            public Size Constraint { get; }
-            public Rect Bounds { get; }
-            public string Text { get; }
-
-
-            public IEnumerable<FormattedTextLine> GetLines()
-            {
-                return new[] { new FormattedTextLine(Text.Length, 10) };
-            }
-
-            public TextHitTestResult HitTestPoint(Point point) => new TextHitTestResult();
-
-            public Rect HitTestTextPosition(int index) => new Rect();
-
-            public IEnumerable<Rect> HitTestTextRange(int index, int length) => new Rect[length];
         }
     }
 }

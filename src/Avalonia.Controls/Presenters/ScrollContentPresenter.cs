@@ -7,8 +7,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
@@ -288,8 +286,8 @@ namespace Avalonia.Controls.Presenters
         private Size ArrangeWithAnchoring(Size finalSize)
         {
             var size = new Size(
-                CanHorizontallyScroll ? Math.Max(Child.DesiredSize.Width, finalSize.Width) : finalSize.Width,
-                CanVerticallyScroll ? Math.Max(Child.DesiredSize.Height, finalSize.Height) : finalSize.Height);
+                CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Width, finalSize.Width) : finalSize.Width,
+                CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Height, finalSize.Height) : finalSize.Height);
 
             Vector TrackAnchor()
             {
@@ -297,7 +295,7 @@ namespace Avalonia.Controls.Presenters
                 // arrange then that change wasn't just due to scrolling (as scrolling doesn't adjust
                 // relative positions within Child).
                 if (_anchorElement != null &&
-                    TranslateBounds(_anchorElement, Child, out var updatedBounds) &&
+                    TranslateBounds(_anchorElement, Child!, out var updatedBounds) &&
                     updatedBounds.Position != _anchorElementBounds.Position)
                 {
                     var offset = updatedBounds.Position - _anchorElementBounds.Position;
@@ -357,13 +355,13 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
-            Extent = Child.Bounds.Size.Inflate(Child.Margin);
+            Extent = Child!.Bounds.Size.Inflate(Child.Margin);
             _isAnchorElementDirty = true;
 
             return finalSize;
         }
 
-        private void OnScrollGesture(object sender, ScrollGestureEventArgs e)
+        private void OnScrollGesture(object? sender, ScrollGestureEventArgs e)
         {
             if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
             {
@@ -391,7 +389,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.Y / logicalScrollItemSize.Y;
                         delta = delta.WithY(delta.Y - logicalUnits * logicalScrollItemSize.Y);
-                        dy = logicalUnits * scrollable!.ScrollSize.Height;
+                        dy = logicalUnits;
                     }
                     else
                         dy = delta.Y;
@@ -409,7 +407,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.X / logicalScrollItemSize.X;
                         delta = delta.WithX(delta.X - logicalUnits * logicalScrollItemSize.X);
-                        dx = logicalUnits * scrollable!.ScrollSize.Width;
+                        dx = logicalUnits;
                     }
                     else
                         dx = delta.X;
@@ -433,7 +431,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void OnScrollGestureEnded(object sender, ScrollGestureEndedEventArgs e)
+        private void OnScrollGestureEnded(object? sender, ScrollGestureEndedEventArgs e)
             => _activeLogicalGestureScrolls?.Remove(e.Id);
 
         /// <inheritdoc/>
@@ -471,7 +469,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == OffsetProperty && !_arranging)
             {
@@ -481,9 +479,10 @@ namespace Avalonia.Controls.Presenters
             base.OnPropertyChanged(change);
         }
 
-        private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
+        private void BringIntoViewRequested(object? sender, RequestBringIntoViewEventArgs e)
         {
-            e.Handled = BringDescendantIntoView(e.TargetObject, e.TargetRect);
+            if (e.TargetObject is not null)
+                e.Handled = BringDescendantIntoView(e.TargetObject, e.TargetRect);
         }
 
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
@@ -522,9 +521,9 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void ScrollInvalidated(object sender, EventArgs e)
+        private void ScrollInvalidated(object? sender, EventArgs e)
         {
-            UpdateFromScrollable((ILogicalScrollable)sender);
+            UpdateFromScrollable((ILogicalScrollable)sender!);
         }
 
         private void UpdateFromScrollable(ILogicalScrollable scrollable)
@@ -581,7 +580,7 @@ namespace Avalonia.Controls.Presenters
                 // We have a candidate, calculate its bounds relative to Child. Because these
                 // bounds aren't relative to the ScrollContentPresenter itself, if they change
                 // then we know it wasn't just due to scrolling.
-                var unscrolledBounds = TranslateBounds(bestCandidate, Child);
+                var unscrolledBounds = TranslateBounds(bestCandidate, Child!);
                 _anchorElement = bestCandidate;
                 _anchorElementBounds = unscrolledBounds;
             }
@@ -589,7 +588,7 @@ namespace Avalonia.Controls.Presenters
 
         private bool GetViewportBounds(IControl element, out Rect bounds)
         {
-            if (TranslateBounds(element, Child, out var childBounds))
+            if (TranslateBounds(element, Child!, out var childBounds))
             {
                 // We want the bounds relative to the new Offset, regardless of whether the child
                 // control has actually been arranged to this offset yet, so translate first to the

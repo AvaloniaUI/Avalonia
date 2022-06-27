@@ -37,6 +37,24 @@ namespace Avalonia.Win32.Input
             IsComposing = false;
         }
 
+        public void ClearLanguageAndWindow()
+        {
+            if (HWND != IntPtr.Zero && _defaultImc != IntPtr.Zero)
+            {
+                ImmReleaseContext(HWND, _defaultImc);
+            }
+
+            _defaultImc = IntPtr.Zero;
+            HWND = IntPtr.Zero;
+            _parent = null;
+            _active = false;
+            _langId = 0;
+            _showCompositionWindow = false;
+            _showCandidateList = false;
+
+            IsComposing = false;
+        }
+
         //Dependant on CurrentThread. When Avalonia will support Multiple Dispatchers -
         //every Dispatcher should have their own InputMethod.
         public static Imm32InputMethod Current { get; } = new Imm32InputMethod();
@@ -74,12 +92,12 @@ namespace Avalonia.Win32.Input
             }
         }
 
-        public void SetActive(bool active)
+        public void SetClient(ITextInputMethodClient client)
         {
-            _active = active;
+            _active = client is { };
             Dispatcher.UIThread.Post(() =>
             {
-                if (active)
+                if (_active)
                 {
                     if (DefaultImc != IntPtr.Zero)
                     {
@@ -216,7 +234,7 @@ namespace Avalonia.Win32.Input
             ImmSetCompositionFont(himc, ref logFont);
         }
         
-        public void SetOptions(TextInputOptionsQueryEventArgs options)
+        public void SetOptions(TextInputOptions options)
         {
             // we're skipping this. not usable on windows
         }

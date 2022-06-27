@@ -4,8 +4,6 @@ using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -71,15 +69,18 @@ namespace Avalonia.Controls.Primitives
         {
             foreach (var child in Children)
             {
-                var info = child.GetValue(s_adornedElementInfoProperty);
+                if (child is AvaloniaObject ao)
+                {
+                    var info = ao.GetValue(s_adornedElementInfoProperty);
 
-                if (info != null && info.Bounds.HasValue)
-                {
-                    child.Measure(info.Bounds.Value.Bounds.Size);
-                }
-                else
-                {
-                    child.Measure(availableSize);
+                    if (info != null && info.Bounds.HasValue)
+                    {
+                        child.Measure(info.Bounds.Value.Bounds.Size);
+                    }
+                    else
+                    {
+                        child.Measure(availableSize);
+                    }
                 }
             }
 
@@ -90,19 +91,22 @@ namespace Avalonia.Controls.Primitives
         {
             foreach (var child in Children)
             {
-                var info = child.GetValue(s_adornedElementInfoProperty);
-                var isClipEnabled = child.GetValue(IsClipEnabledProperty);
+                if (child is AvaloniaObject ao)
+                {
+                    var info = ao.GetValue(s_adornedElementInfoProperty);
+                    var isClipEnabled = ao.GetValue(IsClipEnabledProperty);
 
-                if (info != null && info.Bounds.HasValue)
-                {
-                    child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
-                    child.RenderTransformOrigin = new RelativePoint(new Point(0,0), RelativeUnit.Absolute);
-                    UpdateClip(child, info.Bounds.Value, isClipEnabled);
-                    child.Arrange(info.Bounds.Value.Bounds);
-                }
-                else
-                {
-                    child.Arrange(new Rect(finalSize));
+                    if (info != null && info.Bounds.HasValue)
+                    {
+                        child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
+                        child.RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Absolute);
+                        UpdateClip(child, info.Bounds.Value, isClipEnabled);
+                        child.Arrange(info.Bounds.Value.Bounds);
+                    }
+                    else
+                    {
+                        ArrangeChild((Control) child, finalSize);
+                    }
                 }
             }
 
@@ -142,12 +146,12 @@ namespace Avalonia.Controls.Primitives
             clip.Rect = clipBounds;
         }
 
-        private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (Visual i in e.NewItems)
+                    foreach (Visual i in e.NewItems!)
                     {
                         UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
                     }

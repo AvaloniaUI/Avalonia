@@ -2,6 +2,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
@@ -10,6 +11,7 @@ namespace ControlCatalog.Pages
         public ComboBoxPage()
         {
             this.InitializeComponent();
+            DataContext = new ComboBoxPageViewModel();
         }
 
         private void InitializeComponent()

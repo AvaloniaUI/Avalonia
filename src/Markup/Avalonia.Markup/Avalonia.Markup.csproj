@@ -11,11 +11,14 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\System.Memory.props" />
   <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Markup.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
 </Project>

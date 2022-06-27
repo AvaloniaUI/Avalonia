@@ -6,7 +6,7 @@ using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop
 {
-    public class DBusHelper
+    public static class DBusHelper
     {
         /// <summary>
         /// This class uses synchronous execution at DBus connection establishment stage
@@ -14,14 +14,14 @@ namespace Avalonia.FreeDesktop
         /// </summary>
         private class DBusSyncContext : SynchronizationContext
         {
-            private SynchronizationContext _ctx;
-            private object _lock = new object();
+            private readonly object _lock = new();
+            private SynchronizationContext? _ctx;
 
             public override void Post(SendOrPostCallback d, object state)
             {
                 lock (_lock)
                 {
-                    if (_ctx != null)
+                    if (_ctx is not null)
                         _ctx?.Post(d, state);
                     else
                         lock (_lock)
@@ -33,10 +33,9 @@ namespace Avalonia.FreeDesktop
             {
                 lock (_lock)
                 {
-                    if (_ctx != null)
+                    if (_ctx is not null)
                         _ctx?.Send(d, state);
                     else
-
                         d(state);
                 }
             }
@@ -47,15 +46,14 @@ namespace Avalonia.FreeDesktop
                     _ctx = new AvaloniaSynchronizationContext();
             }
         }
-        public static Connection Connection { get; private set; }
 
-        public static Connection TryInitialize(string dbusAddress = null)
+        public static Connection? Connection { get; private set; }
+
+        public static Connection? TryInitialize(string? dbusAddress = null)
+            => Connection ?? TryCreateNewConnection(dbusAddress);
+
+        public static Connection? TryCreateNewConnection(string? dbusAddress = null)
         {
-            return Connection ?? TryCreateNewConnection(dbusAddress);
-        }
-        
-        public static Connection TryCreateNewConnection(string dbusAddress = null)
-        { 
             var oldContext = SynchronizationContext.Current;
             try
             {

@@ -335,14 +335,14 @@ public:
             return S_OK;
         }
     }
-    
+        
     virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            ::SetAppMenu(s_appTitle, appMenu);
+            ::SetAppMenu(appMenu);
             return S_OK;
         }
     }
@@ -400,6 +400,15 @@ NSPoint ToNSPoint (AvnPoint p)
     return result;
 }
 
+NSRect ToNSRect (AvnRect r)
+{
+    return NSRect
+    {
+        NSPoint { r.X, r.Y },
+        NSSize { r.Width, r.Height }
+    };
+}
+
 AvnPoint ToAvnPoint (NSPoint p)
 {
     AvnPoint result;
@@ -418,7 +427,3 @@ AvnPoint ConvertPointY (AvnPoint p)
     return p;
 }
 
-CGFloat PrimaryDisplayHeight()
-{
-  return NSMaxY([[[NSScreen screens] firstObject] frame]);
-}

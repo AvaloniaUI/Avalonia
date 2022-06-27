@@ -192,13 +192,12 @@ dirs.sln
 
 
 ##################
-# XCode
+# Xcode
 ##################
 Index/
 Logs/
 ModuleCache.noindex/
 Build/Intermediates.noindex/
-info.plist
 build-intermediate
 obj-Direct2D1/
 obj-Skia/

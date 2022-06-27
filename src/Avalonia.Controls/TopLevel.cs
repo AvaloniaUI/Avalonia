@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -14,7 +15,6 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -26,6 +26,7 @@ namespace Avalonia.Controls
     /// It handles scheduling layout, styling and rendering as well as
     /// tracking the widget's <see cref="ClientSize"/>.
     /// </remarks>
+    [TemplatePart("PART_TransparencyFallback", typeof(Border))]
     public abstract class TopLevel : ContentControl,
         IInputRoot,
         ILayoutRoot,
@@ -33,8 +34,7 @@ namespace Avalonia.Controls
         ICloseable,
         IStyleHost,
         ILogicalRoot,
-        ITextInputMethodRoot,
-        IWeakEventSubscriber<ResourcesChangedEventArgs>
+        ITextInputMethodRoot
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -51,8 +51,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
         /// </summary>
-        public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
-            AvaloniaProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
+        public static readonly StyledProperty<IInputElement?> PointerOverElementProperty =
+            AvaloniaProperty.Register<TopLevel, IInputElement?>(nameof(IInputRoot.PointerOverElement));
 
         /// <summary>
         /// Defines the <see cref="TransparencyLevelHint"/> property.
@@ -80,16 +80,19 @@ namespace Avalonia.Controls
                 (s, h) => s.ResourcesChanged -= h
             );
 
-        private readonly IInputManager _inputManager;
-        private readonly IAccessKeyHandler _accessKeyHandler;
-        private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
-        private readonly IPlatformRenderInterface _renderInterface;
-        private readonly IGlobalStyles _globalStyles;
+        private readonly IInputManager? _inputManager;
+        private readonly IAccessKeyHandler? _accessKeyHandler;
+        private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
+        private readonly IPlatformRenderInterface? _renderInterface;
+        private readonly IGlobalStyles? _globalStyles;
+        private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
+        private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
-        private ILayoutManager _layoutManager;
-        private Border _transparencyFallbackBorder;
+        private ILayoutManager? _layoutManager;
+        private Border? _transparencyFallbackBorder;
+        private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -104,7 +107,7 @@ namespace Avalonia.Controls
                 {
                     if (tl.PlatformImpl != null)
                     {
-                        tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue);
+                        tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue!);
                         tl.HandleTransparencyLevelChanged(tl.PlatformImpl.TransparencyLevel);
                     }
                 });
@@ -126,7 +129,7 @@ namespace Avalonia.Controls
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
-        public TopLevel(ITopLevelImpl impl, IAvaloniaDependencyResolver dependencyResolver)
+        public TopLevel(ITopLevelImpl impl, IAvaloniaDependencyResolver? dependencyResolver)
         {
             if (impl == null)
             {
@@ -134,8 +137,6 @@ namespace Avalonia.Controls
                     "Could not create window implementation: maybe no windowing subsystem was initialized?");
             }
 
-            impl = ValidatingToplevelImpl.Wrap(impl);
-            
             PlatformImpl = impl;
 
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
@@ -154,6 +155,11 @@ namespace Avalonia.Controls
             if (Renderer != null)
             {
                 Renderer.SceneInvalidated += SceneInvalidated;
+            }
+            else
+            {
+                // Prevent nullable error.
+                Renderer = null!;
             }
 
             impl.SetInputRoot(this);
@@ -186,21 +192,30 @@ namespace Avalonia.Controls
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
-                ResourcesChangedWeakEvent.Subscribe(applicationResources, this);
+                _resourcesChangesSubscriber = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>(
+                    this, static (target, _, _, e) =>
+                    {
+                        ((ILogical)target).NotifyResourcesChanged(e);
+                    });
+
+                ResourcesChangedWeakEvent.Subscribe(applicationResources, _resourcesChangesSubscriber);
             }
 
             impl.LostFocus += PlatformImpl_LostFocus;
+
+            _pointerOverPreProcessor = new PointerOverPreProcessor(this);
+            _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
         }
 
         /// <summary>
         /// Fired when the window is opened.
         /// </summary>
-        public event EventHandler Opened;
+        public event EventHandler? Opened;
 
         /// <summary>
         /// Fired when the window is closed.
         /// </summary>
-        public event EventHandler Closed;
+        public event EventHandler? Closed;
 
         /// <summary>
         /// Gets or sets the client size of the window.
@@ -261,8 +276,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        [CanBeNull]
-        public ITopLevelImpl PlatformImpl { get; private set; }
+        public ITopLevelImpl? PlatformImpl { get; private set; }
         
         /// <summary>
         /// Gets the renderer for the window.
@@ -272,29 +286,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
-        IAccessKeyHandler IInputRoot.AccessKeyHandler => _accessKeyHandler;
+        IAccessKeyHandler IInputRoot.AccessKeyHandler => _accessKeyHandler!;
 
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
         /// </summary>
-        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler;
+        IKeyboardNavigationHandler IInputRoot.KeyboardNavigationHandler => _keyboardNavigationHandler!;
 
-        /// <summary>
-        /// Gets or sets the input element that the pointer is currently over.
-        /// </summary>
-        IInputElement IInputRoot.PointerOverElement
+        /// <inheritdoc/>
+        IInputElement? IInputRoot.PointerOverElement
         {
             get { return GetValue(PointerOverElementProperty); }
             set { SetValue(PointerOverElementProperty, value); }
         }
 
         /// <inheritdoc/>
-        IMouseDevice IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
-
-        void IWeakEventSubscriber<ResourcesChangedEventArgs>.OnEvent(object sender, WeakEvent ev, ResourcesChangedEventArgs e)
-        {
-            ((ILogical)this).NotifyResourcesChanged(e);
-        }
+        IMouseDevice? IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
 
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
@@ -311,7 +318,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         double IRenderRoot.RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
-        IStyleHost IStyleHost.StylingParent => _globalStyles;
+        IStyleHost IStyleHost.StylingParent => _globalStyles!;
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
@@ -320,7 +327,7 @@ namespace Avalonia.Controls
         {
             if(PlatformImpl == null)
                 throw new InvalidOperationException("Can't create render target, PlatformImpl is null (might be already disposed)");
-            return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
+            return _renderInterface!.CreateRenderTarget(PlatformImpl.Surfaces);
         }
 
         /// <inheritdoc/>
@@ -346,6 +353,12 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
+        public override void InvalidateMirrorTransform()
+        {
+        }
+        
+        protected override bool BypassFlowDirectionPolicies => true;
+        
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
@@ -367,11 +380,13 @@ namespace Avalonia.Controls
             }
 
             Renderer?.Dispose();
-            Renderer = null;
-            
-            (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
+            Renderer = null!;
+
+            _pointerOverPreProcessor?.OnCompleted();
+            _pointerOverPreProcessorSubscription?.Dispose();
+
             PlatformImpl = null;
-            
+
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
@@ -394,7 +409,7 @@ namespace Avalonia.Controls
         protected virtual void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
             ClientSize = clientSize;
-            FrameSize = PlatformImpl.FrameSize;
+            FrameSize = PlatformImpl!.FrameSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.ExecuteLayoutPass();
@@ -457,6 +472,9 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
+            if (PlatformImpl is null)
+                return;
+
             _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
 
             HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
@@ -481,7 +499,7 @@ namespace Avalonia.Controls
         /// <typeparam name="T">The service type.</typeparam>
         /// <param name="resolver">The resolver.</param>
         /// <returns>The service.</returns>
-        private T TryGetService<T>(IAvaloniaDependencyResolver resolver) where T : class
+        private T? TryGetService<T>(IAvaloniaDependencyResolver resolver) where T : class
         {
             var result = resolver.GetService<T>();
 
@@ -502,27 +520,32 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
-            _inputManager.ProcessInput(e);
+            if (e is RawPointerEventArgs pointerArgs)
+            {
+                pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
+            }
+
+            _inputManager?.ProcessInput(e);
         }
 
-        private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
+        private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
         {
-            (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
+            _pointerOverPreProcessor?.SceneInvalidated(e.DirtyRect);
         }
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (IVisual)FocusManager.Instance.Current;
+            var focused = (IVisual?)FocusManager.Instance?.Current;
             if (focused == null)
                 return;
             while (focused.VisualParent != null)
                 focused = focused.VisualParent;
 
             if (focused == this)
-                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+                KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
 
-        ITextInputMethodImpl ITextInputMethodRoot.InputMethod =>
+        ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
             (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
     }
 }

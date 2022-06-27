@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -13,7 +16,9 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Data;
+using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -1610,6 +1615,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.MoveSelection(NavigationDirection.Next, true);
         }
 
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_First_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem { Focusable = false },
+                    new ListBoxItem(),
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.First, true));
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_Last_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.Last, true));
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
         [Fact]
         public void MoveSelection_Does_Select_Disabled_Controls()
         {
@@ -1893,6 +1942,54 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(1, tabStripRaised);
             Assert.Equal(1, carouselRaised);
+        }
+
+        [Fact]
+        public void Setting_IsTextSearchEnabled_Enables_Or_Disables_Text_Search()
+        {
+            var pti = Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true);
+
+            Mock.Get(pti)
+                .Setup(v => v.StartTimer(It.IsAny<DispatcherPriority>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()))
+                .Returns(Disposable.Empty);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(threadingInterface: pti)))
+            {
+                var items = new[]
+                {
+                    new Item { [TextSearch.TextProperty] = "Foo" }, 
+                    new Item { [TextSearch.TextProperty] = "Bar" }
+                };
+
+                var target = new SelectingItemsControl
+                {
+                    Items = items, 
+                    Template = Template(), 
+                    IsTextSearchEnabled = false
+                };
+
+                Prepare(target);
+
+                target.RaiseEvent(new TextInputEventArgs
+                {
+                    RoutedEvent = InputElement.TextInputEvent,
+                    Device = KeyboardDevice.Instance, 
+                    Text = "Foo"
+                });
+
+                Assert.Null(target.SelectedItem);
+
+                target.IsTextSearchEnabled = true;
+
+                target.RaiseEvent(new TextInputEventArgs
+                {
+                    RoutedEvent = InputElement.TextInputEvent, 
+                    Device = KeyboardDevice.Instance, 
+                    Text = "Foo"
+                });
+
+                Assert.Equal(items[0], target.SelectedItem);
+            }
         }
 
         private static void Prepare(SelectingItemsControl target)

@@ -13,19 +13,19 @@ using SkiaSharp;
 
 namespace Avalonia.Web.Blazor
 {
-    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod
+    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
     {
         private Size _clientSize;
         private BlazorSkiaSurface? _currentSurface;
         private IInputRoot? _inputRoot;
         private readonly Stopwatch _sw = Stopwatch.StartNew();
-        private readonly ITextInputMethodImpl _textInputMethod;
+        private readonly AvaloniaView _avaloniaView;
         private readonly TouchDevice _touchDevice;
         private string _currentCursor = CssCursor.Default;
 
-        public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
+        public RazorViewTopLevelImpl(AvaloniaView avaloniaView)
         {
-            _textInputMethod = textInputMethod;
+            _avaloniaView = avaloniaView;
             TransparencyLevel = WindowTransparencyLevel.None;
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
@@ -91,9 +91,16 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        public void RawKeyboardEvent(RawKeyEventType type, string key, RawInputModifiers modifiers)
+        public void RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
         {
-            if (Keycodes.KeyCodes.TryGetValue(key, out var avkey))
+            if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
+            {
+                if (_inputRoot is { })
+                {
+                    Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
+                }
+            }
+            else if (Keycodes.KeyCodes.TryGetValue(key, out avkey))
             {
                 if (_inputRoot is { })
                 {
@@ -135,7 +142,7 @@ namespace Avalonia.Web.Blazor
 
         public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
             var val = (cursor as CssCursor)?.Value ?? CssCursor.Default;
             if (_currentCursor != val)
@@ -175,6 +182,8 @@ namespace Avalonia.Web.Blazor
         public WindowTransparencyLevel TransparencyLevel { get; }
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
-        public ITextInputMethodImpl TextInputMethod => _textInputMethod;
+        public ITextInputMethodImpl TextInputMethod => _avaloniaView;
+
+        public INativeControlHostImpl? NativeControlHost => _avaloniaView.GetNativeControlHostImpl();
     }
 }

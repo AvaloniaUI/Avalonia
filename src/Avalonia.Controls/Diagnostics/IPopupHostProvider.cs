@@ -1,13 +1,13 @@
 ﻿using System;
 using Avalonia.Controls.Primitives;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Diagnostics
 {
     /// <summary>
     /// Diagnostics interface to retrieve an associated <see cref="IPopupHost"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface IPopupHostProvider
     {
         /// <summary>

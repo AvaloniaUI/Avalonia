@@ -1,15 +1,16 @@
 using System;
+using Avalonia.Metadata;
 using Avalonia.Platform;
-
-#nullable enable
 
 namespace Avalonia.Controls.Platform
 {
+    [Unstable]
     public interface INativeMenuExporter
     {
         void SetNativeMenu(NativeMenu? menu);
     }
 
+    [Unstable]
     public interface ITopLevelNativeMenuExporter : INativeMenuExporter
     {
         bool IsNativeMenuExported { get; }
@@ -17,13 +18,15 @@ namespace Avalonia.Controls.Platform
         event EventHandler OnIsNativeMenuExportedChanged;
     }
 
+    [Unstable]
     public interface INativeMenuExporterProvider
     {
         INativeMenuExporter? NativeMenuExporter { get; }
     }
-    
+
+    [Unstable]
     public interface ITopLevelImplWithNativeMenuExporter : ITopLevelImpl
     {
-        ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+        ITopLevelNativeMenuExporter? NativeMenuExporter { get; }
     }
 }

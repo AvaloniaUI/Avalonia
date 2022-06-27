@@ -54,7 +54,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
+        public override void ItemsChanged(IEnumerable? items, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsChanged(items, e);
             ItemContainerSync.ItemsChanged(Owner, items, e);
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (i.ContainerControl != null)
                 {
-                    if (i.Index < panel.Children.Count)
+                    if (i.Index < panel!.Children.Count)
                     {
                         // TODO: This will insert at the wrong place when there are null items.
                         panel.Children.Insert(i.Index, i.ContainerControl);
@@ -101,19 +101,6 @@ namespace Avalonia.Controls.Presenters
             }
 
             return result;
-        }
-
-        private void RemoveContainers(IEnumerable<ItemContainerInfo> items)
-        {
-            var panel = Owner.Panel;
-
-            foreach (var i in items)
-            {
-                if (i.ContainerControl != null)
-                {
-                    panel.Children.Remove(i.ContainerControl);
-                }
-            }
         }
     }
 }

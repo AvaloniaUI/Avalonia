@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -36,7 +37,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
     {
         if (!_subscriptions.TryGetValue(target, out var subscription))
             _subscriptions.Add(target, subscription = new Subscription(this, target));
-        subscription.Add(new WeakReference<IWeakEventSubscriber<TEventArgs>>(subscriber));
+        subscription.Add(subscriber);
     }
 
     public void Unsubscribe(TSender target, IWeakEventSubscriber<TEventArgs> subscriber)
@@ -51,11 +52,59 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
         private readonly TSender _target;
         private readonly Action _compact;
 
-        private WeakReference<IWeakEventSubscriber<TEventArgs>>?[] _data =
-            new WeakReference<IWeakEventSubscriber<TEventArgs>>[16];
-        private int _count;
+        struct Entry
+        {
+            WeakReference<IWeakEventSubscriber<TEventArgs>>? _reference;
+            int _hashCode;
+
+            public Entry(IWeakEventSubscriber<TEventArgs> r)
+            {
+                if (r == null)
+                {
+                    _reference = null;
+                    _hashCode = 0;
+                    return;
+                }
+
+                _hashCode = r.GetHashCode();
+                _reference = new WeakReference<IWeakEventSubscriber<TEventArgs>>(r);
+            }
+
+            public bool IsEmpty
+            {
+                get
+                {
+                    if (_reference == null)
+                        return true;
+                    if (_reference.TryGetTarget(out _))
+                        return false;
+                    _reference = null;
+                    return true;
+                }
+            }
+
+            public bool TryGetTarget([MaybeNullWhen(false)]out IWeakEventSubscriber<TEventArgs> target)
+            {
+                if (_reference == null)
+                {
+                    target = null!;
+                    return false;
+                }
+                return _reference.TryGetTarget(out target);
+            }
+
+            public bool Equals(IWeakEventSubscriber<TEventArgs> r)
+            {
+                if (_reference == null || r.GetHashCode() != _hashCode)
+                    return false;
+                return _reference.TryGetTarget(out var target) && target == r;
+            }
+        }
+
         private readonly Action _unsubscribe;
+        private readonly WeakHashList<IWeakEventSubscriber<TEventArgs>> _list = new();
         private bool _compactScheduled;
+        private bool _destroyed;
 
         public Subscription(WeakEvent<TSender, TEventArgs> ev, TSender target)
         {
@@ -67,48 +116,27 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
 
         void Destroy()
         {
+            if(_destroyed)
+                return;
+            _destroyed = true;
             _unsubscribe();
             _ev._subscriptions.Remove(_target);
         }
 
-        public void Add(WeakReference<IWeakEventSubscriber<TEventArgs>> s)
-        {
-            if (_count == _data.Length)
-            {
-                //Extend capacity
-                var extendedData = new WeakReference<IWeakEventSubscriber<TEventArgs>>?[_data.Length * 2];
-                Array.Copy(_data, extendedData, _data.Length);
-                _data = extendedData;
-            }
-
-            _data[_count] = s;
-            _count++;
-        }
+        public void Add(IWeakEventSubscriber<TEventArgs> s) => _list.Add(s);
 
         public void Remove(IWeakEventSubscriber<TEventArgs> s)
         {
-            var removed = false;
-
-            for (int c = 0; c < _count; ++c)
-            {
-                var reference = _data[c];
-
-                if (reference != null && reference.TryGetTarget(out var instance) && instance == s)
-                {
-                    _data[c] = null;
-                    removed = true;
-                }
-            }
-
-            if (removed)
-            {
+            _list.Remove(s);
+            if(_list.IsEmpty)
+                Destroy();
+            else if(_list.NeedCompact && _compactScheduled)
                 ScheduleCompact();
-            }
         }
 
         void ScheduleCompact()
         {
-            if(_compactScheduled)
+            if(_compactScheduled || _destroyed)
                 return;
             _compactScheduled = true;
             Dispatcher.UIThread.Post(_compact, DispatcherPriority.Background);
@@ -116,43 +144,27 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
         
         void Compact()
         {
+            if(!_compactScheduled)
+                return;
             _compactScheduled = false;
-            int empty = -1;
-            for (var c = 0; c < _count; c++)
-            {
-                var r = _data[c];
-                //Mark current index as first empty
-                if (r == null && empty == -1)
-                    empty = c;
-                //If current element isn't null and we have an empty one
-                if (r != null && empty != -1)
-                {
-                    _data[c] = null;
-                    _data[empty] = r;
-                    empty++;
-                }
-            }
-
-            if (empty != -1)
-                _count = empty;
-            if (_count == 0)
+            _list.Compact();
+            if (_list.IsEmpty)
                 Destroy();
         }
 
         void OnEvent(object? sender, TEventArgs eventArgs)
         {
-            var needCompact = false;
-            for (var c = 0; c < _count; c++)
+            var alive = _list.GetAlive();
+            if(alive == null)
+                Destroy();
+            else
             {
-                var r = _data[c];
-                if (r?.TryGetTarget(out var sub) == true)
-                    sub!.OnEvent(_target, _ev, eventArgs);
-                else
-                    needCompact = true;
+                foreach(var item in alive.Span)
+                    item.OnEvent(_target, _ev, eventArgs);
+                WeakHashList<IWeakEventSubscriber<TEventArgs>>.ReturnToSharedPool(alive);
+                if(_list.NeedCompact && !_compactScheduled)
+                    ScheduleCompact();
             }
-
-            if (needCompact)
-                ScheduleCompact();
         }
     }
 

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -7,7 +8,7 @@ namespace Avalonia.Dialogs
 {
     public static class ManagedFileDialogExtensions
     {
-        private class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
+        internal class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
         {
             async Task<string[]> Show(SystemDialog d, Window parent, ManagedFileDialogOptions options = null)
             {
@@ -29,6 +30,75 @@ namespace Avalonia.Dialogs
                 {
                     result = items;
                     dialog.Close();
+                };
+
+                model.OverwritePrompt += async (filename) =>
+                {
+                    Window overwritePromptDialog = new Window()
+                    {
+                        Title = "Confirm Save As",
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        Padding = new Thickness(10),
+                        MinWidth = 270
+                    };
+
+                    string name = Path.GetFileName(filename);
+
+                    var panel = new DockPanel()
+                    {
+                        HorizontalAlignment = Layout.HorizontalAlignment.Stretch
+                    };
+
+                    var label = new Label()
+                    {
+                        Content = $"{name} already exists.\nDo you want to replace it?"
+                    };
+
+                    panel.Children.Add(label);
+                    DockPanel.SetDock(label, Dock.Top);
+
+                    var buttonPanel = new StackPanel()
+                    {
+                        HorizontalAlignment = Layout.HorizontalAlignment.Right,
+                        Orientation = Layout.Orientation.Horizontal,
+                        Spacing = 10
+                    };
+
+                    var button = new Button()
+                    {
+                        Content = "Yes",
+                        HorizontalAlignment = Layout.HorizontalAlignment.Right
+                    };
+
+                    button.Click += (sender, args) =>
+                    {
+                        result = new string[1] { filename };
+                        overwritePromptDialog.Close();
+                        dialog.Close();
+                    };
+
+                    buttonPanel.Children.Add(button);
+
+                    button = new Button()
+                    {
+                        Content = "No",
+                        HorizontalAlignment = Layout.HorizontalAlignment.Right
+                    };
+
+                    button.Click += (sender, args) =>
+                    {
+                        overwritePromptDialog.Close();
+                    };
+
+                    buttonPanel.Children.Add(button);
+
+                    panel.Children.Add(buttonPanel);
+                    DockPanel.SetDock(buttonPanel, Dock.Bottom);
+
+                    overwritePromptDialog.Content = panel;
+
+                    await overwritePromptDialog.ShowDialog(dialog);
                 };
 
                 model.CancelRequested += dialog.Close;
@@ -71,7 +141,7 @@ namespace Avalonia.Dialogs
 
         public static Task<string[]> ShowManagedAsync(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions options = null) => ShowManagedAsync<Window>(dialog, parent, options);
-        
+
         public static Task<string[]> ShowManagedAsync<TWindow>(this OpenFileDialog dialog, Window parent,
             ManagedFileDialogOptions options = null) where TWindow : Window, new()
         {

@@ -1,5 +1,6 @@
 using System.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -12,6 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An <see cref="ItemsControl"/> in which individual items can be selected.
     /// </summary>
+    [TemplatePart("PART_ScrollViewer", typeof(IScrollable))]
     public class ListBox : SelectingItemsControl
     {
         /// <summary>
@@ -23,13 +25,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Scroll"/> property.
         /// </summary>
-        public static readonly DirectProperty<ListBox, IScrollable> ScrollProperty =
-            AvaloniaProperty.RegisterDirect<ListBox, IScrollable>(nameof(Scroll), o => o.Scroll);
+        public static readonly DirectProperty<ListBox, IScrollable?> ScrollProperty =
+            AvaloniaProperty.RegisterDirect<ListBox, IScrollable?>(nameof(Scroll), o => o.Scroll);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+        public static readonly new DirectProperty<SelectingItemsControl, IList?> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
@@ -50,7 +52,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
             ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
 
-        private IScrollable _scroll;
+        private IScrollable? _scroll;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -64,14 +66,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the scroll information for the <see cref="ListBox"/>.
         /// </summary>
-        public IScrollable Scroll
+        public IScrollable? Scroll
         {
             get { return _scroll; }
             private set { SetAndRaise(ScrollProperty, ref _scroll, value); }
         }
 
         /// <inheritdoc/>
-        public new IList SelectedItems
+        public new IList? SelectedItems
         {
             get => base.SelectedItems;
             set => base.SelectedItems = value;
