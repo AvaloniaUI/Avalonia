@@ -618,8 +618,7 @@
                                         ColorModel="{TemplateBinding ColorModel, Mode=OneWay}"
                                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                         HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center"
-                                        IsVisible="{TemplateBinding IsAlphaVisible}">
+                                        VerticalAlignment="Center">
                   <primitives:ColorSlider.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                       <Binding RelativeSource="{RelativeSource TemplatedParent}"
