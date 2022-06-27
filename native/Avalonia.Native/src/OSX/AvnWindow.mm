@@ -440,9 +440,6 @@
         {
             case NSEventTypeLeftMouseDown:
             {
-                if ([self isMiniaturized])
-                    break;
-                
                 AvnView* view = _parent->View;
                 NSPoint windowPoint = [event locationInWindow];
                 NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
