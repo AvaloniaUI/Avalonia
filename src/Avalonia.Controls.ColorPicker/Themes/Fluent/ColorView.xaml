@@ -229,23 +229,23 @@
                         </Grid>
                       </ControlTemplate>
                     </Setter>
-                  </Style>
 
-                  <Style Selector="ListBoxItem /template/ Rectangle#BorderRectangle">
-                    <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-                    <Setter Property="Opacity" Value="0" />
-                  </Style>
+                    <Style Selector="^ /template/ Rectangle#BorderRectangle">
+                      <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+                      <Setter Property="Opacity" Value="0" />
+                    </Style>
 
-                  <Style Selector="ListBoxItem:pointerover /template/ Rectangle#BorderRectangle">
-                    <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-                    <Setter Property="Opacity" Value="1" />
-                  </Style>
+                    <Style Selector="^:pointerover /template/ Rectangle#BorderRectangle">
+                      <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+                      <Setter Property="Opacity" Value="1" />
+                    </Style>
 
-                  <Style Selector="ListBoxItem:selected /template/ Rectangle#BorderRectangle">
-                    <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrush}, ConverterParameter={DynamicResource TextControlForeground}}" />
-                    <Setter Property="Opacity" Value="1" />
-                  </Style>
+                    <Style Selector="^:selected /template/ Rectangle#BorderRectangle">
+                      <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrush}, ConverterParameter={DynamicResource TextControlForeground}}" />
+                      <Setter Property="Opacity" Value="1" />
+                    </Style>
 
+                  </Style>
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
                   <DataTemplate>
@@ -316,40 +316,40 @@
                                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
                           </ControlTemplate>
                         </Setter>
-                      </Style>
 
-                      <Style Selector="RadioButton /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-                      </Style>
+                        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                          <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+                        </Style>
 
-                      <Style Selector="RadioButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
-                        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
-                      </Style>
+                        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
+                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
+                        </Style>
 
-                      <Style Selector="RadioButton:pressed  /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPressed}" />
-                        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPressed}" />
-                      </Style>
+                        <Style Selector="^:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPressed}" />
+                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPressed}" />
+                        </Style>
 
-                      <Style Selector="RadioButton:checked /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundChecked}" />
-                        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundChecked}" />
-                      </Style>
+                        <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
+                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundChecked}" />
+                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundChecked}" />
+                        </Style>
 
-                      <Style Selector="RadioButton:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOver}" />
-                        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPointerOver}" />
-                      </Style>
+                        <Style Selector="^:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOver}" />
+                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPointerOver}" />
+                        </Style>
 
-                      <Style Selector="RadioButton:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressed}" />
-                        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressed}" />
+                        <Style Selector="^:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressed}" />
+                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressed}" />
+                        </Style>
                       </Style>
 
                     </Grid.Styles>
