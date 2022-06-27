@@ -102,7 +102,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             using (var stream =
                 typeof(UnicodeEnumsGenerator).Assembly.GetManifestResourceStream(
-                    "Avalonia.Visuals.UnitTests.Media.TextFormatting.BreakPairTable.txt"))
+                    "Avalonia.Base.UnitTests.Media.TextFormatting.BreakPairTable.txt"))
             using (var reader = new StreamReader(stream))
             {
                 while (!reader.EndOfStream)
