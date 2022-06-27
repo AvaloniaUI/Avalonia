@@ -185,6 +185,32 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
+        [PlatformTheory(TestPlatforms.MacOS)]
+        [InlineData(ShowWindowMode.NonOwned)]
+        [InlineData(ShowWindowMode.Owned)]
+        public void Minimize_Button_Minimizes_Window(ShowWindowMode mode)
+        {
+            using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
+            {
+                var secondaryWindow = FindWindow(_session, "SecondaryWindow");
+                var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
+
+                miniaturizeButton.Click();
+                Thread.Sleep(1000);
+
+                var hittable = _session.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
+                    .Select(x => x.GetAttribute("hittable")).ToList();
+                Assert.Equal(new[] { "true", "false" }, hittable);
+
+                _session.FindElementByAccessibilityId("RestoreAll").Click();
+                Thread.Sleep(1000);
+
+                hittable = _session.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
+                    .Select(x => x.GetAttribute("hittable")).ToList();
+                Assert.Equal(new[] { "true", "true" }, hittable);
+            }
+        }
+
         private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
