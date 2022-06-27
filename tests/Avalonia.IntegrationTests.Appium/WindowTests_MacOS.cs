@@ -45,7 +45,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
 
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
             {
                 mainWindow.Click();
 
@@ -63,7 +63,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var mainWindow = FindWindow(_session, "MainWindow");
 
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
             {
                 new Actions(_session)
                     .MoveToElement(mainWindow, 100, 1)
@@ -96,7 +96,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             try
             {
-                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
+                using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
                 {
                     var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
                     var mainWindowIndex = GetWindowOrder(windows, "MainWindow");
@@ -119,7 +119,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
 
-            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
+            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
             {
                 mainWindow.Click();
 
@@ -137,7 +137,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
 
-            using (OpenWindow(new PixelSize(1400, 100), ShowWindowMode.NonOwned, WindowStartupLocation.CenterOwner))
+            using (OpenWindow(new PixelSize(1400, 100), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
                 mainWindow.Click();
 
