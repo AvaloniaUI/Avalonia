@@ -41,7 +41,7 @@ namespace Avalonia.UnitTests
             Child = child;
         }
 
-        public Size ClientSize { get; set; } = new Size(100, 100);
+        public Size ClientSize { get; set; } = new Size(1000, 1000);
 
         public Size MaxClientSize { get; set; } = Size.Infinity;
 
@@ -109,6 +109,11 @@ namespace Avalonia.UnitTests
                             Visit(styledChild);
             }
             Visit(this, true);
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return base.MeasureOverride(ClientSize);
         }
     }
 }
