@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia.Controls;
 using OpenQA.Selenium.Appium;
 using Xunit;
@@ -68,16 +69,24 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(original.Position, current.Position);
             Assert.Equal(original.FrameSize, current.FrameSize);
 
-            windowState.Click();
-            _session.FindElementByName("Fullscreen").SendClick();
-            Assert.Equal("Fullscreen", windowState.GetComboBoxValue());
+            // On macOS, only non-owned windows can go fullscreen.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || mode == ShowWindowMode.NonOwned)
+            {
+                windowState.Click();
+                _session.FindElementByName("Fullscreen").SendClick();
+                Assert.Equal("Fullscreen", windowState.GetComboBoxValue());
 
-            windowState.Click();
-            _session.FindElementByName("Normal").SendClick();
+                current = GetWindowInfo();
+                Assert.True(current.ClientSize.Width >= current.ScreenRect.Width);
+                Assert.True(current.ClientSize.Height >= current.ScreenRect.Height);
 
-            current = GetWindowInfo();
-            Assert.Equal(original.Position, current.Position);
-            Assert.Equal(original.FrameSize, current.FrameSize);
+                windowState.Click();
+                _session.FindElementByName("Normal").SendClick();
+
+                current = GetWindowInfo();
+                Assert.Equal(original.Position, current.Position);
+                Assert.Equal(original.FrameSize, current.FrameSize);
+            }
         }
 
         public static TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
@@ -149,13 +158,26 @@ namespace Avalonia.IntegrationTests.Appium
 
         private WindowInfo GetWindowInfo()
         {
-            return new(
-                Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text),
-                Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text),
-                PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text),
-                PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
-                double.Parse(_session.FindElementByAccessibilityId("Scaling").Text));
+            var retry = 0;
 
+            for (;;)
+            {
+                try
+                {
+                    return new(
+                        Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text),
+                        Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text),
+                        PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text),
+                        PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
+                        double.Parse(_session.FindElementByAccessibilityId("Scaling").Text));
+                }
+                catch (OpenQA.Selenium.NoSuchElementException e) when (retry++ < 3)
+                {
+                    // MacOS sometimes seems to need a bit of time to get itself back in order after switching out
+                    // of fullscreen.
+                    Thread.Sleep(1000);
+                }
+            }
         }
 
         public enum ShowWindowMode
