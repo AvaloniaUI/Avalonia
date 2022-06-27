@@ -113,7 +113,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly AttachedProperty<TextAlignment> TextAlignmentProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, TextAlignment>(nameof(TextAlignment), 
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, TextAlignment>(
+                nameof(TextAlignment), 
+                defaultValue: TextAlignment.Start,
                 inherits: true);
 
         /// <summary>
@@ -631,7 +633,11 @@ namespace Avalonia.Controls
                 return finalSize;
             }
 
-            _constraint = new Size(finalSize.Width, double.PositiveInfinity);
+            var scale = LayoutHelper.GetLayoutScale(this);
+
+            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+
+            _constraint = new Size(finalSize.Deflate(padding).Width, double.PositiveInfinity);
 
             _textLayout = null;
 
@@ -744,14 +750,14 @@ namespace Avalonia.Controls
             {
                 if (textSourceIndex > _text.Length)
                 {
-                    return null;
+                    return new TextEndOfParagraph();
                 }
 
                 var runText = _text.Skip(textSourceIndex);
 
                 if (runText.IsEmpty)
                 {
-                    return null;
+                    return new TextEndOfParagraph();
                 }
 
                 return new TextCharacters(runText, _defaultProperties);

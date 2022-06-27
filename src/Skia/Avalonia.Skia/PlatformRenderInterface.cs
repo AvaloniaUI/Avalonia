@@ -62,6 +62,49 @@ namespace Avalonia.Skia
             return new CombinedGeometryImpl(combineMode, g1, g2);
         }
 
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            if (glyphRun.GlyphTypeface.PlatformImpl is not GlyphTypefaceImpl glyphTypeface)
+            {
+                throw new InvalidOperationException("PlatformImpl can't be null.");
+            }
+
+            var fontRenderingEmSize = (float)glyphRun.FontRenderingEmSize;
+            var skFont = new SKFont(glyphTypeface.Typeface, fontRenderingEmSize)
+            {
+                Size = fontRenderingEmSize,
+                Edging = SKFontEdging.Antialias,
+                Hinting = SKFontHinting.None,
+                LinearMetrics = true
+            };
+
+            SKPath path = new SKPath();
+
+            var (currentX, currentY) = glyphRun.BaselineOrigin;
+
+            for (var i = 0; i < glyphRun.GlyphIndices.Count; i++)
+            {
+                var glyph = glyphRun.GlyphIndices[i];
+                var glyphPath = skFont.GetGlyphPath(glyph);
+
+                if (!glyphPath.IsEmpty)
+                {
+                    path.AddPath(glyphPath, (float)currentX, (float)currentY);
+                }
+
+                if (glyphRun.GlyphAdvances != null)
+                {
+                    currentX += glyphRun.GlyphAdvances[i];
+                }
+                else
+                {
+                    currentX += glyphPath.Bounds.Right;
+                }
+            }
+
+            return new StreamGeometryImpl(path);
+        }
+
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {

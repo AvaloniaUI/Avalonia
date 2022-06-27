@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Platform
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Platform
 {
     /// <summary>
     /// Represents a geometry with a transform applied.
@@ -7,6 +9,7 @@
     /// An <see cref="ITransformedGeometryImpl"/> transforms a geometry without transforming its
     /// stroke thickness.
     /// </remarks>
+    [Unstable]
     public interface ITransformedGeometryImpl : IGeometryImpl
     {
         /// <summary>

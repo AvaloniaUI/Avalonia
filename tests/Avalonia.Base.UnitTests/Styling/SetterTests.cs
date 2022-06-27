@@ -91,16 +91,13 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Setter_Should_Apply_Value_Without_Activator_With_Style_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
+            var control = new Control();
             var setter = new Setter(TextBlock.TagProperty, "foo");
 
-            setter.Instance(control.Object).Start(false);
+            setter.Instance(control).Start(false);
 
-            control.Verify(x => x.SetValue(
-                TextBlock.TagProperty,
-                "foo",
-                BindingPriority.Style));
+            Assert.Equal("foo", control.Tag);
+            Assert.Equal(BindingPriority.Style, control.GetDiagnostic(TextBlock.TagProperty).Priority);
         }
 
         [Fact]
@@ -153,13 +150,43 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Equal(BindingPriority.StyleTrigger, control.GetDiagnostic(TextBlock.TagProperty).Priority);
         }
 
-        private IBinding CreateMockBinding(AvaloniaProperty property)
+        [Fact]
+        public void Disposing_Setter_Should_Preserve_LocalValue()
         {
-            var subject = new Subject<object>();
-            var descriptor = InstancedBinding.OneWay(subject);
-            var binding = Mock.Of<IBinding>(x => 
-                x.Initiate(It.IsAny<IAvaloniaObject>(), property, null, false) == descriptor);
-            return binding;
+            var control = new Canvas();
+            var setter = new Setter(TextBlock.TagProperty, "foo");
+
+            var instance = setter.Instance(control);
+            instance.Start(true);
+            instance.Activate();
+
+            control.Tag = "bar";
+
+            instance.Dispose();
+
+            Assert.Equal("bar", control.Tag);
+        }
+
+        [Fact]
+        public void Disposing_Binding_Setter_Should_Preserve_LocalValue()
+        {
+            var control = new Canvas();
+            var source = new { Foo = "foo" };
+            var setter = new Setter(TextBlock.TagProperty, new Binding
+            {
+                Source = source,
+                Path = nameof(source.Foo),
+            });
+
+            var instance = setter.Instance(control);
+            instance.Start(true);
+            instance.Activate();
+
+            control.Tag = "bar";
+
+            instance.Dispose();
+
+            Assert.Equal("bar", control.Tag);
         }
 
         private class TestConverter : IValueConverter

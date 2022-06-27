@@ -232,6 +232,13 @@ namespace Avalonia.Controls
                     StopListeningForDefault(inputElement);
                 }
             }
+            if (IsCancel)
+            {
+                if (e.Root is IInputElement inputElement)
+                {
+                    StopListeningForCancel(inputElement);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -309,6 +316,8 @@ namespace Avalonia.Controls
                 IsPressed = false;
                 e.Handled = true;
             }
+
+            base.OnKeyUp(e);
         }
 
         /// <summary>
@@ -393,6 +402,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
+            base.OnPointerCaptureLost(e);
+
             IsPressed = false;
         }
 
@@ -407,6 +418,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            base.OnApplyTemplate(e);
+
             UnregisterFlyoutEvents(Flyout);
             RegisterFlyoutEvents(Flyout);
             UpdatePseudoClasses();

@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Numerics;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -168,12 +169,7 @@ namespace Avalonia
         /// <param name="point">The point.</param>
         /// <param name="matrix">The matrix.</param>
         /// <returns>The resulting point.</returns>
-        public static Point operator *(Point point, Matrix matrix)
-        {
-            return new Point(
-                (point.X * matrix.M11) + (point.Y * matrix.M21) + matrix.M31,
-                (point.X * matrix.M12) + (point.Y * matrix.M22) + matrix.M32);
-        }
+        public static Point operator *(Point point, Matrix matrix) => matrix.Transform(point);
 
         /// <summary>
         /// Parses a <see cref="Point"/> string.
@@ -254,18 +250,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="transform">The transform.</param>
         /// <returns>The transformed point.</returns>
-        public Point Transform(Matrix transform)
-        {
-            var x = X;
-            var y = Y;
-            var xadd = y * transform.M21 + transform.M31;
-            var yadd = x * transform.M12 + transform.M32;
-            x *= transform.M11;
-            x += xadd;
-            y *= transform.M22;
-            y += yadd;
-            return new Point(x, y);
-        }
+        public Point Transform(Matrix transform) => transform.Transform(this);
 
         /// <summary>
         /// Returns a new point with the specified X coordinate.

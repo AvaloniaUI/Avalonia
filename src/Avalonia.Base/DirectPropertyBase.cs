@@ -2,7 +2,6 @@
 using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Styling;
-using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -188,10 +187,10 @@ namespace Avalonia
             }
             else if (value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(PropertyType))
             {
-                return new PropertySetterLazyInstance<TValue>(
+                return new PropertySetterTemplateInstance<TValue>(
                     target,
                     this,
-                    () => (TValue)template.Build());
+                    template);
             }
             else
             {

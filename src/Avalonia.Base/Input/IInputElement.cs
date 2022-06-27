@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -10,6 +11,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Defines input-related functionality for a control.
     /// </summary>
+    [NotClientImplementable]
     public interface IInputElement : IInteractive, IVisual
     {
         /// <summary>
@@ -40,12 +42,12 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer enters the control.
         /// </summary>
-        event EventHandler<PointerEventArgs>? PointerEnter;
+        event EventHandler<PointerEventArgs>? PointerEntered;
 
         /// <summary>
         /// Occurs when the pointer leaves the control.
         /// </summary>
-        event EventHandler<PointerEventArgs>? PointerLeave;
+        event EventHandler<PointerEventArgs>? PointerExited;
 
         /// <summary>
         /// Occurs when the pointer is pressed over the control.

@@ -109,6 +109,11 @@ namespace Avalonia.Styling
             }
         }
 
+        public static Selector Nesting(this Selector? previous)
+        {
+            return new NestingSelector();
+        }
+
         /// <summary>
         /// Returns a selector which inverts the results of selector argument.
         /// </summary>

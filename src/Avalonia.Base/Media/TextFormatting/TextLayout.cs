@@ -230,7 +230,7 @@ namespace Avalonia.Media.TextFormatting
             foreach (var textLine in TextLines)
             {
                 //Current line isn't covered.
-                if (textLine.FirstTextSourceIndex + textLine.Length <= start)
+                if (textLine.FirstTextSourceIndex + textLine.Length < start)
                 {
                     currentY += textLine.Height;
 
@@ -239,18 +239,27 @@ namespace Avalonia.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(start, length);
 
-                foreach (var bounds in textBounds)
+                if(textBounds.Count > 0)
                 {
-                    Rect? last = result.Count > 0 ? result[result.Count - 1] : null;
+                    foreach (var bounds in textBounds)
+                    {
+                        Rect? last = result.Count > 0 ? result[result.Count - 1] : null;
 
-                    if (last.HasValue && MathUtilities.AreClose(last.Value.Right, bounds.Rectangle.Left) && MathUtilities.AreClose(last.Value.Top, currentY))
-                    {
-                        result[result.Count - 1] = last.Value.WithWidth(last.Value.Width + bounds.Rectangle.Width);
+                        if (last.HasValue && MathUtilities.AreClose(last.Value.Right, bounds.Rectangle.Left) && MathUtilities.AreClose(last.Value.Top, currentY))
+                        {
+                            result[result.Count - 1] = last.Value.WithWidth(last.Value.Width + bounds.Rectangle.Width);
+                        }
+                        else
+                        {
+                            result.Add(bounds.Rectangle.WithY(currentY));
+                        }
+
+                        foreach (var runBounds in bounds.TextRunBounds)
+                        {
+                            start += runBounds.Length;
+                            length -= runBounds.Length;
+                        }
                     }
-                    else
-                    {
-                        result.Add(bounds.Rectangle.WithY(currentY));
-                    }                  
                 }
 
                 if(textLine.FirstTextSourceIndex + textLine.Length >= start + length)
@@ -430,7 +439,7 @@ namespace Avalonia.Media.TextFormatting
                 var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-                if(textLine == null || textLine.Length == 0)
+                if(textLine == null || textLine.Length == 0 || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
                 {
                     if(previousLine != null && previousLine.NewLineLength  > 0)
                     {
@@ -491,6 +500,35 @@ namespace Avalonia.Media.TextFormatting
             }
 
             Bounds = new Rect(left, 0, width, height);
+
+            if(_paragraphProperties.TextAlignment == TextAlignment.Justify)
+            {
+                var whitespaceWidth = 0d;
+
+                foreach (var line in textLines)
+                {
+                    var lineWhitespaceWidth = line.Width - line.WidthIncludingTrailingWhitespace;
+
+                    if(lineWhitespaceWidth > whitespaceWidth)
+                    {
+                        whitespaceWidth = lineWhitespaceWidth;
+                    }
+                }
+
+                var justificationWidth = width - whitespaceWidth;
+
+                if(justificationWidth > 0)
+                {
+                    var justificationProperties = new InterWordJustification(justificationWidth);
+
+                    for (var i = 0; i < textLines.Count - 1; i++)
+                    {
+                        var line = textLines[i];
+
+                        line.Justify(justificationProperties);
+                    }
+                }
+            }
 
             return textLines;
         }

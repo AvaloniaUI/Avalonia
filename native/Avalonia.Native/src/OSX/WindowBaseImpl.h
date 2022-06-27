@@ -16,8 +16,6 @@
 class WindowBaseImpl : public virtual ComObject,
                        public virtual IAvnWindowBase,
                        public INSWindowHolder {
-private:
-    NSCursor *cursor;
 
 public:
     FORWARD_IUNKNOWN()
@@ -28,23 +26,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual ~WindowBaseImpl();
 
-    AutoFitContentView *StandardContainer;
-    AvnView *View;
-    NSWindow * Window;
-    ComPtr<IAvnWindowBaseEvents> BaseEvents;
-    ComPtr<IAvnGlContext> _glContext;
-    NSObject <IRenderTarget> *renderTarget;
-    AvnPoint lastPositionSet;
-    NSSize lastSize;
-    NSSize lastMinSize;
-    NSSize lastMaxSize;
-    AvnMenu* lastMenu;
-    NSString *_lastTitle;
-
-    bool _shown;
-    bool _inResize;
-
-    WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl);
+    WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel = false);
 
     virtual HRESULT ObtainNSWindowHandle(void **ret) override;
 
@@ -56,9 +38,11 @@ BEGIN_INTERFACE_MAP()
 
     virtual NSWindow *GetNSWindow() override;
 
-    virtual NSView *GetNSView() override;
+    virtual AvnView *GetNSView() override;
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
+
+    virtual bool IsShown ();
 
     virtual bool ShouldTakeFocusOnShow();
 
@@ -115,6 +99,8 @@ BEGIN_INTERFACE_MAP()
     virtual bool IsDialog();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
+                           
+    virtual void BringToFront ();
 
 protected:
     virtual NSWindowStyleMask GetStyle();
@@ -124,7 +110,26 @@ protected:
 private:
     void CreateNSWindow (bool isDialog);
     void CleanNSWindow ();
-    void InitialiseNSWindow ();
+
+    NSCursor *cursor;
+    ComPtr<IAvnGlContext> _glContext;
+    bool hasPosition;
+    NSSize lastSize;
+    NSSize lastMinSize;
+    NSSize lastMaxSize;
+    AvnMenu* lastMenu;
+    bool _inResize;
+
+protected:
+    AvnPoint lastPositionSet;
+    AutoFitContentView *StandardContainer;
+    bool _shown;
+
+public:
+    NSObject <IRenderTarget> *renderTarget;
+    NSWindow * Window;
+    ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    AvnView *View;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWBASEIMPL_H

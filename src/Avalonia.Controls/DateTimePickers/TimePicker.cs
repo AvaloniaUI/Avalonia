@@ -38,13 +38,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Header"/> property
         /// </summary>
         public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
+            AvaloniaProperty.Register<TimePicker, object>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> property
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
+            AvaloniaProperty.Register<TimePicker, IDataTemplate>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property

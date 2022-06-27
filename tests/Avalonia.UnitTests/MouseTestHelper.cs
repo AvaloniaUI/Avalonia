@@ -107,13 +107,13 @@ namespace Avalonia.UnitTests
         
         public void Enter(IInteractive target)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnterEvent, target, _pointer, (IVisual)target, default,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnteredEvent, target, _pointer, (IVisual)target, default,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 
         public void Leave(IInteractive target)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerLeaveEvent, target, _pointer, (IVisual)target, default,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerExitedEvent, target, _pointer, (IVisual)target, default,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 
