@@ -901,10 +901,10 @@ namespace Avalonia.Controls
             {
                 if (owner != null)
                 {
-                    // TODO: We really need non-client size here.
+                    var ownerSize = owner.FrameSize ?? owner.ClientSize;
                     var ownerRect = new PixelRect(
                         owner.Position,
-                        PixelSize.FromSize(owner.ClientSize, scaling));
+                        PixelSize.FromSize(ownerSize, scaling));
                     Position = ownerRect.CenterRect(rect).Position;
                 }
             }

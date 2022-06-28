@@ -130,17 +130,10 @@ namespace Avalonia.IntegrationTests.Appium
 
         public static void SendClick(this AppiumWebElement element)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                element.Click();
-            }
-            else
-            {
-                // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
-                // such as list items don't support this action, so instead simulate a physical click as VoiceOver
-                // does.
-                new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
-            }
+            // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
+            // such as list items don't support this action, so instead simulate a physical click as VoiceOver
+            // does. On Windows, Click() seems to fail with the WindowState checkbox for some reason.
+            new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
         }
 
         public static void MovePointerOver(this AppiumWebElement element)
