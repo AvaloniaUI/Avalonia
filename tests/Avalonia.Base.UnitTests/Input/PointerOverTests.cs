@@ -189,7 +189,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             // Ensure that e.Handled is reset between controls.
             root.PointerMoved += (s, e) => e.Handled = true;
-            decorator.PointerEnter += (s, e) => e.Handled = true;
+            decorator.PointerEntered += (s, e) => e.Handled = true;
 
             SetHit(renderer, decorator);
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
@@ -231,7 +231,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             });
 
-            AddEnterLeaveHandlers(HandleEvent, canvas, decorator);
+            AddEnteredExitedHandlers(HandleEvent, canvas, decorator);
 
             // Enter decorator
             SetHit(renderer, decorator);
@@ -246,17 +246,17 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                        ((object?)decorator, "PointerEnter"),
-                        (decorator, "PointerMoved"),
-                        (decorator, "PointerLeave"),
-                        (canvas, "PointerEnter"),
-                        (canvas, "PointerMoved")
+                        ((object?)decorator, nameof(InputElement.PointerEntered)),
+                        (decorator, nameof(InputElement.PointerMoved)),
+                        (decorator, nameof(InputElement.PointerExited)),
+                        (canvas, nameof(InputElement.PointerEntered)),
+                        (canvas, nameof(InputElement.PointerMoved))
                 },
                 result);
         }
 
         [Fact]
-        public void PointerEnter_Leave_Should_Be_Raised_In_Correct_Order()
+        public void PointerEntered_Exited_Should_Be_Raised_In_Correct_Order()
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
@@ -289,7 +289,7 @@ namespace Avalonia.Base.UnitTests.Input
             SetHit(renderer, canvas);
             impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root));
 
-            AddEnterLeaveHandlers(HandleEvent, root, canvas, border, decorator);
+            AddEnteredExitedHandlers(HandleEvent, root, canvas, border, decorator);
 
             SetHit(renderer, decorator);
             impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root));
@@ -297,16 +297,16 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                    ((object?)canvas, "PointerLeave"),
-                    (decorator, "PointerEnter"),
-                    (border, "PointerEnter"),
+                    ((object?)canvas, nameof(InputElement.PointerExited)),
+                    (decorator, nameof(InputElement.PointerEntered)),
+                    (border, nameof(InputElement.PointerEntered)),
                 },
                 result);
         }
 
         // https://github.com/AvaloniaUI/Avalonia/issues/7896
         [Fact]
-        public void PointerEnter_Leave_Should_Set_Correct_Position()
+        public void PointerEntered_Exited_Should_Set_Correct_Position()
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
@@ -331,7 +331,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             });
 
-            AddEnterLeaveHandlers(HandleEvent, root, canvas);
+            AddEnteredExitedHandlers(HandleEvent, root, canvas);
 
             SetHit(renderer, canvas);
             impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root, expectedPosition));
@@ -342,10 +342,10 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                    ((object?)canvas, "PointerEnter", expectedPosition),
-                    (root, "PointerEnter", expectedPosition),
-                    (canvas, "PointerLeave", expectedPosition),
-                    (root, "PointerLeave", expectedPosition)
+                    ((object?)canvas, nameof(InputElement.PointerEntered), expectedPosition),
+                    (root, nameof(InputElement.PointerEntered), expectedPosition),
+                    (canvas, nameof(InputElement.PointerExited), expectedPosition),
+                    (root, nameof(InputElement.PointerExited), expectedPosition)
                 },
                 result);
         }
@@ -415,7 +415,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             });
 
-            AddEnterLeaveHandlers(HandleEvent, root, canvas);
+            AddEnteredExitedHandlers(HandleEvent, root, canvas);
 
             // Init pointer over.
             SetHit(renderer, canvas);
@@ -429,22 +429,22 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                    ((object?)canvas, "PointerEnter", lastClientPosition),
-                    (root, "PointerEnter", lastClientPosition),
-                    (canvas, "PointerLeave", lastClientPosition),
-                    (root, "PointerLeave", lastClientPosition),
+                    ((object?)canvas, nameof(InputElement.PointerEntered), lastClientPosition),
+                    (root, nameof(InputElement.PointerEntered), lastClientPosition),
+                    (canvas, nameof(InputElement.PointerExited), lastClientPosition),
+                    (root, nameof(InputElement.PointerExited), lastClientPosition),
                 },
                 result);
         }
 
-        private static void AddEnterLeaveHandlers(
+        private static void AddEnteredExitedHandlers(
             EventHandler<PointerEventArgs> handler,
             params IInputElement[] controls)
         {
             foreach (var c in controls)
             {
-                c.PointerEnter += handler;
-                c.PointerLeave += handler;
+                c.PointerEntered += handler;
+                c.PointerExited += handler;
                 c.PointerMoved += handler;
             }
         }
