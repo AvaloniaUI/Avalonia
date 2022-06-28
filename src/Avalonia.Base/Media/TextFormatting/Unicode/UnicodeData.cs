@@ -36,29 +36,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         static UnicodeData()
         {
-            unsafe
-            {
-                var unicodeData = UnicodeDataTrie.Data;
-
-                fixed (byte* unicodeDataPtr = unicodeData)
-                {
-                    s_unicodeDataTrie = new UnicodeTrie(new UnmanagedMemoryStream(unicodeDataPtr, unicodeData.Length));
-                }
-
-                var graphemeData = GraphemeBreakTrie.Data;
-
-                fixed (byte* graphemeDataPtr = graphemeData)
-                {
-                    s_graphemeBreakTrie = new UnicodeTrie(new UnmanagedMemoryStream(graphemeDataPtr, graphemeData.Length));
-                }
-
-                var bidiData = BiDiTrie.Data;
-
-                fixed (byte* bidiDataPtr = bidiData)
-                {
-                    s_biDiTrie = new UnicodeTrie(new UnmanagedMemoryStream(bidiDataPtr, bidiData.Length));
-                }
-            }
+            s_unicodeDataTrie = new UnicodeTrie(UnicodeDataTrie.Data);
+            s_graphemeBreakTrie = new UnicodeTrie(GraphemeBreakTrie.Data);
+            s_biDiTrie = new UnicodeTrie(BidiTrie.Data);
         }
 
         /// <summary>
@@ -67,7 +47,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="codepoint">The codepoint in question.</param>
         /// <returns>The code point's general category.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GeneralCategory GetGeneralCategory(int codepoint)
+        public static GeneralCategory GetGeneralCategory(uint codepoint)
         {
             return (GeneralCategory)(s_unicodeDataTrie.Get(codepoint) & CATEGORY_MASK);
         }
@@ -78,7 +58,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="codepoint">The codepoint in question.</param>
         /// <returns>The code point's script.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Script GetScript(int codepoint)
+        public static Script GetScript(uint codepoint)
         {
             return (Script)((s_unicodeDataTrie.Get(codepoint) >> SCRIPT_SHIFT) & SCRIPT_MASK);
         }
@@ -89,7 +69,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="codepoint">The codepoint in question.</param>
         /// <returns>The code point's biDi class.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BidiClass GetBiDiClass(int codepoint)
+        public static BidiClass GetBiDiClass(uint codepoint)
         {
             return (BidiClass)((s_biDiTrie.Get(codepoint) >> BIDICLASS_SHIFT) & BIDICLASS_MASK);
         }
@@ -100,7 +80,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="codepoint">The codepoint in question.</param>
         /// <returns>The code point's paired bracket type.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BidiPairedBracketType GetBiDiPairedBracketType(int codepoint)
+        public static BidiPairedBracketType GetBiDiPairedBracketType(uint codepoint)
         {
             return (BidiPairedBracketType)((s_biDiTrie.Get(codepoint) >> BIDIPAIREDBRACKEDTYPE_SHIFT) & BIDIPAIREDBRACKEDTYPE_MASK);
         }
@@ -111,9 +91,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="codepoint">The codepoint in question.</param>
         /// <returns>The code point's paired bracket.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Codepoint GetBiDiPairedBracket(int codepoint)
+        public static Codepoint GetBiDiPairedBracket(uint codepoint)
         {
-            return new Codepoint((int)(s_biDiTrie.Get(codepoint) & BIDIPAIREDBRACKED_MASK));
+            return new Codepoint((s_biDiTrie.Get(codepoint) & BIDIPAIREDBRACKED_MASK));
         }
 
         /// <summary>
@@ -122,7 +102,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="codepoint">The codepoint in question.</param>
         /// <returns>The code point's line break class.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static LineBreakClass GetLineBreakClass(int codepoint)
+        public static LineBreakClass GetLineBreakClass(uint codepoint)
         {
             return (LineBreakClass)((s_unicodeDataTrie.Get(codepoint) >> LINEBREAK_SHIFT) & LINEBREAK_MASK);
         }
@@ -133,7 +113,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="codepoint">The codepoint in question.</param>
         /// <returns>The code point's grapheme break type.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GraphemeBreakClass GetGraphemeClusterBreak(int codepoint)
+        public static GraphemeBreakClass GetGraphemeClusterBreak(uint codepoint)
         {
             return (GraphemeBreakClass)s_graphemeBreakTrie.Get(codepoint);
         }

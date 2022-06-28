@@ -35,7 +35,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
         EModifier, //EM
         ZWJ, //ZWJ
         ContingentBreak, //CB
-
         Unknown, //XX
         Ambiguous, //AI
         MandatoryBreak, //BK

@@ -66,7 +66,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The forward mapping maps the start index to the end index.
         /// The reverse mapping maps the end index to the start index.
         /// </remarks>
-        private readonly Dictionary<int, int> _isolatePairs = new Dictionary<int, int>();
+        private readonly BidiDictionary<int, int> _isolatePairs = new BidiDictionary<int, int>();
 
         /// <summary>
         /// The working BiDi classes
@@ -187,12 +187,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
         internal BidiAlgorithm()
         {
         }
-
-        /// <summary>
-        /// Gets a per-thread instance that can be re-used as often
-        /// as necessary.
-        /// </summary>
-        public static ThreadLocal<BidiAlgorithm> Instance { get; } = new ThreadLocal<BidiAlgorithm>(() => new BidiAlgorithm());
 
         /// <summary>
         /// Gets the resolved levels.
@@ -1414,35 +1408,37 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Sets the direction of a bracket pair, including setting the direction of
         /// NSM's inside the brackets and following.
         /// </summary>
-        /// <param name="bracketPair">The paired brackets</param>
+        /// <param name="pairedBracket">The paired brackets</param>
         /// <param name="direction">The resolved direction for the bracket pair</param>
-        private void SetPairedBracketDirection(in BracketPair bracketPair, BidiClass direction)
+        private void SetPairedBracketDirection(in BracketPair pairedBracket, BidiClass direction)
         {
             // Set the direction of the brackets
-            _runResolvedClasses[bracketPair.OpeningIndex] = direction;
-            _runResolvedClasses[bracketPair.ClosingIndex] = direction;
+            _runResolvedClasses[pairedBracket.OpeningIndex] = direction;
+            _runResolvedClasses[pairedBracket.ClosingIndex] = direction;
 
             // Set the directionality of NSM's inside the brackets
-            for (var i = bracketPair.OpeningIndex + 1; i < bracketPair.ClosingIndex; i++)
+            // BN  characters (such as ZWJ or ZWSP) that appear between the base bracket character
+            // and the nonspacing mark should be ignored.
+            for (int i = pairedBracket.OpeningIndex + 1; i < pairedBracket.ClosingIndex; i++)
             {
                 if (_runOriginalClasses[i] == BidiClass.NonspacingMark)
                 {
                     _runOriginalClasses[i] = direction;
                 }
-                else
+                else if (_runOriginalClasses[i] != BidiClass.BoundaryNeutral)
                 {
                     break;
                 }
             }
 
             // Set the directionality of NSM's following the brackets
-            for (var i = bracketPair.ClosingIndex + 1; i < _runLength; i++)
+            for (int i = pairedBracket.ClosingIndex + 1; i < _runLength; i++)
             {
                 if (_runOriginalClasses[i] == BidiClass.NonspacingMark)
                 {
-                    _runResolvedClasses[i] = direction;
+                    _runOriginalClasses[i] = direction;
                 }
-                else
+                else if (_runOriginalClasses[i] != BidiClass.BoundaryNeutral)
                 {
                     break;
                 }
