@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
+
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -67,6 +70,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<DataGrid>()).ObjectsCount));
             }
@@ -99,6 +105,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -141,6 +150,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
@@ -179,6 +191,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -215,6 +230,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -260,6 +278,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -351,6 +372,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
             }
@@ -383,6 +407,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
@@ -420,6 +447,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TabItem>()).ObjectsCount));
@@ -496,6 +526,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
@@ -536,8 +569,11 @@ namespace Avalonia.LeakTests
                     initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
                     initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
                 });
-                
+
                 AttachShowAndDetachContextMenu(window);
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
@@ -580,9 +616,12 @@ namespace Avalonia.LeakTests
                     initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
                     initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
                 });
-                
+
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
@@ -623,6 +662,9 @@ namespace Avalonia.LeakTests
 
                 var result = run();
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Path>()).ObjectsCount));
 
@@ -656,6 +698,9 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
@@ -725,14 +770,128 @@ namespace Avalonia.LeakTests
 
                 Assert.Empty(lb.ItemContainerGenerator.Containers);
 
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
         }
 
+        [Fact]
+        public void HotKeyManager_Should_Release_Reference_When_Control_Detached()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
+                    var tl = new Window
+                    {
+                        Content = new ItemsRepeater(),
+                    };
+
+                    tl.Show();
+
+                    var button = new Button();
+                    tl.Content = button;
+                    tl.Template = CreateWindowTemplate();
+                    tl.ApplyTemplate();
+                    tl.Presenter.ApplyTemplate();
+                    HotKeyManager.SetHotKey(button, gesture1);
+
+                    // Detach the button from the logical tree, so there is no reference to it
+                    tl.Content = null;
+                    tl.ApplyTemplate();
+
+                    return tl;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void HotKeyManager_Should_Release_Reference_When_Control_In_Item_Template_Detached()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                    var tl = new Window { SizeToContent = SizeToContent.WidthAndHeight, IsVisible = true };
+                    var lm = tl.LayoutManager;
+                    tl.Show();
+
+                    var keyGestures = new AvaloniaList<KeyGesture> { gesture1 };
+                    var listBox = new ListBox
+                    {
+                        Width = 100,
+                        Height = 100,
+                        VirtualizationMode = ItemVirtualizationMode.None,
+                        // Create a button with binding to the KeyGesture in the template and add it to references list
+                        ItemTemplate = new FuncDataTemplate(typeof(KeyGesture), (o, scope) =>
+                        {
+                            var keyGesture = o as KeyGesture;
+                            return new Button
+                            {
+                                DataContext = keyGesture,
+                                [!Button.HotKeyProperty] = new Binding("")
+                            };
+                        })
+                    };
+                    // Add the listbox and render it
+                    tl.Content = listBox;
+                    lm.ExecuteInitialLayoutPass();
+                    listBox.Items = keyGestures;
+                    lm.ExecuteLayoutPass();
+
+                    // Let the button detach when clearing the source items
+                    keyGestures.Clear();
+                    lm.ExecuteLayoutPass();
+
+                    // Add it again to double check,and render
+                    keyGestures.Add(gesture1);
+                    lm.ExecuteLayoutPass();
+
+                    keyGestures.Clear();
+                    lm.ExecuteLayoutPass();
+
+                    return tl;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+            }
+        }
+
+        private FuncControlTemplate CreateWindowTemplate()
+        {
+            return new FuncControlTemplate<Window>((parent, scope) =>
+            {
+                return new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                }.RegisterInNameScope(scope);
+            });
+        }
+
         private IDisposable Start()
         {
-            void Cleanup()
+            static void Cleanup()
             {
                 // KeyboardDevice holds a reference to the focused item.
                 KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);

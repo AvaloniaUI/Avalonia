@@ -15,7 +15,7 @@ namespace Avalonia.Media.TextFormatting
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
         {
             var textWrapping = paragraphProperties.TextWrapping;
-            FlowDirection flowDirection;
+            FlowDirection resolvedFlowDirection;
             TextLineBreak? nextLineBreak = null;
             List<DrawableTextRun> drawableTextRuns;
 
@@ -24,17 +24,17 @@ namespace Avalonia.Media.TextFormatting
 
             if (previousLineBreak?.RemainingRuns != null)
             {
-                flowDirection = previousLineBreak.FlowDirection;
+                resolvedFlowDirection = previousLineBreak.FlowDirection;
                 drawableTextRuns = previousLineBreak.RemainingRuns.ToList();
                 nextLineBreak = previousLineBreak;
             }
             else
             {
-                drawableTextRuns = ShapeTextRuns(textRuns, paragraphProperties, out flowDirection);
+                drawableTextRuns = ShapeTextRuns(textRuns, paragraphProperties, out resolvedFlowDirection);
 
                 if (nextLineBreak == null && textEndOfLine != null)
                 {
-                    nextLineBreak = new TextLineBreak(textEndOfLine, flowDirection);
+                    nextLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
                 }
             }
 
@@ -45,7 +45,7 @@ namespace Avalonia.Media.TextFormatting
                 case TextWrapping.NoWrap:
                     {
                         textLine = new TextLineImpl(drawableTextRuns, firstTextSourceIndex, textSourceLength,
-                            paragraphWidth, paragraphProperties, flowDirection, nextLineBreak);
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
 
                         textLine.FinalizeLine();
 
@@ -55,7 +55,7 @@ namespace Avalonia.Media.TextFormatting
                 case TextWrapping.Wrap:
                     {
                         textLine = PerformTextWrapping(drawableTextRuns, firstTextSourceIndex, paragraphWidth, paragraphProperties,
-                            flowDirection, nextLineBreak);
+                            resolvedFlowDirection, nextLineBreak);
                         break;
                     }
                 default:
@@ -404,9 +404,9 @@ namespace Avalonia.Media.TextFormatting
                 {
                     endOfLine = textEndOfLine;
 
-                    textRuns.Add(textRun);
+                    textSourceLength += textEndOfLine.TextSourceLength;
 
-                    textSourceLength += textRun.TextSourceLength;
+                    textRuns.Add(textRun);
 
                     break;
                 }
@@ -431,9 +431,9 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
-                    case DrawableTextRun drawableTextRun:
+                    default:
                         {
-                            textRuns.Add(drawableTextRun);
+                            textRuns.Add(textRun);
                             break;
                         }
                 }
@@ -552,11 +552,11 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="firstTextSourceIndex">The first text source index.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
         /// <param name="paragraphProperties">The text paragraph properties.</param>
-        /// <param name="flowDirection"></param>
+        /// <param name="resolvedFlowDirection"></param>
         /// <param name="currentLineBreak">The current line break if the line was explicitly broken.</param>
         /// <returns>The wrapped text line.</returns>
         private static TextLineImpl PerformTextWrapping(List<DrawableTextRun> textRuns, int firstTextSourceIndex,
-            double paragraphWidth, TextParagraphProperties paragraphProperties, FlowDirection flowDirection,
+            double paragraphWidth, TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection,
             TextLineBreak? currentLineBreak)
         {
             if(textRuns.Count == 0)
@@ -684,16 +684,16 @@ namespace Avalonia.Media.TextFormatting
             var remainingCharacters = splitResult.Second;
 
             var lineBreak = remainingCharacters?.Count > 0 ?
-                new TextLineBreak(currentLineBreak?.TextEndOfLine, flowDirection, remainingCharacters) :
+                new TextLineBreak(currentLineBreak?.TextEndOfLine, resolvedFlowDirection, remainingCharacters) :
                 null;
 
             if (lineBreak is null && currentLineBreak?.TextEndOfLine != null)
             {
-                lineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine, flowDirection);
+                lineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine, resolvedFlowDirection);
             }
 
             var textLine = new TextLineImpl(splitResult.First, firstTextSourceIndex, measuredLength,
-                paragraphWidth, paragraphProperties, flowDirection,
+                paragraphWidth, paragraphProperties, resolvedFlowDirection,
                 lineBreak);
 
             return textLine.FinalizeLine();

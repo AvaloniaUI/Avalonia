@@ -194,7 +194,7 @@ namespace Avalonia.Controls
 
             if (ClockIdentifier == "12HourClock")
             {
-                hr = per == 1 ? hr + 12 : per == 0 && hr == 12 ? 0 : hr;
+                hr = per == 1 ? (hr == 12) ? 12 : hr + 12 : per == 0 && hr == 12 ? 0 : hr;
             }
 
             Time = new TimeSpan(hr, min, 0);

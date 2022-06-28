@@ -218,9 +218,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             if (AllowAutoHide)
             {
@@ -228,9 +228,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
 
             if (AllowAutoHide)
             {

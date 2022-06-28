@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -17,14 +18,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         internal const int SCRIPT_SHIFT = CATEGORY_BITS;
         internal const int LINEBREAK_SHIFT = CATEGORY_BITS + SCRIPT_BITS;
-        
+
         internal const int BIDIPAIREDBRACKEDTYPE_SHIFT = BIDIPAIREDBRACKED_BITS;
         internal const int BIDICLASS_SHIFT = BIDIPAIREDBRACKED_BITS + BIDIPAIREDBRACKEDTYPE_BITS;
-        
+
         internal const int CATEGORY_MASK = (1 << CATEGORY_BITS) - 1;
         internal const int SCRIPT_MASK = (1 << SCRIPT_BITS) - 1;
         internal const int LINEBREAK_MASK = (1 << LINEBREAK_BITS) - 1;
-        
+
         internal const int BIDIPAIREDBRACKED_MASK = (1 << BIDIPAIREDBRACKED_BITS) - 1;
         internal const int BIDIPAIREDBRACKEDTYPE_MASK = (1 << BIDIPAIREDBRACKEDTYPE_BITS) - 1;
         internal const int BIDICLASS_MASK = (1 << BIDICLASS_BITS) - 1;
@@ -35,9 +36,29 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         static UnicodeData()
         {
-            s_unicodeDataTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.UnicodeData.trie")!);
-            s_graphemeBreakTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.GraphemeBreak.trie")!);
-            s_biDiTrie = new UnicodeTrie(typeof(UnicodeData).Assembly.GetManifestResourceStream("Avalonia.Assets.BiDi.trie")!);
+            unsafe
+            {
+                var unicodeData = UnicodeDataTrie.Data;
+
+                fixed (byte* unicodeDataPtr = unicodeData)
+                {
+                    s_unicodeDataTrie = new UnicodeTrie(new UnmanagedMemoryStream(unicodeDataPtr, unicodeData.Length));
+                }
+
+                var graphemeData = GraphemeBreakTrie.Data;
+
+                fixed (byte* graphemeDataPtr = graphemeData)
+                {
+                    s_graphemeBreakTrie = new UnicodeTrie(new UnmanagedMemoryStream(graphemeDataPtr, graphemeData.Length));
+                }
+
+                var bidiData = BiDiTrie.Data;
+
+                fixed (byte* bidiDataPtr = bidiData)
+                {
+                    s_biDiTrie = new UnicodeTrie(new UnmanagedMemoryStream(bidiDataPtr, bidiData.Length));
+                }
+            }
         }
 
         /// <summary>
@@ -72,7 +93,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             return (BidiClass)((s_biDiTrie.Get(codepoint) >> BIDICLASS_SHIFT) & BIDICLASS_MASK);
         }
-        
+
         /// <summary>
         /// Gets the <see cref="BidiPairedBracketType"/> for a Unicode codepoint.
         /// </summary>
@@ -83,7 +104,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             return (BidiPairedBracketType)((s_biDiTrie.Get(codepoint) >> BIDIPAIREDBRACKEDTYPE_SHIFT) & BIDIPAIREDBRACKEDTYPE_MASK);
         }
-        
+
         /// <summary>
         /// Gets the paired bracket for a Unicode codepoint.
         /// </summary>
