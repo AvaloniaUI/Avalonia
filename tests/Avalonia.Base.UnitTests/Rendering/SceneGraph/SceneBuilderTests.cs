@@ -838,6 +838,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 Canvas canvas;
                 var tree = new TestRoot
                 {
+                    ClientSize = new Size(100, 100),
                     Child = decorator = new Decorator
                     {
                         Margin = new Thickness(0, 10, 0, 0),
