@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Automation.Peers;
@@ -207,6 +208,8 @@ namespace Avalonia.Win32
                 }
             }
         }
+
+        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.Primary)?.PixelDensity ?? 1;
 
         public double RenderScaling => _scaling;
 
@@ -469,10 +472,14 @@ namespace Avalonia.Win32
             {
                 GetWindowRect(_hwnd, out var rc);
 
-                return new PixelPoint(rc.left, rc.top);
+                var border = HiddenBorderSize;
+                return new PixelPoint(rc.left + border.Width, rc.top + border.Height);
             }
             set
             {
+                var border = HiddenBorderSize;
+                value = new PixelPoint(value.X - border.Width, value.Y - border.Height);
+
                 SetWindowPos(
                     Handle.Handle,
                     IntPtr.Zero,
@@ -485,6 +492,24 @@ namespace Avalonia.Win32
         }
 
         private bool HasFullDecorations => _windowProperties.Decorations == SystemDecorations.Full;
+
+        private PixelSize HiddenBorderSize
+        {
+            get
+            {
+                // Windows 10 and 11 add a 7 pixel invisible border on the left/right/bottom of windows for resizing
+                if (Win32Platform.WindowsVersion.Major < 10 || !HasFullDecorations)
+                {
+                    return PixelSize.Empty;
+                }
+
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var clientRect, Marshal.SizeOf(typeof(RECT)));
+                GetWindowRect(_hwnd, out var frameRect);
+                var borderWidth = GetSystemMetrics(SystemMetric.SM_CXBORDER);
+
+                return new PixelSize(clientRect.left - frameRect.left - borderWidth, 0);
+            }
+        }
 
         public void Move(PixelPoint point) => Position = point;
 
@@ -904,22 +929,25 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = 1;
             }
 
+            //using a default margin of 0 when using WinUiComp removes artefacts when resizing. See issue #8316
+            var defaultMargin = _isUsingComposition ? 0 : 1;
+
             MARGINS margins = new MARGINS();
-            margins.cxLeftWidth = 1;
-            margins.cxRightWidth = 1;
-            margins.cyBottomHeight = 1;
+            margins.cxLeftWidth = defaultMargin;
+            margins.cxRightWidth = defaultMargin;
+            margins.cyBottomHeight = defaultMargin;
 
             if (_extendTitleBarHint != -1)
             {
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : defaultMargin;
 
             if (WindowState == WindowState.Maximized)
             {
                 _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / RenderScaling, 0, 0);
-                _offScreenMargin = new Thickness(borderThickness.left / RenderScaling, borderThickness.top / RenderScaling, borderThickness.right / RenderScaling, borderThickness.bottom / RenderScaling);
+                _offScreenMargin = new Thickness(borderThickness.left / PrimaryScreenRenderScaling, borderThickness.top / PrimaryScreenRenderScaling, borderThickness.right / PrimaryScreenRenderScaling, borderThickness.bottom / PrimaryScreenRenderScaling);
             }
             else
             {

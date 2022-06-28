@@ -349,9 +349,9 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             GridResizeDirection direction = GetEffectiveResizeDirection();
 
