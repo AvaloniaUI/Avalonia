@@ -41,7 +41,7 @@ namespace Avalonia.Rendering.Composition.Server
             Root!.RenderedVisuals++;
             
             var transform = GlobalTransformMatrix;
-            canvas.PreTransform = MatrixUtils.ToMatrix(transform);
+            canvas.PostTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity);
@@ -56,7 +56,7 @@ namespace Avalonia.Rendering.Composition.Server
             RenderCore(canvas, currentTransformedClip);
             
             // Hack to force invalidation of SKMatrix
-            canvas.PreTransform = MatrixUtils.ToMatrix(transform);
+            canvas.PostTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
 
             if (OpacityMaskBrush != null)

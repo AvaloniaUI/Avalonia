@@ -33,7 +33,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         set => _visualBrushRenderer.VisualBrushDrawList = value;
     }
     
-    public Matrix PreTransform { get; set; } = Matrix.Identity;
+    public Matrix PostTransform { get; set; } = Matrix.Identity;
     
     public void Dispose()
     {
@@ -44,7 +44,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
     public Matrix Transform
     {
         get => _transform;
-        set => _impl.Transform = PreTransform * (_transform = value);
+        set => _impl.Transform = (_transform = value) * PostTransform;
     }
 
     public void Clear(Color color)
