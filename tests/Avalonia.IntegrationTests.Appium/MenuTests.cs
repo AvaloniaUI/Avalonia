@@ -57,7 +57,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Alt_Arrow_Keys()
         {
             new Actions(_session)
@@ -69,7 +69,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Child 1", clickedMenuItem.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Select_Grandchild_With_Alt_Arrow_Keys()
         {
             new Actions(_session)
@@ -81,7 +81,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Alt_Access_Keys()
         {
             new Actions(_session)
@@ -93,7 +93,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Child 1", clickedMenuItem.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Select_Grandchild_With_Alt_Access_Keys()
         {
             new Actions(_session)
@@ -105,7 +105,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Click_Arrow_Keys()
         {
             var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
@@ -119,7 +119,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Child 1", clickedMenuItem.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Select_Grandchild_With_Click_Arrow_Keys()
         {
             var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
@@ -133,7 +133,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Child_AcceleratorKey()
         {
             var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
@@ -145,7 +145,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Ctrl+O", childMenuItem.GetAttribute("AcceleratorKey"));
         }
 
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void PointerOver_Does_Not_Steal_Focus()
         {
             // Issue #7906

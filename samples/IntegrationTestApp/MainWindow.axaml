@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
+        Name="MainWindow"
         Title="IntegrationTestApp">
   <NativeMenu.Menu>
     <NativeMenu>
@@ -93,6 +94,25 @@
             <TextBox Name="MenuFocusTest"/>
           </StackPanel>
         </DockPanel>
+      </TabItem>
+      
+      <TabItem Header="Window">
+        <StackPanel>
+          <TextBox Name="ShowWindowSize" Watermark="Window Size"/>
+          <ComboBox Name="ShowWindowMode" SelectedIndex="0">
+            <ComboBoxItem>NonOwned</ComboBoxItem>
+            <ComboBoxItem>Owned</ComboBoxItem>
+            <ComboBoxItem>Modal</ComboBoxItem>
+          </ComboBox>
+          <ComboBox Name="ShowWindowLocation" SelectedIndex="0">
+            <ComboBoxItem>Manual</ComboBoxItem>
+            <ComboBoxItem>CenterScreen</ComboBoxItem>
+            <ComboBoxItem>CenterOwner</ComboBoxItem>
+          </ComboBox>
+          <Button Name="ShowWindow">Show Window</Button>
+          <Button Name="SendToBack">Send to Back</Button>
+          <Button Name="ExitFullscreen">Exit Fullscreen</Button>
+        </StackPanel>
       </TabItem>
     </TabControl>
   </DockPanel>

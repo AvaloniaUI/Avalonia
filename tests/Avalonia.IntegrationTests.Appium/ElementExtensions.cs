@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
+using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
@@ -10,6 +14,19 @@ namespace Avalonia.IntegrationTests.Appium
     {
         public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
             element.FindElementsByXPath("*/*");
+
+        public static (AppiumWebElement close, AppiumWebElement minimize, AppiumWebElement maximize) GetChromeButtons(this AppiumWebElement window)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                var closeButton = window.FindElementByXPath("//XCUIElementTypeButton[1]");
+                var fullscreenButton = window.FindElementByXPath("//XCUIElementTypeButton[2]");
+                var minimizeButton = window.FindElementByXPath("//XCUIElementTypeButton[3]");
+                return (closeButton, minimizeButton, fullscreenButton);
+            }
+
+            throw new NotSupportedException("GetChromeButtons not supported on this platform.");
+        }
 
         public static string GetComboBoxValue(this AppiumWebElement element)
         {
@@ -40,6 +57,74 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 // https://stackoverflow.com/questions/71807788/check-if-element-is-focused-in-appium
                 throw new NotSupportedException("Couldn't work out how to check if an element is focused on mac.");
+            }
+        }
+
+        /// <summary>
+        /// Clicks a button which is expected to open a new window.
+        /// </summary>
+        /// <param name="element">The button to click.</param>
+        /// <returns>
+        /// An object which when disposed will cause the newly opened window to close.
+        /// </returns>
+        public static IDisposable OpenWindowWithClick(this AppiumWebElement element)
+        {
+            var session = element.WrappedDriver;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var oldHandle = session.CurrentWindowHandle;
+                var oldHandles = session.WindowHandles.ToList();
+                var oldChildWindows = session.FindElements(By.XPath("//Window"));
+
+                element.Click();
+
+                var newHandle = session.WindowHandles.Except(oldHandles).SingleOrDefault();
+
+                if (newHandle is not null)
+                {
+                    // A new top-level window was opened. We need to switch to it.
+                    session.SwitchTo().Window(newHandle);
+
+                    return Disposable.Create(() =>
+                    {
+                        session.Close();
+                        session.SwitchTo().Window(oldHandle);
+                    });
+                }
+                else
+                {
+                    // If a new window handle hasn't been added to the session then it's likely
+                    // that a child window was opened. These don't appear in session.WindowHandles
+                    // so we have to use an XPath query to get hold of it.
+                    var newChildWindows = session.FindElements(By.XPath("//Window"));
+                    var childWindow = Assert.Single(newChildWindows.Except(oldChildWindows));
+
+                    return Disposable.Create(() =>
+                    {
+                        childWindow.SendKeys(Keys.Alt + Keys.F4 + Keys.Alt);
+                    });
+                }
+            }
+            else
+            {
+                var oldWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                var oldWindowTitles = oldWindows.ToDictionary(x => x.Text);
+                
+                element.Click();
+
+                var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                var newWindowTitles = newWindows.ToDictionary(x => x.Text);
+                var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
+                var newWindow = (AppiumWebElement)newWindowTitles[newWindowTitle]; 
+                
+                return Disposable.Create(() =>
+                {
+                    // TODO: We should be able to use Cmd+W here but Avalonia apps don't seem to have this shortcut
+                    // set up by default.
+                    var (close, _, _) = newWindow.GetChromeButtons();
+                    close!.Click();
+                });
             }
         }
 
