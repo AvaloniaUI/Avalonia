@@ -159,7 +159,7 @@ namespace Avalonia.Utilities
 
             ~Ref()
             {
-                _counter?.Release();
+                Dispose();
             }
 
             public T Item
