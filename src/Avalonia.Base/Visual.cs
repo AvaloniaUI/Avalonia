@@ -495,7 +495,12 @@ namespace Avalonia
 
             DisableTransitions();
             OnDetachedFromVisualTree(e);
-            CompositionVisual = null;
+            if (CompositionVisual != null)
+            {
+                CompositionVisual.DrawList = null;
+                CompositionVisual = null;
+            }
+
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
