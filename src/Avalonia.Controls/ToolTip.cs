@@ -271,8 +271,9 @@ namespace Avalonia.Controls
             _popupHost = OverlayPopupHost.CreatePopupHost(control, null);
             _popupHost.SetChild(this);
             ((ISetLogicalParent)_popupHost).SetParent(control);
-            
-            _popupHost.ConfigurePosition(control, GetPlacement(control), 
+            ApplyTemplatedParent(this, control.TemplatedParent);
+
+            _popupHost.ConfigurePosition(control, GetPlacement(control),
                 new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
 
             WindowManagerAddShadowHintChanged(_popupHost, false);
