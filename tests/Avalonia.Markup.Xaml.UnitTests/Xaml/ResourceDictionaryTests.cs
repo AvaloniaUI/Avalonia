@@ -66,6 +66,104 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact]
+        public void Item_Is_Added_To_ResourceDictionary_As_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Color x:Key='Red'>Red</Color>
+</ResourceDictionary>";
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+                Assert.True(resources.ContainsDeferredKey("Red"));
+            }
+        }
+
+        [Fact]
+        public void Item_Is_Added_To_Window_Resources_As_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <Color x:Key='Red'>Red</Color>
+    </Window.Resources>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var resources = (ResourceDictionary)window.Resources;
+
+                Assert.True(resources.ContainsDeferredKey("Red"));
+            }
+        }
+
+        [Fact]
+        public void Item_Is_Added_To_Window_MergedDictionaries_As_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <Color x:Key='Red'>Red</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var resources = (ResourceDictionary)window.Resources.MergedDictionaries[0];
+
+                Assert.True(resources.ContainsDeferredKey("Red"));
+            }
+        }
+
+        [Fact]
+        public void Item_Is_Added_To_Style_Resources_As_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Style xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Style.Resources>
+        <Color x:Key='Red'>Red</Color>
+    </Style.Resources>
+</Style>";
+                var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var resources = (ResourceDictionary)style.Resources;
+
+                Assert.True(resources.ContainsDeferredKey("Red"));
+            }
+        }
+
+        [Fact]
+        public void Item_Is_Added_To_Styles_Resources_As_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Styles xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Styles.Resources>
+        <Color x:Key='Red'>Red</Color>
+    </Styles.Resources>
+</Styles>";
+                var style = (Styles)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var resources = (ResourceDictionary)style.Resources;
+
+                Assert.True(resources.ContainsDeferredKey("Red"));
+            }
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

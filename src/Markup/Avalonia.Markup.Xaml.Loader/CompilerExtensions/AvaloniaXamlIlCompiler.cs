@@ -59,6 +59,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertAfter<TypeReferenceResolver>(
                 new XDataTypeTransformer());
 
+            InsertBefore<DeferredContentTransformer>(
+                new AvaloniaXamlIlDeferredResourceTransformer()
+            );
+
             // After everything else
             InsertBefore<NewObjectTransformer>(
                 new AddNameScopeRegistration(),

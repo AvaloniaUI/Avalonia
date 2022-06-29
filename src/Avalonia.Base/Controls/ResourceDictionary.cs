@@ -192,6 +192,11 @@ namespace Avalonia.Controls
             return false;
         }
 
+        public IEnumerator<KeyValuePair<object, object?>> GetEnumerator()
+        {
+            return _inner?.GetEnumerator() ?? Enumerable.Empty<KeyValuePair<object, object?>>().GetEnumerator();
+        }
+
         void ICollection<KeyValuePair<object, object?>>.Add(KeyValuePair<object, object?> item)
         {
             Add(item.Key, item.Value);
@@ -218,12 +223,17 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public IEnumerator<KeyValuePair<object, object?>> GetEnumerator()
-        {
-            return _inner?.GetEnumerator() ?? Enumerable.Empty<KeyValuePair<object, object?>>().GetEnumerator();
-        }
-
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        internal bool ContainsDeferredKey(object key)
+        {
+            if (_inner is not null && _inner.TryGetValue(key, out var result))
+            {
+                return result is DeferredItem;
+            }
+
+            return false;
+        }
 
         void IResourceProvider.AddOwner(IResourceHost owner)
         {
