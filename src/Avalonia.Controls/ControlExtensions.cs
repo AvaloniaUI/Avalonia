@@ -67,6 +67,29 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Finds the named control in the scope of the specified control and throws if not found.
+        /// </summary>
+        /// <typeparam name="T">The type of the control to find.</typeparam>
+        /// <param name="control">The control to look in.</param>
+        /// <param name="name">The name of the control to find.</param>
+        /// <returns>The control.</returns>
+        public static T GetControl<T>(this IControl control, string name) where T : class, IControl
+        {
+            _ = control ?? throw new ArgumentNullException(nameof(control));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
+            var nameScope = control.FindNameScope();
+
+            if (nameScope == null)
+            {
+                throw new InvalidOperationException("Could not find parent name scope.");
+            }
+
+            return nameScope.Find<T>(name) ??
+                throw new ArgumentException($"Could not find control named '{name}'.");
+        }
+
+        /// <summary>
         /// Sets a pseudoclass depending on an observable trigger.
         /// </summary>
         /// <param name="classes">The pseudoclasses collection.</param>
