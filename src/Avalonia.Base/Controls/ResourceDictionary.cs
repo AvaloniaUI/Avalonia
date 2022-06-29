@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls
 {
@@ -29,7 +30,11 @@ namespace Avalonia.Controls
 
         public object? this[object key]
         {
-            get => _inner?[key];
+            get
+            {
+                TryGetValue(key, out var value);
+                return value;
+            }
             set
             {
                 Inner[key] = value;
@@ -119,6 +124,12 @@ namespace Avalonia.Controls
             Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
         }
 
+        public void AddDeferred(object key, Func<IServiceProvider?, object?> factory)
+        {
+            Inner.Add(key, new DeferredItem(factory));
+            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        }
+
         public void Clear()
         {
             if (_inner?.Count > 0)
@@ -143,10 +154,8 @@ namespace Avalonia.Controls
 
         public bool TryGetResource(object key, out object? value)
         {
-            if (_inner is not null && _inner.TryGetValue(key, out value))
-            {
+            if (TryGetValue(key, out value))
                 return true;
-            }
 
             if (_mergedDictionaries != null)
             {
@@ -165,12 +174,23 @@ namespace Avalonia.Controls
 
         public bool TryGetValue(object key, out object? value)
         {
-            if (_inner is not null)
-                return _inner.TryGetValue(key, out value);
+            if (_inner is not null && _inner.TryGetValue(key, out value))
+            {
+                if (value is DeferredItem deffered)
+                {
+                    _inner[key] = value = deffered.Factory(null) switch
+                    {
+                        ITemplateResult t => t.Result,
+                        object v => v,
+                        _ => null,
+                    };
+                }
+                return true;
+            }
+
             value = null;
             return false;
         }
-
 
         void ICollection<KeyValuePair<object, object?>>.Add(KeyValuePair<object, object?> item)
         {
@@ -257,6 +277,12 @@ namespace Avalonia.Controls
                     owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
                 }
             }
+        }
+
+        private class DeferredItem
+        {
+            public DeferredItem(Func<IServiceProvider?, object?> factory) => Factory = factory;
+            public Func<IServiceProvider?, object?> Factory { get; }
         }
     }
 }

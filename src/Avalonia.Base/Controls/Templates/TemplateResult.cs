@@ -1,9 +1,10 @@
 namespace Avalonia.Controls.Templates
 {
-    public class TemplateResult<T>
+    public class TemplateResult<T> : ITemplateResult
     {
         public T Result { get; }
         public INameScope NameScope { get; }
+        object? ITemplateResult.Result => Result;
 
         public TemplateResult(T result, INameScope nameScope)
         {
