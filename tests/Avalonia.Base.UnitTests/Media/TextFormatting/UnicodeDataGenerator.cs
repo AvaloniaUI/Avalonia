@@ -10,22 +10,22 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeDataGenerator
     {
-        public const string Ucd = "https://www.unicode.org/Public/13.0.0/ucd/";
+        public const string Ucd = "https://www.unicode.org/Public/14.0.0/ucd/";
 
-        public static UnicodeTrie GenerateBiDiTrie(out BiDiDataEntries biDiDataEntries,out Dictionary<int, BiDiDataItem> biDiData)
+        public static UnicodeTrie GenerateBiDiTrie(out BiDiDataEntries biDiDataEntries, out Dictionary<int, BiDiDataItem> biDiData)
         {
             biDiData = new Dictionary<int, BiDiDataItem>();
 
-            var biDiClassEntries =
-                UnicodeEnumsGenerator.CreateBiDiClassEnum();
+            var bidiClassEntries =
+                UnicodeEnumsGenerator.CreateBidiClassEnum();
 
-            var biDiClassMappings = CreateTagToIndexMappings(biDiClassEntries);
+            var bidiClassMappings = CreateTagToIndexMappings(bidiClassEntries);
 
-            var biDiClassData = ReadBiDiData();
+            var bidiClassData = ReadBiDiData();
 
-            foreach (var (range, name) in biDiClassData)
+            foreach (var (range, name) in bidiClassData)
             {
-                var biDiClass = biDiClassMappings[name];
+                var biDiClass = bidiClassMappings[name];
 
                 AddBiDiClassRange(biDiData, range, biDiClass);
             }
@@ -56,19 +56,14 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             biDiDataEntries = new BiDiDataEntries()
             {
-                PairedBracketTypes = biDiPairedBracketTypeEntries, BiDiClasses = biDiClassEntries
+                PairedBracketTypes = biDiPairedBracketTypeEntries, BiDiClasses = bidiClassEntries
             };
 
             var trie = biDiTrieBuilder.Freeze();
 
-            GenerateTrieClass("BiDi", trie);
-            
-            using (var stream = File.Create("Generated\\BiDi.trie"))
-            {
-                trie.Save(stream);
+            GenerateTrieClass("Bidi", trie);
 
-                return trie;
-            }
+            return trie;
         }
 
         public static void GenerateTrieClass(string name, UnicodeTrie trie)
@@ -92,6 +87,8 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
                 writer.Write("            ");
 
+                long length = stream.Length;
+
                 while (true)
                 {
                     var b = stream.ReadByte();
@@ -100,18 +97,22 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                     {
                         break;
                     }
-                    
+
                     writer.Write(b.ToString());
 
-                    writer.Write(',');
-
-                    if (stream.Position % 100 == 0)
+                    if (stream.Position % 100 > 0 && stream.Position != length)
                     {
+                        writer.Write(", ");
+                    }
+                    else
+                    {
+                        writer.Write(',');
                         writer.Write(Environment.NewLine);
 
-                        writer.Write("            ");
-
-                        continue;
+                        if (stream.Position != length)
+                        {
+                            writer.Write("            ");
+                        }
                     }
                 }
 
@@ -161,12 +162,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             GenerateTrieClass("UnicodeData", trie);
 
-            using (var stream = File.Create("Generated\\UnicodeData.trie"))
-            {
-                trie.Save(stream);
-                
-                return trie;
-            }
+            return trie;
         }
 
         private static Dictionary<int, UnicodeDataItem> GetUnicodeData(IReadOnlyDictionary<string, int> generalCategoryMappings, 
@@ -461,9 +457,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             public int BracketType { get; set; }
 
             public int BiDiClass { get; set; }
-        }
-        
-
+        }      
     }
     
     internal class UnicodeDataEntries

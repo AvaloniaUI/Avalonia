@@ -244,18 +244,18 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return orderedLineBreakEntries.Values.ToList();
         }
 
-        public static List<DataEntry> CreateBiDiClassEnum()
+        public static List<DataEntry> CreateBidiClassEnum()
         {
             var entries = new List<DataEntry> { new DataEntry("Left_To_Right", "L", string.Empty) };
 
             ParseDataEntries("# Bidi_Class (bc)", entries);
 
-            using (var stream = File.Create("Generated\\BiDiClass.cs"))
+            using (var stream = File.Create("Generated\\BidiClass.cs"))
             using (var writer = new StreamWriter(stream))
             {
                 writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
                 writer.WriteLine("{");
-                writer.WriteLine("    public enum BiDiClass");
+                writer.WriteLine("    public enum BidiClass");
                 writer.WriteLine("    {");
 
                 foreach (var entry in entries)
@@ -277,12 +277,12 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             ParseDataEntries("# Bidi_Paired_Bracket_Type (bpt)", entries);
 
-            using (var stream = File.Create("Generated\\BiDiPairedBracketType.cs"))
+            using (var stream = File.Create("Generated\\BidiPairedBracketType.cs"))
             using (var writer = new StreamWriter(stream))
             {
                 writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
                 writer.WriteLine("{");
-                writer.WriteLine("    public enum BiDiPairedBracketType");
+                writer.WriteLine("    public enum BidiPairedBracketType");
                 writer.WriteLine("    {");
 
                 foreach (var entry in entries)
