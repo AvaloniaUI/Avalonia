@@ -119,13 +119,16 @@ void WindowImpl::BringToFront()
 {
     if(Window != nullptr)
     {
-        if(IsDialog())
+        if (![Window isMiniaturized])
         {
-            Activate();
-        }
-        else
-        {
-            [Window orderFront:nullptr];
+            if(IsDialog())
+            {
+                Activate();
+            }
+            else
+            {
+                [Window orderFront:nullptr];
+            }
         }
         
         [Window invalidateShadow];
@@ -488,6 +491,8 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
         }
 
         if (_shown) {
+            _actualWindowState = _lastWindowState;
+
             switch (state) {
                 case Maximized:
                     if (currentState == FullScreen) {
@@ -545,7 +550,6 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
                     break;
             }
 
-            _actualWindowState = _lastWindowState;
             WindowEvents->WindowStateChanged(_actualWindowState);
         }
 
