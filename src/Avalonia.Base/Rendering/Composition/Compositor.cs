@@ -62,6 +62,7 @@ namespace Avalonia.Rendering.Composition
         /// <returns>A task that completes when sent changes are applied and rendered on the render thread</returns>
         public Task RequestCommitAsync()
         {
+            Dispatcher.UIThread.VerifyAccess();
             var batch = new Batch();
             
             using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
@@ -126,6 +127,7 @@ namespace Avalonia.Rendering.Composition
 
         internal void RegisterForSerialization(CompositionObject compositionObject)
         {
+            Dispatcher.UIThread.VerifyAccess();
             _objectsForSerialization.Add(compositionObject);
             QueueImplicitBatchCommit();
         }
