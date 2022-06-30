@@ -66,7 +66,7 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override Selector? MovePrevious() => _previous;
+        private protected override (Selector?, IStyle?) MovePrevious(IStyle? nestingParent) => (_previous, nestingParent);
         protected override Selector? MovePreviousOrParent() => _previous;
     }
 }

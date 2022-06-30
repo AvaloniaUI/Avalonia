@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.Styling.Activators;
 using Xunit;
@@ -147,6 +148,85 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.True(sink.Active);
             control.Classes.Remove("foo");
             Assert.False(sink.Active);
+        }
+        
+        [Fact]
+        public void Template_Nesting_OfType_Matches()
+        {
+            var control = new Control1 { Classes = { "foo" } };
+            var button = new Button
+            {
+                Template = new FuncControlTemplate((x, _) => control),
+            };
+
+            button.ApplyTemplate();
+
+            Style nested;
+            var parent = new Style(x => x.OfType<Button>().Template())
+            {
+                Children =
+                {
+                    (nested = new Style(x => x.Nesting().OfType<Control1>())),
+                }
+            };
+
+            // REMOOOOVEEEE
+            var foo = new Style(x => x.OfType<Button>().Template().OfType<Control1>());
+            var match2 = foo.Selector.Match(control, parent);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, match2.Result);
+
+            var match = nested.Selector.Match(control, parent);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, match.Result);
+
+
+        }
+
+        [Fact]
+        public void Template_Nesting_OfType_Class_Matches()
+        {
+            var control = new Control1 { Classes = { "foo" } };
+            var button = new Button
+            {
+                Template = new FuncControlTemplate((x, _) => control),
+            };
+
+            button.ApplyTemplate();
+
+            Style nested;
+            var parent = new Style(x => x.OfType<Button>().Template())
+            {
+                Children =
+                {
+                    (nested = new Style(x => x.Nesting().OfType<Control1>().Class("foo"))),
+                }
+            };
+
+            var match = nested.Selector.Match(control, parent);
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+        }
+
+        [Fact]
+        public void Class_Template_Nesting_OfType_Matches()
+        {
+            var control = new Control1 { Classes = { "foo" } };
+            var button = new Button
+            {
+                Template = new FuncControlTemplate((x, _) => control),
+            };
+
+            button.ApplyTemplate();
+
+            Style nested;
+            var parent = new Style(x => x.OfType<Button>().Class("bar").Template())
+            {
+                Children =
+                {
+                    (nested = new Style(x => x.Nesting().OfType<Control1>())),
+                }
+            };
+
+            var match = nested.Selector.Match(control, parent);
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
         }
 
         [Fact]
