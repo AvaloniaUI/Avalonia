@@ -189,6 +189,36 @@ public class StyledElementTests_Theming
             Assert.Null(((IStyleable)target).GetEffectiveTheme());
         }
 
+        [Fact]
+        public void Nested_Style_Can_Override_Property_In_Inner_Templated_Control()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = new ThemedControl2
+            {
+                Theme = new ControlTheme(typeof(ThemedControl2))
+                {
+                    Setters =
+                    {
+                        new Setter(
+                            TemplatedControl.TemplateProperty,
+                            new FuncControlTemplate<ThemedControl2>((o, n) => new ThemedControl())),
+                    },
+                    Children =
+                    {
+                        new Style(x => x.Nesting().Template().OfType<ThemedControl>())
+                        {
+                            Setters = { new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(7)), }
+                        },
+                    }
+                },
+            };
+
+            var root = CreateRoot(target);
+            var inner = Assert.IsType<ThemedControl>(target.VisualChild);
+
+            Assert.Equal(new CornerRadius(7), inner.CornerRadius);
+        }
+
         private static ThemedControl CreateTarget() => new ThemedControl();
 
         private static TestRoot CreateRoot(IControl child)
@@ -332,6 +362,7 @@ public class StyledElementTests_Theming
             Setters =
             {
                 new Setter(TemplatedControl.TemplateProperty, template),
+                new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(5)),
             },
             Children =
             {
@@ -372,6 +403,11 @@ public class StyledElementTests_Theming
     }
 
     private class ThemedControl : TemplatedControl
+    {
+        public IVisual? VisualChild => VisualChildren?.SingleOrDefault();
+    }
+
+    private class ThemedControl2 : TemplatedControl
     {
         public IVisual? VisualChild => VisualChildren?.SingleOrDefault();
     }
