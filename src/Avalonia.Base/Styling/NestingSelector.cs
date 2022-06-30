@@ -37,6 +37,6 @@ namespace Avalonia.Styling
             return parent is Style parentStyle ? (parentStyle.Selector, parentStyle.Parent) : (null, null);
         }
 
-        protected override Selector? MovePreviousOrParent() => null;
+        private protected override Selector? MovePreviousOrParent() => null;
     }
 }

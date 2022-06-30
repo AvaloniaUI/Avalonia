@@ -95,7 +95,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Moves to the previous selector or the parent selector.
         /// </summary>
-        protected abstract Selector? MovePreviousOrParent();
+        private protected abstract Selector? MovePreviousOrParent();
 
         internal virtual void ValidateNestingSelector(bool inControlTheme)
         {
