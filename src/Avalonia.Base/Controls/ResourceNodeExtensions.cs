@@ -132,6 +132,11 @@ namespace Avalonia.Controls
             {
                 _target.OwnerChanged += OwnerChanged;
                 _owner = _target.Owner;
+
+                if (_owner is object)
+                {
+                    _owner.ResourcesChanged += ResourcesChanged;
+                }
             }
 
             protected override void Deinitialize()
