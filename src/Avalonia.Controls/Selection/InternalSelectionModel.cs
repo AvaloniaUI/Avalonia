@@ -170,7 +170,7 @@ namespace Avalonia.Controls.Selection
         {
             if (_writableSelectedItems is INotifyCollectionChanged incc)
             {
-                incc.CollectionChanged += OnSelectedItemsCollectionChanged;
+                incc.CollectionChanged -= OnSelectedItemsCollectionChanged;
             }
         }
 
