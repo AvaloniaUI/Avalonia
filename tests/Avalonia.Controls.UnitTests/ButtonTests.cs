@@ -150,7 +150,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target);
+            RaisePointerEntered(target);
             RaisePointerMove(target, pt);
             RaisePointerPressed(target, 1, MouseButton.Left, pt);
 
@@ -182,10 +182,10 @@ namespace Avalonia.Controls.UnitTests
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target);
+            RaisePointerEntered(target);
             RaisePointerMove(target, new Point(50,50));
             RaisePointerPressed(target, 1, MouseButton.Left, new Point(50, 50));
-            RaisePointerLeave(target);
+            RaisePointerExited(target);
 
             Assert.Equal(_helper.Captured, target);
 
@@ -224,7 +224,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target);
+            RaisePointerEntered(target);
             RaisePointerMove(target, pt);
             RaisePointerPressed(target, 1, MouseButton.Left, pt);
 
@@ -422,12 +422,12 @@ namespace Avalonia.Controls.UnitTests
             _helper.Up(button, mouseButton, pt);
         }
 
-        private void RaisePointerEnter(Button button)
+        private void RaisePointerEntered(Button button)
         {
             _helper.Enter(button);
         }
 
-        private void RaisePointerLeave(Button button)
+        private void RaisePointerExited(Button button)
         {
             _helper.Leave(button);
         }

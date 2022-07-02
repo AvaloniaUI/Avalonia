@@ -10,10 +10,10 @@ namespace Avalonia.Media.TextFormatting
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
-        private readonly FlowDirection _flowDirection;
+        private readonly FlowDirection _resolvedFlowDirection;
 
         public TextLineImpl(List<DrawableTextRun> textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
-            TextParagraphProperties paragraphProperties, FlowDirection flowDirection = FlowDirection.LeftToRight,
+            TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
             TextLineBreak? lineBreak = null, bool hasCollapsed = false)
         {
             FirstTextSourceIndex = firstTextSourceIndex;
@@ -25,7 +25,7 @@ namespace Avalonia.Media.TextFormatting
             _paragraphWidth = paragraphWidth;
             _paragraphProperties = paragraphProperties;
 
-            _flowDirection = flowDirection;
+            _resolvedFlowDirection = resolvedFlowDirection;
         }
 
         /// <inheritdoc/>
@@ -136,7 +136,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
-                _flowDirection, TextLineBreak, true);
+                _resolvedFlowDirection, TextLineBreak, true);
 
             if (collapsedRuns.Count > 0)
             {
@@ -144,7 +144,14 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return collapsedLine;
+        }
 
+        /// <inheritdoc/>
+        public override void Justify(JustificationProperties justificationProperties)
+        {
+            justificationProperties.Justify(this);
+
+            _textLineMetrics = CreateLineMetrics();
         }
 
         /// <inheritdoc/>
@@ -167,7 +174,7 @@ namespace Avalonia.Media.TextFormatting
                     return shapedTextCharacters.GlyphRun.GetCharacterHitFromDistance(distance, out _);
                 }
 
-                return _flowDirection == FlowDirection.LeftToRight ?
+                return _resolvedFlowDirection == FlowDirection.LeftToRight ?
                     new CharacterHit(FirstTextSourceIndex) :
                     new CharacterHit(FirstTextSourceIndex + Length);
             }
@@ -260,7 +267,7 @@ namespace Avalonia.Media.TextFormatting
                             //Look at the left and right edge of the current run
                             if (currentRun.IsLeftToRight)
                             {
-                                if (_flowDirection == FlowDirection.LeftToRight && (lastRun == null || lastRun.IsLeftToRight))
+                                if (_resolvedFlowDirection == FlowDirection.LeftToRight && (lastRun == null || lastRun.IsLeftToRight))
                                 {
                                     if (characterIndex <= currentPosition)
                                     {
@@ -735,7 +742,7 @@ namespace Avalonia.Media.TextFormatting
             // Build up the collection of ordered runs.
             var run = _textRuns[0];
 
-            OrderedBidiRun orderedRun = new(run, GetRunBidiLevel(run, _flowDirection));
+            OrderedBidiRun orderedRun = new(run, GetRunBidiLevel(run, _resolvedFlowDirection));
 
             var current = orderedRun;
 
@@ -743,7 +750,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 run = _textRuns[i];
 
-                current.Next = new OrderedBidiRun(run, GetRunBidiLevel(run, _flowDirection));
+                current.Next = new OrderedBidiRun(run, GetRunBidiLevel(run, _resolvedFlowDirection));
 
                 current = current.Next;
             }
@@ -762,7 +769,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentRun = _textRuns[i];
 
-                var level = GetRunBidiLevel(currentRun, _flowDirection);
+                var level = GetRunBidiLevel(currentRun, _resolvedFlowDirection);
 
                 if (level > max)
                 {
@@ -1242,8 +1249,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var start = GetParagraphOffsetX(width, widthIncludingWhitespace, _paragraphWidth,
-                _paragraphProperties.TextAlignment, _paragraphProperties.FlowDirection);
+            var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 
             if (!double.IsNaN(lineHeight) && !MathUtilities.IsZero(lineHeight))
             {
@@ -1255,6 +1261,55 @@ namespace Avalonia.Media.TextFormatting
 
             return new TextLineMetrics(widthIncludingWhitespace > _paragraphWidth, height, newLineLength, start,
                 -ascent, trailingWhitespaceLength, width, widthIncludingWhitespace);
+        }
+
+        /// <summary>
+        /// Gets the text line offset x.
+        /// </summary>
+        /// <param name="width">The line width.</param>
+        /// <param name="widthIncludingTrailingWhitespace">The paragraph width including whitespace.</param>
+
+        /// <returns>The paragraph offset.</returns>
+        private double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace)
+        {
+            if (double.IsPositiveInfinity(_paragraphWidth))
+            {
+                return 0;
+            }
+
+            var textAlignment = _paragraphProperties.TextAlignment;
+            var paragraphFlowDirection = _paragraphProperties.FlowDirection;
+
+            switch (textAlignment)
+            {
+                case TextAlignment.Start:
+                    {
+                        textAlignment = paragraphFlowDirection == FlowDirection.LeftToRight ? TextAlignment.Left : TextAlignment.Right;
+                        break;
+                    }
+                case TextAlignment.End:
+                    {
+                        textAlignment = paragraphFlowDirection == FlowDirection.RightToLeft ? TextAlignment.Left : TextAlignment.Right;
+                        break;
+                    }
+                case TextAlignment.DetectFromContent:
+                    {
+                        textAlignment = _resolvedFlowDirection == FlowDirection.LeftToRight ? TextAlignment.Left : TextAlignment.Right;
+                        break;
+                    }
+            }
+
+            switch (textAlignment)
+            {
+                case TextAlignment.Center:
+                    return Math.Max(0, (_paragraphWidth - width) / 2);
+
+                case TextAlignment.Right:
+                    return Math.Max(0, _paragraphWidth - widthIncludingTrailingWhitespace);
+
+                default:
+                    return 0;
+            }
         }
 
         private sealed class OrderedBidiRun

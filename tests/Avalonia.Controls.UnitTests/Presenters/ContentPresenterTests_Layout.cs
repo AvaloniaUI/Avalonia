@@ -1,5 +1,6 @@
 using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -231,6 +232,69 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(new Rect(32, 32, 0, 0), content.Bounds);
+        }
+
+        public class UseLayoutRounding
+        {
+            [Fact]
+            public void Measure_Rounds_Padding()
+            {
+                var target = new ContentPresenter
+                {
+                    Padding = new Thickness(1),
+                    Content = new Canvas
+                    {
+                        Width = 101,
+                        Height = 101,
+                    }
+                };
+
+                var root = CreatedRoot(1.5, target);
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                // - 1 pixel padding is rounded up to 1.3333; for both sides it is 2.6666
+                // - Size of 101 gets rounded up to 101.3333
+                // - Desired size = 101.3333 + 2.6666 = 104
+                Assert.Equal(new Size(104, 104), target.DesiredSize);
+            }
+
+            [Fact]
+            public void Measure_Rounds_BorderThickness()
+            {
+                var target = new ContentPresenter
+                {
+                    BorderThickness = new Thickness(1),
+                    Content = new Canvas
+                    {
+                        Width = 101,
+                        Height = 101,
+                    }
+                };
+
+                var root = CreatedRoot(1.5, target);
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                // - 1 pixel border thickness is rounded up to 1.3333; for both sides it is 2.6666
+                // - Size of 101 gets rounded up to 101.3333
+                // - Desired size = 101.3333 + 2.6666 = 104
+                Assert.Equal(new Size(104, 104), target.DesiredSize);
+            }
+
+            private static TestRoot CreatedRoot(
+                double scaling,
+                Control child,
+                Size? constraint = null)
+            {
+                return new TestRoot
+                {
+                    LayoutScaling = scaling,
+                    UseLayoutRounding = true,
+                    Child = child,
+                    ClientSize = constraint ?? new Size(1000, 1000),
+                };
+            }
         }
     }
 }

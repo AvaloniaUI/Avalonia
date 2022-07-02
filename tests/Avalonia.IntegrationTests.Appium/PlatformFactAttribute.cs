@@ -5,21 +5,33 @@ using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
+    [Flags]
+    internal enum TestPlatforms
+    {
+        Windows = 0x01,
+        MacOS = 0x02,
+        All = Windows | MacOS,
+    }
+    
     internal class PlatformFactAttribute : FactAttribute
     {
+        public PlatformFactAttribute(TestPlatforms platforms = TestPlatforms.All) => Platforms = platforms;
+        
+        public TestPlatforms Platforms { get; }
+        
         public override string? Skip
         {
-            get
-            {
-                if (SkipOnWindows && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    return "Ignored on Windows";
-                if (SkipOnOSX && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    return "Ignored on MacOS";
-                return null;
-            }
+            get => IsSupported() ? null : $"Ignored on {RuntimeInformation.OSDescription}";
             set => throw new NotSupportedException();
         }
-        public bool SkipOnOSX { get; set; }
-        public bool SkipOnWindows { get; set; }
+
+        private bool IsSupported()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return Platforms.HasAnyFlag(TestPlatforms.Windows);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return Platforms.HasAnyFlag(TestPlatforms.MacOS);
+            return false;
+        }
     }
 }
