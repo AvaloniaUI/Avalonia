@@ -56,11 +56,12 @@ namespace Avalonia.Input.Raw
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
+            Point = new RawPointerPoint();
             Position = position;
             Type = type;
             InputModifiers = inputModifiers;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RawPointerEventArgs"/> class.
         /// </summary>
@@ -86,6 +87,11 @@ namespace Avalonia.Input.Raw
             Type = type;
             InputModifiers = inputModifiers;
         }
+
+        /// <summary>
+        /// Gets the raw pointer identifier.
+        /// </summary>
+        public long RawPointerId { get; set; }
 
         /// <summary>
         /// Gets the pointer properties and position, in client DIPs.
@@ -130,10 +136,17 @@ namespace Avalonia.Input.Raw
         /// Pointer position, in client DIPs.
         /// </summary>
         public Point Position { get; set; }
-        
+
+        public float Twist { get; set; }
+        public float Pressure { get; set; }
+        public float XTilt { get; set; }
+        public float YTilt { get; set; }
+
+
         public RawPointerPoint()
         {
-            Position = default;
+            this = default;
+            Pressure = 0.5f;
         }
     }
 }

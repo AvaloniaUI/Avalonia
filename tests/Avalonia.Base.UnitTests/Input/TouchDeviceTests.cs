@@ -219,30 +219,36 @@ namespace Avalonia.Input.UnitTests
         {
             for (int i = 0; i < touchPointIds.Length; i++)
             {
-                inputManager.ProcessInput(new RawTouchEventArgs(device, 0,
+                inputManager.ProcessInput(new RawPointerEventArgs(device, 0,
                                                               root,
                                                               type,
                                                               new Point(0, 0),
-                                                              RawInputModifiers.None,
-                                                              touchPointIds[i]));
+                                                              RawInputModifiers.None)
+                {
+                    RawPointerId = touchPointIds[i]
+                });
             }
         }
 
 
         private static void TapOnce(IInputManager inputManager, TouchDevice device, IInputRoot root, ulong timestamp = 0, long touchPointId = 0)
         {
-            inputManager.ProcessInput(new RawTouchEventArgs(device, timestamp,
+            inputManager.ProcessInput(new RawPointerEventArgs(device, timestamp,
                                                root,
                                                RawPointerEventType.TouchBegin,
                                                new Point(0, 0),
-                                               RawInputModifiers.None,
-                                               touchPointId));
-            inputManager.ProcessInput(new RawTouchEventArgs(device, timestamp,
+                                               RawInputModifiers.None)
+            {
+                RawPointerId = touchPointId
+            });
+            inputManager.ProcessInput(new RawPointerEventArgs(device, timestamp,
                                                 root,
                                                 RawPointerEventType.TouchEnd,
                                                 new Point(0, 0),
-                                                RawInputModifiers.None,
-                                                touchPointId));
+                                                RawInputModifiers.None)
+            {
+                RawPointerId = touchPointId
+            });
         }
     }
 }
