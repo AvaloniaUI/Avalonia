@@ -20,15 +20,15 @@ public class PointersPage : UserControl
         border1.PointerReleased += Border_PointerReleased;
         border1.PointerCaptureLost += Border_PointerCaptureLost;
         border1.PointerMoved += Border_PointerUpdated;
-        border1.PointerEnter += Border_PointerUpdated;
-        border1.PointerLeave += Border_PointerUpdated;
+        border1.PointerEntered += Border_PointerUpdated;
+        border1.PointerExited += Border_PointerUpdated;
 
         border2.PointerPressed += Border_PointerPressed;
         border2.PointerReleased += Border_PointerReleased;
         border2.PointerCaptureLost += Border_PointerCaptureLost;
         border2.PointerMoved += Border_PointerUpdated;
-        border2.PointerEnter += Border_PointerUpdated;
-        border2.PointerLeave += Border_PointerUpdated;
+        border2.PointerEntered += Border_PointerUpdated;
+        border2.PointerExited += Border_PointerUpdated;
     }
 
     private void Border_PointerUpdated(object sender, PointerEventArgs e)
