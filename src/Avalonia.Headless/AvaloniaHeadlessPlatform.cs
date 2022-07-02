@@ -73,7 +73,7 @@ namespace Avalonia.Headless
                 .Bind<ITextShaperImpl>().ToSingleton<HeadlessTextShaperStub>()
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-            if (opts.UseComposition)
+            if (opts.UseCompositor)
                 Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
         }
 
@@ -89,7 +89,7 @@ namespace Avalonia.Headless
 
     public class AvaloniaHeadlessPlatformOptions
     {
-        public bool UseComposition { get; set; } = true;
+        public bool UseCompositor { get; set; } = true;
         public bool UseHeadlessDrawing { get; set; } = true;
     }
 
