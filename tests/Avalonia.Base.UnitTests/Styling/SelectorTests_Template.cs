@@ -142,14 +142,13 @@ namespace Avalonia.Base.UnitTests.Styling
             var border = (Border)target.Object.VisualChildren.Single();
             var selector = default(Selector).OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).Activator;
-            var inccDebug = (INotifyCollectionChangedDebug)styleable.Object.Classes;
 
             using (activator.Subscribe(_ => { }))
             {
-                Assert.Single(inccDebug.GetCollectionChangedSubscribers());
+                Assert.Equal(1, ((Classes)styleable.Object.Classes).ListenerCount);
             }
 
-            Assert.Null(inccDebug.GetCollectionChangedSubscribers());
+            Assert.Equal(0, ((Classes)styleable.Object.Classes).ListenerCount);
         }
 
         private void BuildVisualTree<T>(Mock<T> templatedControl) where T : class, IVisual
