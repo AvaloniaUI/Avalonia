@@ -74,12 +74,12 @@ namespace Avalonia.Win32
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
+        private readonly bool _wmPointerEnabled;
 
         private Win32NativeControlHost _nativeControlHost;
         private WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
-        private bool _wmPointerEnabled;
         private IInputRoot _owner;
         private WindowProperties _windowProperties;
         private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
@@ -100,10 +100,10 @@ namespace Avalonia.Win32
         private bool _ignoreWmChar;
 
         private const int MaxPointerHistorySize = 512;
-        private readonly static PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
-        private readonly static POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
-        private readonly static POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
-        private readonly static POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
+        private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
+        private static readonly POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
+        private static readonly POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
+        private static readonly POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
 
         public WindowImpl()
         {
@@ -138,13 +138,7 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
-            _wmPointerEnabled = Win32Platform.Options.EnableWmPointerEvents
-                ?? Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
-
-            if (_wmPointerEnabled && !IsMouseInPointerEnabled())
-            {
-                EnableMouseInPointer(true);
-            }
+            _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
@@ -299,6 +293,8 @@ namespace Avalonia.Win32
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         protected IntPtr Hwnd => _hwnd;
+
+        private bool IsMouseInPointerEnabled => _wmPointerEnabled && IsMouseInPointerEnabled();
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {

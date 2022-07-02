@@ -84,7 +84,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_DESTROY:
                     {
                         UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
-                        
+
                         // We need to release IMM context and state to avoid leaks.
                         if (Imm32InputMethod.Current.HWND == _hwnd)
                         {
@@ -110,9 +110,9 @@ namespace Avalonia.Win32
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
                         _scaling = dpi / 96.0;
                         ScalingChanged?.Invoke(_scaling);
-                        
+
                         using (SetResizeReason(PlatformResizeReason.DpiChange))
-                        { 
+                        {
                             SetWindowPos(hWnd,
                                 IntPtr.Zero,
                                 newDisplayRect.left,
@@ -180,7 +180,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONDOWN:
                 case WindowsMessage.WM_XBUTTONDOWN:
                     {
-                        if (_wmPointerEnabled)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
@@ -213,7 +213,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                     {
-                        if (_wmPointerEnabled)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
@@ -241,12 +241,16 @@ namespace Avalonia.Win32
                     }
                 // Mouse capture is lost
                 case WindowsMessage.WM_CANCELMODE:
-                    _mouseDevice.Capture(null);
+                    if (!IsMouseInPointerEnabled)
+                    {
+                        _mouseDevice.Capture(null);
+                    }
+
                     break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
-                        if (_wmPointerEnabled)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
@@ -273,7 +277,7 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawPointerEventType.Move,
-                            DipFromLParam(lParam), 
+                            DipFromLParam(lParam),
                             GetMouseModifiers(wParam));
 
                         break;
@@ -281,7 +285,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEWHEEL:
                     {
-                        if (_wmPointerEnabled)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
@@ -290,14 +294,14 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             PointToClient(PointFromLParam(lParam)),
-                            new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), 
+                            new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta),
                             GetMouseModifiers(wParam));
                         break;
                     }
 
                 case WindowsMessage.WM_MOUSEHWHEEL:
                     {
-                        if (_wmPointerEnabled)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
@@ -306,14 +310,14 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             PointToClient(PointFromLParam(lParam)),
-                            new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), 
+                            new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0),
                             GetMouseModifiers(wParam));
                         break;
                     }
 
                 case WindowsMessage.WM_MOUSELEAVE:
                     {
-                        if (_wmPointerEnabled)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
@@ -323,7 +327,7 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawPointerEventType.LeaveWindow,
-                            new Point(-1, -1), 
+                            new Point(-1, -1),
                             WindowsKeyboardDevice.Instance.Modifiers);
                         break;
                     }
@@ -333,7 +337,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCMBUTTONDOWN:
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
-                        if (_wmPointerEnabled)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
@@ -598,7 +602,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETMINMAXINFO:
                     {
                         MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-                        
+
                         _maxTrackSize = mmi.ptMaxTrackSize;
 
                         if (_minSize.Width > 0)
@@ -682,7 +686,7 @@ namespace Avalonia.Win32
             if (_managedDrag.PreprocessInputEvent(ref e))
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
 #endif
-            
+
             if(shouldTakeFocus)
             {
                 SetFocus(_hwnd);
@@ -915,11 +919,11 @@ namespace Avalonia.Win32
             if (langid == _langid && Imm32InputMethod.Current.HWND == Hwnd)
             {
                 return;
-            } 
+            }
             _langid = langid;
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
-            
+
         }
 
         private static int ToInt32(IntPtr ptr)
