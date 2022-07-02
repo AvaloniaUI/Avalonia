@@ -864,7 +864,7 @@ namespace Avalonia.Win32
                 Pressure = info.pressure / 1024f,
                 Twist = info.rotation,
                 XTilt = info.tiltX,
-                YTilt = info.tiltX
+                YTilt = info.tiltY
             };
         }
 
