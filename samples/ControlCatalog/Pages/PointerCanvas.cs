@@ -19,6 +19,7 @@ public class PointerCanvas : Control
     private IDisposable? _statusUpdated;
     private Dictionary<int, PointerPoints> _pointers = new();
     private PointerPointProperties? _lastProperties;
+    private PointerUpdateKind? _lastNonOtherUpdateKind;
     class PointerPoints
     {
         struct CanvasPoint
@@ -128,10 +129,11 @@ public class PointerCanvas : Control
 
         _statusUpdated = DispatcherTimer.Run(() =>
         {
-            if (_stopwatch.Elapsed.TotalSeconds > 1)
+            if (_stopwatch.Elapsed.TotalMilliseconds > 250)
             {
                 Status = $@"Events per second: {(_events / _stopwatch.Elapsed.TotalSeconds)}
 PointerUpdateKind: {_lastProperties?.PointerUpdateKind}
+Last PointerUpdateKind != Other: {_lastNonOtherUpdateKind}
 IsLeftButtonPressed: {_lastProperties?.IsLeftButtonPressed}
 IsRightButtonPressed: {_lastProperties?.IsRightButtonPressed}
 IsMiddleButtonPressed: {_lastProperties?.IsMiddleButtonPressed}
@@ -162,20 +164,26 @@ Twist: {_lastProperties?.Twist}";
     void HandleEvent(PointerEventArgs e)
     {
         _events++;
+
         if (_threadSleep != 0)
         {
             Thread.Sleep(_threadSleep);
         }
         InvalidateVisual();
 
+        var lastPointer = e.GetCurrentPoint(this);
+        _lastProperties = lastPointer.Properties;
+
+        if (_lastProperties.PointerUpdateKind != PointerUpdateKind.Other)
+        {
+            _lastNonOtherUpdateKind = _lastProperties.PointerUpdateKind;
+        }
+
         if (e.RoutedEvent == PointerReleasedEvent && e.Pointer.Type == PointerType.Touch)
         {
             _pointers.Remove(e.Pointer.Id);
             return;
         }
-
-        var lastPointer = e.GetCurrentPoint(this);
-        _lastProperties = lastPointer.Properties;
 
         if (e.Pointer.Type != PointerType.Pen
             || lastPointer.Properties.Pressure > 0)
@@ -217,5 +225,11 @@ Twist: {_lastProperties?.Twist}";
     {
         HandleEvent(e);
         base.OnPointerReleased(e);
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        _lastProperties = null;
+        base.OnPointerCaptureLost(e);
     }
 }

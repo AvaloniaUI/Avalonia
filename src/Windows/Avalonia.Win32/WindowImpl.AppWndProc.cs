@@ -746,7 +746,6 @@ namespace Avalonia.Win32
                     {
                         if (GetPointerPenInfoHistory(info.pointerId, ref historyCount, s_historyPenInfos))
                         {
-                            uint timestamp = 0;
                             for (int i = historyCount - 1; i >= 1; i--)
                             {
                                 var historyPenInfo = s_historyPenInfos[i];
@@ -830,7 +829,7 @@ namespace Avalonia.Win32
                 timestamp = info.dwTime;
             }
 
-            modifiers |= GetInputModifiers(info.dwKeyStates);
+            modifiers |= GetInputModifiers(info.pointerFlags);
         }
 
         private RawPointerPoint CreateRawPointerPoint(POINTER_INFO pointerInfo)
@@ -871,48 +870,40 @@ namespace Avalonia.Win32
 
         private static RawPointerEventType GetEventType(WindowsMessage message, POINTER_INFO info)
         {
-            if (message == WindowsMessage.WM_POINTERUPDATE)
+            var isTouch = info.pointerType == PointerInputType.PT_TOUCH;
+            if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED))
             {
-                return info.pointerType == PointerInputType.PT_TOUCH 
-                    ? RawPointerEventType.TouchUpdate
-                    : RawPointerEventType.Move;
+                return isTouch ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
             }
-            switch (info.pointerType)
+
+            var eventType = ToEventType(info.ButtonChangeType, isTouch);
+            if (eventType == RawPointerEventType.LeftButtonDown &&
+                message == WindowsMessage.WM_NCPOINTERDOWN)
             {
-                case PointerInputType.PT_TOUCH:
-                    if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED))
-                    {
-                        return RawPointerEventType.TouchCancel;
-                    }
-                    return message == WindowsMessage.WM_POINTERDOWN || message == WindowsMessage.WM_NCPOINTERDOWN
-                                    ? RawPointerEventType.TouchBegin
-                                    : RawPointerEventType.TouchEnd;
-                default:
-                    var eventType = ToEventType(info.ButtonChangeType);
-                    if (eventType == RawPointerEventType.LeftButtonDown &&
-                        message == WindowsMessage.WM_NCPOINTERDOWN)
-                    {
-                        eventType = RawPointerEventType.NonClientLeftButtonDown;
-                    }
-                    return eventType;
+                eventType = RawPointerEventType.NonClientLeftButtonDown;
             }
+
+            return eventType;
         }
 
-        private static RawPointerEventType ToEventType(PointerButtonChangeType type)
+        private static RawPointerEventType ToEventType(PointerButtonChangeType type, bool isTouch)
         {
             return type switch
             {
-                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_DOWN => RawPointerEventType.LeftButtonDown,
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_DOWN when isTouch => RawPointerEventType.TouchBegin,
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_DOWN when !isTouch => RawPointerEventType.LeftButtonDown,
                 PointerButtonChangeType.POINTER_CHANGE_SECONDBUTTON_DOWN => RawPointerEventType.RightButtonDown,
                 PointerButtonChangeType.POINTER_CHANGE_THIRDBUTTON_DOWN => RawPointerEventType.MiddleButtonDown,
                 PointerButtonChangeType.POINTER_CHANGE_FOURTHBUTTON_DOWN => RawPointerEventType.XButton1Down,
                 PointerButtonChangeType.POINTER_CHANGE_FIFTHBUTTON_DOWN => RawPointerEventType.XButton2Down,
 
-                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_UP => RawPointerEventType.LeftButtonUp,
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_UP when isTouch => RawPointerEventType.TouchEnd,
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_UP when !isTouch => RawPointerEventType.LeftButtonUp,
                 PointerButtonChangeType.POINTER_CHANGE_SECONDBUTTON_UP => RawPointerEventType.RightButtonUp,
                 PointerButtonChangeType.POINTER_CHANGE_THIRDBUTTON_UP => RawPointerEventType.MiddleButtonUp,
                 PointerButtonChangeType.POINTER_CHANGE_FOURTHBUTTON_UP => RawPointerEventType.XButton1Up,
                 PointerButtonChangeType.POINTER_CHANGE_FIFTHBUTTON_UP => RawPointerEventType.XButton2Up,
+                _ when isTouch => RawPointerEventType.TouchUpdate,
                 _ => RawPointerEventType.Move
             };
         }
@@ -994,6 +985,38 @@ namespace Avalonia.Win32
             }
 
             if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON2))
+            {
+                modifiers |= RawInputModifiers.XButton2MouseButton;
+            }
+
+            return modifiers;
+        }
+
+        private static RawInputModifiers GetInputModifiers(PointerFlags flags)
+        {
+            var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_FIRSTBUTTON))
+            {
+                modifiers |= RawInputModifiers.LeftMouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_SECONDBUTTON))
+            {
+                modifiers |= RawInputModifiers.RightMouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_THIRDBUTTON))
+            {
+                modifiers |= RawInputModifiers.MiddleMouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_FOURTHBUTTON))
+            {
+                modifiers |= RawInputModifiers.XButton1MouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_FIFTHBUTTON))
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }

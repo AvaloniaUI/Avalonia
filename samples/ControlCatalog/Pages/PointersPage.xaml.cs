@@ -35,7 +35,8 @@ public class PointersPage : UserControl
     {
         var textBlock = (TextBlock)((Border)sender).Child;
         var position = e.GetPosition((Border)sender);
-        textBlock.Text = @$"Captured: {e.Pointer.Captured == sender}
+        textBlock.Text = @$"Type: {e.Pointer.Type}
+Captured: {e.Pointer.Captured == sender}
 PointerId: {e.Pointer.Id}
 Position: {(int)position.X} {(int)position.Y}";
         e.Handled = true;
@@ -44,7 +45,8 @@ Position: {(int)position.X} {(int)position.Y}";
     private void Border_PointerCaptureLost(object sender, PointerCaptureLostEventArgs e)
     {
         var textBlock = (TextBlock)((Border)sender).Child;
-        textBlock.Text = @$"Captured: {e.Pointer.Captured == sender}
+        textBlock.Text = @$"Type: {e.Pointer.Type}
+Captured: {e.Pointer.Captured == sender}
 PointerId: {e.Pointer.Id}
 Position: ??? ???";
         e.Handled = true;

@@ -19,6 +19,7 @@
           <StackPanel Background="LightYellow">
             <TextBlock Text="{Binding #ThreadSleepSlider.Value, StringFormat='Thread sleep: {0} / 500'}" />
             <Slider x:Name="ThreadSleepSlider"
+                    Value="50"
                     Maximum="500"
                     Minimum="0" />
           </StackPanel>
