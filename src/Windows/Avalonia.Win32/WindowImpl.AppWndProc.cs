@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -26,8 +28,8 @@ namespace Avalonia.Win32
             uint timestamp = unchecked((uint)GetMessageTime());
             RawInputEventArgs e = null;
             var shouldTakeFocus = false;
-
-            switch ((WindowsMessage)msg)
+            var message = (WindowsMessage)msg;
+            switch (message)
             {
                 case WindowsMessage.WM_ACTIVATE:
                     {
@@ -82,7 +84,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_DESTROY:
                     {
                         UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
-                        
+
                         // We need to release IMM context and state to avoid leaks.
                         if (Imm32InputMethod.Current.HWND == _hwnd)
                         {
@@ -108,9 +110,9 @@ namespace Avalonia.Win32
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
                         _scaling = dpi / 96.0;
                         ScalingChanged?.Invoke(_scaling);
-                        
+
                         using (SetResizeReason(PlatformResizeReason.DpiChange))
-                        { 
+                        {
                             SetWindowPos(hWnd,
                                 IntPtr.Zero,
                                 newDisplayRect.left,
@@ -178,6 +180,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONDOWN:
                 case WindowsMessage.WM_XBUTTONDOWN:
                     {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
                         shouldTakeFocus = ShouldTakeFocusOnClick;
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
@@ -188,7 +194,7 @@ namespace Avalonia.Win32
                             _mouseDevice,
                             timestamp,
                             _owner,
-                            (WindowsMessage)msg switch
+                            message switch
                             {
                                 WindowsMessage.WM_LBUTTONDOWN => RawPointerEventType.LeftButtonDown,
                                 WindowsMessage.WM_RBUTTONDOWN => RawPointerEventType.RightButtonDown,
@@ -207,6 +213,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                     {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
@@ -216,7 +226,7 @@ namespace Avalonia.Win32
                             _mouseDevice,
                             timestamp,
                             _owner,
-                            (WindowsMessage)msg switch
+                            message switch
                             {
                                 WindowsMessage.WM_LBUTTONUP => RawPointerEventType.LeftButtonUp,
                                 WindowsMessage.WM_RBUTTONUP => RawPointerEventType.RightButtonUp,
@@ -231,11 +241,19 @@ namespace Avalonia.Win32
                     }
                 // Mouse capture is lost
                 case WindowsMessage.WM_CANCELMODE:
-                    _mouseDevice.Capture(null);
+                    if (!IsMouseInPointerEnabled)
+                    {
+                        _mouseDevice.Capture(null);
+                    }
+
                     break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
@@ -259,42 +277,58 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawPointerEventType.Move,
-                            DipFromLParam(lParam), GetMouseModifiers(wParam));
+                            DipFromLParam(lParam),
+                            GetMouseModifiers(wParam));
 
                         break;
                     }
 
                 case WindowsMessage.WM_MOUSEWHEEL:
                     {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
                             _owner,
                             PointToClient(PointFromLParam(lParam)),
-                            new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), GetMouseModifiers(wParam));
+                            new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta),
+                            GetMouseModifiers(wParam));
                         break;
                     }
 
                 case WindowsMessage.WM_MOUSEHWHEEL:
                     {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
                             _owner,
                             PointToClient(PointFromLParam(lParam)),
-                            new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), GetMouseModifiers(wParam));
+                            new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0),
+                            GetMouseModifiers(wParam));
                         break;
                     }
 
                 case WindowsMessage.WM_MOUSELEAVE:
                     {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
                         _trackingMouse = false;
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
                             _owner,
                             RawPointerEventType.LeaveWindow,
-                            new Point(-1, -1), WindowsKeyboardDevice.Instance.Modifiers);
+                            new Point(-1, -1),
+                            WindowsKeyboardDevice.Instance.Modifiers);
                         break;
                     }
 
@@ -303,11 +337,15 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCMBUTTONDOWN:
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
                             _owner,
-                            (WindowsMessage)msg switch
+                            message switch
                             {
                                 WindowsMessage.WM_NCLBUTTONDOWN => RawPointerEventType
                                     .NonClientLeftButtonDown,
@@ -323,6 +361,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_TOUCH:
                     {
+                        if (_wmPointerEnabled)
+                        {
+                            break;
+                        }
                         var touchInputCount = wParam.ToInt32();
 
                         var pTouchInputs = stackalloc TOUCHINPUT[touchInputCount];
@@ -348,6 +390,120 @@ namespace Avalonia.Win32
                             return IntPtr.Zero;
                         }
 
+                        break;
+                    }
+                case WindowsMessage.WM_NCPOINTERDOWN:
+                case WindowsMessage.WM_NCPOINTERUP:
+                case WindowsMessage.WM_POINTERDOWN:
+                case WindowsMessage.WM_POINTERUP:
+                case WindowsMessage.WM_POINTERUPDATE:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        var eventType = GetEventType(message, info);
+
+                        var args = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
+                        args.IntermediatePoints = CreateLazyIntermediatePoints(info);
+                        e = args;
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
+                case WindowsMessage.WM_POINTERLEAVE:
+                case WindowsMessage.WM_POINTERCAPTURECHANGED:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+                        e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERWHEEL:
+                case WindowsMessage.WM_POINTERHWHEEL:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+
+                        var val = (ToInt32(wParam) >> 16) / wheelDelta;
+                        var delta = message == WindowsMessage.WM_POINTERWHEEL ? new Vector(0, val) : new Vector(val, 0);
+                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point.Position, delta, modifiers)
+                        {
+                            RawPointerId = info.pointerId
+                        };
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERDEVICEINRANGE:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+
+                        // Do not generate events, but release mouse capture on any other device input.
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        if (device != _mouseDevice)
+                        {
+                            _mouseDevice.Capture(null);
+                            return IntPtr.Zero;
+                        }
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERACTIVATE:
+                    {
+                        //occurs when a pointer activates an inactive window.
+                        //we should handle this and return PA_ACTIVATE or PA_NOACTIVATE
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointeractivate
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERDEVICECHANGE:
+                    {
+                        //notifies about changes in the settings of a monitor that has a digitizer attached to it.
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-pointerdevicechange
+                        break;
+                    }
+                case WindowsMessage.WM_NCPOINTERUPDATE:
+                    {
+                        //NC stands for non-client area - window header and window border
+                        //As I found above in an old message handling - we dont need to handle NC pointer move/updates.
+                        //All we need is pointer down and up. So this is skipped for now.
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERENTER:
+                    {
+                        //this is not handled by WM_MOUSEENTER so I think there is no need to handle this too.
+                        //but we can detect a new pointer by this message and calling IS_POINTER_NEW_WPARAM
+
+                        //note: by using a pen there can be a pointer leave or enter inside a window coords
+                        //when you are just lift up the pen above the display
+                        break;
+                    }
+                case WindowsMessage.DM_POINTERHITTEST:
+                    {
+                        //DM stands for direct manipulation.
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/directmanipulation/direct-manipulation-portal
+                        break;
+                    }
+                case WindowsMessage.WM_TOUCHHITTESTING:
+                    {
+                        //This is to determine the most probable touch target.
+                        //provides an input bounding box and receives hit proximity
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-touchhittesting
+                        //https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-touch_hit_testing_input
+                        break;
+                    }
+                case WindowsMessage.WM_PARENTNOTIFY:
+                    {
+                        //This message is sent in a dialog scenarios. Contains mouse position.
+                        //Old message, but listed in the wm_pointer reference
+                        //https://docs.microsoft.com/en-us/previous-versions/windows/desktop/inputmsg/wm-parentnotify
                         break;
                     }
                 case WindowsMessage.WM_NCPAINT:
@@ -446,7 +602,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETMINMAXINFO:
                     {
                         MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-                        
+
                         _maxTrackSize = mmi.ptMaxTrackSize;
 
                         if (_minSize.Width > 0)
@@ -530,7 +686,7 @@ namespace Avalonia.Win32
             if (_managedDrag.PreprocessInputEvent(ref e))
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
 #endif
-            
+
             if(shouldTakeFocus)
             {
                 SetFocus(_hwnd);
@@ -540,13 +696,18 @@ namespace Avalonia.Win32
             {
                 Input(e);
 
-                if ((WindowsMessage)msg == WindowsMessage.WM_KEYDOWN)
+                if (message == WindowsMessage.WM_KEYDOWN)
                 {
                     // Handling a WM_KEYDOWN message should cause the subsequent WM_CHAR message to
                     // be ignored. This should be safe to do as WM_CHAR should only be produced in
                     // response to the call to TranslateMessage/DispatchMessage after a WM_KEYDOWN
                     // is handled.
                     _ignoreWmChar = e.Handled;
+                }
+
+                if (s_intermediatePointsPooledList.Count > 0)
+                {
+                    s_intermediatePointsPooledList.Dispose();
                 }
 
                 if (e.Handled)
@@ -561,6 +722,196 @@ namespace Avalonia.Win32
             }
         }
 
+        private unsafe Lazy<IReadOnlyList<RawPointerPoint>> CreateLazyIntermediatePoints(POINTER_INFO info)
+        {
+            var historyCount = Math.Min((int)info.historyCount, MaxPointerHistorySize);
+            if (historyCount > 1)
+            {
+                return new Lazy<IReadOnlyList<RawPointerPoint>>(() =>
+                {
+                    s_intermediatePointsPooledList.Clear();
+                    s_intermediatePointsPooledList.Capacity = historyCount;
+
+                    // Pointers in history are ordered from newest to oldest, so we need to reverse iteration.
+                    // Also we skip the newest pointer, because original event arguments already contains it.
+
+                    if (info.pointerType == PointerInputType.PT_TOUCH)
+                    {
+                        if (GetPointerTouchInfoHistory(info.pointerId, ref historyCount, s_historyTouchInfos))
+                        {
+                            for (int i = historyCount - 1; i >= 1; i--)
+                            {
+                                var historyTouchInfo = s_historyTouchInfos[i];
+                                s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyTouchInfo));
+                            }
+                        }
+                    }
+                    else if (info.pointerType == PointerInputType.PT_PEN)
+                    {
+                        if (GetPointerPenInfoHistory(info.pointerId, ref historyCount, s_historyPenInfos))
+                        {
+                            for (int i = historyCount - 1; i >= 1; i--)
+                            {
+                                var historyPenInfo = s_historyPenInfos[i];
+                                s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyPenInfo));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Currently Windows does not return history info for mouse input, but we handle it just for case.
+                        if (GetPointerInfoHistory(info.pointerId, ref historyCount, s_historyInfos))
+                        {
+                            for (int i = historyCount - 1; i >= 1; i--)
+                            {
+                                var historyInfo = s_historyInfos[i];
+                                s_intermediatePointsPooledList.Add(CreateRawPointerPoint(historyInfo));
+                            }
+                        }
+                    }
+                    return s_intermediatePointsPooledList;
+                });
+            }
+
+            return null;
+        }
+
+        private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)
+        {
+            return device is TouchDevice
+                ? new RawTouchEventArgs(device, timestamp, _owner, eventType, point, modifiers, rawPointerId)
+                : new RawPointerEventArgs(device, timestamp, _owner, eventType, point, modifiers)
+                {
+                    RawPointerId = rawPointerId
+                };
+        }
+
+        private void GetDevicePointerInfo(IntPtr wParam,
+            out IPointerDevice device, out POINTER_INFO info, out RawPointerPoint point,
+            out RawInputModifiers modifiers, ref uint timestamp)
+        {
+            var pointerId = (uint)(ToInt32(wParam) & 0xFFFF);
+            GetPointerType(pointerId, out var type);
+
+            modifiers = default;
+
+            switch (type)
+            {
+                case PointerInputType.PT_PEN:
+                    device = _penDevice;
+                    GetPointerPenInfo(pointerId, out var penInfo);
+                    info = penInfo.pointerInfo;
+                    point = CreateRawPointerPoint(penInfo);
+                    if (penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_BARREL))
+                    {
+                        modifiers |= RawInputModifiers.PenBarrelButton;
+                    }
+                    if (penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_ERASER))
+                    {
+                        modifiers |= RawInputModifiers.PenEraser;
+                    }
+                    if (penInfo.penFlags.HasFlag(PenFlags.PEN_FLAGS_INVERTED))
+                    {
+                        modifiers |= RawInputModifiers.PenInverted;
+                    }
+                    break;
+                case PointerInputType.PT_TOUCH:
+                    device = _touchDevice;
+                    GetPointerTouchInfo(pointerId, out var touchInfo);
+                    info = touchInfo.pointerInfo;
+                    point = CreateRawPointerPoint(touchInfo);
+                    break;
+                default:
+                    device = _mouseDevice;
+                    GetPointerInfo(pointerId, out info);
+                    point = CreateRawPointerPoint(info);
+                    break;
+            }
+
+            if (info.dwTime != 0)
+            {
+                timestamp = info.dwTime;
+            }
+
+            modifiers |= GetInputModifiers(info.pointerFlags);
+        }
+
+        private RawPointerPoint CreateRawPointerPoint(POINTER_INFO pointerInfo)
+        {
+            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            return new RawPointerPoint
+            {
+                Position = point
+            };
+        }
+        private RawPointerPoint CreateRawPointerPoint(POINTER_TOUCH_INFO info)
+        {
+            var pointerInfo = info.pointerInfo;
+            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            return new RawPointerPoint
+            {
+                Position = point,
+                // POINTER_PEN_INFO.pressure is normalized to a range between 0 and 1024, with 512 as a default.
+                // But in our API we use range from 0.0 to 1.0.
+                Pressure = info.pressure / 1024f
+            };
+        }
+        private RawPointerPoint CreateRawPointerPoint(POINTER_PEN_INFO info)
+        {
+            var pointerInfo = info.pointerInfo;
+            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            return new RawPointerPoint
+            {
+                Position = point,
+                // POINTER_PEN_INFO.pressure is normalized to a range between 0 and 1024, with 512 as a default.
+                // But in our API we use range from 0.0 to 1.0.
+                Pressure = info.pressure / 1024f,
+                Twist = info.rotation,
+                XTilt = info.tiltX,
+                YTilt = info.tiltY
+            };
+        }
+
+        private static RawPointerEventType GetEventType(WindowsMessage message, POINTER_INFO info)
+        {
+            var isTouch = info.pointerType == PointerInputType.PT_TOUCH;
+            if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED))
+            {
+                return isTouch ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+            }
+
+            var eventType = ToEventType(info.ButtonChangeType, isTouch);
+            if (eventType == RawPointerEventType.LeftButtonDown &&
+                message == WindowsMessage.WM_NCPOINTERDOWN)
+            {
+                eventType = RawPointerEventType.NonClientLeftButtonDown;
+            }
+
+            return eventType;
+        }
+
+        private static RawPointerEventType ToEventType(PointerButtonChangeType type, bool isTouch)
+        {
+            return type switch
+            {
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_DOWN when isTouch => RawPointerEventType.TouchBegin,
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_DOWN when !isTouch => RawPointerEventType.LeftButtonDown,
+                PointerButtonChangeType.POINTER_CHANGE_SECONDBUTTON_DOWN => RawPointerEventType.RightButtonDown,
+                PointerButtonChangeType.POINTER_CHANGE_THIRDBUTTON_DOWN => RawPointerEventType.MiddleButtonDown,
+                PointerButtonChangeType.POINTER_CHANGE_FOURTHBUTTON_DOWN => RawPointerEventType.XButton1Down,
+                PointerButtonChangeType.POINTER_CHANGE_FIFTHBUTTON_DOWN => RawPointerEventType.XButton2Down,
+
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_UP when isTouch => RawPointerEventType.TouchEnd,
+                PointerButtonChangeType.POINTER_CHANGE_FIRSTBUTTON_UP when !isTouch => RawPointerEventType.LeftButtonUp,
+                PointerButtonChangeType.POINTER_CHANGE_SECONDBUTTON_UP => RawPointerEventType.RightButtonUp,
+                PointerButtonChangeType.POINTER_CHANGE_THIRDBUTTON_UP => RawPointerEventType.MiddleButtonUp,
+                PointerButtonChangeType.POINTER_CHANGE_FOURTHBUTTON_UP => RawPointerEventType.XButton1Up,
+                PointerButtonChangeType.POINTER_CHANGE_FIFTHBUTTON_UP => RawPointerEventType.XButton2Up,
+                _ when isTouch => RawPointerEventType.TouchUpdate,
+                _ => RawPointerEventType.Move
+            };
+        }
+
         private void UpdateInputMethod(IntPtr hkl)
         {
             // note: for non-ime language, also create it so that emoji panel tracks cursor
@@ -568,11 +919,11 @@ namespace Avalonia.Win32
             if (langid == _langid && Imm32InputMethod.Current.HWND == Hwnd)
             {
                 return;
-            } 
+            }
             _langid = langid;
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
-            
+
         }
 
         private static int ToInt32(IntPtr ptr)
@@ -597,10 +948,7 @@ namespace Avalonia.Win32
 
         private bool ShouldIgnoreTouchEmulatedMessage()
         {
-            if (!_multitouch)
-            {
-                return false;
-            }
+            // Note: GetMessageExtraInfo doesn't work with WM_POINTER events.
 
             // MI_WP_SIGNATURE
             // https://docs.microsoft.com/en-us/windows/win32/tablet/system-events-and-mouse-messages
@@ -613,6 +961,11 @@ namespace Avalonia.Win32
         private static RawInputModifiers GetMouseModifiers(IntPtr wParam)
         {
             var keys = (ModifierKeys)ToInt32(wParam);
+            return GetInputModifiers(keys);
+        }
+
+        private static RawInputModifiers GetInputModifiers(ModifierKeys keys)
+        {
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
 
             if (keys.HasAllFlags(ModifierKeys.MK_LBUTTON))
@@ -636,6 +989,38 @@ namespace Avalonia.Win32
             }
 
             if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON2))
+            {
+                modifiers |= RawInputModifiers.XButton2MouseButton;
+            }
+
+            return modifiers;
+        }
+
+        private static RawInputModifiers GetInputModifiers(PointerFlags flags)
+        {
+            var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_FIRSTBUTTON))
+            {
+                modifiers |= RawInputModifiers.LeftMouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_SECONDBUTTON))
+            {
+                modifiers |= RawInputModifiers.RightMouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_THIRDBUTTON))
+            {
+                modifiers |= RawInputModifiers.MiddleMouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_FOURTHBUTTON))
+            {
+                modifiers |= RawInputModifiers.XButton1MouseButton;
+            }
+
+            if (flags.HasAllFlags(PointerFlags.POINTER_FLAG_FIFTHBUTTON))
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }

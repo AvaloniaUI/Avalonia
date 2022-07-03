@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia.Controls;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Interactions;
 using Xunit;
 using Xunit.Sdk;
 
@@ -23,35 +25,86 @@ namespace Avalonia.IntegrationTests.Appium
 
         [Theory]
         [MemberData(nameof(StartupLocationData))]
-        public void StartupLocation(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
+        public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location)
         {
             using var window = OpenWindow(size, mode, location);
-            var clientSize = Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text);
-            var frameSize = Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text);
-            var position = PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text);
-            var screenRect = PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text);
-            var scaling = double.Parse(_session.FindElementByAccessibilityId("Scaling").Text);
+            var info = GetWindowInfo();
 
-            Assert.True(frameSize.Width >= clientSize.Width, "Expected frame width >= client width.");
-            Assert.True(frameSize.Height > clientSize.Height, "Expected frame height > client height.");
+            if (size.HasValue)
+                Assert.Equal(size.Value, info.ClientSize);
 
-            var frameRect = new PixelRect(position, PixelSize.FromSize(frameSize, scaling));
+            Assert.True(info.FrameSize.Width >= info.ClientSize.Width, "Expected frame width >= client width.");
+            Assert.True(info.FrameSize.Height > info.ClientSize.Height, "Expected frame height > client height.");
+
+            var frameRect = new PixelRect(info.Position, PixelSize.FromSize(info.FrameSize, info.Scaling));
 
             switch (location)
             {
                 case WindowStartupLocation.CenterScreen:
-                    {
-                        var expected = screenRect.CenterRect(frameRect);
-                        AssertCloseEnough(expected.Position, frameRect.Position);
-                        break;
-                    }
+                {
+                    var expected = info.ScreenRect.CenterRect(frameRect);
+                    AssertCloseEnough(expected.Position, frameRect.Position);
+                    break;
+                }
+                case WindowStartupLocation.CenterOwner:
+                {
+                    Assert.NotNull(info.OwnerRect);
+                    var expected = info.OwnerRect!.Value.CenterRect(frameRect);
+                    AssertCloseEnough(expected.Position, frameRect.Position);
+                    break;
+                }
             }
         }
-        
-        public static TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
+
+
+        [Theory]
+        [InlineData(ShowWindowMode.NonOwned)]
+        [InlineData(ShowWindowMode.Owned)]
+        [InlineData(ShowWindowMode.Modal)]
+        public void WindowState(ShowWindowMode mode)
         {
-            var sizes = new PixelSize?[] { null, new PixelSize(400, 300) };
-            var data = new TheoryData<PixelSize?, ShowWindowMode, WindowStartupLocation>();
+            using var window = OpenWindow(null, mode, WindowStartupLocation.Manual);
+            var windowState = _session.FindElementByAccessibilityId("WindowState");
+            var original = GetWindowInfo();
+
+            Assert.Equal("Normal", windowState.GetComboBoxValue());
+
+            windowState.Click();
+            _session.FindElementByName("Maximized").SendClick();
+            Assert.Equal("Maximized", windowState.GetComboBoxValue());
+
+            windowState.Click();
+            _session.FindElementByName("Normal").SendClick();
+
+            var current = GetWindowInfo();
+            Assert.Equal(original.Position, current.Position);
+            Assert.Equal(original.FrameSize, current.FrameSize);
+
+            // On macOS, only non-owned windows can go fullscreen.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || mode == ShowWindowMode.NonOwned)
+            {
+                windowState.Click();
+                _session.FindElementByName("Fullscreen").SendClick();
+                Assert.Equal("Fullscreen", windowState.GetComboBoxValue());
+
+                current = GetWindowInfo();
+                var clientSize = PixelSize.FromSize(current.ClientSize, current.Scaling);
+                Assert.True(clientSize.Width >= current.ScreenRect.Width);
+                Assert.True(clientSize.Height >= current.ScreenRect.Height);
+
+                windowState.Click();
+                _session.FindElementByName("Normal").SendClick();
+
+                current = GetWindowInfo();
+                Assert.Equal(original.Position, current.Position);
+                Assert.Equal(original.FrameSize, current.FrameSize);
+            }
+        }
+
+        public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
+        {
+            var sizes = new Size?[] { null, new Size(400, 300) };
+            var data = new TheoryData<Size?, ShowWindowMode, WindowStartupLocation>();
 
             foreach (var size in sizes)
             {
@@ -96,7 +149,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
+        private IDisposable OpenWindow(Size? size, ShowWindowMode mode, WindowStartupLocation location)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
@@ -115,11 +168,50 @@ namespace Avalonia.IntegrationTests.Appium
             return showButton.OpenWindowWithClick();
         }
 
+        private WindowInfo GetWindowInfo()
+        {
+            PixelRect? ReadOwnerRect()
+            {
+                var text = _session.FindElementByAccessibilityId("OwnerRect").Text;
+                return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
+            }
+
+            var retry = 0;
+
+            for (;;)
+            {
+                try
+                {
+                    return new(
+                        Size.Parse(_session.FindElementByAccessibilityId("ClientSize").Text),
+                        Size.Parse(_session.FindElementByAccessibilityId("FrameSize").Text),
+                        PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text),
+                        ReadOwnerRect(),
+                        PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
+                        double.Parse(_session.FindElementByAccessibilityId("Scaling").Text));
+                }
+                catch (OpenQA.Selenium.NoSuchElementException e) when (retry++ < 3)
+                {
+                    // MacOS sometimes seems to need a bit of time to get itself back in order after switching out
+                    // of fullscreen.
+                    Thread.Sleep(1000);
+                }
+            }
+        }
+
         public enum ShowWindowMode
         {
             NonOwned,
             Owned,
             Modal
         }
+
+        private record WindowInfo(
+            Size ClientSize,
+            Size FrameSize,
+            PixelPoint Position,
+            PixelRect? OwnerRect,
+            PixelRect ScreenRect,
+            double Scaling);
     }
 }

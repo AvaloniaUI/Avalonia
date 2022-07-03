@@ -82,7 +82,7 @@ namespace IntegrationTestApp
                     break;
             }
         }
-        
+
         private void SendToBack()
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
@@ -92,7 +92,18 @@ namespace IntegrationTestApp
                 window.Activate();
             }
         }
-        
+
+        private void RestoreAll()
+        {
+            var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+
+            foreach (var window in lifetime.Windows)
+            {
+                if (window.WindowState == WindowState.Minimized)
+                    window.WindowState = WindowState.Normal;
+            }
+        }
+
         private void MenuClicked(object? sender, RoutedEventArgs e)
         {
             var clickedMenuItemTextBlock = this.FindControl<TextBlock>("ClickedMenuItem");
@@ -117,6 +128,8 @@ namespace IntegrationTestApp
                 SendToBack();
             if (source?.Name == "ExitFullscreen")
                 WindowState = WindowState.Normal;
+            if (source?.Name == "RestoreAll")
+                RestoreAll();
         }
     }
 }
