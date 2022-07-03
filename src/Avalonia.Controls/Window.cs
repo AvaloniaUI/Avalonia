@@ -870,11 +870,14 @@ namespace Avalonia.Controls
             }
 
             Screen? screen = null;
-            if (owner is not null)
+            if (startupLocation is not WindowStartupLocation.Manual or WindowStartupLocation.CenterOwner)
             {
-                screen = Screens.ScreenFromWindow(owner) ?? Screens.ScreenFromPoint(owner.Position);
+                if (owner is not null)
+                {
+                    screen = Screens.ScreenFromWindow(owner) ?? Screens.ScreenFromPoint(owner.Position);
+                }
+                screen ??= Screens.ScreenFromPoint(Position);
             }
-            screen ??= Screens.ScreenFromPoint(Position);
 
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
             var margin = Margin * scaling;
