@@ -869,6 +869,13 @@ namespace Avalonia.Controls
                 startupLocation = WindowStartupLocation.CenterScreen;
             }
 
+            Screen? screen = null;
+            if (owner is not null)
+            {
+                screen = Screens.ScreenFromWindow(owner) ?? Screens.ScreenFromPoint(owner.Position);
+            }
+            screen ??= Screens.ScreenFromPoint(Position);
+
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
             var margin = Margin * scaling;
 
@@ -876,13 +883,6 @@ namespace Avalonia.Controls
             var rect = FrameSize.HasValue ?
                 new PixelRect(PixelSize.FromSize(FrameSize.Value, scaling)) :
                 new PixelRect(PixelSize.FromSize(ClientSize, scaling));
-
-            Screen? screen = null;
-            if (owner is not null)
-            {
-                screen = Screens.ScreenFromWindow(owner) ?? Screens.ScreenFromPoint(owner.Position);
-            }
-            screen ??= Screens.ScreenFromPoint(Position);
 
             switch (startupLocation)
             {
