@@ -30,20 +30,28 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (control is AvaloniaObject ao)
             {
-                MarginThickness = ao.GetValue(Layoutable.MarginProperty);
-
-                if (HasPadding)
+                try
                 {
-                    PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
-                }
+                    _updatingFromControl = true;
+                    MarginThickness = ao.GetValue(Layoutable.MarginProperty);
 
-                if (HasBorder)
+                    if (HasPadding)
+                    {
+                        PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
+                    }
+
+                    if (HasBorder)
+                    {
+                        BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
+                    }
+
+                    HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
+                    VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
+                }
+                finally
                 {
-                    BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
+                    _updatingFromControl = false;
                 }
-
-                HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
-                VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
             }
 
             UpdateSize();

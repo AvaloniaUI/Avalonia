@@ -158,6 +158,7 @@ namespace Avalonia.Rendering.SceneGraph
             if (result != null && result.Parent != parent)
             {
                 Deindex(scene, result);
+                ((VisualNode?)result.Parent)?.RemoveChild(result);
                 result = null;
             }
 
