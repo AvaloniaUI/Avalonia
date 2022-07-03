@@ -696,6 +696,31 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_Manual()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    // Values come from MockWindowingPlatform defaults.
+                    Assert.Equal(800, target.Width);
+                    Assert.Equal(600, target.Height);
+                }
+            }
+
+            [Fact]
             public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_WidthAndHeight()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -711,6 +736,8 @@ namespace Avalonia.Controls.UnitTests
                         SizeToContent = SizeToContent.WidthAndHeight,
                         Content = child
                     };
+
+                    target.GetObservable(Window.WidthProperty).Subscribe(x => { });
 
                     Show(target);
 
