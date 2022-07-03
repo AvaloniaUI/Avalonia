@@ -904,6 +904,9 @@ namespace Avalonia.LeakTests
                     var templateChild = (Decorator)source.GetVisualChildren().Single();
                     ToolTip.SetIsOpen(templateChild, true);
 
+                    // Detach the button from the logical tree, so there is no reference to it
+                    window.Content = null;
+                    
                     return window;
                 };
 
@@ -948,6 +951,9 @@ namespace Avalonia.LeakTests
 
                     var templateChild = (Button)source.GetVisualChildren().Single();
                     templateChild.Flyout!.ShowAt(templateChild);
+
+                    // Detach the button from the logical tree, so there is no reference to it
+                    window.Content = null;
 
                     return window;
                 };
