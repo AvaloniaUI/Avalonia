@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Text;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -14,10 +15,10 @@ namespace Avalonia.X11
     internal unsafe class X11PlatformLifetimeEvents : IDisposable, IPlatformLifetimeEventsImpl
     {
         private readonly AvaloniaX11Platform _platform;
-        private const ulong SmcSaveYourselfProcMask = 1L;
-        private const ulong SmcDieProcMask = 2L;
-        private const ulong SmcSaveCompleteProcMask = 4L;
-        private const ulong SmcShutdownCancelledProcMask = 8L;
+        private const nuint SmcSaveYourselfProcMask = 1;
+        private const nuint SmcDieProcMask = 2;
+        private const nuint SmcSaveCompleteProcMask = 4;
+        private const nuint SmcShutdownCancelledProcMask = 8;
 
         private static readonly ConcurrentDictionary<IntPtr, X11PlatformLifetimeEvents> s_nativeToManagedMapper =
             new ConcurrentDictionary<IntPtr, X11PlatformLifetimeEvents>();
@@ -62,24 +63,24 @@ namespace Avalonia.X11
                 return;
             }
 
-            var errorBuf = new char[255];
-
-            var smcConn = SMLib.SmcOpenConnection(null!,
+            byte[] errorBuf = new byte[255];
+            IntPtr clientIdRet = IntPtr.Zero;
+            var smcConn = SMLib.SmcOpenConnection(null,
                 IntPtr.Zero, 1, 0,
                 SmcSaveYourselfProcMask |
                 SmcSaveCompleteProcMask |
                 SmcShutdownCancelledProcMask |
                 SmcDieProcMask,
                 ref s_callbacks,
-                out _,
-                out _,
+                null,
+                ref clientIdRet,
                 errorBuf.Length,
                 errorBuf);
 
             if (smcConn == IntPtr.Zero)
             {
                 Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?.Log(this,
-                    $"SMLib/ICELib reported a new error: {new string(errorBuf)}");
+                    $"SMLib/ICELib reported a new error: {Encoding.ASCII.GetString(errorBuf)}");
                 return;
             }
 
@@ -152,14 +153,14 @@ namespace Avalonia.X11
         }
 
         private static void StaticErrorHandler(IntPtr smcConn, bool swap, int offendingMinorOpcode,
-            ulong offendingSequence, int errorClass, int severity, IntPtr values)
+            nuint offendingSequence, int errorClass, int severity, IntPtr values)
         {
             GetInstance(smcConn)
                 ?.ErrorHandler(swap, offendingMinorOpcode, offendingSequence, errorClass, severity, values);
         }
 
         // ReSharper disable UnusedParameter.Local
-        private void ErrorHandler(bool swap, int offendingMinorOpcode, ulong offendingSequence, int errorClass,
+        private void ErrorHandler(bool swap, int offendingMinorOpcode, nuint offendingSequence, int errorClass,
             int severity, IntPtr values)
         {
             Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?.Log(this,

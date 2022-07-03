@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Collections.Pooled;
-using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Threading;
-using JetBrains.Annotations;
 
 namespace Avalonia;
 
@@ -19,7 +17,7 @@ internal class RawEventGrouper : IDisposable
     private readonly Action<RawInputEventArgs> _eventCallback;
     private readonly Queue<RawInputEventArgs> _inputQueue = new();
     private readonly Action _dispatchFromQueue;
-    readonly Dictionary<long, RawTouchEventArgs> _lastTouchPoints = new();
+    readonly Dictionary<long, RawPointerEventArgs> _lastTouchPoints = new();
     RawInputEventArgs? _lastEvent;
 
     public RawEventGrouper(Action<RawInputEventArgs> eventCallback)
@@ -49,11 +47,11 @@ internal class RawEventGrouper : IDisposable
                 _lastEvent = null;
             
             if (ev is RawTouchEventArgs { Type: RawPointerEventType.TouchUpdate } touchUpdate)
-                _lastTouchPoints.Remove(touchUpdate.TouchPointId);
+                _lastTouchPoints.Remove(touchUpdate.RawPointerId);
 
             _eventCallback?.Invoke(ev);
 
-            if (ev is RawPointerEventArgs { IntermediatePoints: PooledList<Point> list }) 
+            if (ev is RawPointerEventArgs { IntermediatePoints.Value: PooledList<RawPointerPoint> list }) 
                 list.Dispose();
 
             if (Dispatcher.UIThread.HasJobsWithPriority(DispatcherPriority.Input + 1))
@@ -88,11 +86,11 @@ internal class RawEventGrouper : IDisposable
         {
             if (args is RawTouchEventArgs touchEvent)
             {
-                if (_lastTouchPoints.TryGetValue(touchEvent.TouchPointId, out var lastTouchEvent))
+                if (_lastTouchPoints.TryGetValue(touchEvent.RawPointerId, out var lastTouchEvent))
                     MergeEvents(lastTouchEvent, touchEvent);
                 else
                 {
-                    _lastTouchPoints[touchEvent.TouchPointId] = touchEvent;
+                    _lastTouchPoints[touchEvent.RawPointerId] = touchEvent;
                     AddToQueue(touchEvent);
                 }
             }
@@ -105,15 +103,19 @@ internal class RawEventGrouper : IDisposable
         {
             _lastTouchPoints.Clear();
             if (args is RawTouchEventArgs { Type: RawPointerEventType.TouchUpdate } touchEvent)
-                _lastTouchPoints[touchEvent.TouchPointId] = touchEvent;
+                _lastTouchPoints[touchEvent.RawPointerId] = touchEvent;
         }
         AddToQueue(args);
     }
 
+    private static IReadOnlyList<RawPointerPoint> GetPooledList() => new PooledList<RawPointerPoint>();
+    private static readonly Func<IReadOnlyList<RawPointerPoint>> s_getPooledListDelegate = GetPooledList;
+
     private static void MergeEvents(RawPointerEventArgs last, RawPointerEventArgs current)
     {
-        last.IntermediatePoints ??= new PooledList<Point>();
-        ((PooledList<Point>)last.IntermediatePoints).Add(last.Position);
+        
+        last.IntermediatePoints ??= new Lazy<IReadOnlyList<RawPointerPoint>?>(s_getPooledListDelegate);
+        ((PooledList<RawPointerPoint>)last.IntermediatePoints.Value!).Add(new RawPointerPoint { Position = last.Position });
         last.Position = current.Position;
         last.Timestamp = current.Timestamp;
         last.InputModifiers = current.InputModifiers;

@@ -6,8 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     internal class InternalSelectionModel : SelectionModel<object?>
@@ -170,11 +168,11 @@ namespace Avalonia.Controls.Selection
         {
             if (_writableSelectedItems is INotifyCollectionChanged incc)
             {
-                incc.CollectionChanged += OnSelectedItemsCollectionChanged;
+                incc.CollectionChanged -= OnSelectedItemsCollectionChanged;
             }
         }
 
-        private void OnSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        private void OnSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
         {
             if (_ignoreModelChanges > 0)
             {
@@ -184,8 +182,8 @@ namespace Avalonia.Controls.Selection
             try
             {
                 var items = WritableSelectedItems;
-                var deselected = e.DeselectedItems.ToList();
-                var selected = e.SelectedItems.ToList();
+                var deselected = e.DeselectedItems.ToArray();
+                var selected = e.SelectedItems.ToArray();
 
                 _ignoreSelectedItemsChanges = true;
 
@@ -227,9 +225,9 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private void OnSourceReset(object sender, EventArgs e) => SyncFromSelectedItems();
+        private void OnSourceReset(object? sender, EventArgs e) => SyncFromSelectedItems();
 
-        private void OnSelectedItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnSelectedItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (_ignoreSelectedItemsChanges)
             {
@@ -243,7 +241,7 @@ namespace Avalonia.Controls.Selection
 
             void Remove()
             {
-                foreach (var i in e.OldItems)
+                foreach (var i in e.OldItems!)
                 {
                     var index = IndexOf(Source, i);
 
@@ -263,14 +261,14 @@ namespace Avalonia.Controls.Selection
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Add(e.NewItems);
+                        Add(e.NewItems!);
                         break;
                     case NotifyCollectionChangedAction.Remove:
                         Remove();
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         Remove();
-                        Add(e.NewItems);
+                        Add(e.NewItems!);
                         break;
                     case NotifyCollectionChangedAction.Reset:
                         Clear();

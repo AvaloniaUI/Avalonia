@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using HarfBuzzSharp;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    [Unstable]
     public class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
         private bool _isDisposed;
@@ -64,6 +66,8 @@ namespace Avalonia.Skia
 
         public SKTypeface Typeface { get; }
 
+        public int ReplacementCodepoint { get; }
+        
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public short DesignEmHeight { get; }
 

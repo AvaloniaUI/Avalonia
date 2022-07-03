@@ -36,6 +36,13 @@ namespace Avalonia.FreeDesktop
 
         private string GetSymlinkTarget(string x) => Path.GetFullPath(Path.Combine(DevByLabelDir, NativeMethods.ReadLink(x)));
 
+        private string UnescapeString(string input, string regexText, int escapeBase) =>
+            new Regex(regexText).Replace(input, m => Convert.ToChar(Convert.ToByte(m.Groups[1].Value, escapeBase)).ToString());
+
+        private string UnescapePathFromProcMounts(string input) => UnescapeString(input, @"\\(\d{3})", 8);
+
+        private string UnescapeDeviceLabel(string input) => UnescapeString(input, @"\\x([0-9a-f]{2})", 16);
+
         private void Poll(long _)
         {
             var fProcPartitions = File.ReadAllLines(ProcPartitionsDir)
@@ -47,14 +54,14 @@ namespace Avalonia.FreeDesktop
 
             var fProcMounts = File.ReadAllLines(ProcMountsDir)
                                   .Select(x => x.Split(' '))
-                                  .Select(x => (x[0], x[1]))
+                                  .Select(x => (x[0], UnescapePathFromProcMounts(x[1])))
                                   .Where(x => !x.Item2.StartsWith("/snap/", StringComparison.InvariantCultureIgnoreCase));
 
             var labelDirEnum = Directory.Exists(DevByLabelDir) ?
                                new DirectoryInfo(DevByLabelDir).GetFiles() : Enumerable.Empty<FileInfo>();
 
             var labelDevPathPairs = labelDirEnum
-                                    .Select(x => (GetSymlinkTarget(x.FullName), x.Name));
+                                    .Select(x => (GetSymlinkTarget(x.FullName), UnescapeDeviceLabel(x.Name)));
 
             var q1 = from mount in fProcMounts
                      join device in fProcPartitions on mount.Item1 equals device.Item2
@@ -64,7 +71,7 @@ namespace Avalonia.FreeDesktop
                      {
                          VolumePath = mount.Item2,
                          VolumeSizeBytes = device.Item1,
-                         VolumeLabel = x.Name
+                         VolumeLabel = x.Item2
                      };
 
             var mountVolInfos = q1.ToArray();

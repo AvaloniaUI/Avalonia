@@ -1,10 +1,12 @@
 ﻿using Avalonia.Controls.Platform;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="Menu"/> or <see cref="ContextMenu"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface IMenu : IMenuElement
     {
         /// <summary>

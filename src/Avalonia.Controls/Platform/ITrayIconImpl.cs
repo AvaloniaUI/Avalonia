@@ -1,10 +1,10 @@
 ﻿using System;
 using Avalonia.Controls.Platform;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface ITrayIconImpl : IDisposable
     {
         /// <summary>

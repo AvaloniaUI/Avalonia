@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using CoreAnimation;
-using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using OpenGLES;
@@ -42,7 +43,7 @@ namespace Avalonia.iOS
             MultipleTouchEnabled = true;
         }
 
-        internal class TopLevelImpl : ITopLevelImpl
+        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
         {
             private readonly AvaloniaView _view;
             public AvaloniaView View => _view;
@@ -50,6 +51,7 @@ namespace Avalonia.iOS
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
+                NativeControlHost = new NativeControlHostImpl(_view);
             }
 
             public void Dispose()
@@ -109,6 +111,9 @@ namespace Avalonia.iOS
 
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
+
+            public ITextInputMethodImpl? TextInputMethod => _view;
+            public INativeControlHostImpl NativeControlHost { get; }
         }
 
         [Export("layerClass")]

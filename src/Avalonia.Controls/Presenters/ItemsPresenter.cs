@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Presenters
 
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
-        private EventHandler _scrollInvalidated;
+        private EventHandler? _scrollInvalidated;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -96,7 +96,7 @@ namespace Avalonia.Controls.Presenters
         Size IScrollable.Viewport => Virtualizer?.Viewport ?? Bounds.Size;
 
         /// <inheritdoc/>
-        event EventHandler ILogicalScrollable.ScrollInvalidated
+        event EventHandler? ILogicalScrollable.ScrollInvalidated
         {
             add => _scrollInvalidated += value;
             remove => _scrollInvalidated -= value;
@@ -108,7 +108,7 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         Size ILogicalScrollable.PageScrollSize => Virtualizer?.Viewport ?? new Size(16, 16);
 
-        internal ItemVirtualizer Virtualizer { get; private set; }
+        internal ItemVirtualizer? Virtualizer { get; private set; }
 
         /// <inheritdoc/>
         bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
@@ -117,7 +117,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        IControl ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl from)
+        IControl? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl? from)
         {
             return Virtualizer?.GetControlInDirection(direction, from);
         }
@@ -152,7 +152,7 @@ namespace Avalonia.Controls.Presenters
             _scrollInvalidated?.Invoke(this, EventArgs.Empty);
 
             KeyboardNavigation.SetTabNavigation(
-                (InputElement)Panel,
+                (InputElement)panel,
                 KeyboardNavigation.GetTabNavigation(this));
         }
 

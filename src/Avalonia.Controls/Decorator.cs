@@ -11,8 +11,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly StyledProperty<IControl> ChildProperty =
-            AvaloniaProperty.Register<Decorator, IControl>(nameof(Child));
+        public static readonly StyledProperty<IControl?> ChildProperty =
+            AvaloniaProperty.Register<Decorator, IControl?>(nameof(Child));
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -33,7 +33,7 @@ namespace Avalonia.Controls
         /// Gets or sets the decorated control.
         /// </summary>
         [Content]
-        public IControl Child
+        public IControl? Child
         {
             get { return GetValue(ChildProperty); }
             set { SetValue(ChildProperty, value); }
@@ -66,8 +66,8 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldChild = (Control)e.OldValue;
-            var newChild = (Control)e.NewValue;
+            var oldChild = (Control?)e.OldValue;
+            var newChild = (Control?)e.NewValue;
 
             if (oldChild != null)
             {

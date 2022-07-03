@@ -20,8 +20,8 @@ namespace Avalonia.Diagnostics.Views
         public TreePageView()
         {
             InitializeComponent();
-            _tree = this.FindControl<TreeView>("tree");
-            _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
+            _tree = this.GetControl<TreeView>("tree");
+            _tree.ItemContainerGenerator.Index!.Materialized += TreeViewItemMaterialized;
 
             _adorner = new Panel
             {
@@ -36,6 +36,7 @@ namespace Avalonia.Diagnostics.Views
                     new Border { BorderBrush = new SolidColorBrush(Colors.Yellow, 0.5) }
                 },
             };
+            AdornerLayer.SetIsClipEnabled(_adorner, false);
         }
 
         protected void AddAdorner(object? sender, PointerEventArgs e)
@@ -120,8 +121,8 @@ namespace Avalonia.Diagnostics.Views
 
             if (header != null)
             {
-                header.PointerEnter += AddAdorner;
-                header.PointerLeave += RemoveAdorner;
+                header.PointerEntered += AddAdorner;
+                header.PointerExited += RemoveAdorner;
             }
 
             item.TemplateApplied -= TreeViewItemTemplateApplied;

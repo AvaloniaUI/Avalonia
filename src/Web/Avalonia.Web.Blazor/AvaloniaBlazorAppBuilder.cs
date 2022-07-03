@@ -10,7 +10,9 @@ namespace Avalonia.Web.Blazor
         {
         }
 
-        public AvaloniaBlazorAppBuilder() : base(BlazorRuntimePlatform.Instance, BlazorRuntimePlatform.RegisterServices)
+        public AvaloniaBlazorAppBuilder()
+            : base(new StandardRuntimePlatform(),
+                builder => StandardRuntimePlatformServices.Register(builder.ApplicationType!.Assembly))
         {
             UseWindowingSubsystem(BlazorWindowingPlatform.Register);
         }

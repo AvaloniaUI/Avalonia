@@ -45,7 +45,9 @@ Copyright © 2019 Nikita Tsukanov
 */
 
 using System;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives.PopupPositioning
 {
@@ -60,6 +62,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// requirement that a popup must intersect with or be at least partially adjacent to its parent
     /// surface.
     /// </remarks>
+    [Unstable]
     public struct PopupPositionerParameters
     {
         private PopupGravity _gravity;
@@ -428,6 +431,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// managed implementation is provided in <see cref="ManagedPopupPositioner"/> for platforms
     /// on which popups can be arbitrarily positioned.
     /// </remarks>
+    [NotClientImplementable]
     public interface IPopupPositioner
     {
         /// <summary>
@@ -438,17 +442,19 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         void Update(PopupPositionerParameters parameters);
     }
 
+    [Unstable]
     static class PopupPositionerExtensions
     {
         public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
             TopLevel topLevel,
             IVisual target, PlacementMode placement, Point offset,
             PopupAnchor anchor, PopupGravity gravity,
-            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect)
+            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect,
+            FlowDirection flowDirection)
         {
             // We need a better way for tracking the last pointer position
 #pragma warning disable CS0618 // Type or member is obsolete
-            var pointer = topLevel.PointToClient(topLevel.PlatformImpl.MouseDevice.Position);
+            var pointer = topLevel.PointToClient(topLevel.PlatformImpl?.MouseDevice.Position ?? default);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             positionerParameters.Offset = offset;
@@ -502,6 +508,32 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 }
                 else
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
+            }
+
+            // Invert coordinate system if FlowDirection is RTL
+            if (flowDirection == FlowDirection.RightToLeft)
+            {
+                if ((positionerParameters.Anchor & PopupAnchor.Right) == PopupAnchor.Right)
+                {
+                    positionerParameters.Anchor ^= PopupAnchor.Right;
+                    positionerParameters.Anchor |= PopupAnchor.Left;
+                }
+                else if ((positionerParameters.Anchor & PopupAnchor.Left) == PopupAnchor.Left)
+                {
+                    positionerParameters.Anchor ^= PopupAnchor.Left;
+                    positionerParameters.Anchor |= PopupAnchor.Right;
+                }
+
+                if ((positionerParameters.Gravity & PopupGravity.Right) == PopupGravity.Right)
+                {
+                    positionerParameters.Gravity ^= PopupGravity.Right;
+                    positionerParameters.Gravity |= PopupGravity.Left;
+                }
+                else if ((positionerParameters.Gravity & PopupGravity.Left) == PopupGravity.Left)
+                {
+                    positionerParameters.Gravity ^= PopupGravity.Left;
+                    positionerParameters.Gravity |= PopupGravity.Right;
+                }
             }
         }
     }

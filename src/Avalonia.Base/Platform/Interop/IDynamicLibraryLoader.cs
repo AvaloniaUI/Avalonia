@@ -1,7 +1,9 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Interop
 {
+    [Unstable]
     public interface IDynamicLibraryLoader
     {
         IntPtr LoadLibrary(string dll);
@@ -11,6 +13,11 @@ namespace Avalonia.Platform.Interop
     public class DynamicLibraryLoaderException : Exception
     {
         public DynamicLibraryLoaderException(string message) : base(message)
+        {
+            
+        }
+        
+        public DynamicLibraryLoaderException(string message, Exception innerException) : base(message, innerException)
         {
             
         }

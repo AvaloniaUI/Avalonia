@@ -8,17 +8,26 @@ namespace Avalonia.Win32
 {
     class DragSource : IPlatformDragSource
     {
-        public Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent,
+        public unsafe Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent,
             IDataObject data, DragDropEffects allowedEffects)
         {
             Dispatcher.UIThread.VerifyAccess();
-            triggerEvent.Pointer.Capture(null);
-            OleDragSource src = new OleDragSource();
-            DataObject dataObject = new DataObject(data);
-            int allowed = (int)OleDropTarget.ConvertDropEffect(allowedEffects);
 
-            UnmanagedMethods.DoDragDrop(dataObject, src, allowed, out var finalEffect);
-            return Task.FromResult(OleDropTarget.ConvertDropEffect((DropEffect)finalEffect));
+            triggerEvent.Pointer.Capture(null);
+            
+            using var dataObject = new DataObject(data);
+            using var src = new OleDragSource();
+            var allowed = OleDropTarget.ConvertDropEffect(allowedEffects);
+            
+            var objPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(dataObject);
+            var srcPtr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDropSource>(src);
+
+            UnmanagedMethods.DoDragDrop(objPtr, srcPtr, (int)allowed, out var finalEffect);
+            
+            // Force releasing of internal wrapper to avoid memory leak, if drop target keeps com reference.
+            dataObject.ReleaseWrapped();
+
+            return Task.FromResult(OleDropTarget.ConvertDropEffect((Win32Com.DropEffect)finalEffect));
         }
     }
 }

@@ -1,7 +1,5 @@
 using System;
 
-#nullable enable
-
 namespace Avalonia.Controls.Templates
 {
     /// <summary>
@@ -10,7 +8,7 @@ namespace Avalonia.Controls.Templates
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <typeparam name="TControl">The type of control.</typeparam>
     public class FuncTemplate<TParam, TControl> : ITemplate<TParam, TControl>
-        where TControl : IControl
+        where TControl : IControl?
     {
         private readonly Func<TParam, INameScope, TControl> _func;
 

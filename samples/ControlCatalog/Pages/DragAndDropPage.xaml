@@ -11,7 +11,13 @@
                 Padding="16"
                 BorderBrush="{DynamicResource SystemAccentColor}"
                 BorderThickness="2">
-          <TextBlock Name="DragStateText" TextWrapping="Wrap">Drag Me</TextBlock>
+          <TextBlock Name="DragStateText" TextWrapping="Wrap">Drag Me (text)</TextBlock>
+        </Border>
+        <Border Name="DragMeFiles"
+                Padding="16"
+                BorderBrush="{DynamicResource SystemAccentColor}"
+                BorderThickness="2">
+          <TextBlock Name="DragStateFiles" TextWrapping="Wrap">Drag Me (files)</TextBlock>
         </Border>
         <Border Name="DragMeCustom"
                 Padding="16"

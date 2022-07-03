@@ -1,10 +1,11 @@
-﻿#nullable enable
+﻿using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface IMenuItem : IMenuElement
     {
         /// <summary>

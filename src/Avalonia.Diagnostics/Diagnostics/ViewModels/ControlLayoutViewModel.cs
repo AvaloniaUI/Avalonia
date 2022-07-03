@@ -30,20 +30,28 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (control is AvaloniaObject ao)
             {
-                MarginThickness = ao.GetValue(Layoutable.MarginProperty);
-
-                if (HasPadding)
+                try
                 {
-                    PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
-                }
+                    _updatingFromControl = true;
+                    MarginThickness = ao.GetValue(Layoutable.MarginProperty);
 
-                if (HasBorder)
+                    if (HasPadding)
+                    {
+                        PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
+                    }
+
+                    if (HasBorder)
+                    {
+                        BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
+                    }
+
+                    HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
+                    VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
+                }
+                finally
                 {
-                    BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
+                    _updatingFromControl = false;
                 }
-
-                HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
-                VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
             }
 
             UpdateSize();
@@ -110,7 +118,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateSizeConstraints()
         {
-            if (_control is IAvaloniaObject ao)
+            if (_control is AvaloniaObject ao)
             {
                 string? CreateConstraintInfo(StyledProperty<double> minProperty, StyledProperty<double> maxProperty)
                 {
@@ -191,7 +199,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
                 else
                 {
-                    if (_control is IAvaloniaObject ao)
+                    if (_control is AvaloniaObject ao)
                     {
                         if (e.Property == Layoutable.MarginProperty)
                         {

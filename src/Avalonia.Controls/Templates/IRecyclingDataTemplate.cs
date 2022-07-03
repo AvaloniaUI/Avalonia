@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Controls.Templates
+﻿namespace Avalonia.Controls.Templates
 {
     /// <summary>
     /// An <see cref="IDataTemplate"/> that supports recycling existing elements.
@@ -14,12 +12,12 @@ namespace Avalonia.Controls.Templates
         /// <param name="existing">An optional control to recycle.</param>
         /// <returns>
         /// The <paramref name="existing"/> control if supplied and applicable to
-        /// <paramref name="data"/>, otherwise a new control.
+        /// <paramref name="data"/>, otherwise a new control or null.
         /// </returns>
         /// <remarks>
         /// The caller should ensure that any control passed to <paramref name="existing"/>
         /// originated from the same data template.
         /// </remarks>
-        IControl Build(object data, IControl? existing);
+        IControl? Build(object? data, IControl? existing);
     }
 }

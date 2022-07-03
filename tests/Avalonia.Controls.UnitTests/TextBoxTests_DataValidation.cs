@@ -86,7 +86,9 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new MockTextShaperImpl(),
+            fontManagerImpl: new MockFontManagerImpl());
 
         private IControlTemplate CreateTemplate()
         {

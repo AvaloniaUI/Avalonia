@@ -14,6 +14,12 @@ using System.Reactive.Linq;
 
 namespace Avalonia.Controls
 {
+    [TemplatePart(DATAGRIDROWGROUPHEADER_expanderButton,      typeof(ToggleButton))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_indentSpacer,        typeof(Control))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_itemCountElement,    typeof(TextBlock))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_propertyNameElement, typeof(TextBlock))]
+    [TemplatePart(DataGridRow.DATAGRIDROW_elementRoot,        typeof(Panel))]
+    [TemplatePart(DataGridRow.DATAGRIDROW_elementRowHeader,   typeof(DataGridRowHeader))]
     [PseudoClasses(":pressed", ":current", ":expanded")]
     public class DataGridRowGroupHeader : TemplatedControl
     {
@@ -369,7 +375,7 @@ namespace Avalonia.Controls
             ApplyHeaderStatus();
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
             if (IsEnabled)
             {
@@ -377,10 +383,10 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
         }
 
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             if (IsEnabled)
             {
@@ -388,7 +394,7 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         private void SetIsCheckedNoCallBack(bool value)

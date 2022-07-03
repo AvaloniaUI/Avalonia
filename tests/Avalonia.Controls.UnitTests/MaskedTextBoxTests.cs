@@ -115,7 +115,10 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
+                target.ApplyTemplate();
                 target.CaretIndex = 3;
+                target.Measure(Size.Infinity);
+                
                 RaiseKeyEvent(target, Key.Right, 0);
 
                 Assert.Equal(4, target.CaretIndex);
@@ -132,6 +135,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
@@ -175,43 +180,18 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
-        {
-            using (Start())
-            {
-                var source = new Class1();
-                var target = new MaskedTextBox
-                {
-                    DataContext = source,
-                    Template = CreateTemplate(),
-                };
-
-                target.ApplyTemplate();
-                target.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Foo), BindingMode.TwoWay));
-
-                Assert.Equal("0", target.Text);
-
-                target.CaretIndex = 1;
-                target.RaiseEvent(new TextInputEventArgs
-                {
-                    RoutedEvent = InputElement.TextInputEvent,
-                    Text = "2",
-                });
-
-                Assert.Equal("02", target.Text);
-            }
-        }
-
-        [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
             using (Start())
             {
                 MaskedTextBox textBox = new MaskedTextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
                     CaretIndex = 5
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
                 RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
@@ -248,9 +228,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 var textBox = new MaskedTextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
                     CaretIndex = 19
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
                 RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
@@ -352,6 +335,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -467,6 +452,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -833,6 +820,8 @@ namespace Avalonia.Controls.UnitTests
                     SelectionStart = selectionStart,
                     SelectionEnd = selectionEnd
                 };
+                
+                target.ApplyTemplate();
 
                 if (fromClipboard)
                 {
@@ -892,7 +881,9 @@ namespace Avalonia.Controls.UnitTests
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),     
+            textShaperImpl: new MockTextShaperImpl(), 
+            fontManagerImpl: new MockFontManagerImpl());
 
         private IControlTemplate CreateTemplate()
         {
@@ -902,11 +893,18 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_TextPresenter",
                     [!!TextPresenter.TextProperty] = new Binding
                     {
-                        Path = "Text",
+                        Path = nameof(TextPresenter.Text),
                         Mode = BindingMode.TwoWay,
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
+                    [!!TextPresenter.CaretIndexProperty] = new Binding
+                    {
+                        Path = nameof(TextPresenter.CaretIndex),
+                        Mode = BindingMode.TwoWay,
+                        Priority = BindingPriority.TemplatedParent,
+                        RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                    }
                 }.RegisterInNameScope(scope));
         }
 

@@ -3,13 +3,12 @@ using System.Reactive.Disposables;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Controls.Chrome
 {
     /// <summary>
     /// Draws a titlebar when managed client decorations are enabled.
     /// </summary>
+    [TemplatePart("PART_CaptionButtons", typeof(CaptionButtons))]
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class TitleBar : TemplatedControl
     {
@@ -36,7 +35,7 @@ namespace Avalonia.Controls.Chrome
                     }
                 }
 
-                IsVisible = window.PlatformImpl.NeedsManagedDecorations;
+                IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
             }
         }
 

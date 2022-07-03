@@ -17,7 +17,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public static void BringIntoView(this IControl control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            _ = control ?? throw new ArgumentNullException(nameof(control));
 
             control.BringIntoView(new Rect(control.Bounds.Size));
         }
@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         /// <param name="rect">The area of the control to being into view.</param>
         public static void BringIntoView(this IControl control, Rect rect)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            _ = control ?? throw new ArgumentNullException(nameof(control));
 
             if (control.IsEffectivelyVisible)
             {
@@ -51,10 +51,10 @@ namespace Avalonia.Controls
         /// <param name="control">The control to look in.</param>
         /// <param name="name">The name of the control to find.</param>
         /// <returns>The control or null if not found.</returns>
-        public static T FindControl<T>(this IControl control, string name) where T : class, IControl
+        public static T? FindControl<T>(this IControl control, string name) where T : class, IControl
         {
-            Contract.Requires<ArgumentNullException>(control != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            _ = control ?? throw new ArgumentNullException(nameof(control));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
 
             var nameScope = control.FindNameScope();
 
@@ -67,6 +67,29 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Finds the named control in the scope of the specified control and throws if not found.
+        /// </summary>
+        /// <typeparam name="T">The type of the control to find.</typeparam>
+        /// <param name="control">The control to look in.</param>
+        /// <param name="name">The name of the control to find.</param>
+        /// <returns>The control.</returns>
+        public static T GetControl<T>(this IControl control, string name) where T : class, IControl
+        {
+            _ = control ?? throw new ArgumentNullException(nameof(control));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
+            var nameScope = control.FindNameScope();
+
+            if (nameScope == null)
+            {
+                throw new InvalidOperationException("Could not find parent name scope.");
+            }
+
+            return nameScope.Find<T>(name) ??
+                throw new ArgumentException($"Could not find control named '{name}'.");
+        }
+
+        /// <summary>
         /// Sets a pseudoclass depending on an observable trigger.
         /// </summary>
         /// <param name="classes">The pseudoclasses collection.</param>
@@ -75,7 +98,7 @@ namespace Avalonia.Controls
         /// <returns>A disposable used to cancel the subscription.</returns>
         public static IDisposable Set(this IPseudoClasses classes, string name, IObservable<bool> trigger)
         {
-            Contract.Requires<ArgumentNullException>(classes != null);
+            _ = classes ?? throw new ArgumentNullException(nameof(classes));
 
             return trigger.Subscribe(x => classes.Set(name, x));
         }

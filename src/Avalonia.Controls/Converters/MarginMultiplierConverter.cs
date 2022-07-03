@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Converters
 
         public bool Bottom { get; set; } = false;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is int scalarDepth)
             {
@@ -35,10 +35,9 @@ namespace Avalonia.Controls.Converters
                     Bottom ? Indent * thicknessDepth.Bottom : 0);
             }
             return new Thickness(0);
-            
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new System.NotImplementedException();
         }

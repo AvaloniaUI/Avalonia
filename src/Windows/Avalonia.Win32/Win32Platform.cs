@@ -56,6 +56,11 @@ namespace Avalonia
         /// GPU rendering will not be enabled if this is set to false.
         /// </remarks>
         public bool? AllowEglInitialization { get; set; }
+        
+        public IList<string> EglRendererBlacklist { get; set; } = new List<string>
+        {
+            "Microsoft Basic Render"
+        };
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -63,6 +68,7 @@ namespace Avalonia
         /// <remarks>
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
+        [Obsolete("Multitouch is always enabled on supported Windows versions")]
         public bool? EnableMultitouch { get; set; } = true;
 
         /// <summary>

@@ -87,7 +87,8 @@ partial class Build : NukeBuild
             Console.WriteLine(preamble);
             Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
         }
-        ExecWait("dotnet version:", "dotnet", "--version");
+        ExecWait("dotnet version:", "dotnet", "--info");
+        ExecWait("dotnet workloads:", "dotnet", "workload list");
     }
 
     IReadOnlyCollection<Output> MsBuildCommon(
@@ -99,7 +100,7 @@ partial class Build : NukeBuild
             // This is required for VS2019 image on Azure Pipelines
             .When(Parameters.IsRunningOnWindows &&
                   Parameters.IsRunningOnAzure, _ => _
-                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
+                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
             .SetProcessToolPath(MsBuildExe.Value)
@@ -213,17 +214,11 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("Avalonia.Animation.UnitTests");
             RunCoreTest("Avalonia.Base.UnitTests");
             RunCoreTest("Avalonia.Controls.UnitTests");
             RunCoreTest("Avalonia.Controls.DataGrid.UnitTests");
-            RunCoreTest("Avalonia.Input.UnitTests");
-            RunCoreTest("Avalonia.Interactivity.UnitTests");
-            RunCoreTest("Avalonia.Layout.UnitTests");
             RunCoreTest("Avalonia.Markup.UnitTests");
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
-            RunCoreTest("Avalonia.Styling.UnitTests");
-            RunCoreTest("Avalonia.Visuals.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
         });

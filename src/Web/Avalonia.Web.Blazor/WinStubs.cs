@@ -8,21 +8,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.Web.Blazor
 {
-    internal class ClipboardStub : IClipboard
-    {
-        public Task<string> GetTextAsync() => Task.FromResult("");
-
-        public Task SetTextAsync(string text) => Task.CompletedTask;
-
-        public Task ClearAsync() => Task.CompletedTask;
-
-        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-
-        public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
-
-        public Task<object> GetDataAsync(string format) => Task.FromResult<object>(new ());
-    }
-
     internal class IconLoaderStub : IPlatformIconLoader
     {
         private class IconStub : IWindowIconImpl
@@ -55,5 +40,20 @@ namespace Avalonia.Web.Blazor
 
         public IReadOnlyList<Screen> AllScreens { get; } =
             new[] { new Screen(96, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+
+        public Screen? ScreenFromPoint(PixelPoint point)
+        {
+            return ScreenHelper.ScreenFromPoint(point, AllScreens);
+        }
+
+        public Screen? ScreenFromRect(PixelRect rect)
+        {
+            return ScreenHelper.ScreenFromRect(rect, AllScreens);
+        }
+
+        public Screen? ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
     }
 }

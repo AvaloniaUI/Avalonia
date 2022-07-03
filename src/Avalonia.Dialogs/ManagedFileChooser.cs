@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -9,6 +10,8 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Dialogs
 {
+    [TemplatePart("QuickLinks", typeof(Control))]
+    [TemplatePart("Files",      typeof(ListBox))]
     public class ManagedFileChooser : TemplatedControl
     {
         private Control _quickLinksRoot;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -14,9 +13,9 @@ namespace Avalonia.Controls
     public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
         private static bool s_setupWasAlreadyCalled;
-        private Action _optionsInitializers;
-        private Func<Application> _appFactory;
-        private IApplicationLifetime _lifetime;
+        private Action? _optionsInitializers;
+        private Func<Application>? _appFactory;
+        private IApplicationLifetime? _lifetime;
         
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
@@ -31,32 +30,32 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="Application"/> instance being initialized.
         /// </summary>
-        public Application Instance { get; private set; }
+        public Application? Instance { get; private set; }
         
         /// <summary>
         /// Gets the type of the Instance (even if it's not created yet)
         /// </summary>
-        public Type ApplicationType { get; private set; }
+        public Type? ApplicationType { get; private set; }
         
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
-        public Action WindowingSubsystemInitializer { get; private set; }
+        public Action? WindowingSubsystemInitializer { get; private set; }
 
         /// <summary>
         /// Gets the name of the currently selected windowing subsystem.
         /// </summary>
-        public string WindowingSubsystemName { get; private set; }
+        public string? WindowingSubsystemName { get; private set; }
 
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
-        public Action RenderingSubsystemInitializer { get; private set; }
+        public Action? RenderingSubsystemInitializer { get; private set; }
 
         /// <summary>
         /// Gets the name of the currently selected rendering subsystem.
         /// </summary>
-        public string RenderingSubsystemName { get; private set; }
+        public string? RenderingSubsystemName { get; private set; }
 
         /// <summary>
         /// Gets or sets a method to call after the <see cref="Application"/> is setup.
@@ -120,42 +119,12 @@ namespace Avalonia.Controls
             return Self;
         }
 
-        /// <summary>
-        /// Starts the application with an instance of <typeparamref name="TMainWindow"/>.
-        /// </summary>
-        /// <typeparam name="TMainWindow">The window type.</typeparam>
-        /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
-        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details")]
-        public void Start<TMainWindow>(Func<object> dataContextProvider = null)
-            where TMainWindow : Window, new()
-        {
-            AfterSetup(builder =>
-            {
-                var window = new TMainWindow();
-                if (dataContextProvider != null)
-                    window.DataContext = dataContextProvider();
-                ((IClassicDesktopStyleApplicationLifetime)builder.Instance.ApplicationLifetime)
-                    .MainWindow = window;
-            });
-            
-            // Copy-pasted because we can't call extension methods due to generic constraints
-            var lifetime = new ClassicDesktopStyleApplicationLifetime() {ShutdownMode = ShutdownMode.OnMainWindowClose};
-            SetupWithLifetime(lifetime);
-            lifetime.Start(Array.Empty<string>());
-        }
-
         public delegate void AppMainDelegate(Application app, string[] args);
-
-        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details", true)]
-        public void Start()
-        {
-            throw new NotSupportedException();
-        }
-
+        
         public void Start(AppMainDelegate main, string[] args)
         {
             Setup();
-            main(Instance, args);
+            main(Instance!, args);
         }
 
         /// <summary>
@@ -226,14 +195,17 @@ namespace Avalonia.Controls
             var platformClassName = assemblyName.Replace("Avalonia.", string.Empty) + "Platform";
             var platformClassFullName = assemblyName + "." + platformClassName;
             var platformClass = assembly.GetType(platformClassFullName);
-            var init = platformClass.GetRuntimeMethod("Initialize", Type.EmptyTypes);
-            init.Invoke(null, null);
+            var init = platformClass!.GetRuntimeMethod("Initialize", Type.EmptyTypes);
+            init!.Invoke(null, null);
         };
 
         public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
 
         protected virtual bool CheckSetup => true;
 
+        /// <summary>
+        /// Searches and initiates modules included with <see cref="ExportAvaloniaModuleAttribute"/> attribute.
+        /// </summary>
         private void SetupAvaloniaModules()
         {
             var moduleInitializers = from assembly in AppDomain.CurrentDomain.GetAssemblies()
@@ -251,7 +223,7 @@ namespace Avalonia.Controls
                                              where constructor.GetParameters().Length == 0 && !constructor.IsStatic
                                              select constructor).Single() into constructor
                                      select (Action)(() => constructor.Invoke(Array.Empty<object>()));
-            Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
+            Delegate.Combine(moduleInitializers.ToArray())!.DynamicInvoke();
         }
 
         /// <summary>
@@ -290,6 +262,11 @@ namespace Avalonia.Controls
             if (RenderingSubsystemInitializer == null)
             {
                 throw new InvalidOperationException("No rendering system configured.");
+            }
+
+            if (_appFactory == null)
+            {
+                throw new InvalidOperationException("No Application factory configured.");
             }
 
             if (s_setupWasAlreadyCalled && CheckSetup)

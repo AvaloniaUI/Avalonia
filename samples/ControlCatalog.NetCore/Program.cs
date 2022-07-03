@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Dialogs;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+
+using ControlCatalog.Pages;
 
 namespace ControlCatalog.NetCore
 {
@@ -114,10 +115,20 @@ namespace ControlCatalog.NetCore
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true
                 })
                 .UseSkia()
-                .UseManagedSystemDialogs()
+                .AfterSetup(builder =>
+                {
+                    builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+                    {
+                        StartupScreenIndex = 1,
+                    });
+
+                    EmbedSample.Implementation = OperatingSystem.IsWindows() ? (INativeDemoControl)new EmbedSampleWin()
+                        : OperatingSystem.IsMacOS() ? new EmbedSampleMac()
+                        : OperatingSystem.IsLinux() ? new EmbedSampleGtk()
+                        : null;
+                })
                 .LogToTrace();
 
         static void SilenceConsole()
