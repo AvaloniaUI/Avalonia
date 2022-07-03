@@ -870,61 +870,55 @@ namespace Avalonia.Controls
             }
 
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
-
-            var rect = new PixelRect(
-                PixelPoint.Origin,
-                PixelSize.FromSize(FrameSize ?? ClientSize, scaling));
-            var screen = Screens.ScreenFromPoint(owner?.Position ?? Position);
             var margin = Margin * scaling;
 
-            switch (WindowStartupLocation)
+            // Use frame size, falling back to client size if the platform can't give it to us.
+            var rect = FrameSize.HasValue ?
+                new PixelRect(PixelSize.FromSize(FrameSize.Value, scaling)) :
+                new PixelRect(PixelSize.FromSize(ClientSize, scaling));
+
+            Screen? screen = null;
+            if (owner is not null)
             {
-                case WindowStartupLocation.CenterScreen:
-                    if (screen != null)
-                    {
-                        Position = screen.WorkingArea.CenterRect(rect).Position;
-                    }
+                screen = Screens.ScreenFromWindow(owner) ?? Screens.ScreenFromPoint(owner.Position);
+            }
+            screen ??= Screens.ScreenFromPoint(Position);
+
+            switch (startupLocation)
+            {
+                case WindowStartupLocation.CenterScreen when screen is not null:
+                    Position = screen.WorkingArea.CenterRect(rect).Position;
                     break;
-                case WindowStartupLocation.CenterOwner:
-                    if (owner != null)
-                    {
-                        var ownerRect = new PixelRect(
-                            owner.Position,
-                            PixelSize.FromSize(owner.FrameSize ?? owner.ClientSize, scaling));
-                        Position = ownerRect.CenterRect(rect).Position;
-                    }
+
+                case WindowStartupLocation.CenterOwner when owner is not null:
+                    var ownerRect = new PixelRect(
+                        owner.Position,
+                        PixelSize.FromSize(owner.FrameSize ?? owner.ClientSize, scaling));
+                    Position = ownerRect.CenterRect(rect).Position;
                     break;
-                case WindowStartupLocation.UpperLeftScreen:
-                    if (screen != null)
-                    {
-                        Position = new PixelPoint(
-                            (int)margin.Left,
-                            (int)margin.Top);
-                    }
+
+                case WindowStartupLocation.UpperLeftScreen when screen is not null:
+                    Position = new PixelPoint(
+                        (int)margin.Left,
+                        (int)margin.Top);
                     break;
-                case WindowStartupLocation.UpperRightScreen:
-                    if (screen != null)
-                    {
-                        Position = new PixelPoint(
-                            screen.WorkingArea.Right - rect.Width - (int)margin.Right,
-                            (int)margin.Top);
-                    }
+
+                case WindowStartupLocation.UpperRightScreen when screen is not null:
+                    Position = new PixelPoint(
+                        screen.WorkingArea.Right - rect.Width - (int)margin.Right,
+                        (int)margin.Top);
                     break;
-                case WindowStartupLocation.LowerRightScreen:
-                    if (screen != null)
-                    {
-                        Position = new PixelPoint(
-                            screen.WorkingArea.Right - rect.Width - (int)margin.Right,
-                            screen.WorkingArea.Bottom - rect.Height - (int)margin.Bottom);
-                    }
+
+                case WindowStartupLocation.LowerRightScreen when screen is not null:
+                    Position = new PixelPoint(
+                        screen.WorkingArea.Right - rect.Width - (int)margin.Right,
+                        screen.WorkingArea.Bottom - rect.Height - (int)margin.Bottom);
                     break;
-                case WindowStartupLocation.LowerLeftScreen:
-                    if (screen != null)
-                    {
-                        Position = new PixelPoint(
-                            (int)margin.Left,
-                            screen.WorkingArea.Bottom - rect.Height - (int)margin.Bottom);
-                    }
+
+                case WindowStartupLocation.LowerLeftScreen when screen is not null:
+                    Position = new PixelPoint(
+                        (int)margin.Left,
+                        screen.WorkingArea.Bottom - rect.Height - (int)margin.Bottom);
                     break;
             }
         }
