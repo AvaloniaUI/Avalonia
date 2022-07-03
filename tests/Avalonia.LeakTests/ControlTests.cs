@@ -909,6 +909,9 @@ namespace Avalonia.LeakTests
                     // Detach the button from the logical tree, so there is no reference to it
                     window.Content = null;
                     
+                    // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
+                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    
                     return window;
                 };
 
@@ -959,6 +962,9 @@ namespace Avalonia.LeakTests
                     // Detach the button from the logical tree, so there is no reference to it
                     window.Content = null;
 
+                    // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
+                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    
                     return window;
                 };
 
