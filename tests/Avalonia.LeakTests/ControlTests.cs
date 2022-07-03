@@ -7,6 +7,7 @@ using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -959,7 +960,8 @@ namespace Avalonia.LeakTests
                 dotMemory.Check(memory =>
                 {
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ToolTip>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Flyout>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Popup>()).ObjectsCount);
                 });
             }
         }
