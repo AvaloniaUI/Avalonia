@@ -877,6 +877,93 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ToolTip_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window();
+                    var source = new Button
+                    {
+                        Template = new FuncControlTemplate<Button>((parent, _) =>
+                            new Decorator
+                            {
+                                [ToolTip.TipProperty] = new TextBlock
+                                {
+                                    [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                                }
+                            }),
+                    };
+
+                    window.Content = source;
+                    window.Show();
+
+                    var templateChild = (Decorator)source.GetVisualChildren().Single();
+                    ToolTip.SetIsOpen(templateChild, true);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                {
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ToolTip>()).ObjectsCount);
+                });
+            }
+        }
+        
+        [Fact]
+        public void Flyout_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window();
+                    var source = new Button
+                    {
+                        Template = new FuncControlTemplate<Button>((parent, _) =>
+                            new Button
+                            {
+                                Flyout = new Flyout
+                                {
+                                    Content = new TextBlock
+                                    {
+                                        [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                                    }
+                                }
+                            }),
+                    };
+
+                    window.Content = source;
+                    window.Show();
+
+                    var templateChild = (Button)source.GetVisualChildren().Single();
+                    templateChild.Flyout!.ShowAt(templateChild);
+
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                {
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ToolTip>()).ObjectsCount);
+                });
+            }
+        }
+        
         private FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>

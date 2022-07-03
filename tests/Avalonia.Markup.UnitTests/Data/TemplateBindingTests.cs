@@ -112,17 +112,23 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 window.Content = source;
                 window.Show();
+                try
+                {
+                    var templateChild = (Decorator)source.GetVisualChildren().Single();
+                    ToolTip.SetIsOpen(templateChild, true);
 
-                var templateChild = (Decorator)source.GetVisualChildren().Single();
-                ToolTip.SetIsOpen(templateChild, true);
+                    var target = (TextBlock)ToolTip.GetTip(templateChild)!;
 
-                var target = (TextBlock)ToolTip.GetTip(templateChild)!;
-
-                Assert.Null(target.Text);
-                source.Content = "foo";
-                Assert.Equal("foo", target.Text);
-                source.Content = "bar";
-                Assert.Equal("bar", target.Text);
+                    Assert.Null(target.Text);
+                    source.Content = "foo";
+                    Assert.Equal("foo", target.Text);
+                    source.Content = "bar";
+                    Assert.Equal("bar", target.Text);
+                }
+                finally
+                {
+                    window.Close();
+                }
             }
         }
 
@@ -146,18 +152,24 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 window.Content = source;
                 window.Show();
+                try
+                {
+                    var popup = (Popup)source.GetVisualChildren().Single();
+                    popup.IsOpen = true;
 
-                var popup = (Popup)source.GetVisualChildren().Single();
-                popup.IsOpen = true;
+                    var target = (TextBlock)popup.Child!;
 
-                var target = (TextBlock)popup.Child!;
-
-                target[~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty);
-                Assert.Null(target.Text);
-                source.Content = "foo";
-                Assert.Equal("foo", target.Text);
-                source.Content = "bar";
-                Assert.Equal("bar", target.Text);
+                    target[~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty);
+                    Assert.Null(target.Text);
+                    source.Content = "foo";
+                    Assert.Equal("foo", target.Text);
+                    source.Content = "bar";
+                    Assert.Equal("bar", target.Text);
+                }
+                finally
+                {
+                    window.Close();
+                }
             }
         }
 
@@ -184,18 +196,24 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 window.Content = source;
                 window.Show();
+                try
+                {
+                    var templateChild = (Button)source.GetVisualChildren().Single();
+                    templateChild.Flyout!.ShowAt(templateChild);
 
-                var templateChild = (Button)source.GetVisualChildren().Single();
-                templateChild.Flyout!.ShowAt(templateChild);
+                    var target = (TextBlock)((Flyout)templateChild.Flyout).Content!;
 
-                var target = (TextBlock)((Flyout)templateChild.Flyout).Content!;
-
-                target[~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty);
-                Assert.Null(target.Text);
-                source.Content = "foo";
-                Assert.Equal("foo", target.Text);
-                source.Content = "bar";
-                Assert.Equal("bar", target.Text);
+                    target[~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty);
+                    Assert.Null(target.Text);
+                    source.Content = "foo";
+                    Assert.Equal("foo", target.Text);
+                    source.Content = "bar";
+                    Assert.Equal("bar", target.Text);
+                }
+                finally
+                {
+                    window.Close();
+                }
             }
         }
 
