@@ -832,7 +832,7 @@ namespace Avalonia
 
         private void DetachStyles()
         {
-            if (_appliedStyles is object)
+            if (_appliedStyles?.Count > 0)
             {
                 BeginBatchUpdate();
 
