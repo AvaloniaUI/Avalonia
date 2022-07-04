@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Converters
 
             if (visibility == ScrollBarVisibility.Auto)
             {
-                if (extent == viewport)
+                if (MathUtilities.AreClose(extent, viewport))
                 {
                     return false;
                 }

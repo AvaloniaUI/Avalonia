@@ -85,7 +85,7 @@ namespace Avalonia.Direct2D1.Media
 
             var second = glyphInfos[length - 1];
 
-            if (!new Codepoint((int)second.Codepoint).IsBreakChar)
+            if (!new Codepoint(second.Codepoint).IsBreakChar)
             {
                 return;
             }

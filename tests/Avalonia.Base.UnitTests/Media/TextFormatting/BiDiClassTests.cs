@@ -30,7 +30,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
         private bool Run(BiDiClassData t)
         {
-            var bidi = BidiAlgorithm.Instance.Value;
+            var bidi = new BidiAlgorithm();
             var bidiData = new BidiData(t.ParagraphLevel);
         
             var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.CodePoints).ToArray());
@@ -39,9 +39,12 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             bidiData.Append(text.AsMemory());
 
             // Act
-            bidi.Process(bidiData);
+            for (int i = 0; i < 10; i++)
+            {
+                bidi.Process(bidiData);
+            }
 
-                var resultLevels = bidi.ResolvedLevels;
+            var resultLevels = bidi.ResolvedLevels;
             var resultParagraphLevel = bidi.ResolvedParagraphEmbeddingLevel;
 
             // Assert
