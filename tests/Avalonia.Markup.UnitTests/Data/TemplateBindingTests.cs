@@ -3,9 +3,11 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -88,6 +90,131 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("Hello foo", target.Content);
             target.Content = "Hello bar";
             Assert.Equal("bar", source.Content);
+        }
+
+        [Fact]
+        public void Should_Work_Inside_Of_Tooltip()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var source = new Button
+                {
+                    Template = new FuncControlTemplate<Button>((parent, _) =>
+                        new Decorator
+                        {
+                            [ToolTip.TipProperty] = new TextBlock
+                            {
+                                [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                            }
+                        }),
+                };
+
+                window.Content = source;
+                window.Show();
+                try
+                {
+                    var templateChild = (Decorator)source.GetVisualChildren().Single();
+                    ToolTip.SetIsOpen(templateChild, true);
+
+                    var target = (TextBlock)ToolTip.GetTip(templateChild)!;
+
+                    Assert.Null(target.Text);
+                    source.Content = "foo";
+                    Assert.Equal("foo", target.Text);
+                    source.Content = "bar";
+                    Assert.Equal("bar", target.Text);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Work_Inside_Of_Popup()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var source = new Button
+                {
+                    Template = new FuncControlTemplate<Button>((parent, _) =>
+                        new Popup
+                        {
+                            Child = new TextBlock
+                            {
+                                [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                            }
+                        }),
+                };
+
+                window.Content = source;
+                window.Show();
+                try
+                {
+                    var popup = (Popup)source.GetVisualChildren().Single();
+                    popup.IsOpen = true;
+
+                    var target = (TextBlock)popup.Child!;
+
+                    target[~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty);
+                    Assert.Null(target.Text);
+                    source.Content = "foo";
+                    Assert.Equal("foo", target.Text);
+                    source.Content = "bar";
+                    Assert.Equal("bar", target.Text);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Work_Inside_Of_Flyout()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var source = new Button
+                {
+                    Template = new FuncControlTemplate<Button>((parent, _) =>
+                        new Button
+                        {
+                            Flyout = new Flyout
+                            {
+                                Content = new TextBlock
+                                {
+                                    [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                                }
+                            }
+                        }),
+                };
+
+                window.Content = source;
+                window.Show();
+                try
+                {
+                    var templateChild = (Button)source.GetVisualChildren().Single();
+                    templateChild.Flyout!.ShowAt(templateChild);
+
+                    var target = (TextBlock)((Flyout)templateChild.Flyout).Content!;
+
+                    target[~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty);
+                    Assert.Null(target.Text);
+                    source.Content = "foo";
+                    Assert.Equal("foo", target.Text);
+                    source.Content = "bar";
+                    Assert.Equal("bar", target.Text);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            }
         }
 
         private class PrefixConverter : IValueConverter
