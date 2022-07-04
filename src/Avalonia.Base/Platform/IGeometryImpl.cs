@@ -39,7 +39,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="geometry">The other geometry.</param>
         /// <returns>A new <see cref="IGeometryImpl"/> representing the intersection.</returns>
-        IGeometryImpl Intersect(IGeometryImpl geometry);
+        IGeometryImpl? Intersect(IGeometryImpl geometry);
 
         /// <summary>
         /// Indicates whether the geometry's stroke contains the specified point.
