@@ -10,6 +10,5 @@ pool:
   vmImage: macOS-10.15
 
 steps:
-- script: start-appium
-    appium
+- script: appium
   displayName: 'start appium'
