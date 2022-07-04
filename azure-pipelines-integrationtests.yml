@@ -10,5 +10,9 @@ pool:
   vmImage: macOS-10.15
 
 steps:
+- script: npm install -g appium
+  displayName: 'install appium'
+
 - script: appium
   displayName: 'start appium'
+
