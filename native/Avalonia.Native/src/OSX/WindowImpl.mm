@@ -23,6 +23,8 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastTitle = @"";
     _parent = nullptr;
     WindowEvents = events;
+
+    [Window setHasShadow:true];
     
     OnInitialiseNSWindow();
 }

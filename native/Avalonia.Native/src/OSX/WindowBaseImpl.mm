@@ -47,7 +47,6 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     [Window setContentMaxSize:lastMaxSize];
 
     [Window setOpaque:false];
-    [Window setHasShadow:true];
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
