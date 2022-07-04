@@ -14,18 +14,12 @@ using Avalonia.Utilities;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A control that displays a block of text.
+    /// A control that displays a block of formatted text.
     /// </summary>
     public class RichTextBlock : TextBlock, IInlineHost
     {
         public static readonly StyledProperty<bool> IsTextSelectionEnabledProperty =
             AvaloniaProperty.Register<RichTextBlock, bool>(nameof(IsTextSelectionEnabled), false);
-
-        public static readonly DirectProperty<RichTextBlock, int> CaretIndexProperty =
-            AvaloniaProperty.RegisterDirect<RichTextBlock, int>(
-                nameof(CaretIndex),
-                o => o.CaretIndex,
-                (o, v) => o.CaretIndex = v);
 
         public static readonly DirectProperty<RichTextBlock, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<RichTextBlock, int>(
@@ -67,7 +61,6 @@ namespace Avalonia.Controls
                 nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
         private bool _canCopy;
-        private int _caretIndex;
         private int _selectionStart;
         private int _selectionEnd;
 
@@ -86,31 +79,28 @@ namespace Avalonia.Controls
                 InlineHost = this
             };
         }
-       
+
+        /// <summary>
+        /// Gets or sets the brush that highlights selected text.
+        /// </summary>
         public IBrush? SelectionBrush
         {
             get => GetValue(SelectionBrushProperty);
             set => SetValue(SelectionBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value that defines the brush used for selected text.
+        /// </summary>
         public IBrush? SelectionForegroundBrush
         {
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
-        public int CaretIndex
-        {
-            get => _caretIndex;
-            set
-            {
-                if(SetAndRaise(CaretIndexProperty, ref _caretIndex, value))
-                {
-                    SelectionStart = SelectionEnd = value;
-                }
-            }
-        }
-
+        /// <summary>
+        /// Gets or sets a character index for the beginning of the current selection.
+        /// </summary>
         public int SelectionStart
         {
             get => _selectionStart;
@@ -119,37 +109,36 @@ namespace Avalonia.Controls
                 if (SetAndRaise(SelectionStartProperty, ref _selectionStart, value))
                 {
                     RaisePropertyChanged(SelectedTextProperty, "", "");
-
-                    if (SelectionEnd == value && CaretIndex != value)
-                    {
-                        CaretIndex = value;
-                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Gets or sets a character index for the end of the current selection.
+        /// </summary>
         public int SelectionEnd
         {
             get => _selectionEnd;
             set
             {
-                if(SetAndRaise(SelectionEndProperty, ref _selectionEnd, value))
+                if (SetAndRaise(SelectionEndProperty, ref _selectionEnd, value))
                 {
                     RaisePropertyChanged(SelectedTextProperty, "", "");
-
-                    if (SelectionStart == value && CaretIndex != value)
-                    {
-                        CaretIndex = value;
-                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Gets the content of the current selection.
+        /// </summary>
         public string SelectedText
         {
             get => GetSelection();
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates whether text selection is enabled, either through user action or calling selection-related API.
+        /// </summary>
         public bool IsTextSelectionEnabled
         {
             get => GetValue(IsTextSelectionEnabledProperty);
@@ -181,6 +170,9 @@ namespace Avalonia.Controls
             remove => RemoveHandler(CopyingToClipboardEvent, value);
         }
 
+        /// <summary>
+        /// Copies the current selection to the Clipboard.
+        /// </summary>
         public async void Copy()
         {
             if (_canCopy || !IsTextSelectionEnabled)
@@ -258,7 +250,6 @@ namespace Avalonia.Controls
 
             SelectionEnd = SelectionStart;
         }
-
 
         protected override string? GetText()
         {
@@ -344,13 +335,13 @@ namespace Avalonia.Controls
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 
             if (Match(keymap.Copy))
-            {              
+            {
                 Copy();
-                
+
                 handled = true;
             }
 
-            e.Handled = handled;            
+            e.Handled = handled;
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -367,14 +358,14 @@ namespace Avalonia.Controls
             {
                 var point = e.GetPosition(this);
 
-                var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);         
+                var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
-                var oldIndex = CaretIndex;
+                var oldIndex = SelectionStart;
 
                 var hit = TextLayout.HitTestPoint(point);
                 var index = hit.TextPosition;
 
-                SetAndRaise(CaretIndexProperty, ref _caretIndex, index);
+                SelectionStart = SelectionEnd = index;
 
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
@@ -460,7 +451,7 @@ namespace Avalonia.Controls
                                           caretIndex >= firstSelection && caretIndex <= lastSelection;
                 if (!didClickInSelection)
                 {
-                    CaretIndex = SelectionEnd = SelectionStart = caretIndex;
+                    SelectionStart = SelectionEnd = caretIndex;
                 }
             }
 

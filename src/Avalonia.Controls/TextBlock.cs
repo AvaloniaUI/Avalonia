@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
