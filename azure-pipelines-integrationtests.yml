@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: osx-latest
+  vmImage: macOS-10.15
 
 steps:
 - script: start-appium
