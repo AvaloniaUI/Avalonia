@@ -13,6 +13,6 @@ steps:
 - script: npm install -g appium
   displayName: 'install appium'
 
-- script: appium
+- script: appium &
   displayName: 'start appium'
 
