@@ -170,15 +170,8 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            // REMOOOOVEEEE
-            var foo = new Style(x => x.OfType<Button>().Template().OfType<Control1>());
-            var match2 = foo.Selector.Match(control, parent);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, match2.Result);
-
             var match = nested.Selector.Match(control, parent);
             Assert.Equal(SelectorMatchResult.AlwaysThisInstance, match.Result);
-
-
         }
 
         [Fact]

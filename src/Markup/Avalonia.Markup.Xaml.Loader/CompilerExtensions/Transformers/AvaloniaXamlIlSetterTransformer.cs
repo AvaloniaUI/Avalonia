@@ -27,7 +27,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Property");
             if (property != null)
             {
-
                 var propertyName = property.Values.OfType<XamlAstTextNode>().FirstOrDefault()?.Text;
                 if (propertyName == null)
                     throw new XamlParseException("Setter.Property must be a string", node);
@@ -66,55 +65,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return node;
-        }
-
-        private (IXamlLineInfo, IXamlType) GetTargetType(AstTransformationContext context, IXamlAstNode node)
-        {
-            foreach (var n in context.ParentNodes())
-            {
-                if (n is XamlAstObjectNode parent)
-                {
-                    switch (parent.Type.GetClrType().FullName)
-                    {
-                        case "Avalonia.Styling.Style":
-                            var selectorProperty = parent.Children.OfType<XamlAstXamlPropertyValueNode>()
-                                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector");
-                            if (selectorProperty == null)
-                                throw new XamlParseException("Can not find parent Style Selector.", node);
-                            var selector = selectorProperty.Values.FirstOrDefault() as XamlIlSelectorNode;
-                            if (selector?.TargetType != null)
-                                return (selector, selector.TargetType);
-                            throw new XamlParseException(
-                                "Can not resolve parent Style Selector type", node);
-
-                        case "Avalonia.Styling.ControlTheme":
-                            var targetTypeProperty = parent.Children.OfType<XamlAstXamlPropertyValueNode>()
-                                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "TargetType");
-                            if (targetTypeProperty == null)
-                                throw new XamlParseException("ControlTemplate has no TargetType.", parent);
-                            break;
-                    }
-                }
-            }
-
-            throw new XamlParseException("'Setter' is only valid inside a 'Style' or 'ControlTheme'.", node);
-            //var parent = context.ParentNodes().OfType<XamlAstObjectNode>()
-            //    .FirstOrDefault(p => p.Type.GetClrType().FullName == "Avalonia.Styling.Style" ||
-            //                         p.Type.GetClrType().FullName == "Avalonia.Styling.ControlTheme");
-
-            //if (parent == null)
-            //    throw new XamlParseException(
-            //        "Avalonia.Styling.Setter is only valid inside Avalonia.Styling.Style", node);
-            //var selectorProperty = parent.Children.OfType<XamlAstXamlPropertyValueNode>()
-            //    .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector" ||
-            //                         p.Property.GetClrProperty().Name == "TargetType");
-            //if (selectorProperty == null)
-            //    throw new XamlParseException(
-            //        "Can not find parent Style Selector or ControlTemplate TargetType", node);
-            //var selector = selectorProperty.Values.FirstOrDefault() as XamlIlSelectorNode;
-            //if (selector?.TargetType == null)
-            //    throw new XamlParseException(
-            //        "Can not resolve parent Style Selector type", node);
         }
 
         class SetterValueProperty : XamlAstClrProperty
