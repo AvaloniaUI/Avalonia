@@ -65,26 +65,22 @@ namespace Avalonia.Web.Blazor
 
         private readonly struct FramebufferData
         {
-            private readonly byte[]? _data;
-            private readonly GCHandle _dataHandle;
-
             public PixelSize Size { get; }
 
             public int RowBytes { get; }
 
-            public IntPtr Address => _dataHandle.AddrOfPinnedObject();
+            public IntPtr Address { get; }
 
             public FramebufferData(int width, int height, int bytesPerPixel)
             {
                 Size = new PixelSize(width, height);
                 RowBytes = width * bytesPerPixel;
-                _data = new byte[width * height * bytesPerPixel];
-                _dataHandle = GCHandle.Alloc(_data, GCHandleType.Pinned);
+                Address = Marshal.AllocHGlobal(width * height * bytesPerPixel);
             }
 
             public void Dispose()
             {
-                _dataHandle.Free();
+                Marshal.FreeHGlobal(Address);
             }
         }
     }
