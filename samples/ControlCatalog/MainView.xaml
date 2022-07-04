@@ -112,7 +112,7 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
-      <TabItem Header="Pointers (Touch)">
+      <TabItem Header="Pointers">
         <pages:PointersPage />
       </TabItem>
       <TabItem Header="ProgressBar">

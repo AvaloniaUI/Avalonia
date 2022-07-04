@@ -491,7 +491,11 @@ namespace Avalonia.Controls
         /// Raises the <see cref="Opened"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
+        protected virtual void OnOpened(EventArgs e)
+        {
+            FrameSize = PlatformImpl?.FrameSize;
+            Opened?.Invoke(this, e);  
+        } 
 
         /// <summary>
         /// Raises the <see cref="Closed"/> event.

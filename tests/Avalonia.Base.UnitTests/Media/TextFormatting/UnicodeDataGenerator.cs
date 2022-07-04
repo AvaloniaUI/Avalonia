@@ -10,22 +10,22 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeDataGenerator
     {
-        public const string Ucd = "https://www.unicode.org/Public/13.0.0/ucd/";
+        public const string Ucd = "https://www.unicode.org/Public/14.0.0/ucd/";
 
-        public static UnicodeTrie GenerateBiDiTrie(out BiDiDataEntries biDiDataEntries,out Dictionary<int, BiDiDataItem> biDiData)
+        public static UnicodeTrie GenerateBiDiTrie(out BiDiDataEntries biDiDataEntries, out Dictionary<int, BiDiDataItem> biDiData)
         {
             biDiData = new Dictionary<int, BiDiDataItem>();
 
-            var biDiClassEntries =
-                UnicodeEnumsGenerator.CreateBiDiClassEnum();
+            var bidiClassEntries =
+                UnicodeEnumsGenerator.CreateBidiClassEnum();
 
-            var biDiClassMappings = CreateTagToIndexMappings(biDiClassEntries);
+            var bidiClassMappings = CreateTagToIndexMappings(bidiClassEntries);
 
-            var biDiClassData = ReadBiDiData();
+            var bidiClassData = ReadBiDiData();
 
-            foreach (var (range, name) in biDiClassData)
+            foreach (var (range, name) in bidiClassData)
             {
-                var biDiClass = biDiClassMappings[name];
+                var biDiClass = bidiClassMappings[name];
 
                 AddBiDiClassRange(biDiData, range, biDiClass);
             }
@@ -56,16 +56,69 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             biDiDataEntries = new BiDiDataEntries()
             {
-                PairedBracketTypes = biDiPairedBracketTypeEntries, BiDiClasses = biDiClassEntries
+                PairedBracketTypes = biDiPairedBracketTypeEntries, BiDiClasses = bidiClassEntries
             };
-            
-            using (var stream = File.Create("Generated\\BiDi.trie"))
+
+            var trie = biDiTrieBuilder.Freeze();
+
+            GenerateTrieClass("Bidi", trie);
+
+            return trie;
+        }
+
+        public static void GenerateTrieClass(string name, UnicodeTrie trie)
+        {
+            var stream = new MemoryStream();
+
+            trie.Save(stream);
+
+            using (var fileStream = File.Create($"Generated\\{name}.trie.cs"))
+            using (var writer = new StreamWriter(fileStream))
             {
-                var trie = biDiTrieBuilder.Freeze();
+                writer.WriteLine("using System;");
+                writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
+                writer.WriteLine("{");
+                writer.WriteLine($"   internal static class {name}Trie");
+                writer.WriteLine("    {");
+                writer.WriteLine("        public static ReadOnlySpan<byte> Data => new byte[]");
+                writer.WriteLine("        {");
 
-                trie.Save(stream);
+                stream.Position = 0;
 
-                return trie;
+                writer.Write("            ");
+
+                long length = stream.Length;
+
+                while (true)
+                {
+                    var b = stream.ReadByte();
+
+                    if(b == -1)
+                    {
+                        break;
+                    }
+
+                    writer.Write(b.ToString());
+
+                    if (stream.Position % 100 > 0 && stream.Position != length)
+                    {
+                        writer.Write(", ");
+                    }
+                    else
+                    {
+                        writer.Write(',');
+                        writer.Write(Environment.NewLine);
+
+                        if (stream.Position != length)
+                        {
+                            writer.Write("            ");
+                        }
+                    }
+                }
+
+                writer.WriteLine("        };");              
+                writer.WriteLine("    }");
+                writer.WriteLine("}");
             }
         }
 
@@ -105,14 +158,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 LineBreakClasses = lineBreakClassEntries
             };
 
-            using (var stream = File.Create("Generated\\UnicodeData.trie"))
-            {
-                var trie = unicodeDataTrieBuilder.Freeze();
+            var trie = unicodeDataTrieBuilder.Freeze();
 
-                trie.Save(stream);
-                
-                return trie;
-            }
+            GenerateTrieClass("UnicodeData", trie);
+
+            return trie;
         }
 
         private static Dictionary<int, UnicodeDataItem> GetUnicodeData(IReadOnlyDictionary<string, int> generalCategoryMappings, 
@@ -407,9 +457,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             public int BracketType { get; set; }
 
             public int BiDiClass { get; set; }
-        }
-        
-
+        }      
     }
     
     internal class UnicodeDataEntries

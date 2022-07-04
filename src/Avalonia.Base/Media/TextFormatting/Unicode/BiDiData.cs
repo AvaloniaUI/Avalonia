@@ -18,17 +18,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private ArrayBuilder<BidiClass> _savedClasses;
         private ArrayBuilder<BidiPairedBracketType> _savedPairedBracketTypes;
         private ArrayBuilder<sbyte> _tempLevelBuffer;
-        
-        public BidiData(sbyte paragraphEmbeddingLevel = 0)
+
+        public BidiData(sbyte paragraphEmbeddingLevel)
         {
             ParagraphEmbeddingLevel = paragraphEmbeddingLevel;
         }
 
-        public BidiData(ReadOnlySlice<char> text, sbyte paragraphEmbeddingLevel = 0) : this(paragraphEmbeddingLevel)
-        {
-            Append(text);
-        }
-        
         public sbyte ParagraphEmbeddingLevel { get; private set; }
 
         public bool HasBrackets { get; private set; }
@@ -64,13 +59,23 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </remarks>
         public ArraySlice<int> PairedBracketValues { get; private set; }
 
+        /// <summary>
+        /// Appends text to the bidi data.
+        /// </summary>
+        /// <param name="text">The text to process.</param>
         public void Append(ReadOnlySlice<char> text)
         {
             _classes.Add(text.Length);
             _pairedBracketTypes.Add(text.Length);
             _pairedBracketValues.Add(text.Length);
 
-            var i = Length;
+            // Resolve the BidiCharacterType, paired bracket type and paired
+            // bracket values for all code points
+            HasBrackets = false;
+            HasEmbeddings = false;
+            HasIsolates = false;
+
+            int i = Length;
              
             var codePointEnumerator = new CodepointEnumerator(text);
             
@@ -115,13 +120,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     // Opening bracket types can never have a null pairing.
                     codepoint.TryGetPairedBracket(out var paired);
                     
-                    _pairedBracketValues[i] = Codepoint.GetCanonicalType(paired).Value;
+                    _pairedBracketValues[i] = (int)Codepoint.GetCanonicalType(paired).Value;
 
                     HasBrackets = true;
                 }
                 else if (pbt == BidiPairedBracketType.Close)
                 {
-                    _pairedBracketValues[i] = Codepoint.GetCanonicalType(codepoint).Value;
+                    _pairedBracketValues[i] = (int)Codepoint.GetCanonicalType(codepoint).Value;
                     
                     HasBrackets = true;
                 }

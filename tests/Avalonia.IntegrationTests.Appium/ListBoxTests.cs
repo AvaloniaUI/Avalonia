@@ -61,7 +61,7 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         // appium-mac2-driver just hangs
-        [PlatformFact(SkipOnOSX = true)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void Can_Select_Range_By_Shift_Clicking()
         {
             var listBox = GetTarget();

@@ -128,8 +128,8 @@ namespace Avalonia.Controls.Primitives
 
             if (_inputTarget != null)
             {
-                _inputTarget.PointerEnter += InputTarget_PointerEnter;
-                _inputTarget.PointerLeave += InputTarget_PointerLeave;
+                _inputTarget.PointerEntered += InputTarget_PointerEntered;
+                _inputTarget.PointerExited += InputTarget_PointerExited;
                 _inputTarget.PointerPressed += InputTarget_PointerPressed;
                 _inputTarget.PointerMoved += InputTarget_PointerMoved;
                 _inputTarget.PointerReleased += InputTarget_PointerReleased;
@@ -194,8 +194,8 @@ namespace Avalonia.Controls.Primitives
 
             if (_inputTarget != null)
             {
-                _inputTarget.PointerEnter -= InputTarget_PointerEnter;
-                _inputTarget.PointerLeave -= InputTarget_PointerLeave;
+                _inputTarget.PointerEntered -= InputTarget_PointerEntered;
+                _inputTarget.PointerExited -= InputTarget_PointerExited;
                 _inputTarget.PointerPressed -= InputTarget_PointerPressed;
                 _inputTarget.PointerMoved -= InputTarget_PointerMoved;
                 _inputTarget.PointerReleased -= InputTarget_PointerReleased;
@@ -362,7 +362,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
             if (_selectionEllipsePanel != null &&
@@ -373,7 +373,7 @@ namespace Avalonia.Controls.Primitives
 
             UpdatePseudoClasses();
 
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         /// <inheritdoc/>
@@ -848,16 +848,16 @@ namespace Avalonia.Controls.Primitives
             UpdatePseudoClasses();
         }
 
-        /// <inheritdoc cref="InputElement.PointerEnter"/>
-        private void InputTarget_PointerEnter(object? sender, PointerEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerEntered"/>
+        private void InputTarget_PointerEntered(object? sender, PointerEventArgs args)
         {
             _isPointerOver = true;
             UpdatePseudoClasses();
             args.Handled = true;
         }
 
-        /// <inheritdoc cref="InputElement.PointerLeave"/>
-        private void InputTarget_PointerLeave(object? sender, PointerEventArgs args)
+        /// <inheritdoc cref="InputElement.PointerExited"/>
+        private void InputTarget_PointerExited(object? sender, PointerEventArgs args)
         {
             _isPointerOver = false;
             UpdatePseudoClasses();

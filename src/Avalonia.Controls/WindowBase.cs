@@ -169,7 +169,6 @@ namespace Avalonia.Controls
             }
         }
 
-
         [Obsolete("No longer used. Has no effect.")]
         protected IDisposable BeginAutoSizing() => Disposable.Empty;
 
@@ -184,6 +183,26 @@ namespace Avalonia.Controls
                 init.BeginInit();
                 init.EndInit();
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnClosed(EventArgs e)
+        {
+            // Window must manually raise Loaded/Unloaded events as it is a visual root and
+            // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
+            OnUnloadedCore();
+
+            base.OnClosed(e);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnOpened(EventArgs e)
+        {
+            // Window must manually raise Loaded/Unloaded events as it is a visual root and
+            // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
+            ScheduleOnLoadedCore();
+
+            base.OnOpened(e);
         }
 
         protected override void HandleClosed()
@@ -217,10 +236,14 @@ namespace Avalonia.Controls
         /// <param name="reason">The reason for the resize.</param>
         protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
-            ClientSize = clientSize;
             FrameSize = PlatformImpl?.FrameSize;
-            LayoutManager.ExecuteLayoutPass();
-            Renderer?.Resized(clientSize);
+
+            if (ClientSize != clientSize)
+            {
+                ClientSize = clientSize;
+                LayoutManager.ExecuteLayoutPass();
+                Renderer?.Resized(clientSize);
+            }
         }
 
         /// <summary>
