@@ -37,6 +37,7 @@ namespace Avalonia.Web.Blazor
         private const SKColorType ColorType = SKColorType.Rgba8888;
 
         private bool _initialised;
+        private bool _inputElementFocused;
 
         [Inject] private IJSRuntime Js { get; set; } = null!;
 
@@ -221,6 +222,16 @@ namespace Avalonia.Web.Blazor
             _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, e.Key, GetModifiers(e));
         }
 
+        private void OnFocus(FocusEventArgs e)
+        {
+            // if focus has unexpectedly moved from the input element to the container element,
+            // shift it back to the input element
+            if (_inputElementFocused && _inputHelper is not null)
+            {
+                _inputHelper.Focus();
+            }
+        }
+
         private void OnInput(ChangeEventArgs e)
         {
             if (e.Value != null)
@@ -374,10 +385,12 @@ namespace Avalonia.Web.Blazor
             if (active)
             {
                 _inputHelper.Show();
+                _inputElementFocused = true;
                 _inputHelper.Focus();
             }
             else
             {
+                _inputElementFocused = false;
                 _inputHelper.Hide();
             }
         }
