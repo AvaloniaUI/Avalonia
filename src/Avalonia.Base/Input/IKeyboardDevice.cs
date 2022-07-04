@@ -43,12 +43,17 @@ namespace Avalonia.Input
         Control = 2,
         Shift = 4,
         Meta = 8,
+
         LeftMouseButton = 16,
         RightMouseButton = 32,
         MiddleMouseButton = 64,
         XButton1MouseButton = 128,
         XButton2MouseButton = 256,
-        KeyboardMask = Alt | Control | Shift | Meta
+        KeyboardMask = Alt | Control | Shift | Meta,
+
+        PenInverted = 512,
+        PenEraser = 1024,
+        PenBarrelButton = 2048
     }
 
     [NotClientImplementable]

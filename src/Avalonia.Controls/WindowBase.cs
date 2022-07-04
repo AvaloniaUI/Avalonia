@@ -236,10 +236,14 @@ namespace Avalonia.Controls
         /// <param name="reason">The reason for the resize.</param>
         protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
-            ClientSize = clientSize;
             FrameSize = PlatformImpl?.FrameSize;
-            LayoutManager.ExecuteLayoutPass();
-            Renderer?.Resized(clientSize);
+
+            if (ClientSize != clientSize)
+            {
+                ClientSize = clientSize;
+                LayoutManager.ExecuteLayoutPass();
+                Renderer?.Resized(clientSize);
+            }
         }
 
         /// <summary>

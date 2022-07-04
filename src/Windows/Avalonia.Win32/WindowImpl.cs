@@ -22,6 +22,7 @@ using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.WinRT;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
 
 namespace Avalonia.Win32
@@ -69,18 +70,19 @@ namespace Avalonia.Win32
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
+        private readonly PenDevice _penDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
+        private readonly bool _wmPointerEnabled;
 
         private Win32NativeControlHost _nativeControlHost;
         private WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
-        private bool _multitouch;
         private IInputRoot _owner;
         private WindowProperties _windowProperties;
-        private bool _trackingMouse;
+        private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
         private WindowState _showWindowState;
@@ -97,10 +99,17 @@ namespace Avalonia.Win32
         private uint _langid;
         private bool _ignoreWmChar;
 
+        private const int MaxPointerHistorySize = 512;
+        private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
+        private static readonly POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
+        private static readonly POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
+        private static readonly POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
+
         public WindowImpl()
         {
             _touchDevice = new TouchDevice();
             _mouseDevice = new WindowsMouseDevice();
+            _penDevice = new PenDevice();
 
 #if USE_MANAGED_DRAG
             _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>
@@ -128,6 +137,8 @@ namespace Avalonia.Win32
                 glPlatform is EglPlatformOpenGlInterface egl &&
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+
+            _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
@@ -282,6 +293,8 @@ namespace Avalonia.Win32
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         protected IntPtr Hwnd => _hwnd;
+
+        private bool IsMouseInPointerEnabled => _wmPointerEnabled && IsMouseInPointerEnabled();
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
@@ -815,12 +828,7 @@ namespace Avalonia.Win32
 
             Handle = new WindowImplPlatformHandle(this);
 
-            _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
-
-            if (_multitouch)
-            {
-                RegisterTouchWindow(_hwnd, 0);
-            }
+            RegisterTouchWindow(_hwnd, 0);
 
             if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
             {

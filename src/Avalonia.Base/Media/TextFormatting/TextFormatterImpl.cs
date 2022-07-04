@@ -159,7 +159,6 @@ namespace Avalonia.Media.TextFormatting
         {
             var flowDirection = paragraphProperties.FlowDirection;
             var drawableTextRuns = new List<DrawableTextRun>();
-
             var biDiData = new BidiData((sbyte)flowDirection);
 
             foreach (var textRun in textRuns)
@@ -174,7 +173,6 @@ namespace Avalonia.Media.TextFormatting
                 {
                     biDiData.Append(textRun.Text);
                 }
-
             }
 
             var biDi = new BidiAlgorithm();
@@ -290,9 +288,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textCharacters">The text characters to form <see cref="ShapeableTextCharacters"/> from.</param>
         /// <param name="levels">The bidi levels.</param>
         /// <returns></returns>
-        private static IEnumerable<IReadOnlyList<TextRun>> CoalesceLevels(
-            IReadOnlyList<TextRun> textCharacters,
-            ReadOnlySlice<sbyte> levels)
+        private static IEnumerable<IReadOnlyList<TextRun>> CoalesceLevels(IReadOnlyList<TextRun> textCharacters, ArraySlice<sbyte> levels)
         {
             if (levels.Length == 0)
             {
