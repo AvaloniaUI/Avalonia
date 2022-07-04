@@ -10,6 +10,16 @@ pool:
   vmImage: macOS-10.15
 
 steps:
+- task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.418'
+    inputs:
+      version: 3.1.418
+
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 6.0.202'
+  inputs:
+    version: 6.0.202
+
 - script: npm install -g appium
   displayName: 'install appium'
 
