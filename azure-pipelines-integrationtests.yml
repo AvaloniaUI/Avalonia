@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: macOS-10.15
+  vmImage: macOS-12
 
 steps:
 - task: UseDotNet@2
