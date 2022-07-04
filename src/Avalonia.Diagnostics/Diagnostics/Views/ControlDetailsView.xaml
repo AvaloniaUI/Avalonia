@@ -30,7 +30,11 @@
     <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
 
       <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
-        <Button Grid.Column="0" Grid.RowSpan="2" Content="^" Command="{Binding ApplyParentProperty}" />
+        <Button Grid.Column="0" Grid.RowSpan="2" Content="^" 
+                IsEnabled="{Binding CanNavigateToParentProperty}"
+                Margin="0 0 4 0"
+                ToolTip.Tip="Navigate to parent property"
+                Command="{Binding NavigateToParentProperty}" />
         <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding SelectedEntityName}" FontWeight="Bold" />
         <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding SelectedEntityType}" FontStyle="Italic" />
       </Grid>
