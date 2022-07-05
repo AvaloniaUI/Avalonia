@@ -3,19 +3,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
+    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow, ITopLevelImplWithStorageProvider
     {
         private IKeyboardDevice _keyboard;
         private Stopwatch _st = Stopwatch.StartNew();
@@ -244,6 +246,8 @@ namespace Avalonia.Headless
         public Action LostFocus { get; set; }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+
+        public IStorageProvider StorageProvider => new NoopStorageProvider();
 
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
