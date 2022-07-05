@@ -12,11 +12,6 @@ namespace Avalonia.Controls.Primitives
 {
     public abstract class FlyoutBase : AvaloniaObject, IPopupHostProvider
     {
-        static FlyoutBase()
-        {
-            Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
-        }
-
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
@@ -49,6 +44,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
 
+        /// <summary>
+        /// Defines the OverlayDismissEventPassThrough property
+        /// </summary>
+        public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
+            Popup.OverlayDismissEventPassThroughProperty.AddOwner<FlyoutBase>();
+
         private readonly Lazy<Popup> _popupLazy;
         private bool _isOpen;
         private Control? _target;
@@ -57,6 +58,12 @@ namespace Avalonia.Controls.Primitives
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+
+        static FlyoutBase()
+        {
+            OverlayDismissEventPassThroughProperty.OverrideDefaultValue<FlyoutBase>(true);
+            Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
+        }
 
         public FlyoutBase()
         {
@@ -99,6 +106,21 @@ namespace Avalonia.Controls.Primitives
         {
             get => _target;
             private set => SetAndRaise(TargetProperty, ref _target, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the event that closes the flyout is passed
+        /// through to the parent window.
+        /// </summary>
+        /// <remarks>
+        /// Clicks outside the the flyout cause the flyout to close. When <see cref="OverlayDismissEventPassThrough"/> is set to
+        /// false, these clicks will be handled by the flyout and not be registered by the parent
+        /// window. When set to true, the events will be passed through to the parent window.
+        /// </remarks>
+        public bool OverlayDismissEventPassThrough
+        {
+            get => GetValue(OverlayDismissEventPassThroughProperty);
+            set => SetValue(OverlayDismissEventPassThroughProperty, value);
         }
 
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
@@ -175,6 +197,8 @@ namespace Avalonia.Controls.Primitives
 
             IsOpen = false;
             Popup.IsOpen = false;
+            Popup.OverlayInputPassThroughElement = null;
+
             ((ISetLogicalParent)Popup).SetParent(null);
             
             // Ensure this isn't active
@@ -230,6 +254,9 @@ namespace Avalonia.Controls.Primitives
             {
                 Popup.Child = CreatePresenter();
             }
+
+            Popup.OverlayInputPassThroughElement = placementTarget;
+            Popup.OverlayDismissEventPassThrough = OverlayDismissEventPassThrough;
 
             if (CancelOpening())
             {
@@ -356,10 +383,11 @@ namespace Avalonia.Controls.Primitives
 
         private Popup CreatePopup()
         {
-            var popup = new Popup();
-            popup.WindowManagerAddShadowHint = false;
-            popup.IsLightDismissEnabled = true;
-            popup.OverlayDismissEventPassThrough = true;
+            var popup = new Popup
+            {
+                WindowManagerAddShadowHint = false,
+                IsLightDismissEnabled = true
+            };
 
             popup.Opened += OnPopupOpened;
             popup.Closed += OnPopupClosed;
@@ -372,7 +400,7 @@ namespace Avalonia.Controls.Primitives
         {
             IsOpen = true;
 
-            _popupHostChangedHandler?.Invoke(Popup!.Host);
+            _popupHostChangedHandler?.Invoke(Popup.Host);
         }
 
         private void OnPopupClosing(object? sender, CancelEventArgs e)
