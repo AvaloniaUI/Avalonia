@@ -10,9 +10,6 @@ pool:
   name: 'AvaloniaMacPool'
 
 steps:
-- script: appium &
-  displayName: 'start appium'
-  
 - script: ./tests/Avalonia.IntegrationTests.Appium/macos-clean-build-test.sh
   displayName: 'run integration tests'
 
