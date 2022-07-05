@@ -49,6 +49,14 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
 
+        /// <summary>
+        /// Defines the <see cref="OverlayInputPassThroughElement"/> property
+        /// </summary>
+        public static readonly DirectProperty<FlyoutBase, IInputElement?> OverlayInputPassThroughElementProperty =
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>(
+                o => o.OverlayInputPassThroughElement,
+                (o, v) => o.OverlayInputPassThroughElement = v);
+
         private readonly Lazy<Popup> _popupLazy;
         private bool _isOpen;
         private Control? _target;
@@ -57,6 +65,7 @@ namespace Avalonia.Controls.Primitives
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+        private IInputElement? _overlayInputPassThroughElement;
 
         public FlyoutBase()
         {
@@ -99,6 +108,16 @@ namespace Avalonia.Controls.Primitives
         {
             get => _target;
             private set => SetAndRaise(TargetProperty, ref _target, value);
+        }
+
+        /// <summary>
+        /// Gets or sets an element that should receive pointer input events even when underneath
+        /// the flyout's overlay.
+        /// </summary>
+        public IInputElement? OverlayInputPassThroughElement
+        {
+            get => _overlayInputPassThroughElement;
+            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
         }
 
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
@@ -230,6 +249,8 @@ namespace Avalonia.Controls.Primitives
             {
                 Popup.Child = CreatePresenter();
             }
+
+            Popup.OverlayInputPassThroughElement = OverlayInputPassThroughElement;
 
             if (CancelOpening())
             {
