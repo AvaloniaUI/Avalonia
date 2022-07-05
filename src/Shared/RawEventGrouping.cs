@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Collections.Pooled;
-using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Threading;
-using JetBrains.Annotations;
 
 namespace Avalonia;
 
@@ -19,7 +17,7 @@ internal class RawEventGrouper : IDisposable
     private readonly Action<RawInputEventArgs> _eventCallback;
     private readonly Queue<RawInputEventArgs> _inputQueue = new();
     private readonly Action _dispatchFromQueue;
-    readonly Dictionary<long, RawTouchEventArgs> _lastTouchPoints = new();
+    readonly Dictionary<long, RawPointerEventArgs> _lastTouchPoints = new();
     RawInputEventArgs? _lastEvent;
 
     public RawEventGrouper(Action<RawInputEventArgs> eventCallback)
@@ -49,7 +47,7 @@ internal class RawEventGrouper : IDisposable
                 _lastEvent = null;
             
             if (ev is RawTouchEventArgs { Type: RawPointerEventType.TouchUpdate } touchUpdate)
-                _lastTouchPoints.Remove(touchUpdate.TouchPointId);
+                _lastTouchPoints.Remove(touchUpdate.RawPointerId);
 
             _eventCallback?.Invoke(ev);
 
@@ -88,11 +86,11 @@ internal class RawEventGrouper : IDisposable
         {
             if (args is RawTouchEventArgs touchEvent)
             {
-                if (_lastTouchPoints.TryGetValue(touchEvent.TouchPointId, out var lastTouchEvent))
+                if (_lastTouchPoints.TryGetValue(touchEvent.RawPointerId, out var lastTouchEvent))
                     MergeEvents(lastTouchEvent, touchEvent);
                 else
                 {
-                    _lastTouchPoints[touchEvent.TouchPointId] = touchEvent;
+                    _lastTouchPoints[touchEvent.RawPointerId] = touchEvent;
                     AddToQueue(touchEvent);
                 }
             }
@@ -105,7 +103,7 @@ internal class RawEventGrouper : IDisposable
         {
             _lastTouchPoints.Clear();
             if (args is RawTouchEventArgs { Type: RawPointerEventType.TouchUpdate } touchEvent)
-                _lastTouchPoints[touchEvent.TouchPointId] = touchEvent;
+                _lastTouchPoints[touchEvent.RawPointerId] = touchEvent;
         }
         AddToQueue(args);
     }
