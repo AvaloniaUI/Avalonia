@@ -14,7 +14,7 @@ public interface IStorageFile : IStorageItem
     /// Returns true, if file is readable.
     /// </summary>
     bool CanOpenRead { get; }
-        
+
     /// <summary>
     /// Opens a stream for read access.
     /// </summary>
@@ -24,7 +24,7 @@ public interface IStorageFile : IStorageItem
     /// Returns true, if file is writeable. 
     /// </summary>
     bool CanOpenWrite { get; }
-        
+
     /// <summary>
     /// Opens stream for writing to the file.
     /// </summary>

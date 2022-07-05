@@ -5,7 +5,7 @@ namespace Avalonia.Platform.Storage;
 /// <summary>
 /// Represents a name mapped to the associated file types (extensions).
 /// </summary>
-public class FilePickerFileType
+public sealed class FilePickerFileType
 {
     public FilePickerFileType(string name)
     {

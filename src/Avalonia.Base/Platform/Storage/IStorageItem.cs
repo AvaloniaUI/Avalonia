@@ -27,7 +27,7 @@ public interface IStorageItem : IDisposable
     /// Browser and iOS backends might return relative uris.
     /// </remarks>
     bool TryGetUri([NotNullWhen(true)] out Uri? uri);
-        
+
     /// <summary>
     /// Gets the basic properties of the current item.
     /// </summary>
@@ -37,7 +37,7 @@ public interface IStorageItem : IDisposable
     /// Returns true is item can be bookmarked and reused later.
     /// </summary>
     bool CanBookmark { get; }
-        
+
     /// <summary>
     /// Saves items to a bookmark.
     /// </summary>

@@ -16,7 +16,7 @@ public class StorageItemProperties
         DateCreated = dateCreated;
         DateModified = dateModified;
     }
-        
+
     /// <summary>
     /// Gets the size of the file in bytes.
     /// </summary>

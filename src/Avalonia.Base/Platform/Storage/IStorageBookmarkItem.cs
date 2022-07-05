@@ -17,5 +17,4 @@ public interface IStorageBookmarkFile : IStorageFile, IStorageBookmarkItem
 [NotClientImplementable]
 public interface IStorageBookmarkFolder : IStorageFolder, IStorageBookmarkItem
 {
-
 }

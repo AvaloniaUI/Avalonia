@@ -8,5 +8,4 @@ namespace Avalonia.Platform.Storage;
 [NotClientImplementable]
 public interface IStorageFolder : IStorageItem
 {
-
 }

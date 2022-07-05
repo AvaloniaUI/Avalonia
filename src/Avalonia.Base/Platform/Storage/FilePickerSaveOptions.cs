@@ -5,13 +5,8 @@ namespace Avalonia.Platform.Storage;
 /// <summary>
 /// Options class for <see cref="IStorageProvider.SaveFilePickerAsync"/> method.
 /// </summary>
-public class FilePickerSaveOptions
+public class FilePickerSaveOptions : PickerOptions
 {
-    /// <summary>
-    /// Gets or sets the text that appears in the title bar of a file dialog.
-    /// </summary>
-    public string? Title { get; set; }
-
     /// <summary>
     /// Gets or sets the file name that the file save picker suggests to the user.
     /// </summary>
@@ -21,11 +16,6 @@ public class FilePickerSaveOptions
     /// Gets or sets the default extension to be used to save the file.
     /// </summary>
     public string? DefaultExtension { get; set; }
-
-    /// <summary>
-    /// Gets or sets the initial location where the file open picker looks for files to present to the user.
-    /// </summary>
-    public IStorageFolder? SuggestedStartLocation { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of valid file types that the user can choose to assign to a file.
