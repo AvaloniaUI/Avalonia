@@ -17,7 +17,7 @@ namespace Avalonia.Styling
         {
             if (parent is Style s && s.Selector is not null)
             {
-                return SelectorMatch.AlwaysThisType;
+                return s.Selector.Match(control, s.Parent, subscribe);
             }
             else if (parent is ControlTheme theme)
             {
@@ -32,11 +32,7 @@ namespace Avalonia.Styling
                 "Nesting selector was specified but cannot determine parent selector.");
         }
 
-        private protected override (Selector?, IStyle?) MovePrevious(IStyle? parent)
-        {
-            return parent is Style parentStyle ? (parentStyle.Selector, parentStyle.Parent) : (null, null);
-        }
-
+        protected override Selector? MovePrevious() => null;
         protected override Selector? MovePreviousOrParent() => null;
     }
 }

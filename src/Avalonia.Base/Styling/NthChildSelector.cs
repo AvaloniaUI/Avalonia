@@ -104,7 +104,7 @@ namespace Avalonia.Styling
             return match ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
-        private protected override (Selector?, IStyle?) MovePrevious(IStyle? nestingParent) => (_previous, nestingParent);
+        protected override Selector? MovePrevious() => _previous;
         protected override Selector? MovePreviousOrParent() => _previous;
 
         public override string ToString()

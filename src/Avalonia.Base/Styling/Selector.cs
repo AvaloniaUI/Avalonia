@@ -84,13 +84,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Moves to the previous selector.
         /// </summary>
-        /// <param name="nestingParent">
-        /// The parent style, if the selector is on a nested style.
-        /// </param>
-        /// <remarks>
-        /// The previous selector, and its nesting parent.
-        /// </remarks>
-        private protected abstract (Selector?, IStyle?) MovePrevious(IStyle? nestingParent);
+        protected abstract Selector? MovePrevious();
 
         /// <summary>
         /// Moves to the previous selector or the parent selector.
@@ -148,14 +142,14 @@ namespace Avalonia.Styling
             ref AndActivatorBuilder activators,
             ref Selector? combinator)
         {
-            var (previous, previousParent) = selector.MovePrevious(parent);
+            var previous = selector.MovePrevious();
 
             // Selectors are stored from right-to-left, so we recurse into the selector in order to
             // reverse this order, because the type selector will be on the left and is our best
             // opportunity to exit early.
             if (previous != null && !previous.IsCombinator)
             {
-                var previousMatch = Match(control, previous, previousParent, subscribe, ref activators, ref combinator);
+                var previousMatch = Match(control, previous, parent, subscribe, ref activators, ref combinator);
 
                 if (previousMatch < SelectorMatchResult.Sometimes)
                 {
