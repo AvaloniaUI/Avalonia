@@ -611,6 +611,36 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("foo", notifications[1].NewValue);
         }
 
+        [Fact]
+        public void Can_Run_Empty_Batch_Update_When_Ending_Batch_Update()
+        {
+            var target = new TestClass();
+            var raised = 0;
+            var notifications = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.Foo = "foo";
+            target.Bar = "bar";
+
+            target.BeginBatchUpdate();
+            target.ClearValue(TestClass.FooProperty);
+            target.ClearValue(TestClass.BarProperty);
+            target.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == TestClass.BarProperty)
+                {
+                    target.BeginBatchUpdate();
+                    target.EndBatchUpdate();
+                }
+
+                ++raised;
+            };
+            target.EndBatchUpdate();
+
+            Assert.Null(target.Foo);
+            Assert.Null(target.Bar);
+            Assert.Equal(2, raised);
+        }
+
         public class TestClass : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
