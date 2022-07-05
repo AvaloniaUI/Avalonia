@@ -595,6 +595,69 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Update_When_Control_Moved_Causing_Layout_Change()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Decorator moveFrom;
+                Decorator moveTo;
+                Canvas moveMe;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = new DockPanel
+                    {
+                        Children =
+                        {
+                            (moveFrom = new Decorator
+                            {
+                                Child = moveMe = new Canvas
+                                {
+                                    Width = 100,
+                                    Height = 100,
+                                },
+                            }),
+                            (moveTo = new Decorator()),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+                var moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+                Assert.Equal(1, moveFromNode.Children.Count);
+                Assert.Same(moveMe, moveFromNode.Children[0].Visual);
+                Assert.Empty(moveToNode.Children);
+
+                moveFrom.Child = null;
+                moveTo.Child = moveMe;
+                tree.LayoutManager.ExecuteLayoutPass();
+
+                scene = scene.CloneScene();
+                moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+                moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+                moveFromNode.SortChildren(scene);
+                moveToNode.SortChildren(scene);
+                sceneBuilder.Update(scene, moveFrom);
+                sceneBuilder.Update(scene, moveTo);
+                sceneBuilder.Update(scene, moveMe);
+
+                Assert.Empty(moveFromNode.Children);
+                Assert.Equal(1, moveToNode.Children.Count);
+                Assert.Same(moveMe, moveToNode.Children[0].Visual);
+            }
+        }
+
+        [Fact]
         public void Should_Update_When_Control_Made_Invisible()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

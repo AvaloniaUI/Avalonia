@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 WhitespaceSignificantCollectionAttributes =
                 {
-                     typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
+                    typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
                 },
                 TrimSurroundingWhitespaceAttributes =
                 {
@@ -56,7 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 XmlNamespaceInfoProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider"),
-                DeferredContentPropertyAttributes = {typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute")},
+                DeferredContentPropertyAttributes = { typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute") },
                 DeferredContentExecutorCustomizationDefaultTypeParameter = typeSystem.GetType("Avalonia.Controls.IControl"),
                 DeferredContentExecutorCustomizationTypeParameterDeferredContentAttributePropertyNames = new List<string>
                 {
@@ -70,6 +70,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 InnerServiceProviderFactoryMethod =
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
+                IAddChild = typeSystem.GetType("Avalonia.Markup.Xaml.IAddChild"),
+                IAddChildOfT = typeSystem.GetType("Avalonia.Markup.Xaml.IAddChild`1")
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
 

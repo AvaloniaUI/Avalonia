@@ -16,7 +16,7 @@ namespace Avalonia.Web.Blazor
     internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
     {
         private Size _clientSize;
-        private BlazorSkiaSurface? _currentSurface;
+        private IBlazorSkiaSurface? _currentSurface;
         private IInputRoot? _inputRoot;
         private readonly Stopwatch _sw = Stopwatch.StartNew();
         private readonly AvaloniaView _avaloniaView;
@@ -40,6 +40,11 @@ namespace Avalonia.Web.Blazor
         {
             _currentSurface =
                 new BlazorSkiaSurface(context, glInfo, colorType, size, scaling, GRSurfaceOrigin.BottomLeft);
+        }
+
+        internal void SetSurface(SKColorType colorType, PixelSize size, double scaling, Action<IntPtr, SKSizeI> blitCallback)
+        {
+            _currentSurface = new BlazorSkiaRasterSurface(colorType, size, scaling, blitCallback);
         }
 
         public void SetClientSize(SKSize size, double dpi)
