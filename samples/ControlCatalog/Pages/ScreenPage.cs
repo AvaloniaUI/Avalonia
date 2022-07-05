@@ -18,7 +18,7 @@ namespace ControlCatalog.Pages
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            Window w = (Window)VisualRoot;
+            Window w = (Window)VisualRoot!;
             w.PositionChanged += (sender, args) => InvalidateVisual();
         }
 

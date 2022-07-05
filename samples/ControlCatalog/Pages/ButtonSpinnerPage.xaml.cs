@@ -23,7 +23,7 @@ namespace ControlCatalog.Pages
             var spinner = (ButtonSpinner)sender;
             var txtBox = (TextBlock)spinner.Content;
 
-            int value = Array.IndexOf(_mountains, txtBox.Text);
+            int value = Array.IndexOf(_mountains, txtBox?.Text);
             if (e.Direction == SpinDirection.Increase)
                 value++;
             else

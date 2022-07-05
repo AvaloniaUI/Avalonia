@@ -14,7 +14,7 @@ namespace ControlCatalog.Pages
         public DragAndDropPage()
         {
             this.InitializeComponent();
-            _DropState = this.Find<TextBlock>("DropState");
+            _DropState = this.Get<TextBlock>("DropState");
 
             int textCount = 0;
             SetupDnd("Text", d => d.Set(DataFormats.Text,
@@ -26,8 +26,8 @@ namespace ControlCatalog.Pages
 
         void SetupDnd(string suffix, Action<DataObject> factory, DragDropEffects effects)
         {
-            var dragMe = this.Find<Border>("DragMe" + suffix);
-            var dragState = this.Find<TextBlock>("DragState"+suffix);
+            var dragMe = this.Get<Border>("DragMe" + suffix);
+            var dragState = this.Get<TextBlock>("DragState"+suffix);
 
             async void DoDrag(object sender, Avalonia.Input.PointerPressedEventArgs e)
             {

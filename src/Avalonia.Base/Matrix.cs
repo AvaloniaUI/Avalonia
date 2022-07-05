@@ -9,14 +9,14 @@ namespace Avalonia
     /// <summary>
     /// A 3x3 matrix.
     /// </summary>
-    /// <remakrs>Matrix layout:
+    /// <remarks>Matrix layout:
     ///         | 1st col | 2nd col | 3r col |
-    /// 1st row | scaleX  | skrewY  | persX  |
-    /// 2nd row | skrewX  | scaleY  | persY  |
-    /// 3rd row | transX  | transY  | persZ  |
+    /// 1st row | scaleX  | skewY  | perspX  |
+    /// 2nd row | skewX  | scaleY  | perspY  |
+    /// 3rd row | transX  | transY  | perspZ  |
     /// 
-    /// Note: Skia.SkMatrix uses a transposed layout (where for example skrewX/skrewY and perspp0/tranX are swapped).
-    /// </remakrs>
+    /// Note: Skia.SkMatrix uses a transposed layout (where for example skewX/skewY and persp0/transX are swapped).
+    /// </remarks>
 #if !BUILDTASK
     public
 #endif
@@ -36,18 +36,18 @@ namespace Avalonia
         /// Initializes a new instance of the <see cref="Matrix"/> struct (equivalent to a 2x3 Matrix without perspective).
         /// </summary>
         /// <param name="scaleX">The first element of the first row.</param>
-        /// <param name="skrewY">The second element of the first row.</param>
-        /// <param name="skrewX">The first element of the second row.</param>
+        /// <param name="skewY">The second element of the first row.</param>
+        /// <param name="skewX">The first element of the second row.</param>
         /// <param name="scaleY">The second element of the second row.</param>
         /// <param name="offsetX">The first element of the third row.</param>
         /// <param name="offsetY">The second element of the third row.</param>
         public Matrix(
             double scaleX,
-            double skrewY,
-            double skrewX,
+            double skewY,
+            double skewX,
             double scaleY,
             double offsetX,
-            double offsetY) : this( scaleX, skrewY, 0, skrewX, scaleY, 0, offsetX, offsetY, 1)
+            double offsetY) : this( scaleX, skewY, 0, skewX, scaleY, 0, offsetX, offsetY, 1)
         {
         }
 
@@ -57,34 +57,34 @@ namespace Avalonia
         /// Initializes a new instance of the <see cref="Matrix"/> struct.
         /// </summary>
         /// <param name="scaleX">The first element of the first row.</param>
-        /// <param name="skrewY">The second element of the first row.</param>
-        /// <param name="persX">The third element of the first row.</param>
-        /// <param name="skrewX">The first element of the second row.</param>
+        /// <param name="skewY">The second element of the first row.</param>
+        /// <param name="perspX">The third element of the first row.</param>
+        /// <param name="skewX">The first element of the second row.</param>
         /// <param name="scaleY">The second element of the second row.</param>
-        /// <param name="persY">The third element of the second row.</param>
+        /// <param name="perspY">The third element of the second row.</param>
         /// <param name="offsetX">The first element of the third row.</param>
         /// <param name="offsetY">The second element of the third row.</param>
-        /// <param name="persZ">The third element of the third row.</param>
+        /// <param name="perspZ">The third element of the third row.</param>
         public Matrix(
             double scaleX,
-            double skrewY,
-            double persX,
-            double skrewX,
+            double skewY,
+            double perspX,
+            double skewX,
             double scaleY,
-            double persY, 
+            double perspY, 
             double offsetX,
             double offsetY,
-            double persZ)
+            double perspZ)
         {
             _m11 = scaleX;
-            _m12 = skrewY;
-            _m13 = persX;
-            _m21 = skrewX;
+            _m12 = skewY;
+            _m13 = perspX;
+            _m21 = skewX;
             _m22 = scaleY;
-            _m23 = persY;
+            _m23 = perspY;
             _m31 = offsetX;
             _m32 = offsetY;
-            _m33 = persZ;
+            _m33 = perspZ;
         }
 
         /// <summary>
@@ -111,17 +111,17 @@ namespace Avalonia
         public double M11 => _m11;
 
         /// <summary>
-        /// The second element of the first row (skrewY).
+        /// The second element of the first row (skewY).
         /// </summary>
         public double M12 => _m12;
 
         /// <summary>
-        /// The third element of the first row (persX: input x-axis perspective factor).
+        /// The third element of the first row (perspX: input x-axis perspective factor).
         /// </summary>
         public double M13 => _m13;
 
         /// <summary>
-        /// The first element of the second row (skrewX).
+        /// The first element of the second row (skewX).
         /// </summary>
         public double M21 => _m21;
 
@@ -131,7 +131,7 @@ namespace Avalonia
         public double M22 => _m22;
 
         /// <summary>
-        /// The third element of the second row (persY: input y-axis perspective factor).
+        /// The third element of the second row (perspY: input y-axis perspective factor).
         /// </summary>
         public double M23 => _m23;
 
@@ -146,7 +146,7 @@ namespace Avalonia
         public double M32 => _m32;
 
         /// <summary>
-        /// The third element of the third row (persZ: perspective scale factor).
+        /// The third element of the third row (perspZ: perspective scale factor).
         /// </summary>
         public double M33 => _m33;
 
@@ -450,13 +450,13 @@ namespace Avalonia
             
             inverted = new Matrix(
                 (_m22 * _m33 - _m32 * _m23) * invdet,
-                (_m13 * _m31 - _m12 * _m33) * invdet,
+                (_m13 * _m32 - _m12 * _m33) * invdet,
                 (_m12 * _m23 - _m13 * _m22) * invdet,
                 (_m23 * _m31 - _m21 * _m33) * invdet,
                 (_m11 * _m33 - _m13 * _m31) * invdet,
                 (_m21 * _m13 - _m11 * _m23) * invdet,
                 (_m21 * _m32 - _m31 * _m22) * invdet,
-                (_m21 * _m12 - _m11 * _m32) * invdet,
+                (_m31 * _m12 - _m11 * _m32) * invdet,
                 (_m11 * _m22 - _m21 * _m12) * invdet
                 );
             
@@ -481,7 +481,7 @@ namespace Avalonia
         /// <summary>
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
-        /// <param name="s">Six or nine comma-delimited double values (m11, m12, m21, m22, offsetX, offsetY[, persX, persY, persZ]) that describe the new <see cref="Matrix"/></param>
+        /// <param name="s">Six or nine comma-delimited double values (m11, m12, m21, m22, offsetX, offsetY[, perspX, perspY, perspZ]) that describe the new <see cref="Matrix"/></param>
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s)
         {
@@ -497,11 +497,11 @@ namespace Avalonia
                 var v4 = tokenizer.ReadDouble();
                 var v5 = tokenizer.ReadDouble();
                 var v6 = tokenizer.ReadDouble();
-                var pers = tokenizer.TryReadDouble(out var v7);
-                pers = pers && tokenizer.TryReadDouble(out v8);
-                pers = pers && tokenizer.TryReadDouble(out v9);
+                var persp = tokenizer.TryReadDouble(out var v7);
+                persp = persp && tokenizer.TryReadDouble(out v8);
+                persp = persp && tokenizer.TryReadDouble(out v9);
 
-                if (pers) 
+                if (persp) 
                     return new Matrix(v1, v2, v7, v3, v4, v8, v5, v6, v9);
                 else
                     return new Matrix(v1, v2, v3, v4, v5, v6);

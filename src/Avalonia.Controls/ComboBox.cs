@@ -181,26 +181,13 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            this.UpdateSelectionBoxItem(SelectedItem);
+            UpdateSelectionBoxItem(SelectedItem);
         }
 
-        // Because the SelectedItem isn't connected to the visual tree
         public override void InvalidateMirrorTransform()
         {
             base.InvalidateMirrorTransform();
-
-            if (SelectedItem is Control selectedControl)
-            {
-                selectedControl.InvalidateMirrorTransform();
-
-                foreach (var visual in selectedControl.GetVisualDescendants())
-                {
-                    if (visual is Control childControl)
-                    {
-                        childControl.InvalidateMirrorTransform();
-                    }
-                }
-            }
+            UpdateFlowDirection();
         }
 
         /// <inheritdoc/>
@@ -365,6 +352,8 @@ namespace Avalonia.Controls
             {
                 parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
             }
+
+            UpdateFlowDirection();
         }
 
         private void IsVisibleChanged(bool isVisible)
@@ -432,10 +421,25 @@ namespace Avalonia.Controls
                         }
                     };
                 }
+
+                UpdateFlowDirection();
             }
             else
             {
                 SelectionBoxItem = item;
+            }
+        }
+
+        private void UpdateFlowDirection()
+        {
+            if (SelectionBoxItem is Rectangle rectangle)
+            {
+                if ((rectangle.Fill as VisualBrush)?.Visual is Control content)
+                {
+                    var flowDirection = (((IVisual)content!).VisualParent as Control)?.FlowDirection ?? 
+                        FlowDirection.LeftToRight;
+                    rectangle.FlowDirection = flowDirection;
+                }
             }
         }
 

@@ -139,18 +139,18 @@ namespace Avalonia.Controls
             }
 
         }
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             if (OwningRow != null)
             {
                 IsMouseOver = true;
             }
         }
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
 
             if (OwningRow != null)
             {
@@ -178,9 +178,9 @@ namespace Avalonia.Controls
                 {
                     var handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
 
-                    // Do not handle PointerPressed with touch,
+                    // Do not handle PointerPressed with touch or pen,
                     // so we can start scroll gesture on the same event.
-                    if (e.Pointer.Type != PointerType.Touch)
+                    if (e.Pointer.Type != PointerType.Touch && e.Pointer.Type != PointerType.Pen)
                     {
                         e.Handled = handled;
                     }

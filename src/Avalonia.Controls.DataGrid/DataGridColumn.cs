@@ -855,7 +855,7 @@ namespace Avalonia.Controls
             if (OwningGrid != null && OwningGrid.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(HeaderCell);
-                var roundSize = LayoutHelper.RoundLayoutSize(new Size(leftEdge + ActualWidth, 1), scale, scale);
+                var roundSize = LayoutHelper.RoundLayoutSizeUp(new Size(leftEdge + ActualWidth, 1), scale, scale);
                 LayoutRoundedWidth = roundSize.Width - leftEdge;
             }
             else

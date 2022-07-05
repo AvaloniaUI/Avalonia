@@ -28,16 +28,16 @@ namespace ControlCatalog.Pages
 
     public class NumbersPageViewModel : ViewModelBase
     {
-        private IList<FormatObject> _formats;
+        private IList<FormatObject>? _formats;
         private FormatObject _selectedFormat;
-        private IList<Location> _spinnerLocations;
+        private IList<Location>? _spinnerLocations;
 
         private double _doubleValue;
         private decimal _decimalValue;
 
         public NumbersPageViewModel()
         {
-            SelectedFormat = Formats.FirstOrDefault();
+            _selectedFormat = Formats.FirstOrDefault();
         }
 
         public double DoubleValue
@@ -103,7 +103,7 @@ namespace ControlCatalog.Pages
 
     public class FormatObject
     {
-        public string Value { get; set; }
-        public string Name { get; set; }
+        public string? Value { get; set; }
+        public string? Name { get; set; }
     }
 }

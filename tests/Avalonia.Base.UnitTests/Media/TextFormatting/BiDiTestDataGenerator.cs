@@ -129,6 +129,8 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                     ParagraphEmbeddingLevel = paragraphEmbeddingLevel,
                                     Levels = levels
                                 });
+
+                                break;
                             }
                         }
                     }

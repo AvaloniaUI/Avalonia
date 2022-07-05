@@ -18,9 +18,9 @@ namespace ControlCatalog
         {
             AvaloniaXamlLoader.Load(this);
 
-            var sideBar = this.FindControl<TabControl>("Sidebar");
+            var sideBar = this.Get<TabControl>("Sidebar");
 
-            if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
+            if (AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo().IsDesktop == true)
             {
                 IList tabItems = ((IList)sideBar.Items);
                 tabItems.Add(new TabItem()
@@ -36,7 +36,7 @@ namespace ControlCatalog
 
             }
 
-            var themes = this.Find<ComboBox>("Themes");
+            var themes = this.Get<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
                 if (themes.SelectedItem is CatalogTheme theme)
@@ -80,7 +80,7 @@ namespace ControlCatalog
                 }
             };
 
-            var flowDirections = this.Find<ComboBox>("FlowDirection");
+            var flowDirections = this.Get<ComboBox>("FlowDirection");
             flowDirections.SelectionChanged += (sender, e) =>
             {
                 if (flowDirections.SelectedItem is FlowDirection flowDirection)
@@ -89,7 +89,7 @@ namespace ControlCatalog
                 }
             };
 
-            var decorations = this.Find<ComboBox>("Decorations");
+            var decorations = this.Get<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {
                 if (VisualRoot is Window window
@@ -99,8 +99,8 @@ namespace ControlCatalog
                 }
             };
 
-            var transparencyLevels = this.Find<ComboBox>("TransparencyLevels");
-            IDisposable backgroundSetter = null, paneBackgroundSetter = null;
+            var transparencyLevels = this.Get<ComboBox>("TransparencyLevels");
+            IDisposable? backgroundSetter = null, paneBackgroundSetter = null;
             transparencyLevels.SelectionChanged += (sender, e) =>
             {
                 backgroundSetter?.Dispose();
@@ -118,7 +118,7 @@ namespace ControlCatalog
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            var decorations = this.Find<ComboBox>("Decorations");
+            var decorations = this.Get<ComboBox>("Decorations");
             if (VisualRoot is Window window)
                 decorations.SelectedIndex = (int)window.SystemDecorations;
         }

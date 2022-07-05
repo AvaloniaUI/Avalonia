@@ -65,7 +65,7 @@
                        Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Value:</TextBlock>
-        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding #upDown.Value}" VerticalAlignment="Center"
+        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding DecimalValue}" VerticalAlignment="Center"
                        Margin="2" HorizontalAlignment="Center"/>
 
 

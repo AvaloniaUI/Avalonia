@@ -1,24 +1,27 @@
 ﻿<div id="container" class="avalonia-container" tabindex="0" oncontextmenu="return false;"
-     ontouchcancel="@OnTouchCancel"
-     ontouchmove="@OnTouchMove"
-     onwheel="@OnWheel"
-     onkeydown="@OnKeyDown"
-     onkeyup="@OnKeyUp"
-     onpointerdown="@OnPointerDown"
-     onpointerup="@OnPointerUp"
-     onpointermove="@OnPointerMove">
+     @onwheel="OnWheel"
+     @onkeydown="OnKeyDown"
+     @onkeyup="OnKeyUp"
+     @onpointerdown="OnPointerDown"
+     @onpointerup="OnPointerUp"
+     @onpointermove="OnPointerMove"
+     @onpointercancel="OnPointerCancel"
+     @onfocus="OnFocus">
     
     <canvas id="htmlCanvas" @ref="_htmlCanvas" @attributes="AdditionalAttributes"/>
 
 	<div id="nativeControlsContainer" @ref="_nativeControlsContainer" />
 
-    <input id="inputElement" @ref="_inputElement" type="text" oninput="@OnInput" 
+    <input id="inputElement" @ref="_inputElement" type="text" @oninput="OnInput" 
         onpaste="return false;"
         oncopy="return false;" 
         oncut="return false;"/>
 </div>
 
 <style>
+#container{
+    touch-action: none;
+}
 #htmlCanvas {
     opacity: 1;
     background-color: #ccc;

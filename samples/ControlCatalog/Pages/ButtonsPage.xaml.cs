@@ -11,7 +11,7 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
 
-            this.FindControl<RepeatButton>("RepeatButton").Click += OnRepeatButtonClick;
+            this.Get<RepeatButton>("RepeatButton").Click += OnRepeatButtonClick;
         }
 
         private void InitializeComponent()
@@ -22,7 +22,7 @@ namespace ControlCatalog.Pages
         public void OnRepeatButtonClick(object sender, object args)
         {
             repeatButtonClickCount++;
-            var textBlock = this.FindControl<TextBlock>("RepeatButtonTextBlock");
+            var textBlock = this.Get<TextBlock>("RepeatButtonTextBlock");
             textBlock.Text = $"Repeat Button: {repeatButtonClickCount}";
         }
     }

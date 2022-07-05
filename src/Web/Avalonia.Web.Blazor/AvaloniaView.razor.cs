@@ -37,6 +37,8 @@ namespace Avalonia.Web.Blazor
         private const SKColorType ColorType = SKColorType.Rgba8888;
 
         private bool _initialised;
+        private bool _useGL;
+        private bool _inputElementFocused;
 
         [Inject] private IJSRuntime Js { get; set; } = null!;
 
@@ -57,27 +59,23 @@ namespace Avalonia.Web.Blazor
             return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
         }
         
-        private void OnTouchCancel(TouchEventArgs e)
+        private void OnPointerCancel(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            foreach (var touch in e.ChangedTouches)
+            if (e.PointerType == "touch")
             {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
-            }
-        }
-
-        private void OnTouchMove(TouchEventArgs e)
-        {
-            foreach (var touch in e.ChangedTouches)
-            {
-                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(touch.ClientX, touch.ClientY),
-                    GetModifiers(e), touch.Identifier);
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
             }
         }
 
         private void OnPointerMove(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
-            if (e.PointerType != "touch")
+            if (e.PointerType == "touch")
+            {
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(e.ClientX, e.ClientY),
+                    GetModifiers(e), e.PointerId);
+            }
+            else
             {
                 _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
             }
@@ -174,22 +172,6 @@ namespace Avalonia.Web.Blazor
             return modifiers;
         }
 
-        private static RawInputModifiers GetModifiers(TouchEventArgs e)
-        {
-            var modifiers = RawInputModifiers.None;
-
-            if (e.CtrlKey)
-                modifiers |= RawInputModifiers.Control;
-            if (e.AltKey)
-                modifiers |= RawInputModifiers.Alt;
-            if (e.ShiftKey)
-                modifiers |= RawInputModifiers.Shift;
-            if (e.MetaKey)
-                modifiers |= RawInputModifiers.Meta;
-
-            return modifiers;
-        }
-
         private static RawInputModifiers GetModifiers(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
         {
             var modifiers = RawInputModifiers.None;
@@ -241,6 +223,16 @@ namespace Avalonia.Web.Blazor
             _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, e.Key, GetModifiers(e));
         }
 
+        private void OnFocus(FocusEventArgs e)
+        {
+            // if focus has unexpectedly moved from the input element to the container element,
+            // shift it back to the input element
+            if (_inputElementFocused && _inputHelper is not null)
+            {
+                _inputHelper.Focus();
+            }
+        }
+
         private void OnInput(ChangeEventArgs e)
         {
             if (e.Value != null)
@@ -281,25 +273,44 @@ namespace Avalonia.Web.Blazor
                 _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
 
                 Console.WriteLine("Interop created");
-                _jsGlInfo = _interop.InitGL();
+                
+                var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
+                _useGL = skiaOptions?.CustomGpuFactory != null;
 
-                Console.WriteLine("jsglinfo created - init gl");
-
-                // create the SkiaSharp context
-                if (_context == null)
+                if (_useGL)
                 {
-                    Console.WriteLine("create glcontext");
-                    _glInterface = GRGlInterface.Create();
-                    _context = GRContext.CreateGl(_glInterface);
-
-                    var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
-                    // bump the default resource cache limit
-                    _context.SetResourceCacheLimit(options?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
-                    Console.WriteLine("glcontext created and resource limit set");
+                    _jsGlInfo = _interop.InitGL();
+                    Console.WriteLine("jsglinfo created - init gl");
+                }
+                else
+                {
+                    var rasterInitialized = _interop.InitRaster();
+                    Console.WriteLine("raster initialized: {0}", rasterInitialized);
                 }
 
-                _topLevelImpl.SetSurface(_context, _jsGlInfo, ColorType,
-                    new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi);
+                if (_useGL)
+                {
+                    // create the SkiaSharp context
+                    if (_context == null)
+                    {
+                        Console.WriteLine("create glcontext");
+                        _glInterface = GRGlInterface.Create();
+                        _context = GRContext.CreateGl(_glInterface);
+
+                        
+                        // bump the default resource cache limit
+                        _context.SetResourceCacheLimit(skiaOptions?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
+                        Console.WriteLine("glcontext created and resource limit set");
+                    }
+
+                    _topLevelImpl.SetSurface(_context, _jsGlInfo!, ColorType,
+                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi);
+                }
+                else
+                {
+                    _topLevelImpl.SetSurface(ColorType,
+                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
+                }
                 
                 _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
@@ -321,7 +332,12 @@ namespace Avalonia.Web.Blazor
 
         private void OnRenderFrame()
         {
-            if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0 || _jsGlInfo == null)
+            if (_useGL && (_jsGlInfo == null))
+            {
+                Console.WriteLine("nothing to render");
+                return;
+            }
+            if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0)
             {
                 Console.WriteLine("nothing to render");
                 return;
@@ -394,10 +410,12 @@ namespace Avalonia.Web.Blazor
             if (active)
             {
                 _inputHelper.Show();
+                _inputElementFocused = true;
                 _inputHelper.Focus();
             }
             else
             {
+                _inputElementFocused = false;
                 _inputHelper.Hide();
             }
         }

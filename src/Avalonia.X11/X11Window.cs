@@ -47,6 +47,7 @@ namespace Avalonia.X11
         private IntPtr _renderHandle;
         private IntPtr _xSyncCounter;
         private XSyncValue _xSyncValue;
+        private XSyncState _xSyncState = 0;
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
         private double? _scalingOverride;
@@ -54,6 +55,14 @@ namespace Avalonia.X11
         private TransparencyHelper _transparencyHelper;
         private RawEventGrouper _rawEventGrouper;
         private bool _useRenderWindow = false;
+
+        enum XSyncState
+        {
+            None,
+            WaitConfigure,
+            WaitPaint
+        }
+        
         public X11Window(AvaloniaX11Platform platform, IWindowImpl popupParent)
         {
             _platform = platform;
@@ -508,7 +517,11 @@ namespace Avalonia.X11
                 if (_useRenderWindow)
                     XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
                         ev.ConfigureEvent.height);
-                EnqueuePaint();
+                if (_xSyncState == XSyncState.WaitConfigure)
+                {
+                    _xSyncState = XSyncState.WaitPaint;
+                    EnqueuePaint();
+                }
             }
             else if (ev.type == XEventName.DestroyNotify 
                      && ev.DestroyWindowEvent.window == _handle)
@@ -528,6 +541,7 @@ namespace Avalonia.X11
                     {
                         _xSyncValue.Lo = new UIntPtr(ev.ClientMessageEvent.ptr3.ToPointer()).ToUInt32();
                         _xSyncValue.Hi = ev.ClientMessageEvent.ptr4.ToInt32();
+                        _xSyncState = XSyncState.WaitConfigure;
                     }
                 }
             }
@@ -756,8 +770,11 @@ namespace Avalonia.X11
         void DoPaint()
         {
             Paint?.Invoke(new Rect());
-            if (_xSyncCounter != IntPtr.Zero)
+            if (_xSyncCounter != IntPtr.Zero && _xSyncState == XSyncState.WaitPaint)
+            {
+                _xSyncState = XSyncState.None;
                 XSyncSetCounter(_x11.Display, _xSyncCounter, _xSyncValue);
+            }
         }
         
         public void Invalidate(Rect rect)
@@ -802,6 +819,12 @@ namespace Avalonia.X11
             {
                 XDestroyIC(_xic);
                 _xic = IntPtr.Zero;
+            }
+
+            if (_xSyncCounter != IntPtr.Zero)
+            {
+                XSyncDestroyCounter(_x11.Display, _xSyncCounter);
+                _xSyncCounter = IntPtr.Zero;
             }
             
             if (_handle != IntPtr.Zero)

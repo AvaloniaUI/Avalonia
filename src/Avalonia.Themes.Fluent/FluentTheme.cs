@@ -83,6 +83,14 @@ namespace Avalonia.Themes.Fluent
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
+            
+            if (_loaded is null)
+            {
+                // If style wasn't yet loaded, no need to change children styles,
+                // it will be applied later in Loaded getter.
+                return;
+            }
+            
             if (change.Property == ModeProperty)
             {
                 if (Mode == FluentThemeMode.Dark)

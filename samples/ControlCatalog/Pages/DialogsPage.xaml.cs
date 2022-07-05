@@ -16,14 +16,14 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
 
-            var results = this.FindControl<ItemsPresenter>("PickerLastResults");
-            var resultsVisible = this.FindControl<TextBlock>("PickerLastResultsVisible");
+            var results = this.Get<ItemsPresenter>("PickerLastResults");
+            var resultsVisible = this.Get<TextBlock>("PickerLastResultsVisible");
 
-            string lastSelectedDirectory = null;
+            string? lastSelectedDirectory = null;
 
             List<FileDialogFilter>? GetFilters()
             {
-                if (this.FindControl<CheckBox>("UseFilters").IsChecked != true)
+                if (this.Get<CheckBox>("UseFilters").IsChecked != true)
                     return null;
                 return  new List<FileDialogFilter>
                 {
@@ -39,7 +39,7 @@ namespace ControlCatalog.Pages
                 };
             }
 
-            this.FindControl<Button>("OpenFile").Click += async delegate
+            this.Get<Button>("OpenFile").Click += async delegate
             {
                 // Almost guaranteed to exist
                 var fullPath = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName;
@@ -56,7 +56,7 @@ namespace ControlCatalog.Pages
                 results.Items = result;
                 resultsVisible.IsVisible = result?.Any() == true;
             };
-            this.FindControl<Button>("OpenMultipleFiles").Click += async delegate
+            this.Get<Button>("OpenMultipleFiles").Click += async delegate
             {
                 var result = await new OpenFileDialog()
                 {
@@ -68,7 +68,7 @@ namespace ControlCatalog.Pages
                 results.Items = result;
                 resultsVisible.IsVisible = result?.Any() == true;
             };
-            this.FindControl<Button>("SaveFile").Click += async delegate
+            this.Get<Button>("SaveFile").Click += async delegate
             {
                 var result = await new SaveFileDialog()
                 {
@@ -80,7 +80,7 @@ namespace ControlCatalog.Pages
                 results.Items = new[] { result };
                 resultsVisible.IsVisible = result != null;
             };
-            this.FindControl<Button>("SelectFolder").Click += async delegate
+            this.Get<Button>("SelectFolder").Click += async delegate
             {
                 var result = await new OpenFolderDialog()
                 {
@@ -96,7 +96,7 @@ namespace ControlCatalog.Pages
                 results.Items = new [] { result };
                 resultsVisible.IsVisible = result != null;
             };
-            this.FindControl<Button>("OpenBoth").Click += async delegate
+            this.Get<Button>("OpenBoth").Click += async delegate
             {
                 var result = await new OpenFileDialog()
                 {
@@ -110,35 +110,35 @@ namespace ControlCatalog.Pages
                 results.Items = result;
                 resultsVisible.IsVisible = result?.Any() == true;
             };
-            this.FindControl<Button>("DecoratedWindow").Click += delegate
+            this.Get<Button>("DecoratedWindow").Click += delegate
             {
                 new DecoratedWindow().Show();
             };
-            this.FindControl<Button>("DecoratedWindowDialog").Click += delegate
+            this.Get<Button>("DecoratedWindowDialog").Click += delegate
             {
                 new DecoratedWindow().ShowDialog(GetWindow());
             };
-            this.FindControl<Button>("Dialog").Click += delegate
+            this.Get<Button>("Dialog").Click += delegate
             {
                 var window = CreateSampleWindow();
                 window.Height = 200;
                 window.ShowDialog(GetWindow());
             };
-            this.FindControl<Button>("DialogNoTaskbar").Click += delegate
+            this.Get<Button>("DialogNoTaskbar").Click += delegate
             {
                 var window = CreateSampleWindow();
                 window.Height = 200;
                 window.ShowInTaskbar = false;
                 window.ShowDialog(GetWindow());
             };
-            this.FindControl<Button>("OwnedWindow").Click += delegate
+            this.Get<Button>("OwnedWindow").Click += delegate
             {
                 var window = CreateSampleWindow();
 
                 window.Show(GetWindow());
             };
 
-            this.FindControl<Button>("OwnedWindowNoTaskbar").Click += delegate
+            this.Get<Button>("OwnedWindowNoTaskbar").Click += delegate
             {
                 var window = CreateSampleWindow();
 
@@ -191,7 +191,7 @@ namespace ControlCatalog.Pages
             return window;
         }
 
-        Window GetWindow() => (Window)this.VisualRoot;
+        Window GetWindow() => this.VisualRoot as Window  ?? throw new NullReferenceException("Invalid Owner");
 
         private void InitializeComponent()
         {
