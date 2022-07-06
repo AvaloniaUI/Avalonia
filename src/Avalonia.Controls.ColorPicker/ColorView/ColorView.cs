@@ -4,9 +4,11 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -82,19 +84,19 @@ namespace Avalonia.Controls
             if (_tabControl != null &&
                 _tabControl.Items != null)
             {
-                // Determine if any item is visible
-                bool isAnyItemVisible = false;
+                // Determine the number of visible tab items
+                int numVisibleItems = 0;
                 foreach (var item in _tabControl.Items)
                 {
                     if (item is Control control &&
                         control.IsVisible)
                     {
-                        isAnyItemVisible = true;
-                        break;
+                        numVisibleItems++;
                     }
                 }
 
-                if (isAnyItemVisible)
+                // Verify the selection
+                if (numVisibleItems > 0)
                 {
                     object? selectedItem = null;
 
@@ -139,6 +141,23 @@ namespace Avalonia.Controls
                     _tabControl.SelectedItem = null;
                     _tabControl.IsVisible = false;
                 }
+
+                // Hide the "tab strip" if there is only one tab
+                // This allows, for example, to view only the palette
+                /*
+                var itemsPresenter = _tabControl.FindDescendantOfType<ItemsPresenter>();
+                if (itemsPresenter != null)
+                {
+                    if (numVisibleItems == 1)
+                    {
+                        itemsPresenter.IsVisible = false;
+                    }
+                    else
+                    {
+                        itemsPresenter.IsVisible = true;
+                    }
+                }
+                */
 
                 // Note that if externally the SelectedIndex is set to 4 or something
                 // outside the valid range, the TabControl will ignore it and replace it
