@@ -469,7 +469,7 @@ namespace Avalonia.Controls
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");
 
-            var (closedPaneWidth, paneColumnGridLength) = (SplitViewDisplayMode)e.NewValue switch
+            var (closedPaneWidth, paneColumnGridLength) = e.GetNewValue<SplitViewDisplayMode>() switch
             {
                 SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
                 SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
