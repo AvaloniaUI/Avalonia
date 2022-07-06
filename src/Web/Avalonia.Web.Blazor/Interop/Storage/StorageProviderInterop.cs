@@ -196,5 +196,30 @@ namespace Avalonia.Web.Blazor.Interop.Storage
         public JSStorageFolder(IJSInProcessObjectReference fileHandle) : base(fileHandle)
         {
         }
+
+        public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+        {
+            var items = await FileHandle.InvokeAsync<IJSInProcessObjectReference?>("getItems");
+            if (items is null)
+            {
+                return Array.Empty<IStorageItem>();
+            }
+
+            var count = items.Invoke<int>("count");
+
+            return Enumerable.Range(0, count)
+                .Select(index =>
+                {
+                    var reference = items.Invoke<IJSInProcessObjectReference>("at", index);
+                    return reference.Invoke<string>("getKind") switch
+                    {
+                        "directory" => (IStorageItem)new JSStorageFolder(reference),
+                        "file" => new JSStorageFile(reference),
+                        _ => null
+                    };
+                })
+                .Where(i => i is not null)
+                .ToArray()!;
+        }
     }
 }

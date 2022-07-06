@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
@@ -117,5 +119,20 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
 {
     public IOSStorageFolder(NSUrl url) : base(url)
     {
+    }
+
+    public Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    {
+        var content = NSFileManager.DefaultManager.GetDirectoryContent(Url, null, NSDirectoryEnumerationOptions.None, out var error);
+        if (error is not null)
+        {
+            return Task.FromException<IReadOnlyList<IStorageItem>>(new NSErrorException(error));
+        }
+
+        var items = content
+            .Select(u => u.HasDirectoryPath ? (IStorageItem)new IOSStorageFolder(u) : new IOSStorageFile(u))
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
     }
 }

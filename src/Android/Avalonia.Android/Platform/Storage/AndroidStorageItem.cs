@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -105,6 +106,30 @@ internal sealed class AndroidStorageFolder : AndroidStorageItem, IStorageBookmar
     public override Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
         return Task.FromResult(new StorageItemProperties());
+    }
+
+    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    {
+        using var javaFile = new JavaFile(Uri.Path!);
+
+        // Java file represents files AND directories. Don't be confused.
+        var files = await javaFile.ListFilesAsync().ConfigureAwait(false);
+        if (files is null)
+        {
+            return Array.Empty<IStorageItem>();
+        }
+
+        return files
+            .Select(f => (file: f, uri: AndroidUri.FromFile(f)))
+            .Where(t => t.uri is not null)
+            .Select(t => t.file switch
+            {
+                { IsFile: true } => (IStorageItem)new AndroidStorageFile(Context, t.uri!),
+                { IsDirectory: true } => new AndroidStorageFolder(Context, t.uri!),
+                _ => null
+            })
+            .Where(i => i is not null)
+            .ToArray()!;
     }
 }
 

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Security;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
@@ -41,6 +43,16 @@ public class BclStorageFolder : IStorageBookmarkFolder
             return Task.FromResult<IStorageFolder?>(new BclStorageFolder(directory));
         }
         return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    public Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    {
+         var items = _directoryInfo.GetDirectories()
+            .Select(d => (IStorageItem)new BclStorageFolder(d))
+            .Concat(_directoryInfo.GetFiles().Select(f => new BclStorageFile(f)))
+            .ToArray();
+
+         return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
     }
 
     public virtual Task<string?> SaveBookmark()

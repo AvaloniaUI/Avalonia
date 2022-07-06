@@ -243,8 +243,8 @@ namespace ControlCatalog.Pages
             async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
             {
                 items ??= Array.Empty<IStorageItem>();
-                var mappedResults = items.Select(FullPathOrName).ToList();
                 bookmarkContainer.Text = items.FirstOrDefault(f => f.CanBookmark) is { } f ? await f.SaveBookmark() : "Can't bookmark";
+                var mappedResults = new List<string>();
 
                 if (items.FirstOrDefault() is IStorageItem item)
                 {
@@ -293,7 +293,19 @@ Content:
                     lastSelectedDirectory = await item.GetParentAsync();
                     if (lastSelectedDirectory is not null)
                     {
-                        mappedResults.Insert(0,  "Parent: " + FullPathOrName(lastSelectedDirectory));
+                        mappedResults.Add(FullPathOrName(lastSelectedDirectory));
+                    }
+
+                    foreach (var selectedItem in items)
+                    {
+                        mappedResults.Add("+> " + FullPathOrName(selectedItem));
+                        if (selectedItem is IStorageFolder folder)
+                        {
+                            foreach (var innerItems in await folder.GetItemsAsync())
+                            {
+                                mappedResults.Add("++> " + FullPathOrName(innerItems));
+                            }
+                        }
                     }
                 }
 
