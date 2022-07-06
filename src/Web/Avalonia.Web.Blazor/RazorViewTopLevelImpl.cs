@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Web.Blazor.Interop;
 using SkiaSharp;
@@ -13,7 +14,7 @@ using SkiaSharp;
 
 namespace Avalonia.Web.Blazor
 {
-    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost
+    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         private Size _clientSize;
         private IBlazorSkiaSurface? _currentSurface;
@@ -205,5 +206,6 @@ namespace Avalonia.Web.Blazor
         public ITextInputMethodImpl TextInputMethod => _avaloniaView;
 
         public INativeControlHostImpl? NativeControlHost => _avaloniaView.GetNativeControlHostImpl();
+        public IStorageProvider StorageProvider => _avaloniaView.GetStorageProvider();
     }
 }

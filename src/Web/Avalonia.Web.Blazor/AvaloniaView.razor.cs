@@ -4,11 +4,15 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Web.Blazor.Interop;
+using Avalonia.Web.Blazor.Interop.Storage;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+
 using SkiaSharp;
 using HTMLPointerEventArgs = Microsoft.AspNetCore.Components.Web.PointerEventArgs;
 
@@ -27,6 +31,7 @@ namespace Avalonia.Web.Blazor
         private InputHelperInterop? _inputHelper = null;
         private InputHelperInterop? _canvasHelper = null;
         private NativeControlHostInterop? _nativeControlHost = null;
+        private StorageProviderInterop? _storageProvider = null;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
         private ElementReference _nativeControlsContainer;
@@ -59,7 +64,12 @@ namespace Avalonia.Web.Blazor
         {
             return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
         }
-        
+
+        internal IStorageProvider GetStorageProvider()
+        {
+            return _storageProvider ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
+        }
+
         private void OnPointerCancel(HTMLPointerEventArgs e)
         {
             if (e.PointerType == "touch")
@@ -243,7 +253,8 @@ namespace Avalonia.Web.Blazor
                 };
 
                 _nativeControlHost = await NativeControlHostInterop.ImportAsync(Js, _nativeControlsContainer);
-
+                _storageProvider = await StorageProviderInterop.ImportAsync(Js);
+                
                 Console.WriteLine("starting html canvas setup");
                 _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
 

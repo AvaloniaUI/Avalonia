@@ -209,6 +209,9 @@ namespace Avalonia.X11.NativeDialogs
         public static extern IntPtr gtk_file_filter_add_pattern(IntPtr filter, Utf8Buffer pattern);
         
         [DllImport(GtkName)]
+        public static extern IntPtr gtk_file_filter_add_mime_type (IntPtr filter, Utf8Buffer mimeType);
+        
+        [DllImport(GtkName)]
         public static extern IntPtr gtk_file_chooser_add_filter(IntPtr chooser, IntPtr filter);
 
         [DllImport(GtkName)]
