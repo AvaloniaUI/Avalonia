@@ -27,7 +27,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         
         private bool Run(BiDiTestData testData)
         {
-            var bidi = BidiAlgorithm.Instance.Value;
+            var bidi = new BidiAlgorithm();
             
             // Run the algorithm...
             ArraySlice<sbyte> resultLevels;

@@ -19,11 +19,6 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             var trie = GenerateBreakTypeTrie();
 
             UnicodeDataGenerator.GenerateTrieClass("GraphemeBreak", trie);
-
-            using (var stream = File.Create("Generated\\GraphemeBreak.trie"))
-            {
-                trie.Save(stream);
-            }
         }
 
         private static UnicodeTrie GenerateBreakTypeTrie()
@@ -38,9 +33,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             {
                 foreach (var (start, end, graphemeBreakType) in breakData)
                 {
-                    if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType, out var value))
+                    if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType.Replace("_", ""), out var value))
                     {
-                        continue;
+                        continue;                                     
                     }
 
                     if (start == end)
