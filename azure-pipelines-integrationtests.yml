@@ -6,7 +6,7 @@
 trigger:
 - master
 
-
+jobs:
 - job: Mac
   pool:
     name: 'AvaloniaMacPool'
@@ -19,3 +19,20 @@ trigger:
 - job: Windows
   pool:
     vmImage: 'windows-2022'
+
+  steps:
+  - task: Windows Application Driver@0
+    inputs:
+      OperationType: 'Start'
+      AgentResolution: '1080p'
+    displayName: 'Start WinAppDriver'
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: 'tests/Avalonia.IntegrationTests.Appium/'
+
+  - task: Windows Application Driver@0
+    inputs:
+      OperationType: 'Stop'
+    displayName: 'Stop WinAppDriver'
