@@ -117,6 +117,11 @@ namespace Avalonia.Benchmarks
             return new NullGlyphRun();
         }
 
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool SupportsIndividualRoundRects => true;
 
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;

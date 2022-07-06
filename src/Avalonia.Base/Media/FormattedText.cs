@@ -1223,7 +1223,7 @@ namespace Avalonia.Media
         public double OverhangTrailing
         {
             get
-        {
+            {
                 return BlackBoxMetrics.OverhangTrailing;
             }
         }
@@ -1250,6 +1250,46 @@ namespace Avalonia.Media
             {
                 return Metrics.WidthIncludingTrailingWhitespace;
             }
+        }
+
+        /// <summary>
+        /// Obtains geometry for the text, including underlines and strikethroughs. 
+        /// </summary>
+        /// <param name="origin">The left top origin of the resulting geometry.</param>
+        /// <returns>The geometry returned contains the combined geometry
+        /// of all of the glyphs, underlines and strikeThroughs that represent the formatted text.
+        /// Overlapping contours are merged by performing a Boolean union operation.</returns>
+        public Geometry? BuildGeometry(Point origin)
+        {
+            GeometryGroup? accumulatedGeometry = null;
+            var lineOrigin = origin;
+
+            DrawingGroup drawing = new DrawingGroup();
+
+            using (var ctx = drawing.Open())
+            {
+                using (var enumerator = GetEnumerator())
+                {
+                    while (enumerator.MoveNext())
+                    {
+                        var currentLine = enumerator.Current;
+
+                        if (currentLine != null)
+                        {
+                            currentLine.Draw(ctx, lineOrigin);
+
+                            AdvanceLineOrigin(ref lineOrigin, currentLine);
+                        }
+                    }
+                }
+            }
+
+            Transform? transform = new TranslateTransform(origin.X, origin.Y);
+
+            //  recursively go down the DrawingGroup to build up the geometry
+            CombineGeometryRecursive(drawing, ref transform, ref accumulatedGeometry);
+
+            return accumulatedGeometry;
         }
 
         /// <summary>
@@ -1281,6 +1321,93 @@ namespace Avalonia.Media
                 // black box metrics too because these are already known as a side-effect of drawing
 
                 _metrics = DrawAndCalculateMetrics(drawingContext, origin, true);
+            }
+        }
+
+        private void CombineGeometryRecursive(Drawing drawing, ref Transform? transform, ref GeometryGroup? accumulatedGeometry)
+        {
+            if (drawing is DrawingGroup group)
+            {
+                transform = group.Transform;
+
+                if (group.Children is DrawingCollection children)
+                {
+                    // recursively go down for DrawingGroup
+                    foreach (var child in children)
+                    {
+                        CombineGeometryRecursive(child, ref transform, ref accumulatedGeometry);
+                    }
+                }
+            }
+            else
+            {
+                if (drawing is GlyphRunDrawing glyphRunDrawing)
+                {
+                    // process glyph run
+                    var glyphRun = glyphRunDrawing.GlyphRun;
+
+                    if (glyphRun != null)
+                    {
+                        var glyphRunGeometry = glyphRun.BuildGeometry();
+
+                        glyphRunGeometry.Transform = transform;
+
+                        if (accumulatedGeometry == null)
+                        {
+                            accumulatedGeometry = new GeometryGroup
+                            {
+                                FillRule = FillRule.NonZero
+                            };
+                        }
+
+                        accumulatedGeometry.Children.Add(glyphRunGeometry);
+                    }
+                }
+                else
+                {
+                    if (drawing is GeometryDrawing geometryDrawing)
+                    {
+                        // process geometry (i.e. TextDecoration on the line)
+                        var geometry = geometryDrawing.Geometry;
+
+                        if (geometry != null)
+                        {
+                            geometry.Transform = transform;
+
+                            if (geometry is LineGeometry lineGeometry)
+                            {
+                                // For TextDecoration drawn by DrawLine(), the geometry is a LineGeometry which has no 
+                                // bounding area. So this line won't show up. Work aroud it by increase the Bounding rect 
+                                // to be Pen's thickness                        
+
+                                var bounds = lineGeometry.Bounds;
+
+                                if (bounds.Height == 0)
+                                {
+                                    bounds = bounds.WithHeight(geometryDrawing.Pen?.Thickness ?? 0);
+                                }
+                                else if (bounds.Width == 0)
+                                {
+                                    bounds = bounds.WithWidth(geometryDrawing.Pen?.Thickness ?? 0);
+                                }
+
+                                // convert the line geometry into a rectangle geometry
+                                // we lost line cap info here
+                                geometry = new RectangleGeometry(bounds);
+                            }
+
+                            if (accumulatedGeometry == null)
+                            {
+                                accumulatedGeometry = new GeometryGroup
+                                {
+                                    FillRule = FillRule.NonZero
+                                };
+                            }
+
+                            accumulatedGeometry.Children.Add(geometry);
+                        }
+                    }
+                }
             }
         }
 

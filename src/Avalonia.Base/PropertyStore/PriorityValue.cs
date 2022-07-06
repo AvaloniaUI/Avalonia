@@ -121,6 +121,7 @@ namespace Avalonia.PropertyStore
 
         public void ClearLocalValue()
         {
+            _localValue = default;
             UpdateEffectiveValue(new AvaloniaPropertyChangedEventArgs<T>(
                 _owner,
                 Property,

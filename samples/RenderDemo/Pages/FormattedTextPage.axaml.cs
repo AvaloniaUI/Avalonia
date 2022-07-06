@@ -55,6 +55,10 @@ namespace RenderDemo.Pages
             formattedText.SetFontStyle(FontStyle.Italic, 28, 28);
 
             context.DrawText(formattedText, new Point(10, 0));
+
+            var geometry = formattedText.BuildGeometry(new Point(10 + formattedText.Width + 10, 0));
+
+            context.DrawGeometry(gradient, null, geometry);
         }
     }
 }

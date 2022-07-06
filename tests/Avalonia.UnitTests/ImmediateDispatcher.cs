@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 
@@ -22,7 +23,7 @@ namespace Avalonia.UnitTests
         }
 
         /// <inheritdoc/>
-        public void Post<T>(Action<T> action, T arg, DispatcherPriority priority)
+        public void Post(SendOrPostCallback action, object arg, DispatcherPriority priority)
         {
             action(arg);
         }

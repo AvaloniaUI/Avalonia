@@ -118,7 +118,7 @@ namespace Avalonia.Threading
         }
 
         /// <inheritdoc/>
-        public void Post<T>(Action<T> action, T arg, DispatcherPriority priority = default)
+        public void Post(SendOrPostCallback action, object? arg, DispatcherPriority priority = default)
         {
             _ = action ?? throw new ArgumentNullException(nameof(action));
             _jobRunner.Post(action, arg, priority);

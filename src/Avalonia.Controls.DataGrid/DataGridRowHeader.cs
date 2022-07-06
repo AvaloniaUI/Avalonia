@@ -158,23 +158,23 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
             if (OwningRow != null)
             {
                 OwningRow.IsMouseOver = true;
             }
 
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
         }
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             if (OwningRow != null)
             {
                 OwningRow.IsMouseOver = false;
             }
 
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         //TODO TabStop
