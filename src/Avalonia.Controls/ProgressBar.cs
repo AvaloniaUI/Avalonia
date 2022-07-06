@@ -96,6 +96,7 @@ namespace Avalonia.Controls
             }
         }
 
+        private double _percentage;
         private double _indeterminateStartingOffset;
         private double _indeterminateEndingOffset;
         private Border? _indicator;
@@ -106,8 +107,16 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> ShowProgressTextProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(ShowProgressText));
 
+        public static readonly StyledProperty<string> ProgressTextFormatProperty =
+            AvaloniaProperty.Register<ProgressBar, string>(nameof(ProgressTextFormat), "{1:0}%");
+        
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
+
+        public static readonly DirectProperty<ProgressBar, double> PercentageProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(Percentage),
+                o => o.Percentage);
 
         [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
@@ -123,6 +132,12 @@ namespace Avalonia.Controls
                 p => p.IndeterminateEndingOffset,
                 (p, o) => p.IndeterminateEndingOffset = o);
 
+        public double Percentage
+        {
+            get { return _percentage; }
+            private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
+        }
+        
         [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public double IndeterminateStartingOffset
         {
@@ -163,6 +178,12 @@ namespace Avalonia.Controls
         {
             get => GetValue(ShowProgressTextProperty);
             set => SetValue(ShowProgressTextProperty, value);
+        }
+
+        public string ProgressTextFormat
+        {
+            get => GetValue(ProgressTextFormatProperty);
+            set => SetValue(ProgressTextFormatProperty, value);
         }
 
         public Orientation Orientation
@@ -245,6 +266,8 @@ namespace Avalonia.Controls
                         _indicator.Width = bounds.Width * percent;
                     else
                         _indicator.Height = bounds.Height * percent;
+
+                    Percentage = percent * 100;
                 }
             }
         }
