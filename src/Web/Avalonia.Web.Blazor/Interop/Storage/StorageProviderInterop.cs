@@ -145,7 +145,7 @@ namespace Avalonia.Web.Blazor.Interop.Storage
 
         public bool CanBookmark => true;
 
-        public Task<string?> SaveBookmark()
+        public Task<string?> SaveBookmarkAsync()
         {
             return FileHandle.InvokeAsync<string?>("saveBookmark").AsTask();
         }
@@ -155,7 +155,7 @@ namespace Avalonia.Web.Blazor.Interop.Storage
             return Task.FromResult<IStorageFolder?>(null);
         }
 
-        public Task ReleaseBookmark()
+        public Task ReleaseBookmarkAsync()
         {
             return FileHandle.InvokeAsync<string?>("deleteBookmark").AsTask();
         }
@@ -174,7 +174,7 @@ namespace Avalonia.Web.Blazor.Interop.Storage
         }
 
         public bool CanOpenRead => true;
-        public async Task<Stream> OpenRead()
+        public async Task<Stream> OpenReadAsync()
         {
             var stream = await FileHandle.InvokeAsync<IJSStreamReference>("openRead");
             // Remove maxAllowedSize limit, as developer can decide if they read only small part or everything.
@@ -182,7 +182,7 @@ namespace Avalonia.Web.Blazor.Interop.Storage
         }
 
         public bool CanOpenWrite => true;
-        public async Task<Stream> OpenWrite()
+        public async Task<Stream> OpenWriteAsync()
         {
             var properties = await FileHandle.InvokeAsync<FileProperties?>("getProperties");
             var streamWriter = await FileHandle.InvokeAsync<IJSInProcessObjectReference>("openWrite");

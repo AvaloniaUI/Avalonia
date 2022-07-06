@@ -195,10 +195,10 @@ namespace ControlCatalog.Pages
                 {
                     // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
-                    await using var stream = await file.OpenWrite();
+                    await using var stream = await file.OpenWriteAsync();
                     await using var reader = new System.IO.StreamWriter(stream);
 #else
-                    using var stream = await file.OpenWrite();
+                    using var stream = await file.OpenWriteAsync();
                     using var reader = new System.IO.StreamWriter(stream);
 #endif
                     await reader.WriteLineAsync(openedFileContent.Text);
@@ -243,7 +243,7 @@ namespace ControlCatalog.Pages
             async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
             {
                 items ??= Array.Empty<IStorageItem>();
-                bookmarkContainer.Text = items.FirstOrDefault(f => f.CanBookmark) is { } f ? await f.SaveBookmark() : "Can't bookmark";
+                bookmarkContainer.Text = items.FirstOrDefault(f => f.CanBookmark) is { } f ? await f.SaveBookmarkAsync() : "Can't bookmark";
                 var mappedResults = new List<string>();
 
                 if (items.FirstOrDefault() is IStorageItem item)
@@ -267,9 +267,9 @@ Content:
                         if (file.CanOpenRead)
                         {
 #if NET6_0_OR_GREATER
-                            await using var stream = await file.OpenRead();
+                            await using var stream = await file.OpenReadAsync();
 #else
-                            using var stream = await file.OpenRead();
+                            using var stream = await file.OpenReadAsync();
 #endif
                             using var reader = new System.IO.StreamReader(stream);
 

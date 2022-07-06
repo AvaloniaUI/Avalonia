@@ -51,13 +51,13 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(Url.RemoveLastPathComponent()));
     }
 
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         // no-op
         return Task.CompletedTask;
     }
 
-    public Task<string?> SaveBookmark()
+    public Task<string?> SaveBookmarkAsync()
     {
         try
         {
@@ -104,12 +104,12 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     public bool CanOpenWrite => true;
 
-    public Task<Stream> OpenRead()
+    public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Read));
     }
 
-    public Task<Stream> OpenWrite()
+    public Task<Stream> OpenWriteAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Write));
     }

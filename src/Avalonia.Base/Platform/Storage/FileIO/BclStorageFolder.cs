@@ -55,12 +55,12 @@ public class BclStorageFolder : IStorageBookmarkFolder
          return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
     }
 
-    public virtual Task<string?> SaveBookmark()
+    public virtual Task<string?> SaveBookmarkAsync()
     {
         return Task.FromResult<string?>(_directoryInfo.FullName);
     }
     
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         // No-op
         return Task.CompletedTask;

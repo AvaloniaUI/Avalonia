@@ -36,13 +36,13 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
     public bool CanBookmark => true;
 
-    public Task<string?> SaveBookmark()
+    public Task<string?> SaveBookmarkAsync()
     {
         Context.ContentResolver?.TakePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
         return Task.FromResult(Uri.ToString());
     }
 
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         Context.ContentResolver?.ReleasePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
         return Task.CompletedTask;
@@ -143,10 +143,10 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
     public bool CanOpenWrite => true;
 
-    public Task<Stream> OpenRead() => Task.FromResult(OpenContentStream(Context, Uri, false)
+    public Task<Stream> OpenReadAsync() => Task.FromResult(OpenContentStream(Context, Uri, false)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 
-    public Task<Stream> OpenWrite() => Task.FromResult(OpenContentStream(Context, Uri, true)
+    public Task<Stream> OpenWriteAsync() => Task.FromResult(OpenContentStream(Context, Uri, true)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 
     private Stream? OpenContentStream(Context context, AndroidUri uri, bool isOutput)
