@@ -9,8 +9,8 @@
     <converters:ToBrushConverter x:Key="ToBrush" />
     <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
     <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
-    <x:Double x:Key="AccentColorSectionWidth">80</x:Double>
-    <x:Double x:Key="AccentColorSectionHeight">40</x:Double>
+    <x:Double x:Key="ColorPreviewerAccentSectionWidth">80</x:Double>
+    <x:Double x:Key="ColorPreviewerAccentSectionHeight">40</x:Double>
   </Styles.Resources>
 
   <Style Selector="ColorPreviewer">
@@ -21,8 +21,8 @@
         <Grid ColumnDefinitions="Auto,*,Auto">
           <!-- Left accent colors -->
           <Grid Grid.Column="0"
-                Height="{StaticResource AccentColorSectionHeight}"
-                Width="{StaticResource AccentColorSectionWidth}"
+                Height="{StaticResource ColorPreviewerAccentSectionHeight}"
+                Width="{StaticResource ColorPreviewerAccentSectionWidth}"
                 ColumnDefinitions="*,*"
                 Margin="0,0,-10,0"
                 VerticalAlignment="Center"
@@ -31,7 +31,7 @@
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    Background="{StaticResource CheckeredBackgroundBrush}" />
+                    Background="{StaticResource ColorControlCheckeredBackgroundBrush}" />
             <Border x:Name="PART_AccentDecrement2Border"
                     Grid.Column="0"
                     CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
@@ -44,8 +44,8 @@
           </Grid>
           <!-- Right accent colors -->
           <Grid Grid.Column="2"
-                Height="{StaticResource AccentColorSectionHeight}"
-                Width="{StaticResource AccentColorSectionWidth}"
+                Height="{StaticResource ColorPreviewerAccentSectionHeight}"
+                Width="{StaticResource ColorPreviewerAccentSectionWidth}"
                 ColumnDefinitions="*,*"
                 Margin="-10,0,0,0"
                 VerticalAlignment="Center"
@@ -54,7 +54,7 @@
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    Background="{StaticResource CheckeredBackgroundBrush}" />
+                    Background="{StaticResource ColorControlCheckeredBackgroundBrush}" />
             <Border x:Name="PART_AccentIncrement1Border"
                     Grid.Column="0"
                     Tag="1"
@@ -71,7 +71,7 @@
                   CornerRadius="{TemplateBinding CornerRadius}"
                   Margin="10">
             <Panel>
-              <Border Background="{StaticResource CheckeredBackgroundBrush}"
+              <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
                       CornerRadius="{TemplateBinding CornerRadius}" />
               <Border x:Name="PreviewBorder"
                       CornerRadius="{TemplateBinding CornerRadius}"

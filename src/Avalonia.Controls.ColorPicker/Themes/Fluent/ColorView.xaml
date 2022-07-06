@@ -13,10 +13,10 @@
     <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayName" />
     <converters:ColorToHexConverter x:Key="ColorToHex" />
     <converters:EnumToBoolConverter x:Key="EnumToBool" />
-    <globalization:NumberFormatInfo x:Key="ComponentNumberFormatInfo" NumberDecimalDigits="0" />
+    <globalization:NumberFormatInfo x:Key="ColorViewComponentNumberFormat" NumberDecimalDigits="0" />
     <x:Double x:Key="ColorViewTabStripHeight">48</x:Double>
-    <x:Double x:Key="ComponentLabelWidth">30</x:Double>
-    <x:Double x:Key="ComponentTextInputWidth">80</x:Double>
+    <x:Double x:Key="ColorViewComponentLabelWidth">30</x:Double>
+    <x:Double x:Key="ColorViewComponentTextInputWidth">80</x:Double>
     <!-- Fluent UI System Icons : ic_fluent_inking_tool_20_regular.svg -->
     <PathGeometry x:Key="ColorViewSpectrumIconGeometry">
       M3 2C3.27614 2 3.5 2.22386 3.5 2.5V5.5C3.5 5.77614 3.72386 6 4 6H16C16.2761 6 16.5 5.77614
@@ -405,7 +405,7 @@
                 <Border Grid.Column="0"
                         Grid.Row="2"
                         Height="{Binding ElementName=Component1NumericUpDown, Path=Bounds.Height}"
-                        Width="{DynamicResource ComponentLabelWidth}"
+                        Width="{DynamicResource ColorViewComponentLabelWidth}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
                         BorderThickness="1,1,0,1"
@@ -430,11 +430,11 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
-                               Width="{DynamicResource ComponentTextInputWidth}"
+                               Width="{DynamicResource ColorViewComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
-                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                Minimum="{Binding Minimum, ElementName=Component1Slider}"
                                Maximum="{Binding Maximum, ElementName=Component1Slider}"
                                Value="{Binding Value, ElementName=Component1Slider}"
@@ -455,7 +455,7 @@
                 <!-- Component 2 RGB:Green HSV:Saturation -->
                 <Border Grid.Column="0"
                         Grid.Row="3"
-                        Width="{DynamicResource ComponentLabelWidth}"
+                        Width="{DynamicResource ColorViewComponentLabelWidth}"
                         Height="{Binding ElementName=Component2NumericUpDown, Path=Bounds.Height}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
@@ -481,11 +481,11 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
-                               Width="{DynamicResource ComponentTextInputWidth}"
+                               Width="{DynamicResource ColorViewComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
-                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                Minimum="{Binding Minimum, ElementName=Component2Slider}"
                                Maximum="{Binding Maximum, ElementName=Component2Slider}"
                                Value="{Binding Value, ElementName=Component2Slider}"
@@ -506,7 +506,7 @@
                 <!-- Component 3 RGB:Blue HSV:Value -->
                 <Border Grid.Column="0"
                         Grid.Row="4"
-                        Width="{DynamicResource ComponentLabelWidth}"
+                        Width="{DynamicResource ColorViewComponentLabelWidth}"
                         Height="{Binding ElementName=Component3NumericUpDown, Path=Bounds.Height}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
@@ -532,11 +532,11 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
-                               Width="{DynamicResource ComponentTextInputWidth}"
+                               Width="{DynamicResource ColorViewComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
-                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                Minimum="{Binding Minimum, ElementName=Component3Slider}"
                                Maximum="{Binding Maximum, ElementName=Component3Slider}"
                                Value="{Binding Value, ElementName=Component3Slider}"
@@ -557,7 +557,7 @@
                 <!-- Alpha Component -->
                 <Border Grid.Column="0"
                         Grid.Row="5"
-                        Width="{DynamicResource ComponentLabelWidth}"
+                        Width="{DynamicResource ColorViewComponentLabelWidth}"
                         Height="{Binding ElementName=AlphaComponentNumericUpDown, Path=Bounds.Height}"
                         Background="{DynamicResource TextControlBackgroundDisabled}"
                         BorderBrush="{DynamicResource TextControlBorderBrush}"
@@ -586,11 +586,11 @@
                                AllowSpin="True"
                                ShowButtonSpinner="False"
                                Height="32"
-                               Width="{DynamicResource ComponentTextInputWidth}"
+                               Width="{DynamicResource ColorViewComponentTextInputWidth}"
                                CornerRadius="0,4,4,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
-                               NumberFormat="{StaticResource ComponentNumberFormatInfo}"
+                               NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
                                Minimum="{Binding Minimum, ElementName=AlphaComponentSlider}"
                                Maximum="{Binding Maximum, ElementName=AlphaComponentSlider}"
                                Value="{Binding Value, ElementName=AlphaComponentSlider}"

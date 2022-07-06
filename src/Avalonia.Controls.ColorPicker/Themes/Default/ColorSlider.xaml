@@ -34,7 +34,7 @@
           <Grid Margin="{TemplateBinding Padding}">
             <Rectangle HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
-                       Fill="{StaticResource CheckeredBackgroundBrush}"
+                       Fill="{StaticResource ColorControlCheckeredBackgroundBrush}"
                        RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
                        RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
             <Rectangle HorizontalAlignment="Stretch"
@@ -106,7 +106,7 @@
           <Grid Margin="{TemplateBinding Padding}">
             <Rectangle HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
-                       Fill="{StaticResource CheckeredBackgroundBrush}"
+                       Fill="{StaticResource ColorControlCheckeredBackgroundBrush}"
                        RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
                        RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
             <Rectangle HorizontalAlignment="Stretch"
