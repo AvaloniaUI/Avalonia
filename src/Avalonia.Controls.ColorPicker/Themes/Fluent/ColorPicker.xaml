@@ -7,6 +7,8 @@
   <Styles.Resources>
     <converters:ToBrushConverter x:Key="ToBrush" />
     <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
+    <!-- This must follow OverlayCornerRadius -->
+    <CornerRadius x:Key="OverlayTopCornerRadius">5,5,0,0</CornerRadius>
   </Styles.Resources>
 
   <Style Selector="ColorPicker">
@@ -79,6 +81,12 @@
         </DropDownButton>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <!-- Adjust Background within Flyout -->
+  <!-- Note: This is implemented but there seems to be an issue and the selector can't match across the Flyout -->
+  <Style Selector="ColorPicker /template/ ColorView#FlyoutColorView /template/ Border#TabBackgroundBorder">
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayTopCornerRadius}" />
   </Style>
 
 </Styles>

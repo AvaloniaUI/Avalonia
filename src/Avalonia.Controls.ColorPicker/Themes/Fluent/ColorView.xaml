@@ -13,6 +13,8 @@
     <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayName" />
     <converters:ColorToHexConverter x:Key="ColorToHex" />
     <converters:EnumToBoolConverter x:Key="EnumToBool" />
+    <converters:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="TopLeft, TopRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="BottomLeft, BottomRight"/>
     <globalization:NumberFormatInfo x:Key="ColorViewComponentNumberFormat" NumberDecimalDigits="0" />
     <x:Double x:Key="ColorViewTabStripHeight">48</x:Double>
     <x:Double x:Key="ColorViewComponentLabelWidth">30</x:Double>
@@ -90,29 +92,26 @@
       <ControlTemplate>
         <Grid RowDefinitions="Auto,Auto">
 
-          <!-- Set the backgrounds -->
-          <Border Grid.Row="0"
+          <!-- Backgrounds -->
+          <!-- These are separated for Fluent v2 re-styling without having to re-template. -->
+          <Border x:Name="TabBackgroundBorder"
+                  Grid.Row="0"
                   Grid.RowSpan="2"
                   Height="48"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
                   Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
                   CornerRadius="{TemplateBinding CornerRadius}" />
-
-          <!-- Available for Fluent v2 use -->
-          <!--<Border Grid.Row="0"
-                  Grid.RowSpan="2"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  Background="{TemplateBinding Background}" />
-          <Border Grid.Row="0"
+          <Border x:Name="ContentBackgroundBorder"
+                  Grid.Row="0"
                   Grid.RowSpan="2"
                   Margin="0,48,0,0"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
-                  Background="{ThemeResource LayerFillColorAltBrush}"
-                  BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                  BorderThickness="0,1,0,0" />-->
+                  CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
+                  Background="Transparent"
+                  BorderBrush="Transparent"
+                  BorderThickness="0,1,0,0" />
 
           <TabControl x:Name="PART_TabControl"
                       Grid.Row="0"
