@@ -431,18 +431,40 @@ namespace Avalonia.Controls
             }
         }
 
+        private string GetPsuedoClass(SplitViewDisplayMode mode)
+        {
+            return mode switch
+            {
+                SplitViewDisplayMode.Inline => "inline",
+                SplitViewDisplayMode.CompactInline => "compactinline",
+                SplitViewDisplayMode.Overlay => "overlay",
+                SplitViewDisplayMode.CompactOverlay => "compactoverlay",
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+            };
+        }
+        
+        private string GetPsuedoClass(SplitViewPanePlacement placement)
+        {
+            return placement switch
+            {
+                SplitViewPanePlacement.Left => "left",
+                SplitViewPanePlacement.Right => "right",
+                _ => throw new ArgumentOutOfRangeException(nameof(placement), placement, null)
+            };
+        }
+
         private void OnPanePlacementChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldState = e.OldValue!.ToString()!.ToLower();
-            var newState = e.NewValue!.ToString()!.ToLower();
+            var oldState = GetPsuedoClass(e.GetOldValue<SplitViewPanePlacement>());
+            var newState = GetPsuedoClass(e.GetNewValue<SplitViewPanePlacement>());
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");
         }
 
         private void OnDisplayModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldState = e.OldValue!.ToString()!.ToLower();
-            var newState = e.NewValue!.ToString()!.ToLower();
+            var oldState = GetPsuedoClass(e.GetOldValue<SplitViewDisplayMode>());
+            var newState = GetPsuedoClass(e.GetNewValue<SplitViewDisplayMode>());
 
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");
