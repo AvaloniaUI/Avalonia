@@ -21,16 +21,26 @@ jobs:
     vmImage: 'windows-2022'
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.202'
+    inputs:
+      version: 6.0.202
+
   - task: Windows Application Driver@0
     inputs:
       OperationType: 'Start'
       AgentResolution: '1080p'
     displayName: 'Start WinAppDriver'
+  
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
   - task: DotNetCoreCLI@2
     inputs:
       command: 'test'
-      projects: 'tests/Avalonia.IntegrationTests.Appium/'
+      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
 
   - task: Windows Application Driver@0
     inputs:
