@@ -6,10 +6,16 @@
 trigger:
 - master
 
-pool:
-  name: 'AvaloniaMacPool'
 
-steps:
-- script: ./tests/Avalonia.IntegrationTests.Appium/macos-clean-build-test.sh
-  displayName: 'run integration tests'
+- job: Mac
+  pool:
+    name: 'AvaloniaMacPool'
 
+  steps:
+  - script: ./tests/Avalonia.IntegrationTests.Appium/macos-clean-build-test.sh
+    displayName: 'run integration tests'
+
+
+- job: Windows
+  pool:
+    vmImage: 'windows-2022'
