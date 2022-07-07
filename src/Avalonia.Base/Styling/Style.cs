@@ -7,6 +7,8 @@ namespace Avalonia.Styling
     /// </summary>
     public class Style : StyleBase
     {
+        private Selector? _selector;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
         /// </summary>
@@ -26,7 +28,11 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets or sets the style's selector.
         /// </summary>
-        public Selector? Selector { get; set; }
+        public Selector? Selector 
+        {
+            get => _selector;
+            set => _selector = ValidateSelector(value);
+        }
 
         public override SelectorMatchResult TryAttach(IStyleable target, object? host)
         {
@@ -87,6 +93,14 @@ namespace Avalonia.Styling
             }
 
             base.SetParent(parent);
+        }
+
+        private static Selector? ValidateSelector(Selector? selector)
+        {
+            if (selector is TemplateSelector)
+                throw new InvalidOperationException(
+                    "Invalid selector: Template selector must be followed by control selector.");
+            return selector;
         }
     }
 }
