@@ -1,86 +1,142 @@
-#nullable enable
+﻿#nullable enable
+
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
+using System.Collections.Generic;
+using System.IO;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.MicroCom;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.Win32Com;
 
 namespace Avalonia.Win32
 {
-    internal class SystemDialogImpl : ISystemDialogImpl
+    internal class Win32StorageProvider : BclStorageProvider
     {
         private const uint SIGDN_FILESYSPATH = 0x80058000;
 
         private const FILEOPENDIALOGOPTIONS DefaultDialogOptions = FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM | FILEOPENDIALOGOPTIONS.FOS_NOVALIDATE |
             FILEOPENDIALOGOPTIONS.FOS_NOTESTFILECREATE | FILEOPENDIALOGOPTIONS.FOS_DONTADDTORECENT;
 
-        public unsafe Task<string[]?> ShowFileDialogAsync(FileDialog dialog, Window parent)
+        private readonly WindowImpl _windowImpl;
+
+        public Win32StorageProvider(WindowImpl windowImpl)
         {
-            var hWnd = parent?.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
+            _windowImpl = windowImpl;
+        }
+
+        public override bool CanOpen => true;
+
+        public override bool CanSave => true;
+
+        public override bool CanPickFolder => true;
+
+        public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
+        {
+            var files = await ShowFilePicker(
+                true, true,
+                options.AllowMultiple, false,
+                options.Title, null, options.SuggestedStartLocation, null, null);
+            return files.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray();
+        }
+
+        public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        {
+            var files = await ShowFilePicker(
+                true, false,
+                options.AllowMultiple, false,
+                options.Title, null, options.SuggestedStartLocation,
+                null, options.FileTypeFilter);
+            return files.Select(f => new BclStorageFile(new FileInfo(f))).ToArray();
+        }
+
+        public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
+        {
+            var files = await ShowFilePicker(
+                false, false,
+                false, options.ShowOverwritePrompt,
+                options.Title, options.SuggestedFileName, options.SuggestedStartLocation,
+                options.DefaultExtension, options.FileTypeChoices);
+            return files.Select(f => new BclStorageFile(new FileInfo(f))).FirstOrDefault();
+        }
+
+        private unsafe Task<IEnumerable<string>> ShowFilePicker(
+            bool isOpenFile,
+            bool openFolder,
+            bool allowMultiple,
+            bool? showOverwritePrompt,
+            string? title,
+            string? suggestedFileName,
+            IStorageFolder? folder,
+            string? defaultExtension,
+            IReadOnlyList<FilePickerFileType>? filters)
+        {
             return Task.Run(() =>
             {
-                string[]? result = default;
+                IEnumerable<string> result = Array.Empty<string>();
                 try
                 {
-                    var clsid = dialog is OpenFileDialog ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
+                    var clsid = isOpenFile ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                     var iid = UnmanagedMethods.ShellIds.IFileDialog;
                     var frm = UnmanagedMethods.CreateInstance<IFileDialog>(ref clsid, ref iid);
 
-                    var openDialog = dialog as OpenFileDialog;
-
                     var options = frm.Options;
                     options |= DefaultDialogOptions;
-                    if (openDialog?.AllowMultiple == true)
+                    if (openFolder)
+                    {
+                        options |= FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
+                    }
+                    if (allowMultiple)
                     {
                         options |= FILEOPENDIALOGOPTIONS.FOS_ALLOWMULTISELECT;
                     }
 
-                    if (dialog is SaveFileDialog saveFileDialog)
+                    if (showOverwritePrompt == false)
                     {
-                        var overwritePrompt = saveFileDialog.ShowOverwritePrompt ?? true;
-
-                        if (!overwritePrompt)
-                        {
-                            options &= ~FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT;
-                        }
+                        options &= ~FILEOPENDIALOGOPTIONS.FOS_OVERWRITEPROMPT;
                     }
                     frm.SetOptions(options);
 
-                    var defaultExtension = (dialog as SaveFileDialog)?.DefaultExtension ?? "";
-                    fixed (char* pExt = defaultExtension)
+                    if (defaultExtension is not null)
                     {
-                        frm.SetDefaultExtension(pExt);
+                        fixed (char* pExt = defaultExtension)
+                        {
+                            frm.SetDefaultExtension(pExt);
+                        }
                     }
 
-                    var initialFileName = dialog.InitialFileName ?? "";
-                    fixed (char* fExt = initialFileName)
+                    suggestedFileName ??= "";
+                    fixed (char* fExt = suggestedFileName)
                     {
                         frm.SetFileName(fExt);
                     }
 
-                    var title = dialog.Title ?? "";
+                    title ??= "";
                     fixed (char* tExt = title)
                     {
                         frm.SetTitle(tExt);
                     }
 
-                    fixed (void* pFilters = FiltersToPointer(dialog.Filters, out var count))
+                    if (!openFolder)
                     {
-                        frm.SetFileTypes((ushort)count, pFilters);
+                        fixed (void* pFilters = FiltersToPointer(filters, out var count))
+                        {
+                            frm.SetFileTypes((ushort)count, pFilters);
+                            if (count > 0)
+                            {
+                                frm.SetFileTypeIndex(0);
+                            }
+                        }
                     }
 
-                    frm.SetFileTypeIndex(0);
-
-                    if (dialog.Directory != null)
+                    if (folder?.TryGetUri(out var folderPath) == true)
                     {
                         var riid = UnmanagedMethods.ShellIds.IShellItem;
-                        if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.Directory, IntPtr.Zero, ref riid, out var directoryShellItem)
+                        if (UnmanagedMethods.SHCreateItemFromParsingName(folderPath.LocalPath, IntPtr.Zero, ref riid, out var directoryShellItem)
                             == (uint)UnmanagedMethods.HRESULT.S_OK)
                         {
                             var proxy = MicroComRuntime.CreateProxyFor<IShellItem>(directoryShellItem, true);
@@ -89,18 +145,18 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    var showResult = frm.Show(hWnd);
+                    var showResult = frm.Show(_windowImpl.Handle!.Handle);
 
                     if ((uint)showResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
                     {
                         return result;
-                    } 
+                    }
                     else if ((uint)showResult != (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
                         throw new Win32Exception(showResult);
                     }
 
-                    if (openDialog?.AllowMultiple == true)
+                    if (allowMultiple)
                     {
                         using var fileOpenDialog = frm.QueryInterface<IFileOpenDialog>();
                         var shellItemArray = fileOpenDialog.Results;
@@ -115,7 +171,8 @@ namespace Avalonia.Win32
                                 results.Add(selected);
                             }
                         }
-                        result = results.ToArray();
+
+                        result = results;
                     }
                     else if (frm.Result is { } shellItem
                         && GetAbsoluteFilePath(shellItem) is { } singleResult)
@@ -127,71 +184,14 @@ namespace Avalonia.Win32
                 }
                 catch (COMException ex)
                 {
-                    throw new Win32Exception(ex.HResult);
+                    var message = new Win32Exception(ex.HResult).Message;
+                    throw new COMException(message, ex);
                 }
             })!;
         }
 
-        public unsafe Task<string?> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
-        {
-            return Task.Run(() =>
-            {
-                string? result = default;
-                try
-                {
-                    var hWnd = parent?.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
-                    var clsid = UnmanagedMethods.ShellIds.OpenFileDialog;
-                    var iid = UnmanagedMethods.ShellIds.IFileDialog;
-                    var frm = UnmanagedMethods.CreateInstance<IFileDialog>(ref clsid, ref iid);
 
-                    var options = frm.Options;
-                    options = FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS | DefaultDialogOptions;
-                    frm.SetOptions(options);
-
-                    var title = dialog.Title ?? "";
-                    fixed (char* tExt = title)
-                    {
-                        frm.SetTitle(tExt);
-                    }
-
-                    if (dialog.Directory != null)
-                    {
-                        var riid = UnmanagedMethods.ShellIds.IShellItem;
-                        if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.Directory, IntPtr.Zero, ref riid, out var directoryShellItem)
-                            == (uint)UnmanagedMethods.HRESULT.S_OK)
-                        {
-                            var proxy = MicroComRuntime.CreateProxyFor<IShellItem>(directoryShellItem, true);
-                            frm.SetFolder(proxy);
-                            frm.SetDefaultFolder(proxy);
-                        }
-                    }
-
-                    var showResult = frm.Show(hWnd);
-
-                    if ((uint)showResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
-                    {
-                        return result;
-                    }
-                    else if ((uint)showResult != (uint)UnmanagedMethods.HRESULT.S_OK)
-                    {
-                        throw new Win32Exception(showResult);
-                    }
-
-                    if (frm.Result is not null)
-                    {
-                        result = GetAbsoluteFilePath(frm.Result);
-                    }
-
-                    return result;
-                }
-                catch (COMException ex)
-                {
-                    throw new Win32Exception(ex.HResult);
-                }
-            });
-        }
-
-        private unsafe string? GetAbsoluteFilePath(IShellItem shellItem)
+        private static unsafe string? GetAbsoluteFilePath(IShellItem shellItem)
         {
             var pszString = new IntPtr(shellItem.GetDisplayName(SIGDN_FILESYSPATH));
             if (pszString != IntPtr.Zero)
@@ -208,13 +208,13 @@ namespace Avalonia.Win32
             return default;
         }
 
-        private unsafe byte[] FiltersToPointer(List<FileDialogFilter>? filters, out int lenght)
+        private static byte[] FiltersToPointer(IReadOnlyList<FilePickerFileType>? filters, out int length)
         {
             if (filters == null || filters.Count == 0)
             {
-                filters = new List<FileDialogFilter>
+                filters = new List<FilePickerFileType>
                 {
-                    new FileDialogFilter { Name = "All files", Extensions = new List<string> { "*" } }
+                    FilePickerFileTypes.All
                 };
             }
 
@@ -225,13 +225,18 @@ namespace Avalonia.Win32
             for (int i = 0; i < filters.Count; i++)
             {
                 var filter = filters[i];
+                if (filter.Patterns is null || !filter.Patterns.Any())
+                {
+                    continue;
+                }
+
                 var filterPtr = Marshal.AllocHGlobal(size);
                 try
                 {
                     var filterStr = new UnmanagedMethods.COMDLG_FILTERSPEC
                     {
                         pszName = filter.Name ?? string.Empty,
-                        pszSpec = string.Join(";", filter.Extensions.Select(e => "*." + e))
+                        pszSpec = string.Join(";", filter.Patterns)
                     };
 
                     Marshal.StructureToPtr(filterStr, filterPtr, false);
@@ -243,7 +248,7 @@ namespace Avalonia.Win32
                 }
             }
 
-            lenght = filters.Count;
+            length = filters.Count;
             return resultArr;
         }
     }
