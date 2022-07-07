@@ -5,50 +5,52 @@ namespace Avalonia.Media.TextFormatting.Unicode
 {
     public readonly struct Codepoint
     {
+        private readonly uint _value;
+
         /// <summary>
         /// The replacement codepoint that is used for non supported values.
         /// </summary>
         public static readonly Codepoint ReplacementCodepoint = new Codepoint('\uFFFD');
 
-        public Codepoint(int value)
+        public Codepoint(uint value)
         {
-            Value = value;
+            _value = value;
         }
 
         /// <summary>
         /// Get the codepoint's value.
         /// </summary>
-        public int Value { get; }
+        public uint Value => _value;
 
         /// <summary>
         /// Gets the <see cref="Unicode.GeneralCategory"/>.
         /// </summary>
-        public GeneralCategory GeneralCategory => UnicodeData.GetGeneralCategory(Value);
+        public GeneralCategory GeneralCategory => UnicodeData.GetGeneralCategory(_value);
 
         /// <summary>
         /// Gets the <see cref="Unicode.Script"/>.
         /// </summary>
-        public Script Script => UnicodeData.GetScript(Value);
+        public Script Script => UnicodeData.GetScript(_value);
 
         /// <summary>
         /// Gets the <see cref="Unicode.BidiClass"/>.
         /// </summary>
-        public BidiClass BiDiClass => UnicodeData.GetBiDiClass(Value);
+        public BidiClass BiDiClass => UnicodeData.GetBiDiClass(_value);
 
         /// <summary>
         /// Gets the <see cref="Unicode.BidiPairedBracketType"/>.
         /// </summary>
-        public BidiPairedBracketType PairedBracketType => UnicodeData.GetBiDiPairedBracketType(Value);
+        public BidiPairedBracketType PairedBracketType => UnicodeData.GetBiDiPairedBracketType(_value);
         
         /// <summary>
         /// Gets the <see cref="Unicode.LineBreakClass"/>.
         /// </summary>
-        public LineBreakClass LineBreakClass => UnicodeData.GetLineBreakClass(Value);
+        public LineBreakClass LineBreakClass => UnicodeData.GetLineBreakClass(_value);
 
         /// <summary>
         /// Gets the <see cref="GraphemeBreakClass"/>.
         /// </summary>
-        public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(Value);
+        public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(_value);
 
         /// <summary>
         /// Determines whether this <see cref="Codepoint"/> is a break char.
@@ -60,7 +62,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             get
             {
-                switch (Value)
+                switch (_value)
                 {
                     case '\u000A':
                     case '\u000B':
@@ -109,12 +111,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Codepoint GetCanonicalType(Codepoint codePoint)
         {
-            if (codePoint.Value == 0x3008)
+            if (codePoint._value == 0x3008)
             {
                 return new Codepoint(0x2329);
             }
 
-            if (codePoint.Value == 0x3009)
+            if (codePoint._value == 0x3009)
             {
                 return new Codepoint(0x232A);
             }
@@ -141,19 +143,19 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 return false;
             }
 
-            codepoint = UnicodeData.GetBiDiPairedBracket(Value);
+            codepoint = UnicodeData.GetBiDiPairedBracket(_value);
 
             return true;
         }
 
         public static implicit operator int(Codepoint codepoint)
         {
-            return codepoint.Value;
+            return (int)codepoint._value;
         }
 
         public static implicit operator uint(Codepoint codepoint)
         {
-            return (uint)codepoint.Value;
+            return codepoint._value;
         }
 
         /// <summary>
@@ -191,7 +193,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 if (0xDC00 <= low && low <= 0xDFFF)
                 {
                     count = 2;
-                    return new Codepoint((hi - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000);
+                    return new Codepoint((uint)((hi - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000));
                 }
 
                 return ReplacementCodepoint;
@@ -212,7 +214,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 if (0xD800 <= hi && hi <= 0xDBFF)
                 {
                     count = 2;
-                    return new Codepoint((hi - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000);
+                    return new Codepoint((uint)((hi - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000));
                 }
 
                 return ReplacementCodepoint;
@@ -220,5 +222,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             return new Codepoint(code);
         }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="value"/> is between
+        /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsInRangeInclusive(Codepoint cp, uint lowerBound, uint upperBound)
+            => (cp._value - lowerBound) <= (upperBound - lowerBound);
     }
 }

@@ -15,9 +15,17 @@ namespace Avalonia.Styling
 
         protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
-            if (parent is Style s && s.Selector is Selector selector)
+            if (parent is Style s && s.Selector is not null)
             {
-                return selector.Match(control, (parent as Style)?.Parent, subscribe);
+                return s.Selector.Match(control, s.Parent, subscribe);
+            }
+            else if (parent is ControlTheme theme)
+            {
+                if (theme.TargetType is null)
+                    throw new InvalidOperationException("ControlTheme has no TargetType.");
+                return theme.TargetType.IsAssignableFrom(control.StyleKey) ?
+                    SelectorMatch.AlwaysThisType :
+                    SelectorMatch.NeverThisType;
             }
 
             throw new InvalidOperationException(
@@ -25,6 +33,6 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => null;
-        internal override bool HasValidNestingSelector() => true;
+        protected override Selector? MovePreviousOrParent() => null;
     }
 }

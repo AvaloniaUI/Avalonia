@@ -17,7 +17,7 @@ namespace Avalonia.IntegrationTests.Appium
             tab.Click();
         }
 
-        [PlatformFact(SkipOnWindows = true)]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void View_Menu_Select_Button_Tab()
         {
             var tabs = _session.FindElementByAccessibilityId("MainTabs");

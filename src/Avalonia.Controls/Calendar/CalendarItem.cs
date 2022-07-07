@@ -189,7 +189,7 @@ namespace Avalonia.Controls.Primitives
 
                 EventHandler<PointerPressedEventArgs> cellMouseLeftButtonDown = Cell_MouseLeftButtonDown;
                 EventHandler<PointerReleasedEventArgs> cellMouseLeftButtonUp = Cell_MouseLeftButtonUp;
-                EventHandler<PointerEventArgs> cellMouseEnter = Cell_MouseEnter;
+                EventHandler<PointerEventArgs> cellMouseEntered = Cell_MouseEntered;
                 EventHandler<RoutedEventArgs> cellClick = Cell_Click;
 
                 for (int i = 1; i < Calendar.RowsPerMonth; i++)
@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Primitives
                         cell.SetValue(Grid.ColumnProperty, j);
                         cell.CalendarDayButtonMouseDown += cellMouseLeftButtonDown;
                         cell.CalendarDayButtonMouseUp += cellMouseLeftButtonUp;
-                        cell.PointerEnter += cellMouseEnter;
+                        cell.PointerEntered += cellMouseEntered;
                         cell.Click += cellClick;
                         children.Add(cell);
                     }
@@ -222,7 +222,7 @@ namespace Avalonia.Controls.Primitives
 
                 EventHandler<PointerPressedEventArgs> monthCalendarButtonMouseDown = Month_CalendarButtonMouseDown;
                 EventHandler<PointerReleasedEventArgs> monthCalendarButtonMouseUp = Month_CalendarButtonMouseUp;
-                EventHandler<PointerEventArgs> monthMouseEnter = Month_MouseEnter;
+                EventHandler<PointerEventArgs> monthMouseEntered = Month_MouseEntered;
 
                 for (int i = 0; i < Calendar.RowsPerYear; i++)
                 {
@@ -238,7 +238,7 @@ namespace Avalonia.Controls.Primitives
                         month.SetValue(Grid.ColumnProperty, j);
                         month.CalendarLeftMouseButtonDown += monthCalendarButtonMouseDown;
                         month.CalendarLeftMouseButtonUp += monthCalendarButtonMouseUp;
-                        month.PointerEnter += monthMouseEnter;
+                        month.PointerEntered += monthMouseEntered;
                         children.Add(month);
                     }
                 }
@@ -876,7 +876,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        internal void Cell_MouseEnter(object? sender, PointerEventArgs e)
+        internal void Cell_MouseEntered(object? sender, PointerEventArgs e)
         {
             if (Owner != null)
             {
@@ -1162,7 +1162,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void Month_MouseEnter(object? sender, PointerEventArgs e)
+        private void Month_MouseEntered(object? sender, PointerEventArgs e)
         {
             if (_isMouseLeftButtonDownYearView)
             {

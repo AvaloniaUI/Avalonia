@@ -894,6 +894,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Foo", toolTip.Content);
         }
 
+        [Fact]
+        public void AddChild_Child_Is_Set()
+        {
+            var xaml = @"<ObjectWithAddChild  xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml'>Foo</ObjectWithAddChild>";
+
+            var target = AvaloniaRuntimeXamlLoader.Parse<ObjectWithAddChild>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Equal("Foo", target.Child);
+        }
+
+        [Fact]
+        public void AddChildOfT_Child_Is_Set()
+        {
+            var xaml = @"<ObjectWithAddChildOfT  xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml'>Foo</ObjectWithAddChildOfT>";
+
+            var target = AvaloniaRuntimeXamlLoader.Parse<ObjectWithAddChildOfT>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Null(target.Child);
+            Assert.Equal("Foo", target.Text);
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
@@ -913,6 +936,34 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
     }
+
+    public class ObjectWithAddChild : IAddChild
+    {
+        public object Child { get; set; }
+
+        void IAddChild.AddChild(object child)
+        {
+            Child = child;
+        }
+    }
+
+    public class ObjectWithAddChildOfT : IAddChild<string>
+    {
+        public string Text { get; set; }
+
+        public object Child { get; set; }
+
+        void IAddChild.AddChild(object child)
+        {
+            Child = child;
+        }
+
+        void IAddChild<string>.AddChild(string child)
+        {
+            Text = child;
+        }
+    }
+
     public class BasicTestsAttachedPropertyHolder
     {
         public static AvaloniaProperty<string> FooProperty =

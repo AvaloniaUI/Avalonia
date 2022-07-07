@@ -439,7 +439,7 @@ namespace Avalonia.Media.TextFormatting
                 var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-                if(textLine == null || textLine.Length == 0)
+                if(textLine == null || textLine.Length == 0 || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
                 {
                     if(previousLine != null && previousLine.NewLineLength  > 0)
                     {
@@ -500,6 +500,35 @@ namespace Avalonia.Media.TextFormatting
             }
 
             Bounds = new Rect(left, 0, width, height);
+
+            if(_paragraphProperties.TextAlignment == TextAlignment.Justify)
+            {
+                var whitespaceWidth = 0d;
+
+                foreach (var line in textLines)
+                {
+                    var lineWhitespaceWidth = line.Width - line.WidthIncludingTrailingWhitespace;
+
+                    if(lineWhitespaceWidth > whitespaceWidth)
+                    {
+                        whitespaceWidth = lineWhitespaceWidth;
+                    }
+                }
+
+                var justificationWidth = width - whitespaceWidth;
+
+                if(justificationWidth > 0)
+                {
+                    var justificationProperties = new InterWordJustification(justificationWidth);
+
+                    for (var i = 0; i < textLines.Count - 1; i++)
+                    {
+                        var line = textLines[i];
+
+                        line.Justify(justificationProperties);
+                    }
+                }
+            }
 
             return textLines;
         }

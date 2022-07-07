@@ -25,7 +25,7 @@ namespace Avalonia.Diagnostics.Views
         {
             if (sender is DataGrid grid && grid.DataContext is ControlDetailsViewModel controlDetails)
             {
-                controlDetails.ApplySelectedProperty();
+                controlDetails.NavigateToSelectedProperty();
             }
             
         }

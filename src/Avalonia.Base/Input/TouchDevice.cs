@@ -40,14 +40,14 @@ namespace Avalonia.Input
         {
             if (ev.Handled || _disposed)
                 return;
-            var args = (RawTouchEventArgs)ev;
-            if (!_pointers.TryGetValue(args.TouchPointId, out var pointer))
+            var args = (RawPointerEventArgs)ev;
+            if (!_pointers.TryGetValue(args.RawPointerId, out var pointer))
             {
                 if (args.Type == RawPointerEventType.TouchEnd)
                     return;
                 var hit = args.InputHitTestResult;
 
-                _pointers[args.TouchPointId] = pointer = new Pointer(Pointer.GetNextFreeId(),
+                _pointers[args.RawPointerId] = pointer = new Pointer(Pointer.GetNextFreeId(),
                     PointerType.Touch, _pointers.Count == 0);
                 pointer.Capture(hit);
             }
@@ -88,7 +88,7 @@ namespace Avalonia.Input
 
             if (args.Type == RawPointerEventType.TouchEnd)
             {
-                _pointers.Remove(args.TouchPointId);
+                _pointers.Remove(args.RawPointerId);
                 using (pointer)
                 {
                     target.RaiseEvent(new PointerReleasedEventArgs(target, pointer,
@@ -101,7 +101,7 @@ namespace Avalonia.Input
 
             if (args.Type == RawPointerEventType.TouchCancel)
             {
-                _pointers.Remove(args.TouchPointId);
+                _pointers.Remove(args.RawPointerId);
                 using (pointer)
                     pointer.Capture(null);
                 _lastPointer = null;
@@ -129,8 +129,7 @@ namespace Avalonia.Input
 
         public IPointer? TryGetPointer(RawPointerEventArgs ev)
         {
-            return ev is RawTouchEventArgs args
-                && _pointers.TryGetValue(args.TouchPointId, out var pointer)
+            return _pointers.TryGetValue(ev.RawPointerId, out var pointer)
                 ? pointer
                 : null;
         }

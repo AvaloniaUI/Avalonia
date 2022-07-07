@@ -15,9 +15,15 @@ namespace Avalonia.Media.TextFormatting
         /// The contained text runs.
         /// </value>
         public abstract IReadOnlyList<TextRun> TextRuns { get; }
-        
+
+        /// <summary>
+        /// Gets the first TextSource position of the current line.
+        /// </summary>
         public abstract int FirstTextSourceIndex { get; }
 
+        /// <summary>
+        /// Gets the total number of TextSource positions of the current line.
+        /// </summary>
         public abstract int Length { get; }
 
         /// <summary>
@@ -56,7 +62,7 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a value that indicates whether content of the line overflows the specified paragraph width.
         /// </summary>
         /// <returns>
-        /// <c>true</c>, it the line overflows the specified paragraph width; otherwise, <c>false</c>.
+        /// <c>true</c>, the line overflows the specified paragraph width; otherwise, <c>false</c>.
         /// </returns>
         public abstract bool HasOverflowed { get; }
 
@@ -75,7 +81,7 @@ namespace Avalonia.Media.TextFormatting
         /// The number of newline characters.
         /// </returns>
         public abstract int NewLineLength { get; }
-        
+
         /// <summary>
         /// Gets the distance that black pixels extend beyond the bottom alignment edge of a line.
         /// </summary>
@@ -150,6 +156,15 @@ namespace Avalonia.Media.TextFormatting
         public abstract TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList);
 
         /// <summary>
+        /// Create a justified line based on justification text properties.
+        /// </summary>
+        /// <param name="justificationProperties">An object that represent the justification text properties.</param>
+        /// <returns>
+        /// A <see cref="TextLine"/> value that represents a justified line that can be displayed.
+        /// </returns>
+        public abstract void Justify(JustificationProperties justificationProperties);
+
+        /// <summary>
         /// Gets the character hit corresponding to the specified distance from the beginning of the line.
         /// </summary>
         /// <param name="distance">A <see cref="double"/> value that represents the distance from the beginning of the line.</param>
@@ -192,50 +207,5 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textLength">number of characters of the specified range</param>
         /// <returns>an array of bounding rectangles.</returns>
         public abstract IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceCharacterIndex, int textLength);
-        
-        /// <summary>
-        /// Gets the text line offset x.
-        /// </summary>
-        /// <param name="width">The line width.</param>
-        /// <param name="widthIncludingTrailingWhitespace">The paragraph width including whitespace.</param>
-        /// <param name="paragraphWidth">The paragraph width.</param>
-        /// <param name="textAlignment">The text alignment.</param>
-        /// <param name="flowDirection">The flow direction of the line.</param>
-        /// <returns>The paragraph offset.</returns>
-        internal static double GetParagraphOffsetX(double width, double widthIncludingTrailingWhitespace,
-            double paragraphWidth, TextAlignment textAlignment, FlowDirection flowDirection)
-        {
-            if (double.IsPositiveInfinity(paragraphWidth))
-            {
-                return 0;
-            }
-
-            if (flowDirection == FlowDirection.LeftToRight)
-            {
-                switch (textAlignment)
-                {
-                    case TextAlignment.Center:
-                        return Math.Max(0, (paragraphWidth - width) / 2);
-
-                    case TextAlignment.Right:
-                        return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
-
-                    default:
-                        return 0;
-                }
-            }
-
-            switch (textAlignment)
-            {
-                case TextAlignment.Center:
-                    return Math.Max(0, (paragraphWidth - width) / 2);
-
-                case TextAlignment.Right:
-                    return 0;
-
-                default:
-                    return Math.Max(0, paragraphWidth - widthIncludingTrailingWhitespace);
-            }
-        }
     }
 }
