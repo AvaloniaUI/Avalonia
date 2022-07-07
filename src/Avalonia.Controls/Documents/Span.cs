@@ -14,25 +14,27 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
-        public static readonly DirectProperty<Span, InlineCollection> InlinesProperty =
-            AvaloniaProperty.RegisterDirect<Span, InlineCollection>(
-                nameof(Inlines),
-                o => o.Inlines);
+        public static readonly StyledProperty<InlineCollection> InlinesProperty =
+            AvaloniaProperty.Register<Span, InlineCollection>(
+                nameof(Inlines));
 
-        /// <summary>
-        /// Initializes a new instance of a Span element.
-        /// </summary>
         public Span()
         {
-            Inlines = new InlineCollection(this);
-            Inlines.Invalidated += (s, e) => InlineHost?.Invalidate();
+            Inlines = new InlineCollection
+            {
+                Parent = this
+            };
         }
 
         /// <summary>
         /// Gets or sets the inlines.
         /// </summary>
         [Content]
-        public InlineCollection Inlines { get; }
+        public InlineCollection Inlines
+        {
+            get => GetValue(InlinesProperty);
+            set => SetValue(InlinesProperty, value);
+        }
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
@@ -52,7 +54,7 @@ namespace Avalonia.Controls.Documents
                     var textCharacters = new TextCharacters(text.AsMemory(), textRunProperties);
 
                     textRuns.Add(textCharacters);
-                }          
+                }
             }
         }
 
@@ -65,10 +67,52 @@ namespace Avalonia.Controls.Documents
                     inline.AppendText(stringBuilder);
                 }
             }
-
-            if (Inlines.Text is string text)
+            else
             {
-                stringBuilder.Append(text);
+                if (Inlines.Text is string text)
+                {
+                    stringBuilder.Append(text);
+                }
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            switch (change.Property.Name)
+            {
+                case nameof(InlinesProperty):
+                    OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
+                    InlineHost?.Invalidate();
+                    break;
+            }
+        }
+
+        internal override void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+            base.OnInlineHostChanged(oldValue, newValue);
+
+            if(Inlines is not null)
+            {
+                Inlines.InlineHost = newValue;
+            }
+        }
+
+        private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
+        {
+            if (oldValue is not null)
+            {
+                oldValue.Parent = null;
+                oldValue.InlineHost = null;
+                oldValue.Invalidated -= (s, e) => InlineHost?.Invalidate();
+            }
+
+            if (newValue is not null)
+            {
+                newValue.Parent = this;
+                newValue.InlineHost = InlineHost;
+                newValue.Invalidated += (s, e) => InlineHost?.Invalidate();
             }
         }
     }
