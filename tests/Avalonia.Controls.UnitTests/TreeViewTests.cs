@@ -73,6 +73,35 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Items_Should_Be_Created_Using_ItemConatinerTheme_If_Present()
+        {
+            TreeView target;
+            var theme = new ControlTheme();
+
+            var root = new TestRoot
+            {
+                Child = target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = CreateTestTreeData(),
+                    ItemContainerTheme = theme,
+                    ItemTemplate = new FuncTreeDataTemplate<Node>(
+                        (_, __) => new Canvas(),
+                        x => x.Children),
+                }
+            };
+
+            ApplyTemplates(target);
+
+            var items = target.ItemContainerGenerator.Index.Containers
+                .OfType<TreeViewItem>()
+                .ToList();
+
+            Assert.Equal(5, items.Count);
+            Assert.All(items, x => Assert.Same(theme, x.ItemContainerTheme));
+        }
+
+        [Fact]
         public void Root_ItemContainerGenerator_Containers_Should_Be_Root_Containers()
         {
             var target = new TreeView
