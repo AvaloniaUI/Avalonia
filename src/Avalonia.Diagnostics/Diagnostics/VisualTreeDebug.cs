@@ -10,7 +10,7 @@ namespace Avalonia.Diagnostics
     {
         public static string PrintVisualTree(IVisual visual)
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
             PrintVisualTree(visual, result, 0);
             return result.ToString();
         }

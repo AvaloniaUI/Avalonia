@@ -8,6 +8,9 @@
   </PropertyGroup>
   <Import Project="IncludeXamlIlSre.props" />
   <ItemGroup>
+    <Compile Include="..\..\Avalonia.Base\StringBuilderCache.cs" Link="StringBuilderCache.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>

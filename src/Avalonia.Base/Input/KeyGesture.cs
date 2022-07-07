@@ -106,7 +106,7 @@ namespace Avalonia.Input
 
         public override string ToString()
         {
-            var s = new StringBuilder();
+            var s = StringBuilderCache.Acquire();
 
             static void Plus(StringBuilder s)
             {
@@ -142,7 +142,7 @@ namespace Avalonia.Input
             Plus(s);
             s.Append(Key);
 
-            return s.ToString();
+            return StringBuilderCache.GetStringAndRelease(s);
         }
 
         public bool Matches(KeyEventArgs keyEvent) =>

@@ -144,7 +144,7 @@ namespace Avalonia.Styling
 
         private string BuildSelectorString()
         {
-            var builder = new StringBuilder();
+            var builder = StringBuilderCache.Acquire();
 
             if (_previous != null)
             {
@@ -184,7 +184,7 @@ namespace Avalonia.Styling
                 }
             }
 
-            return builder.ToString();
+            return StringBuilderCache.GetStringAndRelease(builder);
         }
     }
 }

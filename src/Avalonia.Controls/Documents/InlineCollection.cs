@@ -78,14 +78,14 @@ namespace Avalonia.Controls.Documents
                     return _text;
                 }
 
-                var builder = new StringBuilder();
+                var builder = StringBuilderCache.Acquire();
 
                 foreach (var inline in this)
                 {
                     inline.AppendText(builder);
                 }
 
-                return builder.ToString();
+                return StringBuilderCache.GetStringAndRelease(builder);
             }
             set
             {

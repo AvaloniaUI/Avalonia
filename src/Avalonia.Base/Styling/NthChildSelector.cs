@@ -110,7 +110,8 @@ namespace Avalonia.Styling
         public override string ToString()
         {
             var expectedCapacity = NthLastChildSelectorName.Length + 8;
-            var stringBuilder = new StringBuilder(_previous?.ToString(), expectedCapacity);
+            var stringBuilder =  StringBuilderCache.Acquire(expectedCapacity);
+            stringBuilder.Append(_previous?.ToString());
             
             stringBuilder.Append(':');
             stringBuilder.Append(_reversed ? NthLastChildSelectorName : NthChildSelectorName);
@@ -140,7 +141,7 @@ namespace Avalonia.Styling
 
             stringBuilder.Append(')');
 
-            return stringBuilder.ToString();
+            return StringBuilderCache.GetStringAndRelease(stringBuilder);
         }
     }
 }

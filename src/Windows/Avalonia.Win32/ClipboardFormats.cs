@@ -35,9 +35,9 @@ namespace Avalonia.Win32
 
         private static string QueryFormatName(ushort format)
         {
-            StringBuilder sb = new StringBuilder(MAX_FORMAT_NAME_LENGTH);
+            var sb = StringBuilderCache.Acquire(MAX_FORMAT_NAME_LENGTH);
             if (UnmanagedMethods.GetClipboardFormatName(format, sb, sb.Capacity) > 0)
-                return sb.ToString();
+                return StringBuilderCache.GetStringAndRelease(sb);
             return null;
         }
 

@@ -109,7 +109,7 @@ namespace Avalonia.Controls.Primitives
             // Cache results for next time as well
             if (closestKnownColor != KnownColor.None)
             {
-                StringBuilder sb = new StringBuilder(); 
+                var sb = StringBuilderCache.Acquire();
                 string name = closestKnownColor.ToString();
 
                 // Add spaces converting PascalCase to human-readable names
@@ -124,7 +124,7 @@ namespace Avalonia.Controls.Primitives
                     sb.Append(name[i]);
                 }
 
-                string displayName = sb.ToString();
+                string displayName = StringBuilderCache.GetStringAndRelease(sb);
 
                 lock (cacheMutex)
                 {

@@ -103,11 +103,11 @@ namespace Avalonia.Win32
                 for (int i = 0; i < fileCount; i++)
                 {
                     int pathLen = UnmanagedMethods.DragQueryFile(hGlobal, i, null, 0);
-                    StringBuilder sb = new StringBuilder(pathLen+1);
+                    var sb = StringBuilderCache.Acquire(pathLen+1);
 
                     if (UnmanagedMethods.DragQueryFile(hGlobal, i, sb, sb.Capacity) == pathLen)
                     {
-                        files.Add(sb.ToString());
+                        files.Add(StringBuilderCache.GetStringAndRelease(sb));
                     }
                 }
             }
