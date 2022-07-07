@@ -95,6 +95,50 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Container_Should_Have_Theme_Set_To_ItemContainerTheme()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new[] { "Foo", "Bar", "Baz " };
+                var theme = new ControlTheme();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = items,
+                    ItemContainerTheme = theme,
+                };
+
+                Prepare(target);
+
+                var container = (ListBoxItem)target.Presenter.Panel.Children[0];
+
+                Assert.Same(container.Theme, theme);
+            }
+        }
+
+        [Fact]
+        public void Inline_Item_Should_Have_Theme_Set_To_ItemContainerTheme()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new[] { "Foo", "Bar", "Baz " };
+                var theme = new ControlTheme();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = new[] { new ListBoxItem() },
+                    ItemContainerTheme = theme,
+                };
+
+                Prepare(target);
+
+                var container = (ListBoxItem)target.Presenter.Panel.Children[0];
+
+                Assert.Same(container.Theme, theme);
+            }
+        }
+
+        [Fact]
         public void LogicalChildren_Should_Be_Set_For_DataTemplate_Generated_Items()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
