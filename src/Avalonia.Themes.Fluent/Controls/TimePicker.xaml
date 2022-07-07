@@ -82,11 +82,11 @@
           <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForegroundDisabled}" />
         </Style>
       </Style>-->
-      <Style Selector="^:disabled /template/">
-        <Style Selector="^ ContentPresenter#HeaderContentPresenter">
+      <Style Selector="^:disabled">
+        <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource TimePickerHeaderForegroundDisabled}" />
         </Style>
-        <Style Selector="^ Rectangle">
+        <Style Selector="^ /template/ Rectangle">
           <Setter Property="Fill" Value="{DynamicResource TimePickerSpacerFillDisabled}" />
         </Style>
       </Style>

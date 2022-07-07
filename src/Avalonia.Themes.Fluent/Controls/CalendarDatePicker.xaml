@@ -106,13 +106,13 @@
                       <Setter Property="BorderBrush" Value="Transparent"/>
                       <Setter Property="BorderThickness" Value="0" />
                     </Style>
-                    <Style Selector="TextBox#PART_TextBox:disabled /template/">
-                      <Style Selector="^ Border#PART_BorderElement">
+                    <Style Selector="TextBox#PART_TextBox:disabled">
+                      <Style Selector="^ /template/ Border#PART_BorderElement">
                         <!-- By default the TextBox has its own disabled state, override this to make the border background show through -->
                         <Setter Property="Background" Value="Transparent" />
                         <Setter Property="BorderBrush" Value="Transparent" />
                       </Style>
-                      <Style Selector="^ TextBlock#PART_Watermark, ^ TextBlock#PART_FloatingWatermark">
+                      <Style Selector="^ /template/ TextBlock#PART_Watermark, ^ TextBlock#PART_FloatingWatermark">
                         <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerTextForegroundDisabled}" />
                       </Style>
                     </Style>
@@ -152,13 +152,13 @@
       </Style>
 
       <!-- Disabled State -->
-      <Style Selector="^:disabled /template/">
-        <Style Selector="^ Border#Background">
+      <Style Selector="^:disabled">
+        <Style Selector="^ /template/ Border#Background">
           <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackgroundDisabled}" />
           <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrushDisabled}" />
         </Style>
         
-        <Style Selector="^ Button#PART_Button">
+        <Style Selector="^ /template/ Button#PART_Button">
           <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerCalendarGlyphForegroundDisabled}" />
         </Style>
 

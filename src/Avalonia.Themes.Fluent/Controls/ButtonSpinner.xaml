@@ -87,20 +87,20 @@
         <Setter Property="BorderBrush" Value="{DynamicResource SystemErrorTextColor}" />
       </Style>
 
-      <Style Selector="^:left /template/">
-        <Style Selector="^ StackPanel#PART_SpinnerPanel">
+      <Style Selector="^:left">
+        <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
           <Setter Property="Grid.Column" Value="0" />
         </Style>
-        <Style Selector="^ RepeatButton.ButtonSpinnerRepeatButton">
+        <Style Selector="^ /template/ RepeatButton.ButtonSpinnerRepeatButton">
           <Setter Property="BorderThickness" Value="{Binding $parent[ButtonSpinner].BorderThickness, Converter={StaticResource ButtonSpinner_OnlyRightThinknessConverter}}" />
         </Style>
       </Style>
 
-      <Style Selector="^:right /template/">
-        <Style Selector="^ StackPanel#PART_SpinnerPanel">
+      <Style Selector="^:right">
+        <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
           <Setter Property="Grid.Column" Value="2" />
         </Style>
-        <Style Selector="^ RepeatButton.ButtonSpinnerRepeatButton">
+        <Style Selector="^ /template/ RepeatButton.ButtonSpinnerRepeatButton">
           <Setter Property="BorderThickness" Value="{Binding $parent[ButtonSpinner].BorderThickness, Converter={StaticResource ButtonSpinner_OnlyLeftThinknessConverter}}" />
         </Style>
       </Style>

@@ -63,64 +63,64 @@
       </Setter>
 
       <!-- Unchecked PointerOver State -->
-      <Style Selector="^:pointerover /template/">
-        <Style Selector="^ ContentPresenter#ContentPresenter">
+      <Style Selector="^:pointerover">
+        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedPointerOver}" />
         </Style>
 
-        <Style Selector="^ Border#PART_Border">
+        <Style Selector="^ /template/ Border#PART_Border">
           <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUncheckedPointerOver}" />
           <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUncheckedPointerOver}" />
         </Style>
 
-        <Style Selector="^ Border#NormalRectangle">
+        <Style Selector="^ /template/ Border#NormalRectangle">
           <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeUncheckedPointerOver}" />
           <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillUncheckedPointerOver}" />
         </Style>
 
-        <Style Selector="^ Path#CheckGlyph">
+        <Style Selector="^ /template/ Path#CheckGlyph">
           <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundUncheckedPointerOver}" />
         </Style>
       </Style>
 
       <!-- Unchecked Pressed State -->
-      <Style Selector="^:pressed /template/">
-        <Style Selector="^ ContentPresenter#ContentPresenter">
+      <Style Selector="^:pressed">
+        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedPressed}" />
         </Style>
 
-        <Style Selector="^ Border#PART_Border">
+        <Style Selector="^ /template/ Border#PART_Border">
           <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUncheckedPressed}" />
           <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUncheckedPressed}" />
         </Style>
 
-        <Style Selector="^ Border#NormalRectangle">
+        <Style Selector="^ /template/ Border#NormalRectangle">
           <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeUncheckedPressed}" />
           <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillUncheckedPressed}" />
         </Style>
 
-        <Style Selector="^ Path#CheckGlyph">
+        <Style Selector="^ /template/ Path#CheckGlyph">
           <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundUncheckedPressed}" />
         </Style>
       </Style>
 
       <!-- Unchecked Disabled state -->
-      <Style Selector="^:disabled /template/">
-        <Style Selector="^ ContentPresenter#ContentPresenter">
+      <Style Selector="^:disabled">
+        <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUncheckedDisabled}" />
         </Style>
 
-        <Style Selector="^ Border#PART_Border">
+        <Style Selector="^ /template/ Border#PART_Border">
           <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUncheckedDisabled}" />
           <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUncheckedDisabled}" />
         </Style>
 
-        <Style Selector="^ Border#NormalRectangle">
+        <Style Selector="^ /template/ Border#NormalRectangle">
           <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeUncheckedDisabled}" />
           <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillUncheckedDisabled}" />
         </Style>
 
-        <Style Selector="^ Path#CheckGlyph">
+        <Style Selector="^ /template/ Path#CheckGlyph">
           <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundUncheckedDisabled}" />
         </Style>
       </Style>
@@ -145,64 +145,64 @@
         </Style>
 
         <!-- Checked PointerOver State -->
-        <Style Selector="^:pointerover /template/">
-          <Style Selector="^ ContentPresenter#ContentPresenter">
+        <Style Selector="^:pointerover">
+          <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundCheckedPointerOver}" />
           </Style>
 
-          <Style Selector="^ Border#PART_Border">
+          <Style Selector="^ /template/ Border#PART_Border">
             <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundCheckedPointerOver}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushCheckedPointerOver}" />
           </Style>
 
-          <Style Selector="^ Border#NormalRectangle">
+          <Style Selector="^ /template/ Border#NormalRectangle">
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeCheckedPointerOver}" />
             <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillCheckedPointerOver}" />
           </Style>
 
-          <Style Selector="^ Path#CheckGlyph">
+          <Style Selector="^ /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundCheckedPointerOver}" />
           </Style>
         </Style>
 
         <!-- Checked Pressed State -->
-        <Style Selector="^:pressed /template/">
-          <Style Selector="^ ContentPresenter#ContentPresenter">
+        <Style Selector="^:pressed">
+          <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundCheckedPressed}" />
           </Style>
 
-          <Style Selector="^ Border#PART_Border">
+          <Style Selector="^ /template/ Border#PART_Border">
             <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundCheckedPressed}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushCheckedPressed}" />
           </Style>
 
-          <Style Selector="^ Border#NormalRectangle">
+          <Style Selector="^ /template/ Border#NormalRectangle">
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeCheckedPressed}" />
             <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillCheckedPressed}" />
           </Style>
 
-          <Style Selector="^ Path#CheckGlyph">
+          <Style Selector="^ /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundCheckedPressed}" />
           </Style>
         </Style>
 
         <!-- Checked Disabled State -->
-        <Style Selector="^:disabled /template/">
+        <Style Selector="^:disabled">
           <Style Selector="^ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundCheckedDisabled}" />
           </Style>
 
-          <Style Selector="^ Border#PART_Border">
+          <Style Selector="^ /template/ Border#PART_Border">
             <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundCheckedDisabled}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushCheckedDisabled}" />
           </Style>
 
-          <Style Selector="^ Border#NormalRectangle">
+          <Style Selector="^ /template/ Border#NormalRectangle">
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeCheckedDisabled}" />
             <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillCheckedDisabled}" />
           </Style>
 
-          <Style Selector="^ Path#CheckGlyph">
+          <Style Selector="^ /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundCheckedDisabled}" />
           </Style>
         </Style>
@@ -227,64 +227,64 @@
         </Style>
 
         <!-- Indeterminate PointerOver State -->
-        <Style Selector="^:pointerover /template/">
-          <Style Selector="^ ContentPresenter#ContentPresenter">
+        <Style Selector="^:pointerover">
+          <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminatePointerOver}" />
           </Style>
 
-          <Style Selector="^ Border#PART_Border">
+          <Style Selector="^ /template/ Border#PART_Border">
             <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundIndeterminatePointerOver}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushIndeterminatePointerOver}" />
           </Style>
 
-          <Style Selector="^ Border#NormalRectangle">
+          <Style Selector="^ /template/ Border#NormalRectangle">
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeIndeterminatePointerOver}" />
             <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillIndeterminatePointerOver}" />
           </Style>
 
-          <Style Selector="^ Path#CheckGlyph">
+          <Style Selector="^ /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundIndeterminatePointerOver}" />
           </Style>
         </Style>
 
         <!-- Indeterminate Pressed State -->
-        <Style Selector="^:pressed /template/">
-          <Style Selector="^ ContentPresenter#ContentPresenter">
+        <Style Selector="^:pressed">
+          <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminatePressed}" />
           </Style>
 
-          <Style Selector="^ Border#PART_Border">
+          <Style Selector="^ /template/ Border#PART_Border">
             <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundIndeterminatePressed}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushIndeterminatePressed}" />
           </Style>
 
-          <Style Selector="^ Border#NormalRectangle">
+          <Style Selector="^ /template/ Border#NormalRectangle">
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeIndeterminatePressed}" />
             <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillIndeterminatePressed}" />
           </Style>
 
-          <Style Selector="^ Path#CheckGlyph">
+          <Style Selector="^ /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundIndeterminatePressed}" />
           </Style>
         </Style>
 
         <!-- Indeterminate Disabled State -->
-        <Style Selector="^:disabled /template/">
-          <Style Selector="^ ContentPresenter#ContentPresenter">
+        <Style Selector="^:disabled">
+          <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminateDisabled}" />
           </Style>
 
-          <Style Selector="^ Border#PART_Border">
+          <Style Selector="^ /template/ Border#PART_Border">
             <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundIndeterminateDisabled}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushIndeterminateDisabled}" />
           </Style>
 
-          <Style Selector="^ Border#NormalRectangle">
+          <Style Selector="^ /template/ Border#NormalRectangle">
             <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeIndeterminateDisabled}" />
             <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillIndeterminateDisabled}" />
           </Style>
 
-          <Style Selector="^ Path#CheckGlyph">
+          <Style Selector="^ /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundIndeterminateDisabled}" />
           </Style>
         </Style>

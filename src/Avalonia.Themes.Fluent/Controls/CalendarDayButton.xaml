@@ -84,11 +84,11 @@
       </Style>
 
       <!-- WinUI calls this OutOfFocus -->
-      <Style Selector="^:inactive /template/">
-        <Style Selector="^ Border#Root">
+      <Style Selector="^:inactive">
+        <Style Selector="^ /template/ Border#Root">
           <Setter Property="Background" Value="{DynamicResource CalendarViewOutOfScopeBackground}" />
         </Style>
-        <Style Selector="^ ContentControl#Content">
+        <Style Selector="^ /template/ ContentControl#Content">
           <Setter Property="Foreground" Value="{DynamicResource CalendarViewOutOfScopeForeground}" />
         </Style>
       </Style>

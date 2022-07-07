@@ -144,17 +144,15 @@
       </Setter>
 
       <!--  Normal State  -->
-      <Style Selector="^ /template/">
-        <Style Selector="^ TextBlock#PlaceholderTextBlock">
-          <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
-        </Style>
-        <Style Selector="^ Border#HighlightBackground">
-          <Setter Property="IsVisible" Value="False" />
-        </Style>
-        <Style Selector="^ PathIcon#DropDownGlyph">
-          <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
-          <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
-        </Style>
+      <Style Selector="^ /template/ TextBlock#PlaceholderTextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
+      </Style>
+      <Style Selector="^ /template/ Border#HighlightBackground">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+      <Style Selector="^ /template/ PathIcon#DropDownGlyph">
+        <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
+        <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
       </Style>
 
       <!--  PointerOver State  -->
@@ -175,51 +173,51 @@
       </Style>
 
       <!--  Focus Pressed State  -->
-      <Style Selector="^:focused:pressed /template/">
-        <Style Selector="^ ContentControl#ContentPresenter">
+      <Style Selector="^:focused:pressed">
+        <Style Selector="^ /template/ ContentControl#ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocusedPressed}" />
         </Style>
-        <Style Selector="^ TextBlock#PlaceholderTextBlock">
+        <Style Selector="^ /template/ TextBlock#PlaceholderTextBlock">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
         </Style>
-        <Style Selector="^ PathIcon#DropDownGlyph">
+        <Style Selector="^ /template/ PathIcon#DropDownGlyph">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
         </Style>
       </Style>
 
       <!--  Focused State  -->
-      <Style Selector="^:focus-visible /template/">
-        <Style Selector="^ Border#HighlightBackground">
+      <Style Selector="^:focus-visible">
+        <Style Selector="^ /template/ Border#HighlightBackground">
           <Setter Property="IsVisible" Value="True" />
           <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBackgroundBorderBrushFocused}" />
         </Style>
-        <Style Selector="^ ContentControl#ContentPresenter">
+        <Style Selector="^ /template/ ContentControl#ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
         </Style>
-        <Style Selector="^ TextBlock#PlaceholderTextBlock">
+        <Style Selector="^ /template/ TextBlock#PlaceholderTextBlock">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
         </Style>
-        <Style Selector="^ PathIcon#DropDownGlyph">
+        <Style Selector="^ /template/ PathIcon#DropDownGlyph">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocused}" />
         </Style>
       </Style>
 
       <!--  Disabled State  -->
-      <Style Selector="^:disabled /template/">
-        <Style Selector="^ Border#Background">
+      <Style Selector="^:disabled">
+        <Style Selector="^ /template/ Border#Background">
           <Setter Property="Background" Value="{DynamicResource ComboBoxBackgroundDisabled}" />
           <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrushDisabled}" />
         </Style>
-        <Style Selector="^ ContentPresenter#HeaderContentPresenter">
+        <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
         </Style>
-        <Style Selector="^ ContentControl#ContentPresenter">
+        <Style Selector="^ /template/ ContentControl#ContentPresenter">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
         </Style>
-        <Style Selector="^ TextBlock#PlaceholderTextBlock">
+        <Style Selector="^ /template/ TextBlock#PlaceholderTextBlock">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
         </Style>
-        <Style Selector="^ PathIcon#DropDownGlyph">
+        <Style Selector="^ /template/ PathIcon#DropDownGlyph">
           <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForegroundDisabled}" />
         </Style>
       </Style>
