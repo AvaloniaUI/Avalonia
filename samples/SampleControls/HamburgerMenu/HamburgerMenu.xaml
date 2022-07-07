@@ -62,9 +62,28 @@
                           TextElement.FontWeight="{TemplateBinding FontWeight}" />
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter">
+      <Setter Property="Border.Background" Value="{DynamicResource SystemChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
+    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="HamburgerMenuTabItem" TargetType="TabItem">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="12,0,4,0" />
+    <Setter Property="Margin" Value="4,0,8,0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="PART_LayoutRoot"
@@ -80,9 +99,12 @@
                     Margin="6,0,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}" />
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    IsVisible="False"
+                    CornerRadius="{DynamicResource ControlCornerRadius}"/>
             <ContentPresenter Name="PART_ContentPresenter"
                               Padding="{TemplateBinding Padding}"
+                              Margin="0"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                               Content="{TemplateBinding Header}"
@@ -94,14 +116,40 @@
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
+      
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource SystemChromeLowColor}" />
+        <Setter Property="BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
+      </Style>
+    </Style>
+    
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+
+      <Style Selector="^ /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource SystemChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
+    </Style>
   </ControlTheme>
-  
+
   <!--  HamburgerMenu  -->
   <ControlTheme x:Key="{x:Type catalog:HamburgerMenu}" TargetType="catalog:HamburgerMenu">
     <Setter Property="Padding" Value="12 8 4 0" />
     <Setter Property="PaneBackground" Value="{DynamicResource SystemChromeMediumColor}" />
     <Setter Property="Background" Value="{DynamicResource SystemChromeMediumColor}" />
     <Setter Property="ContentBackground" Value="{DynamicResource SystemAltHighColor}" />
+    <Setter Property="ItemContainerTheme" Value="{StaticResource HamburgerMenuTabItem}"/>
+    <Setter Property="TabStripPlacement" Value="Left" />
     <Setter Property="Template">
       <ControlTemplate>
         <Panel Background="{TemplateBinding PaneBackground}">
@@ -109,7 +157,8 @@
                      CompactPaneLength="{StaticResource PaneCompactWidth}"
                      DisplayMode="Inline"
                      IsPaneOpen="True"
-                     OpenPaneLength="{StaticResource PaneExpandWidth}">
+                     OpenPaneLength="{StaticResource PaneExpandWidth}"
+                     PaneBackground="Transparent">
             <SplitView.Pane>
               <Grid Margin="0,0,1,5" RowDefinitions="Auto, *, Auto">
                 <Panel Height="{StaticResource HeaderHeight}" />
@@ -123,11 +172,6 @@
                                   ItemTemplate="{TemplateBinding ItemTemplate}"
                                   Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}">
-                    <ItemsPresenter.Styles>
-                      <Style Selector="catalog|HamburgerMenu > TabItem">
-                        <Setter Property="Theme" Value="{StaticResource HamburgerMenuTabItem}"/>
-                      </Style>
-                    </ItemsPresenter.Styles>
                     <ItemsPresenter.ItemsPanel>
                       <ItemsPanelTemplate>
                         <StackPanel x:Name="HamburgerItemsPanel"
@@ -150,6 +194,7 @@
                   <TextBlock x:Name="HeaderHolder"
                              VerticalAlignment="Center"
                              Classes="h1"
+                             Margin="{StaticResource HeaderMarginExpandedPane}"
                              Text="{Binding $parent[TabControl].SelectedItem.Header, FallbackValue=''}">
                     <TextBlock.Transitions>
                       <Transitions>
@@ -187,7 +232,7 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
                         HorizontalContentAlignment="Center"
-                        Classes="NavigationButton"
+                        Theme="{StaticResource NavigationButton}"
                         CornerRadius="4"
                         IsChecked="{Binding #PART_NavigationPane.IsPaneOpen, Mode=TwoWay}">
             <PathIcon Data="M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z" Foreground="{TemplateBinding Foreground}" />
@@ -196,17 +241,11 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^ /template/ SplitView TextBlock#HeaderHolder">
-      <Setter Property="Margin" Value="{StaticResource HeaderMarginExpandedPane}" />
-    </Style>
     <Style Selector="^ /template/ SplitView[IsPaneOpen=True] TextBlock#HeaderHolder">
       <Setter Property="Margin" Value="{StaticResource HeaderMarginCollapsedPane}" />
     </Style>
     <Style Selector="^ /template/ SplitView[DisplayMode=Overlay][IsPaneOpen=True] TextBlock#HeaderHolder">
       <Setter Property="Margin" Value="{StaticResource HeaderMarginExpandedOverlayPane}" />
-    </Style>
-    <Style Selector="^ /template/ SplitView">
-      <Setter Property="PaneBackground" Value="Transparent" />
     </Style>
     <Style Selector="^ /template/ SplitView[DisplayMode=Overlay]">
       <Setter Property="PaneBackground" Value="{TemplateBinding PaneBackground}" />
@@ -221,26 +260,6 @@
     <Style Selector="^ /template/ SplitView[DisplayMode=Inline][IsPaneOpen=True] Border#BackgroundBorder">
       <Setter Property="CornerRadius" Value="8 0 0 0" />
     </Style>
-    <!--<Style Selector="^ > TabItem">
-      
-    </Style>-->
-    <!--<Style Selector="^ > TabItem /template/ Border#PART_LayoutRoot, :is(Button).NavigationButton /template/ ContentPresenter">
-      <Setter Property="Border.Background" Value="Transparent" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemBaseHighColor}" />
-    </Style>
-    <Style Selector="^ > TabItem:pointerover /template/ Border#PART_LayoutRoot, :is(Button).NavigationButton:pointerover /template/ ContentPresenter">
-      <Setter Property="Border.Background" Value="{DynamicResource SystemChromeLowColor}" />
-      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
-    </Style>
-    <Style Selector="^ > TabItem:pressed /template/ Border#PART_LayoutRoot, :is(Button).NavigationButton:pressed /template/ ContentPresenter">
-      <Setter Property="Border.Background" Value="{DynamicResource SystemChromeLowColor}" />
-      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
-    </Style>
-    <Style Selector=":is(Button).NavigationButton:pressed">
-      <Setter Property="RenderTransform" Value="none" />
-    </Style>-->
   </ControlTheme>
 
 </ResourceDictionary>
