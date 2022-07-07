@@ -1,19 +1,20 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Design.PreviewWith>
-    <Border Margin="20" Width="200" Height="200">
-      <DockPanel LastChildFill="True">
-        <StackPanel Spacing="10" DockPanel.Dock="Top">
-          <Slider Value="50" />
-          <Slider IsEnabled="False" Value="50" />
-        </StackPanel>
-        <StackPanel Spacing="10" Orientation="Horizontal">
-          <Slider Value="50" Orientation="Vertical" />
-          <Slider IsEnabled="False" Orientation="Vertical" Value="50" />
-        </StackPanel>
-      </DockPanel>
-    </Border>
-  </Design.PreviewWith>
-  <Styles.Resources>
+﻿<ResourceDictionary 
+  xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+     <Design.PreviewWith>
+      <Border Margin="20" Width="200" Height="200">
+        <DockPanel LastChildFill="True">
+          <StackPanel Spacing="10" DockPanel.Dock="Top">
+            <Slider Value="50" />
+            <Slider IsEnabled="False" Value="50" />
+          </StackPanel>
+          <StackPanel Spacing="10" Orientation="Horizontal">
+            <Slider Value="50" Orientation="Vertical" />
+            <Slider IsEnabled="False" Orientation="Vertical" Value="50" />
+          </StackPanel>
+        </DockPanel>
+      </Border>
+    </Design.PreviewWith>
     <Thickness x:Key="SliderTopHeaderMargin">0,0,0,4</Thickness>
     <GridLength x:Key="SliderPreContentMargin">15</GridLength>
     <GridLength x:Key="SliderPostContentMargin">15</GridLength>
@@ -24,252 +25,364 @@
     <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
     <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
-  </Styles.Resources>
-  <Style Selector="Thumb.SliderThumbStyle">
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate>
-          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource SliderThumbCornerRadius}" />
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style Selector="Slider:horizontal">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+
+
+  <ControlTheme x:Key="FluentBaseSliderDecreaseIncreaseRepeatButtonTheme" TargetType="RepeatButton" BasedOn="{StaticResource {x:Type RepeatButton}}">
     <Setter Property="Template">
       <ControlTemplate>
-        <DataValidationErrors>
-          <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
-            <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextElement.Foreground="{DynamicResource SliderHeaderForeground}"
-              Margin="{DynamicResource SliderTopHeaderMargin}" />
-              <Grid x:Name="SliderContainer" Grid.Row="1">
-                <Grid.Styles>
-                  <Style Selector="TickBar">
-                    <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
-                  </Style>
-                </Grid.Styles>
-                <Grid x:Name="HorizontalTemplate" ColumnDefinitions="Auto,Auto,*" MinHeight="{DynamicResource SliderHorizontalHeight}">
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="{DynamicResource SliderPreContentMargin}" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="{DynamicResource SliderPostContentMargin}" />
-                  </Grid.RowDefinitions>
-                  <TickBar Name="TopTickBar" Placement="Top" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
-                  <!-- <TickBar Name="HorizontalInlineTickBar" Placement="Top" Fill="{DynamicResource SliderInlineTickBarFill}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" /> -->
-                  <TickBar Name="BottomTickBar" Placement="Bottom" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
-                  <Track Name="PART_Track" Grid.Row="1" Grid.ColumnSpan="3" IsDirectionReversed="{TemplateBinding IsDirectionReversed}" Orientation="Horizontal">
-                    <Track.DecreaseButton>
-                      <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <RepeatButton.Template>
-                          <ControlTemplate>
-                            <Grid>
-                              <Border Name="FocusTarget" Background="Transparent" Margin="0,-10" />
-                              <Border Name="TrackBackground" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource ControlCornerRadius}" Height="{DynamicResource SliderTrackThemeHeight}" VerticalAlignment="Center" />
-                            </Grid>
-                          </ControlTemplate>
-                        </RepeatButton.Template>
-                      </RepeatButton>
-                    </Track.DecreaseButton>
-                    <Track.IncreaseButton>
-                      <RepeatButton Name="PART_IncreaseButton" Background="{TemplateBinding Background}" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <RepeatButton.Template>
-                          <ControlTemplate>
-                            <Grid>
-                              <Border Name="FocusTarget" Background="Transparent" Margin="0,-10" />
-                              <Border Name="TrackBackground" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource ControlCornerRadius}" Height="{DynamicResource SliderTrackThemeHeight}" VerticalAlignment="Center" />
-                            </Grid>
-                          </ControlTemplate>
-                        </RepeatButton.Template>
-                      </RepeatButton>
-                    </Track.IncreaseButton>
-                    <Thumb Classes="SliderThumbStyle" Name="thumb" Margin="0" Padding="0" DataContext="{TemplateBinding Value}" Height="{DynamicResource SliderHorizontalThumbHeight}" Width="{DynamicResource SliderHorizontalThumbWidth}" />
-                  </Track>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Border>
-        </DataValidationErrors>
+        <Grid>
+          <Border
+              Name="FocusTarget"
+              Margin="0,-10"
+              Background="Transparent" />
+          <Border
+              Name="TrackBackground"
+              Background="{TemplateBinding Background}"
+              CornerRadius="{DynamicResource ControlCornerRadius}" />
+        </Grid>
       </ControlTemplate>
     </Setter>
-  </Style>
-  <Style Selector="Slider:vertical">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+  </ControlTheme>
+  
+  <ControlTheme x:Key="FluentHorizontalSliderDecreaseIncreaseRepeatButtonTheme" TargetType="RepeatButton" BasedOn="{StaticResource FluentBaseSliderDecreaseIncreaseRepeatButtonTheme}">
+    <Setter Property="Height" Value="{DynamicResource SliderTrackThemeHeight}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </ControlTheme>
+  
+  <ControlTheme x:Key="FluentVerticalSliderDecreaseIncreaseRepeatButtonTheme" TargetType="RepeatButton" BasedOn="{StaticResource FluentBaseSliderDecreaseIncreaseRepeatButtonTheme}">
+    <Setter Property="Width" Value="{DynamicResource SliderTrackThemeHeight}"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentSliderThumbTheme" TargetType="Thumb">
     <Setter Property="Template">
       <ControlTemplate>
-        <DataValidationErrors>
-          <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
-            <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-              <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextElement.Foreground="{DynamicResource SliderHeaderForeground}"
-              Margin="{DynamicResource SliderTopHeaderMargin}" />
-              <Grid x:Name="SliderContainer" Grid.Row="1">
-                <Grid.Styles>
-                  <Style Selector="TickBar">
-                    <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
-                  </Style>
-                </Grid.Styles>
-                <Grid x:Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="{DynamicResource SliderPreContentMargin}" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="{DynamicResource SliderPostContentMargin}" />
-                  </Grid.ColumnDefinitions>
-                  <TickBar Name="LeftTickBar" Placement="Left" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
-                  <!-- <TickBar Name="VerticalInlineTickBar" Placement="Inline" Fill="{DynamicResource SliderInlineTickBarFill}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" /> -->
-                  <TickBar Name="RightTickBar" Placement="Right" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" />
-                  <Track Name="PART_Track" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" IsDirectionReversed="{TemplateBinding IsDirectionReversed}" Orientation="Vertical">
-                    <Track.DecreaseButton>
-                      <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}" Focusable="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                        <RepeatButton.Template>
-                          <ControlTemplate>
-                            <Grid>
-                              <Border Name="FocusTarget" Background="Transparent" Margin="0,-10" />
-                              <Border Name="TrackBackground" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource ControlCornerRadius}" Width="{DynamicResource SliderTrackThemeHeight}" HorizontalAlignment="Center" />
-                            </Grid>
-                          </ControlTemplate>
-                        </RepeatButton.Template>
-                      </RepeatButton>
-                    </Track.DecreaseButton>
-                    <Track.IncreaseButton>
-                      <RepeatButton Name="PART_IncreaseButton" Background="{TemplateBinding Background}" Focusable="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                        <RepeatButton.Template>
-                          <ControlTemplate>
-                            <Grid>
-                              <Border Name="FocusTarget" Background="Transparent" Margin="0,-10" />
-                              <Border Name="TrackBackground" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource ControlCornerRadius}" Width="{DynamicResource SliderTrackThemeHeight}" HorizontalAlignment="Center" />
-                            </Grid>
-                          </ControlTemplate>
-                        </RepeatButton.Template>
-                      </RepeatButton>
-                    </Track.IncreaseButton>
-                    <Thumb Classes="SliderThumbStyle" Name="SliderThumb" Margin="0" Padding="0" DataContext="{TemplateBinding Value}" Height="{DynamicResource SliderVerticalThumbHeight}" Width="{DynamicResource SliderVerticalThumbWidth}" />
-                  </Track>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Border>
-        </DataValidationErrors>
+        <Border
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{DynamicResource SliderThumbCornerRadius}" />
       </ControlTemplate>
     </Setter>
-  </Style>
-  <Style Selector="Slider /template/ Track#PART_Track">
-    <Setter Property="Minimum" Value="{TemplateBinding Minimum}" />
-    <Setter Property="Maximum" Value="{TemplateBinding Maximum}" />
-    <Setter Property="Value" Value="{TemplateBinding Value, Mode=TwoWay}" />
-  </Style>
-  <Style Selector="Slider /template/ TickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
-    <Setter Property="TickFrequency" Value="{TemplateBinding Slider.TickFrequency}" />
-    <Setter Property="Orientation" Value="{TemplateBinding Slider.Orientation}" />
-    <Setter Property="Minimum" Value="{TemplateBinding Slider.Minimum}" />
-    <Setter Property="Maximum" Value="{TemplateBinding Slider.Maximum}" />
-  </Style>
+  </ControlTheme>
   
-  <!-- Normal State -->
-  
-  <Style Selector="Slider /template/ Thumb.SliderThumbStyle">
-    <Setter Property="Background" Value="{DynamicResource SliderThumbBackground}" />
-  </Style>
+  <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider">
+    <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Style Selector="^:horizontal">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DataValidationErrors>
+                    <Border
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid
+                            Name="grid"
+                            Margin="{TemplateBinding Padding}"
+                            RowDefinitions="Auto, *">
+                            <ContentPresenter
+                                x:Name="HeaderContentPresenter"
+                                Grid.Row="0"
+                                Margin="{DynamicResource SliderTopHeaderMargin}"
+                                TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}"
+                                TextElement.Foreground="{DynamicResource SliderHeaderForeground}" />
+                            <Grid x:Name="SliderContainer" Grid.Row="1">
+                                <Grid.Styles>
+                                    <Style Selector="TickBar">
+                                        <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
+                                    </Style>
+                                </Grid.Styles>
+                                <Grid
+                                    x:Name="HorizontalTemplate"
+                                    MinHeight="{DynamicResource SliderHorizontalHeight}"
+                                    ColumnDefinitions="Auto,Auto,*">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="{DynamicResource SliderPreContentMargin}" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="{DynamicResource SliderPostContentMargin}" />
+                                    </Grid.RowDefinitions>
+                                    <TickBar
+                                        Name="TopTickBar"
+                                        Grid.ColumnSpan="3"
+                                        Ticks="{TemplateBinding Ticks}"
+                                        TickFrequency="{TemplateBinding Slider.TickFrequency}"
+                                        Orientation="{TemplateBinding Slider.Orientation}"
+                                        Minimum="{TemplateBinding Slider.Minimum}"
+                                        Maximum="{TemplateBinding Slider.Maximum}"
+                                        Height="{DynamicResource SliderOutsideTickBarThemeHeight}"
+                                        Margin="0,0,0,4"
+                                        VerticalAlignment="Bottom"
+                                        Placement="Top" />
+                                    <TickBar
+                                        Name="BottomTickBar"
+                                        Grid.Row="2"
+                                        Grid.ColumnSpan="3"
+                                        Ticks="{TemplateBinding Ticks}"
+                                        TickFrequency="{TemplateBinding Slider.TickFrequency}"
+                                        Orientation="{TemplateBinding Slider.Orientation}"
+                                        Minimum="{TemplateBinding Slider.Minimum}"
+                                        Maximum="{TemplateBinding Slider.Maximum}"
+                                        Height="{DynamicResource SliderOutsideTickBarThemeHeight}"
+                                        Margin="0,4,0,0"
+                                        VerticalAlignment="Top"
+                                        Placement="Bottom" />
+                                    <Track
+                                        Name="PART_Track"
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="3"
+                                        Minimum="{TemplateBinding Minimum}"
+                                        Maximum="{TemplateBinding Maximum}"
+                                        Value="{TemplateBinding Value, Mode=TwoWay}"
+                                        IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                                        Orientation="Horizontal">
+                                        <Track.DecreaseButton>
+                                            <RepeatButton
+                                                Name="PART_DecreaseButton"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                Theme="{StaticResource FluentHorizontalSliderDecreaseIncreaseRepeatButtonTheme}"
+                                                Background="{TemplateBinding Foreground}"
+                                                Focusable="False"/>
+                                        </Track.DecreaseButton>
+                                        <Track.IncreaseButton>
+                                            <RepeatButton
+                                                Name="PART_IncreaseButton"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                Theme="{StaticResource FluentHorizontalSliderDecreaseIncreaseRepeatButtonTheme}"
+                                                Background="{TemplateBinding Background}"
+                                                Focusable="False"/>
+                                        </Track.IncreaseButton>
+                                      <Thumb
+                                          Name="thumb"
+                                          Width="{DynamicResource SliderHorizontalThumbWidth}"
+                                          Height="{DynamicResource SliderHorizontalThumbHeight}"
+                                          Margin="0"
+                                          Padding="0"
+                                          BorderThickness="0"
+                                          Classes="SliderThumbStyle"
+                                          Theme="{StaticResource FluentSliderThumbTheme}"
+                                          DataContext="{TemplateBinding Value}"/>
+                                    </Track>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </DataValidationErrors>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="^:vertical">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DataValidationErrors>
+                    <Border
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid
+                            Name="grid"
+                            Margin="{TemplateBinding Padding}"
+                            RowDefinitions="Auto, *">
+                            <ContentPresenter
+                                x:Name="HeaderContentPresenter"
+                                Grid.Row="0"
+                                Margin="{DynamicResource SliderTopHeaderMargin}"
+                                TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}"
+                                TextElement.Foreground="{DynamicResource SliderHeaderForeground}" />
+                            <Grid x:Name="SliderContainer" Grid.Row="1">
+                                <Grid.Styles>
+                                    <Style Selector="TickBar">
+                                        <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
+                                    </Style>
+                                </Grid.Styles>
+                                <Grid
+                                    x:Name="VerticalTemplate"
+                                    MinWidth="{DynamicResource SliderVerticalWidth}"
+                                    RowDefinitions="*,Auto,Auto">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="{DynamicResource SliderPreContentMargin}" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="{DynamicResource SliderPostContentMargin}" />
+                                    </Grid.ColumnDefinitions>
+                                    <TickBar
+                                        Name="LeftTickBar"
+                                        Grid.RowSpan="3"
+                                        Ticks="{TemplateBinding Ticks}"
+                                        TickFrequency="{TemplateBinding Slider.TickFrequency}"
+                                        Orientation="{TemplateBinding Slider.Orientation}"
+                                        Minimum="{TemplateBinding Slider.Minimum}"
+                                        Maximum="{TemplateBinding Slider.Maximum}"
+                                        Width="{DynamicResource SliderOutsideTickBarThemeHeight}"
+                                        Margin="0,0,4,0"
+                                        HorizontalAlignment="Right"
+                                        Placement="Left" />
+                                    <TickBar
+                                        Name="RightTickBar"
+                                        Grid.RowSpan="3"
+                                        Grid.Column="2"
+                                        Ticks="{TemplateBinding Ticks}"
+                                        TickFrequency="{TemplateBinding Slider.TickFrequency}"
+                                        Orientation="{TemplateBinding Slider.Orientation}"
+                                        Minimum="{TemplateBinding Slider.Minimum}"
+                                        Maximum="{TemplateBinding Slider.Maximum}"
+                                        Width="{DynamicResource SliderOutsideTickBarThemeHeight}"
+                                        Margin="4,0,0,0"
+                                        HorizontalAlignment="Left"
+                                        Placement="Right" />
+                                    <Track
+                                        Name="PART_Track"
+                                        Grid.RowSpan="3"
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="1"
+                                        Minimum="{TemplateBinding Minimum}"
+                                        Maximum="{TemplateBinding Maximum}"
+                                        Value="{TemplateBinding Value, Mode=TwoWay}"
+                                        IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                                        Orientation="Vertical">
+                                        <Track.DecreaseButton>
+                                            <RepeatButton
+                                                Name="PART_DecreaseButton"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                Theme="{StaticResource FluentVerticalSliderDecreaseIncreaseRepeatButtonTheme}"
+                                                Background="{TemplateBinding Foreground}"
+                                                Focusable="False"/>
+                                        </Track.DecreaseButton>
+                                        <Track.IncreaseButton>
+                                            <RepeatButton
+                                                Name="PART_IncreaseButton"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                Background="{TemplateBinding Background}"
+                                                Theme="{StaticResource FluentVerticalSliderDecreaseIncreaseRepeatButtonTheme}"
+                                                Focusable="False"/>
+                                        </Track.IncreaseButton>
+                                        <Thumb
+                                            Name="SliderThumb"
+                                            Width="{DynamicResource SliderVerticalThumbWidth}"
+                                            Height="{DynamicResource SliderVerticalThumbHeight}"
+                                            Margin="0"
+                                            Padding="0"
+                                            BorderThickness="0"
+                                            Classes="SliderThumbStyle"
+                                            Theme="{StaticResource FluentSliderThumbTheme}"
+                                            DataContext="{TemplateBinding Value}" />
+                                    </Track>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </DataValidationErrors>
+            </ControlTemplate>
+        </Setter>
+    </Style>
 
-  <Style Selector="Slider /template/ Grid#SliderContainer">
-    <Setter Property="Background" Value="{DynamicResource SliderContainerBackground}" />
-  </Style>
+    <!--  Normal State  -->
 
-  <Style Selector="Slider /template/ TickBar">
-    <Setter Property="IsVisible" Value="False" />
-    <Setter Property="Ticks" Value="{TemplateBinding Ticks}" />
-  </Style>
+    <Style Selector="^ /template/">
+      <Style Selector="^Thumb.SliderThumbStyle">
+        <Setter Property="Background" Value="{DynamicResource SliderThumbBackground}" />
+      </Style>
+      <Style Selector="^Grid#SliderContainer">
+        <Setter Property="Background" Value="{DynamicResource SliderContainerBackground}" />
+      </Style>
+      <Style Selector="^TickBar">
+        <Setter Property="IsVisible" Value="False" />
+        <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
+      </Style>
+    </Style>
 
-  <!-- TickBar Placement States -->
+    <!--  TickBar Placement States  -->
 
-  <Style Selector="Slider[TickPlacement=TopLeft] /template/ TickBar#LeftTickBar, Slider[TickPlacement=Outside] /template/ TickBar#LeftTickBar">
-    <Setter Property="IsVisible" Value="True" />
-  </Style>
- 
-  <Style Selector="Slider[TickPlacement=TopLeft] /template/ TickBar#TopTickBar, Slider[TickPlacement=Outside] /template/ TickBar#TopTickBar">
-    <Setter Property="IsVisible" Value="True" />
-  </Style>
- 
-  <Style Selector="Slider[TickPlacement=BottomRight] /template/ TickBar#BottomTickBar, Slider[TickPlacement=Outside] /template/ TickBar#BottomTickBar">
-    <Setter Property="IsVisible" Value="True" />
-  </Style>
- 
-  <Style Selector="Slider[TickPlacement=BottomRight] /template/ TickBar#RightTickBar, Slider[TickPlacement=Outside] /template/ TickBar#RightTickBar">
-    <Setter Property="IsVisible" Value="True" />
-  </Style>
- 
-  <!-- Disabled State -->
+    <Style Selector="^[TickPlacement=TopLeft] /template/ TickBar#LeftTickBar, ^[TickPlacement=Outside] /template/ TickBar#LeftTickBar">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
 
-  <Style Selector="Slider:disabled /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
-  </Style>
-  
-  <Style Selector="Slider:disabled /template/ RepeatButton#PART_DecreaseButton">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillDisabled}" />
-  </Style>
-  
-  <Style Selector="Slider:disabled /template/ RepeatButton#PART_IncreaseButton">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackFillDisabled}" />
-  </Style>
-  
-  <Style Selector="Slider:disabled /template/ Thumb.SliderThumbStyle">
-    <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
-  </Style>
-  
-  <Style Selector="Slider:disabled /template/ TickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
-  </Style>
-  
-  <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
-    <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundDisabled}" />
-  </Style>
+    <Style Selector="^[TickPlacement=TopLeft] /template/ TickBar#TopTickBar, ^[TickPlacement=Outside] /template/ TickBar#TopTickBar">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
 
-  <!-- PointerOver State -->
-  <Style Selector="Slider:pointerover /template/ RepeatButton#PART_IncreaseButton">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackFillPointerOver}" />
-  </Style>
-  
-  <Style Selector="Slider:pointerover /template/ Thumb.SliderThumbStyle">
-    <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
-  </Style>
-  
-  <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
-    <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundPointerOver}" />
-  </Style>
-  
-  <Style Selector="Slider:pointerover /template/ RepeatButton#PART_DecreaseButton">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPointerOver}" />
-  </Style>
+    <Style Selector="^[TickPlacement=BottomRight] /template/ TickBar#BottomTickBar, ^[TickPlacement=Outside] /template/ TickBar#BottomTickBar">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
 
-  <!-- Pressed State -->
-  <Style Selector="Slider:pressed /template/ RepeatButton#PART_IncreaseButton">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackFillPressed}" />
-  </Style>
+    <Style Selector="^[TickPlacement=BottomRight] /template/ TickBar#RightTickBar, ^[TickPlacement=Outside] /template/ TickBar#RightTickBar">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
 
-  <Style Selector="Slider:pressed /template/ Thumb.SliderThumbStyle">
-    <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPressed}" />
-  </Style>
-  
-  <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
-    <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundPressed}" />
-  </Style>
-  
-  <Style Selector="Slider:pointerover /template/ RepeatButton#PART_DecreaseButton">
-    <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPressed}" />
-  </Style>
-  
-  <Style Selector="Slider:error /template/ Thumb.SliderThumbStyle">
-    <Setter Property="Background" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
-  </Style>
-  
-  <Style Selector="Slider:error">
+    <!--  Disabled State  -->
+
+    <Style Selector="^:disabled /template/">
+      <Style Selector="^ContentPresenter#HeaderContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
+      </Style>
+      <Style Selector="^RepeatButton#PART_DecreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillDisabled}" />
+      </Style>
+
+      <Style Selector="^RepeatButton#PART_IncreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillDisabled}" />
+      </Style>
+
+      <Style Selector="^Thumb.SliderThumbStyle">
+        <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
+      </Style>
+
+      <Style Selector="^TickBar">
+        <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
+      </Style>
+    </Style>
+
+    <!--  PointerOver State  -->
+    <Style Selector="^:pointerover /template/">
+      <Style Selector="^Grid#SliderContainer">
+        <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundDisabled}" />
+      </Style>
+      <Style Selector="^RepeatButton#PART_IncreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillPointerOver}" />
+      </Style>
+
+      <Style Selector="^Thumb.SliderThumbStyle">
+          <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
+      </Style>
+
+      <Style Selector="^Grid#SliderContainer">
+          <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundPointerOver}" />
+      </Style>
+
+      <Style Selector="^RepeatButton#PART_DecreaseButton">
+          <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPointerOver}" />
+      </Style>
+    
+    </Style>
+
+    <!--  Pressed State  -->
+    <Style Selector="^:pressed /template/">
+      <Style Selector="^Grid#SliderContainer">
+        <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundPressed}" />
+      </Style>
+      <Style Selector="^RepeatButton#PART_DecreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPressed}" />
+      </Style>
+      <Style Selector="^RepeatButton#PART_IncreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillPressed}" />
+      </Style>
+
+      <Style Selector="^Thumb.SliderThumbStyle">
+        <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:error">
       <Setter Property="Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
-  </Style>
-</Styles>
+      <Style Selector="^/template/ Thumb.SliderThumbStyle">
+        <Setter Property="Background" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+      </Style>
+    </Style>
+
+  </ControlTheme>
+</ResourceDictionary>

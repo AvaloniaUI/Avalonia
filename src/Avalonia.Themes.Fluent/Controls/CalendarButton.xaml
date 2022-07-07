@@ -1,121 +1,109 @@
-<!--
+﻿<!--
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui" 
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ControlTheme x:Key="{x:Type CalendarButton}" TargetType="CalendarButton">
+      <Setter Property="ClickMode" Value="Release" />
+      <Setter Property="MinWidth" Value="40" />
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="Margin" Value="1" />
+      <Setter Property="Padding" Value="0,0,0,0" />
+      <!--These are actually set on the CalendarView in WinUI-->
+      <Setter Property="Foreground" Value="{DynamicResource CalendarViewCalendarItemForeground}" />
+      <Setter Property="Background" Value="{DynamicResource CalendarViewCalendarItemRevealBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewCalendarItemRevealBorderBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="FontSize" Value="20" />
+      <Setter Property="ClipToBounds" Value="False" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Panel>
+            <!-- To mimic WinUI SystemFocusVisual, Focus visual is drawn outside the bounds of the item -->
+            <Border Name="Root" Background="{TemplateBinding Background}"
+                    BorderThickness="0" ClipToBounds="True">
+              <ContentControl Name="Content"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              FontSize="{TemplateBinding FontSize}"
+                              Margin="{TemplateBinding Padding}" />
+            </Border>
+            
+            <!-- Drawn Border should render on top of background to preserve the 1px margin between items -->
+            <Border Name="Border"
+                    BorderThickness="2"
+                    BorderBrush="{TemplateBinding BorderBrush}" />
+          </Panel>
+        </ControlTemplate>
+      </Setter>
 
-<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="CalendarButton">
-    <Setter Property="ClickMode" Value="Release"/>
-    <Setter Property="MinWidth" Value="40"/>
-    <Setter Property="MinHeight" Value="40"/>
-    <Setter Property="Margin" Value="1"/>
-    <Setter Property="Padding" Value="0,0,0,0"/>
-    <!--These are actually set on the CalendarView in WinUI-->
-    <Setter Property="Foreground" Value="{DynamicResource CalendarViewCalendarItemForeground}"/>
-    <Setter Property="Background" Value="{DynamicResource CalendarViewCalendarItemRevealBackground}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewCalendarItemRevealBorderBrush}"/>
-    <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="FontSize" Value="20"/>
-    <Setter Property="ClipToBounds" Value="False"/>
-    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-    <Setter Property="VerticalContentAlignment" Value="Center"/>
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Panel>
-          <!-- To mimic WinUI SystemFocusVisual, Focus visual is drawn outside the bounds of the item -->
-          <Border Name="Root" Background="{TemplateBinding Background}"
-                  BorderThickness="0" ClipToBounds="True">
+      <Style Selector="^:pointerover /template/ Border#Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewHoverBorderBrush}" />
+      </Style>
+      
+      <Style Selector="^:pressed /template/ Border#Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark2}" />
+      </Style>
 
-            <ContentControl Name="Content"
-                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                  Content="{TemplateBinding Content}"
-                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                  FontSize="{TemplateBinding FontSize}"
-                  Margin="{TemplateBinding Padding}"/>
+      <!-- Adjusted :selected to look like :today from DayItem -->
+      <Style Selector="^:selected">
+        <Style Selector="^ /template/ Border#Root">
+          <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+        </Style>
+        
+        <Style Selector="^ /template/ Border#Border">
+          <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewSelectedBorderBrush}" />
+        </Style>
 
-          </Border>
+        <Style Selector="^ /template/ ContentControl#Content">
+          <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}" />
+          <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
 
-          <!-- Drawn Border should render on top of background to preserve the 1px
-                        margin between items-->
-          <Border Name="Border"
-                  BorderThickness="2"
-                  BorderBrush="{TemplateBinding BorderBrush}"/>
+        <Style Selector="^:pointerover">
+          <Style Selector="^ /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark1}" />
+          </Style>
+          <Style Selector="^ /template/ Border#Root">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+          </Style>
+        </Style>
 
-          <!--Removed for now...WinUI doesn't have selection follow focus, and only uses 
-              focus visual w/ keyboard focus
-          <Border Name="FocusVisual" BorderThickness="2"
-                     BorderBrush="{DynamicResource SystemControlHighlightBaseHighBrush}"
-                     IsHitTestVisible="False"
-                     Margin="-2"  CornerRadius="{DynamicResource ControlCornerRadius}"/>-->
-        </Panel>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <!--<Style Selector="CalendarButton /template/ Border#FocusVisual">
-    <Setter Property="IsVisible" Value="False"/>
-  </Style>-->
+        <Style Selector="^:pressed">
+          <Style Selector="^ /template/ Border#Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark2}" />
+          </Style>
+          
+          <Style Selector="^ /template/ Border#Root">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+          </Style>
+        </Style>
+      </Style>
 
-  <Style Selector="CalendarButton:pointerover /template/ Border#Border">
-    <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewHoverBorderBrush}"/>
-  </Style>
-  <Style Selector="CalendarButton:pressed /template/ Border#Border">
-    <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewPressedBorderBrush}"/>
-  </Style>
+      <!-- WinUI calls this OutOfFocus -->
+      <Style Selector="^:inactive">
+        <Style Selector="^ /template/ Border#Root">
+          <!-- These are probably set in code, but consistent -->
+          <Setter Property="Background" Value="{DynamicResource CalendarViewOutOfScopeBackground}"/>
+        </Style>
+        <Style Selector="^ /template/ ContentControl#Content">
+          <Setter Property="Foreground" Value="{DynamicResource CalendarViewOutOfScopeForeground}"/>
+        </Style>
+      </Style>
 
-  <!-- Adjusted :selected to look like :today from DayItem -->
-  <Style Selector="CalendarButton:selected /template/ Border#Root">
-    <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
-  </Style>
-  <Style Selector="CalendarButton:selected /template/ Border#Border">
-    <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewSelectedBorderBrush}"/>
-  </Style>
-  <Style Selector="CalendarButton:selected:pointerover /template/ Border#Root">
-    <Setter Property="Background">
-      <SolidColorBrush Color="{DynamicResource SystemAccentColor}"/>
-    </Setter>
-  </Style>
-  <Style Selector="CalendarButton:selected:pointerover /template/ Border#Border">
-    <Setter Property="BorderBrush">
-      <SolidColorBrush Color="{DynamicResource SystemAccentColorDark1}"/>
-    </Setter>
-  </Style>
-  <Style Selector="CalendarButton:selected:pressed /template/ Border#Root">
-    <Setter Property="Background">
-      <SolidColorBrush Color="{DynamicResource SystemAccentColor}"/>
-    </Setter>
-  </Style>
-  <Style Selector="CalendarButton:pressed /template/ Border#Border">
-    <Setter Property="BorderBrush">
-      <SolidColorBrush Color="{DynamicResource SystemAccentColorDark2}"/>
-    </Setter>
-  </Style>
+      <Style Selector="^:blackout /template/ ContentControl#Content">
+        <Setter Property="Foreground" Value="{DynamicResource CalendarViewBlackoutForeground}" />
+      </Style>
 
-  <Style Selector="CalendarButton:selected /template/ ContentControl#Content">
-    <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}"/>
-    <Setter Property="FontWeight" Value="SemiBold"/>
-  </Style>
-
-  <!-- WinUI calls this OutOfFocus -->
-  <Style Selector="CalendarButton:inactive /template/ Border#Root">
-    <!-- These are probably set in code, but consistent -->
-    <Setter Property="Background" Value="{DynamicResource CalendarViewOutOfScopeBackground}"/>
-  </Style>
-  <Style Selector="CalendarButton:inactive /template/ ContentControl#Content">
-    <Setter Property="Foreground" Value="{DynamicResource CalendarViewOutOfScopeForeground}"/>
-  </Style>
-
-  <Style Selector="CalendarButton:blackout /template/ ContentControl#Content">
-    <Setter Property="Foreground" Value="{DynamicResource CalendarViewBlackoutForeground}"/>
-  </Style>
-
-  <!--<Style Selector="CalendarButton:dayfocused /template/ Border#FocusVisual">
-            <Setter Property="IsVisible" Value="True"/>
-      </Style>-->
-
-  <Style Selector="CalendarDayButton:disabled /template/ ContentControl#Content">
-    <Setter Property="Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}"/>
-  </Style>
-</Styles>
+      <Style Selector="^:disabled /template/ ContentControl#Content">
+        <Setter Property="Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}" />
+      </Style>
+    </ControlTheme>
+</ResourceDictionary>

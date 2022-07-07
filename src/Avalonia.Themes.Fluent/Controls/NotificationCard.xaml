@@ -1,11 +1,11 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="0" Background="White">
       <NotificationCard Content="Testing" />
     </Border>
   </Design.PreviewWith>
-  <Style Selector="NotificationCard">
+  <ControlTheme x:Key="{x:Type NotificationCard}" TargetType="NotificationCard">
     <Setter Property="UseLayoutRounding" Value="True"/>
     <Setter Property="Width" Value="350"/>
     <Setter Property="FontSize" Value="14"/>
@@ -24,8 +24,8 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     ClipToBounds="True">
               <DockPanel>
-                <Panel x:Name="PART_HeaderBar" Height="4" DockPanel.Dock="Top" />
-                <ContentControl Name="PART_Content" Content="{TemplateBinding Content}" />
+                <Panel x:Name="PART_HeaderBar" Height="4" Background="{DynamicResource NotificationCardProgressBackgroundBrush}" DockPanel.Dock="Top" />
+                <ContentControl Name="PART_Content" MinHeight="64" Content="{TemplateBinding Content}" />
               </DockPanel>
             </Border>
           </Border>
@@ -33,7 +33,7 @@
       </ControlTemplate>
     </Setter>
 
-    <Style.Animations>
+    <ControlTheme.Animations>
       <Animation Duration="0:0:0.45" Easing="QuadraticEaseIn" FillMode="Forward">
         <KeyFrame Cue="0%">
           <Setter Property="Opacity" Value="0"/>
@@ -51,14 +51,9 @@
           <Setter Property="ScaleTransform.ScaleY" Value="1"/>
         </KeyFrame>
       </Animation>
-    </Style.Animations>
-  </Style>
+    </ControlTheme.Animations>
 
-  <Style Selector="NotificationCard/template/ ContentControl#PART_Content">
-    <Setter Property="MinHeight" Value="64" />
-  </Style>
-
-  <Style Selector="NotificationCard[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+  <Style Selector="^[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
     <Setter Property="RenderTransformOrigin" Value="50%,0%"/>
     <Style.Animations>
       <Animation Duration="0:0:0.75" Easing="QuadraticEaseOut" FillMode="Forward">
@@ -78,7 +73,7 @@
     </Style.Animations>
   </Style>
 
-  <Style Selector="NotificationCard[IsClosing=true]">
+  <Style Selector="^[IsClosing=true]">
     <Style.Animations>
       <Animation Duration="0:0:1.25" Easing="QuadraticEaseOut" FillMode="Forward">
         <KeyFrame Cue="100%">
@@ -88,19 +83,17 @@
     </Style.Animations>
   </Style>
 
-  <Style Selector="NotificationCard /template/ Panel#PART_HeaderBar">
-    <Setter Property="Background" Value="{DynamicResource NotificationCardProgressBackgroundBrush}"/>
-  </Style>
-  <Style Selector="NotificationCard:information /template/ Panel#PART_HeaderBar">
+  <Style Selector="^:information /template/ Panel#PART_HeaderBar">
     <Setter Property="Background" Value="{DynamicResource NotificationCardInformationBackgroundBrush}"/>
   </Style>
-  <Style Selector="NotificationCard:success /template/ Panel#PART_HeaderBar">
+  <Style Selector="^:success /template/ Panel#PART_HeaderBar">
     <Setter Property="Background" Value="{DynamicResource NotificationCardSuccessBackgroundBrush}"/>
   </Style>
-  <Style Selector="NotificationCard:warning /template/ Panel#PART_HeaderBar">
+  <Style Selector="^:warning /template/ Panel#PART_HeaderBar">
     <Setter Property="Background" Value="{DynamicResource NotificationCardWarningBackgroundBrush}"/>
   </Style>
-  <Style Selector="NotificationCard:error /template/ Panel#PART_HeaderBar">
+  <Style Selector="^:error /template/ Panel#PART_HeaderBar">
     <Setter Property="Background" Value="{DynamicResource NotificationCardErrorBackgroundBrush}"/>
   </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>

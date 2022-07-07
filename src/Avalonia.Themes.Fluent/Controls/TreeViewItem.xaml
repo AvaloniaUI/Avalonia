@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui"
+﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
 
@@ -53,7 +53,6 @@
   </Style>
 
   <Style Selector="TreeViewItem">
-    <Style.Resources />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Background" Value="{DynamicResource TreeViewItemBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrush}" />

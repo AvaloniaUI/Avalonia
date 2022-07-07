@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui" 
+﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:CompileBindings="True">
   <Design.PreviewWith>
@@ -10,7 +10,7 @@
                TextAlignment="Center"/>
     </Border>
   </Design.PreviewWith>
-  
+
   <Styles.Resources>
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
     <StreamGeometry x:Key="TextBoxClearButtonData">M 11.416016,10 20,1.4160156 18.583984,0 10,8.5839846 1.4160156,0 0,1.4160156 8.5839844,10 0,18.583985 1.4160156,20 10,11.416015 18.583984,20 20,18.583985 Z</StreamGeometry>
@@ -36,7 +36,7 @@
     <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />    
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
@@ -73,32 +73,32 @@
                                 VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                                 IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                                 AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
-                      <Panel>
-                        <TextBlock Name="PART_Watermark"
-                                Opacity="0.5"
-                                Text="{TemplateBinding Watermark}"
-                                TextAlignment="{TemplateBinding TextAlignment}"
-                                TextWrapping="{TemplateBinding TextWrapping}"
-                                IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        <TextPresenter Name="PART_TextPresenter"
-                                      Text="{TemplateBinding Text, Mode=TwoWay}"
-                                      CaretIndex="{TemplateBinding CaretIndex}"
-                                      SelectionStart="{TemplateBinding SelectionStart}"
-                                      SelectionEnd="{TemplateBinding SelectionEnd}"
-                                      TextAlignment="{TemplateBinding TextAlignment}"
-                                      TextWrapping="{TemplateBinding TextWrapping}"
-                                      LineHeight="{TemplateBinding LineHeight}"
-                                      PasswordChar="{TemplateBinding PasswordChar}"
-                                      RevealPassword="{TemplateBinding RevealPassword}"
-                                      SelectionBrush="{TemplateBinding SelectionBrush}"
-                                      SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                      CaretBrush="{TemplateBinding CaretBrush}"
-                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/> 
-                      </Panel>
-                    </ScrollViewer>
+                    <Panel>
+                      <TextBlock Name="PART_Watermark"
+                              Opacity="0.5"
+                              Text="{TemplateBinding Watermark}"
+                              TextAlignment="{TemplateBinding TextAlignment}"
+                              TextWrapping="{TemplateBinding TextWrapping}"
+                              IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                      <TextPresenter Name="PART_TextPresenter"
+                                    Text="{TemplateBinding Text, Mode=TwoWay}"
+                                    CaretIndex="{TemplateBinding CaretIndex}"
+                                    SelectionStart="{TemplateBinding SelectionStart}"
+                                    SelectionEnd="{TemplateBinding SelectionEnd}"
+                                    TextAlignment="{TemplateBinding TextAlignment}"
+                                    TextWrapping="{TemplateBinding TextWrapping}"
+                                    LineHeight="{TemplateBinding LineHeight}"
+                                    PasswordChar="{TemplateBinding PasswordChar}"
+                                    RevealPassword="{TemplateBinding RevealPassword}"
+                                    SelectionBrush="{TemplateBinding SelectionBrush}"
+                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                    CaretBrush="{TemplateBinding CaretBrush}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Panel>
+                  </ScrollViewer>
                 </DockPanel>
                 <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
               </Grid>
@@ -159,7 +159,7 @@
   <Style Selector="TextBox /template/ DockPanel#PART_InnerDockPanel">
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
-  
+
   <Style Selector="TextBox /template/ TextBlock#PART_FloatingWatermark">
     <Setter Property="IsVisible" Value="False" />
   </Style>
@@ -237,7 +237,7 @@
     <Setter Property="MinWidth" Value="34" />
     <Setter Property="Width" Value="{Binding $self.Bounds.Height}"/>
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="VerticalAlignment" Value="Stretch" />    
+    <Setter Property="VerticalAlignment" Value="Stretch" />
   </Style>
   <Style Selector="Button.textBoxClearButton /template/ Border#PART_ButtonLayoutBorder,
                    ToggleButton.passwordBoxRevealButton /template/ Border#PART_ButtonLayoutBorder">

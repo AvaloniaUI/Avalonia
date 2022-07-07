@@ -1,36 +1,35 @@
-<Style xmlns="https://github.com/avaloniaui"
-       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       Selector="Menu">
-  <Design.PreviewWith>
-    <Border Padding="20">
-      <Menu>
-        <MenuItem Header="New" />
-        <MenuItem Header="Open" />
-      </Menu>
-    </Border>
-  </Design.PreviewWith>
-
-  <Style.Resources>
-    <x:Double x:Key="MenuBarHeight">32</x:Double>
-  </Style.Resources>
-
-  <Setter Property="Background" Value="Transparent" />
-  <Setter Property="Height" Value="{DynamicResource MenuBarHeight}" />
-  <Setter Property="Template">
-    <ControlTemplate>
-      <Border Background="{TemplateBinding Background}"
-              BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}"
-              CornerRadius="{TemplateBinding CornerRadius}"
-              HorizontalAlignment="Stretch"
-              Padding="{TemplateBinding Padding}">
-        <ItemsPresenter Name="PART_ItemsPresenter"
-                        Items="{TemplateBinding Items}"
-                        ItemsPanel="{TemplateBinding ItemsPanel}"
-                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                        VerticalAlignment="Stretch"
-                        KeyboardNavigation.TabNavigation="Continue" />
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+      <Border Padding="20">
+        <Menu>
+          <MenuItem Header="New" />
+          <MenuItem Header="Open" />
+        </Menu>
       </Border>
-    </ControlTemplate>
-  </Setter>
-</Style>
+    </Design.PreviewWith>
+
+    <x:Double x:Key="MenuBarHeight">32</x:Double>
+
+    <ControlTheme x:Key="{x:Type Menu}" TargetType="Menu">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Height" Value="{DynamicResource MenuBarHeight}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  HorizontalAlignment="Stretch"
+                  Padding="{TemplateBinding Padding}">
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            Items="{TemplateBinding Items}"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                            VerticalAlignment="Stretch"
+                            KeyboardNavigation.TabNavigation="Continue" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+</ResourceDictionary>

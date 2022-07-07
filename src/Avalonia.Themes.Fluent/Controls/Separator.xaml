@@ -1,7 +1,7 @@
-<Styles xmlns="https://github.com/avaloniaui">
-
-  <Style Selector="Separator">
-    <Setter Property="Focusable" Value="False"/>
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type Separator}" TargetType="Separator">
+    <Setter Property="Focusable" Value="False" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Padding="{TemplateBinding Margin}"
@@ -11,9 +11,8 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}"
-                Background="{TemplateBinding Background}"/>
+                Background="{TemplateBinding Background}" />
       </ControlTemplate>
     </Setter>
-  </Style>
-
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>

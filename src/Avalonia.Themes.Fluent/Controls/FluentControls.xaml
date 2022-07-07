@@ -1,70 +1,78 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="Avalonia.Themes.Fluent.Controls.FluentControls">
-  <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->  
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml"/>
-  <!-- PathIcon also needs to be defined early so it can be overriden by other styles (e.g. ComboBox) -->
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Button.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CaptionButtons.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Carousel.xaml"/>  
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CheckBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DropDownButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBoxItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Menu.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ProgressBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RadioButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RepeatButton.xaml" />
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Separator.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Slider.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStrip.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStripItem.xaml"/>
-  <!-- TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel-->
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TransitioningContentControl.xaml" />
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Expander.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Window.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/EmbeddableControlRoot.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDayButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Calendar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDatePicker.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ButtonSpinner.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NumericUpDown.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/AutoCompleteBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/WindowNotificationManager.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FlyoutPresenter.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuFlyoutPresenter.xaml"/>
-  <!-- ManagedFileChooser comes last because it uses (and overrides) styles for a multitude of other controls...the dialogs were originally UserControls, after all-->
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ManagedFileChooser.xaml"/>
+﻿<Styles
+    x:Class="Avalonia.Themes.Fluent.Controls.FluentControls"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Button.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RadioButton.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Expander.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ProgressBar.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/AutoCompleteBox.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ButtonSpinner.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Calendar.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarButton.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDatePicker.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDayButton.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarItem.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CaptionButtons.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Carousel.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CheckBox.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/FlyoutPresenter.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBox.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBoxItem.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Menu.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuFlyoutPresenter.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NumericUpDown.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RepeatButton.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Separator.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabControl.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStrip.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStripItem.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TransitioningContentControl.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/WindowNotificationManager.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Window.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DropDownButton.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/EmbeddableControlRoot.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Slider.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <!--  Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox)  -->
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml" />
+    <!--  TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel  -->
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml" />
+    <!--  ManagedFileChooser comes last because it uses (and overrides) styles for a multitude of other controls...the dialogs were originally UserControls, after all  -->
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ManagedFileChooser.xaml" />
+    <Styles.Resources />
 </Styles>
