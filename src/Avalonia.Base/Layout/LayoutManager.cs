@@ -414,7 +414,7 @@ namespace Avalonia.Layout
             }
         }
 
-        private struct EffectiveViewportChangedListener
+        private class EffectiveViewportChangedListener
         {
             public EffectiveViewportChangedListener(ILayoutable listener, Rect viewport)
             {
