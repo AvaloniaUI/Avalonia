@@ -641,6 +641,38 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        
+        [Fact]
+        public void ResolvesElementNameInTemplate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<ContentControl xmlns='https://github.com/avaloniaui'
+                Content='Hello'>
+    <ContentControl.Styles>
+        <Style Selector='ContentControl'>
+            <Setter Property='Template'>
+                <ControlTemplate>
+                    <Panel>
+                        <TextBox Name='InnerTextBox' Text='Hello' />
+                        <ContentPresenter Content='{CompiledBinding Text, ElementName=InnerTextBox}' />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </ContentControl.Styles>
+</ContentControl>";
+
+                var contentControl = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
+                contentControl.Measure(new Size(10, 10));
+                
+                var result = contentControl.GetTemplateChildren().OfType<ContentPresenter>().First();
+                
+                Assert.Equal("Hello", result.Content);
+            }
+        }
+        
         [Fact]
         public void Binds_To_Source()
         {

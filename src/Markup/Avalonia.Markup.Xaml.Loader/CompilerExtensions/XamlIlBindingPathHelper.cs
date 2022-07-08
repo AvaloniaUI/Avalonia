@@ -374,6 +374,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public static IXamlType GetTargetType(IXamlAstNode namescopeRoot, string name)
             {
+                // If we start from the nested scope - skip it.
+                if (namescopeRoot is NestedScopeMetadataNode scope)
+                {
+                    namescopeRoot = scope.Value;
+                }
+                
                 var finder = new ScopeRegistrationFinder(name);
                 namescopeRoot.Visit(finder);
                 return finder.TargetType;
@@ -399,6 +405,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
             {
+                // Ignore name registrations, if we are inside of the nested namescope.
                 if (_childScopesStack.Count == 0 && node is AvaloniaNameScopeRegistrationXamlIlNode registration)
                 {
                     if (registration.Name is XamlAstTextNode text && text.Text == Name)
