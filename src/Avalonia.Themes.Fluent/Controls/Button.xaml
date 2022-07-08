@@ -20,7 +20,6 @@
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
         <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />
@@ -47,6 +46,10 @@
       <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
+    </Style>
+
+    <Style Selector="^:pressed">
+      <Setter Property="RenderTransform" Value="scale(0.98)" />
     </Style>
 
     <Style Selector="^:pressed  /template/ ContentPresenter#PART_ContentPresenter">
@@ -85,10 +88,6 @@
         <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushDisabled}" />
         <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
       </Style>
-    </Style>
-
-    <Style Selector="^:pressed">
-      <Setter Property="RenderTransform" Value="scale(0.98)" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>
