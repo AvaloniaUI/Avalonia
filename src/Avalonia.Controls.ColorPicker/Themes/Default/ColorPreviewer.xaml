@@ -1,14 +1,10 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="using:Avalonia.Controls.Converters"
         xmlns:pc="using:Avalonia.Controls.Primitives.Converters"
         x:CompileBindings="True">
 
   <Styles.Resources>
-    <pc:AccentColorConverter x:Key="AccentColor" />
-    <converters:ToBrushConverter x:Key="ToBrush" />
-    <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
-    <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
+    <pc:AccentColorConverter x:Key="AccentColorConverter" />
     <x:Double x:Key="ColorPreviewerAccentSectionWidth">80</x:Double>
     <x:Double x:Key="ColorPreviewerAccentSectionHeight">40</x:Double>
   </Styles.Resources>
@@ -36,11 +32,11 @@
                     Grid.Column="0"
                     CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
                     Tag="-2"
-                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='-2'}" />
+                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColorConverter}, ConverterParameter='-2'}" />
             <Border x:Name="PART_AccentDecrement1Border"
                     Grid.Column="1"
                     Tag="-1"
-                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='-1'}" />
+                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColorConverter}, ConverterParameter='-1'}" />
           </Grid>
           <!-- Right accent colors -->
           <Grid Grid.Column="2"
@@ -58,12 +54,12 @@
             <Border x:Name="PART_AccentIncrement1Border"
                     Grid.Column="0"
                     Tag="1"
-                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='1'}" />
+                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColorConverter}, ConverterParameter='1'}" />
             <Border x:Name="PART_AccentIncrement2Border"
                     Grid.Column="1"
                     CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
                     Tag="2"
-                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColor}, ConverterParameter='2'}" />
+                    Background="{TemplateBinding HsvColor, Converter={StaticResource AccentColorConverter}, ConverterParameter='2'}" />
           </Grid>
           <!-- Must be last for drop shadow Z-index -->
           <Border Grid.Column="1"
@@ -75,7 +71,7 @@
                       CornerRadius="{TemplateBinding CornerRadius}" />
               <Border x:Name="PreviewBorder"
                       CornerRadius="{TemplateBinding CornerRadius}"
-                      Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrush}}"
+                      Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrushConverter}}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch" />
             </Panel>

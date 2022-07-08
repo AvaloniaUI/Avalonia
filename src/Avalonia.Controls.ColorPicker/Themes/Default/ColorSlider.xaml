@@ -1,12 +1,6 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="using:Avalonia.Controls.Converters"
         x:CompileBindings="True">
-
-  <Styles.Resources>
-    <converters:CornerRadiusToDoubleConverter x:Key="TopLeftCornerRadius" Corner="TopLeft" />
-    <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadius" Corner="BottomRight" />
-  </Styles.Resources>
 
   <Style Selector="Thumb.ColorSliderThumbStyle">
     <Setter Property="BorderThickness" Value="0" />
@@ -35,13 +29,13 @@
             <Rectangle HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        Fill="{StaticResource ColorControlCheckeredBackgroundBrush}"
-                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
-                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
+                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
+                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
             <Rectangle HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        Fill="{TemplateBinding Background}"
-                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
-                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
+                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
+                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
             <Track Name="PART_Track"
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Stretch"
@@ -107,13 +101,13 @@
             <Rectangle HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        Fill="{StaticResource ColorControlCheckeredBackgroundBrush}"
-                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
-                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
+                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
+                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
             <Rectangle HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        Fill="{TemplateBinding Background}"
-                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadius}}"
-                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadius}}" />
+                       RadiusX="{TemplateBinding CornerRadius, Converter={StaticResource TopLeftCornerRadiusConverter}}"
+                       RadiusY="{TemplateBinding CornerRadius, Converter={StaticResource BottomRightCornerRadiusConverter}}" />
             <Track Name="PART_Track"
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Stretch"

@@ -1,7 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="using:Avalonia.Controls.Converters">
 
   <Styles.Resources>
+    <!-- Shared Resources -->
     <VisualBrush x:Key="ColorControlCheckeredBackgroundBrush"
                  TileMode="Tile"
                  Stretch="Uniform"
@@ -18,6 +20,16 @@
         </DrawingPresenter>
       </VisualBrush.Visual>
     </VisualBrush>
+    
+    <!-- Shared Converters -->
+    <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+    <converters:ToBrushConverter x:Key="ToBrushConverter" />
+    <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
+    <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="TopLeft, TopRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="BottomLeft, BottomRight"/>
+    <converters:CornerRadiusToDoubleConverter x:Key="TopLeftCornerRadiusConverter" Corner="TopLeft" />
+    <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadiusConverter" Corner="BottomRight" />
   </Styles.Resources>
 
   <!-- Primitives -->
