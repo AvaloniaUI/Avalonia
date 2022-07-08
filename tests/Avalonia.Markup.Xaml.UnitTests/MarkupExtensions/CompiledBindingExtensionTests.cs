@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -17,8 +17,6 @@ using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.UnitTests;
-using JetBrains.Annotations;
-using XamlX;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
@@ -676,6 +674,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void ResolvesRelativeSourceBindingFromTemplate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<ContentControl xmlns='https://github.com/avaloniaui'
+                Content='Hello'>
+    <ContentControl.Styles>
+        <Style Selector='ContentControl'>
+            <Setter Property='Template'>
+                <ControlTemplate>
+                    <ContentPresenter Content='{CompiledBinding Content, RelativeSource={RelativeSource TemplatedParent}}' />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </ContentControl.Styles>
+</ContentControl>";
+
+                var contentControl = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
+                contentControl.Measure(new Size(10, 10));
+                
+                var result = contentControl.GetTemplateChildren().OfType<ContentPresenter>().First();
+                Assert.Equal("Hello", result.Content);
+            }
+        }
         
         [Fact]
         public void ResolvesElementNameInTemplate()

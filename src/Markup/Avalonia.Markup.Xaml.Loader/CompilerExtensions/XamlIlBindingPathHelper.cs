@@ -244,6 +244,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     case TemplatedParentBindingExpressionNode templatedParent:
                         var templatedParentField = context.GetAvaloniaTypes().StyledElement.GetAllFields()
                             .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == "TemplatedParentProperty");
+                        nodes.Add(new SelfPathElementNode(selfType));
                         nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(
                             templatedParentField,
                             templatedParent.Type));
