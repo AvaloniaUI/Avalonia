@@ -21,7 +21,7 @@
     <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate TargetType="ProgressBar">
         <Border x:Name="ProgressBarRoot" ClipToBounds="True" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">          
             <Panel>
               <Panel x:Name="DeterminateRoot">
@@ -32,7 +32,7 @@
                 <Border x:Name="IndeterminateProgressBarIndicator2" CornerRadius="{TemplateBinding CornerRadius}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
               </Panel>
               <LayoutTransformControl x:Name="PART_LayoutTransformControl" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{TemplateBinding ShowProgressText}">
-                <TextBlock Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" Text="{ReflectionBinding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
+                <TextBlock Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
               </LayoutTransformControl>
             </Panel>
         </Border>
