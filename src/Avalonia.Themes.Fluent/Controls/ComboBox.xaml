@@ -72,7 +72,8 @@
                       Background="{DynamicResource ComboBoxBackgroundUnfocused}"
                       BorderBrush="{DynamicResource ComboBoxBackgroundBorderBrushUnfocused}"
                       BorderThickness="{TemplateBinding BorderThickness}"
-                      CornerRadius="{TemplateBinding CornerRadius}" />
+                      CornerRadius="{TemplateBinding CornerRadius}"
+                      IsVisible="False"/>
               <TextBlock x:Name="PlaceholderTextBlock"
                          Grid.Row="1"
                          Grid.Column="0"
@@ -109,7 +110,9 @@
                         Width="12"
                         Margin="0,0,10,0" 
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Center" />
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource ComboBoxDropDownGlyphForeground}"
+                        Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z"/>
               
               <Popup Name="PART_Popup" 
                      WindowManagerAddShadowHint="False"
@@ -142,18 +145,6 @@
           </DataValidationErrors>
         </ControlTemplate>
       </Setter>
-
-      <!--  Normal State  -->
-      <Style Selector="^ /template/ TextBlock#PlaceholderTextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
-      </Style>
-      <Style Selector="^ /template/ Border#HighlightBackground">
-        <Setter Property="IsVisible" Value="False" />
-      </Style>
-      <Style Selector="^ /template/ PathIcon#DropDownGlyph">
-        <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
-        <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
-      </Style>
 
       <!--  PointerOver State  -->
       <Style Selector="^:pointerover /template/ Border#Background">
