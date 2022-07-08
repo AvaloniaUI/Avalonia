@@ -116,7 +116,12 @@ namespace ControlCatalog.NetCore
                 .With(new Win32PlatformOptions
                 {
                 })
-                .UseSkia()
+                .With(new AvaloniaNativeGraphicsPlatformOptions
+                    {
+                        
+                    })
+                .UseAvaloniaNativeGraphics()
+                //.UseSkia()
                 .AfterSetup(builder =>
                 {
                     builder.Instance!.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()

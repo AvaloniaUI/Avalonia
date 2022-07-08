@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Headless.Vnc\Avalonia.Headless.Vnc.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
+    <ProjectReference Include="..\..\src\Skia\Avalonia.NativeGraphics\src\Avalonia.NativeGraphics.Backend\Avalonia.NativeGraphics.Backend.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
