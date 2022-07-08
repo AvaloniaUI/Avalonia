@@ -41,6 +41,7 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStrip.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStripItem.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml" />
@@ -66,7 +67,6 @@
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml" />
     <!--  TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel  -->
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml" />
