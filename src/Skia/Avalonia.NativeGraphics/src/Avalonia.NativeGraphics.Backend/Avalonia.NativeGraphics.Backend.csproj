@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>9</LangVersion>
+        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+      <RootNamespace>Avalonia.NativeGraphics</RootNamespace>
+      <AssemblyName>Avalonia.NativeGraphics</AssemblyName>
+      <PackageId>Avalonia.NativeGraphics</PackageId>
+      <IncludeLinuxSkia>true</IncludeLinuxSkia>
+      <IncludeWasmSkia>true</IncludeWasmSkia>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
-    </ItemGroup>
-    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\..\packages\Avalonia\Avalonia.csproj" />
       <ProjectReference Include="..\Avalonia.NativeGraphics\Avalonia.NativeGraphics.csproj" />
     </ItemGroup>
 
