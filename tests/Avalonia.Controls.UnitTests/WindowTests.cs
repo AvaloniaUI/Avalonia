@@ -542,28 +542,25 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
-        public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen_1080_175()
+        public void Window_Should_Be_Sized_To_MinSize_If_InitialSize_Less_Than_MinSize()
         {
             var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
-
             var screens = new Mock<IScreenImpl>();
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
             screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
             
-
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
             windowImpl.Setup(x => x.RenderScaling).Returns(1.75);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
 
-            var clientSize = new Size(801.142, 366);
+            var clientSize = new Size(400.142, 366);
             
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
-
             windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
                 .Callback<Size, PlatformResizeReason>((x, y) =>
                 {
-                    clientSize = x;//.Constrain(screen1.Object.Bounds.Size.ToSize(1.75));
+                    clientSize = x;
                     windowImpl.Object.Resized?.Invoke(clientSize, y);
                 });
 
@@ -575,14 +572,10 @@ namespace Avalonia.Controls.UnitTests
                 window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 window.MinWidth = 720;
                 window.MinHeight = 480;
-                //window.Width = 720;
-                //window.Height = 480;
 
                 window.Show();
-
-                var expectedPosition = new PixelPoint(321, 36);
-
-                Assert.Equal(window.Position, expectedPosition);
+                
+                Assert.Equal(new Size(720, 480), window.Bounds.Size);
             }
         }
 
