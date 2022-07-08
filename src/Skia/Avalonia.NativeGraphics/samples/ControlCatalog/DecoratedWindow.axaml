@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ControlCatalog.DecoratedWindow"
+        Title="Avalonia Control Gallery"
+        xmlns:local="clr-namespace:ControlCatalog" HasSystemDecorations="False" Name="Window">
+        <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="Decorated">
+        <NativeMenu>
+          <NativeMenuItem Header="Open"/>
+          <NativeMenuItem Header="Recent">
+            <NativeMenuItem.Menu>
+              <NativeMenu/>
+            </NativeMenuItem.Menu>
+          </NativeMenuItem>
+          <NativeMenuItem Header="Quit Avalonia" Gesture="CMD+Q"/>
+        </NativeMenu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Edit">
+        <NativeMenu>
+          <NativeMenuItem Header="Copy"/>
+          <NativeMenuItem Header="Paste"/>
+        </NativeMenu>
+      </NativeMenuItem>
+    </NativeMenu>
+  </NativeMenu.Menu>
+    <Grid RowDefinitions="5,*,5" ColumnDefinitions="5,*,5">
+        <DockPanel  Grid.Column="1"  Grid.Row="1" >
+            <Grid Name="TitleBar" Background="LightBlue" DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto">
+                <TextBlock VerticalAlignment="Center" Margin="5,0,0,0">Title</TextBlock>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <StackPanel.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Margin" Value="2"/>
+                        </Style>
+                    </StackPanel.Styles>
+                    <Button Name="MinimizeButton">_</Button>
+                    <Button Name="MaximizeButton">[ ]</Button>
+                    <Button Name="CloseButton">X</Button>
+                </StackPanel>
+            </Grid>
+            <Border Background="White" Margin="5">
+                <StackPanel>
+                    <TextBlock>Hello world!</TextBlock>
+
+                    <CheckBox IsChecked="{Binding ElementName=Window, Path=HasSystemDecorations}">Decorated</CheckBox>
+
+                    <CheckBox IsChecked="{Binding ElementName=Window, Path=CanResize}">CanResize</CheckBox>
+                </StackPanel>
+            </Border>
+        </DockPanel>
+        <Border Name="TopLeft" Background="Red"/>
+        <Border Name="TopRight" Background="Red" Grid.Column="2" />
+        <Border Name="BottomLeft" Background="Red" Grid.Row="2" />
+        <Border Name="BottomRight" Background="Red"  Grid.Row="2" Grid.Column="2"/>
+        <Border Name="Top" Background="Blue" Grid.Column="1" />
+        <Border Name="Right" Background="Blue" Grid.Row="1"  Grid.Column="2" />
+        <Border Name="Bottom" Background="Blue" Grid.Row="2" Grid.Column="1"  />
+        <Border Name="Left" Background="Blue"  Grid.Row="1" />
+    </Grid>
+</Window>

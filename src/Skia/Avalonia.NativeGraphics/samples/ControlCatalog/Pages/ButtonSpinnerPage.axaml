@@ -1,0 +1,34 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ButtonSpinnerPage"
+             xmlns:sys="clr-namespace:System;assembly=netstandard">
+
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">ButtonSpinner</TextBlock>
+    <TextBlock Classes="h2">The ButtonSpinner control allows you to add button spinners to any element and then respond to the Spin event to manipulate that element.</TextBlock>
+
+    <StackPanel Orientation="Vertical" Spacing="8" Width="200" Margin="0,20,0,0">
+      <CheckBox Name="allowSpinCheck" IsChecked="True">AllowSpin</CheckBox>
+      <CheckBox Name="showSpinCheck" IsChecked="True">ShowButtonSpinner</CheckBox>
+      <ButtonSpinner Spin="OnSpin" Height="30"
+                     AllowSpin="{Binding #allowSpinCheck.IsChecked}"
+                     ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Everest"/>
+      </ButtonSpinner>
+      <ButtonSpinner Spin="OnSpin" Height="30" ButtonSpinnerLocation="Left"
+                     AllowSpin="{Binding #allowSpinCheck.IsChecked}"
+                     ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Everest"/>
+      </ButtonSpinner>
+      <ButtonSpinner MinHeight="30" Spin="OnSpin" ButtonSpinnerLocation="Left"
+                     AllowSpin="{Binding #allowSpinCheck.IsChecked}"
+                     ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">
+        <DataValidationErrors.Error>
+          <sys:Exception /> 
+        </DataValidationErrors.Error>
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Everest"/>
+      </ButtonSpinner>
+    </StackPanel>
+  </StackPanel>
+
+</UserControl>

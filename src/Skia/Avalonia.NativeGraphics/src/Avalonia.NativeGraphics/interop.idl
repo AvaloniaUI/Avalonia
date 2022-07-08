@@ -1,0 +1,86 @@
+@clr-namespace Avalonia.Native.Interop
+@clr-access public
+@clr-map bool int
+@cpp-preamble @@
+#pragma once
+#include "com.h"
+#include "stddef.h"
+@@
+
+struct AvgRect
+{
+    double X,Y,Width,Height;
+}
+
+struct AvgPixelSize
+{
+    int Width, Height;
+}
+
+struct AvgMatrix3x2
+{
+    double M11;
+    double M12;
+    double M21;
+    double M22;
+    double M31;
+    double M32;
+}
+
+[uuid(084B6D03-4545-43D1-971D-3D3A968A3127)]
+interface IAvgGetProcAddressDelegate
+{
+    [intptr]void* GetProcAddress(char* proc);
+}
+
+[uuid(52434e9c-5438-4ac9-9823-9f5a3fe90d53)]
+interface IAvgFactory : IUnknown
+{
+    int GetVersion();
+    HRESULT CreateGlGpu(bool gles, IAvgGetProcAddressDelegate* glGetProcAddress, [out]IAvgGpu**ppv);
+    HRESULT CreateGlGpuRenderTarget(IAvgGpu* gpu, IAvgGlPlatformSurfaceRenderTarget* gl, IAvgRenderTarget** ppv);
+}
+
+[uuid(309466F0-B5CA-4ABA-8469-2C902FE5D8F3)]
+interface IAvgDrawingContext
+{
+    void SetTransform(AvgMatrix3x2* matrix);
+    void Clear(uint color);
+    void FillRect(AvgRect rect, uint color);
+}
+
+[uuid(04D2ADF7-F4DF-4836-A60E-7699E5E53EC7)]
+interface IAvgRenderTarget
+{
+    HRESULT CreateDrawingContext(IAvgDrawingContext** ppv);
+}
+
+
+[uuid(7BB8B147-F9C7-49CE-905D-F08AB0EC632F)]
+interface IAvgGpuControl
+{
+    HRESULT Lock(IUnknown** ppv);
+}
+
+[uuid(5E4C1E66-1A35-47C6-A9D3-C26A42EAFD1B)]
+interface IAvgGpu
+{
+}
+
+[uuid(BCE2AEA0-18EF-46D8-910A-A01BC19450E4)]
+interface IAvgGlPlatformSurfaceRenderTarget
+{
+    HRESULT BeginDraw(IAvgGlPlatformSurfaceRenderSession** ppv);
+}
+
+[uuid(38504E1E-EE85-4336-8D01-91FCB67B7197)]
+interface IAvgGlPlatformSurfaceRenderSession
+{
+    void GetPixelSize([out]AvgPixelSize* rv);
+    double GetScaling();
+    int GetSampleCount();
+    int GetStencilSize();
+    int GetFboId();
+    bool GetIsYFlipped();
+}
+

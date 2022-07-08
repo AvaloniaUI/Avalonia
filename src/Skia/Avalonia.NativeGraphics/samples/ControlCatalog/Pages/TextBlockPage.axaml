@@ -1,0 +1,125 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TextBlockPage">
+  <StackPanel>
+    <TextBlock Classes="h1">TextBlock</TextBlock>
+    <TextBlock Classes="h2">A control that can display text</TextBlock>
+    <StackPanel
+      Orientation="Horizontal"
+      Spacing="16"
+      HorizontalAlignment="Center"
+      Margin="0,16,0,0">
+      <StackPanel.Styles>
+        <Style Selector="Border">
+          <Setter Property="BorderThickness" Value="1"/>
+          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumLowBrush}"/>
+          <Setter Property="Padding" Value="2"/>
+        </Style>
+      </StackPanel.Styles>
+      <Border>
+        <StackPanel Width="200" Spacing="8">
+          <TextBlock Margin="0 0 10 0" TextTrimming="CharacterEllipsis" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+          <TextBlock Margin="0 0 10 0" TextTrimming="WordEllipsis" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+          <TextBlock Text="Left aligned text" TextAlignment="Left" />
+          <TextBlock Text="Center aligned text" TextAlignment="Center" />
+          <TextBlock Text="Right aligned text" TextAlignment="Right" />
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Width="200" Spacing="8">
+          <TextBlock
+            TextWrapping="Wrap"
+            Text="Multiline TextBlock with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Width="200" Spacing="8">
+          <TextBlock Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+          <TextBlock Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+          <TextBlock Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-Italic.ttf#Source Sans Pro"/>
+          <TextBlock Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-*.ttf#Source Sans Pro"/>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+    <StackPanel
+      Orientation="Horizontal"
+      Spacing="16"
+      HorizontalAlignment="Center"
+      Margin="0,16,0,0">
+      <StackPanel.Styles>
+        <Style Selector="Border">
+          <Setter Property="BorderThickness" Value="1"/>
+          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumLowBrush}"/>
+          <Setter Property="Padding" Value="2"/>
+        </Style>
+      </StackPanel.Styles>
+      <Border>
+        <StackPanel Width="200" Spacing="8">
+          <TextBlock TextDecorations="Underline" Text="Underline"/>
+          <TextBlock TextDecorations="Strikethrough" Text="Strikethrough"/>
+          <TextBlock TextDecorations="Overline" Text="Overline" />
+          <TextBlock TextDecorations="Baseline" Text="Baseline"/>
+          <TextBlock Text="Custom TextDecorations">
+            <TextBlock.TextDecorations>
+              <TextDecorationCollection>
+                <TextDecoration
+                  Location="Overline"
+                  StrokeThicknessUnit="Pixel"
+                  StrokeThickness="2">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Red"/>
+                        <GradientStop Offset="1" Color="Green"/>
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
+                </TextDecoration>
+                <TextDecoration
+                  Location="Strikethrough"
+                  StrokeThicknessUnit="Pixel"
+                  StrokeThickness="1">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Green"/>
+                        <GradientStop Offset="1" Color="Blue"/>
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
+                </TextDecoration>
+                <TextDecoration
+                  Location="Underline"
+                  StrokeThicknessUnit="Pixel"
+                  StrokeThickness="2">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Blue"/>
+                        <GradientStop Offset="1" Color="Red"/>
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
+                </TextDecoration>
+              </TextDecorationCollection>
+            </TextBlock.TextDecorations>
+          </TextBlock>
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Width="200" Spacing="8">
+          <TextBlock Text="🏻 👌🏻"/>
+          <TextBlock Text="🏼 👌🏼" />
+          <TextBlock Text="🏽 👌🏽"/>
+          <TextBlock Text="🏾 👌🏾"/>
+          <TextBlock Text="🏿 👌🏿"/>
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Width="200" Spacing="8">
+          <TextBlock Text="👪 👨‍👩‍👧 👨‍👩‍👧‍👦"/>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

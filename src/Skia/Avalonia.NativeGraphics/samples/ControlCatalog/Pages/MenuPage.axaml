@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.MenuPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">Menu</TextBlock>
+    <TextBlock Classes="h2">Exported menu fallback</TextBlock>
+    <TextBlock>(Should be only visible on platforms without desktop-global menu bar)</TextBlock>
+    <NativeMenuBar/>
+    <TextBlock Classes="h2">A window menu</TextBlock>
+            
+        <StackPanel Orientation="Horizontal"
+              Margin="0,16,0,0"
+              HorizontalAlignment="Center"
+              Spacing="16">
+            <StackPanel>
+                <TextBlock Classes="h3" Margin="4 8">Defined in XAML</TextBlock>
+                <Menu>
+                    <MenuItem Header="_First">
+                        <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+                        <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
+                        <Separator/>
+                        <MenuItem Header="Menu with _Submenu">
+                            <MenuItem Header="Submenu _1"/>
+                            <MenuItem Header="Submenu _2 with Submenu">
+                                <MenuItem Header="Submenu Level 2" />
+                            </MenuItem>
+                            <MenuItem Header="Submenu _3 with Submenu Disabled" IsEnabled="False">
+                                <MenuItem Header="Submenu Level 2" />
+                            </MenuItem>                          
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Icon" InputGesture="Ctrl+Shift+B">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/github_icon.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Checkbox">
+                            <MenuItem.Icon>
+                                <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="_Second">
+                        <MenuItem Header="Second _Menu Item"/>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+
+            <StackPanel>
+                <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
+                <Menu Items="{Binding MenuItems}">
+                    <Menu.Styles>
+                        <Style Selector="MenuItem">
+                            <Setter Property="Header" Value="{Binding Header}"/>
+                            <Setter Property="Items" Value="{Binding Items}"/>
+                            <Setter Property="Command" Value="{Binding Command}"/>
+                            <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+                        </Style>
+                    </Menu.Styles>
+                </Menu>
+            </StackPanel>
+        
+
+            <StackPanel>
+                <TextBlock Classes="h3" Margin="4 8">Mixed</TextBlock>
+                <Menu>
+                    <MenuItem Header="_File">
+                        <MenuItem Header="_New" CommandParameter="{Binding}" InputGesture="Ctrl+N"/>
+                        <Separator/>
+                        <MenuItem Header="_Open..." InputGesture="Ctrl+O"/>
+                        <Separator/>
+                        <MenuItem Header="Execu_te Script..." />
+                        <Separator/>
+                        <MenuItem Header="_Recent" Items="{Binding RecentItems}">
+                            <MenuItem.Styles>
+                                <Style Selector="MenuItem">
+                                    <Setter Property="Header" Value="{Binding Header}"/>
+                                </Style>
+                            </MenuItem.Styles>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="E_xit" InputGesture="Alt+F4"/>
+                    </MenuItem>
+                    <MenuItem Header="_Help">
+                        <MenuItem Header="_About"/>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

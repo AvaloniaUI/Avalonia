@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ScrollViewerPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">ScrollViewer</TextBlock>
+    <TextBlock Classes="h2">Allows for horizontal and vertical content scrolling.</TextBlock>
+
+    <Grid ColumnDefinitions="Auto, *">
+      <StackPanel Orientation="Vertical" Spacing="4">
+        <ToggleSwitch IsChecked="{Binding AllowAutoHide}" Content="Allow auto hide" />
+
+        <StackPanel Orientation="Vertical" Spacing="4">
+          <TextBlock Text="Horizontal Scroll" />
+          <ComboBox Items="{Binding AvailableVisibility}" SelectedItem="{Binding HorizontalScrollVisibility}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="4">
+          <TextBlock Text="Vertical Scroll" />
+          <ComboBox Items="{Binding AvailableVisibility}" SelectedItem="{Binding VerticalScrollVisibility}" />
+        </StackPanel>
+      </StackPanel>
+
+      <ScrollViewer x:Name="ScrollViewer"
+                    Grid.Column="1"
+                    Width="400" Height="400"
+                    AllowAutoHide="{Binding AllowAutoHide}"
+                    HorizontalScrollBarVisibility="{Binding HorizontalScrollVisibility}"
+                    VerticalScrollBarVisibility="{Binding VerticalScrollVisibility}">
+        <Image Width="800" Height="800" Stretch="UniformToFill"
+               Source="/Assets/delicate-arch-896885_640.jpg" />
+      </ScrollViewer>
+    </Grid>
+
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ListBoxPage">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Margin="4">
+      <TextBlock Classes="h1">ListBox</TextBlock>
+      <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Right" Margin="4">
+      <CheckBox IsChecked="{Binding Multiple}">Multiple</CheckBox>
+      <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
+      <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
+      <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
+      <Button Command="{Binding AddItemCommand}">Add</Button>
+      <Button Command="{Binding RemoveItemCommand}">Remove</Button>
+      <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
+    </StackPanel>
+    <ListBox Items="{Binding Items}"
+             Selection="{Binding Selection}"
+             AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
+             SelectionMode="{Binding SelectionMode^}"/>
+  </DockPanel>
+</UserControl>

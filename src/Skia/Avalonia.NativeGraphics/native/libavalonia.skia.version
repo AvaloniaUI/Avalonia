@@ -1,0 +1,6 @@
+FOO {
+    global:
+        CreateAvaloniaNativeGraphics;
+
+    local: *;         # hide everything else
+};

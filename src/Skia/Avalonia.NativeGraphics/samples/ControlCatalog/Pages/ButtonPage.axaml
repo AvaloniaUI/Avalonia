@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ButtonPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">Button</TextBlock>
+    <TextBlock Classes="h2">A button control</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <StackPanel Orientation="Vertical" Spacing="8" Width="200">
+        <Button>Standard XAML Button</Button>
+        <Button Foreground="White">Foreground</Button>
+        <Button Background="{DynamicResource SystemAccentColor}">Background</Button>
+        <Button IsEnabled="False">Disabled</Button>
+        <Button Content="Re-themed">
+          <Button.Styles>
+            <Style>
+              <Style.Resources>
+                <SolidColorBrush x:Key="ThemeBorderMidBrush">Red</SolidColorBrush>
+                <SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBorderBrush">Red</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackground">DarkRed</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Red</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundPressed">OrangeRed</SolidColorBrush>
+              </Style.Resources>
+            </Style>
+          </Button.Styles>          
+        </Button>
+        <RepeatButton Name="RepeatButton">
+          <TextBlock Name="RepeatButtonTextBlock" Text="Repeat Button: 0" />
+        </RepeatButton>
+        <ToggleButton Content="Toggle Button"/>
+    </StackPanel>
+
+      <StackPanel Orientation="Vertical" Spacing="8" Width="150">
+        <Button BorderThickness="0">No Border</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}">Border Color</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}" BorderThickness="4">Thick Border</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}" BorderThickness="4" IsEnabled="False">Disabled</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}" KeyboardNavigation.IsTabStop="False">IsTabStop=False</Button>
+      </StackPanel>
+    </StackPanel>    
+  </StackPanel>
+</UserControl>

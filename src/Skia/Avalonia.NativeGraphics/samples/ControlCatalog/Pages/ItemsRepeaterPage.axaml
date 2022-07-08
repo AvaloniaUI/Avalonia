@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ItemsRepeaterPage">
+  <UserControl.Resources>
+    <RecyclePool x:Key="RecyclePool" />
+    <DataTemplate x:Key="odd">
+      <TextBlock Background="Yellow"
+                 Foreground="Black"
+                 Height="{Binding Height}"
+                 Text="{Binding Text}"/>
+    </DataTemplate>
+    <DataTemplate x:Key="even">
+      <TextBlock Background="Wheat"
+                 Foreground="Black"
+                 Height="{Binding Height}"
+                 Text="{Binding Text}"/>
+    </DataTemplate>
+    <RecyclingElementFactory x:Key="elementFactory"
+                             RecyclePool="{StaticResource RecyclePool}"
+                             SelectTemplateKey="OnSelectTemplateKey">
+      <RecyclingElementFactory.Templates>
+        <StaticResource x:Key="odd" ResourceKey="odd" />
+        <StaticResource x:Key="even" ResourceKey="even" />
+      </RecyclingElementFactory.Templates>
+    </RecyclingElementFactory>
+  </UserControl.Resources>
+  
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0 0 0 16">
+      <TextBlock Classes="h1">ItemsRepeater</TextBlock>
+      <TextBlock Classes="h2">A data-driven collection control that incorporates a flexible layout system, custom views, and virtualization.</TextBlock>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Right" Margin="8 0" Spacing="4">
+      <ComboBox SelectedIndex="0" SelectionChanged="LayoutChanged">
+        <ComboBoxItem>Stack - Vertical</ComboBoxItem>
+        <ComboBoxItem>Stack - Horizontal</ComboBoxItem>
+        <ComboBoxItem>UniformGrid - Vertical</ComboBoxItem>
+        <ComboBoxItem>UniformGrid - Horizontal</ComboBoxItem>
+      </ComboBox>
+      <Button Command="{Binding AddItem}">Add Item</Button>
+      <Button Command="{Binding RandomizeHeights}">Randomize Heights</Button>
+      <Button Command="{Binding ResetItems}">Reset items</Button>
+      <Button x:Name="scrollToLast">Scroll to Last</Button>
+      <Button x:Name="scrollToRandom">Scroll to Random</Button>
+    </StackPanel>
+    <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlHighlightBaseMediumLowBrush}" Margin="0 0 0 16">
+      <ScrollViewer Name="scroller"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}"
+                       ItemTemplate="{StaticResource elementFactory}"/>
+      </ScrollViewer>
+    </Border>
+  </DockPanel>
+</UserControl>

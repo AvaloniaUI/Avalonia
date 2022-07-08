@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:AvaloniaUI/Avalonia.NativeGraphics
+	branch = master
+	commit = 464fbe62c05a8da4c50f2ce3c6313babe3be2b18
+	parent = d3debf017728b2f0a6fc2d20b1571b0ed891e917
+	method = merge
+	cmdver = 0.4.3

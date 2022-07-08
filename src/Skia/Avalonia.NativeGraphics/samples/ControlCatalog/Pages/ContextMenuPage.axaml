@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ContextMenuPage">
+    <StackPanel Orientation="Vertical" Spacing="4">
+        <TextBlock Classes="h1">Context Menu</TextBlock>
+        <TextBlock Classes="h2">A right click menu that can be applied to any control.</TextBlock>
+
+        <StackPanel Orientation="Horizontal"
+              Margin="0,16,0,0"
+              HorizontalAlignment="Center"
+              Spacing="16">
+            <Border Background="{DynamicResource SystemAccentColor}"
+                    Margin="16"
+                    Padding="48,48,48,48">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+                        <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
+                        <Separator/>
+                        <MenuItem Header="Menu with _Submenu">
+                            <MenuItem Header="Submenu _1"/>
+                            <MenuItem Header="Submenu _2"/>
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Icon" InputGesture="Ctrl+Shift+B">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/github_icon.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Checkbox">
+                            <MenuItem.Icon>
+                                <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <TextBlock Text="Defined in XAML"/>
+            </Border>
+            <Border Background="{DynamicResource SystemAccentColor}"
+                    Margin="16"
+                    Padding="48,48,48,48">
+                <Border.ContextMenu>
+                    <ContextMenu Items="{Binding MenuItems}">
+                        <ContextMenu.Styles>
+                            <Style Selector="MenuItem">
+                                <Setter Property="Header" Value="{Binding Header}"/>
+                                <Setter Property="Items" Value="{Binding Items}"/>
+                                <Setter Property="Command" Value="{Binding Command}"/>
+                                <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+                            </Style>
+                        </ContextMenu.Styles>
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <TextBlock Text="Dynamically Generated"/>
+            </Border>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

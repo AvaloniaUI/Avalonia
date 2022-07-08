@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.LayoutTransformControlPage">
+  <DockPanel>
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="16" DockPanel.Dock="Top">
+      <TextBlock Grid.Column="0" Grid.Row="0">Rotation</TextBlock>
+      <Slider Name="rotation" Maximum="360" Grid.Column="1" Grid.Row="0"/>
+    </Grid>
+
+    <Grid ColumnDefinitions="24,Auto,24" 
+          RowDefinitions="24,Auto,24"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center">
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="1" Grid.Row="0"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="0" Grid.Row="1"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="2" Grid.Row="1"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="1" Grid.Row="2"/>
+
+      <LayoutTransformControl Name="layoutTransform" Grid.Column="1" Grid.Row="1">
+        <LayoutTransformControl.LayoutTransform>
+          <RotateTransform Angle="{Binding #rotation.Value}"/>
+        </LayoutTransformControl.LayoutTransform>
+          <Button Background="White">Layout Transform</Button>
+      </LayoutTransformControl>
+    </Grid>
+  </DockPanel>
+</UserControl>

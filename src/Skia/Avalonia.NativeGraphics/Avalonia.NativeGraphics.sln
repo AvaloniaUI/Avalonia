@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C3B63469-605A-442E-AEFE-1DF199206238}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.NativeGraphics", "src\Avalonia.NativeGraphics\Avalonia.NativeGraphics.csproj", "{8932F2D6-5DEA-47E8-AADC-99C61D99EC51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.NativeGraphics.Backend", "src\Avalonia.NativeGraphics.Backend\Avalonia.NativeGraphics.Backend.csproj", "{95DE4E6D-6EBE-456E-8D89-90FBAFDB55FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{D04C89D4-F59E-4653-9391-F76A851A748F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog", "samples\ControlCatalog\ControlCatalog.csproj", "{C8689BC3-1F6B-4A79-B75E-51F93A2A8E4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.NetCore", "samples\ControlCatalog.NetCore\ControlCatalog.NetCore.csproj", "{5A9A57DD-DBEE-4108-8C26-3719A4C0B697}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F6E77FF7-7356-430D-BF32-EEE69C7ECD7A}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMvvm", "samples\MiniMvvm\MiniMvvm.csproj", "{76D04206-D6E5-4820-B384-390AB87442E9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8932F2D6-5DEA-47E8-AADC-99C61D99EC51} = {C3B63469-605A-442E-AEFE-1DF199206238}
+		{95DE4E6D-6EBE-456E-8D89-90FBAFDB55FD} = {C3B63469-605A-442E-AEFE-1DF199206238}
+		{C8689BC3-1F6B-4A79-B75E-51F93A2A8E4A} = {D04C89D4-F59E-4653-9391-F76A851A748F}
+		{5A9A57DD-DBEE-4108-8C26-3719A4C0B697} = {D04C89D4-F59E-4653-9391-F76A851A748F}
+		{76D04206-D6E5-4820-B384-390AB87442E9} = {D04C89D4-F59E-4653-9391-F76A851A748F}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8932F2D6-5DEA-47E8-AADC-99C61D99EC51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8932F2D6-5DEA-47E8-AADC-99C61D99EC51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8932F2D6-5DEA-47E8-AADC-99C61D99EC51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8932F2D6-5DEA-47E8-AADC-99C61D99EC51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95DE4E6D-6EBE-456E-8D89-90FBAFDB55FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95DE4E6D-6EBE-456E-8D89-90FBAFDB55FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95DE4E6D-6EBE-456E-8D89-90FBAFDB55FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95DE4E6D-6EBE-456E-8D89-90FBAFDB55FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8689BC3-1F6B-4A79-B75E-51F93A2A8E4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8689BC3-1F6B-4A79-B75E-51F93A2A8E4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8689BC3-1F6B-4A79-B75E-51F93A2A8E4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8689BC3-1F6B-4A79-B75E-51F93A2A8E4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A9A57DD-DBEE-4108-8C26-3719A4C0B697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A9A57DD-DBEE-4108-8C26-3719A4C0B697}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A9A57DD-DBEE-4108-8C26-3719A4C0B697}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A9A57DD-DBEE-4108-8C26-3719A4C0B697}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76D04206-D6E5-4820-B384-390AB87442E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76D04206-D6E5-4820-B384-390AB87442E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76D04206-D6E5-4820-B384-390AB87442E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76D04206-D6E5-4820-B384-390AB87442E9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

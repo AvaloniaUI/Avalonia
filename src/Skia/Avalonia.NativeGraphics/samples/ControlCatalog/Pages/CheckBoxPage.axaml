@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CheckBoxPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">CheckBox</TextBlock>
+    <TextBlock Classes="h2">A check box control</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <StackPanel Orientation="Vertical"
+                  Spacing="16">
+        <CheckBox>Unchecked</CheckBox>
+        <CheckBox IsChecked="True">Checked</CheckBox>
+        <CheckBox IsChecked="{x:Null}">Indeterminate</CheckBox>
+        <CheckBox IsChecked="True" IsEnabled="False">Disabled</CheckBox>
+      </StackPanel>
+      <StackPanel Orientation="Vertical"
+                  HorizontalAlignment="Center"
+                  Spacing="16">
+        <CheckBox IsChecked="False" IsThreeState="True">Three State: Unchecked</CheckBox>
+        <CheckBox IsChecked="True" IsThreeState="True">Three State: Checked</CheckBox>
+        <CheckBox IsChecked="{x:Null}" IsThreeState="True">Three State: Indeterminate</CheckBox>
+        <CheckBox IsChecked="{x:Null}" IsThreeState="True" IsEnabled="False">Three State: Disabled</CheckBox>
+      </StackPanel>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

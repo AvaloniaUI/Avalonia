@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TreeViewPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">TreeView</TextBlock>
+    <TextBlock Classes="h2">Displays a hierachical tree of data.</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <StackPanel Orientation="Vertical" Spacing="8">
+        <TreeView Items="{Binding Items}" SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350">
+          <TreeView.ItemTemplate>
+            <TreeDataTemplate ItemsSource="{Binding Children}">
+              <TextBlock Text="{Binding Header}"/>
+            </TreeDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+
+        <Button Command="{Binding AddItemCommand}">Add</Button>
+        <Button Command="{Binding RemoveItemCommand}">Remove</Button>
+        <Button Command="{Binding SelectRandomItemCommand}">Select Random</Button>
+
+        <ComboBox SelectedIndex="{Binding SelectionMode, Mode=TwoWay}">
+          <ComboBoxItem>Single</ComboBoxItem>
+          <ComboBoxItem>Multiple</ComboBoxItem>
+          <ComboBoxItem>Toggle</ComboBoxItem>
+          <ComboBoxItem>AlwaysSelected</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

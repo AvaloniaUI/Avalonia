@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.BorderPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">Border</TextBlock>
+    <TextBlock Classes="h2">A control which decorates a child with a border and background</TextBlock>
+
+    <StackPanel Orientation="Vertical"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <Border BorderBrush="{DynamicResource SystemAccentColor}" BorderThickness="2" Padding="16">
+        <TextBlock>Border</TextBlock>
+      </Border>
+      <Border Background="{DynamicResource SystemAccentColorDark1}" 
+              BorderBrush="{DynamicResource SystemAccentColor}" 
+              BorderThickness="4" 
+              Padding="16">
+        <TextBlock>Border and Background</TextBlock>
+      </Border>
+      <Border BorderBrush="{DynamicResource SystemAccentColor}"
+              BorderThickness="4" 
+              CornerRadius="8"
+              Padding="16">
+        <TextBlock>Rounded Corners</TextBlock>
+      </Border>
+      <Border Background="{DynamicResource SystemAccentColor}"
+              CornerRadius="8"
+              Padding="16">
+        <TextBlock>Rounded Corners</TextBlock>
+      </Border>
+      <Border Width="100" Height="100"
+              BorderThickness="0"
+              Background="White"
+              CornerRadius="100" ClipToBounds="True">
+        <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill" />
+      </Border>
+      <TextBlock Text="Border with Clipping" HorizontalAlignment="Center" />
+    </StackPanel>    
+  </StackPanel>
+</UserControl>

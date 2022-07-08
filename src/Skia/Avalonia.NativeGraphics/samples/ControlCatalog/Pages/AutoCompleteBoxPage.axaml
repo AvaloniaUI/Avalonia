@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
+             x:Class="ControlCatalog.Pages.AutoCompleteBoxPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">AutoCompleteBox</TextBlock>
+    <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+              Margin="0,16,0,0"
+              HorizontalAlignment="Center"
+              Spacing="8">
+      <StackPanel Orientation="Vertical">
+        <TextBlock Text="MinimumPrefixLength: 1"/>
+        <AutoCompleteBox Width="200"
+                         Margin="0,0,0,8"
+                         MinimumPrefixLength="1"/>
+        <TextBlock Text="MinimumPrefixLength: 3"/>
+        <AutoCompleteBox Width="200"
+                         Margin="0,0,0,8"
+                         MinimumPrefixLength="3"/>
+        <TextBlock Text="MinimumPopulateDelay: 1 Second"/>
+        <AutoCompleteBox Width="200"
+                         Margin="0,0,0,8"
+                         MinimumPopulateDelay="1"/>
+        <TextBlock Text="MaxDropDownHeight: 60"/>
+        <AutoCompleteBox Width="200"
+                         Margin="0,0,0,8"
+                         MaxDropDownHeight="60"/>
+        <AutoCompleteBox Width="200"
+                         Margin="0,0,0,8"
+                         Watermark="Watermark"/>
+        <TextBlock Text="Disabled"/>
+        <AutoCompleteBox Width="200"
+                         IsEnabled="False"/>
+      </StackPanel>
+      
+
+      <StackPanel Orientation="Vertical">
+        
+        <TextBlock Text="ValueMemberBinding"/>
+        <AutoCompleteBox Width="200"
+                         Margin="0,0,0,8"
+                         ValueMemberBinding="{Binding Capital}"/>
+        <TextBlock Text="Multi-Binding"/>
+        <AutoCompleteBox Name="MultiBindingBox"
+                         Width="200"
+                         Margin="0,0,0,8"
+                         FilterMode="Contains"/>
+        <TextBlock Text="Async Populate"/>
+        <AutoCompleteBox Name="AsyncBox"
+                         Width="200"
+                         Margin="0,0,0,8"
+                         FilterMode="None"/>
+        <TextBlock Text="Custom Autocomplete"/>
+        <AutoCompleteBox Name="CustomAutocompleteBox"
+                         Width="200"
+                         Margin="0,0,0,8"
+                         FilterMode="None"/>
+        
+        <TextBlock Text="With Validation Errors"/>
+        <AutoCompleteBox Name="ValidationErrors"
+                         Width="200"
+                         Margin="0,0,0,8"
+                         FilterMode="None">
+          <DataValidationErrors.Error>
+            <sys:Exception /> 
+          </DataValidationErrors.Error>
+        </AutoCompleteBox>
+      </StackPanel>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

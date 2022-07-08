@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">Carousel</TextBlock>
+    <TextBlock Classes="h2">An items control that displays its items as pages that fill the control.</TextBlock>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="8">
+      <Button Name="left" VerticalAlignment="Center" Padding="20">
+        <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
+      </Button>
+      <Carousel Name="carousel">
+        <Carousel.PageTransition>
+          <PageSlide Duration="0.25" Orientation="Vertical" />
+        </Carousel.PageTransition>
+        <Image Source="/Assets/delicate-arch-896885_640.jpg"/>
+        <Image Source="/Assets/hirsch-899118_640.jpg"/>
+        <Image Source="/Assets/maple-leaf-888807_640.jpg"/>
+      </Carousel>
+      <Button Name="right" VerticalAlignment="Center" Padding="20">
+        <Path Data="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" Fill="Black"/>
+      </Button>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+      <TextBlock VerticalAlignment="Center">Transition</TextBlock>
+      <ComboBox Name="transition" SelectedIndex="1" VerticalAlignment="Center">
+        <ComboBoxItem>None</ComboBoxItem>
+        <ComboBoxItem>Slide</ComboBoxItem>
+        <ComboBoxItem>Crossfade</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+      <TextBlock VerticalAlignment="Center">Orientation</TextBlock>
+      <ComboBox Name="orientation" SelectedIndex="1" VerticalAlignment="Center">
+        <ComboBoxItem>Horizontal</ComboBoxItem>
+        <ComboBoxItem>Vertical</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+    
+  </StackPanel>
+</UserControl>

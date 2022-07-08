@@ -1,0 +1,91 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
+             x:Class="ControlCatalog.Pages.NumericUpDownPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Margin="2" Classes="h1">Numeric up-down control</TextBlock>
+    <TextBlock Margin="2" Classes="h2" TextWrapping="Wrap">Numeric up-down control provides a TextBox with button spinners that allow incrementing and decrementing numeric values by using the spinner buttons, keyboard up/down arrows, or mouse wheel.</TextBlock>
+
+    <TextBlock Margin="2,5,2,2" FontSize="14" FontWeight="Bold">Features:</TextBlock>
+    <Grid Margin="2" ColumnDefinitions="Auto,Auto,Auto,Auto" RowDefinitions="Auto,Auto">
+      <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">ShowButtonSpinner:</TextBlock>
+        <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding #upDown.ShowButtonSpinner}" VerticalAlignment="Center" Margin="2"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="2">IsReadOnly:</TextBlock>
+        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding #upDown.IsReadOnly}" VerticalAlignment="Center" Margin="2"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="2">AllowSpin:</TextBlock>
+        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding #upDown.AllowSpin}" VerticalAlignment="Center" Margin="2"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">ClipValueToMinMax:</TextBlock>
+        <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding #upDown.ClipValueToMinMax}" VerticalAlignment="Center" Margin="2"/>
+
+      </Grid>
+      <Grid Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">FormatString:</TextBlock>
+        <ComboBox Grid.Row="0" Grid.Column="1" Items="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+                  VerticalAlignment="Center" Margin="2">
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="2">
+                <TextBlock Text="{Binding Name}"/>
+                <TextBlock Text="-"/>
+                <TextBlock Text="{Binding Value}"/>
+              </StackPanel>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="2">ButtonSpinnerLocation:</TextBlock>
+        <ComboBox Grid.Row="1" Grid.Column="1" Items="{Binding SpinnerLocations}" SelectedItem="{Binding #upDown.ButtonSpinnerLocation}"
+                  VerticalAlignment="Center" Margin="2"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="2">CultureInfo:</TextBlock>
+        <ComboBox Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}" SelectedItem="{Binding #upDown.CultureInfo}"
+                  VerticalAlignment="Center" Margin="2"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Watermark:</TextBlock>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding #upDown.Watermark}" VerticalAlignment="Center" Margin="2" />
+
+        <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">Text:</TextBlock>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding #upDown.Text}" VerticalAlignment="Center" Margin="2" />
+      </Grid>
+      <Grid Grid.Row="0" Grid.Column="2" Margin="10,2,2,2" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Minimum:</TextBlock>
+        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding #upDown.Minimum}"
+                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Maximum:</TextBlock>
+        <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding #upDown.Maximum}"
+                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Increment:</TextBlock>
+        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding #upDown.Increment}" VerticalAlignment="Center"
+                       Margin="2" HorizontalAlignment="Center"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Value:</TextBlock>
+        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding #upDown.Value}" VerticalAlignment="Center"
+                       Margin="2" HorizontalAlignment="Center"/>
+
+      </Grid>
+    </Grid>
+
+    <StackPanel Margin="2,10,2,2" Orientation="Horizontal" Spacing="10">
+      <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of NumericUpDown:</TextBlock>
+      <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
+                     CultureInfo="en-US" VerticalAlignment="Center"
+                     Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+      
+      <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</TextBlock>
+      <NumericUpDown Minimum="0" Maximum="10" Increment="0.5"
+                     CultureInfo="en-US" VerticalAlignment="Center"
+                     Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}">
+        <DataValidationErrors.Error>
+          <sys:Exception /> 
+        </DataValidationErrors.Error>
+      </NumericUpDown>
+    </StackPanel>
+
+  </StackPanel>
+</UserControl>

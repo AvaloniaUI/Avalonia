@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ImagePage">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Spacing="4">
+      <TextBlock Classes="h1">Image</TextBlock>
+      <TextBlock Classes="h2">Displays an image</TextBlock>
+    </StackPanel>
+
+    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,*" Margin="64">
+      
+      <DockPanel Grid.Column="0" Grid.Row="1" Margin="16">
+        <TextBlock DockPanel.Dock="Top" Classes="h3" Margin="0 8">Bitmap</TextBlock>
+        <ComboBox Name="bitmapStretch" DockPanel.Dock="Top" SelectedIndex="2" SelectionChanged="BitmapStretchChanged">
+          <ComboBoxItem>None</ComboBoxItem>
+          <ComboBoxItem>Fill</ComboBoxItem>
+          <ComboBoxItem>Uniform</ComboBoxItem>
+          <ComboBoxItem>UniformToFill</ComboBoxItem>
+        </ComboBox>
+        <Image Name="bitmapImage"
+               Source="/Assets/delicate-arch-896885_640.jpg"/>
+      </DockPanel>
+
+      <DockPanel Grid.Column="1" Grid.Row="1" Margin="16">
+        <TextBlock DockPanel.Dock="Top" Classes="h3" Margin="0 8">Crop</TextBlock>
+        <ComboBox Name="bitmapCrop" DockPanel.Dock="Top" SelectedIndex="2" SelectionChanged="BitmapCropChanged">
+          <ComboBoxItem>None</ComboBoxItem>
+          <ComboBoxItem>Center</ComboBoxItem>
+          <ComboBoxItem>TopLeft</ComboBoxItem>
+          <ComboBoxItem>TopRight</ComboBoxItem>
+          <ComboBoxItem>BottomLeft</ComboBoxItem>
+          <ComboBoxItem>BottomRight</ComboBoxItem>
+        </ComboBox>
+        <Image Name="croppedImage">
+          <Image.Source>
+            <CroppedBitmap  Source="/Assets/delicate-arch-896885_640.jpg" SourceRect="0 0 320 240"/>  
+          </Image.Source>
+        </Image>
+      </DockPanel>
+
+      <DockPanel Grid.Column="2" Grid.Row="1" Margin="16">
+        <TextBlock DockPanel.Dock="Top" Classes="h3" Margin="0 8">Drawing</TextBlock>
+        <ComboBox Name="drawingStretch" DockPanel.Dock="Top" SelectedIndex="2" SelectionChanged="DrawingStretchChanged">
+          <ComboBoxItem>None</ComboBoxItem>
+          <ComboBoxItem>Fill</ComboBoxItem>
+          <ComboBoxItem>Uniform</ComboBoxItem>
+          <ComboBoxItem>UniformToFill</ComboBoxItem>
+        </ComboBox>
+        <Image Name="drawingImage">
+          <Image.Source>
+            <DrawingImage>
+              <GeometryDrawing Brush="Red">
+                <PathGeometry>
+                  <PathFigure StartPoint="0,0" IsClosed="True">
+                    <QuadraticBezierSegment Point1="50,0" Point2="50,-50" />
+                    <QuadraticBezierSegment Point1="100,-50" Point2="100,0" />
+                    <LineSegment Point="50,0" />
+                    <LineSegment Point="50,50" />
+                  </PathFigure>
+                </PathGeometry>
+              </GeometryDrawing>
+            </DrawingImage>
+          </Image.Source>
+        </Image>
+      </DockPanel>
+    </Grid>
+    
+  </DockPanel>
+</UserControl>

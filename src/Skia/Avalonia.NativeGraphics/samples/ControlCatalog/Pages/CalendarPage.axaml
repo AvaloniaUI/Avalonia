@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CalendarPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">Calendar</TextBlock>
+    <TextBlock Classes="h2">A calendar control for selecting dates</TextBlock>
+        
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <StackPanel Orientation="Vertical">
+        <TextBlock Text="SelectionMode: None"/>
+        <Calendar SelectionMode="None"
+                  Margin="0,0,0,8"/>
+
+        <TextBlock Text="SelectionMode: SingleDate"/>
+        <Calendar SelectionMode="SingleDate"
+                  Margin="0,0,0,8"/>
+
+        <TextBlock Text="Disabled"/>
+        <Calendar IsEnabled="False"
+                  SelectionMode="SingleDate"/>
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical">
+        <TextBlock Text="SelectionMode: SingleRange"/>
+        <Calendar SelectionMode="SingleRange"
+                  Margin="0,0,0,8"/>
+
+        <TextBlock Text="SelectionMode: MultipleRange"/>
+        <Calendar SelectionMode="MultipleRange"/>
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical">
+        <TextBlock Text="DisplayDates"/>
+        <Calendar Name="DisplayDatesCalendar"
+                  SelectionMode="SingleDate"
+                  Margin="0,0,0,8"/>
+
+        <TextBlock Text="BlackoutDates"/>
+        <Calendar Name="BlackoutDatesCalendar"
+                  SelectionMode="SingleDate" />
+      </StackPanel>
+      
+    </StackPanel> 
+  </StackPanel>
+</UserControl>

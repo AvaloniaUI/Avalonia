@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RadioButtonPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">RadioButton</TextBlock>
+    <TextBlock Classes="h2">Allows the selection of a single option of many</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <StackPanel Orientation="Vertical"
+                  Spacing="16">
+        <RadioButton IsChecked="True">Option 1</RadioButton>
+        <RadioButton>Option 2</RadioButton>
+        <RadioButton IsChecked="{x:Null}">Option 3</RadioButton>
+        <RadioButton IsEnabled="False">Disabled</RadioButton>
+      </StackPanel>
+      <StackPanel Orientation="Vertical"
+                  Spacing="16">
+        <RadioButton IsChecked="True" IsThreeState="True">Three States: Option 1</RadioButton>
+        <RadioButton IsChecked="False" IsThreeState="True">Three States: Option 2</RadioButton>
+        <RadioButton IsChecked="{x:Null}" IsThreeState="True">Three States: Option 3</RadioButton>
+        <RadioButton IsChecked="{x:Null}" IsThreeState="True" IsEnabled="False">Disabled</RadioButton>
+      </StackPanel>
+      <StackPanel Orientation="Vertical"
+                  Spacing="16">
+        <RadioButton GroupName="A" IsChecked="True">Group A: Option 1</RadioButton>
+        <RadioButton GroupName="A" IsEnabled="False">Group A: Disabled</RadioButton>
+        <RadioButton GroupName="B">Group B: Option 1</RadioButton>
+        <RadioButton GroupName="B" IsChecked="{x:Null}">Group B: Option 3</RadioButton>
+      </StackPanel>
+      <StackPanel Orientation="Vertical"
+                  Spacing="16">
+        <RadioButton GroupName="A" IsChecked="True">Group A: Option 2</RadioButton>
+        <RadioButton GroupName="B">Group B: Option 2</RadioButton>
+        <RadioButton GroupName="B" IsChecked="{x:Null}">Group B: Option 4</RadioButton>
+      </StackPanel>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

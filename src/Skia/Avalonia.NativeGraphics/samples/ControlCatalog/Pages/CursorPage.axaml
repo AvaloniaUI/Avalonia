@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CursorPage">
+  <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,*">
+    <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="4">
+      <TextBlock Classes="h1">Cursor</TextBlock>
+      <TextBlock Classes="h2">Defines a cursor (mouse pointer)</TextBlock>
+    </StackPanel>
+
+    <ListBox Grid.Row="1" Items="{Binding StandardCursors}" Margin="0 8 8 8">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Cursor" Value="{Binding Cursor}"/>
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Type}"/>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <StackPanel Grid.Column="1" Grid.Row="1" Margin="8 8 0 8">
+      <Button Cursor="{Binding CustomCursor}" Margin="0 8" Padding="16">
+        <TextBlock>Custom Cursor</TextBlock>
+      </Button>
+    </StackPanel>
+ </Grid>
+</UserControl>

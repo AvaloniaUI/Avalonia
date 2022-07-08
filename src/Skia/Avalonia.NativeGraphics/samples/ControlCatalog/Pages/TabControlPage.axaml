@@ -1,0 +1,100 @@
+<UserControl
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="ControlCatalog.Pages.TabControlPage"
+    xmlns="https://github.com/avaloniaui">
+    <DockPanel>
+        <TextBlock 
+            DockPanel.Dock="Top" 
+            Classes="h1"
+            Text="TabControl"
+            Margin="4">           
+        </TextBlock>
+        <TextBlock 
+            DockPanel.Dock="Top" 
+            Classes="h2"
+            Text="A tab control that displays a tab strip along with the content of the selected tab"
+            Margin="4">          
+        </TextBlock>
+        <Grid 
+            ColumnDefinitions="*,*" 
+            RowDefinitions="*,100">
+            <DockPanel
+                Grid.Column="0"
+                Margin="4">
+                <TextBlock
+                    DockPanel.Dock="Top"
+                    Classes="h1"
+                    Text="From Inline TabItems">
+                </TextBlock>
+                <TabControl
+                    Margin="0 16"
+                    TabStripPlacement="{Binding TabPlacement}">
+                    <TabItem Header="Arch">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock>This is the first page in the TabControl.</TextBlock>
+                            <Image Source="/Assets/delicate-arch-896885_640.jpg" Width="300"/>
+                        </StackPanel>
+                    </TabItem>
+                    <TabItem Header="Leaf">                       
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock>This is the second page in the TabControl.</TextBlock>
+                            <Image Source="/Assets/maple-leaf-888807_640.jpg" Width="300"/>
+                        </StackPanel>
+                    </TabItem>
+                    <TabItem Header="Disabled" IsEnabled="False">
+                        <TextBlock>You should not see this.</TextBlock>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+            <DockPanel
+                Grid.Column="1"
+                Margin="4">
+                <TextBlock
+                    DockPanel.Dock="Top"
+                    Classes="h1"
+                    Text="From DataTemplate">
+                </TextBlock>
+                <TabControl
+                    Items="{Binding Tabs}"
+                    Margin="0 16"
+                    TabStripPlacement="{Binding TabPlacement}">
+                    <TabControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                Text="{Binding Header}">
+                            </TextBlock>
+                        </DataTemplate>
+                    </TabControl.ItemTemplate>
+                    <TabControl.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="{Binding Text}"/>
+                                <Image Source="{Binding Image}" Width="300"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </TabControl.ContentTemplate>
+                    <TabControl.Styles>
+                        <Style Selector="TabItem">
+                            <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+                        </Style>
+                    </TabControl.Styles>
+                </TabControl>
+            </DockPanel>
+            <StackPanel
+                Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Orientation="Horizontal"
+                Spacing="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
+                <ComboBox SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
+                    <ComboBoxItem>Left</ComboBoxItem>
+                    <ComboBoxItem>Bottom</ComboBoxItem>
+                    <ComboBoxItem>Right</ComboBoxItem>
+                    <ComboBoxItem>Top</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

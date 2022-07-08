@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ComboBoxPage"
+             xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">ComboBox</TextBlock>
+    <TextBlock Classes="h2">A drop-down list.</TextBlock>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="8">
+      <ComboBox PlaceholderText="Pick an Item">
+        <ComboBoxItem>Inline Items</ComboBoxItem>
+        <ComboBoxItem>Inline Item 2</ComboBoxItem>
+        <ComboBoxItem>Inline Item 3</ComboBoxItem>
+        <ComboBoxItem>Inline Item 4</ComboBoxItem>
+      </ComboBox>
+
+      <ComboBox SelectedIndex="0">
+        <ComboBoxItem>
+          <Panel>
+            <Rectangle Fill="{DynamicResource SystemAccentColor}"/>
+            <TextBlock Margin="8">Control Items</TextBlock>
+          </Panel>
+        </ComboBoxItem>
+        <ComboBoxItem>
+          <Ellipse Width="50" Height="50" Fill="Yellow"/>
+        </ComboBoxItem>
+        <ComboBoxItem>
+          <TextBox Text="TextBox"/>
+        </ComboBoxItem>
+      </ComboBox>
+
+       <ComboBox x:Name="fontComboBox"  SelectedIndex="0">
+         <ComboBox.ItemTemplate>
+           <DataTemplate>
+             <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
+           </DataTemplate>
+         </ComboBox.ItemTemplate>
+       </ComboBox>
+      
+      <ComboBox PlaceholderText="Pick an Item">
+        <ComboBoxItem>Inline Items</ComboBoxItem>
+        <ComboBoxItem>Inline Item 2</ComboBoxItem>
+        <ComboBoxItem>Inline Item 3</ComboBoxItem>
+        <ComboBoxItem>Inline Item 4</ComboBoxItem>
+        <DataValidationErrors.Error>
+          <sys:Exception /> 
+        </DataValidationErrors.Error>
+      </ComboBox>
+    </StackPanel>
+
+  </StackPanel>
+</UserControl>

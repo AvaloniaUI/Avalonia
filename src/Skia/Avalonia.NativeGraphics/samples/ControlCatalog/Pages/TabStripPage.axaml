@@ -1,0 +1,33 @@
+<UserControl xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabStripPage"
+             xmlns="https://github.com/avaloniaui">
+    <StackPanel Orientation="Vertical" Spacing="4">
+        <TextBlock Classes="h1">TabStrip</TextBlock>
+        <TextBlock Classes="h2">A control which displays a selectable strip of tabs</TextBlock>
+
+        <Separator Margin="0 16"/>
+        
+        <TextBlock Classes="h1">Defined in XAML</TextBlock>
+        <TabStrip>
+            <TabStripItem>Item 1</TabStripItem>
+            <TabStripItem>Item 2</TabStripItem>
+            <TabStripItem IsEnabled="False">Disabled</TabStripItem>
+        </TabStrip>
+
+        <Separator Margin="0 16"/>
+
+        <TextBlock Classes="h1">Dynamically generated</TextBlock>
+        <TabStrip Items="{Binding}">
+            <TabStrip.Styles>
+                <Style Selector="TabStripItem">
+                    <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+                </Style>
+            </TabStrip.Styles>
+            <TabStrip.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Header}"/>
+                </DataTemplate>
+            </TabStrip.ItemTemplate>
+        </TabStrip>
+    </StackPanel>
+</UserControl>
