@@ -6,7 +6,7 @@
   <Style Selector="ColorSpectrum">
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate>
+        <ControlTemplate TargetType="{x:Type ColorSpectrum}">
           <Panel x:Name="PART_LayoutRoot"
                  HorizontalAlignment="Stretch"
                  VerticalAlignment="Stretch">

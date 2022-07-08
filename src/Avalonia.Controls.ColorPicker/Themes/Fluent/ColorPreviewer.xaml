@@ -13,7 +13,7 @@
     <Setter Property="Height" Value="70" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate TargetType="{x:Type ColorPreviewer}">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <!-- Left accent colors -->
           <Grid Grid.Column="0"

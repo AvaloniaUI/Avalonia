@@ -17,7 +17,7 @@
       <controls:FluentColorPalette />
     </Setter>
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate TargetType="{x:Type ColorPicker}">
         <DropDownButton CornerRadius="{TemplateBinding CornerRadius}"
                         Height="{TemplateBinding Height}"
                         Width="{TemplateBinding Width}"

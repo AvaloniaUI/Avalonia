@@ -21,7 +21,7 @@
     <Setter Property="CornerRadius" Value="10" />
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate TargetType="{x:Type ColorSlider}">
         <Border BorderThickness="{TemplateBinding BorderThickness}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 CornerRadius="{TemplateBinding CornerRadius}">
@@ -93,7 +93,7 @@
     <Setter Property="CornerRadius" Value="10" />
     <Setter Property="Width" Value="20" />
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate TargetType="{x:Type ColorSlider}">
         <Border BorderThickness="{TemplateBinding BorderThickness}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 CornerRadius="{TemplateBinding CornerRadius}">
