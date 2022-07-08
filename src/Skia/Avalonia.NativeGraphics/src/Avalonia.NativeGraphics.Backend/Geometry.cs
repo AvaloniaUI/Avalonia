@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Avalonia.Native.Interop;
 using Avalonia.Platform;
 
 namespace Avalonia.NativeGraphics.Backend
@@ -7,7 +8,15 @@ namespace Avalonia.NativeGraphics.Backend
     {
         private IGeometryImpl _sourceGeometry;
         private Matrix _transform;
+        public IAvgPath _avgPath;
+        protected IAvgFactory _factory;
 
+        public GeometryImpl(IAvgFactory factory)
+        {
+            _factory = factory;
+            _avgPath = factory.CreateAvgPath();
+        }
+        
         public Rect GetRenderBounds(IPen pen)
         {
             return new Rect();
@@ -20,7 +29,7 @@ namespace Avalonia.NativeGraphics.Backend
 
         public IGeometryImpl Intersect(IGeometryImpl geometry)
         {
-            return new GeometryImpl();
+            return new GeometryImpl(_factory);
         }
 
         public bool StrokeContains(IPen pen, Point point)
@@ -30,7 +39,7 @@ namespace Avalonia.NativeGraphics.Backend
 
         public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
-            return new GeometryImpl
+            return new GeometryImpl(_factory)
             {
                 _sourceGeometry = this,
                 _transform = transform

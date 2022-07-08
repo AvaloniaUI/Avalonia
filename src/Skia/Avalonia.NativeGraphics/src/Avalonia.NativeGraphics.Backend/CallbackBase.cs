@@ -1,6 +1,3 @@
-using System;
-using System.Runtime.ExceptionServices;
-using Avalonia.Platform;
 using MicroCom.Runtime;
 
 namespace Avalonia.NativeGraphics.Backend

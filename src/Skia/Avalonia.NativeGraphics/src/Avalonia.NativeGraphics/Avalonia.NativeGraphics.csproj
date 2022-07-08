@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
@@ -9,7 +9,7 @@
     <ItemGroup>
       <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.10.4" PrivateAssets="all" />
       <PackageReference Include="MicroCom.Runtime" Version="0.10.4" />
-      <MicroComIdl Include="interop.idl" CSharpInteropPath="Interop.Generated.cs" CppHeaderPath="$(MSBuildThisFileDirectory)\..\..\native\interop.h" />
+      <MicroComIdl Include="interop.idl" CSharpInteropPath="Interop.Generated.cs" CppHeaderPath="$(MSBuildThisFileDirectory)\..\..\native\include\interop.h" />
     </ItemGroup>
 
 </Project>

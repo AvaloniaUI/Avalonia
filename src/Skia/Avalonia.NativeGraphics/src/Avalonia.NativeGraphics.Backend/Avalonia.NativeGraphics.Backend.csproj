@@ -12,4 +12,10 @@
       <ProjectReference Include="..\Avalonia.NativeGraphics\Avalonia.NativeGraphics.csproj" />
     </ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="HarfBuzzSharp" Version="2.8.2" />
+		<PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2" />
+		<PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="2.8.2" />
+	</ItemGroup>
+
 </Project>

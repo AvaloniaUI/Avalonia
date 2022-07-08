@@ -212,3 +212,10 @@ coc-settings.json
 *.map
 src/Web/Avalonia.Web.Blazor/wwwroot/*.js
 src/Web/Avalonia.Web.Blazor/Interop/Typescript/*.js
+native/build
+/native/CMakeFiles/3.22.22040401-MSVC_2
+/native/compile_commands.json
+/samples/ControlCatalog/Converter/MathSubtractConverter.cs
+/native/cmake_install.cmake
+/native/build.ninja
+/NuGet.Config.bak

@@ -7,14 +7,51 @@
 #include "stddef.h"
 @@
 
+struct AvgPoint
+{
+    double X,Y;
+}
+
+struct AvgVector
+{
+    double X,Y;
+}
+
 struct AvgRect
 {
     double X,Y,Width,Height;
 }
 
+struct AvgSize
+{
+    double Width, Height;
+};
+
+struct AvgRoundRect
+{
+    AvgRect Rect;
+    int IsRounded;
+    AvgVector RadiiTopLeft;
+    AvgVector RadiiTopRight;
+    AvgVector RadiiBottomLeft;
+    AvgVector RadiiBottomRight;
+}
+
 struct AvgPixelSize
 {
     int Width, Height;
+}
+
+enum AvgSweepDirection
+{
+    CounterClockwise=0,
+    ClockWise=1
+}
+
+enum AvgFillRule
+{
+    EvenOdd=0,
+    NonZero=1,
 }
 
 struct AvgMatrix3x2
@@ -26,6 +63,81 @@ struct AvgMatrix3x2
     double M31;
     double M32;
 }
+
+struct AvgColor
+{
+    byte R;
+    byte G;
+    byte B;
+    byte A;
+}
+
+struct AvgBrush
+{
+    bool Valid;
+    double Opacity;
+    AvgColor Color;
+}
+
+struct AvgPen
+{
+    bool Valid;
+    AvgBrush Brush;
+    // dashStyle;
+    // LineCap;
+    //LineJoin
+    double MiterLimit;
+    double Thickness;
+}
+
+struct AvgBoxShadow
+{
+    double OffsetX;
+    double OffsetY;
+    double Blur;
+    double Spread;
+    int color;
+    bool IsInset;
+}
+
+enum AvgFontStyle
+{
+    Normal=0,
+    Italic=1,
+    Oblique=2,
+}
+
+struct AvgTypeface
+{
+    AvgFontStyle FontStyle;
+    int FontWeight;
+    int FontStretch;
+}
+
+struct AvgGlyphInfo
+{
+    uint codepoint;
+    uint mask;
+    uint cluster;
+    uint var1;
+    uint var2;
+}
+
+struct AvgGlphPosition
+{
+    int x_advance;
+    int y_advance;
+    int x_offset;
+    int y_offset;
+    uint var;
+}
+
+struct AvgSkPosition
+{
+    float x;
+    float y;
+}
+
 
 [uuid(084B6D03-4545-43D1-971D-3D3A968A3127)]
 interface IAvgGetProcAddressDelegate
@@ -39,14 +151,110 @@ interface IAvgFactory : IUnknown
     int GetVersion();
     HRESULT CreateGlGpu(bool gles, IAvgGetProcAddressDelegate* glGetProcAddress, [out]IAvgGpu**ppv);
     HRESULT CreateGlGpuRenderTarget(IAvgGpu* gpu, IAvgGlPlatformSurfaceRenderTarget* gl, IAvgRenderTarget** ppv);
+    /* HRESULT CreateRenderInterface(IAvgRenderInterface** ppv); */
+    HRESULT CreateAvgPath(IAvgPath** ppv);
+    HRESULT CreateAvgFontManager(IAvgFontManager** ppv);
+    HRESULT CreateAvgGlyphRun(IAvgFontManager* fontManager, IAvgGlyphTypeface* typeface, IAvgGlyphRun** ppv);
+    HRESULT CreateAvgFontShapeBuffer(IAvgGlyphTypeface* typeface, IAvgFontShapeBuffer** ppv);
+
 }
 
 [uuid(309466F0-B5CA-4ABA-8469-2C902FE5D8F3)]
 interface IAvgDrawingContext
 {
+    double GetScaling ();
     void SetTransform(AvgMatrix3x2* matrix);
     void Clear(uint color);
-    void FillRect(AvgRect rect, uint color);
+    void DrawGeometry(IAvgPath* path, AvgBrush brush, AvgPen pen);
+    void DrawRectangle(AvgRoundRect rect, AvgBrush brush, AvgPen pen, AvgBoxShadow* boxshadows, int n_boxshadows);
+    void DrawLine(AvgPoint p1, AvgPoint p2, AvgPen pen);
+    void DrawGlyphRun(IAvgGlyphRun* glyphrun, double x, double y, AvgBrush brush);
+    void PushOpacity(double opacity);
+    void PopOpacity();
+    void PushClip(AvgRoundRect clip);
+    void PopClip();
+}
+
+[uuid(22E1D577-1248-4737-9220-56B7DAC49BF2)]
+interface IAvgPath : IUnknown
+{
+   void ArcTo(AvgPoint point, AvgSize size, double rotationAngle, bool isLargeArc, AvgSweepDirection sweepDirection);
+   void BeginFigure(AvgPoint startPoint, bool isFilled);
+   void CubicBezierTo(AvgPoint p1, AvgPoint p2, AvgPoint p3);
+   void QuadraticBezierTo(AvgPoint p1, AvgPoint p2);
+   void LineTo(AvgPoint point); 
+   void EndFigure(bool isClosed);
+   void SetFillRule(AvgFillRule fillRule);
+   void AddRect(AvgRect rect);
+   void MoveTo(AvgPoint point);
+   void AddOval(AvgRect rect);
+}
+
+
+[uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
+interface IAvgString : IUnknown
+{
+     HRESULT Pointer(void**retOut);
+     HRESULT Length(int*ret);
+}
+
+[uuid(58B0D106-EB8C-4DDB-AB3D-A61DBC7BCB6D)]
+interface IAvgFontManager : IUnknown
+{
+    IAvgString* GetDefaultFamilyName();
+    int GetFontFamilyCount();
+    IAvgString* GetFamilyName(int index);
+    IAvgGlyphTypeface* CreateGlyphTypeface(char* fontFamily, AvgTypeface typeface);
+}
+
+[uuid(02F671AE-B7B9-45EE-A89E-D5BF14DFAE84)]
+interface IAvgRenderInterface : IUnknown
+{
+
+}
+
+[uuid(D10A435A-7378-4753-946B-94009D0DF2B6)]
+interface IAvgGlyphTypeface
+{
+    uint GetGlyph(uint codepoint);
+    int GetGlyphAdvance(uint glyph);
+    int GetDesignEmHeight();
+    int GetAscent();
+    int GetDescent();
+    int GetLineGap();
+    int GetUnderlinePosition();
+    int GetUnderlineThickness();
+    int GetStrikethroughPosition();
+    int GetStrikethroughThickness();
+    int GetIsFixedPitch();
+    int GetIsFakeBold();
+    int GetIsFakeItalic();
+}
+
+[uuid(98765BAA-1FEC-400F-94A0-B74C299152F9)]
+interface IAvgFontShapeBuffer
+{
+    int GetLength();
+    void GuessSegmentProperties();
+    void SetDirection(int direction);
+    void SetLanguage(void* language);
+    void AddUtf16(void* utf16, int length, int itemOffset, int itemLength);
+    void Shape();
+    void GetScale(int* x, int* y);
+    void *GetGlyphInfoSpan([out] uint* length);
+    void *GetGlyphPositionSpan([out] uint* length);
+}
+
+[uuid(DF88C411-3ED3-4EE6-BAF6-33BA027AB6DF)]
+interface IAvgGlyphRun : IUnknown
+{
+    HRESULT AllocRun(int count);
+    HRESULT AllocHorizontalRun(int count);
+    HRESULT AllocPositionedRun(int count);
+    void SetFontSize(float size);
+    void* GetGlyphBuffer();
+    void* GetPositionsBuffer();
+    void BuildText();
 }
 
 [uuid(04D2ADF7-F4DF-4836-A60E-7699E5E53EC7)]

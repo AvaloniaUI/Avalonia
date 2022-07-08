@@ -63,7 +63,6 @@ namespace ControlCatalog.NetCore
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true,
                     AllowEglInitialization = true,
                     UseDeferredRendering = false
                 })
@@ -77,10 +76,9 @@ namespace ControlCatalog.NetCore
                 })
                 .With(new AvaloniaNativeGraphicsPlatformOptions
                 {
-                    LibraryPath =
-                        Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.GetModules()[0].FullyQualifiedName),
-                            "..","..","..","..","..","native","cmake-build-debug", "libavalonia.skia.so")
+                    LibraryPath = Path.GetFullPath(@"..\..\..\..\..\native\out\build\x64-Release\avalonia.skia.dll")
                 })
+                //.UseSkia()
                 .UseAvaloniaNativeGraphics()
                 .UseManagedSystemDialogs();
 

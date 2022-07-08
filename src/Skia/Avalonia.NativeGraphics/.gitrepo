@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = git@github.com:AvaloniaUI/Avalonia.NativeGraphics
-	branch = master
-	commit = 464fbe62c05a8da4c50f2ce3c6313babe3be2b18
-	parent = d3debf017728b2f0a6fc2d20b1571b0ed891e917
+	branch = develop
+	commit = 37d5741fd5b5e897eb777263751691c1cfcac47e
+	parent = 29cfd309a4c8b0076a1a3aa5c3d65b5e580c7dc5
 	method = merge
 	cmdver = 0.4.3

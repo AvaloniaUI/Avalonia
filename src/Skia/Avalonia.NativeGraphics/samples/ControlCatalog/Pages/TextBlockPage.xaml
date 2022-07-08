@@ -1,0 +1,133 @@
+<UserControl x:Class="ControlCatalog.Pages.TextBlockPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel>
+    <TextBlock Classes="h2">A control that can display text</TextBlock>
+    <WrapPanel MaxWidth="680"
+               Margin="-10,0"
+               HorizontalAlignment="Center">
+      <WrapPanel.Styles>
+        <Style Selector="Border">
+          <Setter Property="BorderThickness" Value="1" />
+          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumLowBrush}" />
+          <Setter Property="Padding" Value="2" />
+          <Setter Property="Margin" Value="10" />
+          <Setter Property="Width" Value="200" />
+        </Style>
+      </WrapPanel.Styles>
+      <Border>
+        <StackPanel Spacing="8">
+          <TextBlock Margin="0,0,10,0"
+                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Margin="0,0,10,0"
+                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                     TextTrimming="WordEllipsis" />
+          <TextBlock Text="Left aligned text" TextAlignment="Left" />
+          <TextBlock Text="Center aligned text" TextAlignment="Center" />
+          <TextBlock Text="Right aligned text" TextAlignment="Right" />
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Spacing="8">
+          <TextBlock Text="Multiline TextBlock with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Spacing="8">
+          <TextBlock FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"
+                     FontStyle="Normal"
+                     FontWeight="Normal"
+                     Text="Custom font regular" />
+          <TextBlock FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"
+                     FontStyle="Normal"
+                     FontWeight="Bold"
+                     Text="Custom font bold" />
+          <TextBlock FontFamily="/Assets/Fonts/SourceSansPro-Italic.ttf#Source Sans Pro"
+                     FontStyle="Italic"
+                     FontWeight="Normal"
+                     Text="Custom font italic" />
+          <TextBlock FontFamily="/Assets/Fonts/SourceSansPro-*.ttf#Source Sans Pro"
+                     FontStyle="Italic"
+                     FontWeight="Bold"
+                     Text="Custom font italic bold" />
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Spacing="8">
+          <TextBlock Text="Underline" TextDecorations="Underline" />
+          <TextBlock Text="Strikethrough" TextDecorations="Strikethrough" />
+          <TextBlock Text="Overline" TextDecorations="Overline" />
+          <TextBlock Text="Baseline" TextDecorations="Baseline" />
+          <TextBlock Text="Custom TextDecorations">
+            <TextBlock.TextDecorations>
+              <TextDecorationCollection>
+                <TextDecoration Location="Overline"
+                                StrokeThickness="2"
+                                StrokeThicknessUnit="Pixel">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Red" />
+                        <GradientStop Offset="1" Color="Green" />
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
+                </TextDecoration>
+                <TextDecoration Location="Strikethrough"
+                                StrokeThickness="1"
+                                StrokeThicknessUnit="Pixel">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Green" />
+                        <GradientStop Offset="1" Color="Blue" />
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
+                </TextDecoration>
+                <TextDecoration Location="Underline"
+                                StrokeThickness="2"
+                                StrokeThicknessUnit="Pixel">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Blue" />
+                        <GradientStop Offset="1" Color="Red" />
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
+                </TextDecoration>
+              </TextDecorationCollection>
+            </TextBlock.TextDecorations>
+          </TextBlock>
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Spacing="8">
+          <TextBlock Text="🏻 👌🏻" />
+          <TextBlock Text="🏼 👌🏼" />
+          <TextBlock Text="🏽 👌🏽" />
+          <TextBlock Text="🏾 👌🏾" />
+          <TextBlock Text="🏿 👌🏿" />
+        </StackPanel>
+      </Border>
+      <Border>
+        <StackPanel Spacing="8">
+          <TextBlock Text="👪 👨‍👩‍👧 👨‍👩‍👧‍👦" />
+        </StackPanel>
+      </Border>
+      <Border>
+        <TextBlock Margin="10" TextWrapping="Wrap">
+          This <Span FontWeight="Bold">is</Span> a
+          <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
+          with <Span TextDecorations="Underline">several</Span>
+          <Span FontStyle="Italic">Span</Span> elements,
+          <Span Foreground="Blue">
+            using a <Bold>variety</Bold> of <Italic>styles</Italic>
+          </Span>.
+        </TextBlock>
+      </Border>
+    </WrapPanel>
+  </StackPanel>
+</UserControl>

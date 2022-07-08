@@ -1,0 +1,264 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
+             x:Class="ControlCatalog.Pages.FlyoutsPage">
+
+    <UserControl.Resources>
+        <MenuFlyout x:Key="SharedMenuFlyout">
+            <MenuItem Header="Item 1">
+                <MenuItem Header="Subitem 1" />
+                <MenuItem Header="Subitem 2" />
+                <MenuItem Header="Subitem 3" />
+            </MenuItem>
+            <MenuItem Header="Item 2" InputGesture="Ctrl+A" />
+            <MenuItem Header="Item 3" />
+        </MenuFlyout>
+        <Flyout Placement="Bottom" x:Key="BasicFlyout">
+            <Panel Width="100" Height="100">
+                <TextBlock Text="Flyout Content!" />
+            </Panel>
+        </Flyout>
+    </UserControl.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="10">
+            <TextBlock FontSize="18" Text="Button with a Flyout" />
+            <StackPanel>
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                        BorderThickness="1" Padding="15">
+                    <Button Content="Click Me!" Flyout="{StaticResource BasicFlyout}" />
+                </Border>
+                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                    <TextBlock Name="ButtonFlyoutXamlText" Padding="15" />
+                </Panel>
+            </StackPanel>
+
+            <TextBlock FontSize="18" Text="MenuFlyout" />
+            <StackPanel>
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                        BorderThickness="1" Padding="15">
+                    <Button Content="Click Me!" Flyout="{StaticResource SharedMenuFlyout}" />
+                </Border>
+                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                    <TextBlock Name="MenuFlyoutXamlText" Padding="15" />
+                </Panel>
+            </StackPanel>
+
+            <TextBlock FontSize="18" Text="Attached Flyouts" />
+            <StackPanel>
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                        BorderThickness="1" Padding="15">
+                    <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                           HorizontalAlignment="Left"
+                           Height="100"
+                           Name="AttachedFlyoutPanel">
+                        <FlyoutBase.AttachedFlyout>
+                            <Flyout>
+                                <Panel Height="100">
+                                    <TextBlock Text="Attached Flyout!"
+                                               VerticalAlignment="Center"
+                                               Margin="10"/>
+                                </Panel>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
+
+                        <TextBlock Text="Double click panel to launch AttachedFlyout"
+                                   VerticalAlignment="Center"
+                                   Margin="10"/>
+
+                    </Panel>
+                </Border>
+                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                    <TextBlock Name="AttachedFlyoutXamlText" Padding="15" />
+                </Panel>
+            </StackPanel>
+
+
+            <TextBlock FontSize="18" Text="Sharing Flyouts" />
+            <StackPanel>
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                        BorderThickness="1" Padding="15">
+                    <StackPanel Orientation="Horizontal" Spacing="30">
+                        <Button Content="Launch Flyout on this button" Flyout="{StaticResource SharedMenuFlyout}"/>
+                        <Button Content="Launch Flyout on this button" Flyout="{StaticResource SharedMenuFlyout}"/>
+                    </StackPanel>
+                </Border>
+                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                    <TextBlock Name="SharedFlyoutXamlText" Padding="15" />
+                </Panel>
+            </StackPanel>
+
+            <TextBlock FontSize="18" Text="Flyout Placements" />
+            <StackPanel>
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                        BorderThickness="1" Padding="15">
+                    <UniformGrid Columns="3">
+                        <UniformGrid.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Margin" Value="10" />
+                            </Style>
+                        </UniformGrid.Styles>
+                        <Button Content="Placement=Top">
+                            <Button.Flyout>
+                                <Flyout Placement="Top">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=Bottom">
+                            <Button.Flyout>
+                                <Flyout Placement="Bottom">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=Left">
+                            <Button.Flyout>
+                                <Flyout Placement="Left">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=Right">
+                            <Button.Flyout>
+                                <Flyout Placement="Right">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=TopEdgeAlignedLeft">
+                            <Button.Flyout>
+                                <Flyout Placement="TopEdgeAlignedLeft">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=TopEdgeAlignedRight">
+                            <Button.Flyout>
+                                <Flyout Placement="TopEdgeAlignedRight">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=BottomEdgeAlignedLeft">
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedLeft">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=BottomEdgeAlignedRight">
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=LeftEdgeAlignedTop">
+                            <Button.Flyout>
+                                <Flyout Placement="LeftEdgeAlignedTop">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=LeftEdgeAlignedBottom">
+                            <Button.Flyout>
+                                <Flyout Placement="LeftEdgeAlignedBottom">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=RightEdgeAlignedBottom">
+                            <Button.Flyout>
+                                <Flyout Placement="RightEdgeAlignedTop">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="Placement=RightEdgeAlignedBottom">
+                            <Button.Flyout>
+                                <Flyout Placement="RightEdgeAlignedBottom">
+                                    <Panel Width="100" Height="100">
+                                        <TextBlock Text="Flyout Content!" />
+                                    </Panel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+
+                    </UniformGrid>
+                </Border>
+            </StackPanel>
+
+            <TextBlock FontSize="18" Text="Flyout ShowMode" />
+            <StackPanel>
+                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                        BorderThickness="1" Padding="15">
+                    <WrapPanel Orientation="Horizontal">
+                        <WrapPanel.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Margin" Value="4" />
+                            </Style>
+                        </WrapPanel.Styles>
+                        <Button Content="ShowMode=Standard (default)">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <StackPanel Width="200">
+                                        <TextBox />
+                                        <TextBlock Text="Standard ShowMode attempts to focus the Flyout when its opened" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="ShowMode=Transient">
+                            <Button.Flyout>
+                                <Flyout ShowMode="Transient">
+                                    <StackPanel Width="200">
+                                        <TextBox />
+                                        <TextBlock Text="Transient ShowMode does not focus the Flyout when opened" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Content="ShowMode=TransientWithDismissOnPointerMoveAway">
+                            <Button.Flyout>
+                                <Flyout ShowMode="TransientWithDismissOnPointerMoveAway">
+                                    <StackPanel Width="200">
+                                        <TextBox />
+                                        <TextBlock Text="Show in Transient mode (no focus), but closes the Flyout when the pointer moves away" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        
+                    </WrapPanel>
+                </Border>
+            </StackPanel>
+            
+        </StackPanel>
+    </ScrollViewer>
+    
+</UserControl>

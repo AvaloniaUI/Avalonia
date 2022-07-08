@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             xmlns:converter="clr-namespace:ControlCatalog.Converter"
+             xmlns:system="using:System"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:TransitioningContentControlPageViewModel"
+             x:CompileBindings="True"
+             x:Class="ControlCatalog.Pages.TransitioningContentControlPage">
+
+    <UserControl.DataContext>
+        <vm:TransitioningContentControlPageViewModel />
+    </UserControl.DataContext>
+
+    <UserControl.Styles>
+        <Style Selector="HeaderedContentControl">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="HeaderCol" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter Content="{TemplateBinding Header}" 
+                                              Grid.Column="0" 
+                                              VerticalAlignment="Center" />
+                            <ContentPresenter Content="{TemplateBinding Content}" 
+                                              Grid.Column="1" 
+                                              VerticalAlignment="Center" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+  
+  <UserControl.Resources>
+    <converter:MathSubtractConverter x:Key="MathSubtractConverter" />
+    <system:Double x:Key="TopMargin">8</system:Double>
+  </UserControl.Resources>
+  
+    <DockPanel LastChildFill="True" 
+               Height="{Binding Path=Bounds.Height, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}, Converter={StaticResource MathSubtractConverter},ConverterParameter={StaticResource TopMargin}}">
+
+        <TextBlock DockPanel.Dock="Top" Classes="h2">The TransitioningContentControl control allows you to show a page transition whenever the Content changes.</TextBlock>
+
+        <ExperimentalAcrylicBorder DockPanel.Dock="Bottom" Margin="10" CornerRadius="5" >
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial BackgroundSource="Digger" TintColor="White" />
+            </ExperimentalAcrylicBorder.Material>
+            
+            <StackPanel Margin="5" Spacing="5" Grid.IsSharedSizeScope="True">
+                <HeaderedContentControl Header="Select a transition">
+                     <ComboBox Items="{Binding PageTransitions}" SelectedItem="{Binding SelectedTransition}" />
+                </HeaderedContentControl>
+                <HeaderedContentControl Header="Duration">
+                     <NumericUpDown Value="{Binding Duration}" Increment="250" Minimum="100" />
+                </HeaderedContentControl>
+                <HeaderedContentControl Header="Clip to Bounds">
+                    <ToggleSwitch IsChecked="{Binding ClipToBounds}" />
+                </HeaderedContentControl>
+            </StackPanel>
+        </ExperimentalAcrylicBorder>
+
+        <Button DockPanel.Dock="Left" Command="{Binding PrevImage}" Content="&lt;" />
+        <Button DockPanel.Dock="Right" Command="{Binding NextImage}" Content=">" />
+        
+        <Border ClipToBounds="{Binding ClipToBounds}" Margin="5">
+            <TransitioningContentControl Content="{Binding SelectedImage}"
+                                         PageTransition="{Binding SelectedTransition.Transition}" >
+                <TransitioningContentControl.ContentTemplate>
+                    <DataTemplate DataType="Bitmap">
+                        <Image Source="{Binding}"  />
+                    </DataTemplate>
+                </TransitioningContentControl.ContentTemplate>
+            </TransitioningContentControl>
+        </Border>
+    </DockPanel>
+</UserControl>

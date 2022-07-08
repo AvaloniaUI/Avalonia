@@ -1,0 +1,10 @@
+---
+BasedOnStyle: Microsoft
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 120
+UseTab: Never
+IndentCaseLabels: false
+DerivePointerAlignment: false
+PointerAlignment: Left
+...

@@ -20,6 +20,8 @@ namespace Avalonia
         [DllImport("libAvaloniaNativeGraphics")]
         static extern IntPtr CreateAvaloniaNativeGraphics();
 
+        private static IAvgFactory _factory;
+
         public static unsafe void Initialize(AvaloniaNativeGraphicsPlatformOptions options)
         {
             IntPtr graphics;
@@ -36,12 +38,15 @@ namespace Avalonia
                 graphics = CreateAvaloniaNativeGraphics();
 
             var factory = MicroComRuntime.CreateProxyFor<IAvgFactory>(graphics, true);
+            _factory = factory;
             
             AvaloniaLocator.CurrentMutable
             .Bind<IPlatformRenderInterface>().ToConstant(new PlatformRenderInterface(factory))
-                .Bind<IFontManagerImpl>().ToConstant(new FontManagerStub())
-                .Bind<ITextShaperImpl>().ToConstant(new TextShaperStub());
+                .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl(factory))
+                .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
         }
+
+        public static IAvgFactory Factory => _factory;
 
         public static TAppBuilder UseAvaloniaNativeGraphics<TAppBuilder>(this TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()

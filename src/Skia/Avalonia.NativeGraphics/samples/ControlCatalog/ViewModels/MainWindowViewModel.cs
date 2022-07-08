@@ -5,6 +5,7 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
 using System;
+using System.ComponentModel.DataAnnotations;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -15,11 +16,11 @@ namespace ControlCatalog.ViewModels
 
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
-        private WindowState[] _windowStates;
+        private WindowState[] _windowStates = Array.Empty<WindowState>();
         private int _transparencyLevel;
-        private ExtendClientAreaChromeHints _chromeHints;
+        private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
         private bool _extendClientAreaEnabled;
-        private bool _systemTitleBarEnabled;        
+        private bool _systemTitleBarEnabled;
         private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
 
@@ -46,14 +47,15 @@ namespace ControlCatalog.ViewModels
             {
                 var dialog = new AboutAvaloniaDialog();
 
-                var mainWindow = (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-
-                await dialog.ShowDialog(mainWindow);
+                if ((App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow is { } mainWindow)
+                {
+                    await dialog.ShowDialog(mainWindow);
+                }
             });
 
             ExitCommand = MiniCommand.Create(() =>
             {
-                (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
+                (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
 
             ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
@@ -164,5 +166,17 @@ namespace ControlCatalog.ViewModels
         public MiniCommand ExitCommand { get; }
 
         public MiniCommand ToggleMenuItemCheckedCommand { get; }
+
+        private DateTime? _validatedDateExample;
+
+        /// <summary>
+        ///    A required DateTime which should demonstrate validation for the DateTimePicker
+        /// </summary>
+        [Required]
+        public DateTime? ValidatedDateExample
+        {
+            get => _validatedDateExample;
+            set => this.RaiseAndSetIfChanged(ref _validatedDateExample, value);
+        }
     }
 }

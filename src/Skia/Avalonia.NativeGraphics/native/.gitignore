@@ -1,2 +1,6 @@
 cmake-build-*
+build
 pre-built
+interop.h
+Interop.Generated.cs
+
