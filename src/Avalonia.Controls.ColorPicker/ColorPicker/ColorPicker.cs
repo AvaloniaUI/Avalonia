@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Avalonia.Controls
+﻿namespace Avalonia.Controls
 {
     /// <summary>
     /// Presents a color for user editing using a spectrum, palette and component sliders within a drop down.

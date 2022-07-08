@@ -28,7 +28,6 @@ namespace Avalonia.Controls
         private TextBox?    _hexTextBox;
         private TabControl? _tabControl;
 
-        private ObservableCollection<Color> _paletteColors = new ObservableCollection<Color>();
         private ColorToHexConverter colorToHexConverter = new ColorToHexConverter();
         protected bool ignorePropertyChanged = false;
 
