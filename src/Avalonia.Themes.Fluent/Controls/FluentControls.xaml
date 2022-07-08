@@ -59,6 +59,8 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DropDownButton.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/EmbeddableControlRoot.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Slider.xaml" />
+                <!--  ManagedFileChooser comes last because it uses (and overrides) styles for a multitude of other controls...the dialogs were originally UserControls, after all  -->
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ManagedFileChooser.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>
@@ -72,7 +74,5 @@
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml" />
-    <!--  ManagedFileChooser comes last because it uses (and overrides) styles for a multitude of other controls...the dialogs were originally UserControls, after all  -->
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ManagedFileChooser.xaml" />
     <Styles.Resources />
 </Styles>

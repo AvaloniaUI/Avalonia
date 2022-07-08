@@ -1,8 +1,14 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dialogs="clr-namespace:Avalonia.Dialogs;assembly=Avalonia.Dialogs">
-  <Style Selector="dialogs|ManagedFileChooser">
-    <Style.Resources>
+  <Design.PreviewWith>
+    <Border Padding="20" Width="800" Height="500">
+      <dialogs:ManagedFileChooser/>
+    </Border>
+  </Design.PreviewWith>
+
+  <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooser}" TargetType="dialogs:ManagedFileChooser">
+    <ControlTheme.Resources>
       <ResourceDictionary>
         <GradientStops x:Key="IconRes.FolderBackGradientStops">
         </GradientStops>
@@ -124,7 +130,7 @@
           </DrawingGroup>
         </dialogs:ResourceSelectorConverter>
       </ResourceDictionary>
-    </Style.Resources>
+    </ControlTheme.Resources>
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
@@ -246,79 +252,77 @@
         </DockPanel>
       </ControlTemplate>
     </Setter>
-  </Style>
+    <Style Selector="^ /template/ ListBox#QuickLinks">
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Width" Value="240"/>
+      <Setter Property="Padding" Value="0,20"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Name="border" BoxShadow="inset -6 0 3 -3 #20000000" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+            <ScrollViewer Name="PART_ScrollViewer" HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}" VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <ItemsPresenter Name="PART_ItemsPresenter"
+                              Items="{TemplateBinding Items}"
+                              ItemsPanel="{TemplateBinding ItemsPanel}"
+                              ItemTemplate="{TemplateBinding ItemTemplate}"
+                              Margin="{TemplateBinding Padding}"
+                              VirtualizationMode="{TemplateBinding VirtualizationMode}"/>
+            </ScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+      <Setter Property="ItemContainerTheme">
+        <ControlTheme TargetType="ListBoxItem">
+          <Setter Property="Height" Value="32"/>
+          <Setter Property="Padding" Value="30,6"/>
+          <Setter Property="Template">
+            <ControlTemplate>
+              <Border x:Name="LayoutRoot" CornerRadius="2" Margin="10,0">
+                <Panel>
+                  <Border x:Name="SelectedLine" HorizontalAlignment="Left" Margin="2,6" CornerRadius="0.5" Width="3" Background="{DynamicResource SystemControlHighlightAccentBrush}" IsVisible="{TemplateBinding IsSelected}"/>
+                  <ContentPresenter Name="PART_ContentPresenter"
+                              Background="Transparent"
+                              BorderBrush="Transparent"
+                              BorderThickness="0"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              Padding="{TemplateBinding Padding}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
 
+                </Panel>
+              </Border>
+            </ControlTemplate>
+          </Setter>
 
-  <Style Selector="dialogs|ManagedFileChooser /template/ ListBox#QuickLinks">
-    <Setter Property="Margin" Value="0"/>
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
-    <Setter Property="BorderThickness" Value="0"/>
-    <Setter Property="Width" Value="240"/>
-    <Setter Property="Padding" Value="0,20"/>
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Border Name="border" BoxShadow="inset -6 0 3 -3 #20000000" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-          <ScrollViewer Name="PART_ScrollViewer" HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}" VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-            <ItemsPresenter Name="PART_ItemsPresenter"
-                            Items="{TemplateBinding Items}"
-                            ItemsPanel="{TemplateBinding ItemsPanel}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Margin="{TemplateBinding Padding}"
-                            VirtualizationMode="{TemplateBinding VirtualizationMode}"/>
-          </ScrollViewer>
-        </Border>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <Style Selector="dialogs|ManagedFileChooser /template/ ListBox#QuickLinks ListBoxItem">
-    <Setter Property="Height" Value="32"/>
-    <Setter Property="Padding" Value="30,6"/>
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Border x:Name="LayoutRoot" CornerRadius="2" Margin="10,0">
-          <Panel>
-            <Border x:Name="SelectedLine" HorizontalAlignment="Left" Margin="2,6" CornerRadius="0.5" Width="3" Background="{DynamicResource SystemControlHighlightAccentBrush}" IsVisible="{TemplateBinding IsSelected}"/>
-            <ContentPresenter Name="PART_ContentPresenter"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        BorderThickness="0"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Content="{TemplateBinding Content}"
-                        Padding="{TemplateBinding Padding}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+          <Style Selector="^:pointerover /template/ Border#LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltMediumBrush}"/>
+          </Style>
+          <Style Selector="^:selected /template/ Border#LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltMediumHighBrush}"/>
+          </Style>
+        </ControlTheme>
+      </Setter>
+    </Style>
 
-          </Panel>
-        </Border>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <Style Selector="dialogs|ManagedFileChooser /template/ ListBox#QuickLinks ListBoxItem:pointerover /template/ Border#LayoutRoot">
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltMediumBrush}"/>
-  </Style>
-  <Style Selector="dialogs|ManagedFileChooser /template/ ListBox#QuickLinks ListBoxItem:selected /template/ Border#LayoutRoot">
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltMediumHighBrush}"/>
-  </Style>
-  <Style Selector="dialogs|ManagedFileChooser /template/ DockPanel#NavBar Button,
-                    dialogs|ManagedFileChooser /template/ DockPanel#NavBar TextBox">
-    <Setter Property="Height" Value="30"/>
-  </Style>
-  <Style Selector="dialogs|ManagedFileChooser /template/ DockPanel#NavBar Button">
-    <Setter Property="VerticalAlignment" Value="Stretch"/>
-    <Setter Property="Width" Value="40"/>
-    <Setter Property="Margin" Value="0,0,8,0"/>
-    <Setter Property="BorderThickness" Value="0"/>
-  </Style>
-  <Style Selector="dialogs|ManagedFileChooser /template/ DockPanel#NavBar Button:not(:pointerover):not(:pressed)">
-    <Setter Property="Background" Value="Transparent"/>
-  </Style>
+    <Style Selector="^ /template/ DockPanel#NavBar Button, ^ /template/ DockPanel#NavBar TextBox">
+      <Setter Property="Height" Value="30"/>
+    </Style>
+    <Style Selector="^ /template/ DockPanel#NavBar Button">
+      <Setter Property="VerticalAlignment" Value="Stretch"/>
+      <Setter Property="Width" Value="40"/>
+      <Setter Property="Margin" Value="0,0,8,0"/>
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="^ /template/ DockPanel#NavBar Button:not(:pointerover):not(:pressed)">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
 
-  <Style Selector="dialogs|ManagedFileChooser /template/ UniformGrid#Finalize > Button">
-    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-    <Setter Property="HorizontalAlignment" Value="Stretch"/>
-    <Setter Property="Margin" Value="4,0,0,0"/>
-  </Style>
-  <Style Selector="dialogs|ManagedFileChooser /template/ UniformGrid#Finalize > Button /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="HorizontalAlignment" Value="Stretch"/>
-  </Style>
-</Styles>
+    <Style Selector="^ /template/ UniformGrid#Finalize > Button">
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="Margin" Value="4,0,0,0"/>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
