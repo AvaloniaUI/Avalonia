@@ -20,6 +20,7 @@
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
         <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />

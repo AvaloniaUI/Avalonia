@@ -23,6 +23,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter x:Name="PART_ContentPresenter"

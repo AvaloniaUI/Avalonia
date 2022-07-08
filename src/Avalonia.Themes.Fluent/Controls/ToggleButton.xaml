@@ -23,6 +23,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
         <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />
