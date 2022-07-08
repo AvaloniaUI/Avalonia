@@ -34,6 +34,7 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RepeatButton.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Separator.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabControl.xaml" />
@@ -64,7 +65,6 @@
     <!--  Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox)  -->
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml" />
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml" />
     <!--  TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel  -->
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" />
