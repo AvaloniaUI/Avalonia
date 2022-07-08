@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,9 +118,9 @@ namespace ControlCatalog.NetCore
                 {
                 })
                 .With(new AvaloniaNativeGraphicsPlatformOptions
-                    {
-                        
-                    })
+                {
+                    LibraryPath = Path.GetFullPath(@"..\..\..\..\..\src\Skia\Avalonia.NativeGraphics\native\build\avalonia.skia.dll")
+                })
                 .UseAvaloniaNativeGraphics()
                 //.UseSkia()
                 .AfterSetup(builder =>

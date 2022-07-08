@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
       <TargetFrameworks>netstandard2.0</TargetFrameworks>
-      <RootNamespace>Avalonia.NativeGraphics</RootNamespace>
-      <AssemblyName>Avalonia.NativeGraphics</AssemblyName>
-      <PackageId>Avalonia.NativeGraphics</PackageId>
+      <RootNamespace>Avalonia.NativeGraphics.Backend</RootNamespace>
+      <AssemblyName>Avalonia.NativeGraphics.Backend</AssemblyName>
+      <PackageId>Avalonia.NativeGraphics.Backend</PackageId>
       <IncludeLinuxSkia>true</IncludeLinuxSkia>
       <IncludeWasmSkia>true</IncludeWasmSkia>
+      <IncludeWindowsSkia>true</IncludeWindowsSkia>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
       <LangVersion>9</LangVersion>
     </PropertyGroup>
@@ -15,9 +16,7 @@
     </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="HarfBuzzSharp" Version="2.8.2" />
-		<PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2" />
-		<PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="2.8.2" />
+	  <PackageReference Include="HarfBuzzSharp" Version="2.8.2.1-preview.84" />
 	</ItemGroup>
 
 </Project>
