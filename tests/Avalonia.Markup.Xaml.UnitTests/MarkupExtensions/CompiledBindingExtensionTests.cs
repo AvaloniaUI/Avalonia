@@ -102,6 +102,41 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(dataContext.StringProperty, textBlock.Text);
             }
         }
+        
+        [Fact]
+        public void ResolvesPathPassedByPropertyWithInnerItemTemplate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <ItemsControl Name='itemsControl' Items='{CompiledBinding Path=ListProperty}'>
+	    <ItemsControl.ItemTemplate>
+		    <DataTemplate>
+			    <TextBlock />
+		    </DataTemplate>
+	    </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<ItemsControl>("itemsControl");
+
+                var dataContext = new TestDataContext
+                {
+                    ListProperty =
+                    {
+                        "Hello"
+                    } 
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.ListProperty, textBlock.Items);
+            }
+        }
 
         [Fact]
         public void ResolvesStreamTaskBindingCorrectly()

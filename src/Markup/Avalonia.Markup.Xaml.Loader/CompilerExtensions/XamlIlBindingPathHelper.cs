@@ -47,7 +47,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     return startTypeResolver();
                 }
 
-                if (bindingPathAssignment.Values[0] is ParsedBindingPathNode bindingPathNode)
+                if (bindingPathAssignment.Values[0] is XamlIlBindingPathNode pathNode)
+                {
+                    bindingResultType = pathNode.BindingResultType;
+                }
+                else if (bindingPathAssignment.Values[0] is ParsedBindingPathNode bindingPathNode)
                 {
                     var transformed = TransformBindingPath(
                         context,
@@ -63,7 +67,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
                 else
                 {
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("Invalid state of Path property");
                 }
             }
 
