@@ -1145,6 +1145,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal("bar-" + typeof(TestDataContext).FullName, textBlock.Text);
             }
         }
+        
+        [Fact]
+        public void SupportCastToTypeInExpressionWithProperty_ExplicitPropertyCast()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'>
+    <ContentControl Content='{CompiledBinding $parent.((local:IHasExplicitProperty)DataContext).ExplicitProperty}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.GetControl<ContentControl>("contentControl");
+
+                var dataContext = new TestDataContext();
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(((IHasExplicitProperty)dataContext).ExplicitProperty, contentControl.Content);
+            }
+        }
 
         [Fact]
         public void Binds_To_Self_Without_DataType()
@@ -1410,6 +1432,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public interface IHasPropertyDerived : IHasProperty
     { }
 
+    public interface IHasExplicitProperty
+    {
+        string ExplicitProperty { get; }
+    }
+
     public class AppendConverter : IValueConverter
     {
         public static IValueConverter Instance { get; } = new AppendConverter();
@@ -1429,7 +1456,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public class TestDataContextBaseClass {}
     
-    public class TestDataContext : TestDataContextBaseClass, IHasPropertyDerived
+    public class TestDataContext : TestDataContextBaseClass, IHasPropertyDerived, IHasExplicitProperty
     {
         public string StringProperty { get; set; }
 
@@ -1448,6 +1475,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public NonIntegerIndexer NonIntegerIndexerProperty { get; set; } = new NonIntegerIndexer();
 
         public INonIntegerIndexerDerived NonIntegerIndexerInterfaceProperty => NonIntegerIndexerProperty;
+
+        string IHasExplicitProperty.ExplicitProperty => "Hello"; 
+
+        public string ExplicitProperty => "Bye"; 
 
         public class NonIntegerIndexer : NotifyingBase, INonIntegerIndexerDerived
         {
