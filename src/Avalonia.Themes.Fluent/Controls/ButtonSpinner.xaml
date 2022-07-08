@@ -3,106 +3,144 @@
                     xmlns:sys="clr-namespace:System;assembly=netstandard"
                     xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
                     x:CompileBindings="True">
-    <Design.PreviewWith>
-      <Border Padding="20" Background="Black">
-        <StackPanel Spacing="20">
-          <ButtonSpinner ButtonSpinnerLocation="Right"
-                         Content="Right disabled inline spinner"
-                         AllowSpin="False">
-            <DataValidationErrors.Error>
-              <sys:Exception />
-            </DataValidationErrors.Error>
-          </ButtonSpinner>
-          <ButtonSpinner ButtonSpinnerLocation="Left"
-                         Content="Left spinner" />
-          <ButtonSpinner ShowButtonSpinner="False"
-                         Content="Hide spinner" />
-        </StackPanel>
-      </Border>
-    </Design.PreviewWith>
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <ButtonSpinner Content="Right spinner" />
+        <ButtonSpinner ButtonSpinnerLocation="Left"
+                       Content="Left spinner" />
+        <ButtonSpinner BorderThickness="2"
+                       BorderBrush="Blue"
+                       Content="Right Border" />
+        <ButtonSpinner ButtonSpinnerLocation="Left"
+                       BorderThickness="2"
+                       BorderBrush="Blue"
+                       Content="Left Border" />
+        <ButtonSpinner Content="Right disabled"
+                       AllowSpin="False"/>
+        <ButtonSpinner ButtonSpinnerLocation="Left"
+                       Content="Left disabled"
+                       AllowSpin="False"/>
+        <ButtonSpinner ShowButtonSpinner="False"
+                       Content="Hide spinner" />
+        <ButtonSpinner Content="Error"
+                       AllowSpin="False">
+          <DataValidationErrors.Error>
+            <sys:Exception>
+              <x:Arguments>
+                <x:String>Error</x:String>
+              </x:Arguments>
+            </sys:Exception>
+          </DataValidationErrors.Error>
+        </ButtonSpinner>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
 
-    <converters:MarginMultiplierConverter x:Key="ButtonSpinner_OnlyLeftThinknessConverter"
-                                          Indent="1"
-                                          Left="True" />
-    <converters:MarginMultiplierConverter x:Key="ButtonSpinner_OnlyRightThinknessConverter"
-                                          Indent="1"
-                                          Right="True" />
+  <converters:MarginMultiplierConverter x:Key="ButtonSpinnerLeftThickness" Indent="1" Left="True" />
+  <converters:MarginMultiplierConverter x:Key="ButtonSpinnerRightThickness" Indent="1" Right="True" />
+  <StreamGeometry x:Key="ButtonSpinnerIncreaseButtonIcon">M0,9 L10,0 20,9 19,10 10,2 1,10 z</StreamGeometry>
+  <StreamGeometry x:Key="ButtonSpinnerDecreaseButtonIcon">M0,1 L10,10 20,1 19,0 10,8 1,0 z</StreamGeometry>
 
-    <StreamGeometry x:Key="ButtonSpinnerIncreaseButtonIcon">M0,9 L10,0 20,9 19,10 10,2 1,10 z</StreamGeometry>
-    <StreamGeometry x:Key="ButtonSpinnerDecreaseButtonIcon">M0,1 L10,10 20,1 19,0 10,8 1,0 z</StreamGeometry>
+  <ControlTheme x:Key="FluentButtonSpinnerRepeatButton" TargetType="RepeatButton" BasedOn="{StaticResource {x:Type RepeatButton}}">
+    <Setter Property="CornerRadius" Value="0"/>
+    <Setter Property="MinWidth" Value="34" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+  </ControlTheme>
 
-    <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
-      <Setter Property="Padding" Value="10, 0" />
-      <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
-      <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
-      <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-      <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
-      <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
-      <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="Focusable" Value="True" />
-      <Setter Property="Template">
-        <ControlTemplate>
-          <DataValidationErrors>
-            <Border Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{TemplateBinding CornerRadius}"
-                    MinHeight="{TemplateBinding MinHeight}">
-              <Grid ColumnDefinitions="Auto,*,Auto">
-                <ContentPresenter Name="PART_ContentPresenter"
-                                  Grid.Column="1"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  Content="{TemplateBinding Content}"
-                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  Padding="{TemplateBinding Padding}" />
-                <StackPanel Name="PART_SpinnerPanel"
-                            Orientation="Horizontal"
-                            IsVisible="{TemplateBinding ShowButtonSpinner}">
-                  <RepeatButton Name="PART_IncreaseButton"
-                                Classes="ButtonSpinnerRepeatButton"
-                                VerticalContentAlignment="Center"
-                                Foreground="{TemplateBinding Foreground}"
+  <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+    <Setter Property="Padding" Value="10, 0" />
+    <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Focusable" Value="True"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DataValidationErrors>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  MinHeight="{TemplateBinding MinHeight}">
+            <DockPanel>
+              <StackPanel Name="PART_SpinnerPanel"
+                          DockPanel.Dock="Right"
+                          Orientation="Horizontal"
+                          IsVisible="{TemplateBinding ShowButtonSpinner}">
+                <RepeatButton Name="PART_IncreaseButton"
+                              Background="{TemplateBinding Background}"
+                              BorderThickness="0"
+                              CornerRadius="0"
+                              VerticalAlignment="Stretch"
+                              VerticalContentAlignment="Center"
+                              Foreground="{TemplateBinding Foreground}"
+                              FontSize="{TemplateBinding FontSize}"
+                              MinWidth="34">
+                  <Path Fill="{TemplateBinding Foreground}"
+                        Width="16"
+                        Height="8"
+                        Stretch="Uniform"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
+                </RepeatButton>
+
+                <Border BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerRightThickness}}"
+                        VerticalAlignment="Stretch"/>
+
+                <RepeatButton Name="PART_DecreaseButton"
+                              Background="{TemplateBinding Background}"
+                              BorderThickness="0"
+                              CornerRadius="0"
+                              VerticalAlignment="Stretch"
+                              VerticalContentAlignment="Center"
+                              Foreground="{TemplateBinding Foreground}"
+                              FontSize="{TemplateBinding FontSize}"
+                              MinWidth="34">
+                  <Path Fill="{TemplateBinding Foreground}"
+                        Width="16"
+                        Height="8"
+                        Stretch="Uniform"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
+                </RepeatButton>
+              </StackPanel>
+
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Grid.Column="1"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                Background="{TemplateBinding Background}"
-                                FontSize="{TemplateBinding FontSize}">
-                    <Path Fill="{TemplateBinding Foreground}" Width="16" Height="8" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
-                  </RepeatButton>
-                  <RepeatButton Name="PART_DecreaseButton" Classes="ButtonSpinnerRepeatButton" Foreground="{TemplateBinding Foreground}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" VerticalContentAlignment="Center" FontSize="{TemplateBinding FontSize}">
-                    <Path Fill="{TemplateBinding Foreground}" Width="16" Height="8" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
-                  </RepeatButton>
-                </StackPanel>
-              </Grid>
-            </Border>
-          </DataValidationErrors>
-        </ControlTemplate>
-      </Setter>
-
-      <Style Selector="^:error">
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemErrorTextColor}" />
+                                BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerRightThickness}}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Padding="{TemplateBinding Padding}" />
+            </DockPanel>
+          </Border>
+        </DataValidationErrors>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:left">
+      <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
+        <Setter Property="DockPanel.Dock" Value="Left"/>
       </Style>
-
-      <Style Selector="^:left">
-        <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
-          <Setter Property="Grid.Column" Value="0" />
-        </Style>
-        <Style Selector="^ /template/ RepeatButton.ButtonSpinnerRepeatButton">
-          <Setter Property="BorderThickness" Value="{Binding $parent[ButtonSpinner].BorderThickness, Converter={StaticResource ButtonSpinner_OnlyRightThinknessConverter}}" />
-        </Style>
+      <Style Selector="^ /template/ ContentPresenter">
+        <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerLeftThickness}}" />
       </Style>
+    </Style>
+    <Style Selector="^:error">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemErrorTextColor}" />
+    </Style>
+  </ControlTheme>
 
-      <Style Selector="^:right">
-        <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
-          <Setter Property="Grid.Column" Value="2" />
-        </Style>
-        <Style Selector="^ /template/ RepeatButton.ButtonSpinnerRepeatButton">
-          <Setter Property="BorderThickness" Value="{Binding $parent[ButtonSpinner].BorderThickness, Converter={StaticResource ButtonSpinner_OnlyLeftThinknessConverter}}" />
-        </Style>
-      </Style>
-    </ControlTheme>
 </ResourceDictionary>
