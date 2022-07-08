@@ -121,7 +121,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 {
                     throw new XamlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
                 }
-                
+
                 var modeProperty = relativeSourceObject.Children
                     .OfType<XamlAstXamlPropertyValueNode>()
                     .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Mode")?
@@ -226,7 +226,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     var parentType = contentTemplateNode.TargetType.GetClrType();
                     if (parentType is null)
                     {
-                        throw new XamlParseException("TargetType has to be set on ControlTemplate.", binding);
+                        throw new XamlParseException("TargetType has to be set on ControlTemplate or it should be defined inside of a Style.", binding);
                     } 
 
                     convertedNode = new TemplatedParentBindingExpressionNode { Type = parentType };
