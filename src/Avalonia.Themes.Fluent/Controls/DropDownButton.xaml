@@ -57,17 +57,13 @@
                           Margin="0,0,10,0"
                           Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z"
                           HorizontalAlignment="Right"
-                          VerticalAlignment="Center" />
+                          VerticalAlignment="Center"
+                          Foreground="{DynamicResource ComboBoxDropDownGlyphForeground}"/>
               </Grid>
             </Border>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
-      
-      <!--  Normal State  -->
-      <Style Selector="^ /template/ PathIcon#DropDownGlyph">
-        <Setter Property="Foreground" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
-      </Style>
       
       <!--  PointerOver State  -->
       <Style Selector="^:pointerover /template/ Border#RootBorder">
@@ -75,8 +71,12 @@
         <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
       </Style>
-      
+
       <!--  Pressed State  -->
+      <Style Selector="^:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.98)" />
+      </Style>
+
       <Style Selector="^:pressed /template/ Border#RootBorder">
         <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
@@ -91,10 +91,6 @@
       </Style>
       <Style Selector="^:disabled /template/ PathIcon#DropDownGlyph">
         <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
-      </Style>
-
-      <Style Selector="^:pressed">
-        <Setter Property="RenderTransform" Value="scale(0.98)" />
       </Style>
     </ControlTheme>
   
