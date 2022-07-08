@@ -45,10 +45,6 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    </Style>
-
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPointerOver}" />
