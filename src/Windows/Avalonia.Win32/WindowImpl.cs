@@ -870,7 +870,14 @@ namespace Avalonia.Win32
             if (fullscreen)
             {
                 GetWindowRect(_hwnd, out var windowRect);
-                _savedWindowInfo.WindowRect = windowRect;
+                GetClientRect(_hwnd, out var clientRect);
+
+                clientRect.left += windowRect.left;
+                clientRect.right += windowRect.left;
+                clientRect.top += windowRect.top;
+                clientRect.bottom += windowRect.top;
+                
+                _savedWindowInfo.WindowRect = clientRect;
 
                 var current = GetStyle();
                 var currentEx = GetExtendedStyle();
@@ -907,10 +914,10 @@ namespace Avalonia.Win32
                 SetExtendedStyle(_savedWindowInfo.ExStyle, false);
 
                 // On restore, resize to the previous saved rect size.
-                var new_rect = _savedWindowInfo.WindowRect.ToPixelRect();
+                var newClientRect = _savedWindowInfo.WindowRect.ToPixelRect();
 
-                SetWindowPos(_hwnd, IntPtr.Zero, new_rect.X, new_rect.Y, new_rect.Width,
-                             new_rect.Height,
+                SetWindowPos(_hwnd, IntPtr.Zero, newClientRect.X, newClientRect.Y, newClientRect.Width,
+                             newClientRect.Height,
                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
 
                 UpdateWindowProperties(_windowProperties, true);

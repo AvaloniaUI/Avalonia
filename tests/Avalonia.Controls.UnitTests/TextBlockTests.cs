@@ -20,13 +20,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Default_Text_Value_Should_Be_EmptyString()
+        public void Default_Text_Value_Should_Be_Null()
         {
             var textBlock = new TextBlock();
 
-            Assert.Equal(
-                "",
-                textBlock.Text);
+            Assert.Equal(null, textBlock.Text);
         }
 
         [Fact]
@@ -61,48 +59,6 @@ namespace Avalonia.Controls.UnitTests
             ((SolidColorBrush)target.Foreground).Color = Colors.Green;
 
             renderer.Verify(x => x.AddDirty(target), Times.Once);
-        }
-
-        [Fact]
-        public void Changing_InlinesCollection_Should_Invalidate_Measure()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var target = new TextBlock();
-
-                target.Measure(Size.Infinity);
-           
-                Assert.True(target.IsMeasureValid);
-           
-                target.Inlines.Add(new Run("Hello"));
-           
-                Assert.False(target.IsMeasureValid);
-           
-                target.Measure(Size.Infinity);
-           
-                Assert.True(target.IsMeasureValid);
-            }
-        }
-        
-        [Fact]
-        public void Changing_Inlines_Properties_Should_Invalidate_Measure()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var target = new TextBlock();
-
-                var inline = new Run("Hello");
-                
-                target.Inlines.Add(inline);
-
-                target.Measure(Size.Infinity);
-           
-                Assert.True(target.IsMeasureValid);
-
-                inline.Text = "1337";
-                
-                Assert.False(target.IsMeasureValid);
-            }
         }
     }
 }
