@@ -25,5 +25,5 @@
         </Menu>
       </ControlTemplate>
     </Setter>
-   </ControlTheme>
+  </ControlTheme>
 </ResourceDictionary>
