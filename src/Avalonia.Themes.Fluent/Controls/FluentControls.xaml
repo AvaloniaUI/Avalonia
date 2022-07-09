@@ -39,6 +39,7 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Separator.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabControl.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStrip.xaml" />
@@ -72,7 +73,6 @@
     <!--  TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel  -->
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml" />
     <Styles.Resources />
