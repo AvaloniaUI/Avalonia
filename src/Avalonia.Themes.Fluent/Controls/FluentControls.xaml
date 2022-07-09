@@ -25,6 +25,7 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBox.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBoxItem.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuScrollViewer.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Menu.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuFlyoutPresenter.xaml" />

@@ -5,8 +5,8 @@
                     x:DataType="MenuItem"
                     x:CompileBindings="True">
   <Design.PreviewWith>
-    <Border Padding="20">
-      <StackPanel Spacing="20">
+    <Border Padding="20" Width="320">
+      <StackPanel Spacing="20" HorizontalAlignment="Left">
         <MenuItem Header="_Standard"/>
         <MenuItem IsSelected="True" Header="Selected"/>
         <MenuItem Header="With Icon">
@@ -22,8 +22,26 @@
         <MenuItem Header="Input Gesture" InputGesture="Ctrl+G"/>
         <MenuItem Header="Disabled" IsEnabled="False"/>
         <MenuItem Header="-"/>
-        <MenuItem Header="Parent">
-          <MenuItem Header="Child"/>
+        <MenuItem Header="Parent" IsSubMenuOpen="True">
+          <MenuItem Header="Child 1"/>
+          <MenuItem Header="Child 2"/>
+          <MenuItem Header="Child 3"/>
+          <MenuItem Header="Child 4"/>
+          <MenuItem Header="Child 5"/>
+          <MenuItem Header="Child 6"/>
+          <MenuItem Header="Child 7"/>
+          <MenuItem Header="Child 8"/>
+          <MenuItem Header="Child 9"/>
+          <MenuItem Header="Child 10"/>
+          <MenuItem Header="Child 11"/>
+          <MenuItem Header="Child 12"/>
+          <MenuItem Header="Child 13"/>
+          <MenuItem Header="Child 14"/>
+          <MenuItem Header="Child 15"/>
+          <MenuItem Header="Child 16"/>
+          <MenuItem Header="Child 17"/>
+          <MenuItem Header="Child 18"/>
+          <MenuItem Header="Child 19"/>
         </MenuItem>
         <MenuItem Header="Disabled Parent" IsEnabled="False">
           <MenuItem Header="Child"/>
@@ -113,7 +131,7 @@
                     MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
                     HorizontalAlignment="Stretch"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
-              <ScrollViewer Classes="menuscroller">
+              <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
