@@ -51,6 +51,7 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TransitioningContentControl.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/WindowNotificationManager.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Window.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml" />
@@ -68,10 +69,7 @@
         </ResourceDictionary>
     </Styles.Resources>
 
-    <!--  Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox)  -->
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml" />
-    <!--  TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel  -->
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml" />
