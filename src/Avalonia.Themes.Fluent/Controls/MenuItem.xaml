@@ -160,7 +160,7 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
-                   MinWidth="{ReflectionBinding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}">
