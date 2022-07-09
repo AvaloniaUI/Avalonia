@@ -67,6 +67,8 @@ namespace Avalonia.Controls.Documents
                 Brushes.Black,
                 inherits: true);
 
+        private IInlineHost? _inlineHost;
+
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
         /// </summary>
@@ -250,7 +252,21 @@ namespace Avalonia.Controls.Documents
             control.SetValue(ForegroundProperty, value);
         }
 
-        internal IInlineHost? InlineHost { get; set; }
+        internal IInlineHost? InlineHost
+        {
+            get => _inlineHost;
+            set
+            {
+                var oldValue = _inlineHost;
+                _inlineHost = value;
+                OnInlineHostChanged(oldValue, value);
+            }
+        }
+
+        internal virtual void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+
+        }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
