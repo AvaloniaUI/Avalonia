@@ -5,7 +5,7 @@
         xmlns:primitives="using:Avalonia.Controls.Primitives"
         xmlns:pc="clr-namespace:Avalonia.Controls.Primitives.Converters;assembly=Avalonia.Controls.ColorPicker"
         xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
-        x:CompileBindings="False">
+        x:CompileBindings="True">
 
   <Styles.Resources>
     <pc:ContrastBrushConverter x:Key="ContrastBrushConverter" />
@@ -244,12 +244,20 @@
                       <Setter Property="Opacity" Value="1" />
                     </Style>
 
-                    <Style Selector="^:selected /template/ Rectangle#BorderRectangle">
-                      <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={DynamicResource TextControlForeground}}" />
+                    <Style Selector="^:selected /template/ Rectangle#BorderRectangle"
+                           x:DataType="Color">
+                      <!-- The below line really should be:
+                             'Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={DynamicResource TextControlForeground}}"'
+                           However, DynamicResource and Binding is not currently supported in Avalonia for converter parameters.
+                           This means certain colors with transparency less than 50% may have a selection border that is difficult
+                           to see over top of the default control/window background. Since palettes do not usually have transparency
+                           it is considered better to disable this functionality rather than work around it with a multi-value
+                           converter. This should be revisited if Avalonia supports the above code in the future. -->
+                      <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrushConverter}}" />
                       <Setter Property="Opacity" Value="1" />
                     </Style>
-
                   </Style>
+
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
                   <DataTemplate DataType="{x:Type Color}">
