@@ -396,7 +396,7 @@ namespace Avalonia.Controls.Primitives
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IStyledElement child)
+                if (children[i] is IStyledElement child && child.TemplatedParent is null)
                 {
                     ApplyTemplatedParent(child, templatedParent);
                 }
