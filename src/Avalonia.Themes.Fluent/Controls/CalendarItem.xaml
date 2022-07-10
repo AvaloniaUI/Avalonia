@@ -91,7 +91,11 @@
                       Padding="1"
                       HorizontalContentAlignment="Left">
                 <!--Path mimics Segoe MDL2 Assets font glyph used in WinUI-->
-                <Path StrokeThickness="1.5" Data="M 0,9 L 9,0 L 18,9" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Path Stroke="{DynamicResource CalendarViewForeground}"
+                      StrokeThickness="1.5" 
+                      Data="M 0,9 L 9,0 L 18,9" 
+                      HorizontalAlignment="Center" 
+                      VerticalAlignment="Center" />
               </Button>
               <Button Name="NextButton"
                       Grid.Column="2"
@@ -100,7 +104,11 @@
                       Padding="1"
                       HorizontalContentAlignment="Left">
                 <!--Path mimics Segoe MDL2 Assets font glyph used in WinUI-->
-                <Path StrokeThickness="1.5" Data="M 0,0 L 9,9 L 18,0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Path Stroke="{DynamicResource CalendarViewForeground}"
+                      StrokeThickness="1.5" 
+                      Data="M 0,0 L 9,9 L 18,0" 
+                      HorizontalAlignment="Center" 
+                      VerticalAlignment="Center" />
               </Button>
             </Grid>
             <!--Border below is used only for MonthView but it can't be moved inside of Grid because CalendarItem expects it to be empty and it will cause side-effects-->
@@ -147,9 +155,6 @@
         </Border>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^ /template/ Button > Path">
-      <Setter Property="Stroke" Value="{DynamicResource CalendarViewForeground}" />
-    </Style>
     <Style Selector="^ /template/ Button:pointerover > Path">
       <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}" />
     </Style>

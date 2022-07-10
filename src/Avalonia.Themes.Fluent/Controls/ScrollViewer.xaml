@@ -68,18 +68,17 @@
           <Panel x:Name="PART_ScrollBarsSeparator"
                  Grid.Row="1"
                  Grid.Column="1"
-                 Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
+                 Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}"
+                 Opacity="0">
+            <Panel.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+              </Transitions>
+            </Panel.Transitions>
+          </Panel>
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^ /template/ Panel#PART_ScrollBarsSeparator">
-      <Setter Property="Opacity" Value="0" />
-      <Setter Property="Transitions">
-        <Transitions>
-          <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
-        </Transitions>
-      </Setter>
-    </Style>
     <Style Selector="^[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
       <Setter Property="Opacity" Value="1" />
     </Style>

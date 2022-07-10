@@ -2,11 +2,14 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Design.PreviewWith>
-    <Border Margin="20" Width="200" Height="400">
+    <Border Margin="20" Width="400" Height="600">
       <DockPanel LastChildFill="True">
         <StackPanel Spacing="10" DockPanel.Dock="Top">
           <Slider Value="50" />
           <Slider IsDirectionReversed="True" Value="50" />
+          <Slider Value="50" TickPlacement="TopLeft" TickFrequency="10"/>
+          <Slider Value="50" TickPlacement="BottomRight" TickFrequency="10"/>
+          <Slider Value="50" TickPlacement="Outside" TickFrequency="10"/>
           <Slider IsEnabled="False" Value="50" />
           <Slider Value="50">
             <DataValidationErrors.Error>
@@ -22,6 +25,9 @@
           <Slider Value="50" Orientation="Vertical" />
           <Slider IsDirectionReversed="True" Value="50" Orientation="Vertical" />
           <Slider IsEnabled="False" Orientation="Vertical" Value="50" />
+          <Slider Value="50" TickPlacement="TopLeft" TickFrequency="10" Orientation="Vertical" />
+          <Slider Value="50" TickPlacement="BottomRight" TickFrequency="10" Orientation="Vertical" />
+          <Slider Value="50" TickPlacement="Outside" TickFrequency="10" Orientation="Vertical" />
         </StackPanel>
       </DockPanel>
     </Border>
@@ -103,7 +109,9 @@
                     Margin="{DynamicResource SliderTopHeaderMargin}"
                     TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}"
                     TextElement.Foreground="{DynamicResource SliderHeaderForeground}" />
-                <Grid x:Name="SliderContainer" Grid.Row="1">
+                <Grid x:Name="SliderContainer"
+                      Grid.Row="1"
+                      Background="{DynamicResource SliderContainerBackground}">
                   <Grid.Styles>
                     <Style Selector="TickBar">
                       <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
@@ -129,7 +137,9 @@
                         Height="{DynamicResource SliderOutsideTickBarThemeHeight}"
                         Margin="0,0,0,4"
                         VerticalAlignment="Bottom"
-                        Placement="Top" />
+                        Placement="Top" 
+                        IsVisible="False"
+                        Fill="{DynamicResource SliderTickBarFill}"/>
                     <TickBar
                         Name="BottomTickBar"
                         Grid.Row="2"
@@ -142,7 +152,9 @@
                         Height="{DynamicResource SliderOutsideTickBarThemeHeight}"
                         Margin="0,4,0,0"
                         VerticalAlignment="Top"
-                        Placement="Bottom" />
+                        Placement="Bottom"
+                        IsVisible="False"
+                        Fill="{DynamicResource SliderTickBarFill}" />
                     <Track
                         Name="PART_Track"
                         Grid.Row="1"
@@ -172,6 +184,7 @@
                           Height="{DynamicResource SliderHorizontalThumbHeight}"
                           Margin="0"
                           Padding="0"
+                          Background="{DynamicResource SliderThumbBackground}"
                           BorderThickness="0"
                           Theme="{StaticResource FluentSliderThumbTheme}"
                           DataContext="{TemplateBinding Value}"/>
@@ -202,7 +215,9 @@
                     Margin="{DynamicResource SliderTopHeaderMargin}"
                     TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}"
                     TextElement.Foreground="{DynamicResource SliderHeaderForeground}" />
-                <Grid x:Name="SliderContainer" Grid.Row="1">
+                <Grid x:Name="SliderContainer"
+                      Grid.Row="1"
+                      Background="{DynamicResource SliderContainerBackground}">
                   <Grid.Styles>
                     <Style Selector="TickBar">
                       <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
@@ -228,7 +243,9 @@
                         Width="{DynamicResource SliderOutsideTickBarThemeHeight}"
                         Margin="0,0,4,0"
                         HorizontalAlignment="Right"
-                        Placement="Left" />
+                        Placement="Left"
+                        IsVisible="False"
+                        Fill="{DynamicResource SliderTickBarFill}"/>
                     <TickBar
                         Name="RightTickBar"
                         Grid.RowSpan="3"
@@ -241,7 +258,9 @@
                         Width="{DynamicResource SliderOutsideTickBarThemeHeight}"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
-                        Placement="Right" />
+                        Placement="Right" 
+                        IsVisible="False"
+                        Fill="{DynamicResource SliderTickBarFill}"/>
                     <Track
                         Name="PART_Track"
                         Grid.RowSpan="3"
@@ -272,6 +291,7 @@
                           Height="{DynamicResource SliderVerticalThumbHeight}"
                           Margin="0"
                           Padding="0"
+                          Background="{DynamicResource SliderThumbBackground}"
                           BorderThickness="0"
                           Theme="{StaticResource FluentSliderThumbTheme}"
                           DataContext="{TemplateBinding Value}" />
@@ -283,19 +303,6 @@
           </DataValidationErrors>
         </ControlTemplate>
       </Setter>
-    </Style>
-
-    <!--  Normal State  -->
-
-    <Style Selector="^ /template/ Thumb">
-      <Setter Property="Background" Value="{DynamicResource SliderThumbBackground}" />
-    </Style>
-    <Style Selector="^ /template/ Grid#SliderContainer">
-      <Setter Property="Background" Value="{DynamicResource SliderContainerBackground}" />
-    </Style>
-    <Style Selector="^/template/ TickBar">
-      <Setter Property="IsVisible" Value="False" />
-      <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
     </Style>
 
     <!--  TickBar Placement States  -->

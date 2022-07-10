@@ -15,8 +15,8 @@
         <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}">Standard Item</ListBoxItem>
         <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}" Classes="MonthItem">Month Item</ListBoxItem>
         <RepeatButton Theme="{DynamicResource FluentDateTimePickerButton}">Button</RepeatButton>
-        <RepeatButton Theme="{DynamicResource FluentDateTimePickerUpButton}"/>
-        <RepeatButton Theme="{DynamicResource FluentDateTimePickerDownButton}"/>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerUpButton}" IsVisible="True"/>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerDownButton}" IsVisible="True"/>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
@@ -90,6 +90,7 @@
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+    <Setter Property="IsVisible" Value="False"/>
     <Setter Property="Content">
       <Template>
         <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -105,6 +106,7 @@
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+    <Setter Property="IsVisible" Value="False"/>
     <Setter Property="Content">
       <Template>
         <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">

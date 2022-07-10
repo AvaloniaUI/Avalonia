@@ -280,10 +280,6 @@
     </Setter>
 
     <Style Selector="^ /template/ Panel">
-      <Style Selector="^ RepeatButton">
-        <Setter Property="IsVisible" Value="False" />
-      </Style>
-
       <Style Selector="^:pointerover RepeatButton">
         <Setter Property="IsVisible" Value="True" />
       </Style>
