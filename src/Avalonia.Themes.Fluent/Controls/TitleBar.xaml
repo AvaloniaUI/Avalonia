@@ -1,8 +1,8 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
-      <Border>
-        <TitleBar Background="SkyBlue" Height="30" Width="300" Foreground="Black" />
+      <Border Height="30" Width="300">
+        <TitleBar Background="SkyBlue" Foreground="Black" />
       </Border>
     </Design.PreviewWith>
 
@@ -13,11 +13,19 @@
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Template">
         <ControlTemplate>
-          <Panel HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="Stretch">
-            <Panel x:Name="PART_MouseTracker" Height="1" VerticalAlignment="Top" />
+          <Panel HorizontalAlignment="{TemplateBinding HorizontalAlignment}" 
+                 VerticalAlignment="Stretch">
+            <Panel x:Name="PART_MouseTracker" 
+                   Height="1" 
+                   VerticalAlignment="Top" />
             <Panel x:Name="PART_Container">
-              <Border x:Name="PART_Background" Background="{TemplateBinding Background}" />
-              <CaptionButtons x:Name="PART_CaptionButtons" VerticalAlignment="Top" HorizontalAlignment="Right" Foreground="{TemplateBinding Foreground}" />
+              <Border x:Name="PART_Background"
+                      Background="{TemplateBinding Background}"
+                      IsHitTestVisible="False"/>
+              <CaptionButtons x:Name="PART_CaptionButtons"
+                              VerticalAlignment="Top" 
+                              HorizontalAlignment="Right"
+                              Foreground="{TemplateBinding Foreground}" />
             </Panel>
           </Panel>
         </ControlTemplate>
@@ -25,10 +33,6 @@
 
       <Style Selector="^:fullscreen">
         <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
-      </Style>
-
-      <Style Selector="^ /template/ Border#PART_Background">
-        <Setter Property="IsHitTestVisible" Value="False" />
       </Style>
 
       <Style Selector="^:fullscreen /template/ Border#PART_Background">
