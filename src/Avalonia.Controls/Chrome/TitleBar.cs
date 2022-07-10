@@ -35,8 +35,7 @@ namespace Avalonia.Controls.Chrome
                     }
                 }
 
-                if (!Design.IsDesignMode)
-                    IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
+                IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
             }
         }
 
@@ -48,7 +47,7 @@ namespace Avalonia.Controls.Chrome
 
             _captionButtons = e.NameScope.Get<CaptionButtons>("PART_CaptionButtons");
 
-            if (VisualRoot is Window window && !Design.IsDesignMode)
+            if (VisualRoot is Window window)
             {
                 _captionButtons?.Attach(window);
 
@@ -60,7 +59,7 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnAttachedToVisualTree(e);
 
-            if (VisualRoot is Window window && !Design.IsDesignMode)
+            if (VisualRoot is Window window)
             {
                 _disposables = new CompositeDisposable
                 {
