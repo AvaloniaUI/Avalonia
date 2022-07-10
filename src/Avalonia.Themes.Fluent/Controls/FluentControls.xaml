@@ -59,7 +59,9 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DateTimePickerShared.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml" />
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DropDownButton.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/EmbeddableControlRoot.xaml" />
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Slider.xaml" />
@@ -72,6 +74,5 @@
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitButton.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
-    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml" />
     <Styles.Resources />
 </Styles>
