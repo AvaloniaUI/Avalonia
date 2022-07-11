@@ -553,29 +553,6 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
             windowImpl.Setup(x => x.RenderScaling).Returns(1.75);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
-
-            var clientSize = new Size(400, 300);
-            bool isShown = false;
-            
-            windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
-                .Callback<Size, PlatformResizeReason>((x, y) =>
-                {
-                    if (x != clientSize)
-                    {
-                        clientSize = x;
-
-                        windowImpl.Object.Resized?.Invoke(clientSize, y);
-                    }
-                });
-
-            windowImpl.Setup(x => x.Show(It.IsAny<bool>(), It.IsAny<bool>()))
-                .Callback<bool, bool>((activate, isDialog) =>
-                {
-                    isShown = true;
-                    windowImpl.Object.Resized?.Invoke(clientSize, PlatformResizeReason.Unspecified);
-                });
-            
-            windowImpl.Setup(x => x.FrameSize).Returns(() => windowImpl.Object.ClientSize.Inflate(new Thickness(5, 25, 5, 5)));
             
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -586,7 +563,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
                 
-                Assert.Equal(new PixelPoint(601, 194), window.Position);
+                Assert.Equal(new PixelPoint(330, 63), window.Position);
                 Assert.Equal(new Size(720, 480), window.Bounds.Size);
             }
         }

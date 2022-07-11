@@ -55,12 +55,18 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
                 .Callback<Size, PlatformResizeReason>((x, y) =>
             {
-                clientSize = x.Constrain(s_screenSize);
-                windowImpl.Object.Resized?.Invoke(clientSize, y);
+                var constrainedSize = x.Constrain(s_screenSize);
+                
+                if (constrainedSize != clientSize)
+                {
+                    clientSize = constrainedSize;
+                    windowImpl.Object.Resized?.Invoke(clientSize, y);
+                }
             });
 
             windowImpl.Setup(x => x.Show(true, It.IsAny<bool>())).Callback(() =>
             {
+                windowImpl.Object.Resized?.Invoke(windowImpl.Object.ClientSize, PlatformResizeReason.Unspecified);
                 windowImpl.Object.Activated?.Invoke();
             });
 
