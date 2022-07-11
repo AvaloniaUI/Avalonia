@@ -42,8 +42,8 @@ target_link_directories(avalonia.skia PRIVATE ${PKGROOT}/${SKIA_LIBDIR})
 target_link_libraries(avalonia.skia PRIVATE skia)
 target_link_libraries(avalonia.skia PRIVATE ${PKGROOT}/${SKIA_LIBDIR}/libharfbuzz.a)
 
-if (!WINDOWS)
-target_link_libraries(avalonia.skia PRIVATE fontconfig)
+if (NOT WIN32)
+    target_link_libraries(avalonia.skia PRIVATE fontconfig)
 endif()
 
 link_directories(${OPENGL_LIBRARY_DIRS})
@@ -51,17 +51,17 @@ target_link_libraries(avalonia.skia PRIVATE ${OPENGL_LIBRARIES})
 
 target_compile_definitions(avalonia.skia PRIVATE ${SKIA_COMPILE_DEFINES})
 
-if (!WINDOWS)
-target_link_options(avalonia.skia PRIVATE "-Wl,--version-script=${CMAKE_SOURCE_DIR}/libavalonia.skia.version")
-target_link_options(avalonia.skia PRIVATE "-static-libgcc")
-target_link_options(avalonia.skia PRIVATE "-static-libstdc++")
+if (NOT WIN32)
+    target_link_options(avalonia.skia PRIVATE "-Wl,--version-script=${CMAKE_SOURCE_DIR}/libavalonia.skia.version")
+    target_link_options(avalonia.skia PRIVATE "-static-libgcc")
+    target_link_options(avalonia.skia PRIVATE "-static-libstdc++")
 
-target_compile_options(avalonia.skia
-   PRIVATE
-       "-static-libstdc++"
-       "-static-libgcc"
-       "-Wno-subobject-linkage"
-)
+    target_compile_options(avalonia.skia
+       PRIVATE
+           "-static-libstdc++"
+           "-static-libgcc"
+           "-Wno-subobject-linkage"
+    )
 else()
     set_property(TARGET avalonia.skia PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
 
