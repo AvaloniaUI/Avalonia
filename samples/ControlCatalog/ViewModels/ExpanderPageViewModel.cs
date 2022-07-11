@@ -5,10 +5,10 @@ namespace ControlCatalog.ViewModels
 {
     public class ExpanderPageViewModel : ViewModelBase
     {
-        private CornerRadius _cornerRadius;
+        private object _cornerRadius = AvaloniaProperty.UnsetValue;
         private bool _rounded;
 
-        public CornerRadius CornerRadius
+        public object CornerRadius
         {
             get => _cornerRadius;
             private set => RaiseAndSetIfChanged(ref _cornerRadius, value);
@@ -20,7 +20,7 @@ namespace ControlCatalog.ViewModels
             set
             {
                 if (RaiseAndSetIfChanged(ref _rounded, value))
-                    CornerRadius = _rounded ? new CornerRadius(25) : default;
+                    CornerRadius = _rounded ? new CornerRadius(25) : AvaloniaProperty.UnsetValue;
             }
         }
     }
