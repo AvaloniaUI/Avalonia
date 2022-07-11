@@ -41,9 +41,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
             AvaloniaProperty.Register<RichTextBlock, IBrush?>(nameof(SelectionBrush), Brushes.Blue);
 
-        public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
-            AvaloniaProperty.Register<RichTextBlock, IBrush?>(nameof(SelectionForegroundBrush));
-
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
@@ -68,7 +65,7 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue(typeof(RichTextBlock), true);
 
-            AffectsRender<RichTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionForegroundBrushProperty, SelectionBrushProperty);
+            AffectsRender<RichTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
         }
 
         public RichTextBlock()
@@ -87,15 +84,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(SelectionBrushProperty);
             set => SetValue(SelectionBrushProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value that defines the brush used for selected text.
-        /// </summary>
-        public IBrush? SelectionForegroundBrush
-        {
-            get => GetValue(SelectionForegroundBrushProperty);
-            set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
         /// <summary>
@@ -198,7 +186,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public override void Render(DrawingContext context)
+        protected override void RenderTextLayout(DrawingContext context, Point origin)
         {
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
@@ -213,13 +201,16 @@ namespace Avalonia.Controls
 
                 var rects = TextLayout.HitTestTextRange(start, length);
 
-                foreach (var rect in rects)
+                using (context.PushPostTransform(Matrix.CreateTranslation(origin)))
                 {
-                    context.FillRectangle(selectionBrush, PixelRect.FromRect(rect, 1).ToRect(1));
+                    foreach (var rect in rects)
+                    {
+                        context.FillRectangle(selectionBrush, PixelRect.FromRect(rect, 1).ToRect(1));
+                    }
                 }
             }
 
-            base.Render(context);
+            base.RenderTextLayout(context, origin);
         }
 
         /// <summary>
@@ -280,8 +271,9 @@ namespace Avalonia.Controls
         /// <returns>A <see cref="TextLayout"/> object.</returns>
         protected override TextLayout CreateTextLayout(string? text)
         {
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
             var defaultProperties = new GenericTextRunProperties(
-                new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+                typeface,
                 FontSize,
                 TextDecorations,
                 Foreground);
@@ -328,6 +320,8 @@ namespace Avalonia.Controls
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            base.OnKeyDown(e);
+
             var handled = false;
             var modifiers = e.KeyModifiers;
             var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
@@ -346,6 +340,8 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
+            base.OnPointerPressed(e);
+
             if (!IsTextSelectionEnabled)
             {
                 return;
@@ -356,7 +352,9 @@ namespace Avalonia.Controls
 
             if (text != null && clickInfo.Properties.IsLeftButtonPressed)
             {
-                var point = e.GetPosition(this);
+                var padding = Padding;
+
+                var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
 
                 var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
@@ -403,6 +401,8 @@ namespace Avalonia.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            base.OnPointerMoved(e);
+
             if (!IsTextSelectionEnabled)
             {
                 return;
@@ -411,11 +411,13 @@ namespace Avalonia.Controls
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                var point = e.GetPosition(this);
+                var padding = Padding;
+
+                var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
 
                 point = new Point(
-                    MathUtilities.Clamp(point.X, 0, Math.Max(Bounds.Width - 1, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(Bounds.Height - 1, 0)));
+                    MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.Bounds.Width, 0)),
+                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Bounds.Width, 0)));
 
                 var hit = TextLayout.HitTestPoint(point);
 
@@ -425,6 +427,8 @@ namespace Avalonia.Controls
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
+            base.OnPointerReleased(e);
+
             if (!IsTextSelectionEnabled)
             {
                 return;
@@ -437,7 +441,9 @@ namespace Avalonia.Controls
 
             if (e.InitialPressMouseButton == MouseButton.Right)
             {
-                var point = e.GetPosition(this);
+                var padding = Padding;
+
+                var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
 
                 var hit = TextLayout.HitTestPoint(point);
 
@@ -467,11 +473,6 @@ namespace Avalonia.Controls
                 case nameof(InlinesProperty):
                     {
                         OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
-                        InvalidateTextLayout();
-                        break;
-                    }
-                case nameof(TextProperty):
-                    {
                         InvalidateTextLayout();
                         break;
                     }

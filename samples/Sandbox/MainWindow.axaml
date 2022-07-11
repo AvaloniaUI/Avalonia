@@ -1,5 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
-  <RichTextBlock Width="200" IsTextSelectionEnabled="True" Text="Multiline TextBlock with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." TextWrapping="Wrap" />
+  <RichTextBlock 
+    HorizontalAlignment="Center" 
+    VerticalAlignment="Center" 
+    Background="AliceBlue" 
+    Padding="5" 
+    IsTextSelectionEnabled="True" 
+    FontSize="18" 
+    FontWeight="Bold" 
+    SelectionStart="24" 
+    SelectionEnd="23">
+    <LineBreak/>
+    <Run>أَبْجَدِيَّة عَرَبِيَّة</Run>
+  </RichTextBlock>
 </Window>

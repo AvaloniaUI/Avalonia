@@ -317,7 +317,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         currentGlyphRun = shapedTextCharacters.GlyphRun;
 
-                        if (currentPosition + remainingLength < currentPosition + currentRun.Text.Length)
+                        if (currentPosition + remainingLength <= currentPosition + currentRun.Text.Length)
                         {
                             characterHit = new CharacterHit(currentRun.Text.Start + remainingLength);
 
@@ -524,27 +524,30 @@ namespace Avalonia.Media.TextFormatting
                     characterLength = NewLineLength;
                 }
 
-                var runwidth = endX - startX;
-                var currentRunBounds = new TextRunBounds(new Rect(startX, 0, runwidth, Height), currentPosition, characterLength, currentRun);
+                var runWidth = endX - startX;
+                var currentRunBounds = new TextRunBounds(new Rect(startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
 
-                if (lastDirection == currentDirection && result.Count > 0 && MathUtilities.AreClose(currentRect.Right, startX))
+                if (!MathUtilities.IsZero(runWidth) || NewLineLength > 0)
                 {
-                    currentRect = currentRect.WithWidth(currentWidth + runwidth);
+                    if (lastDirection == currentDirection && result.Count > 0 && MathUtilities.AreClose(currentRect.Right, startX))
+                    {
+                        currentRect = currentRect.WithWidth(currentWidth + runWidth);
 
-                    var textBounds = result[result.Count - 1];
+                        var textBounds = result[result.Count - 1];
 
-                    textBounds.Rectangle = currentRect;
+                        textBounds.Rectangle = currentRect;
 
-                    textBounds.TextRunBounds.Add(currentRunBounds);
+                        textBounds.TextRunBounds.Add(currentRunBounds);
+                    }
+                    else
+                    {
+                        currentRect = currentRunBounds.Rectangle;
+
+                        result.Add(new TextBounds(currentRect, currentDirection, new List<TextRunBounds> { currentRunBounds }));
+                    }
                 }
-                else
-                {
-                    currentRect = currentRunBounds.Rectangle;
 
-                    result.Add(new TextBounds(currentRect, currentDirection, new List<TextRunBounds> { currentRunBounds }));
-                }
-
-                currentWidth += runwidth;
+                currentWidth += runWidth;
                 currentPosition += characterLength;
 
                 if (currentPosition > characterIndex)
@@ -671,22 +674,25 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentRunBounds = new TextRunBounds(new Rect(Start + startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
 
-                if (lastDirection == currentDirection && result.Count > 0 && MathUtilities.AreClose(currentRect.Right, Start + startX))
+                if(!MathUtilities.IsZero(runWidth) || NewLineLength > 0)
                 {
-                    currentRect = currentRect.WithWidth(currentWidth + runWidth);
+                    if (lastDirection == currentDirection && result.Count > 0 && MathUtilities.AreClose(currentRect.Right, Start + startX))
+                    {
+                        currentRect = currentRect.WithWidth(currentWidth + runWidth);
 
-                    var textBounds = result[result.Count - 1];
+                        var textBounds = result[result.Count - 1];
 
-                    textBounds.Rectangle = currentRect;
+                        textBounds.Rectangle = currentRect;
 
-                    textBounds.TextRunBounds.Add(currentRunBounds);
-                }
-                else
-                {
-                    currentRect = currentRunBounds.Rectangle;
+                        textBounds.TextRunBounds.Add(currentRunBounds);
+                    }
+                    else
+                    {
+                        currentRect = currentRunBounds.Rectangle;
 
-                    result.Add(new TextBounds(currentRect, currentDirection, new List<TextRunBounds> { currentRunBounds }));
-                }
+                        result.Add(new TextBounds(currentRect, currentDirection, new List<TextRunBounds> { currentRunBounds }));
+                    }
+                }               
 
                 currentWidth += runWidth;
                 currentPosition += characterLength;
@@ -704,6 +710,8 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
             }
+
+            result.Reverse();
 
             return result;
         }

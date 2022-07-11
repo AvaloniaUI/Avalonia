@@ -910,6 +910,51 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Get_CharacterHit_From_Distance_RTL()
+        {
+            using (Start())
+            { 
+                var text = "أَبْجَدِيَّة عَرَبِيَّة";
+
+                var layout = new TextLayout(
+                  text,
+                  Typeface.Default,
+                  12,
+                  Brushes.Black);
+
+                var textLine = layout.TextLines[0];
+
+                var firstRun = textLine.TextRuns[0] as ShapedTextCharacters;
+
+                var firstCluster = firstRun.ShapedBuffer.GlyphClusters[0];
+
+                var characterHit = textLine.GetCharacterHitFromDistance(0);
+
+                Assert.Equal(firstCluster, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(text.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+
+                var distance = textLine.GetDistanceFromCharacterHit(characterHit);
+
+                Assert.Equal(0, distance);
+
+                distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(characterHit.FirstCharacterIndex));
+
+                var firstAdvance = firstRun.ShapedBuffer.GlyphAdvances[0];
+
+                Assert.Equal(firstAdvance, distance);
+
+                var rect = layout.HitTestTextPosition(22);
+
+                Assert.Equal(firstAdvance, rect.Left);
+
+                rect = layout.HitTestTextPosition(23);
+
+                Assert.Equal(0, rect.Left);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
