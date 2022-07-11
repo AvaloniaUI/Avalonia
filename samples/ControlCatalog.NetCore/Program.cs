@@ -113,13 +113,16 @@ namespace ControlCatalog.NetCore
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    UseDeferredRendering = false,
                 })
                 .With(new Win32PlatformOptions
                 {
                 })
                 .With(new AvaloniaNativeGraphicsPlatformOptions
                 {
-                    LibraryPath = Path.GetFullPath(@"..\..\..\..\..\src\Skia\Avalonia.NativeGraphics\native\build\avalonia.skia.dll")
+                    LibraryPath = OperatingSystem.IsWindows() ?
+                        Path.GetFullPath(@"..\..\..\..\..\src\skia\Avalonia.NativeGraphics\native\build\avalonia.skia.dll") :
+                        Path.GetFullPath(@"..\..\..\..\..\src\Skia\Avalonia.NativeGraphics\native\build\libavalonia.skia.so")
                 })
                 .UseAvaloniaNativeGraphics()
                 //.UseSkia()
