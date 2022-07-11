@@ -681,8 +681,8 @@ namespace Avalonia.Controls
             IsVisible = true;
 
             var initialSize = new Size(
-                double.IsNaN(Width) ? ClientSize.Width : Width,
-                double.IsNaN(Height) ? ClientSize.Height : Height);
+                double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
+                double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
 
             if (initialSize != ClientSize)
             {
