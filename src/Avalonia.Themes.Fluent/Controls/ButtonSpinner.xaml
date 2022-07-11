@@ -23,8 +23,7 @@
                        AllowSpin="False"/>
         <ButtonSpinner ShowButtonSpinner="False"
                        Content="Hide spinner" />
-        <ButtonSpinner Content="Error"
-                       AllowSpin="False">
+        <ButtonSpinner Content="Error">
           <DataValidationErrors.Error>
             <sys:Exception>
               <x:Arguments>
@@ -46,6 +45,9 @@
     <Setter Property="CornerRadius" Value="0"/>
     <Setter Property="MinWidth" Value="34" />
     <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{TemplateBinding BorderBrush}" />
+    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
@@ -76,8 +78,10 @@
                           Orientation="Horizontal"
                           IsVisible="{TemplateBinding ShowButtonSpinner}">
                 <RepeatButton Name="PART_IncreaseButton"
+                              Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
                               Background="{TemplateBinding Background}"
-                              BorderThickness="0"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerLeftThickness}}"
                               CornerRadius="0"
                               VerticalAlignment="Stretch"
                               VerticalContentAlignment="Center"
@@ -93,13 +97,11 @@
                         Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
                 </RepeatButton>
 
-                <Border BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerRightThickness}}"
-                        VerticalAlignment="Stretch"/>
-
                 <RepeatButton Name="PART_DecreaseButton"
+                              Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
                               Background="{TemplateBinding Background}"
-                              BorderThickness="0"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerLeftThickness}}"
                               CornerRadius="0"
                               VerticalAlignment="Stretch"
                               VerticalContentAlignment="Center"
@@ -118,8 +120,6 @@
 
               <ContentPresenter Name="PART_ContentPresenter"
                                 Grid.Column="1"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerRightThickness}}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Content="{TemplateBinding Content}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -134,8 +134,8 @@
       <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
         <Setter Property="DockPanel.Dock" Value="Left"/>
       </Style>
-      <Style Selector="^ /template/ ContentPresenter">
-        <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerLeftThickness}}" />
+      <Style Selector="^ /template/ RepeatButton">
+        <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerRightThickness}}"/>
       </Style>
     </Style>
     <Style Selector="^:error">
