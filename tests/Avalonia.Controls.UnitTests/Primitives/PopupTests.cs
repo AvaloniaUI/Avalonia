@@ -295,7 +295,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent()
+        public void ContentControl_With_Popup_In_Template_Should_Set_TemplatedParent()
         {
             // Test uses OverlayPopupHost default template
             using (CreateServices())
@@ -381,6 +381,134 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         },
                         templatedParents);
                 }
+            }
+        }
+
+        [Fact]
+        public void ItemsControl_With_Popup_In_Template_Should_Set_TemplatedParent()
+        {
+            // Test uses OverlayPopupHost default template
+            using (CreateServices())
+            {
+                PopupItemsControl target;
+                var item = new Border();
+                var root = PreparedWindow(target = new PopupItemsControl
+                {
+                    Items = new[] { item },
+                    Template = new FuncControlTemplate<PopupItemsControl>(PopupItemsControlTemplate),
+                }); ;
+                root.Show();
+
+                target.ApplyTemplate();
+
+                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                popup.Open();
+
+                var popupRoot = (Control)popup.Host;
+                popupRoot.Measure(Size.Infinity);
+                popupRoot.Arrange(new Rect(popupRoot.DesiredSize));
+
+                var children = popupRoot.GetVisualDescendants().ToList();
+                var types = children.Select(x => x.GetType().Name).ToList();
+
+                if (UsePopupHost)
+                {
+                    Assert.Equal(
+                        new[]
+                        {
+                            "LayoutTransformControl",
+                            "VisualLayerManager",
+                            "ContentPresenter",
+                            "ItemsPresenter",
+                            "StackPanel",
+                            "Border",
+                        },
+                        types);
+                }
+                else
+                {
+                    Assert.Equal(
+                        new[]
+                        {
+                            "LayoutTransformControl",
+                            "Panel",
+                            "Border",
+                            "VisualLayerManager",
+                            "ContentPresenter",
+                            "ItemsPresenter",
+                            "StackPanel",
+                            "Border",
+                        },
+                        types);
+                }
+
+                var templatedParents = children
+                    .OfType<IControl>()
+                    .Select(x => x.TemplatedParent).ToList();
+
+                if (UsePopupHost)
+                {
+                    Assert.Equal(
+                        new object[]
+                        {
+                            popupRoot,
+                            popupRoot,
+                            popupRoot,
+                            target,
+                            target,
+                            null,
+                        },
+                        templatedParents);
+                }
+                else
+                {
+                    Assert.Equal(
+                        new object[]
+                        {
+                            popupRoot,
+                            popupRoot,
+                            popupRoot,
+                            popupRoot,
+                            popupRoot,
+                            target,
+                            target,
+                            null,
+                        },
+                        templatedParents);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Overwrite_TemplatedParent_Of_Item_In_ItemsControl_With_Popup_On_Second_Open()
+        {
+            // Test uses OverlayPopupHost default template
+            using (CreateServices())
+            {
+                PopupItemsControl target;
+                var item = new Border();
+                var root = PreparedWindow(target = new PopupItemsControl
+                {
+                    Items = new[] { item },
+                    Template = new FuncControlTemplate<PopupItemsControl>(PopupItemsControlTemplate),
+                });
+                root.Show();
+
+                target.ApplyTemplate();
+
+                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                popup.Open();
+
+                var popupRoot = (Control)popup.Host;
+                popupRoot.Measure(Size.Infinity);
+                popupRoot.Arrange(new Rect(popupRoot.DesiredSize));
+
+                Assert.Null(item.TemplatedParent);
+
+                popup.Close();
+                popup.Open();
+
+                Assert.Null(item.TemplatedParent);
             }
         }
 
@@ -979,7 +1107,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }.RegisterInNameScope(scope);
         }
 
+        private static IControl PopupItemsControlTemplate(PopupItemsControl control, INameScope scope)
+        {
+            return new Popup
+            {
+                Name = "popup",
+                PlacementTarget = control,
+                Child = new ItemsPresenter
+                {
+                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
+                }
+            }.RegisterInNameScope(scope);
+        }
+
         private class PopupContentControl : ContentControl
+        {
+        }
+
+        private class PopupItemsControl : ItemsControl
         {
         }
 

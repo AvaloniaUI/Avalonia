@@ -11,6 +11,6 @@ namespace Avalonia.FreeDesktop
     internal interface IRequest : IDBusObject
     {
         Task CloseAsync();
-        Task<IDisposable> WatchResponseAsync(Action<(uint response, IDictionary<string, object> results)> handler, Action<Exception> onError = null);
+        Task<IDisposable> WatchResponseAsync(Action<(uint response, IDictionary<string, object> results)> handler, Action<Exception>? onError = null);
     }
 }
