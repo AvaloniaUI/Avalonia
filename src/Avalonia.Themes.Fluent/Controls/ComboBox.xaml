@@ -136,7 +136,6 @@
                       Background="{DynamicResource ComboBoxDropDownBackground}"
                       BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"
                       BorderThickness="{DynamicResource ComboBoxDropdownBorderThickness}"
-                      Margin="0,-1,0,-1"
                       Padding="{DynamicResource ComboBoxDropdownBorderPadding}"
                       HorizontalAlignment="Stretch"
                       CornerRadius="{DynamicResource OverlayCornerRadius}">
