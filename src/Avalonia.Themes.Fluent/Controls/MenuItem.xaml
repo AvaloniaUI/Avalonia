@@ -26,6 +26,7 @@
           <MenuItem Header="Child 1"/>
           <MenuItem Header="Child 2"/>
           <MenuItem Header="Child 3"/>
+          <Separator/>
           <MenuItem Header="Child 4"/>
           <MenuItem Header="Child 5"/>
           <MenuItem Header="Child 6"/>
@@ -204,9 +205,7 @@
     <Style Selector="^:separator">
       <Setter Property="Template">
         <ControlTemplate>
-          <Separator Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
-                     Margin="{DynamicResource MenuFlyoutSeparatorThemePadding}"
-                     Height="{DynamicResource MenuFlyoutSeparatorThemeHeight}"/>
+          <Separator/>
         </ControlTemplate>
       </Setter>
     </Style>
