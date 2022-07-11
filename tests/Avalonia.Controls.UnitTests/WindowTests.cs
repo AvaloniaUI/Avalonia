@@ -549,22 +549,33 @@ namespace Avalonia.Controls.UnitTests
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
             screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
             
-            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            var windowImpl = MockWindowingPlatform.CreateWindowMock(400, 300);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
             windowImpl.Setup(x => x.RenderScaling).Returns(1.75);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
 
-            var clientSize = new Size(400.142, 366);
+            var clientSize = new Size(400, 300);
+            bool isShown = false;
             
-            windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
                 .Callback<Size, PlatformResizeReason>((x, y) =>
                 {
-                    clientSize = x;
-                    windowImpl.Object.Resized?.Invoke(clientSize, y);
+                    if (x != clientSize)
+                    {
+                        clientSize = x;
+
+                        windowImpl.Object.Resized?.Invoke(clientSize, y);
+                    }
                 });
 
-            windowImpl.Setup(x => x.FrameSize).Returns(() => clientSize.Inflate(new Thickness(5, 25, 5, 5)));
+            windowImpl.Setup(x => x.Show(It.IsAny<bool>(), It.IsAny<bool>()))
+                .Callback<bool, bool>((activate, isDialog) =>
+                {
+                    isShown = true;
+                    windowImpl.Object.Resized?.Invoke(clientSize, PlatformResizeReason.Unspecified);
+                });
+            
+            windowImpl.Setup(x => x.FrameSize).Returns(() => windowImpl.Object.ClientSize.Inflate(new Thickness(5, 25, 5, 5)));
             
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -575,6 +586,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
                 
+                Assert.Equal(new PixelPoint(601, 194), window.Position);
                 Assert.Equal(new Size(720, 480), window.Bounds.Size);
             }
         }

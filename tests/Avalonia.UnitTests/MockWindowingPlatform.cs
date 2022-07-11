@@ -21,11 +21,11 @@ namespace Avalonia.UnitTests
             _popupImpl = popupImpl;
         }
 
-        public static Mock<IWindowImpl> CreateWindowMock()
+        public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600)
         {
             var windowImpl = new Mock<IWindowImpl>();
             var position = new PixelPoint();
-            var clientSize = new Size(800, 600);
+            var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
