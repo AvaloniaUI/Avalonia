@@ -37,6 +37,8 @@ class AvgDrawingContext : public ComSingleObject<IAvgDrawingContext, &IID_IAvgDr
 
     void Clear(unsigned int color) override;
 
+    void DrawImage(IAvgImage* image) override;
+
     void DrawGeometry(IAvgPath* path, AvgBrush brush, AvgPen pen) override;
 
     void DrawRectangle(AvgRoundRect rect, AvgBrush brush, AvgPen pen, AvgBoxShadow* boxshadows, int n_boxshadows) override;

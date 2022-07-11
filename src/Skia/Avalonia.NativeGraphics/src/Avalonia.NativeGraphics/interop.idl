@@ -156,6 +156,7 @@ interface IAvgFactory : IUnknown
     HRESULT CreateAvgFontManager(IAvgFontManager** ppv);
     HRESULT CreateAvgGlyphRun(IAvgFontManager* fontManager, IAvgGlyphTypeface* typeface, IAvgGlyphRun** ppv);
     HRESULT CreateAvgFontShapeBuffer(IAvgGlyphTypeface* typeface, IAvgFontShapeBuffer** ppv);
+    HRESULT CreateAvgStream(IAvgStream** ppv);
 
 }
 
@@ -165,6 +166,7 @@ interface IAvgDrawingContext
     double GetScaling ();
     void SetTransform(AvgMatrix3x2* matrix);
     void Clear(uint color);
+    void DrawImage(IAvgImage* image);
     void DrawGeometry(IAvgPath* path, AvgBrush brush, AvgPen pen);
     void DrawRectangle(AvgRoundRect rect, AvgBrush brush, AvgPen pen, AvgBoxShadow* boxshadows, int n_boxshadows);
     void DrawLine(AvgPoint p1, AvgPoint p2, AvgPen pen);
@@ -292,3 +294,15 @@ interface IAvgGlPlatformSurfaceRenderSession
     bool GetIsYFlipped();
 }
 
+[uuid(EAB81071-54D2-4824-BBFA-5D5B5F16137E)]
+interface IAvgStream
+{
+    bool write(void* buffer, uint size);
+    IAvgImage* makeAvgImage();
+}
+
+[uuid(4D0AF4A6-347D-40B0-A7F2-AF214DE5709F)]
+interface IAvgImage
+{
+    AvgVector getSize();
+}

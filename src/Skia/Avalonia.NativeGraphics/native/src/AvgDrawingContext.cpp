@@ -4,6 +4,7 @@
 
 #include "AvgDrawingContext.h"
 #include "AvgPath.h"
+#include "AvgImage.h"
 #include "AvgGlyphRun.h"
 #include "comimpl.h"
 #include "include/core/SkRRect.h"
@@ -20,6 +21,13 @@ void AvgDrawingContext::SetTransform(AvgMatrix3x2* matrix)
 void AvgDrawingContext::Clear(unsigned int color)
 {
     _canvas->clear(color);
+}
+
+void AvgDrawingContext::DrawImage(IAvgImage* image)
+{
+    AvgImage* avgImage = dynamic_cast<AvgImage*>(image);
+
+    _canvas->drawImage(avgImage->_image, 0, 0);
 }
 
 void AvgDrawingContext::ConfigurePaint(AvgBrush brush)

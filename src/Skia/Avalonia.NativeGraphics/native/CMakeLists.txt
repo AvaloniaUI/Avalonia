@@ -24,6 +24,8 @@ target_sources(avalonia.skia
         src/AvgGlyphRun.cpp
         src/AvgGlyphTypeface.cpp
         src/AvgFontShapeBuffer.cpp
+        src/AvgStream.cpp
+        src/AvgImage.cpp
 )
 
 target_include_directories(avalonia.skia PRIVATE ${PKGROOT}/${SKIA_PREFIX}/include/skia)
@@ -39,6 +41,10 @@ set_target_properties(avalonia.skia
 target_link_directories(avalonia.skia PRIVATE ${PKGROOT}/${SKIA_LIBDIR})
 target_link_libraries(avalonia.skia PRIVATE skia)
 target_link_libraries(avalonia.skia PRIVATE ${PKGROOT}/${SKIA_LIBDIR}/libharfbuzz.a)
+
+if (!WINDOWS)
+target_link_libraries(avalonia.skia PRIVATE fontconfig)
+endif()
 
 link_directories(${OPENGL_LIBRARY_DIRS})
 target_link_libraries(avalonia.skia PRIVATE ${OPENGL_LIBRARIES})

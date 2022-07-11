@@ -16,7 +16,7 @@
     </ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="HarfBuzzSharp" Version="2.8.2.1-preview.84" />
+	  <PackageReference Include="HarfBuzzSharp" Version="2.8.2" />
 	</ItemGroup>
 
 </Project>

@@ -106,7 +106,7 @@ namespace Avalonia.NativeGraphics.Backend
 
         public IBitmapImpl LoadBitmap(Stream stream)
         {
-            return new BitmapStub(stream);
+            return new ImmutableBitmap(stream);
         }
 
         public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,

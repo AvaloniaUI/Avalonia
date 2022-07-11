@@ -37,12 +37,19 @@ namespace Avalonia.NativeGraphics.Backend
         public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
             BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
         {
+            ImmutableBitmap bmp = (ImmutableBitmap) source.Item;
             
+            _native.DrawImage(bmp._image);
         }
 
         public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             
+        }
+
+        public void DrawImage(IAvgImage source)
+        {
+           _native.DrawImage(source); 
         }
 
         public void DrawLine(IPen pen, Point p1, Point p2)

@@ -3,6 +3,7 @@
 #include "AvgGlyphRun.h"
 #include "AvgFontShapeBuffer.h"
 #include "AvgPath.h"
+#include "AvgStream.h"
 #include "comimpl.h"
 #include "interop.h"
 
@@ -55,6 +56,13 @@ class AvgFactory : public ComSingleObject<IAvgFactory, &IID_IAvgFactory>
         *ppv = new AvgFontShapeBuffer(typeface);
         return 0;
     }
+    
+    HRESULT CreateAvgStream(IAvgStream** ppv) override
+    {
+        *ppv = new AvgStream();
+        return 0;
+    }
+
 };
 
 
