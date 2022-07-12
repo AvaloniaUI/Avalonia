@@ -104,7 +104,6 @@ namespace Avalonia.Native
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
             }
 
-            var renderLoop = new RenderLoop();
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
@@ -114,7 +113,6 @@ namespace Avalonia.Native
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderLoop>().ToConstant(renderLoop)
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
@@ -122,6 +120,9 @@ namespace Avalonia.Native
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
+
+            var renderLoop = new RenderLoop();
+            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(renderLoop);
 
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
@@ -145,6 +146,7 @@ namespace Avalonia.Native
                 }
             }
             
+
             if (_options.UseDeferredRendering && _options.UseCompositor)
             {
                 Compositor = new Compositor(renderLoop, _platformGl);
