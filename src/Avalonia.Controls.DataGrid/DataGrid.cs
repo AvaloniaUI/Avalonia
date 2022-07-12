@@ -5990,15 +5990,14 @@ namespace Avalonia.Controls
         /// <returns>The formatted string.</returns>
         private string FormatClipboardContent(DataGridRowClipboardEventArgs e)
         {
-            StringBuilder text = new StringBuilder();
-            for (int cellIndex = 0; cellIndex < e.ClipboardRowContent.Count; cellIndex++)
+            var text = new StringBuilder();
+            var clipboardRowContent = e.ClipboardRowContent;
+            var numberOfItem = clipboardRowContent.Count;
+            for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
             {
-                DataGridClipboardCellContent cellContent = e.ClipboardRowContent[cellIndex];
-                if (cellContent != null)
-                {
-                    text.Append(cellContent.Content);
-                }
-                if (cellIndex < e.ClipboardRowContent.Count - 1)
+                var cellContent = clipboardRowContent[cellIndex];
+                text.Append(cellContent.Content);
+                if (cellIndex < numberOfItem - 1)
                 {
                     text.Append('\t');
                 }

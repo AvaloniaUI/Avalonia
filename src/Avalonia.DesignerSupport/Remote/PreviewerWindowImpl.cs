@@ -1,15 +1,17 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Remote.Server;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl
+    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl, ITopLevelImplWithStorageProvider
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
 
@@ -89,6 +91,8 @@ namespace Avalonia.DesignerSupport.Remote
         public Thickness OffScreenMargin { get; } = new Thickness();
 
         public bool NeedsManagedDecorations => false;
+
+        public IStorageProvider StorageProvider => new NoopStorageProvider();
 
         public void Activate()
         {
