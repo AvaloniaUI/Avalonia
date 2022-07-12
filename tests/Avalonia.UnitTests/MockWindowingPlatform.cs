@@ -21,11 +21,11 @@ namespace Avalonia.UnitTests
             _popupImpl = popupImpl;
         }
 
-        public static Mock<IWindowImpl> CreateWindowMock()
+        public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600)
         {
             var windowImpl = new Mock<IWindowImpl>();
             var position = new PixelPoint();
-            var clientSize = new Size(800, 600);
+            var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
@@ -55,12 +55,18 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
                 .Callback<Size, PlatformResizeReason>((x, y) =>
             {
-                clientSize = x.Constrain(s_screenSize);
-                windowImpl.Object.Resized?.Invoke(clientSize, y);
+                var constrainedSize = x.Constrain(s_screenSize);
+                
+                if (constrainedSize != clientSize)
+                {
+                    clientSize = constrainedSize;
+                    windowImpl.Object.Resized?.Invoke(clientSize, y);
+                }
             });
 
             windowImpl.Setup(x => x.Show(true, It.IsAny<bool>())).Callback(() =>
             {
+                windowImpl.Object.Resized?.Invoke(windowImpl.Object.ClientSize, PlatformResizeReason.Unspecified);
                 windowImpl.Object.Activated?.Invoke();
             });
 
