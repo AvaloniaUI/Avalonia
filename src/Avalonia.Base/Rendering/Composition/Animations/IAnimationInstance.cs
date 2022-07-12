@@ -8,7 +8,7 @@ namespace Avalonia.Rendering.Composition.Animations
     {
         ServerObject TargetObject { get; }
         ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue);
-        void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, int storeOffset);
+        void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property);
         void Activate();
         void Deactivate();
         void Invalidate();

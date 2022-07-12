@@ -21,7 +21,25 @@ namespace Avalonia.Rendering.Composition.Server
         public long ItselfLastChangedBy { get; private set; }
         private uint _activationCount;
         public bool IsActive => _activationCount != 0;
+        private InlineDictionary<CompositionProperty, ServerObjectSubscriptionStore> _subscriptions;
+        private InlineDictionary<CompositionProperty, IAnimationInstance> _animations;
+        
+        private class ServerObjectSubscriptionStore
+        {
+            public bool IsValid;
+            public RefTrackingDictionary<IAnimationInstance>? Subscribers;
 
+            public void Invalidate()
+            {
+                if (IsValid)
+                    return;
+                IsValid = false;
+                if (Subscribers != null)
+                    foreach (var sub in Subscribers)
+                        sub.Key.Invalidate();
+            }
+        }
+            
         public ServerObject(ServerCompositor compositor)
         {
             Compositor = compositor;
@@ -62,46 +80,62 @@ namespace Avalonia.Rendering.Composition.Server
             
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        protected class OffsetDummy
+        void InvalidateSubscriptions(CompositionProperty property)
         {
-#pragma warning disable CS0649
-            public FillerStruct Filler;
-#pragma warning restore CS0649
+            if(_subscriptions.TryGetValue(property, out var subs))
+                subs.Invalidate();
+        }
+
+        protected void SetValue<T>(CompositionProperty prop, out T field, T value)
+        {
+            field = value;
+            InvalidateSubscriptions(prop);
+        }
+
+        protected T GetValue<T>(CompositionProperty prop, ref T field)
+        {
+            if (_subscriptions.TryGetValue(prop, out var subs))
+                subs.IsValid = true;
+            return field;
+        }
+
+        protected void SetAnimatedValue<T>(CompositionProperty prop, ref T field,
+            TimeSpan commitedAt, IAnimationInstance animation) where T : struct
+        {
+            if (IsActive && _animations.TryGetValue(prop, out var oldAnimation))
+                oldAnimation.Deactivate();
+            _animations[prop] = animation;
+            
+            animation.Initialize(commitedAt, ExpressionVariant.Create(field), prop);
+            if(IsActive)
+                animation.Activate();
+            
+            InvalidateSubscriptions(prop);
+        }
+
+        protected void SetAnimatedValue<T>(CompositionProperty property, out T field, T value)
+        {
+            if (_animations.TryGetAndRemoveValue(property, out var animation) && IsActive) 
+                animation.Deactivate();
+            field = value;
+            InvalidateSubscriptions(property);
         }
         
-        [StructLayout(LayoutKind.Sequential)]
-        protected unsafe struct FillerStruct
+        protected T GetAnimatedValue<T>(CompositionProperty property, ref T field) where T : struct
         {
-            public fixed byte FillerData[8192];
+            if (_subscriptions.TryGetValue(property, out var subscriptions))
+                subscriptions.IsValid = true;
+
+            if (_animations.TryGetValue(property, out var animation))
+                field = animation.Evaluate(Compositor.ServerNow, ExpressionVariant.Create(field))
+                .CastOrDefault<T>();
+
+            return field;
         }
-
-        private static readonly object s_OffsetDummy = new OffsetDummy();
-        protected static T GetOffsetDummy<T>() where T : ServerObject => Unsafe.As<T>(s_OffsetDummy);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static int GetOffset(ServerObject obj, ref ServerObjectSubscriptionStore field)
+        
+        public virtual void NotifyAnimatedValueChanged(CompositionProperty prop)
         {
-            return Unsafe.ByteOffset(ref obj._activationCount,
-                    ref Unsafe.As<ServerObjectSubscriptionStore, uint>(ref field))
-                .ToInt32();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected ref ServerObjectSubscriptionStore GetStoreFromOffset(int offset)
-        {
-#if DEBUG
-            if (offset == 0)
-                throw new InvalidOperationException();
-#endif
-            return ref Unsafe.As<uint, ServerObjectSubscriptionStore>(ref Unsafe.AddByteOffset(ref _activationCount,
-                new IntPtr(offset)));
-        }
-
-        public virtual void NotifyAnimatedValueChanged(int offset)
-        {
-            ref var store = ref GetStoreFromOffset(offset);
-            store.Invalidate();
+            InvalidateSubscriptions(prop);
             ValuesInvalidated();
         }
 
@@ -110,21 +144,22 @@ namespace Avalonia.Rendering.Composition.Server
             
         }
 
-        public void SubscribeToInvalidation(int member, IAnimationInstance animation)
+        public void SubscribeToInvalidation(CompositionProperty member, IAnimationInstance animation)
         {
-            ref var store = ref GetStoreFromOffset(member);
+            if (!_subscriptions.TryGetValue(member, out var store))
+                _subscriptions[member] = store = new ServerObjectSubscriptionStore();
             if (store.Subscribers == null)
                 store.Subscribers = new();
             store.Subscribers.AddRef(animation);
         }
 
-        public void UnsubscribeFromInvalidation(int member, IAnimationInstance animation)
+        public void UnsubscribeFromInvalidation(CompositionProperty member, IAnimationInstance animation)
         {
-            ref var store = ref GetStoreFromOffset(member);
-            store.Subscribers?.ReleaseRef(animation);
+            if(_subscriptions.TryGetValue(member, out var store))
+                store.Subscribers?.ReleaseRef(animation);
         }
 
-        public virtual int? GetFieldOffset(string fieldName) => null;
+        public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
 
         protected virtual void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
         {

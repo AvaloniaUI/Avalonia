@@ -3,6 +3,7 @@ using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition
 {
@@ -17,6 +18,8 @@ namespace Avalonia.Rendering.Composition
         /// The collection of implicit animations attached to this object.
         /// </summary>
         public ImplicitAnimationCollection? ImplicitAnimations { get; set; }
+
+        private protected InlineDictionary<CompositionProperty, IAnimationInstance> PendingAnimations;
         internal CompositionObject(Compositor compositor, ServerObject server)
         {
             Compositor = compositor;

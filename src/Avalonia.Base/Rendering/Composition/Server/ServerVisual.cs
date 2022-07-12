@@ -121,7 +121,7 @@ namespace Avalonia.Rendering.Composition.Server
             var oldCombinedTransformedClipBounds = _combinedTransformedClipBounds;
 
 
-            if (_parent.Value?.IsDirtyComposition == true)
+            if (_parent?.IsDirtyComposition == true)
             {
                 IsDirtyComposition = true;
                 _isDirtyForUpdate = true;

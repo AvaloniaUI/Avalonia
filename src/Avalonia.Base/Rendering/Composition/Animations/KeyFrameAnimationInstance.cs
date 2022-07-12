@@ -151,7 +151,7 @@ namespace Avalonia.Rendering.Composition.Animations
                 return f.Value;
         }
 
-        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, int storeOffset)
+        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property)
         {
             _startedAt = startedAt;
             _startingValue = startingValue.CastOrDefault<T>();
@@ -160,7 +160,7 @@ namespace Avalonia.Rendering.Composition.Animations
             // TODO: Update subscriptions based on the current keyframe rather than keeping subscriptions to all of them
             foreach (var frame in _keyFrames)
                 frame.Expression?.CollectReferences(hs);
-            Initialize(storeOffset, hs);
+            Initialize(property, hs);
         }
 
         public override void Activate()

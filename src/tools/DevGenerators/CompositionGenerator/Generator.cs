@@ -42,8 +42,10 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         string ChangedFieldsTypeName(GClass c) => c.Name + "ChangedFields";
         string ChangedFieldsFieldName(GClass c) =>  "_changedFieldsOf" + c.Name;
         string PropertyBackingFieldName(GProperty prop) => "_" + prop.Name.WithLowerFirst();
-        string ServerPropertyOffsetFieldName(GProperty prop) => "s_OffsetOf" + PropertyBackingFieldName(prop);
-        string PropertyPendingAnimationFieldName(GProperty prop) => "_pendingAnimationFor" + prop.Name;
+        string CompositionPropertyField(GProperty prop) => "s_IdOf" + prop.Name + "Property";
+
+        ExpressionSyntax ClientProperty(GClass c, GProperty p) =>
+            MemberAccess(ServerName(c.Name), CompositionPropertyField(p));
 
         void GenerateClass(GClass cl)
         {
@@ -140,30 +142,10 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                     .AddParameterListParameters(Parameter(Identifier("c")).WithType(ParseTypeName("BatchStreamReader")))
                     .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon()));
 
-            var applyMethodBody = Block(
-                ExpressionStatement(InvocationExpression(MemberAccess(IdentifierName("base"), "ApplyCore"),
-                    ArgumentList(SeparatedList(new[] {Argument(IdentifierName("changes"))})))),
-                LocalDeclarationStatement(VariableDeclaration(ParseTypeName("var"))
-                    .WithVariables(SingletonSeparatedList(
-                        VariableDeclarator(changesVarName)
-                            .WithInitializer(EqualsValueClause(CastExpression(ParseTypeName(changesName),
-                                IdentifierName("changes"))))))),
-                ExpressionStatement(InvocationExpression(IdentifierName("ApplyChangesExtra"))
-                    .AddArgumentListArguments(Argument(IdentifierName("c"))))
-            );
-
-            var uninitializedObjectName = "dummy";
-            var serverStaticCtorBody = Block(
-                ParseStatement($"var dummy = GetOffsetDummy<{serverName}>();")
-            );
-
-
             var resetBody = Block();
             var startAnimationBody = Block();
             var serverGetPropertyBody = Block();
-            var serverGetFieldOffsetBody = Block();
-            var activatedBody = Block(ParseStatement("base.Activated();"));
-            var deactivatedBody = Block(ParseStatement("base.Deactivated();"));
+            var serverGetCompositionPropertyBody = Block();
             var serializeMethodBody = SerializeChangesPrologue(cl);
             var deserializeMethodBody = DeserializeChangesPrologue(cl);
 
@@ -172,16 +154,12 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             foreach (var prop in cl.Properties)
             {
                 var fieldName = PropertyBackingFieldName(prop);
-                var animatedFieldName = PropertyPendingAnimationFieldName(prop);
-                var fieldOffsetName = ServerPropertyOffsetFieldName(prop);
                 var propType = ParseTypeName(prop.Type);
                 var filteredPropertyType = prop.Type.TrimEnd('?');
                 var isObject = _objects.Contains(filteredPropertyType);
                 var isNullable = prop.Type.EndsWith("?");
                 bool isPassthrough = false;
 
-                if (prop.Animated)
-                    client = client.AddMembers(DeclareField("IAnimationInstance?", animatedFieldName));
                 client = GenerateClientProperty(client, cl, prop, propType, isObject, isNullable);
 
                 var animatedServer = prop.Animated;
@@ -201,35 +179,50 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 
                 if (animatedServer)
                     server = server.AddMembers(
-                        DeclareField("ServerAnimatedValueStore<" + serverPropertyType + ">", fieldName),
+                        DeclareField(serverPropertyType, fieldName),
                         PropertyDeclaration(ParseTypeName(serverPropertyType), prop.Name)
                             .AddModifiers(SyntaxKind.PublicKeyword)
                             .WithExpressionBody(ArrowExpressionClause(
-                                InvocationExpression(MemberAccess(fieldName, "GetAnimated"),
-                                    ArgumentList(SingletonSeparatedList(Argument(IdentifierName("Compositor")))))))
+                                InvocationExpression(IdentifierName("GetAnimatedValue"),
+                                    ArgumentList(SeparatedList(new[]{
+                                        Argument(IdentifierName(CompositionPropertyField(prop))),
+                                        Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName(fieldName))
+                                        }
+                                        )))))
                             .WithSemicolonToken(Semicolon())
                     );
                 else
                 {
                     server = server
-                        .AddMembers(DeclareField("ServerValueStore<" + serverPropertyType + ">", fieldName))
+                        .AddMembers(DeclareField(serverPropertyType, fieldName))
                         .AddMembers(PropertyDeclaration(ParseTypeName(serverPropertyType), prop.Name)
                             .AddModifiers(SyntaxKind.PublicKeyword)
                             .AddAccessorListAccessors(
                                 AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
-                                    Block(ReturnStatement(MemberAccess(IdentifierName(fieldName), "Value")))),
+                                    Block(ReturnStatement(
+                                        InvocationExpression(IdentifierName("GetValue"),
+                                            ArgumentList(SeparatedList(new[]{
+                                                    Argument(IdentifierName(CompositionPropertyField(prop))),
+                                                    Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName(fieldName))
+                                                }
+                                            )))))),
                                 AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
                                     Block(
                                         ParseStatement("var changed = false;"),
                                         IfStatement(BinaryExpression(SyntaxKind.NotEqualsExpression,
-                                                 MemberAccess(IdentifierName(fieldName), "Value"),
+                                                 IdentifierName(fieldName),
                                                 IdentifierName("value")),
                                             Block(
                                                 ParseStatement("On" + prop.Name + "Changing();"),
                                                 ParseStatement($"changed = true;"))
                                         ),
-                                        ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                                            MemberAccess(IdentifierName(fieldName), "Value"), IdentifierName("value"))),
+                                        ExpressionStatement(InvocationExpression(IdentifierName("SetValue"),
+                                            ArgumentList(SeparatedList(new[]{
+                                                    Argument(IdentifierName(CompositionPropertyField(prop))),
+                                                    Argument(null, Token(SyntaxKind.OutKeyword), IdentifierName(fieldName)),
+                                                    Argument(IdentifierName("value"))
+                                                }
+                                            )))),
                                         ParseStatement($"if(changed) On" + prop.Name + "Changed();")
                                     ))
                             ))
@@ -238,36 +231,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                         .AddMembers(MethodDeclaration(ParseTypeName("void"), "On" + prop.Name + "Changing")
                             .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon()));
                 }
-
-                if (animatedServer)
-                    applyMethodBody = applyMethodBody.AddStatements(
-                        IfStatement(MemberAccess(changesVar, prop.Name, "IsValue"),
-                            ExpressionStatement(
-                                InvocationExpression(MemberAccess(fieldName, "SetValue"),
-                                    ArgumentList(SeparatedList(new[]
-                                    {
-                                        Argument(IdentifierName("this")),
-                                        Argument(MemberAccess(changesVar, prop.Name, "Value")),
-                                    }))))),
-                        IfStatement(MemberAccess(changesVar, prop.Name, "IsAnimation"),
-                            ExpressionStatement(
-                                InvocationExpression(MemberAccess(fieldName, "SetAnimation"),
-                                    ArgumentList(SeparatedList(new[]
-                                    {
-                                        Argument(IdentifierName("this")),
-                                        Argument(ParseExpression("c.Batch.CommitedAt")),
-                                        Argument(MemberAccess(changesVar, prop.Name, "Animation")),
-                                        Argument(IdentifierName(fieldOffsetName))
-                                    })))))
-                    );
-                else
-                    applyMethodBody = applyMethodBody.AddStatements(
-                        IfStatement(MemberAccess(changesVar, prop.Name, "IsSet"),
-                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                                IdentifierName(prop.Name), MemberAccess(changesVar, prop.Name, "Value"))))
-
-                    );
-
+                
                 resetBody = resetBody.AddStatements(
                     ExpressionStatement(InvocationExpression(MemberAccess(prop.Name, "Reset"))));
                 
@@ -277,24 +241,15 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 if (animatedServer)
                 {
                     startAnimationBody = ApplyStartAnimation(startAnimationBody, cl, prop);
-                    activatedBody = activatedBody.AddStatements(ParseStatement($"{fieldName}.Activate(this);"));
-                    deactivatedBody = deactivatedBody.AddStatements(ParseStatement($"{fieldName}.Deactivate(this);"));
                 }
 
                 
                 serverGetPropertyBody = ApplyGetProperty(serverGetPropertyBody, prop);
-                serverGetFieldOffsetBody = ApplyGetProperty(serverGetFieldOffsetBody, prop, fieldOffsetName);
+                serverGetCompositionPropertyBody = ApplyGetProperty(serverGetCompositionPropertyBody, prop, CompositionPropertyField(prop));
 
-                server = server.AddMembers(DeclareField("int", fieldOffsetName, SyntaxKind.StaticKeyword));
-                serverStaticCtorBody = serverStaticCtorBody.AddStatements(ExpressionStatement(
-                    AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, IdentifierName(fieldOffsetName),
-                        InvocationExpression(IdentifierName("GetOffset"),
-                            ArgumentList(SeparatedList(new[]
-                            {
-                                Argument(IdentifierName(uninitializedObjectName)),
-                                Argument(RefExpression(MemberAccess(
-                                    MemberAccess(IdentifierName(uninitializedObjectName), fieldName), "Subscriptions")))
-                            }))))));
+                server = server.AddMembers(DeclareField("CompositionProperty", CompositionPropertyField(prop),
+                    EqualsValueClause(ParseExpression("CompositionProperty.Register()")),
+                    SyntaxKind.InternalKeyword, SyntaxKind.StaticKeyword));
                 
                 if (prop.DefaultValue != null)
                 {
@@ -304,16 +259,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                                 IdentifierName(prop.Name), ParseExpression(prop.DefaultValue))));
                 }
             }
-
-            server = server.AddMembers(ConstructorDeclaration(serverName)
-                .WithModifiers(TokenList(Token(SyntaxKind.StaticKeyword)))
-                .WithBody(serverStaticCtorBody));
-
-            server = server
-                .AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(
-                    $"protected override void Activated(){{}}")!).WithBody(activatedBody))
-                .AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(
-                    $"protected override void Deactivated(){{}}")!).WithBody(deactivatedBody));
+            
             if (cl.Properties.Count > 0)
             {
                 server = server.AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(
@@ -331,12 +277,15 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 .AddMembers(
                     MethodDeclaration(ParseTypeName("void"), "InitializeDefaultsExtra")
                         .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon()));
-            
+
             if (cl.Properties.Count > 0)
+            {
+                serializeMethodBody = serializeMethodBody.AddStatements(SerializeChangesEpilogue(cl));
                 client = client.AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(
                         $"private protected override void SerializeChangesCore(BatchStreamWriter writer){{}}")!)
                     .WithBody(serializeMethodBody));
-            
+            }
+
             if (list != null)
                 client = AppendListProxy(list, client);
 
@@ -344,7 +293,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 client = WithStartAnimation(client, startAnimationBody);
             
             server = WithGetPropertyForAnimation(server, serverGetPropertyBody);
-            server = WithGetFieldOffset(server, serverGetFieldOffsetBody);
+            server = WithGetCompositionProperty(server, serverGetCompositionPropertyBody);
             
             if(cl.Implements.Count > 0)
                 foreach (var impl in cl.Implements)
@@ -430,8 +379,6 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
 
         StatementSyntax GeneratePropertySetterAssignment(GClass cl, GProperty prop, bool isObject, bool isNullable)
         {
-            var pendingAnimationField = PropertyPendingAnimationFieldName(prop);
-
             var code = @$"
     // Update the backing value
     {PropertyBackingFieldName(prop)} = value;
@@ -444,7 +391,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             {
                 code += @$"
     // Reset previous animation if any
-    {pendingAnimationField} = null;
+    PendingAnimations.Remove({ClientProperty(cl, prop)});
     {ChangedFieldsFieldName(cl)} &= ~{ChangedFieldsTypeName(cl)}.{prop.Name}Animated;
     // Check for implicit animations
     if(ImplicitAnimations != null && ImplicitAnimations.TryGetValue(""{prop.Name}"", out var animation) == true)
@@ -453,7 +400,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         if(animation is CompositionAnimation a)
         {{
             {ChangedFieldsFieldName(cl)} |= {ChangedFieldsTypeName(cl)}.{prop.Name}Animated;
-            {pendingAnimationField} = a.CreateInstance(this.Server, value);
+            PendingAnimations[{ClientProperty(cl, prop)}] = a.CreateInstance(this.Server, value);
         }}  
         // Animation is triggered by the current field, but does not necessary affects it
         StartAnimationGroup(animation, ""{prop.Name}"", value);
@@ -471,7 +418,7 @@ if (propertyName == ""{prop.Name}"")
 {{
 var current = {PropertyBackingFieldName(prop)};
 var server = animation.CreateInstance(this.Server, finalValue);
-{PropertyPendingAnimationFieldName(prop)} = server;
+PendingAnimations[{ClientProperty(cl, prop)}] = server;
 {ChangedFieldsFieldName(cl)} |= {ChangedFieldsTypeName(cl)}.{prop.Name}Animated;
 RegisterForSerialization();
 return;
@@ -512,6 +459,9 @@ return;
                 ParseStatement($"writer.Write({ChangedFieldsFieldName(cl)});")
                 );
         }
+
+        private BlockSyntax SerializeChangesEpilogue(GClass cl) =>
+            Block(ParseStatement(ChangedFieldsFieldName(cl) + " = default;"));
         
         BlockSyntax ApplySerializeField(BlockSyntax body, GClass cl, GProperty prop, bool isObject, bool isPassthrough)
         {
@@ -523,7 +473,7 @@ return;
             {
                 code = $@"
     if(({changedFields} & {changedFieldsType}.{prop.Name}Animated) == {changedFieldsType}.{prop.Name}Animated)
-        writer.WriteObject({PropertyPendingAnimationFieldName(prop)});
+        writer.WriteObject(PendingAnimations.GetAndRemove({ClientProperty(cl, prop)}));
     else ";
             }
 
@@ -556,7 +506,7 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
             {
                 code = $@"
     if((changed & {changedFieldsType}.{prop.Name}Animated) == {changedFieldsType}.{prop.Name}Animated)
-            {PropertyBackingFieldName(prop)}.SetAnimation(this, commitedAt, reader.ReadObject<IAnimationInstance>(), {ServerPropertyOffsetFieldName(prop)});
+            SetAnimatedValue({CompositionPropertyField(prop)}, ref {PropertyBackingFieldName(prop)}, commitedAt, reader.ReadObject<IAnimationInstance>());
     else ";
             }
 
@@ -565,7 +515,7 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
     if((changed & {changedFieldsType}.{prop.Name}) == {changedFieldsType}.{prop.Name})
 ";
             if (prop.Animated)
-                code += $"{PropertyBackingFieldName(prop)}.SetValue(this, {readValueCode});";
+                code += $"SetAnimatedValue({CompositionPropertyField(prop)}, out {PropertyBackingFieldName(prop)}, {readValueCode});";
             else code += $"{prop.Name} =  {readValueCode};";
             return body.AddStatements(ParseStatement(code));
         }
@@ -583,14 +533,14 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
             return cl.AddMembers(method);
         }
         
-        ClassDeclarationSyntax WithGetFieldOffset(ClassDeclarationSyntax cl, BlockSyntax body)
+        ClassDeclarationSyntax WithGetCompositionProperty(ClassDeclarationSyntax cl, BlockSyntax body)
         {
             if (body.Statements.Count == 0)
                 return cl;
             body = body.AddStatements(
-                ParseStatement("return base.GetFieldOffset(name);"));
+                ParseStatement("return base.GetCompositionProperty(name);"));
             var method = ((MethodDeclarationSyntax)ParseMemberDeclaration(
-                    $"public override int? GetFieldOffset(string name){{}}"))
+                    $"public override CompositionProperty? GetCompositionProperty(string name){{}}"))
                 .WithBody(body);
 
             return cl.AddMembers(method);

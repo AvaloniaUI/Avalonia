@@ -29,12 +29,12 @@ namespace Avalonia.Rendering.Composition.Animations
             return _expression.Evaluate(ref ctx);
         }
 
-        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, int storeOffset)
+        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property)
         {
             _startingValue = startingValue;
             var hs = new HashSet<(string, string)>();
             _expression.CollectReferences(hs);
-            base.Initialize(storeOffset, hs);
+            base.Initialize(property, hs);
         }
         
         public ExpressionAnimationInstance(Expression expression,

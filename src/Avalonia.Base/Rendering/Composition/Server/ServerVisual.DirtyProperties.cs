@@ -50,27 +50,27 @@ partial class ServerCompositionVisual
             _clipSizeDirty = true;
     }
 
-    public override void NotifyAnimatedValueChanged(int offset)
+    public override void NotifyAnimatedValueChanged(CompositionProperty offset)
     {
         base.NotifyAnimatedValueChanged(offset);
-        if (offset == s_OffsetOf_clipToBounds
-            || offset == s_OffsetOf_opacity
-            || offset == s_OffsetOf_size)
+        if (offset == s_IdOfClipToBoundsProperty
+            || offset == s_IdOfOpacityProperty
+            || offset == s_IdOfSizeProperty)
             IsDirtyComposition = true;
 
-        if (offset == s_OffsetOf_size
-            || offset == s_OffsetOf_anchorPoint
-            || offset == s_OffsetOf_centerPoint
-            || offset == s_OffsetOf_adornedVisual
-            || offset == s_OffsetOf_transformMatrix
-            || offset == s_OffsetOf_scale
-            || offset == s_OffsetOf_rotationAngle
-            || offset == s_OffsetOf_orientation
-            || offset == s_OffsetOf_offset)
+        if (offset == s_IdOfSizeProperty
+            || offset == s_IdOfAnchorPointProperty
+            || offset == s_IdOfCenterPointProperty
+            || offset == s_IdOfAdornedVisualProperty
+            || offset == s_IdOfTransformMatrixProperty
+            || offset == s_IdOfScaleProperty
+            || offset == s_IdOfRotationAngleProperty
+            || offset == s_IdOfOrientationProperty
+            || offset == s_IdOfOffsetProperty)
             _combinedTransformDirty = true;
         
-        if (offset == s_OffsetOf_clipToBounds
-            || offset == s_OffsetOf_size)
+        if (offset == s_IdOfClipToBoundsProperty
+            || offset == s_IdOfSizeProperty)
             _clipSizeDirty = true;
     }
 }

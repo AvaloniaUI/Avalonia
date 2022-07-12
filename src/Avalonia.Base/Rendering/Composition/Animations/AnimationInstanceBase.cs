@@ -12,10 +12,10 @@ namespace Avalonia.Rendering.Composition.Animations;
 /// </summary>
 internal abstract class AnimationInstanceBase : IAnimationInstance
 {
-    private List<(ServerObject obj, int member)>? _trackedObjects;
+    private List<(ServerObject obj, CompositionProperty member)>? _trackedObjects;
     protected PropertySetSnapshot Parameters { get; }
     public ServerObject TargetObject { get; }
-    protected int StoreOffset { get; private set; }
+    protected CompositionProperty Property { get; private set; } = null!;
     private bool _invalidated;
 
     public AnimationInstanceBase(ServerObject target, PropertySetSnapshot parameters)
@@ -24,7 +24,7 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
         TargetObject = target;
     }
 
-    protected void Initialize(int storeOffset, HashSet<(string name, string member)> trackedObjects)
+    protected void Initialize(CompositionProperty property, HashSet<(string name, string member)> trackedObjects)
     {
         if (trackedObjects.Count > 0)
         {
@@ -34,22 +34,22 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
                 var obj = Parameters.GetObjectParameter(t.name);
                 if (obj is ServerObject tracked)
                 {
-                    var off = tracked.GetFieldOffset(t.member);
+                    var off = tracked.GetCompositionProperty(t.member);
                     if (off == null)
 #if DEBUG
                         throw new InvalidCastException("Attempting to subscribe to unknown field");
 #else
                         continue;
 #endif
-                    _trackedObjects.Add((tracked, off.Value));
+                    _trackedObjects.Add((tracked, off));
                 }
             }
         }
 
-        StoreOffset = storeOffset;
+        Property = property;
     }
 
-    public abstract void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, int storeOffset);
+    public abstract void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property);
     protected abstract ExpressionVariant EvaluateCore(TimeSpan now, ExpressionVariant currentValue);
 
     public ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue)
@@ -77,6 +77,6 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
         if (_invalidated)
             return;
         _invalidated = true;
-        TargetObject.NotifyAnimatedValueChanged(StoreOffset);
+        TargetObject.NotifyAnimatedValueChanged(Property);
     }
 }
