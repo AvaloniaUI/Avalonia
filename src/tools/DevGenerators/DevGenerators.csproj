@@ -13,6 +13,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
     <Compile Include="..\..\Shared\SourceGeneratorAttributes.cs" />
+    <Compile Include="..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
 
 </Project>

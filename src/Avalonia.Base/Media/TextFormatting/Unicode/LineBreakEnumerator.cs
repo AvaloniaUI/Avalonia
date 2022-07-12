@@ -450,6 +450,20 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 _lb30a = 0;
             }
 
+            // Rule LB30b
+            if (_nextClass == LineBreakClass.EModifier && _lastPosition > 0)
+            {
+                // Mahjong Tiles (Unicode block) are extended pictographics but have a class of ID
+                // Unassigned codepoints with Line_Break=ID in some blocks are also assigned the Extended_Pictographic property.
+                // Those blocks are intended for future allocation of emoji characters.
+                var cp = Codepoint.ReadAt(_text, _lastPosition - 1, out int _);
+
+                if (Codepoint.IsInRangeInclusive(cp, 0x1F000, 0x1F02F))
+                {
+                    shouldBreak = false;
+                }
+            }
+
             _currentClass = _nextClass;
 
             return shouldBreak;

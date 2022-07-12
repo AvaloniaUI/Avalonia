@@ -734,10 +734,9 @@ namespace Avalonia.Media
 
         private void Set<T>(ref T field, T value)
         {
-            if (_glyphRunImpl != null)
-            {
-                throw new InvalidOperationException("GlyphRun can't be changed after it has been initialized.'");
-            }
+            _glyphRunImpl?.Dispose();
+
+            _glyphRunImpl = null;
 
             _glyphRunMetrics = null;
 

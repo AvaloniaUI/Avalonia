@@ -71,6 +71,7 @@ namespace Avalonia
         /// <remarks>
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
+        [Obsolete("Multitouch is always enabled on supported Windows versions")]
         public bool? EnableMultitouch { get; set; } = true;
 
         /// <summary>
@@ -165,7 +166,6 @@ namespace Avalonia.Win32
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)
                 {

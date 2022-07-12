@@ -122,10 +122,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     throw new XamlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
                 }
 
-                var mode = relativeSourceObject.Children
+                var modeProperty = relativeSourceObject.Children
                     .OfType<XamlAstXamlPropertyValueNode>()
-                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Mode")
-                    ?.Values[0] is XamlAstTextNode modeAssignedValue ? modeAssignedValue.Text : null;
+                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Mode")?
+                    .Values.FirstOrDefault() as XamlAstTextNode
+                    ?? relativeSourceObject.Arguments.OfType<XamlAstTextNode>().FirstOrDefault();
+                
+                var mode = modeProperty?.Text;
                 if (relativeSourceObject.Arguments.Count == 0 && mode == null)
                 {
                     mode = "FindAncestor";
@@ -212,15 +215,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
                 else if (mode == "TemplatedParent")
                 {
-                    var parentType = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
+                    var contentTemplateNode = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                         .FirstOrDefault(x =>
-                            x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate)
-                        ?.TargetType.GetClrType();
-
-                    if (parentType is null)
+                            x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate);
+                    if (contentTemplateNode is null)
                     {
                         throw new XamlParseException("A binding with a TemplatedParent RelativeSource has to be in a ControlTemplate.", binding);
                     }
+
+                    var parentType = contentTemplateNode.TargetType.GetClrType();
+                    if (parentType is null)
+                    {
+                        throw new XamlParseException("TargetType has to be set on ControlTemplate or it should be defined inside of a Style.", binding);
+                    } 
 
                     convertedNode = new TemplatedParentBindingExpressionNode { Type = parentType };
                 }

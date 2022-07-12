@@ -431,23 +431,45 @@ namespace Avalonia.Controls
             }
         }
 
+        private string GetPseudoClass(SplitViewDisplayMode mode)
+        {
+            return mode switch
+            {
+                SplitViewDisplayMode.Inline => "inline",
+                SplitViewDisplayMode.CompactInline => "compactinline",
+                SplitViewDisplayMode.Overlay => "overlay",
+                SplitViewDisplayMode.CompactOverlay => "compactoverlay",
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+            };
+        }
+        
+        private string GetPseudoClass(SplitViewPanePlacement placement)
+        {
+            return placement switch
+            {
+                SplitViewPanePlacement.Left => "left",
+                SplitViewPanePlacement.Right => "right",
+                _ => throw new ArgumentOutOfRangeException(nameof(placement), placement, null)
+            };
+        }
+
         private void OnPanePlacementChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldState = e.OldValue!.ToString()!.ToLower();
-            var newState = e.NewValue!.ToString()!.ToLower();
+            var oldState = GetPseudoClass(e.GetOldValue<SplitViewPanePlacement>());
+            var newState = GetPseudoClass(e.GetNewValue<SplitViewPanePlacement>());
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");
         }
 
         private void OnDisplayModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldState = e.OldValue!.ToString()!.ToLower();
-            var newState = e.NewValue!.ToString()!.ToLower();
+            var oldState = GetPseudoClass(e.GetOldValue<SplitViewDisplayMode>());
+            var newState = GetPseudoClass(e.GetNewValue<SplitViewDisplayMode>());
 
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");
 
-            var (closedPaneWidth, paneColumnGridLength) = (SplitViewDisplayMode)e.NewValue switch
+            var (closedPaneWidth, paneColumnGridLength) = e.GetNewValue<SplitViewDisplayMode>() switch
             {
                 SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
                 SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),

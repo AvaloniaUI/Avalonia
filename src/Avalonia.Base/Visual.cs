@@ -383,7 +383,9 @@ namespace Avalonia
                     if (e.OldValue is IAffectsRender oldValue)
                     {
                         if (sender._affectsRenderWeakSubscriber != null)
+                        {
                             InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
+                        }
                     }
 
                     if (e.NewValue is IAffectsRender newValue)

@@ -30,6 +30,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Cherokee, //Cher
         Chorasmian, //Chrs
         Coptic, //Copt
+        CyproMinoan, //Cpmn
         Cypriot, //Cprt
         Cyrillic, //Cyrl
         Devanagari, //Deva
@@ -109,6 +110,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Oriya, //Orya
         Osage, //Osge
         Osmanya, //Osma
+        OldUyghur, //Ougr
         Palmyrene, //Palm
         PauCinHau, //Pauc
         OldPermic, //Perm
@@ -151,8 +153,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Thai, //Thai
         Tibetan, //Tibt
         Tirhuta, //Tirh
+        Tangsa, //Tnsa
+        Toto, //Toto
         Ugaritic, //Ugar
         Vai, //Vaii
+        Vithkuqi, //Vith
         WarangCiti, //Wara
         Wancho, //Wcho
         OldPersian, //Xpeo

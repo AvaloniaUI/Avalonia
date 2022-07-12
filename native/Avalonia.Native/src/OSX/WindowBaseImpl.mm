@@ -48,7 +48,6 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     [Window setContentMaxSize:lastMaxSize];
 
     [Window setOpaque:false];
-    [Window setHasShadow:true];
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -224,7 +223,7 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        if(Window != nullptr){
+        if(Window != nullptr && _shown){
             auto frame = [Window frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;

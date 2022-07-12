@@ -101,7 +101,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="value">The array slice.</param>
         /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
-        public ArraySlice<T> Add(in ReadOnlySlice<T> value)
+        public ArraySlice<T> Add(in ArraySlice<T> value)
         {
             var position = _size;
 

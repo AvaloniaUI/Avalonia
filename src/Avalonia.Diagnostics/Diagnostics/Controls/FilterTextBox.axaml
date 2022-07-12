@@ -19,7 +19,7 @@
                   Classes="textBoxClearButton"
                   ToolTip.Tip="Clear"
                   Cursor="Hand"
-                  Command="{ReflectionBinding $parent[TextBox].Clear}"
+                  Command="{Binding $parent[TextBox].Clear}"
                   Opacity="0.5" />
           <ToggleButton Classes="filter-text-box-toggle"
                         ToolTip.Tip="Match Case"

@@ -72,6 +72,9 @@
       <TabItem Header="CalendarDatePicker">
         <pages:CalendarDatePickerPage />
       </TabItem>
+      <TabItem Header="Dialogs">
+        <pages:DialogsPage />
+      </TabItem>
       <TabItem Header="Drag+Drop">
         <pages:DragAndDropPage />
       </TabItem>
@@ -112,7 +115,7 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
-      <TabItem Header="Pointers (Touch)">
+      <TabItem Header="Pointers">
         <pages:PointersPage />
       </TabItem>
       <TabItem Header="ProgressBar">
