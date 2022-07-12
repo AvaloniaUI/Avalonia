@@ -47,6 +47,7 @@
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="BorderBrush" Value="{TemplateBinding BorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForegroundDisabled}"/>
     </Style>
   </ControlTheme>
 
@@ -88,13 +89,9 @@
                               Foreground="{TemplateBinding Foreground}"
                               FontSize="{TemplateBinding FontSize}"
                               MinWidth="34">
-                  <Path Fill="{TemplateBinding Foreground}"
-                        Width="16"
-                        Height="8"
-                        Stretch="Uniform"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
+                  <PathIcon Width="16"
+                            Height="8"
+                            Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
                 </RepeatButton>
 
                 <RepeatButton Name="PART_DecreaseButton"
@@ -108,13 +105,9 @@
                               Foreground="{TemplateBinding Foreground}"
                               FontSize="{TemplateBinding FontSize}"
                               MinWidth="34">
-                  <Path Fill="{TemplateBinding Foreground}"
-                        Width="16"
-                        Height="8"
-                        Stretch="Uniform"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
+                  <PathIcon Width="16"
+                            Height="8"
+                            Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
                 </RepeatButton>
               </StackPanel>
 
