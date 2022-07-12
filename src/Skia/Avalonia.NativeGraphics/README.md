@@ -52,3 +52,9 @@ To get a working build ensure:
 cmake -GNinja "-DCMAKE_C_COMPILER=C:/Program Files/LLVM/bin/clang-cl.exe" "-DCMAKE_CXX_COMPILER=C:/Program Files/LLVM/bin/clang-cl.exe" -DCMAKE_C_FLAGS=-m64 -DCMAKE_CXX_FLAGS=-m64 ..
 ```
 
+### Wasm
+
+```
+emcmake cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+emmake ninja
+```

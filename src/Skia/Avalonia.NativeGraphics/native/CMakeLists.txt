@@ -11,7 +11,7 @@ endif()
 
 include(${PKGROOT}/skia.cmake)
 
-add_library(avalonia.skia SHARED)
+add_library(avalonia.skia)
 
 target_sources(avalonia.skia 
     PRIVATE
@@ -51,17 +51,19 @@ target_link_libraries(avalonia.skia PRIVATE ${OPENGL_LIBRARIES})
 
 target_compile_definitions(avalonia.skia PRIVATE ${SKIA_COMPILE_DEFINES})
 
+message("System name is: ${CMAKE_SYSTEM_NAME}")
+
 if (NOT WIN32)
     target_link_options(avalonia.skia PRIVATE "-Wl,--version-script=${CMAKE_SOURCE_DIR}/libavalonia.skia.version")
-    target_link_options(avalonia.skia PRIVATE "-static-libgcc")
-    target_link_options(avalonia.skia PRIVATE "-static-libstdc++")
 
-    target_compile_options(avalonia.skia
-       PRIVATE
-           "-static-libstdc++"
-           "-static-libgcc"
-           "-Wno-subobject-linkage"
-    )
+    if (NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+        target_compile_options(avalonia.skia
+           PRIVATE
+               "-static-libstdc++"
+               "-static-libgcc"
+               "-Wno-subobject-linkage"
+        )
+    endif()
 else()
     set_property(TARGET avalonia.skia PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
 
