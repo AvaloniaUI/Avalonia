@@ -195,7 +195,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            UpdateIndicator(finalSize);
+            UpdateIndicator();
             return base.ArrangeOverride(finalSize);
         }
 
@@ -218,18 +218,21 @@ namespace Avalonia.Controls
         {
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
-            UpdateIndicator(Bounds.Size);
+            UpdateIndicator();
         }
 
-        private void UpdateIndicator(Size bounds)
+        private void UpdateIndicator()
         {
+            // Gets the size of the parent indicator container
+            var barSize = _indicator?.Parent?.Bounds.Size ?? Bounds.Size;
+            
             if (_indicator != null)
             {
                 if (IsIndeterminate)
                 {
                     // Pulled from ModernWPF.
 
-                    var dim = Orientation == Orientation.Horizontal ? bounds.Width : bounds.Height;
+                    var dim = Orientation == Orientation.Horizontal ? barSize.Width : barSize.Height;
                     var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
                     var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
 
@@ -254,8 +257,8 @@ namespace Avalonia.Controls
                         new Rect(
                             padding.Left,
                             padding.Top,
-                            bounds.Width - (padding.Right + padding.Left),
-                            bounds.Height - (padding.Bottom + padding.Top)
+                            barSize.Width - (padding.Right + padding.Left),
+                            barSize.Height - (padding.Bottom + padding.Top)
                             ));
                 }
                 else
@@ -263,9 +266,9 @@ namespace Avalonia.Controls
                     double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
 
                     if (Orientation == Orientation.Horizontal)
-                        _indicator.Width = bounds.Width * percent;
+                        _indicator.Width = barSize.Width * percent;
                     else
-                        _indicator.Height = bounds.Height * percent;
+                        _indicator.Height = barSize.Height * percent;
 
                     Percentage = percent * 100;
                 }
@@ -274,7 +277,7 @@ namespace Avalonia.Controls
 
         private void UpdateIndicatorWhenPropChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateIndicator(Bounds.Size);
+            UpdateIndicator();
         }
 
         private void UpdatePseudoClasses(
