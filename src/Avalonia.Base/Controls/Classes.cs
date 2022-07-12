@@ -1,5 +1,7 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Collections;
 
 #nullable enable
@@ -15,7 +17,7 @@ namespace Avalonia.Controls
     public class Classes : AvaloniaList<string>, IPseudoClasses
     {
         private List<IClassesChangedListener>? _listeners;
-
+        ReaderWriterLockSlim _syncLocker = new();
         /// <summary>
         /// Initializes a new instance of the <see cref="Classes"/> class.
         /// </summary>
@@ -305,20 +307,65 @@ namespace Avalonia.Controls
 
         internal void AddListener(IClassesChangedListener listener)
         {
-            (_listeners ??= new()).Add(listener);
+            _syncLocker.EnterWriteLock();
+            try
+            {
+                (_listeners ??= new()).Add(listener);
+            }
+            finally
+            {
+                _syncLocker.ExitWriteLock();
+            }
+            
         }
 
         internal void RemoveListener(IClassesChangedListener listener)
         {
-            _listeners?.Remove(listener);
+            _syncLocker.EnterWriteLock();
+            try
+            {
+                _listeners?.Remove(listener);
+            }
+            finally
+            {
+                _syncLocker.ExitWriteLock();
+            }
         }
 
         private void NotifyChanged()
         {
-            if (_listeners is null)
-                return;
-            foreach (var listener in _listeners)
-                listener.Changed();
+            if (_listeners is { } listeners)
+            {
+                var pool = ArrayPool<IClassesChangedListener>.Shared;
+                IClassesChangedListener[] changedListeners;
+                var numberOfListners = 0;
+                _syncLocker.EnterReadLock();
+                try
+                {
+                    numberOfListners = _listeners.Count;
+                    if (numberOfListners == 0)
+                    {
+                        return;
+                    }
+                    changedListeners = pool.Rent(numberOfListners);
+                    listeners.CopyTo(changedListeners);
+                }
+                finally
+                {
+                    _syncLocker.ExitReadLock();
+                }
+                try
+                {
+                    for (int i = 0; i < numberOfListners; i++)
+                    {
+                        changedListeners[i].Changed();
+                    }
+                }
+                finally
+                {
+                    pool.Return(changedListeners, true);
+                }
+            }
         }
 
         private void ThrowIfPseudoclass(string name, string operation)
