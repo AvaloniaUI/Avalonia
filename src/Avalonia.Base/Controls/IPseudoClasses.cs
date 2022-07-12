@@ -25,6 +25,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="name">The pseudoclass name.</param>
         /// <returns>Whether the pseudoclass is present.</returns>
-        bool Has(string name);
+        bool Contains(string name);
     }
 }
