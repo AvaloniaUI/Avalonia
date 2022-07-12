@@ -11,6 +11,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
+    <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
     <Compile Include="..\Shared\SourceGeneratorAttributes.cs" />
   </ItemGroup>
 

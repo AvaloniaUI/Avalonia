@@ -1,48 +1,31 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Controls;
+using System.Text.RegularExpressions;
+using Avalonia.Platform.Storage;
 
 namespace Avalonia.Dialogs
 {
     internal class ManagedFileChooserFilterViewModel : InternalViewModelBase
     {
-        private readonly string[] _extensions;
+        private readonly Regex[] _patterns;
         public string Name { get; }
 
-        public ManagedFileChooserFilterViewModel(FileDialogFilter filter)
+        public ManagedFileChooserFilterViewModel(FilePickerFileType filter)
         {
             Name = filter.Name;
 
-            if (filter.Extensions.Contains("*"))
+            if (filter.Patterns?.Contains("*.*") == true)
             {
                 return;
             }
 
-            _extensions = filter.Extensions?.Select(e => "." + e.ToLowerInvariant()).ToArray();
-        }
-
-        public ManagedFileChooserFilterViewModel()
-        {
-            Name = "All files";
+            _patterns = filter.Patterns?
+                .Select(e => new Regex(Regex.Escape(e).Replace(@"\*", ".*").Replace(@"\?", "."), RegexOptions.Singleline | RegexOptions.IgnoreCase))
+                .ToArray();
         }
 
         public bool Match(string filename)
         {
-            if (_extensions == null)
-            {
-                return true;
-            }
-
-            foreach (var ext in _extensions)
-            {
-                if (filename.EndsWith(ext, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return _patterns == null || _patterns.Any(ext => ext.IsMatch(filename));
         }
 
         public override string ToString() => Name;

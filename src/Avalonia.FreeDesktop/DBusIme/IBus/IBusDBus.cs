@@ -22,25 +22,25 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         Task<object> GetEngineAsync();
         Task DestroyAsync();
         Task SetSurroundingTextAsync(object Text, uint CursorPos, uint AnchorPos);
-        Task<IDisposable> WatchCommitTextAsync(Action<object> cb, Action<Exception> onError = null);
-        Task<IDisposable> WatchForwardKeyEventAsync(Action<(uint keyval, uint keycode, uint state)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchRequireSurroundingTextAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchDeleteSurroundingTextAsync(Action<(int offset, uint nchars)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchUpdatePreeditTextAsync(Action<(object text, uint cursorPos, bool visible)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchShowPreeditTextAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchHidePreeditTextAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchUpdateAuxiliaryTextAsync(Action<(object text, bool visible)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchShowAuxiliaryTextAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchHideAuxiliaryTextAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchUpdateLookupTableAsync(Action<(object table, bool visible)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchShowLookupTableAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchHideLookupTableAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchPageUpLookupTableAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchPageDownLookupTableAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchCursorUpLookupTableAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchCursorDownLookupTableAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchRegisterPropertiesAsync(Action<object> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchUpdatePropertyAsync(Action<object> handler, Action<Exception> onError = null);
+        Task<IDisposable> WatchCommitTextAsync(Action<object> cb, Action<Exception>? onError = null);
+        Task<IDisposable> WatchForwardKeyEventAsync(Action<(uint keyval, uint keycode, uint state)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchRequireSurroundingTextAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchDeleteSurroundingTextAsync(Action<(int offset, uint nchars)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchUpdatePreeditTextAsync(Action<(object text, uint cursorPos, bool visible)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchShowPreeditTextAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchHidePreeditTextAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchUpdateAuxiliaryTextAsync(Action<(object text, bool visible)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchShowAuxiliaryTextAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchHideAuxiliaryTextAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchUpdateLookupTableAsync(Action<(object table, bool visible)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchShowLookupTableAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchHideLookupTableAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchPageUpLookupTableAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchPageDownLookupTableAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchCursorUpLookupTableAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchCursorDownLookupTableAsync(Action handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchRegisterPropertiesAsync(Action<object> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchUpdatePropertyAsync(Action<object> handler, Action<Exception>? onError = null);
     }
     
     
