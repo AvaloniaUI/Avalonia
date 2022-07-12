@@ -122,9 +122,12 @@ namespace Avalonia.Rendering.Composition.Server
 
                 targetContext.Clear(Colors.Transparent);
                 targetContext.Transform = Matrix.Identity;
-                targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1,
-                    new Rect(_layerSize),
-                    new Rect(Size), BitmapInterpolationMode.LowQuality);
+                if (_layer.CanBlit)
+                    _layer.Blit(targetContext);
+                else
+                    targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1,
+                        new Rect(_layerSize),
+                        new Rect(Size), BitmapInterpolationMode.LowQuality);
                 
                 
                 if (DrawDirtyRects)
