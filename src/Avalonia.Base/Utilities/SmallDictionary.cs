@@ -1,16 +1,19 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Utilities;
 
-public struct InlineDictionary<TKey, TValue> where TKey : class where TValue : class
+public struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TKey : class where TValue : class
 {
     object? _data;
     TValue? _value;
 
     void SetCore(TKey key, TValue value, bool overwrite)
     {
+        if (key == null)
+            throw new ArgumentNullException();
         if (_data == null)
         {
             _data = key;
@@ -178,4 +181,98 @@ public struct InlineDictionary<TKey, TValue> where TKey : class where TValue : c
             return v;
         throw new KeyNotFoundException();
     }
+
+    public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
+    {
+        private Dictionary<TKey, TValue>.Enumerator _inner;
+        private readonly KeyValuePair<TKey?, TValue?>[]? _arr;
+        private KeyValuePair<TKey, TValue> _first;
+        private int _index;
+        private Type _type;
+        enum Type
+        {
+            Empty, Single, Array, Dictionary
+        }
+
+        public Enumerator(InlineDictionary<TKey, TValue> parent)
+        {
+            _arr = null;
+            _first = default;
+            _index = -1;
+            _inner = default;
+            if (parent._data is Dictionary<TKey, TValue> inner)
+            {
+                _inner = inner.GetEnumerator();
+                _type = Type.Dictionary;
+            }
+            else if (parent._data is KeyValuePair<TKey?, TValue?>[] arr)
+            {
+                _type = Type.Array;
+                _arr = arr;
+            }
+            else if (parent._data != null)
+            {
+                _type = Type.Single;
+                _first = new((TKey)parent._data!, parent._value!);
+            }
+            else
+                _type = Type.Empty;
+
+        }
+
+        public bool MoveNext()
+        {
+            if (_type == Type.Single)
+            {
+                if (_index != -1)
+                    return false;
+                _index = 0;
+            }
+            else if (_type == Type.Array)
+            {
+                var next = _index + 1;
+                if (_arr!.Length - 1 < next || _arr[next].Key == null)
+                    return false;
+                _index = next;
+                return true;
+            }
+            else if (_type == Type.Dictionary)
+                return _inner.MoveNext();
+
+            return false;
+        }
+
+        public void Reset()
+        {
+            _index = -1;
+            if(_type == Type.Dictionary)
+                ((IEnumerator)_inner).Reset();
+        }
+
+        public KeyValuePair<TKey, TValue> Current
+        {
+            get
+            {
+                if (_type == Type.Single)
+                    return _first!;
+                if (_type == Type.Array)
+                    return _arr![_index]!;
+                if (_type == Type.Dictionary)
+                    return _inner.Current;
+                throw new InvalidOperationException();
+            }
+        }
+
+        object IEnumerator.Current => Current;
+
+        public void Dispose()
+        {
+        }
+    }
+
+    public Enumerator GetEnumerator() => new Enumerator(this);
+
+    IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
 }

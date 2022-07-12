@@ -70,14 +70,16 @@ namespace Avalonia.Rendering.Composition.Server
                 Deactivated();
         }
 
-        protected virtual void Activated()
+        protected void Activated()
         {
-            
+            foreach(var kp in _animations)
+                kp.Value.Activate();
         }
 
-        protected virtual void Deactivated()
+        protected void Deactivated()
         {
-            
+            foreach(var kp in _animations)
+                kp.Value.Deactivate();
         }
 
         void InvalidateSubscriptions(CompositionProperty property)
