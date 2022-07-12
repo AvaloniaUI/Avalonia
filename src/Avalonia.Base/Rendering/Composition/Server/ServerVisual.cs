@@ -120,11 +120,12 @@ namespace Avalonia.Rendering.Composition.Server
             var oldTransformedContentBounds = TransformedOwnContentBounds;
             var oldCombinedTransformedClipBounds = _combinedTransformedClipBounds;
 
-
+            var dirtyOldBounds = false; 
             if (_parent?.IsDirtyComposition == true)
             {
                 IsDirtyComposition = true;
                 _isDirtyForUpdate = true;
+                dirtyOldBounds = true;
             }
 
             GlobalTransformMatrix = newTransform;
@@ -161,8 +162,7 @@ namespace Avalonia.Rendering.Composition.Server
             
             if (wasVisible != IsVisibleInFrame)
                 _isDirtyForUpdate = true;
-
-            var dirtyOldBounds = false; 
+            
             // Invalidate previous rect and queue new rect based on visibility
             if (positionChanged)
             {
