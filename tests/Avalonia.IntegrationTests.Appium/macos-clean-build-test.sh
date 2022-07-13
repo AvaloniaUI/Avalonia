@@ -3,6 +3,7 @@
 SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 cd "$SCRIPT_DIR"/../.. || exit
 git clean -xdf
+pkill IntegrationTestApp
 ./build.sh CompileNative
 ./samples/IntegrationTestApp/bundle.sh
 open -n ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
