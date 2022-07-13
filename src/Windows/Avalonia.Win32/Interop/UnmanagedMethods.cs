@@ -1763,9 +1763,6 @@ namespace Avalonia.Win32.Interop
             return result;
         }
 
-        [DllImport("user32.dll")]
-        internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
-
         [DllImport("imm32.dll", SetLastError = true)]
         public static extern IntPtr ImmGetContext(IntPtr hWnd);
         [DllImport("imm32.dll", SetLastError = true)]
@@ -1870,14 +1867,6 @@ namespace Avalonia.Win32.Interop
             public byte lfPitchAndFamily;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
             public string lfFaceName;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct WindowCompositionAttributeData
-        {
-            public WindowCompositionAttribute Attribute;
-            public IntPtr Data;
-            public int SizeOfData;
         }
 
         internal enum WindowCompositionAttribute

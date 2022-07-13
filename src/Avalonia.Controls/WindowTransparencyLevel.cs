@@ -21,12 +21,7 @@
         /// The window background is a blur-behind with a high blur radius. This level may fallback to Blur.
         /// </summary>
         AcrylicBlur,
-        
-        /// <summary>
-        /// Force acrylic on some incompatible versions of Windows 10. 
-        /// </summary>
-        ForceAcrylicBlur,
-        
+
         /// <summary>
         /// The window background is based on desktop wallpaper tint with a blur. This will only work on Windows 11 
         /// </summary>
