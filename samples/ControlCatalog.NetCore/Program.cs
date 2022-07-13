@@ -60,12 +60,6 @@ namespace ControlCatalog.NetCore
                     })
                     .AfterSetup(_ =>
                     {
-                        static Task LowPriorityDelay(int ms)
-                        {
-                            return Task.Delay(ms).ContinueWith(_ =>
-                                    Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background))
-                                .Unwrap();
-                        }
                         DispatcherTimer.RunOnce(async () =>
                         {
                             var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
@@ -77,7 +71,7 @@ namespace ControlCatalog.NetCore
                                     continue;
                                 Console.WriteLine("Selecting " + page.Header);
                                 tc.SelectedItem = page;
-                                await LowPriorityDelay(20);
+                                await Task.Delay(50);
                             }
                             Console.WriteLine("Selecting the first page");
                             tc.SelectedItem = tc.Items.OfType<object>().First();
@@ -86,7 +80,7 @@ namespace ControlCatalog.NetCore
                             for (var c = 0; c < 3; c++)
                             {
                                 GC.Collect(2, GCCollectionMode.Forced);
-                                await Task.Delay(00);
+                                await Task.Delay(50);
                             }
 
                             void FormatMem(string metric, long bytes)
