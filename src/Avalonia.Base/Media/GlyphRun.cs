@@ -652,7 +652,7 @@ namespace Avalonia.Media
                 for (var index = 0; index < glyphCount; index++)
                 {
                     width -= GetGlyphAdvance(index, out _);
-                }             
+                }
             }
             else
             {

@@ -96,6 +96,7 @@ namespace Avalonia.Controls
             }
         }
 
+        private double _percentage;
         private double _indeterminateStartingOffset;
         private double _indeterminateEndingOffset;
         private Border? _indicator;
@@ -106,8 +107,16 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> ShowProgressTextProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(ShowProgressText));
 
+        public static readonly StyledProperty<string> ProgressTextFormatProperty =
+            AvaloniaProperty.Register<ProgressBar, string>(nameof(ProgressTextFormat), "{1:0}%");
+        
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
+
+        public static readonly DirectProperty<ProgressBar, double> PercentageProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(Percentage),
+                o => o.Percentage);
 
         [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
@@ -123,6 +132,12 @@ namespace Avalonia.Controls
                 p => p.IndeterminateEndingOffset,
                 (p, o) => p.IndeterminateEndingOffset = o);
 
+        public double Percentage
+        {
+            get { return _percentage; }
+            private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
+        }
+        
         [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public double IndeterminateStartingOffset
         {
@@ -165,6 +180,12 @@ namespace Avalonia.Controls
             set => SetValue(ShowProgressTextProperty, value);
         }
 
+        public string ProgressTextFormat
+        {
+            get => GetValue(ProgressTextFormatProperty);
+            set => SetValue(ProgressTextFormatProperty, value);
+        }
+
         public Orientation Orientation
         {
             get => GetValue(OrientationProperty);
@@ -174,7 +195,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            UpdateIndicator(finalSize);
+            UpdateIndicator();
             return base.ArrangeOverride(finalSize);
         }
 
@@ -197,18 +218,21 @@ namespace Avalonia.Controls
         {
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
-            UpdateIndicator(Bounds.Size);
+            UpdateIndicator();
         }
 
-        private void UpdateIndicator(Size bounds)
+        private void UpdateIndicator()
         {
+            // Gets the size of the parent indicator container
+            var barSize = _indicator?.Parent?.Bounds.Size ?? Bounds.Size;
+            
             if (_indicator != null)
             {
                 if (IsIndeterminate)
                 {
                     // Pulled from ModernWPF.
 
-                    var dim = Orientation == Orientation.Horizontal ? bounds.Width : bounds.Height;
+                    var dim = Orientation == Orientation.Horizontal ? barSize.Width : barSize.Height;
                     var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
                     var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
 
@@ -233,8 +257,8 @@ namespace Avalonia.Controls
                         new Rect(
                             padding.Left,
                             padding.Top,
-                            bounds.Width - (padding.Right + padding.Left),
-                            bounds.Height - (padding.Bottom + padding.Top)
+                            barSize.Width - (padding.Right + padding.Left),
+                            barSize.Height - (padding.Bottom + padding.Top)
                             ));
                 }
                 else
@@ -242,16 +266,18 @@ namespace Avalonia.Controls
                     double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
 
                     if (Orientation == Orientation.Horizontal)
-                        _indicator.Width = bounds.Width * percent;
+                        _indicator.Width = barSize.Width * percent;
                     else
-                        _indicator.Height = bounds.Height * percent;
+                        _indicator.Height = barSize.Height * percent;
+
+                    Percentage = percent * 100;
                 }
             }
         }
 
         private void UpdateIndicatorWhenPropChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateIndicator(Bounds.Size);
+            UpdateIndicator();
         }
 
         private void UpdatePseudoClasses(
