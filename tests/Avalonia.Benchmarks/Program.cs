@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
 namespace Avalonia.Benchmarks
@@ -19,7 +21,17 @@ namespace Avalonia.Benchmarks
                 .ThenBy(t => t.Name)
                 .ToArray();
             var benchmarkSwitcher = new BenchmarkSwitcher(benchmarks);
-            benchmarkSwitcher.Run(args);
+            IConfig config = null;
+
+            if (args.Contains("--debug"))
+            {
+                config = new DebugInProcessConfig();
+                var a = new List<string>(args);
+                a.Remove("--debug");
+                args = a.ToArray();
+            }
+
+            benchmarkSwitcher.Run(args, config);
         }
     }
 }
