@@ -6,4 +6,6 @@ git clean -xdf
 ./build.sh CompileNative
 ./samples/IntegrationTestApp/bundle.sh
 open -n ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
+pkill IntegrationTestApp
 dotnet test tests/Avalonia.IntegrationTests.Appium/ -l "console;verbosity=detailed"
+pkill IntegrationTestApp

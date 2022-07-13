@@ -57,7 +57,6 @@ namespace Avalonia.IntegrationTests.Appium
         {
             try
             {
-                Session.CloseApp();
                 Session.Close();
             }
             catch
