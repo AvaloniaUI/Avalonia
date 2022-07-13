@@ -170,8 +170,7 @@
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   HorizontalAlignment="Stretch"
                                   ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  Items="{TemplateBinding Items}"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}">
+                                  Items="{TemplateBinding Items}">
                     <ItemsPresenter.ItemsPanel>
                       <ItemsPanelTemplate>
                         <StackPanel x:Name="HamburgerItemsPanel"
