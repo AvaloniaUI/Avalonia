@@ -12,6 +12,8 @@ jobs:
     name: 'AvaloniaMacPool'
 
   steps:
+  - script: system_profiler SPDisplaysDataType |grep Resolution
+  
   - script: |
       pkill node
       appium &
