@@ -23,7 +23,7 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 opts.App = path;
                 opts.DeviceName = "WindowsPC";
-                opts.AutomationName = "windows";
+                opts.AutomationName = "Windows";
                 opts.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
                 opts.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 10000);
 

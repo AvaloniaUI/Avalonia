@@ -47,6 +47,7 @@ jobs:
     inputs:
       script: |
         npm install -g appium@next
+        npm install wd
         appium driver install windows
   
   - task: PowerShell@2
