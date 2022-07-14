@@ -26,17 +26,6 @@ jobs:
     inputs:
       version: 6.0.202
   
-  - task: Windows Application Driver@0
-    inputs:
-      OperationType: 'Start'
-      AgentResolution: '4K'
-    displayName: 'Start WinAppDriver'
-
-  - task: Windows Application Driver@0
-    inputs:
-      OperationType: 'Stop'
-    displayName: 'Stop WinAppDriver'
-  
   - task: DotNetCoreCLI@2
     inputs:
       command: 'build'
@@ -46,6 +35,7 @@ jobs:
     displayName: 'install appium'
     inputs:
       script: |
+        npm --version
         npm install -g appium@next
         npm install wd
         appium driver install windows
@@ -58,8 +48,4 @@ jobs:
         Start-Job -Command {Appium}
         dotnet test tests/Avalonia.IntegrationTests.Appium
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'test'
-      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
 
