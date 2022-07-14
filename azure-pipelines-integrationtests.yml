@@ -22,10 +22,15 @@ jobs:
 
   steps:
     script: npm --version
+
     script: npm config get prefix
+
     script: dir c:\\npm\\prefix
+
     script: npm install -g appium@next
+
     script: c:\\npm\\prefix\\appium.cmd driver install windows
+    
     script: c:\\npm\\prefix\\appium.cmd
     
   - task: PowerShell@2
