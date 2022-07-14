@@ -21,6 +21,8 @@ jobs:
     vmImage: 'windows-2022'
 
   steps:
+  - script: npm config get prefix
+  
   - task: CmdLine@2
     displayName: 'install appium'
     inputs:
