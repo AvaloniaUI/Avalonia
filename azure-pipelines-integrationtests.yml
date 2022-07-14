@@ -22,12 +22,9 @@ jobs:
 
   steps:
   - script: |
-      npm --version
-      npm config get prefix
-      dir c:\\npm\\prefix
-      npm install -g appium@next
-      c:\\npm\\prefix\\appium.cmd driver install windows
-      c:\\npm\\prefix\\appium.cmd
+      npm install -g appium@next --unsafe-perm=true --allow-root
+      appium driver install windows
+      appium
     
   - task: PowerShell@2
     displayName: 'run appium server'
