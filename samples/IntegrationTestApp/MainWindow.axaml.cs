@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -20,6 +21,9 @@ namespace IntegrationTestApp
             AddHandler(Button.ClickEvent, OnButtonClick);
             ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
             DataContext = this;
+            
+            Console.WriteLine("Test app started");
+            Debug.WriteLine("Test app started");
         }
 
         public List<string> ListBoxItems { get; }

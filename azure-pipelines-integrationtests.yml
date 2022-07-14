@@ -55,6 +55,7 @@ jobs:
       targetType: 'inline'
       script: |
         Start-Process cmd -ArgumentList "/c appium"
+        samples\\IntegrationTestApp\\bin\\Debug\\net6.0\\IntegrationTestApp.exe
 
 
   - task: DotNetCoreCLI@2
