@@ -10,7 +10,7 @@ namespace ControlCatalog.ViewModels
 {
     public class MenuPageViewModel
     {
-        public Control View { get; set; }
+        public Control? View { get; set; }
         public MenuPageViewModel()
         {
             OpenCommand = MiniCommand.CreateFromTask(Open);

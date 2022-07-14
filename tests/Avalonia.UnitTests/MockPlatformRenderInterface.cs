@@ -122,6 +122,11 @@ namespace Avalonia.UnitTests
             return Mock.Of<IGlyphRunImpl>();
         }
 
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
         public bool SupportsIndividualRoundRects { get; set; }
 
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;

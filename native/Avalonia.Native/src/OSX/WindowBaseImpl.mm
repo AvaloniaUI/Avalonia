@@ -48,7 +48,6 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     [Window setContentMaxSize:lastMaxSize];
 
     [Window setOpaque:false];
-    [Window setHasShadow:true];
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -224,7 +223,7 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        if(Window != nullptr){
+        if(Window != nullptr && _shown){
             auto frame = [Window frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;
@@ -298,14 +297,15 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
-            lastSize = NSSize {x, y};
+            if(x != lastSize.width || y != lastSize.height) {
+                lastSize = NSSize{x, y};
 
-            if (!_shown) {
-                BaseEvents->Resized(AvnSize{x, y}, reason);
-            }
-            else if(Window != nullptr) {
-                [Window setContentSize:lastSize];
-                [Window invalidateShadow];
+                if (!_shown) {
+                    BaseEvents->Resized(AvnSize{x, y}, reason);
+                } else if (Window != nullptr) {
+                    [Window setContentSize:lastSize];
+                    [Window invalidateShadow];
+                }
             }
         }
         @finally {

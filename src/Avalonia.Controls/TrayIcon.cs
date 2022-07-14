@@ -189,7 +189,10 @@ namespace Avalonia.Controls
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
             var trayIcons = GetIcons(app);
 
-            RemoveIcons(trayIcons);
+            if (trayIcons != null)
+            {
+                RemoveIcons(trayIcons);
+            }
         }
 
         private static void Icons_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

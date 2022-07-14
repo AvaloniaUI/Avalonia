@@ -35,7 +35,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             Transformers.Insert(2, _designTransformer = new AvaloniaXamlIlDesignPropertiesTransformer());
             Transformers.Insert(3, _bindingTransformer = new AvaloniaBindingExtensionTransformer());
             
-            
             // Targeted
             InsertBefore<PropertyReferenceResolver>(
                 new AvaloniaXamlIlResolveClassesPropertiesTransformer(),
@@ -46,16 +45,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlReorderClassesPropertiesTransformer()
             );
 
-            InsertBefore<ContentConvertTransformer>(                
-                new AvaloniaXamlIlBindingPathParser(),
+            InsertBefore<ContentConvertTransformer>(
                 new AvaloniaXamlIlSelectorTransformer(),
-                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
+                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),                 
+                new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
+
+            InsertAfter<TypeReferenceResolver>(
+                new XDataTypeTransformer());
 
             // After everything else
             InsertBefore<NewObjectTransformer>(

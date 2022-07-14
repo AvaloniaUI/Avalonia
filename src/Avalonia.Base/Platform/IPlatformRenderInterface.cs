@@ -59,6 +59,13 @@ namespace Avalonia.Platform
         IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2);
 
         /// <summary>
+        /// Created a geometry implementation for the glyph run.
+        /// </summary>
+        /// <param name="glyphRun">The glyph run to build a geometry from.</param>
+        /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
+        IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun);
+
+        /// <summary>
         /// Creates a renderer.
         /// </summary>
         /// <param name="surfaces">

@@ -350,6 +350,39 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void MirrorTransform_For_Control_With_RenderTransform_Should_Be_Correct()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 400,
+                    Height = 200,
+                    Child = border = new Border
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Background = Brushes.Red,
+                        Width = 100,
+                        RenderTransform = new ScaleTransform(0.5, 1),
+                        FlowDirection = FlowDirection.RightToLeft
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var expectedTransform = new Matrix(-1, 0, 0, 1, 100, 0) * Matrix.CreateScale(0.5, 1) * Matrix.CreateTranslation(25, 0);
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(expectedTransform, borderNode.Transform);
+            }
+        }
+
+        [Fact]
         public void Should_Update_Border_Background_Node()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -544,6 +577,69 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
                 moveFrom.Child = null;
                 moveTo.Child = moveMe;
+
+                scene = scene.CloneScene();
+                moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+                moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+                moveFromNode.SortChildren(scene);
+                moveToNode.SortChildren(scene);
+                sceneBuilder.Update(scene, moveFrom);
+                sceneBuilder.Update(scene, moveTo);
+                sceneBuilder.Update(scene, moveMe);
+
+                Assert.Empty(moveFromNode.Children);
+                Assert.Equal(1, moveToNode.Children.Count);
+                Assert.Same(moveMe, moveToNode.Children[0].Visual);
+            }
+        }
+
+        [Fact]
+        public void Should_Update_When_Control_Moved_Causing_Layout_Change()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Decorator moveFrom;
+                Decorator moveTo;
+                Canvas moveMe;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = new DockPanel
+                    {
+                        Children =
+                        {
+                            (moveFrom = new Decorator
+                            {
+                                Child = moveMe = new Canvas
+                                {
+                                    Width = 100,
+                                    Height = 100,
+                                },
+                            }),
+                            (moveTo = new Decorator()),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+                var moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+                Assert.Equal(1, moveFromNode.Children.Count);
+                Assert.Same(moveMe, moveFromNode.Children[0].Visual);
+                Assert.Empty(moveToNode.Children);
+
+                moveFrom.Child = null;
+                moveTo.Child = moveMe;
+                tree.LayoutManager.ExecuteLayoutPass();
 
                 scene = scene.CloneScene();
                 moveFromNode = (VisualNode)scene.FindNode(moveFrom);
@@ -805,6 +901,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 Canvas canvas;
                 var tree = new TestRoot
                 {
+                    ClientSize = new Size(100, 100),
                     Child = decorator = new Decorator
                     {
                         Margin = new Thickness(0, 10, 0, 0),

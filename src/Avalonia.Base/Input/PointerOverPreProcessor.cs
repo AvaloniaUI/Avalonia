@@ -97,7 +97,7 @@ namespace Avalonia.Input
             // Do not pass rootVisual, when we have unknown (negative) position,
             // so GetPosition won't return invalid values.
             var hasPosition = position.X >= 0 && position.Y >= 0;
-            var e = new PointerEventArgs(InputElement.PointerLeaveEvent, element, pointer,
+            var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
                 hasPosition ? root : null, hasPosition ? position : default,
                 timestamp, properties, inputModifiers);
 
@@ -177,7 +177,7 @@ namespace Avalonia.Input
 
             el = root.PointerOverElement;
 
-            var e = new PointerEventArgs(InputElement.PointerLeaveEvent, el, pointer, root, position,
+            var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, root, position,
                 timestamp, properties, inputModifiers);
             if (el != null && branch != null && !el.IsAttachedToVisualTree)
             {
@@ -195,7 +195,7 @@ namespace Avalonia.Input
             el = root.PointerOverElement = element;
             _lastPointer = (pointer, root.PointToScreen(position));
 
-            e.RoutedEvent = InputElement.PointerEnterEvent;
+            e.RoutedEvent = InputElement.PointerEnteredEvent;
 
             while (el != null && el != branch)
             {

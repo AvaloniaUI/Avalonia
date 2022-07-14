@@ -221,7 +221,8 @@ namespace Avalonia.Controls
                     ShowsPreview = showsPreview,
                     ResizeDirection = resizeDirection,
                     SplitterLength = Math.Min(Bounds.Width, Bounds.Height),
-                    ResizeBehavior = GetEffectiveResizeBehavior(resizeDirection)
+                    ResizeBehavior = GetEffectiveResizeBehavior(resizeDirection),
+                    Scaling = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1,
                 };
 
                 // Store the rows and columns to resize on drag events.
@@ -348,9 +349,9 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             GridResizeDirection direction = GetEffectiveResizeDirection();
 
@@ -630,13 +631,17 @@ namespace Avalonia.Controls
             {
                 double actualLength1 = GetActualLength(definition1);
                 double actualLength2 = GetActualLength(definition2);
+                double pixelLength = 1 / _resizeData.Scaling;
+                double epsilon = pixelLength + LayoutHelper.LayoutEpsilon;
 
                 // When splitting, Check to see if the total pixels spanned by the definitions 
-                // is the same as before starting resize. If not cancel the drag.
+                // is the same as before starting resize. If not cancel the drag. We need to account for
+                // layout rounding here, so ignore differences of less than a device pixel to avoid problems
+                // that WPF has, such as https://stackoverflow.com/questions/28464843.
                 if (_resizeData.SplitBehavior == SplitBehavior.Split &&
                     !MathUtilities.AreClose(
                         actualLength1 + actualLength2,
-                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, LayoutHelper.LayoutEpsilon))
+                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, epsilon))
                 {
                     CancelResize();
 
@@ -798,6 +803,9 @@ namespace Avalonia.Controls
             // The minimum of Width/Height of Splitter.  Used to ensure splitter 
             // isn't hidden by resizing a row/column smaller than the splitter.
             public double SplitterLength;
+
+            // The current layout scaling factor.
+            public double Scaling;
         }
     }
 
