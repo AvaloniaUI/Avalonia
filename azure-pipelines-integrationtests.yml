@@ -32,13 +32,13 @@ jobs:
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
   - script: npm install -g appium@next
-      displayName: 'install appium'
+    displayName: 'install appium'
 
   - script: appium driver install windows
-      displayName: 'install appium windows driver'
+    displayName: 'install appium windows driver'
 
   - powershell: Start-Process appium
-      displayName: 'run appium server'
+    displayName: 'run appium server'
 
   - task: DotNetCoreCLI@2
     inputs:
