@@ -235,8 +235,8 @@ namespace Avalonia
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
-        
-        public bool UseCompositor { get; set; }
+
+        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use IME.

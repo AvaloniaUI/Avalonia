@@ -113,13 +113,11 @@ namespace ControlCatalog.NetCore
                 {
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
-                    EnableIme = true,
-                    UseCompositor = true
+                    EnableIme = true
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true,
-                    UseCompositor = true
+                    EnableMultitouch = true
                 })
                 .UseSkia()
                 .AfterSetup(builder =>
