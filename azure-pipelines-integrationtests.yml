@@ -27,14 +27,14 @@ jobs:
       script: |
         npm --version
         npm install -g appium@next
-        C:\\npm\\prefix\\appium driver install windows
+        C:\\npm\\prefix\\appium.cmd driver install windows
   
   - task: PowerShell@2
     displayName: 'run appium server'
     inputs:
       targetType: 'inline'
       script: |
-        C:\\npm\\prefix\\appium
+        C:\\npm\\prefix\\appium.ps1
         dotnet test tests/Avalonia.IntegrationTests.Appium
 
 
