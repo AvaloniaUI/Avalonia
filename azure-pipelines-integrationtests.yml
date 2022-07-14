@@ -20,25 +20,20 @@ jobs:
   pool:
     vmImage: 'windows-2022'
 
-  steps:
-  - script: npm config get prefix
-  
   - task: CmdLine@2
     displayName: 'install appium'
     inputs:
       script: |
         npm --version
         npm install -g appium@next
-        npm install wd
-        npm config get prefix
-        appium driver install windows
+        C:/npm/prefix/appium driver install windows
   
   - task: PowerShell@2
     displayName: 'run appium server'
     inputs:
       targetType: 'inline'
       script: |
-        appium
+        C:/npm/prefix/appium
         dotnet test tests/Avalonia.IntegrationTests.Appium
 
 
