@@ -31,6 +31,11 @@ jobs:
       OperationType: 'Start'
       AgentResolution: '4K'
     displayName: 'Start WinAppDriver'
+
+  - task: Windows Application Driver@0
+    inputs:
+      OperationType: 'Stop'
+    displayName: 'Stop WinAppDriver'
   
   - task: DotNetCoreCLI@2
     inputs:
@@ -50,13 +55,10 @@ jobs:
       targetType: 'inline'
       script: |
         Start-Job -Command {Appium}
+        dotnet test tests/Avalonia.IntegrationTests.Appium
 
   - task: DotNetCoreCLI@2
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
 
-  - task: Windows Application Driver@0
-    inputs:
-      OperationType: 'Stop'
-    displayName: 'Stop WinAppDriver'
