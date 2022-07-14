@@ -13,7 +13,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class WindowTests_MacOS
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public WindowTests_MacOS(TestAppFixture fixture)
         {
@@ -25,8 +25,8 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 try
                 {
-                    var tabs = _session.FindElementByAccessibilityId("MainTabs");
-                    var tab = tabs.FindElementByName("Window");
+                    var tabs = _session.FindElement(MobileBy.AccessibilityId("MainTabs"));
+                    var tab = tabs.FindElement(MobileBy.Name("Window"));
                     tab.Click();
                     return;
                 }
@@ -43,7 +43,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _session.FindElement(MobileBy.AccessibilityId("MainWindow"));
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
             {
@@ -110,14 +110,14 @@ namespace Avalonia.IntegrationTests.Appium
             }
             finally
             {
-                _session.FindElementByAccessibilityId("ExitFullscreen").Click();
+                _session.FindElement(MobileBy.AccessibilityId("ExitFullscreen")).Click();
             }
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _session.FindElement(MobileBy.AccessibilityId("MainWindow"));
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
             {
@@ -135,7 +135,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_NonOwned_Window_Does_Not_Stay_InFront_Of_Parent()
         {
-            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            var mainWindow = _session.FindElement(MobileBy.AccessibilityId("MainWindow"));
 
             using (OpenWindow(new PixelSize(1400, 100), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
@@ -148,7 +148,7 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(1, secondaryWindowIndex);
                 Assert.Equal(0, mainWindowIndex);
 
-                var sendToBack = _session.FindElementByAccessibilityId("SendToBack");
+                var sendToBack = _session.FindElement(MobileBy.AccessibilityId("SendToBack"));
                 sendToBack.Click();
             }
         }
@@ -198,14 +198,14 @@ namespace Avalonia.IntegrationTests.Appium
                 miniaturizeButton.Click();
                 Thread.Sleep(1000);
 
-                var hittable = _session.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
+                var hittable = _session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
                     .Select(x => x.GetAttribute("hittable")).ToList();
                 Assert.Equal(new[] { "true", "false" }, hittable);
 
-                _session.FindElementByAccessibilityId("RestoreAll").Click();
+                _session.FindElement(MobileBy.AccessibilityId("RestoreAll")).Click();
                 Thread.Sleep(1000);
 
-                hittable = _session.FindElementsByXPath("/XCUIElementTypeApplication/XCUIElementTypeWindow")
+                hittable = _session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
                     .Select(x => x.GetAttribute("hittable")).ToList();
                 Assert.Equal(new[] { "true", "true" }, hittable);
             }
@@ -213,34 +213,34 @@ namespace Avalonia.IntegrationTests.Appium
 
         private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
         {
-            var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
-            var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
-            var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
-            var showButton = _session.FindElementByAccessibilityId("ShowWindow");
+            var sizeTextBox = _session.FindElement(MobileBy.AccessibilityId("ShowWindowSize"));
+            var modeComboBox = _session.FindElement(MobileBy.AccessibilityId("ShowWindowMode"));
+            var locationComboBox = _session.FindElement(MobileBy.AccessibilityId("ShowWindowLocation"));
+            var showButton = _session.FindElement(MobileBy.AccessibilityId("ShowWindow"));
 
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
             modeComboBox.Click();
-            _session.FindElementByName(mode.ToString()).SendClick();
+            _session.FindElement(MobileBy.Name(mode.ToString())).SendClick();
 
             locationComboBox.Click();
-            _session.FindElementByName(location.ToString()).SendClick();
+            _session.FindElement(MobileBy.Name(location.ToString())).SendClick();
 
             return showButton.OpenWindowWithClick();
         }
 
-        private static int GetWindowOrder(IReadOnlyCollection<AppiumWebElement> elements, string identifier)
+        private static int GetWindowOrder(IReadOnlyCollection<AppiumElement> elements, string identifier)
         {
             return elements.TakeWhile(x =>
-                x.FindElementByXPath("XCUIElementTypeWindow")?.GetAttribute("identifier") != identifier).Count();
+                x.FindElement(By.XPath("XCUIElementTypeWindow"))?.GetAttribute("identifier") != identifier).Count();
         }
 
-        private static AppiumWebElement FindWindow(AppiumDriver<AppiumWebElement> session, string identifier)
+        private static AppiumElement FindWindow(AppiumDriver session, string identifier)
         {
-            var windows = session.FindElementsByXPath("XCUIElementTypeWindow");
+            var windows = session.FindElements(By.XPath("XCUIElementTypeWindow"));
             return windows.First(x =>
-                x.FindElementsByXPath("XCUIElementTypeWindow")
+                x.FindElements(By.XPath("XCUIElementTypeWindow"))
                     .Any(y => y.GetAttribute("identifier") == identifier));
         }
 

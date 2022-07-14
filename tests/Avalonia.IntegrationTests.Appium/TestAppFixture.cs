@@ -21,11 +21,11 @@ namespace Avalonia.IntegrationTests.Appium
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                opts.AddAdditionalCapability(MobileCapabilityType.App, path);
-                opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
-                opts.AddAdditionalCapability(MobileCapabilityType.DeviceName, "WindowsPC");
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.App, path);
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.DeviceName, "WindowsPC");
 
-                Session = new WindowsDriver<AppiumWebElement>(
+                Session = new WindowsDriver(
                     new Uri("http://127.0.0.1:4723"),
                     opts);
 
@@ -36,13 +36,14 @@ namespace Avalonia.IntegrationTests.Appium
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                opts.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
-                opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
-                opts.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
-                opts.AddAdditionalCapability("appium:showServerLogs", true);
+                opts.AutomationName = "mac2";
+                opts.AddAdditionalAppiumOption("appium:bundleId", TestAppBundleId);
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
+                opts.AddAdditionalAppiumOption("appium:showServerLogs", true);
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 10000);
 
-                Session = new MacDriver<AppiumWebElement>(
-                    new Uri("http://127.0.0.1:4723/wd/hub"),
+                Session = new MacDriver(
+                    new Uri("http://127.0.0.1:4723"),
                     opts);
             }
             else
@@ -51,7 +52,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        public AppiumDriver<AppiumWebElement> Session { get; }
+        public AppiumDriver Session { get; }
 
         public void Dispose()
         {
