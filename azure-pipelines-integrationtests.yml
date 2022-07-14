@@ -25,24 +25,22 @@ jobs:
     displayName: 'Use .NET Core SDK 6.0.202'
     inputs:
       version: 6.0.202
-
-  - task: Windows Application Driver@0
-    inputs:
-      OperationType: 'Start'
-      AgentResolution: '4K'
-    displayName: 'Start WinAppDriver'
   
   - task: DotNetCoreCLI@2
     inputs:
       command: 'build'
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
+  - script: npm install -g appium@next
+      displayName: 'install appium'
+
+  - script: appium driver install windows
+      displayName: 'install appium windows driver'
+
+  - powershell: Start-Process appium
+      displayName: 'run appium server'
+
   - task: DotNetCoreCLI@2
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
-
-  - task: Windows Application Driver@0
-    inputs:
-      OperationType: 'Stop'
-    displayName: 'Stop WinAppDriver'
