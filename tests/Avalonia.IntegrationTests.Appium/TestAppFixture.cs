@@ -25,6 +25,7 @@ namespace Avalonia.IntegrationTests.Appium
                 opts.DeviceName = "WindowsPC";
                 opts.AutomationName = "windows";
                 opts.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 10000);
 
                 Session = new WindowsDriver(
                     new Uri("http://127.0.0.1:4723"),
