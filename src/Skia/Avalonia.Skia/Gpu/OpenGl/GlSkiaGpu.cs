@@ -50,8 +50,8 @@ namespace Avalonia.Skia
         public ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
         {
             // Only windows platform needs our FBO trickery
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return null;
+            //if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            //    return null;
 
             // Blit feature requires glBlitFramebuffer
             if (_glContext.GlInterface.BlitFramebuffer == null)
