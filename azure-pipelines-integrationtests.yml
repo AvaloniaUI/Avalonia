@@ -21,16 +21,6 @@ jobs:
     vmImage: 'windows-2022'
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.202'
-    inputs:
-      version: 6.0.202
-  
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'build'
-      projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
-
   - task: CmdLine@2
     displayName: 'install appium'
     inputs:
@@ -38,6 +28,7 @@ jobs:
         npm --version
         npm install -g appium@next
         npm install wd
+        npm config get prefix
         appium driver install windows
   
   - task: PowerShell@2
