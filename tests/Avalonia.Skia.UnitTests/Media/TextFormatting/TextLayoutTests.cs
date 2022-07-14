@@ -925,7 +925,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textLine = layout.TextLines[0];
 
-                var firstRun = textLine.TextRuns[0] as ShapedTextCharacters;
+                var firstRun = (ShapedTextCharacters)textLine.TextRuns[0];
 
                 var firstCluster = firstRun.ShapedBuffer.GlyphClusters[0];
 
@@ -943,15 +943,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var firstAdvance = firstRun.ShapedBuffer.GlyphAdvances[0];
 
-                Assert.Equal(firstAdvance, distance);
+                Assert.Equal(firstAdvance, distance, 5);
 
                 var rect = layout.HitTestTextPosition(22);
 
-                Assert.Equal(firstAdvance, rect.Left);
+                Assert.Equal(firstAdvance, rect.Left, 5);
 
                 rect = layout.HitTestTextPosition(23);
 
-                Assert.Equal(0, rect.Left);
+                Assert.Equal(0, rect.Left, 5);
             }
         }
 
