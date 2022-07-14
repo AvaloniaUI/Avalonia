@@ -55,6 +55,11 @@ jobs:
       targetType: 'inline'
       script: |
         Start-Job -Command {appium}
-        dotnet test tests/Avalonia.IntegrationTests.Appium
+
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
 
 
