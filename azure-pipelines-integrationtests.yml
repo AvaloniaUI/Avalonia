@@ -54,7 +54,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        Start-Process appium
+        Start-Process cmd -ArgumentList "/c appium"
 
 
   - task: DotNetCoreCLI@2
