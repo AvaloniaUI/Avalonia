@@ -20,6 +20,7 @@ jobs:
   pool:
     vmImage: 'windows-2022'
 
+  steps:
   - task: CmdLine@2
     displayName: 'install appium'
     inputs:
