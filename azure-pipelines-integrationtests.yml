@@ -45,7 +45,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        Start-Job -Command {Appium}
+        appium
         dotnet test tests/Avalonia.IntegrationTests.Appium
 
 
