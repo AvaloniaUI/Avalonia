@@ -502,25 +502,34 @@ namespace Avalonia.Controls
             IInputElement? from,
             bool wrap)
         {
-            IInputElement? result;
-            var c = from;
-
-            do
+            for(;;)
             {
-                result = container.GetControl(direction, c, wrap);
+                var result = container.GetControl(direction, from, wrap);
 
-                if (result != null &&
-                    result.Focusable &&
+                if (result is null || result == from)
+                {
+                    return null;
+                }
+
+                if (result.Focusable &&
                     result.IsEffectivelyEnabled &&
                     result.IsEffectivelyVisible)
                 {
                     return result;
                 }
 
-                c = result;
-            } while (c != null && c != from && direction != NavigationDirection.First && direction != NavigationDirection.Last);
+                direction = direction switch
+                {
+                    //We did not find an enabled first item. Move downwards until we find one.
+                    NavigationDirection.First => NavigationDirection.Down,
 
-            return null;
+                    //We did not find an enabled last item. Move upwards until we find one.
+                    NavigationDirection.Last => NavigationDirection.Up,
+                    _ => direction
+                };
+
+                from = result;
+            }
         }
 
         private void PresenterChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)

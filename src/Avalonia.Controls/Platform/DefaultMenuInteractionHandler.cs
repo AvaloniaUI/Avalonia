@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Platform
             Menu.PointerPressed += PointerPressed;
             Menu.PointerReleased += PointerReleased;
             Menu.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
-            Menu.AddHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
+            Menu.AddHandler(MenuBase.MenuOpenedEvent, MenuOpened);
             Menu.AddHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
@@ -89,7 +89,7 @@ namespace Avalonia.Controls.Platform
             Menu.PointerPressed -= PointerPressed;
             Menu.PointerReleased -= PointerReleased;
             Menu.RemoveHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
-            Menu.RemoveHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
+            Menu.RemoveHandler(MenuBase.MenuOpenedEvent, MenuOpened);
             Menu.RemoveHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.RemoveHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
