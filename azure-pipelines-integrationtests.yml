@@ -21,10 +21,9 @@ jobs:
     vmImage: 'windows-2022'
 
   steps:
-  - script: |
-      npm install -g appium@next --unsafe-perm=true --allow-root
-      appium driver install windows
-      appium
+  - script: npm install -g appium@next --unsafe-perm=true --allow-root
+  - script: appium driver install windows
+  - script: appium
     
   - task: PowerShell@2
     displayName: 'run appium server'
