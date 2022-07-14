@@ -31,14 +31,19 @@ jobs:
       command: 'build'
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
-  - script: npm install -g appium@next
+  - task: CmdLine@2
     displayName: 'install appium'
-
-  - script: appium driver install windows
-    displayName: 'install appium windows driver'
-
-  - powershell: Start-Process appium
+    inputs:
+      script: |
+        npm install -g appium@next
+        appium driver install windows
+  
+  - task: PowerShell@2
     displayName: 'run appium server'
+    inputs:
+      targetType: 'inline'
+      script: |
+        Start-Process appium
 
   - task: DotNetCoreCLI@2
     inputs:
