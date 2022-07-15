@@ -13,6 +13,7 @@
 {
     @public IOSurfaceRef surface;
     @public AvnPixelSize size;
+    @public bool hasContent;
     @public float scale;
     ComPtr<IAvnGlContext> _context;
     GLuint _framebuffer, _texture, _renderbuffer;
@@ -41,6 +42,7 @@
     self->scale = scale;
     self->size = size;
     self->_context = context;
+    self->hasContent = false;
     return self;
 }
 
@@ -92,6 +94,7 @@
     _context->MakeCurrent(release.getPPV());
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     glFlush();
+    self->hasContent = true;
 }
 
 -(void) dealloc
@@ -170,6 +173,8 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
         @synchronized (lock) {
             if(_layer == nil)
                 return;
+            if(!surface->hasContent)
+                return;
             [CATransaction begin];
             [_layer setContents: nil];
             if(surface != nil)
@@ -213,6 +218,7 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
             memcpy(pSurface + y*sstride, pFb + y*fstride, wbytes);
         }
         IOSurfaceUnlock(surf, 0, nil);
+        surface->hasContent = true;
         [self updateLayer];
         return S_OK;
     }

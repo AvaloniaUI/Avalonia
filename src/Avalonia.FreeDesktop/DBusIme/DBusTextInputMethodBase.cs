@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
-using Avalonia.FreeDesktop.DBusIme.Fcitx;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
@@ -26,7 +24,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             return (im, im);
         }
     }
-    
+
     internal abstract class DBusTextInputMethodBase : IX11InputMethodControl, ITextInputMethodImpl
     {
         private List<IDisposable> _disposables = new List<IDisposable>();
@@ -34,7 +32,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         protected Connection Connection { get; }
         private readonly string[] _knownNames;
         private bool _connecting;
-        private string _currentName;
+        private string? _currentName;
         private DBusCallQueue _queue;
         private bool _controlActive, _windowActive;
         private bool? _imeActive;
@@ -42,9 +40,9 @@ namespace Avalonia.FreeDesktop.DBusIme
         private PixelRect? _lastReportedRect;
         private double _scaling = 1;
         private PixelPoint _windowPosition;
-        
+
         protected bool IsConnected => _currentName != null;
-        
+
         public DBusTextInputMethodBase(Connection connection, params string[] knownNames)
         {
             _queue = new DBusCallQueue(QueueOnError);
@@ -58,18 +56,18 @@ namespace Avalonia.FreeDesktop.DBusIme
             foreach (var name in _knownNames)
                 _disposables.Add(await Connection.ResolveServiceOwnerAsync(name, OnNameChange));
         }
-        
+
         protected abstract Task<bool> Connect(string name);
 
         protected string GetAppName() =>
-            Application.Current.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
-        
+            Application.Current?.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
+
         private async void OnNameChange(ServiceOwnerChangedEventArgs args)
         {
             if (args.NewOwner != null && _currentName == null)
             {
                 _onlineNamesQueue.Enqueue(args.ServiceName);
-                if(!_connecting)
+                if (!_connecting)
                 {
                     _connecting = true;
                     try
@@ -98,25 +96,25 @@ namespace Avalonia.FreeDesktop.DBusIme
                         _connecting = false;
                     }
                 }
-                
+
             }
-            
+
             // IME has crashed
             if (args.NewOwner == null && args.ServiceName == _currentName)
             {
                 _currentName = null;
-                foreach(var s in _disposables)
+                foreach (var s in _disposables)
                     s.Dispose();
                 _disposables.Clear();
-                
+
                 OnDisconnected();
                 Reset();
-                
+
                 // Watch again
                 Watch();
             }
         }
-        
+
         protected virtual Task Disconnect()
         {
             return Task.CompletedTask;
@@ -124,7 +122,7 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         protected virtual void OnDisconnected()
         {
-            
+
         }
 
         protected virtual void Reset()
@@ -149,10 +147,14 @@ namespace Avalonia.FreeDesktop.DBusIme
             OnDisconnected();
             _currentName = null;
         }
-        
+
         protected void Enqueue(Func<Task> cb) => _queue.Enqueue(cb);
 
-        protected void AddDisposable(IDisposable d) => _disposables.Add(d);
+        protected void AddDisposable(IDisposable? d)
+        {
+            if(d is { })
+                _disposables.Add(d);
+        }
         
         public void Dispose()
         {
@@ -198,7 +200,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             UpdateActive();
         }
         
-        void ITextInputMethodImpl.SetClient(ITextInputMethodClient client)
+        void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
             _controlActive = client is { };
             UpdateActive();
@@ -225,7 +227,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             }
         }
 
-        private Action<string> _onCommit;
+        private Action<string>? _onCommit;
         event Action<string> IX11InputMethodControl.Commit
         {
             add => _onCommit += value;
@@ -234,7 +236,7 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         protected void FireCommit(string s) => _onCommit?.Invoke(s);
         
-        private Action<X11InputMethodForwardedKey> _onForward;
+        private Action<X11InputMethodForwardedKey>? _onForward;
         event Action<X11InputMethodForwardedKey> IX11InputMethodControl.ForwardKey
         {
             add => _onForward += value;

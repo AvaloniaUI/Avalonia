@@ -12,8 +12,25 @@ jobs:
     name: 'AvaloniaMacPool'
 
   steps:
-  - script: ./tests/Avalonia.IntegrationTests.Appium/macos-clean-build-test.sh
-    displayName: 'run integration tests'
+  - script: system_profiler SPDisplaysDataType |grep Resolution
+  
+  - script: |
+      pkill node
+      appium &
+      pkill IntegrationTestApp
+      ./build.sh CompileNative
+      ./samples/IntegrationTestApp/bundle.sh
+      open -n ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
+      pkill IntegrationTestApp
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+
+  - script: |
+      pkill IntegrationTestApp
+      pkill node
 
 
 - job: Windows
