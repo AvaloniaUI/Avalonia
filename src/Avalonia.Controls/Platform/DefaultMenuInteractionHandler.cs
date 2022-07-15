@@ -175,7 +175,11 @@ namespace Avalonia.Controls.Platform
 
                 case Key.Left:
                 {
-                    if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
+                    if (item is { IsSubMenuOpen: true, SelectedItem: null })
+                    {
+                        item.Close();
+                    }
+                    else if (item?.Parent is IMenuItem { IsTopLevel: false, IsSubMenuOpen: true } parent)
                     {
                         parent.Close();
                         parent.Focus();
