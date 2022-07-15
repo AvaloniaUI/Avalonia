@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Primitives
 
             OwningGrid.OnFillerColumnWidthNeeded(finalSize.Width);
 
-            double rowDesiredWidth = OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth + OwningGrid.ColumnsInternal.FillerColumn.FillerWidth;
+            double rowDesiredWidth = OwningGrid.RowHeadersDesiredWidth + OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth + OwningGrid.ColumnsInternal.FillerColumn.FillerWidth;
             double topEdge = -OwningGrid.NegVerticalOffset;
             foreach (Control element in OwningGrid.DisplayData.GetScrollingElements())
             {
