@@ -502,11 +502,13 @@ namespace Avalonia.Controls
             IInputElement? from,
             bool wrap)
         {
-            for(;;)
-            {
-                var result = container.GetControl(direction, from, wrap);
+            var current = from;
 
-                if (result is null || result == from)
+            for (;;)
+            {
+                var result = container.GetControl(direction, current, wrap);
+
+                if (result is null || current == from)
                 {
                     return null;
                 }
@@ -534,7 +536,7 @@ namespace Avalonia.Controls
                
                 }
 
-                from = result;
+                current = result;
             }
         }
 
