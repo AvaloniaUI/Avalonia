@@ -1656,7 +1656,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact(Timeout = 2000)]
-        public void MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_First_Item()
+        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_First_Item()
         {
             var target = new TestSelector
             {
@@ -1670,13 +1670,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
-            target.MoveSelection(NavigationDirection.First, true);
+
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.First, true));
 
             Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact(Timeout = 2000)]
-        public void MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_Last_Item()
+        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_Last_Item()
         {
             var target = new TestSelector
             {
@@ -1690,7 +1693,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
-            target.MoveSelection(NavigationDirection.Last, true);
+
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.Last, true));
 
             Assert.Equal(-1, target.SelectedIndex);
         }
