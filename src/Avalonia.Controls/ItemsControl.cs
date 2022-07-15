@@ -518,15 +518,21 @@ namespace Avalonia.Controls
                     return result;
                 }
 
-                direction = direction switch
+                switch (direction)
                 {
                     //We did not find an enabled first item. Move downwards until we find one.
-                    NavigationDirection.First => NavigationDirection.Down,
+                    case NavigationDirection.First:
+                        direction = NavigationDirection.Down;
+                        wrap = false;
+                        break;
 
                     //We did not find an enabled last item. Move upwards until we find one.
-                    NavigationDirection.Last => NavigationDirection.Up,
-                    _ => direction
-                };
+                    case NavigationDirection.Last:
+                        direction = NavigationDirection.Up;
+                        wrap = false;
+                        break;
+               
+                }
 
                 from = result;
             }

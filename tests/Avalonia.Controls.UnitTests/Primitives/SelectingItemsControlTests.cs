@@ -1655,6 +1655,46 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(1, target.SelectedIndex);
         }
 
+        [Fact(Timeout = 2000)]
+        public void MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_First_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem { Focusable = false },
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.First, true);
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact(Timeout = 2000)]
+        public void MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_Last_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem { Focusable = false },
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Last, true);
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
         [Fact]
         public void MoveSelection_Does_Select_Disabled_Controls()
         {
