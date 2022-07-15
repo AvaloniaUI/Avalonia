@@ -19,6 +19,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.X11.Glx;
 using static Avalonia.X11.XLib;
@@ -387,13 +388,15 @@ namespace Avalonia.X11
 
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
-            
-            return _platform.Options.UseDeferredRendering ?
-                new DeferredRenderer(root, loop)
-                {
-                    RenderOnlyOnRenderThread = true
-                } :
-                (IRenderer)new X11ImmediateRendererProxy(root, loop);
+
+            return _platform.Options.UseDeferredRendering
+                ? _platform.Options.UseCompositor
+                    ? new CompositingRenderer(root, this._platform.Compositor)
+                    : new DeferredRenderer(root, loop)
+                    {
+                        RenderOnlyOnRenderThread = true
+                    }
+                : (IRenderer)new X11ImmediateRendererProxy(root, loop);
         }
 
         void OnEvent(ref XEvent ev)
