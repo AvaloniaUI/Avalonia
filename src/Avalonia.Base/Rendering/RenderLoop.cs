@@ -87,6 +87,8 @@ namespace Avalonia.Rendering
             }
         }
 
+        public bool RunsInBackground => Timer.RunsInBackground;
+
         private void TimerTick(TimeSpan time)
         {
             if (Interlocked.CompareExchange(ref _inTick, 1, 0) == 0)
