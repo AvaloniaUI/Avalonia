@@ -1595,8 +1595,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "Bar" }, selectedItems);
         }
 
-        [Fact]
-        public void MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
         {
             // Issue #3094.
             var target = new TestSelector
@@ -1612,7 +1612,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
-            target.MoveSelection(NavigationDirection.Next, true);
+
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.Next, true));
         }
 
         [Fact]
