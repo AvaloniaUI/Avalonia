@@ -7,8 +7,8 @@ pkill node
 appium &
 pkill IntegrationTestApp
 ./build.sh CompileNative
-rm -rf ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
-open -b net.avaloniaui.avalonia.integrationtestapp
+rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
+pkill IntegrationTestApp
 ./samples/IntegrationTestApp/bundle.sh
 open -n ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
 pkill IntegrationTestApp
