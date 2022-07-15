@@ -13,8 +13,14 @@
     <pc:ThirdComponentConverter x:Key="ThirdComponent" />
   </UserControl.Resources>
 
-  <Grid ColumnDefinitions="Auto,10,Auto">
-    <Grid Grid.Column="0"
+  <Grid ColumnDefinitions="Auto,10,Auto,10,Auto"
+        RowDefinitions="Auto,Auto">
+    <ColorPicker Grid.Column="0"
+                 Grid.Row="1" />
+    <ColorView Grid.Column="0"
+               Grid.Row="0"
+               ColorSpectrumShape="Ring" />
+    <Grid Grid.Column="2"
           Grid.Row="0"
           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
       <ColorSpectrum x:Name="ColorSpectrum1"
@@ -41,39 +47,11 @@
                    ColorModel="Hsva"
                    HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
       <ColorPreviewer Grid.Row="5"
-                      ShowAccentColors="True"
+                      IsAccentColorsVisible="True"
                       HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
     </Grid>
-    <Grid Grid.Column="2"
-          Grid.Row="0"
-          ColumnDefinitions="Auto,Auto,Auto"
-          RowDefinitions="Auto,Auto">
-      <ColorSlider Grid.Column="0"
-                   Grid.Row="0"
-                   IsAlphaMaxForced="True"
-                   IsSaturationValueMaxForced="False"
-                   ColorComponent="{Binding Components, ElementName=ColorSpectrum2, Converter={StaticResource ThirdComponent}}"
-                   ColorModel="Hsva"
-                   Orientation="Vertical"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum2}" />
-      <ColorSpectrum x:Name="ColorSpectrum2"
-                     Grid.Column="1"
-                     Grid.Row="0"
-                     Color="Green"
-                     Shape="Ring"
-                     Height="256"
-                     Width="256" />
-      <ColorSlider Grid.Column="2"
-                   Grid.Row="0"
-                   ColorComponent="Alpha"
-                   ColorModel="Hsva"
-                   Orientation="Vertical"
-                   HsvColor="{Binding HsvColor, ElementName=ColorSpectrum2}" />
-      <ColorPreviewer Grid.Column="0"
-                      Grid.ColumnSpan="3"
-                      Grid.Row="1"
-                      ShowAccentColors="True"
-                      HsvColor="{Binding HsvColor, ElementName=ColorSpectrum2}" />
+    <Grid Grid.Column="4"
+          Grid.Row="0">
     </Grid>
   </Grid>
 </UserControl>
