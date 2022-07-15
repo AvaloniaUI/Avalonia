@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NComposition>
+    <Using>System.Numerics</Using>
+    <Using>Avalonia.Rendering.Composition.Server</Using>
+    <Using>Avalonia.Rendering.Composition.Transport</Using>
+    <Using>Avalonia.Rendering.Composition.Animations</Using>
+    
+    <Manual Name="Avalonia.Platform.IGeometryImpl" Passthrough="true"/>
+    <Manual Name="Avalonia.Media.IBrush" Passthrough="true"/>
+    <Object Name="CompositionVisual" Abstract="true">
+        <Property Name="Root" Type="CompositionTarget?" InternalSet="true" />
+        <Property Name="Parent" Type="CompositionVisual?" InternalSet="true"  />
+        <Property Name="Visible" Type="bool" Animated="true" DefaultValue="true"/>
+        <Property Name="Opacity" Type="float" Animated="true" DefaultValue="1"/>
+        
+        <Property Name="Clip" Type="Avalonia.Platform.IGeometryImpl?" Internal="true" />
+        <Property Name="ClipToBounds" Type="bool" Animated="true" DefaultValue="true"/>
+        <Property Name="Offset" Type="Vector3" Animated="true"/>
+        <Property Name="Size" Type="Vector2" Animated="true"/>
+        <Property Name="AnchorPoint" Type="Vector2" Animated="true"/>
+        <Property Name="CenterPoint" Type="Vector3" Animated="true"/>
+        <Property Name="RotationAngle" Type="float" Animated="true"/>
+        <Property Name="Orientation" Type="Quaternion" DefaultValue="Quaternion.Identity" Animated="true"/>
+        <Property Name="Scale" Type="Vector3" DefaultValue="new Vector3(1, 1, 1)" Animated="true"/>
+        <Property Name="TransformMatrix" Type="Matrix4x4" DefaultValue="Matrix4x4.Identity" Animated="true"/>
+        <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
+        <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IBrush?" Internal="true" />
+    </Object>
+    <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
+    <List Name="CompositionVisualCollection" ItemType="CompositionVisual" CustomCtor="true"/>
+    <Object Name="CompositionTarget" CustomServerCtor="true">
+        <Property Name="Root" Type="CompositionVisual?"/>
+        <Property Name="IsEnabled" Type="bool"/>
+        <Property Name="DrawDirtyRects" Type="bool"/>
+        <Property Name="DrawFps" Type="bool"/>
+        <Property Name="Scaling" Type="double"/>
+        <Property Name="Size" Type="Size" />
+    </Object>
+    <KeyFrameAnimation Name="Scalar" Type="float"/>
+    <KeyFrameAnimation Name="Boolean" Type="bool"/>
+    <KeyFrameAnimation Name="Color" Type="Avalonia.Media.Color"/>
+    <KeyFrameAnimation Type="Vector2"/>
+    <KeyFrameAnimation Type="Vector3"/>
+    <KeyFrameAnimation Type="Vector4"/>
+    <KeyFrameAnimation Type="Quaternion"/>
+</NComposition>

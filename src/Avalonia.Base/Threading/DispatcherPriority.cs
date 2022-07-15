@@ -63,9 +63,19 @@ namespace Avalonia.Threading
         public static readonly DispatcherPriority Render = new(5);
 
         /// <summary>
+        /// The job will be processed with the same priority as composition batch commit.
+        /// </summary>
+        public static readonly DispatcherPriority CompositionBatch = new(6);
+        
+        /// <summary>
+        /// The job will be processed with the same priority as composition updates.
+        /// </summary>
+        public static readonly DispatcherPriority Composition = new(7);
+        
+        /// <summary>
         /// The job will be processed with the same priority as render.
         /// </summary>
-        public static readonly DispatcherPriority Layout = new(6);
+        public static readonly DispatcherPriority Layout = new(8);
 
         /// <summary>
         /// The job will be processed with the same priority as data binding.
@@ -75,7 +85,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// The job will be processed before other asynchronous operations.
         /// </summary>
-        public static readonly DispatcherPriority Send = new(7);
+        public static readonly DispatcherPriority Send = new(9);
 
         /// <summary>
         /// Maximum possible priority
