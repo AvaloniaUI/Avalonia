@@ -53,6 +53,14 @@ namespace Avalonia.Controls
                 coerce: CoerceHsvColor);
 
         /// <summary>
+        /// Defines the <see cref="IsAccentColorsVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsAccentColorsVisibleProperty =
+            AvaloniaProperty.Register<ColorView, bool>(
+                nameof(IsAccentColorsVisible),
+                true);
+
+        /// <summary>
         /// Defines the <see cref="IsAlphaEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsAlphaEnabledProperty =
@@ -220,14 +228,6 @@ namespace Avalonia.Controls
                 nameof(SelectedIndex),
                 (int)ColorViewTab.Spectrum);
 
-        /// <summary>
-        /// Defines the <see cref="ShowAccentColors"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> ShowAccentColorsProperty =
-            AvaloniaProperty.Register<ColorView, bool>(
-                nameof(ShowAccentColors),
-                true);
-
         /// <inheritdoc cref="ColorSpectrum.Color"/>
         public Color Color
         {
@@ -265,6 +265,13 @@ namespace Avalonia.Controls
         {
             get => GetValue(HsvColorProperty);
             set => SetValue(HsvColorProperty, value);
+        }
+
+        /// <inheritdoc cref="ColorPreviewer.IsAccentColorsVisible"/>
+        public bool IsAccentColorsVisible
+        {
+            get => GetValue(IsAccentColorsVisibleProperty);
+            set => SetValue(IsAccentColorsVisibleProperty, value);
         }
 
         /// <summary>
@@ -325,7 +332,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <remarks>
         /// Note that accent color visibility is controlled separately by
-        /// <see cref="ShowAccentColors"/>.
+        /// <see cref="IsAccentColorsVisible"/>.
         /// </remarks>
         public bool IsColorPreviewVisible
         {
@@ -483,13 +490,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(SelectedIndexProperty);
             set => SetValue(SelectedIndexProperty, value);
-        }
-
-        /// <inheritdoc cref="ColorPreviewer.ShowAccentColors"/>
-        public bool ShowAccentColors
-        {
-            get => GetValue(ShowAccentColorsProperty);
-            set => SetValue(ShowAccentColorsProperty, value);
         }
     }
 }

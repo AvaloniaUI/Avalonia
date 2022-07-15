@@ -638,8 +638,8 @@
           <!-- Previewer -->
           <!-- Note that top/bottom margins have -5 to remove for drop shadow padding -->
           <primitives:ColorPreviewer Grid.Row="1"
-                                     ShowAccentColors="{TemplateBinding ShowAccentColors}"
                                      HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                     IsAccentColorsVisible="{TemplateBinding IsAccentColorsVisible}"
                                      Margin="12,-5,12,7"
                                      IsVisible="{TemplateBinding IsColorPreviewVisible}" />
         </Grid>

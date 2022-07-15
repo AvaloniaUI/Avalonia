@@ -53,6 +53,7 @@
                          ColorSpectrumComponents="{TemplateBinding ColorSpectrumComponents}"
                          ColorSpectrumShape="{TemplateBinding ColorSpectrumShape}"
                          HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                         IsAccentColorsVisible="{TemplateBinding IsAccentColorsVisible}"
                          IsAlphaEnabled="{TemplateBinding IsAlphaEnabled}"
                          IsAlphaVisible="{TemplateBinding IsAlphaVisible}"
                          IsColorComponentsVisible="{TemplateBinding IsColorComponentsVisible}"
@@ -73,8 +74,7 @@
                          PaletteColors="{TemplateBinding PaletteColors}"
                          PaletteColumnCount="{TemplateBinding PaletteColumnCount}"
                          Palette="{TemplateBinding Palette}"
-                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                         ShowAccentColors="{TemplateBinding ShowAccentColors}" />
+                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
             </Flyout>
           </DropDownButton.Flyout>
         </DropDownButton>

@@ -47,7 +47,7 @@
                    ColorModel="Hsva"
                    HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
       <ColorPreviewer Grid.Row="5"
-                      ShowAccentColors="True"
+                      IsAccentColorsVisible="True"
                       HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
     </Grid>
     <Grid Grid.Column="4"
