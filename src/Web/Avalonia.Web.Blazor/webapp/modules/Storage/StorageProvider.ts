@@ -1,131 +1,13 @@
-﻿// As we don't have proper package managing for Avalonia.Web project, declare types manually
+﻿import { IndexedDbWrapper } from "./IndexedDbWrapper";
+
 declare global {
-    interface FileSystemWritableFileStream {
-        write(position: number, data: BufferSource | Blob | string): Promise<void>;
-        truncate(size: number): Promise<void>;
-        close(): Promise<void>;
-    }
-    type PermissionsMode = "read" | "readwrite";
-    interface FileSystemFileHandle {
-        name: string,
-        getFile(): Promise<File>;
-        createWritable(options?: { keepExistingData?: boolean }): Promise<FileSystemWritableFileStream>;
-
-        queryPermission(options?: { mode: PermissionsMode }): Promise<"granted" | "denied" | "prompt">;
-        requestPermission(options?: { mode: PermissionsMode }): Promise<"granted" | "denied" | "prompt">;
-
-        entries(): AsyncIterableIterator<[string, FileSystemFileHandle]>;
-    }
-    type WellKnownDirectory = "desktop" | "documents" | "downloads" | "music" | "pictures" | "videos"; 
-    type StartInDirectory =  WellKnownDirectory | FileSystemFileHandle;
-    interface FilePickerAcceptType {
-        description: string,
-        // mime -> ext[] array
-        accept: { [mime: string]: string | string[] }
-    }
-    interface FilePickerOptions {
-        types?: FilePickerAcceptType[],
-        excludeAcceptAllOption: boolean,
-        id?: string,
+    type WellKnownDirectory = "desktop" | "documents" | "downloads" | "music" | "pictures" | "videos";
+    type StartInDirectory = WellKnownDirectory | FileSystemFileHandle;
+    interface OpenFilePickerOptions {
         startIn?: StartInDirectory
     }
-    interface OpenFilePickerOptions extends FilePickerOptions {
-        multiple: boolean
-    }
-    interface SaveFilePickerOptions extends FilePickerOptions {
-        suggestedName?: string
-    }
-    interface DirectoryPickerOptions {
-        id?: string,
+    interface SaveFilePickerOptions {
         startIn?: StartInDirectory
-    }
-    
-    interface Window {
-        showOpenFilePicker: (options: OpenFilePickerOptions) => Promise<FileSystemFileHandle[]>;
-        showSaveFilePicker: (options: SaveFilePickerOptions) => Promise<FileSystemFileHandle>;
-        showDirectoryPicker: (options: DirectoryPickerOptions) => Promise<FileSystemFileHandle>;
-    }
-}
-
-// TODO move to another file and use import
-class IndexedDbWrapper {
-    constructor(private databaseName: string, private objectStores: [ string ]) {
-
-    }
-
-    public connect(): Promise<InnerDbConnection> {
-        const conn = window.indexedDB.open(this.databaseName, 1);
-
-        conn.onupgradeneeded = event => {
-            const db = (<IDBRequest<IDBDatabase>>event.target).result;
-            this.objectStores.forEach(store => {
-                db.createObjectStore(store);
-            });
-        }
-
-        return new Promise((resolve, reject) => {
-            conn.onsuccess = event => {
-                resolve(new InnerDbConnection((<IDBRequest<IDBDatabase>>event.target).result));
-            }
-            conn.onerror = event => {
-                reject((<IDBRequest<IDBDatabase>>event.target).error);
-            }
-        });
-    }
-}
-
-class InnerDbConnection {
-    constructor(private database: IDBDatabase) { }
-
-    private openStore(store: string, mode: IDBTransactionMode): IDBObjectStore {
-        const tx = this.database.transaction(store, mode);
-        return tx.objectStore(store);
-    }
-
-    public put(store: string, obj: any, key?: IDBValidKey): Promise<IDBValidKey> {
-        const os = this.openStore(store, "readwrite");
-
-        return new Promise((resolve, reject) => {
-            const response = os.put(obj, key);
-            response.onsuccess = () => {
-                resolve(response.result);
-            };
-            response.onerror = () => {
-                reject(response.error);
-            };
-        });
-    }
-
-    public get(store: string, key: IDBValidKey): any {
-        const os = this.openStore(store, "readonly");
-
-        return new Promise((resolve, reject) => {
-            const response = os.get(key);
-            response.onsuccess = () => {
-                resolve(response.result);
-            };
-            response.onerror = () => {
-                reject(response.error);
-            };
-        });
-    }
-
-    public delete(store: string, key: IDBValidKey): Promise<void> {
-        const os = this.openStore(store, "readwrite");
-
-        return new Promise((resolve, reject) => {
-            const response = os.delete(key);
-            response.onsuccess = () => {
-                resolve();
-            };
-            response.onerror = () => {
-                reject(response.error);
-            };
-        });
-    }
-
-    public close() {
-        this.database.close();
     }
 }
 
@@ -135,7 +17,7 @@ const avaloniaDb = new IndexedDbWrapper("AvaloniaDb", [
 ])
 
 class StorageItem {
-    constructor(public handle: FileSystemFileHandle, private bookmarkId?: string) { }
+    constructor(private handle: FileSystemHandle, private bookmarkId?: string) { }
 
     public getName(): string {
         return this.handle.name
@@ -146,21 +28,35 @@ class StorageItem {
     }
 
     public async openRead(): Promise<Blob> {
+        if (!(this.handle instanceof FileSystemFileHandle)) {
+            throw new Error("StorageItem is not a file");
+        }
+
         await this.verityPermissions('read');
 
-        return await this.handle.getFile();
+        const file = await this.handle.getFile();
+        return file;
     }
 
     public async openWrite(): Promise<FileSystemWritableFileStream> {
+        if (!(this.handle instanceof FileSystemFileHandle)) {
+            throw new Error("StorageItem is not a file");
+        }
+
         await this.verityPermissions('readwrite');
 
         return await this.handle.createWritable({ keepExistingData: true });
     }
 
-    public async getProperties(): Promise<{ Size: number, LastModified: number, Type: string }> {
-        const file = this.handle.getFile && await this.handle.getFile();
-        
-        return file && {
+    public async getProperties(): Promise<{ Size: number, LastModified: number, Type: string } | null> {
+        const file = this.handle instanceof FileSystemFileHandle
+            && await this.handle.getFile();
+
+        if (!file) {
+            return null;
+        }
+
+        return {
             Size: file.size,
             LastModified: file.lastModified,
             Type: file.type
@@ -168,6 +64,10 @@ class StorageItem {
     }
 
     public async getItems(): Promise<StorageItems> {
+        if (this.handle.kind !== "directory"){
+            return new StorageItems([]);
+        }
+        
         const items: StorageItem[] = [];
         for await (const [key, value] of this.handle.entries()) {
             items.push(new StorageItem(value));
@@ -175,7 +75,7 @@ class StorageItem {
         return new StorageItems(items);
     }
     
-    private async verityPermissions(mode: PermissionsMode): Promise<void | never> {
+    private async verityPermissions(mode: FileSystemPermissionMode): Promise<void | never> {
         if (await this.handle.queryPermission({ mode }) === 'granted') {
             return;
         }
@@ -200,7 +100,7 @@ class StorageItem {
             connection.close();
         }
     }
-    
+
     public async deleteBookmark(): Promise<void> {
         if (!this.bookmarkId) {
             return;
