@@ -351,17 +351,6 @@ namespace Avalonia.Skia
                 "Current GPU acceleration backend does not support OpenGL integration");
         }
 
-        // TODO Remove
-        /*public IVulkanBitmapImpl CreateVulkanBitmap(VulkanPlatformInterface platformInterface, PixelSize pixelSize, Vector dpi, uint format)
-        {
-            if (_skiaGpu is VulkanSkiaGpu vulkanGpu)
-                return vulkanGpu.CreateVulkamBitmap(platformInterface, pixelSize, dpi, format);
-            if (_skiaGpu == null)
-                throw new PlatformNotSupportedException("GPU acceleration is not available");
-            throw new PlatformNotSupportedException(
-                "Current GPU acceleration backend does not support Vulkan integration");
-        }*/
-
         public bool SupportsIndividualRoundRects => true;
 
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
