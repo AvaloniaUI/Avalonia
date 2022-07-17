@@ -10,6 +10,7 @@ namespace Avalonia.Vulkan
         private readonly CommandPool _commandPool;
 
         private readonly List<VulkanCommandBuffer> _usedCommandBuffers = new();
+        private object _lock = new object();
 
         public unsafe VulkanCommandBufferPool(VulkanDevice device, VulkanPhysicalDevice physicalDevice)
         {
@@ -28,8 +29,11 @@ namespace Avalonia.Vulkan
 
         public unsafe void Dispose()
         {
-            FreeUsedCommandBuffers();
-            _device.Api.DestroyCommandPool(_device.InternalHandle, _commandPool, null);
+            lock (_lock)
+            {
+                FreeUsedCommandBuffers();
+                _device.Api.DestroyCommandPool(_device.InternalHandle, _commandPool, null);
+            }
         }
 
         private CommandBuffer AllocateCommandBuffer()
@@ -42,9 +46,12 @@ namespace Avalonia.Vulkan
                 Level = CommandBufferLevel.Primary
             };
 
-            _device.Api.AllocateCommandBuffers(_device.InternalHandle, commandBufferAllocateInfo, out var commandBuffer);
+            lock (_lock)
+            {
+                _device.Api.AllocateCommandBuffers(_device.InternalHandle, commandBufferAllocateInfo, out var commandBuffer);
 
-            return commandBuffer;
+                return commandBuffer;
+            }
         }
 
         public VulkanCommandBuffer CreateCommandBuffer()
@@ -54,7 +61,7 @@ namespace Avalonia.Vulkan
 
         public void FreeUsedCommandBuffers()
         {
-            lock (_usedCommandBuffers)
+            lock (_lock)
             {
                 foreach (var usedCommandBuffer in _usedCommandBuffers) usedCommandBuffer.Dispose();
 
@@ -64,7 +71,7 @@ namespace Avalonia.Vulkan
 
         private void DisposeCommandBuffer(VulkanCommandBuffer commandBuffer)
         {
-            lock (_usedCommandBuffers)
+            lock (_lock)
             {
                 _usedCommandBuffers.Add(commandBuffer);
             }
@@ -101,7 +108,10 @@ namespace Avalonia.Vulkan
             public unsafe void Dispose()
             {
                 _device.Api.WaitForFences(_device.InternalHandle, 1, _fence, true, ulong.MaxValue);
-                _device.Api.FreeCommandBuffers(_device.InternalHandle, _commandBufferPool._commandPool, 1, InternalHandle);
+                lock (_commandBufferPool._lock)
+                {
+                    _device.Api.FreeCommandBuffers(_device.InternalHandle, _commandBufferPool._commandPool, 1, InternalHandle);
+                }
                 _device.Api.DestroyFence(_device.InternalHandle, _fence, null);
             }
 
