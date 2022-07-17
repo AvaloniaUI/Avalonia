@@ -17,7 +17,9 @@ using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.X11.Glx;
 using static Avalonia.X11.XLib;
@@ -28,7 +30,8 @@ namespace Avalonia.X11
     unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
         ITopLevelImplWithNativeMenuExporter,
         ITopLevelImplWithNativeControlHost,
-        ITopLevelImplWithTextInputMethod
+        ITopLevelImplWithTextInputMethod,
+        ITopLevelImplWithStorageProvider
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -212,6 +215,10 @@ namespace Avalonia.X11
                 XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_SYNC_REQUEST_COUNTER,
                     _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
+
+            var canUseFreeDekstopPicker = !platform.Options.UseGtkFilePicker && platform.Options.UseDBusMenu;
+            StorageProvider = canUseFreeDekstopPicker && DBusSystemDialog.TryCreate(Handle) is {} dBusStorage
+                ? dBusStorage : new NativeDialogs.GtkSystemDialog(this);
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -382,13 +389,15 @@ namespace Avalonia.X11
 
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
-            
-            return _platform.Options.UseDeferredRendering ?
-                new DeferredRenderer(root, loop)
-                {
-                    RenderOnlyOnRenderThread = true
-                } :
-                (IRenderer)new X11ImmediateRendererProxy(root, loop);
+
+            return _platform.Options.UseDeferredRendering
+                ? _platform.Options.UseCompositor
+                    ? new CompositingRenderer(root, this._platform.Compositor)
+                    : new DeferredRenderer(root, loop)
+                    {
+                        RenderOnlyOnRenderThread = true
+                    }
+                : (IRenderer)new X11ImmediateRendererProxy(root, loop);
         }
 
         void OnEvent(ref XEvent ev)
@@ -1193,6 +1202,7 @@ namespace Avalonia.X11
 
         public bool NeedsManagedDecorations => false;
 
+        public IStorageProvider StorageProvider { get; }
 
         public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
         {

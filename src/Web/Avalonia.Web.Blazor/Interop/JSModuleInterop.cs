@@ -37,6 +37,12 @@ namespace Avalonia.Web.Blazor.Interop
         protected TValue Invoke<TValue>(string identifier, params object?[]? args) =>
             Module.Invoke<TValue>(identifier, args);
 
+        protected ValueTask InvokeAsync(string identifier, params object?[]? args) =>
+            Module.InvokeVoidAsync(identifier, args);
+
+        protected ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object?[]? args) =>
+            Module.InvokeAsync<TValue>(identifier, args);
+
         protected virtual void OnDisposingModule() { }
     }
 }

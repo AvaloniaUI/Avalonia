@@ -8,6 +8,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -301,6 +302,49 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(3, canExecuteCallCount);
             }
         }
+
+
+        [Fact]
+        public void TemplatedParent_Should_Not_Be_Applied_To_Submenus()
+        {
+            using (Application())
+            {
+                MenuItem topLevelMenu;
+                MenuItem childMenu1;
+                MenuItem childMenu2;
+                var menu = new Menu
+                {
+                    Items = new[]
+                    {
+                        (topLevelMenu = new MenuItem
+                        {
+                            Header = "Foo",
+                            Items = new[]
+                            {
+                                (childMenu1 = new MenuItem { Header = "Bar" }),
+                                (childMenu2 = new MenuItem { Header = "Baz" }),
+                            }
+                        }),
+                    }
+                };
+
+                var window = new Window { Content = menu };
+                window.LayoutManager.ExecuteInitialLayoutPass();
+
+                topLevelMenu.IsSubMenuOpen = true;
+
+                Assert.True(((IVisual)childMenu1).IsAttachedToVisualTree);
+                Assert.Null(childMenu1.TemplatedParent);
+                Assert.Null(childMenu2.TemplatedParent);
+
+                topLevelMenu.IsSubMenuOpen = false;
+                topLevelMenu.IsSubMenuOpen = true;
+
+                Assert.Null(childMenu1.TemplatedParent);
+                Assert.Null(childMenu2.TemplatedParent);
+            }
+        }
+
         private IDisposable Application()
         {
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));

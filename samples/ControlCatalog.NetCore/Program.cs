@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -56,7 +56,11 @@ namespace ControlCatalog.NetCore
             else if (args.Contains("--full-headless"))
             {
                 return builder
-                    .UseHeadless(true)
+                    .UseHeadless(new AvaloniaHeadlessPlatformOptions
+                    {
+                        UseHeadlessDrawing = true,
+                        UseCompositor = true
+                    })
                     .AfterSetup(_ =>
                     {
                         DispatcherTimer.RunOnce(async () =>
@@ -66,12 +70,11 @@ namespace ControlCatalog.NetCore
                             var tc = window.GetLogicalDescendants().OfType<TabControl>().First();
                             foreach (var page in tc.Items.Cast<TabItem>().ToList())
                             {
-                                // Skip DatePicker because of some layout bug in grid
-                                if (page.Header.ToString() == "DatePicker")
+                                if (page.Header.ToString() == "DatePicker" || page.Header.ToString() == "TreeView")
                                     continue;
                                 Console.WriteLine("Selecting " + page.Header);
                                 tc.SelectedItem = page;
-                                await Task.Delay(500);
+                                await Task.Delay(50);
                             }
                             Console.WriteLine("Selecting the first page");
                             tc.SelectedItem = tc.Items.OfType<object>().First();
@@ -80,7 +83,7 @@ namespace ControlCatalog.NetCore
                             for (var c = 0; c < 3; c++)
                             {
                                 GC.Collect(2, GCCollectionMode.Forced);
-                                await Task.Delay(500);
+                                await Task.Delay(50);
                             }
 
                             void FormatMem(string metric, long bytes)
@@ -90,7 +93,6 @@ namespace ControlCatalog.NetCore
 
                             FormatMem("GC allocated bytes", GC.GetTotalMemory(true));
                             FormatMem("WorkingSet64", Process.GetCurrentProcess().WorkingSet64);
-
                         }, TimeSpan.FromSeconds(1));
                     })
                     .StartWithClassicDesktopLifetime(args);
@@ -137,10 +139,11 @@ namespace ControlCatalog.NetCore
                 {
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
-                    EnableIme = true,
+                    EnableIme = true
                 })
                 .With(new Win32PlatformOptions
                 {
+                    EnableMultitouch = true
                 })
                 .UseSkia()
                 .AfterSetup(builder =>
