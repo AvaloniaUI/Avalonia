@@ -41,7 +41,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 GetAvaloniaPointFromEvent);
             _gl = GlPlatformSurface.TryCreate(this);
-            
             _framebuffer = new FramebufferManager(this);
 
             RenderScaling = _view.Scaling;
