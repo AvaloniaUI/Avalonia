@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -73,6 +74,12 @@ namespace Avalonia.Direct2D1.Media
         {
             get { return _deviceContext.Transform.ToAvalonia(); }
             set { _deviceContext.Transform = value.ToDirect2D(); }
+        }
+
+        public Matrix4x4 Transform4x4
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
