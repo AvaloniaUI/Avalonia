@@ -38,41 +38,17 @@ namespace Avalonia.Controls.Documents
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            if (Inlines.HasComplexContent)
+            foreach (var inline in Inlines)
             {
-                foreach (var inline in Inlines)
-                {
-                    inline.BuildTextRun(textRuns);
-                }
-            }
-            else
-            {
-                if (Inlines.Text is string text)
-                {
-                    var textRunProperties = CreateTextRunProperties();
-
-                    var textCharacters = new TextCharacters(text.AsMemory(), textRunProperties);
-
-                    textRuns.Add(textCharacters);
-                }
+                inline.BuildTextRun(textRuns);
             }
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
         {
-            if (Inlines.HasComplexContent)
+            foreach (var inline in Inlines)
             {
-                foreach (var inline in Inlines)
-                {
-                    inline.AppendText(stringBuilder);
-                }
-            }
-            else
-            {
-                if (Inlines.Text is string text)
-                {
-                    stringBuilder.Append(text);
-                }
+                inline.AppendText(stringBuilder);
             }
         }
 
@@ -93,7 +69,7 @@ namespace Avalonia.Controls.Documents
         {
             base.OnInlineHostChanged(oldValue, newValue);
 
-            if(Inlines is not null)
+            if (Inlines is not null)
             {
                 Inlines.InlineHost = newValue;
             }

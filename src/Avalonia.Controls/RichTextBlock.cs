@@ -16,7 +16,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of formatted text.
     /// </summary>
-    public class RichTextBlock : TextBlock, IInlineHost
+    public class RichTextBlock : TextBlock, IInlineHost, IAddChild<string>, IAddChild<Inline>, IAddChild<IControl>
     {
         public static readonly StyledProperty<bool> IsTextSelectionEnabledProperty =
             AvaloniaProperty.Register<RichTextBlock, bool>(nameof(IsTextSelectionEnabled), false);
@@ -148,7 +148,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the inlines.
         /// </summary>
-        [Content]
         public InlineCollection Inlines
         {
             get => GetValue(InlinesProperty);
@@ -169,6 +168,8 @@ namespace Avalonia.Controls
             add => AddHandler(CopyingToClipboardEvent, value);
             remove => RemoveHandler(CopyingToClipboardEvent, value);
         }
+
+        internal bool HasComplexContent => Inlines.Count > 0;
 
         /// <summary>
         /// Copies the current selection to the Clipboard.
@@ -251,6 +252,59 @@ namespace Avalonia.Controls
             SelectionEnd = SelectionStart;
         }
 
+        void IAddChild<string>.AddChild(string text)
+        {
+            AddText(text);
+        }
+
+        void IAddChild<Inline>.AddChild(Inline inline)
+        {
+            if (!HasComplexContent && !string.IsNullOrEmpty(_text))
+            {
+                Inlines.Add(_text);
+
+                _text = null;
+            }
+
+            Inlines.Add(inline);
+        }
+
+        void IAddChild<IControl>.AddChild(IControl child)
+        {
+            if (!HasComplexContent && !string.IsNullOrEmpty(_text))
+            {
+                Inlines.Add(_text);
+
+                _text = null;
+            }
+
+            Inlines.Add(new InlineUIContainer(child));
+        }
+
+        protected void AddText(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            if (!HasComplexContent && string.IsNullOrEmpty(_text))
+            {
+                _text = text;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(_text))
+                {
+                    Inlines.Add(_text);
+
+                    _text = null;
+                }
+
+                Inlines.Add(text);
+            }
+        }
+
         protected override string? GetText()
         {
             return _text ?? Inlines.Text;
@@ -259,17 +313,8 @@ namespace Avalonia.Controls
         protected override void SetText(string? text)
         {
             var oldValue = _text ?? Inlines?.Text;
-
-            if (Inlines is not null && Inlines.HasComplexContent)
-            {
-                Inlines.Text = text;
-
-                _text = null;
-            }
-            else
-            {
-                _text = text;
-            }
+      
+            AddText(text);        
 
             RaisePropertyChanged(TextProperty, oldValue, text);
         }
@@ -293,7 +338,7 @@ namespace Avalonia.Controls
 
             var inlines = Inlines;
 
-            if (inlines is not null && inlines.HasComplexContent)
+            if (HasComplexContent)
             {
                 var textRuns = new List<TextRun>();
 
