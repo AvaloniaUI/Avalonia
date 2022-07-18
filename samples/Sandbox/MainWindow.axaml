@@ -1,13 +1,4 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
-  <RichTextBlock Margin="10" TextWrapping="Wrap">
-    This <Span FontWeight="Bold">is</Span> a
-    <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
-    with <Span TextDecorations="Underline">several</Span>
-    <Span FontStyle="Italic">Span</Span> elements,
-    <Span Foreground="Blue">
-      using a <Bold>variety</Bold> of <Italic>styles</Italic>
-    </Span>.
-  </RichTextBlock>
 </Window>
