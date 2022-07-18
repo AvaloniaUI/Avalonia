@@ -69,6 +69,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             var tev = libinput_event_get_touch_event(ev);
             if (tev == IntPtr.Zero)
                 return;
+            var modifiers = GetCurrentModifiersState();
             if (type < LibInputEventType.LIBINPUT_EVENT_TOUCH_FRAME)
             {
                 var info = _screen.ScaledSize;
@@ -98,13 +99,13 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     : type == LibInputEventType.LIBINPUT_EVENT_TOUCH_UP ? RawPointerEventType.TouchEnd
                     : type == LibInputEventType.LIBINPUT_EVENT_TOUCH_MOTION ? RawPointerEventType.TouchUpdate
                     : RawPointerEventType.TouchCancel,
-                    pt, RawInputModifiers.None, slot));
+                    pt, modifiers, slot));
             }
         }
 
         private void HandlePointer(IntPtr ev, LibInputEventType type)
         {
-            //TODO: support input modifiers
+            var modifiers = GetCurrentModifiersState();
             var pev = libinput_event_get_pointer_event(ev);
             var info = _screen.ScaledSize;
             var ts = libinput_event_pointer_get_time_usec(pev) / 1000;
@@ -113,7 +114,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 _mousePosition = new Point(libinput_event_pointer_get_absolute_x_transformed(pev, (int)info.Width),
                     libinput_event_pointer_get_absolute_y_transformed(pev, (int)info.Height));
                 ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
-                    RawInputModifiers.None));
+                    modifiers));
             }
             else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_BUTTON)
             {
@@ -135,7 +136,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
 
                 ScheduleInput(
-                    new RawPointerEventArgs(_mouse, ts, _inputRoot, evnt, _mousePosition, RawInputModifiers.None));
+                    new RawPointerEventArgs(_mouse, ts, _inputRoot, evnt, _mousePosition, modifiers));
             }
 
         }
