@@ -47,6 +47,11 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                         && type <= LibInputEventType.LIBINPUT_EVENT_POINTER_AXIS)
                         HandlePointer(ev, type);
 
+                    if (type == LibInputEventType.LIBINPUT_EVENT_KEYBOARD_KEY)
+                    {
+                        HandleKeyboardEvent(ev, type);
+                    }
+
                     libinput_event_destroy(ev);
                     libinput_dispatch(ctx);
                 }
@@ -94,6 +99,44 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     : RawPointerEventType.TouchCancel,
                     pt, RawInputModifiers.None, slot));
             }
+        }
+
+        private void HandlePointer(IntPtr ev, LibInputEventType type)
+        {
+            //TODO: support input modifiers
+            var pev = libinput_event_get_pointer_event(ev);
+            var info = _screen.ScaledSize;
+            var ts = libinput_event_pointer_get_time_usec(pev) / 1000;
+            if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE)
+            {
+                _mousePosition = new Point(libinput_event_pointer_get_absolute_x_transformed(pev, (int)info.Width),
+                    libinput_event_pointer_get_absolute_y_transformed(pev, (int)info.Height));
+                ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
+                    RawInputModifiers.None));
+            }
+            else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_BUTTON)
+            {
+                var button = (EvKey)libinput_event_pointer_get_button(pev);
+                var buttonState = libinput_event_pointer_get_button_state(pev);
+
+
+                var evnt = button == EvKey.BTN_LEFT ?
+                    (buttonState == 1 ? RawPointerEventType.LeftButtonDown : RawPointerEventType.LeftButtonUp) :
+                    button == EvKey.BTN_MIDDLE ?
+                        (buttonState == 1 ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.MiddleButtonUp) :
+                        button == EvKey.BTN_RIGHT ?
+                            (buttonState == 1 ?
+                                RawPointerEventType.RightButtonDown :
+                                RawPointerEventType.RightButtonUp) :
+                            (RawPointerEventType)(-1);
+                if (evnt == (RawPointerEventType)(-1))
+                    return;
+
+
+                ScheduleInput(
+                    new RawPointerEventArgs(_mouse, ts, _inputRoot, evnt, _mousePosition, RawInputModifiers.None));
+            }
+
         }
 
         public void Initialize(IScreenInfoProvider screen, Action<RawInputEventArgs> onInput)

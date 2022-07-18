@@ -170,11 +170,10 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
         [DllImport(LibInput)]
         public extern static LibInputPointerAxisSource libinput_event_pointer_get_axis_source(IntPtr ev);
-
-        [DllImport((LibInput))]
-        public extern static double libinput_event_pointer_get_axis_value_discrete(IntPtr ev, LibInputPointerAxis axis);
+        [DllImport(LibInput)]
+        public extern static libinput_key libinput_event_keyboard_get_key(IntPtr ev);
 
         [DllImport(LibInput)]
-        public extern static double libinput_event_pointer_get_scroll_value_v120(IntPtr ev, LibInputPointerAxis axis);
+        public extern static libinput_key_state libinput_event_keyboard_get_key_state(IntPtr ev);
     }
 }
