@@ -84,6 +84,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             ScheduleInput(args);
         }
 
+        //TODO: Get initial keyboard state
         private RawInputModifiers GetCurrentModifiersState()
         {
             var modifiers = RawInputModifiers.None;
