@@ -19,14 +19,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             {
                 var key = libinput_event_keyboard_get_key(rawKeyboardEvent);
                 var state = libinput_event_keyboard_get_key_state(rawKeyboardEvent);
+                var timestamp = (ulong)libinput_event_keyboard_get_time(rawKeyboardEvent);
 
                 if (state == libinput_key_state.Pressed)
                 {
-                    OnKeyPressEvent(key);
+                    OnKeyPressEvent(key, timestamp);
                 }
                 else if (state == libinput_key_state.Released)
                 {
-                    OnKeyReleaseEvent(key);
+                    OnKeyReleaseEvent(key, timestamp);
                 }
                 else
                 {
@@ -39,7 +40,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
         }
 
-        private void OnKeyPressEvent(libinput_key rawKey)
+        private void OnKeyPressEvent(libinput_key rawKey, ulong timestamp)
         {
             var key = ConvertToVirtualKey(rawKey);
 
@@ -52,7 +53,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             _pressedKeys.Add(rawKey);
 
             var args = new RawKeyEventArgs(_keyboard
-                , (ulong)DateTime.Now.Ticks
+                , timestamp
                 , _inputRoot
                 , RawKeyEventType.KeyDown
                 , key
@@ -61,7 +62,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             ScheduleInput(args);
         }
 
-        private void OnKeyReleaseEvent(libinput_key rawKey)
+        private void OnKeyReleaseEvent(libinput_key rawKey, ulong timestamp)
         {
             var key = ConvertToVirtualKey(rawKey);
 
@@ -74,7 +75,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             _pressedKeys.Add(rawKey);
 
             var args = new RawKeyEventArgs(_keyboard
-                , (ulong)DateTime.Now.Ticks
+                , timestamp
                 , _inputRoot
                 , RawKeyEventType.KeyUp
                 , key

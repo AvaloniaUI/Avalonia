@@ -175,5 +175,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
         [DllImport(LibInput)]
         public extern static libinput_key_state libinput_event_keyboard_get_key_state(IntPtr ev);
+
+        [DllImport(LibInput)]
+        public extern static ulong libinput_event_keyboard_get_time(IntPtr ev);
     }
 }
