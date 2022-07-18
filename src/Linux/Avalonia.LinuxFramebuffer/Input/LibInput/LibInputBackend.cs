@@ -9,6 +9,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
     public partial class LibInputBackend : IInputBackend
     {
+        private const string LibInput = nameof(Logging.LogArea.X11Platform) + "/" + nameof(LibInput);
         private IScreenInfoProvider _screen;
         private IInputRoot _inputRoot;
         private TouchDevice _touch = new TouchDevice();
