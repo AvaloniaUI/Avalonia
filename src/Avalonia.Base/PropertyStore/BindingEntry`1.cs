@@ -42,7 +42,7 @@ namespace Avalonia.PropertyStore
         {
             get
             {
-                StartIfNecessary();
+                Start(produceValue: false);
                 return _hasValue;
             }
         }
@@ -58,31 +58,17 @@ namespace Avalonia.PropertyStore
 
         public T GetValue()
         {
-            StartIfNecessary();
+            Start(produceValue: false);
             if (!_hasValue)
                 throw new AvaloniaInternalException("The binding entry has no value.");
             return _value!;
         }
 
-        public void Start()
-        {
-            Debug.Assert(_subscription is null);
-
-            // Subscription won't be set until Subscribe completes, but in the meantime we
-            // need to signal that we've started as Subscribe may cause a value to be produced.
-            _subscription = Disposable.Empty;
-
-            if (_source is IObservable<BindingValue<T>> bv)
-                _subscription = bv.Subscribe(this);
-            else if (_source is IObservable<T> b)
-                _subscription = b.Subscribe(this);
-            else
-                throw new AvaloniaInternalException("Unexpected binding source.");
-        }
+        public void Start() => Start(true);
 
         public bool TryGetValue([MaybeNullWhen(false)] out T value)
         {
-            StartIfNecessary();
+            Start(produceValue: false);
             value = _value;
             return _hasValue;
         }
@@ -111,7 +97,7 @@ namespace Avalonia.PropertyStore
 
         object? IValueEntry.GetValue()
         {
-            StartIfNecessary();
+            Start(produceValue: false);
             if (!_hasValue)
                 throw new AvaloniaInternalException("The BindingEntry<T> has no value.");
             return _value!;
@@ -119,7 +105,7 @@ namespace Avalonia.PropertyStore
 
         bool IValueEntry.TryGetValue(out object? value)
         {
-            StartIfNecessary();
+            Start(produceValue: false);
             value = _value;
             return _hasValue;
         }
@@ -130,7 +116,8 @@ namespace Avalonia.PropertyStore
             {
                 _hasValue = false;
                 _value = default;
-                _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
+                if (_subscription is not null)
+                    _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
             }
         }
 
@@ -145,10 +132,11 @@ namespace Avalonia.PropertyStore
                 {
                     _value = value;
                     _hasValue = true;
-                    _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, value);
+                    if (_subscription is not null)
+                        _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, value);
                 }
             }
-            else
+            else if (_subscription is not null)
             {
                 _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
             }
@@ -160,10 +148,21 @@ namespace Avalonia.PropertyStore
             _frame.OnBindingCompleted(this);
         }
 
-        private void StartIfNecessary()
+        private void Start(bool produceValue)
         {
-            if (_subscription is null)
-                Start();
+            if (_subscription is not null)
+                return;
+
+            // Will only produce a new value when subscription isn't null.
+            if (produceValue)
+                _subscription = Disposable.Empty;
+
+            _subscription = _source switch
+            {
+                IObservable<BindingValue<T>> bv => bv.Subscribe(this),
+                IObservable<T> b => b.Subscribe(this),
+                _ => throw new AvaloniaInternalException("Unexpected binding source."),
+            };
         }
     }
 }
