@@ -23,7 +23,6 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChanged;
         private List<AvaloniaObject>? _inheritanceChildren;
         private ValueStore _values;
-        private bool _batchUpdate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
