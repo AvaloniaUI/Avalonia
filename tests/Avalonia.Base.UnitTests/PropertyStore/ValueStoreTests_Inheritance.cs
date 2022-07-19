@@ -81,6 +81,23 @@ namespace Avalonia.Base.UnitTests.PropertyStore
         }
 
         [Fact]
+        public void Clearing_Value_In_Child_Updates_InheritanceAncestor()
+        {
+            var parent = new Class1();
+            var child = new Class1 { Parent = parent };
+            var grandchild = new Class1 { Parent = child };
+
+            parent.Foo = "changed";
+            child.Foo = "foochanged";
+            child.ClearValue(Class1.FooProperty);
+
+            var parentStore = parent.GetValueStore();
+            Assert.Null(parentStore.InheritanceAncestor);
+            Assert.Same(parentStore, child.GetValueStore().InheritanceAncestor);
+            Assert.Same(parentStore, grandchild.GetValueStore().InheritanceAncestor);
+        }
+
+        [Fact]
         public void Adding_Child_Sets_InheritanceAncestor()
         {
             var parent = new Class1();

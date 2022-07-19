@@ -206,6 +206,25 @@ namespace Avalonia.PropertyStore
             return default;
         }
 
+        public bool TryGetInheritedValue(
+            AvaloniaProperty property,
+            [NotNullWhen(true)] out EffectiveValue? result)
+        {
+            Debug.Assert(property.Inherits);
+
+            var i = InheritanceAncestor;
+
+            while (i is not null)
+            {
+                if (i.TryGetEffectiveValue(property, out result))
+                    return true;
+                i = i.InheritanceAncestor;
+            }
+
+            result = null;
+            return false;
+        }
+
         public void SetInheritanceParent(AvaloniaObject? oldParent, AvaloniaObject? newParent)
         {
             var values = DictionaryPool<AvaloniaProperty, OldNewValue>.Get();
@@ -651,7 +670,7 @@ namespace Avalonia.PropertyStore
             if (_effectiveValues is not null && _effectiveValues.Remove(property))
             {
                 if (property.Inherits && --_inheritedValueCount == 0)
-                    OnInheritanceAncestorChanged(InheritanceAncestor?.InheritanceAncestor);
+                    OnInheritanceAncestorChanged(InheritanceAncestor);
                 return true;
             }
 
@@ -663,7 +682,7 @@ namespace Avalonia.PropertyStore
             if (_effectiveValues is not null && _effectiveValues.Remove(property, out result))
             {
                 if (property.Inherits && --_inheritedValueCount == 0)
-                    OnInheritanceAncestorChanged(InheritanceAncestor?.InheritanceAncestor);
+                    OnInheritanceAncestorChanged(InheritanceAncestor);
                 return true;
             }
 
@@ -895,25 +914,6 @@ namespace Avalonia.PropertyStore
             if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out value))
                 return true;
             value = null;
-            return false;
-        }
-
-        private bool TryGetInheritedValue(
-            AvaloniaProperty property,
-            [NotNullWhen(true)] out EffectiveValue? result)
-        {
-            Debug.Assert(property.Inherits);
-
-            var i = InheritanceAncestor;
-
-            while (i is not null)
-            {
-                if (i.TryGetEffectiveValue(property, out result))
-                    return true;
-                i = i.InheritanceAncestor;
-            }
-
-            result = null;
             return false;
         }
 

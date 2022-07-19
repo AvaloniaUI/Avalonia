@@ -257,11 +257,23 @@ namespace Avalonia.PropertyStore
 
         public void DisposeAndRaiseUnset(ValueStore owner, StyledPropertyBase<T> property)
         {
-            var defaultValue = property.GetDefaultValue(owner.GetType());
+            BindingPriority priority;
+            T oldValue;
 
-            if (!EqualityComparer<T>.Default.Equals(defaultValue, Value))
+            if (property.Inherits && owner.TryGetInheritedValue(property, out var i))
             {
-                owner.Owner.RaisePropertyChanged(property, Value, defaultValue, BindingPriority.Unset, true);
+                oldValue = ((EffectiveValue<T>)i).Value;
+                priority = BindingPriority.Inherited;
+            }
+            else
+            {
+                oldValue = property.GetDefaultValue(owner.GetType());
+                priority = BindingPriority.Unset;
+            }
+
+            if (!EqualityComparer<T>.Default.Equals(oldValue, Value))
+            {
+                owner.Owner.RaisePropertyChanged(property, Value, oldValue, priority, true);
                 if (property.Inherits)
                     owner.OnInheritedEffectiveValueDisposed(property, Value);
             }

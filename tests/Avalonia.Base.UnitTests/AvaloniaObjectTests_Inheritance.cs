@@ -44,6 +44,53 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void ClearValue_On_Parent_Raises_PropertyChanged_On_Child()
+        {
+            Class1 parent = new Class1();
+            Class2 child = new Class2 { Parent = parent };
+            var raised = 0;
+
+            parent.SetValue(Class1.BazProperty, "changed");
+
+            child.PropertyChanged += (s, e) =>
+            {
+                Assert.Same(child, e.Sender);
+                Assert.Equal("changed", e.OldValue);
+                Assert.Equal("bazdefault", e.NewValue);
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
+
+            parent.ClearValue(Class1.BazProperty);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void ClearValue_On_Child_Raises_PropertyChanged_With_Inherited_Parent_Value()
+        {
+            Class1 parent = new Class1();
+            Class2 child = new Class2 { Parent = parent };
+            var raised = 0;
+
+            parent.SetValue(Class1.BazProperty, "parent");
+            child.SetValue(Class1.BazProperty, "child");
+
+            child.PropertyChanged += (s, e) =>
+            {
+                Assert.Same(child, e.Sender);
+                Assert.Equal("child", e.OldValue);
+                Assert.Equal("parent", e.NewValue);
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
+
+            child.ClearValue(Class1.BazProperty);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void Setting_InheritanceParent_Raises_PropertyChanged_When_Parent_Has_Value_Set()
         {
             bool raised = false;
