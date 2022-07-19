@@ -104,6 +104,13 @@ namespace Avalonia.PropertyStore
             EffectiveValue? newValue);
 
         /// <summary>
+        /// Coerces the property value.
+        /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property to coerce.</param>
+        public abstract void CoerceValue(ValueStore owner, AvaloniaProperty property);
+
+        /// <summary>
         /// Disposes the effective value, raising <see cref="AvaloniaObject.PropertyChanged"/>
         /// where necessary.
         /// </summary>

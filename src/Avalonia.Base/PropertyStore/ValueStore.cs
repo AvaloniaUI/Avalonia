@@ -189,6 +189,12 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
+        public void CoerceValue(AvaloniaProperty property)
+        {
+            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
+                v.CoerceValue(this, property);
+        }
+
         public Optional<T> GetBaseValue<T>(StyledPropertyBase<T> property)
         {
             if (TryGetEffectiveValue(property, out var v) &&
@@ -628,7 +634,7 @@ namespace Avalonia.PropertyStore
         {
             Debug.Assert(priority < BindingPriority.Inherited);
             var defaultValue = property.GetDefaultValue(Owner.GetType());
-            var effectiveValue = new EffectiveValue<T>(defaultValue, BindingPriority.Unset);
+            var effectiveValue = new EffectiveValue<T>(Owner, property, defaultValue, BindingPriority.Unset);
             AddEffectiveValue(property, effectiveValue);
             effectiveValue.SetAndRaise(this, property, value, priority);
         }

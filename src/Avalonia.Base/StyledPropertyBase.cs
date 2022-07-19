@@ -183,7 +183,7 @@ namespace Avalonia
 
         internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
         {
-            return new EffectiveValue<TValue>(GetDefaultValue(o.GetType()), BindingPriority.Unset);
+            return new EffectiveValue<TValue>(o, this, GetDefaultValue(o.GetType()), BindingPriority.Unset);
         }
 
         /// <inheritdoc/>

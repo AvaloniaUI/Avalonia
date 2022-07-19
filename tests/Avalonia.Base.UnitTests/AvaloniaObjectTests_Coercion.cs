@@ -73,7 +73,7 @@ namespace Avalonia.Base.UnitTests
             var source1 = new Subject<BindingValue<int>>();
             var source2 = new Subject<BindingValue<int>>();
 
-            target.Bind(Class1.FooProperty, source1);
+            target.Bind(Class1.FooProperty, source1, BindingPriority.Style);
             source1.OnNext(150);
 
             target.Bind(Class1.FooProperty, source2);

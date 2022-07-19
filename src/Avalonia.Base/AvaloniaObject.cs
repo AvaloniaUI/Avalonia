@@ -462,11 +462,7 @@ namespace Avalonia
         /// Coerces the specified <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
-        public void CoerceValue(AvaloniaProperty property)
-        {
-            throw new NotImplementedException();
-            ////_values?.CoerceValue(property);
-        }
+        public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
 
         /// <inheritdoc/>
         internal void AddInheritanceChild(AvaloniaObject child)
