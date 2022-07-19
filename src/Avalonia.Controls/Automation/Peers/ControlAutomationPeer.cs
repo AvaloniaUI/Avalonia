@@ -146,7 +146,7 @@ namespace Avalonia.Automation.Peers
         protected override string? GetAccessKeyCore() => AutomationProperties.GetAccessKey(Owner);
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
-        protected override Rect GetBoundingRectangleCore() => GetBounds(Owner.TransformedBounds);
+        protected override Rect GetBoundingRectangleCore() => GetBounds(Owner);
         protected override string GetClassNameCore() => Owner.GetType().Name;
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
         protected override bool IsContentElementCore() => AutomationProperties.GetAccessibilityView(Owner) >= AccessibilityView.Content;
@@ -160,9 +160,19 @@ namespace Avalonia.Automation.Peers
             return AutomationProperties.GetControlTypeOverride(Owner) ?? GetAutomationControlTypeCore();
         }
 
-        private static Rect GetBounds(TransformedBounds? bounds)
+        private static Rect GetBounds(Control control)
         {
-            return bounds?.Bounds.TransformToAABB(bounds!.Value.Transform) ?? default;
+            var root = control.GetVisualRoot();
+
+            if (root is null)
+                return default;
+
+            var transform = control.TransformToVisual(root);
+
+            if (!transform.HasValue)
+                return default;
+
+            return new Rect(control.Bounds.Size).TransformToAABB(transform.Value);
         }
 
         private void Initialize()
@@ -182,12 +192,14 @@ namespace Avalonia.Automation.Peers
                 if (parent is Control c)
                     (GetOrCreate(c) as ControlAutomationPeer)?.InvalidateChildren();
             }
-            else if (e.Property == Visual.TransformedBoundsProperty)
+            else if (e.Property == Visual.BoundsProperty || 
+                     e.Property == Visual.RenderTransformProperty ||
+                     e.Property == Visual.RenderTransformOriginProperty)
             {
                 RaisePropertyChangedEvent(
                     AutomationElementIdentifiers.BoundingRectangleProperty,
-                    GetBounds((TransformedBounds?)e.OldValue),
-                    GetBounds((TransformedBounds?)e.NewValue));
+                    null,
+                    GetBounds(Owner));
             }
             else if (e.Property == Visual.VisualParentProperty)
             {

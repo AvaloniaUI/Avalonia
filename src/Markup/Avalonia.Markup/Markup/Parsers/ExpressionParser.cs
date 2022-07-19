@@ -8,6 +8,9 @@ using Avalonia.Controls;
 
 namespace Avalonia.Markup.Parsers
 {
+    /// <summary>
+    /// Parser for composition expressions
+    /// </summary>
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;

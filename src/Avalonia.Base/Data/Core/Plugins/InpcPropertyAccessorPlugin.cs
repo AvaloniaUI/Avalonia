@@ -55,7 +55,7 @@ namespace Avalonia.Data.Core.Plugins
         
         private PropertyInfo? GetFirstPropertyWithName(object instance, string propertyName)
         {
-            if (instance is IReflectableType reflectableType)
+            if (instance is IReflectableType reflectableType && instance is not Type)
                 return reflectableType.GetTypeInfo().GetProperty(propertyName, PropertyBindingFlags);
 
             var type = instance.GetType();
