@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -146,7 +147,7 @@ namespace Avalonia.Base.UnitTests.Styling
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
 
-            Assert.Equal(new[] { "foodefault", "Foo", "Bar", "foodefault" }, values);
+            Assert.Equal(new[] { "foodefault", "Bar", "foodefault" }, values);
         }
 
         [Fact]
@@ -463,39 +464,40 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Template_In_Inactive_Style_Is_Not_Built()
         {
-            var instantiationCount = 0;
-            var template = new FuncTemplate<Class1>(() =>
-            {
-                ++instantiationCount;
-                return new Class1();
-            });
+            throw new NotImplementedException();
+            ////var instantiationCount = 0;
+            ////var template = new FuncTemplate<Class1>(() =>
+            ////{
+            ////    ++instantiationCount;
+            ////    return new Class1();
+            ////});
 
-            Styles styles = new Styles
-            {
-                new Style(x => x.OfType<Class1>())
-                {
-                    Setters =
-                    {
-                        new Setter(Class1.ChildProperty, template),
-                    },
-                },
+            ////Styles styles = new Styles
+            ////{
+            ////    new Style(x => x.OfType<Class1>())
+            ////    {
+            ////        Setters =
+            ////        {
+            ////            new Setter(Class1.ChildProperty, template),
+            ////        },
+            ////    },
 
-                new Style(x => x.OfType<Class1>())
-                {
-                    Setters =
-                    {
-                        new Setter(Class1.ChildProperty, template),
-                    },
-                }
-            };
+            ////    new Style(x => x.OfType<Class1>())
+            ////    {
+            ////        Setters =
+            ////        {
+            ////            new Setter(Class1.ChildProperty, template),
+            ////        },
+            ////    }
+            ////};
 
-            var target = new Class1();
-            target.BeginBatchUpdate();
-            styles.TryAttach(target, null);
-            target.EndBatchUpdate();
+            ////var target = new Class1();
+            ////target.BeginBatchUpdate();
+            ////styles.TryAttach(target, null);
+            ////target.EndBatchUpdate();
 
-            Assert.NotNull(target.Child);
-            Assert.Equal(1, instantiationCount);
+            ////Assert.NotNull(target.Child);
+            ////Assert.Equal(1, instantiationCount);
         }
 
         [Fact]
@@ -700,6 +702,28 @@ namespace Avalonia.Base.UnitTests.Styling
                 root.Measure(Size.Infinity);
                 Assert.Equal(new Thickness(4), border.BorderThickness);
             }
+        }
+
+        [Fact]
+        public void DetachStyles_Should_Detach_Activator()
+        {
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
+            };
+
+            var target = new Class1();
+
+            style.TryAttach(target, null);
+
+            Assert.Equal(1, target.Classes.ListenerCount);
+
+            ((IStyleable)target).DetachStyles();
+
+            Assert.Equal(0, target.Classes.ListenerCount);
         }
 
         [Fact]

@@ -1,4 +1,5 @@
 using System;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -7,6 +8,7 @@ namespace Avalonia.Styling
     /// </summary>
     public class Style : StyleBase
     {
+        private bool? _inControlTheme;
         private Selector? _selector;
 
         /// <summary>
@@ -48,7 +50,9 @@ namespace Avalonia.Styling
                         SelectorMatch.NeverThisInstance);
 
                 if (match.IsMatch)
+                {
                     Attach(target, match.Activator);
+                }
 
                 result = match.Result;
             }
@@ -93,6 +97,28 @@ namespace Avalonia.Styling
             }
 
             base.SetParent(parent);
+        }
+
+        private bool IsInControlTheme()
+        {
+            if (_inControlTheme.HasValue)
+                return _inControlTheme.Value;
+
+            StyleBase? s = this;
+
+            while (s is not null)
+            {
+                if (s is ControlTheme)
+                {
+                    _inControlTheme = true;
+                    return true;
+                }
+
+                s = s.Parent as StyleBase;
+            }
+
+            _inControlTheme = false;
+            return false;
         }
 
         private static Selector? ValidateSelector(Selector? selector)

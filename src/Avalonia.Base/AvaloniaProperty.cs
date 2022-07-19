@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 
@@ -456,6 +457,12 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Creates an effective value for the property.
+        /// </summary>
+        /// <param name="o">The effective value owner.</param>
+        internal abstract EffectiveValue CreateEffectiveValue(AvaloniaObject o);
+
+        /// <summary>
         /// Routes an untyped ClearValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
@@ -471,8 +478,7 @@ namespace Avalonia
         /// Routes an untyped GetBaseValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        /// <param name="maxPriority">The maximum priority for the value.</param>
-        internal abstract object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority);
+        internal abstract object? RouteGetBaseValue(AvaloniaObject o);
 
         /// <summary>
         /// Routes an untyped SetValue call to a typed call.
@@ -496,11 +502,19 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         internal abstract IDisposable RouteBind(
             AvaloniaObject o,
-            IObservable<BindingValue<object?>> source,
+            IObservable<object?> source,
             BindingPriority priority);
 
-        internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent);
-        internal abstract ISetterInstance CreateSetterInstance(IStyleable target, object? value);
+        /// <summary>
+        /// Routes an untyped Bind call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="source">The binding source.</param>
+        /// <param name="priority">The priority.</param>
+        internal abstract IDisposable RouteBind(
+            AvaloniaObject o,
+            IObservable<BindingValue<object?>> source,
+            BindingPriority priority);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.

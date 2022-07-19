@@ -26,9 +26,11 @@ namespace Avalonia.Styling.Activators
             _reversed = reversed;
         }
 
+        public override bool IsActive => NthChildSelector.Evaluate(_control, _provider, _step, _offset, _reversed).IsMatch;
+
         protected override void Initialize()
         {
-            PublishNext(IsMatching());
+            PublishNext(IsActive);
             _provider.ChildIndexChanged += ChildIndexChanged;
         }
 
@@ -47,10 +49,8 @@ namespace Avalonia.Styling.Activators
                 || e.Child is null                
                 || e.Child == _control)
             {
-                PublishNext(IsMatching());
+                PublishNext(IsActive);
             }
         }
-
-        private bool IsMatching() => NthChildSelector.Evaluate(_control, _provider, _step, _offset, _reversed).IsMatch;
     }
 }

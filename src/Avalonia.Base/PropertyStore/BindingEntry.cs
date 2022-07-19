@@ -1,154 +1,137 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Reactive.Disposables;
 using Avalonia.Data;
-using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
-    /// <summary>
-    /// Represents an untyped interface to <see cref="BindingEntry{T}"/>.
-    /// </summary>
-    internal interface IBindingEntry : IBatchUpdate, IPriorityValueEntry, IDisposable
+    internal class BindingEntry : IValueEntry,
+        IObserver<object?>,
+        IDisposable
     {
-        void Start(bool ignoreBatchUpdate);
-    }
-
-    /// <summary>
-    /// Stores a binding in a <see cref="ValueStore"/> or <see cref="PriorityValue{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The property type.</typeparam>
-    internal class BindingEntry<T> : IBindingEntry, IPriorityValueEntry<T>, IObserver<BindingValue<T>>
-    {
-        private readonly AvaloniaObject _owner;
-        private ValueOwner<T> _sink;
+        private readonly ValueFrameBase _frame;
+        private readonly IObservable<object?> _source;
         private IDisposable? _subscription;
-        private bool _isSubscribed;
-        private bool _batchUpdate;
-        private Optional<T> _value;
+        private bool _hasValue;
+        private object? _value;
 
         public BindingEntry(
-            AvaloniaObject owner,
-            StyledPropertyBase<T> property,
-            IObservable<BindingValue<T>> source,
-            BindingPriority priority,
-            ValueOwner<T> sink)
+            ValueFrameBase frame,
+            AvaloniaProperty property,
+            IObservable<object?> source)
         {
-            _owner = owner;
+            _frame = frame;
+            _source = source;
             Property = property;
-            Source = source;
-            Priority = priority;
-            _sink = sink;
         }
 
-        public StyledPropertyBase<T> Property { get; }
-        public BindingPriority Priority { get; private set; }
-        public IObservable<BindingValue<T>> Source { get; }
-        Optional<object?> IValue.GetValue() => _value.ToObject();
-
-        public void BeginBatchUpdate() => _batchUpdate = true;
-
-        public void EndBatchUpdate()
+        public bool HasValue
         {
-            _batchUpdate = false;
-
-            if (_sink.IsValueStore)
-                Start();
+            get
+            {
+                StartIfNecessary();
+                return _hasValue;
+            }
         }
 
-        public Optional<T> GetValue(BindingPriority maxPriority)
-        {
-            return Priority >= maxPriority ? _value : Optional<T>.Empty;
-        }
+        public AvaloniaProperty Property { get; }
 
         public void Dispose()
         {
+            Unsubscribe();
+            BindingCompleted();
+        }
+
+        public object? GetValue()
+        {
+            StartIfNecessary();
+            if (!_hasValue)
+                throw new AvaloniaInternalException("The binding entry has no value.");
+            return _value!;
+        }
+
+        public bool TryGetValue(out object? value)
+        {
+            StartIfNecessary();
+            value = _value;
+            return _hasValue;
+        }
+
+        public void Start()
+        {
+            Debug.Assert(_subscription is null);
+
+            // Subscription won't be set until Subscribe completes, but in the meantime we
+            // need to signal that we've started as Subscribe may cause a value to be produced.
+            _subscription = Disposable.Empty;
+            _subscription = _source.Subscribe(this);
+        }
+
+        public void OnCompleted() => BindingCompleted();
+        public void OnError(Exception error) => BindingCompleted();
+
+        public void OnNext(object? value) => SetValue(value);
+
+        public virtual void Unsubscribe()
+        {
             _subscription?.Dispose();
             _subscription = null;
-            OnCompleted();
         }
 
-        public void OnCompleted()
+        private void ClearValue()
         {
-            var oldValue = _value;
-            _value = default;
-            Priority = BindingPriority.Unset;
-            _isSubscribed = false;
-            _sink.Completed(Property, this, oldValue);
-        }
-
-        public void OnError(Exception error)
-        {
-            throw new NotImplementedException("BindingEntry.OnError is not implemented", error);
-        }
-
-        public void OnNext(BindingValue<T> value)
-        {
-            if (Dispatcher.UIThread.CheckAccess())
+            if (_hasValue)
             {
-                UpdateValue(value); 
+                _hasValue = false;
+                _value = default;
+                _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
+            }
+        }
+
+        private void SetValue(object? value)
+        {
+            if (_frame.Owner is null)
+                return;
+
+            if (value is BindingNotification n)
+            {
+                value = n.Value;
+            }
+
+            if (value == AvaloniaProperty.UnsetValue)
+            {
+                ClearValue();
+            }
+            else if (value == BindingOperations.DoNothing)
+            {
+                // Do nothing!
+            }
+            else if (UntypedValueUtils.TryConvertAndValidate(Property, value, out var typedValue))
+            {
+                if (!_hasValue || !Equals(_value, typedValue))
+                {
+                    _value = typedValue;
+                    _hasValue = true;
+                    _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, typedValue);
+                }
             }
             else
             {
-                // To avoid allocating closure in the outer scope we need to capture variables
-                // locally. This allows us to skip most of the allocations when on UI thread.
-                var instance = this;
-                var newValue = value;
-
-                Dispatcher.UIThread.Post(() => instance.UpdateValue(newValue));
+                ClearValue();
+                LoggingUtils.LogInvalidValue(_frame.Owner.Owner, Property, Property.PropertyType, value);
             }
         }
 
-        public void Start() => Start(false);
-
-        public void Start(bool ignoreBatchUpdate)
+        private void BindingCompleted()
         {
-            // We can't use _subscription to check whether we're subscribed because it won't be set
-            // until Subscribe has finished, which will be too late to prevent reentrancy. In addition
-            // don't re-subscribe to completed/disposed bindings (indicated by Unset priority).
-            if (!_isSubscribed &&
-                Priority != BindingPriority.Unset &&
-                (!_batchUpdate || ignoreBatchUpdate))
-            {
-                _isSubscribed = true;
-                _subscription = Source.Subscribe(this);
-            }
+            _subscription = null;
+            _frame.OnBindingCompleted(this);
         }
 
-        public void Reparent(PriorityValue<T> parent) => _sink = new(parent);
-
-        public void RaiseValueChanged(
-            AvaloniaObject owner,
-            AvaloniaProperty property,
-            Optional<object?> oldValue,
-            Optional<object?> newValue)
+        private void StartIfNecessary()
         {
-            owner.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
-                owner,
-                (AvaloniaProperty<T>)property,
-                oldValue.Cast<T>(),
-                newValue.Cast<T>(),
-                Priority));
-        }
-
-        private void UpdateValue(BindingValue<T> value)
-        {
-            if (value.HasValue && Property.ValidateValue?.Invoke(value.Value) == false)
-            {
-                value = Property.GetDefaultValue(_owner.GetType());
-            }
-
-            if (value.Type == BindingValueType.DoNothing)
-            {
-                return;
-            }
-
-            var old = _value;
-
-            if (value.Type != BindingValueType.DataValidationError)
-            {
-                _value = value.ToOptional();
-            }
-
-            _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(_owner, Property, old, value, Priority));
+            if (_subscription is null)
+                Start();
         }
     }
 }

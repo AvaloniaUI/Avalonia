@@ -22,6 +22,8 @@ namespace Avalonia.Styling.Activators
             _match = match;
         }
 
+        public override bool IsActive => AreClassesMatching(_classes, _match);
+
         public static bool AreClassesMatching(IReadOnlyList<string> classes, IList<string> toMatch)
         {
             int remainingMatches = toMatch.Count;
@@ -54,12 +56,12 @@ namespace Avalonia.Styling.Activators
 
         void IClassesChangedListener.Changed()
         {
-            PublishNext(IsMatching());
+            PublishNext(IsActive);
         }
 
         protected override void Initialize()
         {
-            PublishNext(IsMatching());
+            PublishNext(IsActive);
             _classes.AddListener(this);
         }
 
@@ -67,7 +69,5 @@ namespace Avalonia.Styling.Activators
         {
             _classes.RemoveListener(this);
         }
-
-        private bool IsMatching() => AreClassesMatching(_classes, _match);
     }
 }

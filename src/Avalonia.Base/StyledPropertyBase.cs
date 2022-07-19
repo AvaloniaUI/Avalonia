@@ -1,7 +1,10 @@
 using System;
+using System.Reflection;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Reactive;
 using Avalonia.Styling;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -169,6 +172,20 @@ namespace Avalonia
         /// <inheritdoc/>
         object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
 
+        bool IStyledPropertyAccessor.ValidateValue(object? value)
+        {
+            if (value is null && !typeof(TValue).IsValueType)
+                return ValidateValue?.Invoke(default!) ?? true;
+            if (value is TValue typed)
+                return ValidateValue?.Invoke(typed) ?? true;
+            return false;
+        }
+
+        internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
+        {
+            return new EffectiveValue<TValue>(GetDefaultValue(o.GetType()), BindingPriority.Unset);
+        }
+
         /// <inheritdoc/>
         internal override void RouteClearValue(AvaloniaObject o)
         {
@@ -182,34 +199,44 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority)
+        internal override object? RouteGetBaseValue(AvaloniaObject o)
         {
-            var value = o.GetBaseValue<TValue>(this, maxPriority);
+            var value = o.GetBaseValue<TValue>(this);
             return value.HasValue ? value.Value : AvaloniaProperty.UnsetValue;
         }
 
         /// <inheritdoc/>
         internal override IDisposable? RouteSetValue(
-            AvaloniaObject o,
+            AvaloniaObject target,
             object? value,
             BindingPriority priority)
         {
-            var v = TryConvert(value);
+            if (value == BindingOperations.DoNothing)
+            {
+                return null;
+            }
+            else if (value == UnsetValue)
+            {
+                target.ClearValue(this);
+                return null;
+            }
+            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
+            {
+                return target.SetValue<TValue>(this, (TValue)converted!, priority);
+            }
+            else
+            {
+                var type = value?.GetType().FullName ?? "(null)";
+                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
+            }
+        }
 
-            if (v.HasValue)
-            {
-                return o.SetValue<TValue>(this, (TValue)v.Value!, priority);
-            }
-            else if (v.Type == BindingValueType.UnsetValue)
-            {
-                o.ClearValue(this);
-            }
-            else if (v.HasError)
-            {
-                throw v.Error!;
-            }
-
-            return null;
+        internal override IDisposable RouteBind(
+            AvaloniaObject target,
+            IObservable<object?> source,
+            BindingPriority priority)
+        {
+            return target.Bind<TValue>(this, source, priority);
         }
 
         /// <inheritdoc/>
@@ -220,39 +247,6 @@ namespace Avalonia
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
             return o.Bind<TValue>(this, adapter, priority);
-        }
-
-        /// <inheritdoc/>
-        internal override void RouteInheritanceParentChanged(
-            AvaloniaObject o,
-            AvaloniaObject? oldParent)
-        {
-            o.InheritanceParentChanged(this, oldParent);
-        }
-
-        internal override ISetterInstance CreateSetterInstance(IStyleable target, object? value)
-        {
-            if (value is IBinding binding)
-            {
-                return new PropertySetterBindingInstance<TValue>(
-                    target,
-                    this,
-                    binding);
-            }
-            else if (value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(PropertyType))
-            {
-                return new PropertySetterTemplateInstance<TValue>(
-                    target,
-                    this,
-                    template);
-            }
-            else
-            {
-                return new PropertySetterInstance<TValue>(
-                    target,
-                    this,
-                    (TValue)value!);
-            }
         }
 
         private object? GetDefaultBoxedValue(Type type)

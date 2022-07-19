@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {

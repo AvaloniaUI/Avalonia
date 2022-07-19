@@ -362,10 +362,8 @@ namespace Avalonia
         /// </summary>
         /// <param name="target">The object.</param>
         /// <param name="property">The property.</param>
-        /// <param name="maxPriority">The maximum priority for the value.</param>
         /// <remarks>
-        /// For styled properties, gets the value of the property if set on the object with a
-        /// priority equal or lower to <paramref name="maxPriority"/>, otherwise
+        /// For styled properties, gets the value of the property excluding animated values, otherwise
         /// <see cref="AvaloniaProperty.UnsetValue"/>. Note that this method does not return
         /// property values that come from inherited or default values.
         /// 
@@ -373,14 +371,13 @@ namespace Avalonia
         /// </remarks>
         public static object? GetBaseValue(
             this IAvaloniaObject target,
-            AvaloniaProperty property,
-            BindingPriority maxPriority)
+            AvaloniaProperty property)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
 
             if (target is AvaloniaObject ao)
-                return property.RouteGetBaseValue(ao, maxPriority);
+                return property.RouteGetBaseValue(ao);
             throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
         }
 
@@ -389,10 +386,8 @@ namespace Avalonia
         /// </summary>
         /// <param name="target">The object.</param>
         /// <param name="property">The property.</param>
-        /// <param name="maxPriority">The maximum priority for the value.</param>
         /// <remarks>
-        /// For styled properties, gets the value of the property if set on the object with a
-        /// priority equal or lower to <paramref name="maxPriority"/>, otherwise
+        /// For styled properties, gets the value of the property excluding animated values, otherwise
         /// <see cref="Optional{T}.Empty"/>. Note that this method does not return property values
         /// that come from inherited or default values.
         /// 
@@ -400,8 +395,7 @@ namespace Avalonia
         /// </remarks>
         public static Optional<T> GetBaseValue<T>(
             this IAvaloniaObject target,
-            AvaloniaProperty<T> property,
-            BindingPriority maxPriority)
+            AvaloniaProperty<T> property)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -410,7 +404,7 @@ namespace Avalonia
             {
                 return property switch
                 {
-                    StyledPropertyBase<T> styled => ao.GetBaseValue(styled, maxPriority),
+                    StyledPropertyBase<T> styled => ao.GetBaseValue(styled),
                     DirectPropertyBase<T> direct => ao.GetValue(direct),
                     _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
                 };

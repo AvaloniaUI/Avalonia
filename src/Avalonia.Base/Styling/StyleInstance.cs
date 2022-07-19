@@ -1,137 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Subjects;
-using Avalonia.Animation;
+using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Styling.Activators;
-
-#nullable enable
 
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// A <see cref="Style"/> which has been instanced on a control.
+    /// Stores state for a <see cref="Style"/> that has been instanced on a control.
     /// </summary>
-    internal sealed class StyleInstance : IStyleInstance, IStyleActivatorSink
+    /// <remarks>
+    /// <see cref="StyleInstance"/> implements the <see cref="IValueFrame"/> interface meaning that
+    /// it is injected directly into the value store of an <see cref="AvaloniaObject"/>. Depending
+    /// on the setters present on the style, it may be possible to share a single style instance
+    /// among all controls that the style is applied to; meaning that a single style instance can
+    /// apply to multiple controls.
+    /// </remarks>
+    internal class StyleInstance : ValueFrameBase, IStyleInstance, IStyleActivatorSink, IDisposable
     {
-        private readonly ISetterInstance[]? _setters;
-        private readonly IDisposable[]? _animations;
         private readonly IStyleActivator? _activator;
-        private readonly Subject<bool>? _animationTrigger;
+        private List<ISetterInstance>? _setters;
+        private bool _isActivatorInitializing;
+        private bool _isActivatorSubscribed;
 
-        public StyleInstance(
-            IStyle source,
-            IStyleable target,
-            IReadOnlyList<ISetter>? setters,
-            IReadOnlyList<IAnimation>? animations,
-            IStyleActivator? activator = null)
+        public StyleInstance(IStyle style, IStyleActivator? activator)
         {
-            Source = source ?? throw new ArgumentNullException(nameof(source));
-            Target = target ?? throw new ArgumentNullException(nameof(target));
             _activator = activator;
-            IsActive = _activator is null;
+            Priority = activator is object ? BindingPriority.StyleTrigger : BindingPriority.Style;
+            Source = style;
+        }
 
-            if (setters is not null)
+        public bool HasActivator => _activator is object;
+
+        public override bool IsActive
+        {
+            get
             {
-                var setterCount = setters.Count;
-
-                _setters = new ISetterInstance[setterCount];
-
-                for (var i = 0; i < setterCount; ++i)
+                if (_activator is object && !_isActivatorSubscribed)
                 {
-                    _setters[i] = setters[i].Instance(Target);
+                    _isActivatorInitializing = true;
+                    _activator.Subscribe(this);
+                    _isActivatorInitializing = false;
+                    _isActivatorSubscribed = true;
                 }
-            }
 
-            if (animations is not null && target is Animatable animatable)
-            {
-                var animationsCount = animations.Count;
-
-                _animations = new IDisposable[animationsCount];
-                _animationTrigger = new Subject<bool>();
-
-                for (var i = 0; i < animationsCount; ++i)
-                {
-                    _animations[i] = animations[i].Apply(animatable, null, _animationTrigger);
-                }
+                return _activator?.IsActive ?? true;
             }
         }
 
-        public bool HasActivator => _activator is not null;
-        public bool IsActive { get; private set; }
+        public override BindingPriority Priority { get; }
         public IStyle Source { get; }
-        public IStyleable Target { get; }
 
-        public void Start()
+        public void Add(ISetterInstance instance)
         {
-            var hasActivator = HasActivator;
-
-            if (_setters is not null)
-            {
-                foreach (var setter in _setters)
-                {
-                    setter.Start(hasActivator);
-                }
-            }
-
-            if (hasActivator)
-            {
-                _activator!.Subscribe(this, 0);
-            }
-            else if (_animationTrigger is not null)
-            {
-                _animationTrigger.OnNext(true);
-            }
+            if (instance is IValueEntry valueEntry)
+                base.Add(valueEntry);
+            else
+                (_setters ??= new()).Add(instance);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            if (_setters is not null)
-            {
-                foreach (var setter in _setters)
-                {
-                    setter.Dispose();
-                }
-            }
-
-            if (_animations is not null)
-            {
-                foreach (var subscription in _animations)
-                {
-                    subscription.Dispose();
-                }
-            }
-
+            base.Dispose();
             _activator?.Dispose();
         }
 
-        private void ActivatorChanged(bool value)
+        void IStyleActivatorSink.OnNext(bool value, int tag)
         {
-            if (IsActive != value)
-            {
-                IsActive = value;
-
-                _animationTrigger?.OnNext(value);
-
-                if (_setters is not null)
-                {
-                    if (IsActive)
-                    {
-                        foreach (var setter in _setters)
-                        {
-                            setter.Activate();
-                        }
-                    }
-                    else
-                    {
-                        foreach (var setter in _setters)
-                        {
-                            setter.Deactivate();
-                        }
-                    }
-                }
-            }
+            if (!_isActivatorInitializing)
+                Owner?.FrameActivationChanged(this);
         }
-
-        void IStyleActivatorSink.OnNext(bool value, int tag) => ActivatorChanged(value);
     }
 }

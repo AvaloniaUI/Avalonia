@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace Avalonia.Styling.Activators
 {
     /// <summary>
@@ -10,6 +8,8 @@ namespace Avalonia.Styling.Activators
         private IStyleActivatorSink? _sink;
         private int _tag;
         private bool? _value;
+
+        public abstract bool IsActive { get; }
 
         public void Subscribe(IStyleActivatorSink sink, int tag = 0)
         {

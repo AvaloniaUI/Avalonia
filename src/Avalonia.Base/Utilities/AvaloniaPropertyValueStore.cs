@@ -92,6 +92,8 @@ namespace Avalonia.Utilities
             return (0, false);
         }
 
+        public bool Contains(AvaloniaProperty property) => TryFindEntry(property.Id).Item2;
+
         public bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
         {
             (int index, bool found) = TryFindEntry(property.Id);
@@ -129,7 +131,12 @@ namespace Avalonia.Utilities
 
         public void SetValue(AvaloniaProperty property, TValue value)
         {
-            _entries[TryFindEntry(property.Id).Item1].Value = value;
+            var (index, found) = TryFindEntry(property.Id);
+
+            if (found)
+                _entries[index].Value = value;
+            else
+                AddValue(property, value);
         }
 
         public void Remove(AvaloniaProperty property)

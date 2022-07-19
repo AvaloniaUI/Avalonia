@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -36,39 +37,11 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void Setting_Parent_Should_Not_Set_InheritanceParent_If_Already_Set()
-        {
-            var parent = new Decorator();
-            var inheritanceParent = new Decorator();
-            var target = new TestControl();
-
-            ((ISetInheritanceParent)target).SetParent(inheritanceParent);
-            parent.Child = target;
-
-            Assert.Equal(parent, target.Parent);
-            Assert.Equal(inheritanceParent, target.InheritanceParent);
-        }
-
-        [Fact]
         public void InheritanceParent_Should_Be_Cleared_When_Removed_From_Parent()
         {
             var parent = new Decorator();
             var target = new TestControl();
 
-            parent.Child = target;
-            parent.Child = null;
-
-            Assert.Null(target.InheritanceParent);
-        }
-
-        [Fact]
-        public void InheritanceParent_Should_Be_Cleared_When_Removed_From_Parent_When_Has_Different_InheritanceParent()
-        {
-            var parent = new Decorator();
-            var inheritanceParent = new Decorator();
-            var target = new TestControl();
-
-            ((ISetInheritanceParent)target).SetParent(inheritanceParent);
             parent.Child = target;
             parent.Child = null;
 
@@ -126,7 +99,7 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.True(childRaised);
             Assert.True(grandchildRaised);
         }
-        
+
         [Fact]
         public void AttachedToLogicalTree_Should_Be_Called_Before_Parent_Change_Signalled()
         {
@@ -329,6 +302,8 @@ namespace Avalonia.Base.UnitTests.Styling
                 var root = new TestRoot();
                 var child = new Border();
 
+                AvaloniaLocator.CurrentMutable.BindToSelf<IStyler>(new Styler());
+
                 root.Child = child;
 
                 Assert.Throws<InvalidOperationException>(() => child.Name = "foo");
@@ -351,22 +326,28 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void StyleInstance_Is_Disposed_When_Control_Removed_From_Logical_Tree()
+        public void Style_Is_Removed_When_Control_Removed_From_Logical_Tree()
         {
-            using (AvaloniaLocator.EnterScope())
+            var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var target = new Border();
+            var root = new TestRoot
             {
-                var root = new TestRoot();
-                var child = new Border();
+                Styles =
+                {
+                    new Style(x => x.OfType<Border>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Border.BackgroundProperty, Brushes.Red),
+                        }
+                    }
+                },
+                Child = target,
+            };
 
-                root.Child = child;
-
-                var styleInstance = new Mock<IStyleInstance>();
-                ((IStyleable)child).StyleApplied(styleInstance.Object);
-
-                root.Child = null;
-
-                styleInstance.Verify(x => x.Dispose(), Times.Once);
-            }
+            Assert.Equal(Brushes.Red, target.Background);
+            root.Child = null;
+            Assert.Null(target.Background);
         }
 
         [Fact]
@@ -474,7 +455,7 @@ namespace Avalonia.Base.UnitTests.Styling
             root.DataContext = "foo";
 
             Assert.Equal(
-                new[] 
+                new[]
                 {
                     "begin root",
                     "begin a1",

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Avalonia.Data;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -6,7 +7,17 @@ namespace Avalonia.Base.UnitTests
     public class AvaloniaObjectTests_Inheritance
     {
         [Fact]
-        public void GetValue_Returns_Inherited_Value()
+        public void GetValue_Returns_Inherited_Value_1()
+        {
+            Class1 parent = new Class1();
+            parent.SetValue(Class1.BazProperty, "changed");
+
+            Class2 child = new Class2 { Parent = parent };
+            Assert.Equal("changed", child.GetValue(Class1.BazProperty));
+        }
+
+        [Fact]
+        public void GetValue_Returns_Inherited_Value_2()
         {
             Class1 parent = new Class1();
             Class2 child = new Class2 { Parent = parent };
@@ -17,7 +28,23 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Setting_InheritanceParent_Raises_PropertyChanged_When_Value_Changed_In_Parent()
+        public void ClearValue_Clears_Inherited_Value()
+        {
+            Class1 parent = new Class1();
+            Class2 child = new Class2 { Parent = parent };
+
+            parent.SetValue(Class1.BazProperty, "changed");
+
+            Assert.Equal("changed", child.GetValue(Class1.BazProperty));
+
+            parent.ClearValue(Class1.BazProperty);
+            
+            Assert.Equal("bazdefault", parent.GetValue(Class1.BazProperty));
+            Assert.Equal("bazdefault", child.GetValue(Class1.BazProperty));
+        }
+
+        [Fact]
+        public void Setting_InheritanceParent_Raises_PropertyChanged_When_Parent_Has_Value_Set()
         {
             bool raised = false;
 
@@ -29,15 +56,17 @@ namespace Avalonia.Base.UnitTests
                 raised = s == child &&
                          e.Property == Class1.BazProperty &&
                          (string)e.OldValue == "bazdefault" &&
-                         (string)e.NewValue == "changed";
+                         (string)e.NewValue == "changed" &&
+                         e.Priority == BindingPriority.Inherited;
 
             child.Parent = parent;
 
             Assert.True(raised);
+            Assert.Equal("changed", child.GetValue(Class1.BazProperty));
         }
 
         [Fact]
-        public void Setting_InheritanceParent_Raises_PropertyChanged_For_Attached_Property_When_Value_Changed_In_Parent()
+        public void Setting_InheritanceParent_Raises_PropertyChanged_For_Attached_Property_When_Parent_Has_Value_Set()
         {
             bool raised = false;
 
@@ -54,6 +83,7 @@ namespace Avalonia.Base.UnitTests
             child.Parent = parent;
 
             Assert.True(raised);
+            Assert.Equal("changed", child.GetValue(AttachedOwner.AttachedProperty));
         }
 
         [Fact]
@@ -71,6 +101,7 @@ namespace Avalonia.Base.UnitTests
             child.Parent = parent;
 
             Assert.False(raised);
+            Assert.Equal("localvalue", child.GetValue(Class1.BazProperty));
         }
 
         [Fact]
@@ -91,6 +122,7 @@ namespace Avalonia.Base.UnitTests
             parent.SetValue(Class1.BazProperty, "changed");
 
             Assert.True(raised);
+            Assert.Equal("changed", child.GetValue(Class1.BazProperty));
         }
 
         [Fact]
@@ -111,6 +143,7 @@ namespace Avalonia.Base.UnitTests
             parent.SetValue(AttachedOwner.AttachedProperty, "changed");
 
             Assert.True(raised);
+            Assert.Equal("changed", child.GetValue(AttachedOwner.AttachedProperty));
         }
 
         [Fact]
@@ -126,6 +159,85 @@ namespace Avalonia.Base.UnitTests
             parent.SetValue(Class1.BazProperty, "changed");
 
             Assert.Equal(new[] { parent, child }, result);
+        }
+
+        [Fact]
+        public void Reparenting_Raises_PropertyChanged_For_Old_And_New_Inherited_Values()
+        {
+            var oldParent = new Class1();
+            oldParent.SetValue(Class1.BazProperty, "oldvalue");
+
+            var newParent = new Class1();
+            newParent.SetValue(Class1.BazProperty, "newvalue");
+
+            var child = new Class2 { Parent = oldParent };
+            var raised = 0;
+
+            child.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(child, e.Sender);
+                Assert.Equal("oldvalue", e.GetOldValue<string>());
+                Assert.Equal("newvalue", e.GetNewValue<string>());
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
+
+            child.Parent = newParent;
+
+            Assert.Equal(1, raised);
+            Assert.Equal("newvalue", child.GetValue(Class1.BazProperty));
+        }
+
+        [Fact]
+        public void Reparenting_Raises_PropertyChanged_On_GrandChild_For_Old_And_New_Inherited_Values()
+        {
+            var oldParent = new Class1();
+            oldParent.SetValue(Class1.BazProperty, "oldvalue");
+
+            var newParent = new Class1();
+            newParent.SetValue(Class1.BazProperty, "newvalue");
+
+            var child = new Class2 { Parent = oldParent };
+            var grandchild = new Class2 { Parent = child };
+            var raised = 0;
+
+            grandchild.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(grandchild, e.Sender);
+                Assert.Equal("oldvalue", e.GetOldValue<string>());
+                Assert.Equal("newvalue", e.GetNewValue<string>());
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
+
+            child.Parent = newParent;
+
+            Assert.Equal(1, raised);
+            Assert.Equal("newvalue", grandchild.GetValue(Class1.BazProperty));
+        }
+
+        [Fact]
+        public void Reparenting_Retains_Inherited_Property_Set_On_Child()
+        {
+            var oldParent = new Class1();
+            oldParent.SetValue(Class1.BazProperty, "oldvalue");
+
+            var newParent = new Class1();
+            newParent.SetValue(Class1.BazProperty, "newvalue");
+
+            var child = new Class2 { Parent = oldParent };
+            child.SetValue(Class1.BazProperty, "childvalue");
+
+            var grandchild = new Class2 { Parent = child };
+            var raised = 0;
+
+            grandchild.PropertyChanged += (s, e) => ++raised;
+
+            child.Parent = newParent;
+
+            Assert.Equal(0, raised);
+            Assert.Equal("childvalue", child.GetValue(Class1.BazProperty));
+            Assert.Equal("childvalue", grandchild.GetValue(Class1.BazProperty));
         }
 
         private class Class1 : AvaloniaObject

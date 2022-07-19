@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Utilities;
 
@@ -243,6 +244,34 @@ namespace Avalonia.Data
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
                 _ => new BindingValue<T>((T)value!)
             };
+        }
+
+        public static bool operator !=(BindingValue<T> x, Optional<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return true;
+            return !EqualityComparer<T>.Default.Equals(x.Value, y.Value);
+        }
+
+        public static bool operator ==(BindingValue<T> x, Optional<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return false;
+            return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
+        }
+
+        public static bool operator !=(Optional<T> x, BindingValue<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return true;
+            return !EqualityComparer<T>.Default.Equals(x.Value, y.Value);
+        }
+
+        public static bool operator ==(Optional<T> x, BindingValue<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return false;
+            return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.PropertyStore;
 using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
@@ -80,11 +81,24 @@ namespace Avalonia.Styling
             return _resources?.TryGetResource(key, out result) ?? false;
         }
 
-        internal void Attach(IStyleable target, IStyleActivator? activator)
+        internal IValueFrame Attach(IStyleable target, IStyleActivator? activator)
         {
-            var instance = new StyleInstance(this, target, _setters, _animations, activator);
-            target.StyleApplied(instance);
-            instance.Start();
+            if (target is not AvaloniaObject ao)
+                throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");
+
+            var instance = new StyleInstance(this, activator);
+
+            if (_setters is object)
+            {
+                foreach (var setter in _setters)
+                {
+                    var setterInstance = setter.Instance(instance, target);
+                    instance.Add(setterInstance);
+                }
+            }
+
+            ao.GetValueStore().AddFrame(instance);
+            return instance;
         }
 
         internal SelectorMatchResult TryAttachChildren(IStyleable target, object? host)

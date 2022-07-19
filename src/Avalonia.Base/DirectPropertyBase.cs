@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Reactive;
 using Avalonia.Styling;
 
@@ -120,6 +121,11 @@ namespace Avalonia
             base.OverrideMetadata(type, metadata);
         }
 
+        internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
+        {
+            throw new InvalidOperationException("Cannot create EffectiveValue for direct property.");
+        }
+
         /// <inheritdoc/>
         internal override void RouteClearValue(AvaloniaObject o)
         {
@@ -132,7 +138,7 @@ namespace Avalonia
             return o.GetValue<TValue>(this);
         }
 
-        internal override object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority)
+        internal override object? RouteGetBaseValue(AvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
         }
@@ -161,6 +167,22 @@ namespace Avalonia
             return null;
         }
 
+        /// <summary>
+        /// Routes an untyped Bind call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="source">The binding source.</param>
+        /// <param name="priority">The priority.</param>
+        internal override IDisposable RouteBind(
+            AvaloniaObject o,
+            IObservable<object?> source,
+            BindingPriority priority)
+        {
+            // TODO: this requires a double adapter, we should make AvaloniaObject
+            // accept an `IObservable<object?>` for direct properties directly.
+            return RouteBind(o, source.ToBindingValue(), priority);
+        }
+
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
             AvaloniaObject o,
@@ -169,36 +191,6 @@ namespace Avalonia
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
             return o.Bind<TValue>(this, adapter);
-        }
-
-        internal override void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent)
-        {
-            throw new NotSupportedException("Direct properties do not support inheritance.");
-        }
-
-        internal override ISetterInstance CreateSetterInstance(IStyleable target, object? value)
-        {
-            if (value is IBinding binding)
-            {
-                return new PropertySetterBindingInstance<TValue>(
-                    target,
-                    this,
-                    binding);
-            }
-            else if (value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(PropertyType))
-            {
-                return new PropertySetterTemplateInstance<TValue>(
-                    target,
-                    this,
-                    template);
-            }
-            else
-            {
-                return new PropertySetterInstance<TValue>(
-                    target,
-                    this,
-                    (TValue)value!);
-            }
         }
     }
 }

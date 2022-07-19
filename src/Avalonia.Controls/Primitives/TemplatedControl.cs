@@ -371,11 +371,11 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ThemeProperty)
-            {
-                foreach (var child in this.GetTemplateChildren())
-                    child.InvalidateStyles();
-            }
+            //if (change.Property == ThemeProperty)
+            //{
+            //    foreach (var child in this.GetTemplateChildren())
+            //        child.InvalidateStyles();
+            //}
         }
 
         /// <summary>
