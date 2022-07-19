@@ -823,20 +823,20 @@ namespace Avalonia.PropertyStore
                 for (var j = 0; j < count; ++j)
                 {
                     var entry = frame.GetEntry(j);
+                    var property = entry.Property;
+                    EffectiveValue? effectiveValue = null;
+
+                    // Skip if we already have a value/base value for this property.
+                    if (_effectiveValues?.TryGetValue(property, out effectiveValue) == true &&
+                        effectiveValue.BasePriority < BindingPriority.Unset)
+                        continue;
 
                     if (!entry.HasValue)
                         continue;
 
-                    var property = entry.Property;
-
-                    if (_effectiveValues is not null &&
-                        _effectiveValues.TryGetValue(property, out var effectiveValue))
+                    if (effectiveValue is not null)
                     {
-                        if (effectiveValue.Priority == BindingPriority.Unset ||
-                            effectiveValue.BasePriority == BindingPriority.Unset)
-                        {
-                            effectiveValue.SetAndRaise(this, entry, priority);
-                        }
+                        effectiveValue.SetAndRaise(this, entry, priority);
                     }
                     else
                     {
