@@ -464,40 +464,39 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Template_In_Inactive_Style_Is_Not_Built()
         {
-            throw new NotImplementedException();
-            ////var instantiationCount = 0;
-            ////var template = new FuncTemplate<Class1>(() =>
-            ////{
-            ////    ++instantiationCount;
-            ////    return new Class1();
-            ////});
+            var instantiationCount = 0;
+            var template = new FuncTemplate<Class1>(() =>
+            {
+                ++instantiationCount;
+                return new Class1();
+            });
 
-            ////Styles styles = new Styles
-            ////{
-            ////    new Style(x => x.OfType<Class1>())
-            ////    {
-            ////        Setters =
-            ////        {
-            ////            new Setter(Class1.ChildProperty, template),
-            ////        },
-            ////    },
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>())
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.ChildProperty, template),
+                    },
+                },
 
-            ////    new Style(x => x.OfType<Class1>())
-            ////    {
-            ////        Setters =
-            ////        {
-            ////            new Setter(Class1.ChildProperty, template),
-            ////        },
-            ////    }
-            ////};
+                new Style(x => x.OfType<Class1>())
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.ChildProperty, template),
+                    },
+                }
+            };
 
-            ////var target = new Class1();
-            ////target.BeginBatchUpdate();
-            ////styles.TryAttach(target, null);
-            ////target.EndBatchUpdate();
+            var target = new Class1();
+            target.GetValueStore().BeginStyling();
+            styles.TryAttach(target, null);
+            target.GetValueStore().EndStyling();
 
-            ////Assert.NotNull(target.Child);
-            ////Assert.Equal(1, instantiationCount);
+            Assert.NotNull(target.Child);
+            Assert.Equal(1, instantiationCount);
         }
 
         [Fact]
