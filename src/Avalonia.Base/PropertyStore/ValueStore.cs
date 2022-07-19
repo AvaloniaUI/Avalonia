@@ -528,9 +528,8 @@ namespace Avalonia.PropertyStore
         private void InsertFrame(IValueFrame frame)
         {
             Debug.Assert(!_frames.Contains(frame));
-            var index = _frames.BinarySearch(frame, FrameInsertionComparer.Instance);
-            if (index < 0)
-                index = ~index;
+
+            var index = BinarySearchFrame(frame.Priority);
             _frames.Insert(index, frame);
             ++_frameGeneration;
             frame.SetOwner(this);
@@ -569,15 +568,12 @@ namespace Avalonia.PropertyStore
         {
             Debug.Assert(priority != BindingPriority.LocalValue);
 
-            // TODO: Binary search?
-            for (var i = _frames.Count - 1; i >= 0;  --i)
-            {
-                var frame = _frames[i];
-                if (frame is ImmediateValueFrame immediate &&  !immediate.Contains(property))
-                    return immediate;
-                if (frame.Priority > priority)
-                    break;
-            }
+            var index = BinarySearchFrame(priority);
+
+            if (index > 0 && _frames[index - 1] is ImmediateValueFrame f &&
+                f.Priority == priority &&
+                !f.Contains(property))
+                return f;
 
             var result = new ImmediateValueFrame(priority);
             InsertFrame(result);
@@ -915,14 +911,28 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        private class FrameInsertionComparer : IComparer<IValueFrame>
+        private int BinarySearchFrame(BindingPriority priority)
         {
-            public static readonly FrameInsertionComparer Instance = new FrameInsertionComparer();
-            public int Compare(IValueFrame? x, IValueFrame? y)
+            var lo = 0;
+            var hi = _frames.Count - 1;
+
+            // Binary search insertion point.
+            while (lo <= hi)
             {
-                var result = y!.Priority - x!.Priority;
-                return result != 0 ? result : -1;
+                var i = lo + ((hi - lo) >> 1);
+                var order = priority - _frames[i].Priority;
+
+                if (order <= 0)
+                {
+                    lo = i + 1;
+                }
+                else
+                {
+                    hi = i - 1;
+                }
             }
+
+            return lo;
         }
 
         private readonly struct OldNewValue
