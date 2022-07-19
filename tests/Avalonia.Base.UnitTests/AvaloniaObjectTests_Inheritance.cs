@@ -147,6 +147,28 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Clearing_Value_In_InheritanceParent_Raises_PropertyChanged()
+        {
+            bool raised = false;
+
+            Class1 parent = new Class1();
+            parent.SetValue(Class1.BazProperty, "changed");
+
+            Class2 child = new Class2 { Parent = parent };
+
+            child.PropertyChanged += (s, e) =>
+                raised = s == child &&
+                         e.Property == Class1.BazProperty &&
+                         (string)e.OldValue == "changed" &&
+                         (string)e.NewValue == "bazdefault";
+
+            parent.ClearValue(Class1.BazProperty);
+
+            Assert.True(raised);
+            Assert.Equal("bazdefault", child.GetValue(Class1.BazProperty));
+        }
+
+        [Fact]
         public void PropertyChanged_Is_Raised_In_Parent_Before_Child()
         {
             var parent = new Class1();

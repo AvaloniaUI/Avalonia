@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Avalonia.Collections.Pooled;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
@@ -14,14 +13,15 @@ namespace Avalonia.PropertyStore
     {
         private readonly List<IValueFrame> _frames = new();
         private Dictionary<int, IDisposable>? _localValueBindings;
-        private InheritanceFrame? _inheritanceFrame;
         private Dictionary<AvaloniaProperty, EffectiveValue>? _effectiveValues;
+        private int _inheritedValueCount;
         private int _frameGeneration;
         private int _styling;
 
         public ValueStore(AvaloniaObject owner) => Owner = owner;
 
         public AvaloniaObject Owner { get; }
+        public ValueStore? InheritanceAncestor { get; private set; }
         public IReadOnlyList<IValueFrame> Frames => _frames;
 
         public void BeginStyling() => ++_styling;
@@ -160,7 +160,7 @@ namespace Avalonia.PropertyStore
         {
             if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
                 return v.Value;
-            if (_inheritanceFrame is not null && _inheritanceFrame.TryGetFromThisOrAncestor(property, out v))
+            if (property.Inherits && TryGetInheritedValue(property, out v))
                 return v.Value;
 
             return GetDefaultValue(property);
@@ -170,7 +170,7 @@ namespace Avalonia.PropertyStore
         {
             if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
                 return ((EffectiveValue<T>)v).Value;
-            if (_inheritanceFrame is not null && _inheritanceFrame.TryGetFromThisOrAncestor(property, out v))
+            if (property.Inherits && TryGetInheritedValue(property, out v))
                 return ((EffectiveValue<T>)v).Value;
             return property.GetDefaultValue(Owner.GetType());
         }
@@ -203,41 +203,57 @@ namespace Avalonia.PropertyStore
         public void SetInheritanceParent(AvaloniaObject? oldParent, AvaloniaObject? newParent)
         {
             var values = DictionaryPool<AvaloniaProperty, OldNewValue>.Get();
-            var oldInheritanceFrame = oldParent?.GetValueStore()._inheritanceFrame;
-            var newInheritanceFrame = newParent?.GetValueStore().OnBecameInheritanceParent();
+            var oldAncestor = InheritanceAncestor;
+            var newAncestor = newParent?.GetValueStore();
 
-            // The old and new parents are the same, nothing to do here.
-            if (oldInheritanceFrame == newInheritanceFrame)
+            if (newAncestor?._inheritedValueCount == 0)
+                newAncestor = newAncestor.InheritanceAncestor;
+
+            // The old and new inheritance ancestors are the same, nothing to do here.
+            if (oldAncestor == newAncestor)
                 return;
 
-            // First get the old values from the old inheritance parent.
-            var f = oldInheritanceFrame;
+            // First get the old values from the old inheritance ancestor.
+            var f = oldAncestor;
 
             while (f is not null)
             {
-                foreach (var i in f)
+                Debug.Assert(f._effectiveValues is not null);
+
+                if (f._effectiveValues is not null)
                 {
-                    values.TryAdd(i.Key, new(i.Value));
+                    foreach (var i in f._effectiveValues)
+                    {
+                        if (i.Key.Inherits)
+                            values.TryAdd(i.Key, new(i.Value));
+                    }
                 }
-                f = f.Parent;
+
+                f = f.InheritanceAncestor;
             }
 
-            f = newInheritanceFrame;
+            f = newAncestor;
 
-            // Get the new values from the new inheritance parent.
+            // Get the new values from the new inheritance ancestor.
             while (f is not null)
             {
-                foreach (var i in f)
+                Debug.Assert(f._effectiveValues is not null);
+
+                foreach (var i in f._effectiveValues)
                 {
-                    if (values.TryGetValue(i.Key, out var existing))
-                        values[i.Key] = existing.WithNewValue(i.Value);
-                    else
-                        values.Add(i.Key, new(null, i.Value));
+                    if (i.Key.Inherits)
+                    {
+                        if (values.TryGetValue(i.Key, out var existing))
+                            values[i.Key] = existing.WithNewValue(i.Value);
+                        else
+                            values.Add(i.Key, new(null, i.Value));
+                    }
                 }
-                f = f.Parent;
+
+                f = f.InheritanceAncestor;
             }
 
-            ParentInheritanceFrameChanged(newInheritanceFrame);
+            OnInheritanceAncestorChanged(newAncestor);
 
             // Raise PropertyChanged events where necessary on this object and inheritance children.
             foreach (var i in values)
@@ -255,27 +271,6 @@ namespace Avalonia.PropertyStore
         public void FrameActivationChanged(IValueFrame frame)
         {
             ReevaluateEffectiveValues();
-        }
-
-        /// <summary>
-        /// Called by an inheritance child to notify the value store that it has become an
-        /// inheritance parent. Creates and returns an inheritance frame if necessary.
-        /// </summary>
-        /// <returns></returns>
-        public InheritanceFrame? OnBecameInheritanceParent()
-        {
-            if (_inheritanceFrame is not null)
-                return _inheritanceFrame;
-            if (_effectiveValues is null)
-                return null;
-
-            foreach (var i in _effectiveValues)
-            {
-                if (i.Key.Inherits)
-                    return GetOrCreateInheritanceFrame(true);
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -363,6 +358,32 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
+        /// Called by the parent value store when its inheritance ancestor changes.
+        /// </summary>
+        /// <param name="ancestor">The new inheritance ancestor.</param>
+        public void OnInheritanceAncestorChanged(ValueStore? ancestor)
+        {
+            if (ancestor != this)
+            {
+                InheritanceAncestor = ancestor;
+                if (_inheritedValueCount > 0)
+                    return;
+            }
+
+            var children = Owner.GetInheritanceChildren();
+
+            if (children is null)
+                return;
+
+            var count = children.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                children[i].GetValueStore().OnInheritanceAncestorChanged(ancestor);
+            }
+        }
+
+        /// <summary>
         /// Called by <see cref="EffectiveValue{T}"/> when an property with inheritance enabled
         /// changes its value on this value store.
         /// </summary>
@@ -370,7 +391,7 @@ namespace Avalonia.PropertyStore
         /// <param name="oldValue">The old value of the property.</param>
         /// <param name="value">The effective value instance.</param>
         public void OnInheritedEffectiveValueChanged<T>(
-            StyledPropertyBase<T> property, 
+            StyledPropertyBase<T> property,
             T oldValue,
             EffectiveValue<T> value)
         {
@@ -378,20 +399,14 @@ namespace Avalonia.PropertyStore
 
             var children = Owner.GetInheritanceChildren();
 
-            // If we have children or an existing inheritance frame, then make sure it's owned and
-            // set the value. If we have no children and no inheritance frame then it will be
-            // created when it's needed.
-            if (children is not null || _inheritanceFrame is not null)
-                GetOrCreateInheritanceFrame(true)[property] = value;
+            if (children is null)
+                return;
 
-            if (children is not null)
+            var count = children.Count;
+
+            for (var i = 0; i < count; ++i)
             {
-                var count = children.Count;
-
-                for (var i = 0; i < count; ++i)
-                {
-                    children[i].GetValueStore().OnParentInheritedValueChanged(property, oldValue, value.Value);
-                }
+                children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, value.Value);
             }
         }
 
@@ -404,12 +419,6 @@ namespace Avalonia.PropertyStore
         public void OnInheritedEffectiveValueDisposed<T>(StyledPropertyBase<T> property, T oldValue)
         {
             Debug.Assert(property.Inherits);
-            Debug.Assert(_inheritanceFrame is null || _inheritanceFrame.Owner == this);
-
-            if (_inheritanceFrame is null || _inheritanceFrame.Owner != this)
-                return;
-
-            _inheritanceFrame.Remove(property);
 
             var children = Owner.GetInheritanceChildren();
 
@@ -420,7 +429,7 @@ namespace Avalonia.PropertyStore
 
                 for (var i = 0; i < count; ++i)
                 {
-                    children[i].GetValueStore().OnParentInheritedValueChanged(property, oldValue, defaultValue);
+                    children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, defaultValue);
                 }
             }
         }
@@ -443,15 +452,19 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public void OnParentInheritedValueChanged<T>(
+        /// <summary>
+        /// Called when an inherited property changes on the value store of the inheritance ancestor.
+        /// </summary>
+        /// <typeparam name="T">The property type.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="oldValue">The old value of the property.</param>
+        /// <param name="newValue">The new value of the property.</param>
+        public void OnAncestorInheritedValueChanged<T>(
             StyledPropertyBase<T> property, 
             T oldValue,
             T newValue)
         {
             Debug.Assert(property.Inherits);
-
-            // Ensure the inheritance frame is created.
-            GetOrCreateInheritanceFrame(false);
 
             // If the inherited value is set locally, propagation stops here.
             if (_effectiveValues is not null && _effectiveValues.ContainsKey(property))
@@ -473,7 +486,7 @@ namespace Avalonia.PropertyStore
 
             for (var i = 0; i < count; ++i)
             {
-                children[i].GetValueStore().OnParentInheritedValueChanged(property, oldValue, newValue);
+                children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, newValue);
             }
         }
 
@@ -535,33 +548,6 @@ namespace Avalonia.PropertyStore
             frame.SetOwner(this);
         }
 
-        private InheritanceFrame GetOrCreateInheritanceFrame(bool owned)
-        {
-            if (_inheritanceFrame is null)
-            {
-                var parentFrame = Owner.InheritanceParent?.GetValueStore()._inheritanceFrame;
-
-                _inheritanceFrame = owned || parentFrame is null ? 
-                    new(this, parentFrame) : 
-                    parentFrame;
-
-                if (_effectiveValues is not null)
-                {
-                    foreach (var i in _effectiveValues)
-                    {
-                        if (i.Key.Inherits)
-                            _inheritanceFrame[i.Key] = i.Value;
-                    }
-                }
-            }
-            else if (owned && _inheritanceFrame.Owner != this)
-            {
-                _inheritanceFrame = new(this, _inheritanceFrame);
-            }
-
-            return _inheritanceFrame;
-        }
-
         private ImmediateValueFrame GetOrCreateImmediateValueFrame(
             AvaloniaProperty property, 
             BindingPriority priority)
@@ -600,9 +586,18 @@ namespace Avalonia.PropertyStore
             }
             else
             {
-                _effectiveValues?.Remove(property);
+                RemoveEffectiveValue(property);
                 current.DisposeAndRaiseUnset(this, property);
             }
+        }
+
+        private void AddEffectiveValue(AvaloniaProperty property, EffectiveValue effectiveValue)
+        {
+            _effectiveValues ??= new();
+            _effectiveValues.Add(property, effectiveValue);
+
+            if (property.Inherits && _inheritedValueCount++ == 0)
+                OnInheritanceAncestorChanged(this);
         }
 
         /// <summary>
@@ -617,8 +612,7 @@ namespace Avalonia.PropertyStore
         {
             Debug.Assert(priority < BindingPriority.Inherited);
             var effectiveValue = property.CreateEffectiveValue(Owner);
-            _effectiveValues ??= new();
-            _effectiveValues.Add(property, effectiveValue);
+            AddEffectiveValue(property, effectiveValue);
             effectiveValue.SetAndRaise(this, property, value, priority);
         }
 
@@ -635,9 +629,33 @@ namespace Avalonia.PropertyStore
             Debug.Assert(priority < BindingPriority.Inherited);
             var defaultValue = property.GetDefaultValue(Owner.GetType());
             var effectiveValue = new EffectiveValue<T>(defaultValue, BindingPriority.Unset);
-            _effectiveValues ??= new();
-            _effectiveValues.Add(property, effectiveValue);
+            AddEffectiveValue(property, effectiveValue);
             effectiveValue.SetAndRaise(this, property, value, priority);
+        }
+
+        private bool RemoveEffectiveValue(AvaloniaProperty property)
+        {
+            if (_effectiveValues is not null && _effectiveValues.Remove(property))
+            {
+                if (property.Inherits && --_inheritedValueCount == 0)
+                    OnInheritanceAncestorChanged(InheritanceAncestor?.InheritanceAncestor);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool RemoveEffectiveValue(AvaloniaProperty property, [NotNullWhen(true)] out EffectiveValue? result)
+        {
+            if (_effectiveValues is not null && _effectiveValues.Remove(property, out result))
+            {
+                if (property.Inherits && --_inheritedValueCount == 0)
+                    OnInheritanceAncestorChanged(InheritanceAncestor?.InheritanceAncestor);
+                return true;
+            }
+
+            result = null;
+            return false;
         }
 
         /// <summary>
@@ -761,30 +779,6 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        private void ParentInheritanceFrameChanged(InheritanceFrame? parent)
-        {
-            if (_inheritanceFrame?.Owner == this)
-            {
-                _inheritanceFrame.SetParent(parent);
-            }
-            else if (_inheritanceFrame != parent)
-            {
-                _inheritanceFrame = parent;
-
-                var children = Owner.GetInheritanceChildren();
-
-                if (children is null)
-                    return;
-
-                var count = children.Count;
-
-                for (var i = 0; i < count; ++i)
-                {
-                    children[i].GetValueStore().ParentInheritanceFrameChanged(parent);
-                }
-            }
-        }
-
         private void ReevaluateEffectiveValues()
         {
         restart:
@@ -841,8 +835,7 @@ namespace Avalonia.PropertyStore
                     else
                     {
                         var v = property.CreateEffectiveValue(Owner);
-                        _effectiveValues ??= new();
-                        _effectiveValues.Add(property, v);
+                        AddEffectiveValue(property, v);
                         v.SetAndRaise(this, entry, priority);
                     }
 
@@ -871,7 +864,7 @@ namespace Avalonia.PropertyStore
                 {
                     foreach (var v in remove)
                     {
-                        if (_effectiveValues.Remove(v, out var e))
+                        if (RemoveEffectiveValue(v, out var e))
                             e.DisposeAndRaiseUnset(this, v);
                     }
                     remove.Dispose();
@@ -887,6 +880,25 @@ namespace Avalonia.PropertyStore
             if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out value))
                 return true;
             value = null;
+            return false;
+        }
+
+        private bool TryGetInheritedValue(
+            AvaloniaProperty property,
+            [NotNullWhen(true)] out EffectiveValue? result)
+        {
+            Debug.Assert(property.Inherits);
+
+            var i = InheritanceAncestor;
+
+            while (i is not null)
+            {
+                if (i.TryGetEffectiveValue(property, out result))
+                    return true;
+                i = i.InheritanceAncestor;
+            }
+
+            result = null;
             return false;
         }
 
