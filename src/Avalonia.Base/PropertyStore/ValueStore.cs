@@ -141,7 +141,6 @@ namespace Avalonia.PropertyStore
             {
                 var frame = GetOrCreateImmediateValueFrame(property, priority);
                 result = frame.AddValue(property, value);
-                InsertFrame(frame);
             }
 
             if (TryGetEffectiveValue(property, out var existing))
@@ -528,6 +527,7 @@ namespace Avalonia.PropertyStore
 
         private void InsertFrame(IValueFrame frame)
         {
+            Debug.Assert(!_frames.Contains(frame));
             var index = _frames.BinarySearch(frame, FrameInsertionComparer.Instance);
             if (index < 0)
                 index = ~index;
