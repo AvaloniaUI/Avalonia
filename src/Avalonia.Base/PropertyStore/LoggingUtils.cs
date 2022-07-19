@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
 
@@ -23,7 +24,7 @@ namespace Avalonia.PropertyStore
             BindingValue<T> value)
         {
             if (value.HasError)
-                Log(owner, property, value);
+                Log(owner, property, value.Error!);
         }
 
         public static void LogInvalidValue(
@@ -59,25 +60,23 @@ namespace Avalonia.PropertyStore
             AvaloniaProperty property,
             Exception e)
         {
-            owner.GetBindingWarningLogger(property, e)?.Log(
-                owner,
-                "Error in binding to {Target}.{Property}: {Message}",
-                owner,
-                property,
-                e.Message);
-        }
+            if (e is TargetInvocationException t)
+                e = t.InnerException!;
 
-        private static void Log<T>(
-            AvaloniaObject owner,
-            AvaloniaProperty property,
-            BindingValue<T> value)
-        {
-            owner.GetBindingWarningLogger(property, value.Error)?.Log(
-                owner,
-                "Error in binding to {Target}.{Property}: {Message}",
-                owner,
-                property,
-                value.Error!.Message);
+            if (e is AggregateException a)
+            {
+                foreach (var i in a.InnerExceptions)
+                    Log(owner, property, i);
+            }
+            else
+            {
+                owner.GetBindingWarningLogger(property, e)?.Log(
+                    owner,
+                    "Error in binding to {Target}.{Property}: {Message}",
+                    owner,
+                    property,
+                    e.Message);
+            }
         }
     }
 }
