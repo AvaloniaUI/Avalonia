@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
-using Avalonia.Logging;
 
 namespace Avalonia.PropertyStore
 {
     internal static class LoggingUtils
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogIfNecessary(
+            AvaloniaObject owner,
+            AvaloniaProperty property,
+            BindingNotification value)
+        {
+            if (value.ErrorType != BindingErrorType.None)
+                Log(owner, property, value.Error!);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LogIfNecessary<T>(
             AvaloniaObject owner,
@@ -43,6 +52,19 @@ namespace Avalonia.PropertyStore
                     property,
                     expectedType);
             }
+        }
+
+        private static void Log(
+            AvaloniaObject owner,
+            AvaloniaProperty property,
+            Exception e)
+        {
+            owner.GetBindingWarningLogger(property, e)?.Log(
+                owner,
+                "Error in binding to {Target}.{Property}: {Message}",
+                owner,
+                property,
+                e.Message);
         }
 
         private static void Log<T>(

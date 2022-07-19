@@ -113,6 +113,7 @@ namespace Avalonia.PropertyStore
             if (value is BindingNotification n)
             {
                 value = n.Value;
+                LoggingUtils.LogIfNecessary(_frame.Owner.Owner, Property, n);
             }
 
             if (value == AvaloniaProperty.UnsetValue)
