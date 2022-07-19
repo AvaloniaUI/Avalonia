@@ -68,7 +68,7 @@ namespace Avalonia.Styling
         void IStyleActivatorSink.OnNext(bool value, int tag)
         {
             if (!_isActivatorInitializing)
-                Owner?.FrameActivationChanged(this);
+                Owner?.OnFrameActivationChanged(this);
         }
     }
 }

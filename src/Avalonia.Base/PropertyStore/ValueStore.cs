@@ -274,11 +274,6 @@ namespace Avalonia.PropertyStore
             DictionaryPool<AvaloniaProperty, OldNewValue>.Release(values);
         }
 
-        public void FrameActivationChanged(IValueFrame frame)
-        {
-            ReevaluateEffectiveValues();
-        }
-
         /// <summary>
         /// Called by non-LocalValue binding entries to re-evaluate the effective value when the
         /// binding produces a new value.
@@ -361,6 +356,16 @@ namespace Avalonia.PropertyStore
                 if (priority <= existing.Priority)
                     ReevaluateEffectiveValue(property, existing);
             }
+        }
+
+        /// <summary>
+        /// Called by an <see cref="IValueFrame"/> when its <see cref="IValueFrame.IsActive"/>
+        /// state changes.
+        /// </summary>
+        /// <param name="frame">The frame which produced the change.</param>
+        public void OnFrameActivationChanged(IValueFrame frame)
+        {
+            ReevaluateEffectiveValues();
         }
 
         /// <summary>
