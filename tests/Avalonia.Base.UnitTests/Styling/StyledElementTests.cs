@@ -470,6 +470,57 @@ namespace Avalonia.Base.UnitTests.Styling
                 called);
         }
 
+
+        [Fact]
+        public void DataContext_Notifications_Should_Be_Called_In_Correct_Order_When_Setting_Parent()
+        {
+            var root = new TestStackPanel
+            {
+                Name = "root",
+                DataContext = "foo",
+            };
+
+            var children = new[]
+            {
+                new TestControl
+                {
+                    Name = "a1",
+                    Child = new TestControl
+                    {
+                        Name = "b1",
+                    }
+                },
+                new TestControl
+                {
+                    Name = "a2",
+                    DataContext = "foo",
+                },
+            };
+
+            var called = new List<string>();
+
+            foreach (IDataContextEvents c in new[] { children[0], children[0].Child, children[1] })
+            {
+                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((StyledElement)s).Name);
+                c.DataContextChanged += (s, e) => called.Add("changed " + ((StyledElement)s).Name);
+                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((StyledElement)s).Name);
+            }
+
+            root.Children.AddRange(children);
+
+            Assert.Equal(
+                new[]
+                {
+                    "begin a1",
+                    "begin b1",
+                    "changed a1",
+                    "changed b1",
+                    "end b1",
+                    "end a1",
+                },
+                called);
+        }
+
         [Fact]
         public void Resources_Owner_Is_Set()
         {

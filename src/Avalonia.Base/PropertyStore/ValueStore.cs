@@ -476,6 +476,8 @@ namespace Avalonia.PropertyStore
             if (_effectiveValues is not null && _effectiveValues.ContainsKey(property))
                 return;
 
+            using var notifying = PropertyNotifying.Start(Owner, property);
+
             Owner.RaisePropertyChanged(
                 property,
                 oldValue,
@@ -768,6 +770,8 @@ namespace Avalonia.PropertyStore
             // If the value is set locally, propagaton ends here.
             if (_effectiveValues?.ContainsKey(property) == true)
                 return;
+
+            using var notifying = PropertyNotifying.Start(Owner, property);
 
             // Raise PropertyChanged on this object if necessary.
             (oldValue ?? newValue!).RaiseInheritedValueChanged(Owner, property, oldValue, newValue);

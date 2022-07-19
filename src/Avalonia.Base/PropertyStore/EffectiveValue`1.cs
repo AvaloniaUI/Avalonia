@@ -133,6 +133,7 @@ namespace Avalonia.PropertyStore
 
             if (valueChanged)
             {
+                using var notifying = PropertyNotifying.Start(owner.Owner, property);
                 owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
                 if (property.Inherits)
                     owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
@@ -200,6 +201,7 @@ namespace Avalonia.PropertyStore
 
             if (valueChanged)
             {
+                using var notifying = PropertyNotifying.Start(owner.Owner, property);
                 owner.Owner.RaisePropertyChanged(property, oldValue, Value, Priority, true);
                 if (property.Inherits)
                     owner.OnInheritedEffectiveValueChanged(property, oldValue, this);

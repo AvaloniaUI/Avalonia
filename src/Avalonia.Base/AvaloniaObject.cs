@@ -596,32 +596,21 @@ namespace Avalonia
             BindingPriority priority,
             bool isEffectiveValue)
         {
+            var e = new AvaloniaPropertyChangedEventArgs<T>(
+                this,
+                property,
+                oldValue,
+                newValue,
+                priority,
+                isEffectiveValue);
+
+            OnPropertyChangedCore(e);
+
             if (isEffectiveValue)
-                property.Notifying?.Invoke(this, true);
-
-            try
             {
-                var e = new AvaloniaPropertyChangedEventArgs<T>(
-                    this,
-                    property,
-                    oldValue,
-                    newValue,
-                    priority,
-                    isEffectiveValue);
-
-                OnPropertyChangedCore(e);
-
-                if (isEffectiveValue)
-                {
-                    property.NotifyChanged(e);
-                    _propertyChanged?.Invoke(this, e);
-                    _inpcChanged?.Invoke(this, new PropertyChangedEventArgs(property.Name));
-                }
-            }
-            finally
-            {
-                if (isEffectiveValue)
-                    property.Notifying?.Invoke(this, false);
+                property.NotifyChanged(e);
+                _propertyChanged?.Invoke(this, e);
+                _inpcChanged?.Invoke(this, new PropertyChangedEventArgs(property.Name));
             }
         }
 
