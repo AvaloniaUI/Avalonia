@@ -20,11 +20,6 @@ namespace Avalonia.PropertyStore
 
         public void SetOwner(ValueStore? owner) => Owner = owner;
 
-        public bool TryGet(AvaloniaProperty property, [NotNullWhen(true)] out IValueEntry? value)
-        {
-            return _entries.TryGetValue(property, out value);
-        }
-
         public bool TryGetEntry(AvaloniaProperty property, [NotNullWhen(true)] out IValueEntry? entry)
         {
             return _entries.TryGetValue(property, out entry);
