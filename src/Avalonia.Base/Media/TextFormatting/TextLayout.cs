@@ -415,6 +415,32 @@ namespace Avalonia.Media.TextFormatting
             height += textLine.Height;
         }
 
+        private static int GetTextSourceContentLength(ITextSource textSource)
+        {
+            var pos = 0;
+            while (true)
+            {
+                var current = textSource.GetTextRun(pos);
+
+                if (current is null)
+                {
+                    return pos;
+                }
+
+                if (current.TextSourceLength == 0)
+                {
+                    return pos;
+                }
+
+                if (current.TextSourceLength == 1 && current is TextEndOfParagraph)
+                {
+                    return pos;
+                }
+
+                pos += current.TextSourceLength;
+            }
+        }
+
         private IReadOnlyList<TextLine> CreateTextLines()
         {
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
@@ -434,12 +460,14 @@ namespace Avalonia.Media.TextFormatting
 
             TextLine? previousLine = null;
 
+            var length = GetTextSourceContentLength(_textSource);
+
             while (true)
             {
                 var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-                if(textLine == null || textLine.Length == 0 || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
+                if(textLine == null || (textLine.Length == 0 && length == _textSourceLength) || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
                 {
                     if(previousLine != null && previousLine.NewLineLength  > 0)
                     {
@@ -453,7 +481,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                _textSourceLength += textLine.Length;
+                _textSourceLength += textLine.Length == 0 ? 1 : textLine.Length;
                 
                 //Fulfill max height constraint
                 if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight) && height + textLine.Height > MaxHeight)

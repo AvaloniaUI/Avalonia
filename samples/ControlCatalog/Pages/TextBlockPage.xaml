@@ -119,8 +119,10 @@
       </Border>
       <Border>
         <RichTextBlock Margin="10" TextWrapping="Wrap">
-          This <Span FontWeight="Bold">is</Span> a
+          <LineBreak/>This <Span FontWeight="Bold">is</Span><LineBreak/> a
           <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
+          <LineBreak/>
+          <LineBreak/>
           with <Span TextDecorations="Underline">several</Span>
           <Span FontStyle="Italic">Span</Span> elements,
           <Span Foreground="Blue">
