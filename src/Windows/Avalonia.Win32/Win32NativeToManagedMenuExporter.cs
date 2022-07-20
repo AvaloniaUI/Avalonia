@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 
@@ -15,13 +16,15 @@ namespace Avalonia.Win32
             _nativeMenu = nativeMenu;
         }
 
-        private IEnumerable<MenuItem> Populate(NativeMenu nativeMenu)
+        private AvaloniaList<MenuItem> Populate(NativeMenu nativeMenu)
         {
+            var result = new AvaloniaList<MenuItem>();
+            
             foreach (var menuItem in nativeMenu.Items)
             {
                 if (menuItem is NativeMenuItemSeparator)
                 {
-                    yield return new MenuItem { Header = "-" };
+                    result.Add(new MenuItem { Header = "-" });
                 }
                 else if (menuItem is NativeMenuItem item)
                 {
@@ -36,12 +39,14 @@ namespace Avalonia.Win32
                         newItem.Click += (_, __) => bridge.RaiseClicked();
                     }
 
-                    yield return newItem;
+                    result.Add(newItem);
                 }
             }
+
+            return result;
         }
 
-        public IEnumerable<MenuItem>? GetMenu()
+        public AvaloniaList<MenuItem>? GetMenu()
         {
             if (_nativeMenu != null)
             {
