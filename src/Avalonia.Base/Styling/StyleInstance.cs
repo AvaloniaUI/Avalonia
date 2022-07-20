@@ -10,13 +10,13 @@ namespace Avalonia.Styling
     /// Stores state for a <see cref="Style"/> that has been instanced on a control.
     /// </summary>
     /// <remarks>
-    /// <see cref="StyleInstance"/> implements the <see cref="IValueFrame"/> interface meaning that
-    /// it is injected directly into the value store of an <see cref="AvaloniaObject"/>. Depending
-    /// on the setters present on the style, it may be possible to share a single style instance
-    /// among all controls that the style is applied to; meaning that a single style instance can
+    /// <see cref="StyleInstance"/> is based on <see cref="ValueFrame"/> meaning that it is 
+    /// injected directly into the value store of an <see cref="AvaloniaObject"/>. Depending on
+    /// the setters present on the style, it may be possible to share a single style instance
+    /// among all controls that the style is applied to, meaning that a single style instance can
     /// apply to multiple controls.
     /// </remarks>
-    internal class StyleInstance : ValueFrameBase, IStyleInstance, IStyleActivatorSink, IDisposable
+    internal class StyleInstance : ValueFrame, IStyleInstance, IStyleActivatorSink, IDisposable
     {
         private readonly IStyleActivator? _activator;
         private List<ISetterInstance>? _setters;

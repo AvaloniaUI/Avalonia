@@ -81,7 +81,7 @@ namespace Avalonia.Styling
             return _resources?.TryGetResource(key, out result) ?? false;
         }
 
-        internal IValueFrame Attach(IStyleable target, IStyleActivator? activator)
+        internal ValueFrame Attach(IStyleable target, IStyleActivator? activator)
         {
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");

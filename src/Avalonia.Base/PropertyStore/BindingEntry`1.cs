@@ -12,14 +12,14 @@ namespace Avalonia.PropertyStore
         IObserver<BindingValue<T>>,
         IDisposable
     {
-        private readonly ValueFrameBase _frame;
+        private readonly ValueFrame _frame;
         private readonly object _source;
         private IDisposable? _subscription;
         private bool _hasValue;
         private T? _value;
 
         public BindingEntry(
-            ValueFrameBase frame,
+            ValueFrame frame,
             StyledPropertyBase<T> property,
             IObservable<BindingValue<T>> source)
         {
@@ -29,7 +29,7 @@ namespace Avalonia.PropertyStore
         }
 
         public BindingEntry(
-            ValueFrameBase frame,
+            ValueFrame frame,
             StyledPropertyBase<T> property,
             IObservable<T> source)
         {

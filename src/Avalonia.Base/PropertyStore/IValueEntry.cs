@@ -3,7 +3,7 @@
 namespace Avalonia.PropertyStore
 {
     /// <summary>
-    /// Represents an untyped value entry in an <see cref="IValueFrame"/>.
+    /// Represents an untyped value entry in a <see cref="ValueFrame"/>.
     /// </summary>
     internal interface IValueEntry
     {

@@ -11,7 +11,7 @@ namespace Avalonia.PropertyStore
 {
     internal class ValueStore
     {
-        private readonly List<IValueFrame> _frames = new();
+        private readonly List<ValueFrame> _frames = new();
         private Dictionary<int, IDisposable>? _localValueBindings;
         private Dictionary<AvaloniaProperty, EffectiveValue>? _effectiveValues;
         private int _inheritedValueCount;
@@ -22,7 +22,7 @@ namespace Avalonia.PropertyStore
 
         public AvaloniaObject Owner { get; }
         public ValueStore? InheritanceAncestor { get; private set; }
-        public IReadOnlyList<IValueFrame> Frames => _frames;
+        public IReadOnlyList<ValueFrame> Frames => _frames;
 
         public void BeginStyling() => ++_styling;
 
@@ -32,7 +32,7 @@ namespace Avalonia.PropertyStore
                 ReevaluateEffectiveValues();
         }
 
-        public void AddFrame(IValueFrame style)
+        public void AddFrame(ValueFrame style)
         {
             InsertFrame(style);
             ReevaluateEffectiveValues();
@@ -366,7 +366,7 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="frame">The frame which contained the binding.</param>
-        public void OnBindingCompleted(AvaloniaProperty property, IValueFrame frame)
+        public void OnBindingCompleted(AvaloniaProperty property, ValueFrame frame)
         {
             var priority = frame.Priority;
 
@@ -378,11 +378,11 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
-        /// Called by an <see cref="IValueFrame"/> when its <see cref="IValueFrame.IsActive"/>
+        /// Called by a <see cref="ValueFrame"/> when its <see cref="ValueFrame.IsActive"/>
         /// state changes.
         /// </summary>
         /// <param name="frame">The frame which produced the change.</param>
-        public void OnFrameActivationChanged(IValueFrame frame)
+        public void OnFrameActivationChanged(ValueFrame frame)
         {
             ReevaluateEffectiveValues();
         }
@@ -523,12 +523,12 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
-        /// Called by an <see cref="IValueFrame"/> to re-evaluate the effective value when a value
+        /// Called by a <see cref="ValueFrame"/> to re-evaluate the effective value when a value
         /// is removed.
         /// </summary>
         /// <param name="frame">The frame on which the change occurred.</param>
         /// <param name="property">The property whose value was removed.</param>
-        public void OnValueEntryRemoved(IValueFrame frame, AvaloniaProperty property)
+        public void OnValueEntryRemoved(ValueFrame frame, AvaloniaProperty property)
         {
             Debug.Assert(frame.IsActive);
 
@@ -548,7 +548,7 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public bool RemoveFrame(IValueFrame frame)
+        public bool RemoveFrame(ValueFrame frame)
         {
             if (_frames.Remove(frame))
             {
@@ -570,7 +570,7 @@ namespace Avalonia.PropertyStore
                 null);
         }
 
-        private void InsertFrame(IValueFrame frame)
+        private void InsertFrame(ValueFrame frame)
         {
             Debug.Assert(!_frames.Contains(frame));
 

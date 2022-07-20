@@ -1,7 +1,7 @@
 ﻿namespace Avalonia.PropertyStore
 {
     /// <summary>
-    /// Represents a typed value entry in an <see cref="IValueFrame"/>.
+    /// Represents a typed value entry in a <see cref="ValueFrame"/>.
     /// </summary>
     internal interface IValueEntry<T> : IValueEntry
     {

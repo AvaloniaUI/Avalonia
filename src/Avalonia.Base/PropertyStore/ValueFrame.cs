@@ -5,7 +5,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.PropertyStore
 {
-    internal abstract class ValueFrameBase : IValueFrame
+    internal abstract class ValueFrame
     {
         private readonly AvaloniaPropertyValueStore<IValueEntry> _entries = new();
 
