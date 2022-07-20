@@ -15,7 +15,6 @@ namespace Avalonia.PropertyStore
         }
 
         public override bool IsActive => true;
-        public override BindingPriority Priority { get; }
 
         public BindingEntry<T> AddBinding<T>(
             StyledPropertyBase<T> property,

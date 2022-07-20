@@ -12,7 +12,7 @@ namespace Avalonia.PropertyStore
         public int EntryCount => _entries.Count;
         public abstract bool IsActive { get; }
         public ValueStore? Owner { get; private set; }
-        public abstract BindingPriority Priority { get; }
+        public BindingPriority Priority { get; protected set; }
 
         public bool Contains(AvaloniaProperty property) => _entries.Contains(property);
 

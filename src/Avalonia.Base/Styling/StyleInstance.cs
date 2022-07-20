@@ -40,7 +40,6 @@ namespace Avalonia.Styling
             }
         }
 
-        public override BindingPriority Priority { get; }
         public IStyle Source { get; }
 
         public void Add(ISetterInstance instance)
