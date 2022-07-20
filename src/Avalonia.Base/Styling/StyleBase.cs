@@ -19,6 +19,7 @@ namespace Avalonia.Styling
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
         private StyleCache? _childCache;
+        private StyleInstance? _sharedInstance;
 
         public IList<IStyle> Children => _children ??= new(this);
 
@@ -86,15 +87,30 @@ namespace Avalonia.Styling
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");
 
-            var instance = new StyleInstance(this, activator);
+            StyleInstance instance;
 
-            if (_setters is object)
+            if (_sharedInstance is not null)
             {
-                foreach (var setter in _setters)
+                instance = _sharedInstance;
+            }
+            else
+            {
+                var canShareInstance = activator is null;
+
+                instance = new StyleInstance(this, activator);
+
+                if (_setters is object)
                 {
-                    var setterInstance = setter.Instance(instance, target);
-                    instance.Add(setterInstance);
+                    foreach (var setter in _setters)
+                    {
+                        var setterInstance = setter.Instance(instance, target);
+                        instance.Add(setterInstance);
+                        canShareInstance &= setterInstance == setter;
+                    }
                 }
+
+                if (canShareInstance)
+                    _sharedInstance = instance;
             }
 
             ao.GetValueStore().AddFrame(instance);
