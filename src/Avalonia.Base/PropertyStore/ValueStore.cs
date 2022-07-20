@@ -572,7 +572,8 @@ namespace Avalonia.PropertyStore
 
         private void InsertFrame(ValueFrame frame)
         {
-            Debug.Assert(!_frames.Contains(frame));
+            // Uncomment this line when #8549 is fixed.
+            //Debug.Assert(!_frames.Contains(frame));
 
             var index = BinarySearchFrame(frame.Priority);
             _frames.Insert(index, frame);
