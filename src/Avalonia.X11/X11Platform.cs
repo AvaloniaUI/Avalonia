@@ -216,16 +216,16 @@ namespace Avalonia
         public bool OverlayPopups { get; set; }
 
         /// <summary>
-        /// Enables native file dialogs as well as global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
+        /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
         /// The default value is true.
         /// </summary>
         public bool UseDBusMenu { get; set; } = true;
 
         /// <summary>
-        /// Enables GTK file picker instead of default FreeDesktop.
-        /// The default value is true. And FreeDesktop file picker is used instead if available.
+        /// Enables DBus file picker instead of GTK.
+        /// The default value is true.
         /// </summary>
-        public bool UseGtkFilePicker { get; set; } = false;
+        public bool UseDBusFilePicker { get; set; } = true;
 
         /// <summary>
         /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.

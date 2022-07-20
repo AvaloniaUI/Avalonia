@@ -15,27 +15,26 @@ namespace Avalonia.FreeDesktop
 {
     internal class DBusSystemDialog : BclStorageProvider
     {
-        private static readonly Lazy<IFileChooser?> s_fileChooser = new(() =>
-        {
-            var fileChooser = DBusHelper.Connection?.CreateProxy<IFileChooser>("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
-            if (fileChooser is null)
-                return null;
-            try
-            {
-                _ = fileChooser.GetVersionAsync();
-                return fileChooser;
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)?.Log(null, $"Unable to connect to org.freedesktop.portal.Desktop: {e.Message}");
-                return null;
-            }
-        });
+        private static readonly Lazy<IFileChooser?> s_fileChooser = new(() => DBusHelper.Connection?
+            .CreateProxy<IFileChooser>("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop"));
 
-        internal static DBusSystemDialog? TryCreate(IPlatformHandle handle)
+        internal static async Task<DBusSystemDialog?> TryCreate(IPlatformHandle handle)
         {
-            return handle.HandleDescriptor == "XID" && s_fileChooser.Value is { } fileChooser
-                ? new DBusSystemDialog(fileChooser, handle) : null;
+            if (handle.HandleDescriptor == "XID" && s_fileChooser.Value is { } fileChooser)
+            {
+                try
+                {
+                    await fileChooser.GetVersionAsync();
+                    return new DBusSystemDialog(fileChooser, handle);
+                }
+                catch (Exception e)
+                {
+                    Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)?.Log(null, $"Unable to connect to org.freedesktop.portal.Desktop: {e.Message}");
+                    return null;
+                }
+            }
+
+            return null;
         }
 
         private readonly IFileChooser _fileChooser;
