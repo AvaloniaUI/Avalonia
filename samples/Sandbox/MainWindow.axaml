@@ -1,4 +1,15 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
+  <NativeMenu.Menu>
+    <NativeMenu>
+    </NativeMenu>
+  </NativeMenu.Menu>
+
+  <StackPanel Orientation="Vertical">
+    <Label Name="MyLabel">Click bellow to recreate the Native Menus and check the memory growing</Label>
+    <Button Name="MyButton" Click="MyButton_OnClick">Click me!</Button>
+    <Button Name="ForGCCollectButton" Click="ForGCCollectButton_OnClick">Force GC Collect</Button>
+    <Button Click="MyButton_OnClick2">Take Snapshot</Button>
+  </StackPanel>
 </Window>
