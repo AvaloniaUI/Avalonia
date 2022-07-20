@@ -13,6 +13,9 @@
       </Style>
     </Grid.Styles>
     <controls:HamburgerMenu Name="Sidebar">
+      <TabItem Header="Composition">
+        <pages:CompositionPage/>
+      </TabItem>
       <TabItem Header="Acrylic">
         <pages:AcrylicPage />
       </TabItem>

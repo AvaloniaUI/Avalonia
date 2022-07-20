@@ -11,8 +11,13 @@ namespace Avalonia.Controls
         public MenuFlyoutPresenter()
             :base(new DefaultMenuInteractionHandler(true))
         {
-
         }
+
+        public MenuFlyoutPresenter(IMenuInteractionHandler menuInteractionHandler)
+            : base(menuInteractionHandler)
+        {
+        }
+
 
         public override void Close()
         {

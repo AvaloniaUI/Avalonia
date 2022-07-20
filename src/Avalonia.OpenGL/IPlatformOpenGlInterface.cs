@@ -1,8 +1,10 @@
+using Avalonia.Platform;
+
 namespace Avalonia.OpenGL
 {
-    public interface IPlatformOpenGlInterface
+    public interface IPlatformOpenGlInterface : IPlatformGpu
     {
-        IGlContext PrimaryContext { get; }
+        new IGlContext PrimaryContext { get; }
         IGlContext CreateSharedContext();
         bool CanShareContexts { get; }
         bool CanCreateContexts { get; }

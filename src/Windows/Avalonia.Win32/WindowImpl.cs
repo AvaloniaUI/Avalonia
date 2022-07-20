@@ -15,6 +15,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
@@ -543,6 +544,9 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
+            if (Win32Platform.Compositor != null)
+                return new CompositingRenderer(root, Win32Platform.Compositor);
+            
             return Win32Platform.UseDeferredRendering
                 ? _isUsingComposition
                     ? new DeferredRenderer(root, loop)
