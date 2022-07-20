@@ -199,7 +199,8 @@ namespace Avalonia.Controls
 
         private static void Icons_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            RemoveIcons(e.OldItems.Cast<TrayIcon>());
+            if (e.OldItems is not null)
+                RemoveIcons(e.OldItems.Cast<TrayIcon>());
         }
 
         private static void RemoveIcons(IEnumerable<TrayIcon> icons)
