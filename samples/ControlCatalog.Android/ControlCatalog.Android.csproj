@@ -9,35 +9,33 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Assets\AboutAssets.txt" />
-  </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="..\..\build\Assets\Icon.png">
       <Link>Resources\drawable\Icon.png</Link>
     </AndroidResource>
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release' and '$(TF_BUILD)' == ''">
-    <DebugSymbols>True</DebugSymbols>
+  <PropertyGroup Condition="'$(RunAOTCompilation)'=='' and '$(Configuration)'=='Release' and '$(TF_BUILD)'==''">
     <RunAOTCompilation>True</RunAOTCompilation>
+  </PropertyGroup>
+  
+  <!-- PropertyGroup Condition="'$(RunAOTCompilation)'=='True'">
     <EnableLLVM>True</EnableLLVM>
-    <AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
-  </PropertyGroup>
+    <AndroidAotAdditionalArguments>no-write-symbols,nodebug</AndroidAotAdditionalArguments>
+    <AndroidAotMode>Hybrid</AndroidAotMode>
+    <AndroidGenerateJniMarshalMethods>True</AndroidGenerateJniMarshalMethods>
+  </PropertyGroup -->
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
-    <RunAOTCompilation>False</RunAOTCompilation>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+  <PropertyGroup Condition="'$(AndroidEnableProfiler)'=='True'">
+    <IsEmulator Condition="'$(IsEmulator)' == ''">True</IsEmulator>
+    <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.3.1.3" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.3.1.3" />
+    <AndroidEnvironment Condition="'$(IsEmulator)'=='True'" Include="environment.emulator.txt" />
+    <AndroidEnvironment Condition="'$(IsEmulator)'!='True'" Include="environment.device.txt" />
   </ItemGroup>
 
   <ItemGroup>

@@ -951,7 +951,8 @@ namespace Avalonia
 
             public void Dispose()
             {
-                _subscription.Dispose();
+                // _subscription can be null, if Subscribe failed with an exception.
+                _subscription?.Dispose();
                 _owner._directBindings!.Remove(this);
             }
 

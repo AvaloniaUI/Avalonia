@@ -38,7 +38,7 @@ namespace ControlCatalog.Pages
 
         private class TabStripItemViewModel
         {
-            public string Header { get; set; }
+            public string? Header { get; set; }
             public bool IsEnabled { get; set; } = true;
         }
     }

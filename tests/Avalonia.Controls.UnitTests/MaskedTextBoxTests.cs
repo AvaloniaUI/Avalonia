@@ -180,34 +180,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
-        {
-            using (Start())
-            {
-                var source = new Class1();
-                var target = new MaskedTextBox
-                {
-                    DataContext = source,
-                    Template = CreateTemplate(),
-                };
-
-                target.ApplyTemplate();
-                target.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Foo), BindingMode.TwoWay));
-
-                Assert.Equal("0", target.Text);
-
-                target.CaretIndex = 1;
-                target.RaiseEvent(new TextInputEventArgs
-                {
-                    RoutedEvent = InputElement.TextInputEvent,
-                    Text = "2",
-                });
-
-                Assert.Equal("02", target.Text);
-            }
-        }
-
-        [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
             using (Start())

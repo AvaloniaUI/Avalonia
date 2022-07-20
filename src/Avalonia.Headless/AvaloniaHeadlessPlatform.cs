@@ -7,12 +7,14 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
 namespace Avalonia.Headless
 {
     public static class AvaloniaHeadlessPlatform
     {
+        internal static Compositor Compositor { get; private set; }
         class RenderTimer : DefaultRenderTimer
         {
             private readonly int _framesPerSecond;
@@ -55,14 +57,13 @@ namespace Avalonia.Headless
             public ITrayIconImpl CreateTrayIcon() => null;
         }
         
-        internal static void Initialize()
+        internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(new HeadlessPlatformThreadingInterface())
                 .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToConstant(new HeadlessPlatformSettingsStub())
-                .Bind<ISystemDialogImpl>().ToSingleton<HeadlessSystemDialogsStub>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
@@ -71,6 +72,8 @@ namespace Avalonia.Headless
                 .Bind<ITextShaperImpl>().ToSingleton<HeadlessTextShaperStub>()
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+            if (opts.UseCompositor)
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);
         }
 
 
@@ -82,15 +85,21 @@ namespace Avalonia.Headless
 
         }
     }
-    
+
+    public class AvaloniaHeadlessPlatformOptions
+    {
+        public bool UseCompositor { get; set; } = true;
+        public bool UseHeadlessDrawing { get; set; } = true;
+    }
+
     public static class AvaloniaHeadlessPlatformExtensions
     {
-        public static T UseHeadless<T>(this T builder, bool headlessDrawing = true) 
+        public static T UseHeadless<T>(this T builder, AvaloniaHeadlessPlatformOptions opts) 
             where T : AppBuilderBase<T>, new()
         {
-            if (headlessDrawing)
+            if(opts.UseHeadlessDrawing)
                 builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
-            return builder.UseWindowingSubsystem(AvaloniaHeadlessPlatform.Initialize, "Headless");
+            return builder.UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
         }
     }
 }

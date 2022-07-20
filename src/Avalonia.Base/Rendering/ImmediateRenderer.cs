@@ -331,7 +331,11 @@ namespace Avalonia.Rendering
                     if (_updateTransformedBounds)
                         visual.TransformedBounds = transformed;
 
-                    foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
+                    var childrenEnumerable = visual.HasNonUniformZIndexChildren
+                        ? visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance)
+                        : (IEnumerable<IVisual>)visual.VisualChildren;
+                    
+                    foreach (var child in childrenEnumerable)
                     {
                         var childBounds = GetTransformedBounds(child);
 

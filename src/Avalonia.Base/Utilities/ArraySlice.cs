@@ -116,7 +116,7 @@ namespace Avalonia.Utilities
         /// </summary>
         public static implicit operator ReadOnlySlice<T>(ArraySlice<T> slice)
         {
-            return new ReadOnlySlice<T>(slice._data).AsSlice(slice.Start, slice.Length);
+            return new ReadOnlySlice<T>(slice._data, 0, slice.Length, slice.Start);
         }
 
         /// <summary>

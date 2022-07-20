@@ -268,11 +268,11 @@ namespace Avalonia.Collections
 
         public static DataGridSortDescription FromComparer(IComparer comparer, ListSortDirection direction = ListSortDirection.Ascending)
         {
-            return new DataGridComparerSortDesctiption(comparer, direction);
+            return new DataGridComparerSortDescription(comparer, direction);
         }
     }
 
-    public class DataGridComparerSortDesctiption : DataGridSortDescription
+    public class DataGridComparerSortDescription : DataGridSortDescription
     {
         private readonly IComparer _innerComparer;
         private readonly ListSortDirection _direction;
@@ -281,7 +281,7 @@ namespace Avalonia.Collections
         public IComparer SourceComparer => _innerComparer;
         public override IComparer<object> Comparer => _comparer;
         public override ListSortDirection Direction => _direction;
-        public DataGridComparerSortDesctiption(IComparer comparer, ListSortDirection direction)
+        public DataGridComparerSortDescription(IComparer comparer, ListSortDirection direction)
         {
             _innerComparer = comparer;
             _direction = direction;
@@ -300,7 +300,7 @@ namespace Avalonia.Collections
         public override DataGridSortDescription SwitchSortDirection()
         {
             var newDirection = _direction == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
-            return new DataGridComparerSortDesctiption(_innerComparer, newDirection);
+            return new DataGridComparerSortDescription(_innerComparer, newDirection);
         }
     }
 

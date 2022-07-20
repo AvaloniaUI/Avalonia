@@ -1,3 +1,7 @@
+
+
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -8,11 +12,10 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Server;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -288,6 +291,10 @@ namespace Avalonia
         /// </summary>
         protected IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
+        internal CompositionDrawListVisual? CompositionVisual { get; private set; }
+        
+        public bool HasNonUniformZIndexChildren { get; private set; }
+
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
         /// </summary>
@@ -376,7 +383,9 @@ namespace Avalonia
                     if (e.OldValue is IAffectsRender oldValue)
                     {
                         if (sender._affectsRenderWeakSubscriber != null)
+                        {
                             InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
+                        }
                     }
 
                     if (e.NewValue is IAffectsRender newValue)
@@ -432,9 +441,16 @@ namespace Avalonia
             }
 
             EnableTransitions();
+            if (_visualRoot.Renderer is IRendererWithCompositor compositingRenderer)
+            {
+                AttachToCompositor(compositingRenderer.Compositor);
+            }
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
+
+            if (ZIndex != 0 && this.GetVisualParent() is Visual parent)
+                parent.HasNonUniformZIndexChildren = true;
 
             var visualChildren = VisualChildren;
 
@@ -450,6 +466,17 @@ namespace Avalonia
                     }
                 }
             }
+        }
+
+        internal CompositionVisual AttachToCompositor(Compositor compositor)
+        {
+            if (CompositionVisual == null || CompositionVisual.Compositor != compositor)
+            {
+                CompositionVisual = new CompositionDrawListVisual(compositor,
+                    new ServerCompositionDrawListVisual(compositor.Server, this), this);
+            }
+
+            return CompositionVisual;
         }
 
         /// <summary>
@@ -470,6 +497,12 @@ namespace Avalonia
 
             DisableTransitions();
             OnDetachedFromVisualTree(e);
+            if (CompositionVisual != null)
+            {
+                CompositionVisual.DrawList = null;
+                CompositionVisual = null;
+            }
+
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
@@ -564,7 +597,7 @@ namespace Avalonia
                 {
                     newValue.Changed += sender.RenderTransformChanged;
                 }
-
+                
                 sender.InvalidateVisual();
             }
         }
@@ -594,6 +627,9 @@ namespace Avalonia
         {
             var sender = e.Sender as IVisual;
             var parent = sender?.VisualParent;
+            if (sender?.ZIndex != 0 && parent is Visual parentVisual)
+                parentVisual.HasNonUniformZIndexChildren = true;
+            
             sender?.InvalidateVisual();
             parent?.VisualRoot?.Renderer?.RecalculateChildren(parent);
         }

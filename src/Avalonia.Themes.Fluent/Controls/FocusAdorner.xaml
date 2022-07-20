@@ -19,16 +19,4 @@
       </FocusAdornerTemplate>
     </Setter>
   </Style>
-
-  <!--  DottedLine FocusAdorner  -->
-  <Style Selector="Window.DottedLineFocusAdorner :is(Control)">
-    <Setter Property="FocusAdorner">
-      <FocusAdornerTemplate>
-        <Rectangle Stroke="{StaticResource SystemControlFocusVisualPrimaryBrush}"
-                   StrokeThickness="1"
-                   StrokeDashArray="1,2"
-                   Margin="1" />
-      </FocusAdornerTemplate>
-    </Setter>
-  </Style>
 </Styles>

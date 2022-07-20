@@ -468,10 +468,6 @@ namespace Avalonia
                                 values.Remove(entry.property);
                             }
                         }
-                        else
-                        {
-                            throw new AvaloniaInternalException("Value could not be found at the end of batch update.");
-                        }
 
                         // If a new batch update was started while ending this one, abort.
                         if (_batchUpdateCount > 0)

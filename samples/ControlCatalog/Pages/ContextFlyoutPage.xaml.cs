@@ -18,29 +18,29 @@ namespace ControlCatalog.Pages
 
             DataContext = new ContextPageViewModel();
 
-            _textBox = this.FindControl<TextBox>("TextBox");
+            _textBox = this.Get<TextBox>("TextBox");
 
-            var cutButton = this.FindControl<Button>("CutButton");
+            var cutButton = this.Get<Button>("CutButton");
             cutButton.Click += CloseFlyout;
 
-            var copyButton = this.FindControl<Button>("CopyButton");
+            var copyButton = this.Get<Button>("CopyButton");
             copyButton.Click += CloseFlyout;
 
-            var pasteButton = this.FindControl<Button>("PasteButton");
+            var pasteButton = this.Get<Button>("PasteButton");
             pasteButton.Click += CloseFlyout;
 
-            var clearButton = this.FindControl<Button>("ClearButton");
+            var clearButton = this.Get<Button>("ClearButton");
             clearButton.Click += CloseFlyout;
 
-            var customContextRequestedBorder = this.FindControl<Border>("CustomContextRequestedBorder");
+            var customContextRequestedBorder = this.Get<Border>("CustomContextRequestedBorder");
             customContextRequestedBorder.AddHandler(ContextRequestedEvent, CustomContextRequested, RoutingStrategies.Tunnel);
 
-            var cancellableContextBorder = this.FindControl<Border>("CancellableContextBorder");
+            var cancellableContextBorder = this.Get<Border>("CancellableContextBorder");
             cancellableContextBorder.ContextFlyout!.Closing += ContextFlyoutPage_Closing;
             cancellableContextBorder.ContextFlyout!.Opening += ContextFlyoutPage_Opening;
         }
 
-        private ContextPageViewModel _model;
+        private ContextPageViewModel? _model;
         protected override void OnDataContextChanged(EventArgs e)
         {
             if (_model != null)
@@ -55,7 +55,7 @@ namespace ControlCatalog.Pages
         private void ContextFlyoutPage_Closing(object sender, CancelEventArgs e)
         {
             var cancelCloseCheckBox = this.FindControl<CheckBox>("CancelCloseCheckBox");
-            e.Cancel = cancelCloseCheckBox.IsChecked ?? false;
+            e.Cancel = cancelCloseCheckBox?.IsChecked ?? false;
         }
 
         private void ContextFlyoutPage_Opening(object sender, EventArgs e)
@@ -63,13 +63,13 @@ namespace ControlCatalog.Pages
             if (e is CancelEventArgs cancelArgs)
             {
                 var cancelCloseCheckBox = this.FindControl<CheckBox>("CancelOpenCheckBox");
-                cancelArgs.Cancel = cancelCloseCheckBox.IsChecked ?? false;
+                cancelArgs.Cancel = cancelCloseCheckBox?.IsChecked ?? false;
             }
         }
 
         private void CloseFlyout(object sender, RoutedEventArgs e)
         {
-            _textBox.ContextFlyout.Hide();
+            _textBox.ContextFlyout?.Hide();
         }
 
         public void CustomContextRequested(object sender, ContextRequestedEventArgs e)

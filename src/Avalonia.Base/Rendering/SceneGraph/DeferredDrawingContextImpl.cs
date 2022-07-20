@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -456,7 +457,7 @@ namespace Avalonia.Rendering.SceneGraph
             return _drawOperationindex < _node!.DrawOperations.Count ? _node.DrawOperations[_drawOperationindex] as IRef<T> : null;
         }
 
-        private IDictionary<IVisual, Scene>? CreateChildScene(IBrush? brush)
+        private IDisposable? CreateChildScene(IBrush? brush)
         {
             var visualBrush = brush as VisualBrush;
 
@@ -469,7 +470,7 @@ namespace Avalonia.Rendering.SceneGraph
                     (visual as IVisualBrushInitialize)?.EnsureInitialized();
                     var scene = new Scene(visual);
                     _sceneBuilder.UpdateAll(scene);
-                    return new Dictionary<IVisual, Scene> { { visualBrush.Visual, scene } };
+                    return scene;
                 }
             }
 

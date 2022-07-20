@@ -28,16 +28,16 @@ namespace ControlCatalog.Pages
 
     public class NumbersPageViewModel : ViewModelBase
     {
-        private IList<FormatObject> _formats;
+        private IList<FormatObject>? _formats;
         private FormatObject _selectedFormat;
-        private IList<Location> _spinnerLocations;
+        private IList<Location>? _spinnerLocations;
 
         private double _doubleValue;
         private decimal _decimalValue;
 
         public NumbersPageViewModel()
         {
-            SelectedFormat = Formats.FirstOrDefault();
+            _selectedFormat = Formats.FirstOrDefault();
         }
 
         public double DoubleValue
@@ -84,15 +84,10 @@ namespace ControlCatalog.Pages
             }
         }
 
-        public IList<CultureInfo> Cultures { get; } = new List<CultureInfo>()
-        {
-            new CultureInfo("en-US"),
-            new CultureInfo("en-GB"),
-            new CultureInfo("fr-FR"),
-            new CultureInfo("ar-DZ"),
-            new CultureInfo("zh-CN"),
-            new CultureInfo("cs-CZ")
-        };
+        // Trimmed-mode friendly where we might not have cultures
+        public IList<CultureInfo?> Cultures { get; } = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
+            .Where(c => new[] { "en-US", "en-GB", "fr-FR", "ar-DZ", "zh-CH", "cs-CZ" }.Contains(c.Name))
+            .ToArray();
 
         public FormatObject SelectedFormat
         {
@@ -103,7 +98,7 @@ namespace ControlCatalog.Pages
 
     public class FormatObject
     {
-        public string Value { get; set; }
-        public string Name { get; set; }
+        public string? Value { get; set; }
+        public string? Name { get; set; }
     }
 }

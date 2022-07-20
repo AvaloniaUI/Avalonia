@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 
 namespace IntegrationTestApp
 {
@@ -46,6 +48,62 @@ namespace IntegrationTestApp
             }
         }
 
+        private void ShowWindow()
+        {
+            var sizeTextBox = this.GetControl<TextBox>("ShowWindowSize");
+            var modeComboBox = this.GetControl<ComboBox>("ShowWindowMode");
+            var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
+            var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
+            var owner = (Window)this.GetVisualRoot()!;
+
+            var window = new ShowWindowTest
+            {
+                WindowStartupLocation = (WindowStartupLocation)locationComboBox.SelectedIndex,
+            };
+
+            if (size.HasValue)
+            {
+                window.Width = size.Value.Width;
+                window.Height = size.Value.Height;
+            }
+
+            sizeTextBox.Text = string.Empty;
+
+            switch (modeComboBox.SelectedIndex)
+            {
+                case 0:
+                    window.Show();
+                    break;
+                case 1:
+                    window.Show(owner);
+                    break;
+                case 2:
+                    window.ShowDialog(owner);
+                    break;
+            }
+        }
+
+        private void SendToBack()
+        {
+            var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+
+            foreach (var window in lifetime.Windows)
+            {
+                window.Activate();
+            }
+        }
+
+        private void RestoreAll()
+        {
+            var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+
+            foreach (var window in lifetime.Windows)
+            {
+                if (window.WindowState == WindowState.Minimized)
+                    window.WindowState = WindowState.Normal;
+            }
+        }
+
         private void MenuClicked(object? sender, RoutedEventArgs e)
         {
             var clickedMenuItemTextBlock = this.FindControl<TextBlock>("ClickedMenuItem");
@@ -64,6 +122,14 @@ namespace IntegrationTestApp
                 this.FindControl<ListBox>("BasicListBox").SelectedIndex = -1;
             if (source?.Name == "MenuClickedMenuItemReset")
                 this.FindControl<TextBlock>("ClickedMenuItem").Text = "None";
+            if (source?.Name == "ShowWindow")
+                ShowWindow();
+            if (source?.Name == "SendToBack")
+                SendToBack();
+            if (source?.Name == "ExitFullscreen")
+                WindowState = WindowState.Normal;
+            if (source?.Name == "RestoreAll")
+                RestoreAll();
         }
     }
 }
