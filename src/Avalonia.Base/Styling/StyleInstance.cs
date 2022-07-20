@@ -20,8 +20,6 @@ namespace Avalonia.Styling
     {
         private readonly IStyleActivator? _activator;
         private List<ISetterInstance>? _setters;
-        private bool _isActivatorInitializing;
-        private bool _isActivatorSubscribed;
 
         public StyleInstance(IStyle style, IStyleActivator? activator)
         {
@@ -36,14 +34,8 @@ namespace Avalonia.Styling
         {
             get
             {
-                if (_activator is object && !_isActivatorSubscribed)
-                {
-                    _isActivatorInitializing = true;
+                if (_activator?.IsSubscribed == false)
                     _activator.Subscribe(this);
-                    _isActivatorInitializing = false;
-                    _isActivatorSubscribed = true;
-                }
-
                 return _activator?.IsActive ?? true;
             }
         }
@@ -65,10 +57,6 @@ namespace Avalonia.Styling
             _activator?.Dispose();
         }
 
-        void IStyleActivatorSink.OnNext(bool value, int tag)
-        {
-            if (!_isActivatorInitializing)
-                Owner?.OnFrameActivationChanged(this);
-        }
+        void IStyleActivatorSink.OnNext(bool value, int tag) => Owner?.OnFrameActivationChanged(this);
     }
 }

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Styling.Activators
+﻿namespace Avalonia.Styling.Activators
 {
     /// <summary>
     /// An <see cref="IStyleActivator"/> which inverts the state of an input activator.
@@ -9,8 +7,8 @@ namespace Avalonia.Styling.Activators
     {
         private readonly IStyleActivator _source;
         public NotActivator(IStyleActivator source) => _source = source;
-        public override bool IsActive => !_source.IsActive;
-        void IStyleActivatorSink.OnNext(bool value, int tag) => PublishNext(!value);
+        void IStyleActivatorSink.OnNext(bool value, int tag) => ReevaluateIsActive();
+        protected override bool EvaluateIsActive() => !_source.IsActive;
         protected override void Initialize() => _source.Subscribe(this, 0);
         protected override void Deinitialize() => _source.Unsubscribe(this);
     }

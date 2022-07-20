@@ -33,8 +33,14 @@ namespace Avalonia.Base.UnitTests.Styling
             private readonly IStyleActivator _source;
             
             public ObservableAdapter(IStyleActivator source) => _source = source;
+
             protected override void Initialize() => _source.Subscribe(this);
             protected override void Deinitialize() => _source.Unsubscribe(this);
+            
+            protected override void Subscribed(IObserver<bool> observer, bool first)
+            {
+                observer.OnNext(_source.IsActive);
+            }
 
             void IStyleActivatorSink.OnNext(bool value, int tag)
             {

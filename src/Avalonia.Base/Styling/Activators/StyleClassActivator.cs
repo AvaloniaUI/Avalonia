@@ -1,9 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
-using Avalonia.Collections;
 using Avalonia.Controls;
-
-#nullable enable
 
 namespace Avalonia.Styling.Activators
 {
@@ -21,8 +17,6 @@ namespace Avalonia.Styling.Activators
             _classes = classes;
             _match = match;
         }
-
-        public override bool IsActive => AreClassesMatching(_classes, _match);
 
         public static bool AreClassesMatching(IReadOnlyList<string> classes, IList<string> toMatch)
         {
@@ -54,20 +48,9 @@ namespace Avalonia.Styling.Activators
             return remainingMatches == 0;
         }
 
-        void IClassesChangedListener.Changed()
-        {
-            PublishNext(IsActive);
-        }
-
-        protected override void Initialize()
-        {
-            PublishNext(IsActive);
-            _classes.AddListener(this);
-        }
-
-        protected override void Deinitialize()
-        {
-            _classes.RemoveListener(this);
-        }
+        void IClassesChangedListener.Changed() => ReevaluateIsActive();
+        protected override bool EvaluateIsActive() => AreClassesMatching(_classes, _match);
+        protected override void Initialize() => _classes.AddListener(this);
+        protected override void Deinitialize() => _classes.RemoveListener(this);
     }
 }

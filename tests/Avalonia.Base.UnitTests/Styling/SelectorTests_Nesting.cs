@@ -292,7 +292,13 @@ namespace Avalonia.Base.UnitTests.Styling
 
         private class ActivatorSink : IStyleActivatorSink
         {
-            public ActivatorSink(IStyleActivator source) => source.Subscribe(this);
+            public ActivatorSink(IStyleActivator source)
+            {
+                source.Subscribe(this);
+                Active = source.IsActive;
+            }
+
+
             public bool Active { get; private set; }
             public void OnNext(bool value, int tag) => Active = value;
         }

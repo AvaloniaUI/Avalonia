@@ -1,7 +1,5 @@
 ﻿using System;
 
-#nullable enable
-
 namespace Avalonia.Styling.Activators
 {
     /// <summary>
@@ -24,13 +22,10 @@ namespace Avalonia.Styling.Activators
             _value = value;
         }
 
-        public override bool IsActive
+        protected override bool EvaluateIsActive()
         {
-            get
-            {
-                var value = _control.GetValue(_property);
-                return PropertyEqualsSelector.Compare(_property.PropertyType, value, _value);
-            }
+            var value = _control.GetValue(_property);
+            return PropertyEqualsSelector.Compare(_property.PropertyType, value, _value);
         }
 
         protected override void Initialize()
@@ -42,6 +37,6 @@ namespace Avalonia.Styling.Activators
 
         void IObserver<object?>.OnCompleted() { }
         void IObserver<object?>.OnError(Exception error) { }
-        void IObserver<object?>.OnNext(object? value) => PublishNext(IsActive);
+        void IObserver<object?>.OnNext(object? value) => ReevaluateIsActive();
     }
 }

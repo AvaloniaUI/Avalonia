@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Avalonia.Styling.Activators
 {
@@ -11,27 +9,8 @@ namespace Avalonia.Styling.Activators
     internal class OrActivator : StyleActivatorBase, IStyleActivatorSink
     {
         private List<IStyleActivator>? _sources;
-        private ulong _flags;
-        private bool _initializing;
 
         public int Count => _sources?.Count ?? 0;
-
-        public override bool IsActive
-        {
-            get
-            {
-                if (_sources is null)
-                    return false;
-
-                foreach (var source in _sources)
-                {
-                    if (source.IsActive)
-                        return true;
-                }
-
-                return false;
-            }
-        }
 
         public void Add(IStyleActivator activator)
         {
@@ -39,21 +18,20 @@ namespace Avalonia.Styling.Activators
             _sources.Add(activator);
         }
 
-        void IStyleActivatorSink.OnNext(bool value, int tag)
+        void IStyleActivatorSink.OnNext(bool value, int tag) => ReevaluateIsActive();
+
+        protected override bool EvaluateIsActive()
         {
-            if (value)
+            if (_sources is null || _sources.Count == 0)
+                return true;
+
+            foreach (var source in _sources)
             {
-                _flags |= 1ul << tag;
-            }
-            else
-            {
-                _flags &= ~(1ul << tag);
+                if (source.IsActive)
+                    return true;
             }
 
-            if (!_initializing)
-            {
-                PublishNext(_flags != 0);
-            }
+            return false;
         }
 
         protected override void Initialize()
@@ -62,15 +40,10 @@ namespace Avalonia.Styling.Activators
             {
                 var i = 0;
 
-                _initializing = true;
-
                 foreach (var source in _sources)
                 {
                     source.Subscribe(this, i++);
                 }
-
-                _initializing = false;
-                PublishNext(_flags != 0);
             }
         }
 

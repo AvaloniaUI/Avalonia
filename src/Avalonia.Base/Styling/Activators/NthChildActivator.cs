@@ -26,30 +26,25 @@ namespace Avalonia.Styling.Activators
             _reversed = reversed;
         }
 
-        public override bool IsActive => NthChildSelector.Evaluate(_control, _provider, _step, _offset, _reversed).IsMatch;
-
-        protected override void Initialize()
+        protected override bool EvaluateIsActive()
         {
-            PublishNext(IsActive);
-            _provider.ChildIndexChanged += ChildIndexChanged;
+            return NthChildSelector.Evaluate(_control, _provider, _step, _offset, _reversed).IsMatch;
         }
 
-        protected override void Deinitialize()
-        {
-            _provider.ChildIndexChanged -= ChildIndexChanged;
-        }
+        protected override void Initialize() => _provider.ChildIndexChanged += ChildIndexChanged;
+        protected override void Deinitialize() => _provider.ChildIndexChanged -= ChildIndexChanged;
 
         private void ChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
         {
             // Run matching again if:
             // 1. Selector is reversed, so other item insertion/deletion might affect total count without changing subscribed item index.
-            // 2. e.Child is null, when all children indeces were changed.
+            // 2. e.Child is null, when all children indices were changed.
             // 3. Subscribed child index was changed.
             if (_reversed
-                || e.Child is null                
+                || e.Child is null
                 || e.Child == _control)
             {
-                PublishNext(IsActive);
+                ReevaluateIsActive();
             }
         }
     }
