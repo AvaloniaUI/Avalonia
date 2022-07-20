@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Media.Imaging;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -28,7 +31,16 @@ namespace Avalonia.Win32
                 }
                 else if (menuItem is NativeMenuItem item)
                 {
-                    var newItem = new MenuItem { Header = item.Header, Icon = item.Icon, Command = item.Command, CommandParameter = item.CommandParameter };
+                    var newItem = new MenuItem
+                    {
+                        [!MenuItem.HeaderProperty] = item.GetObservable(NativeMenuItem.HeaderProperty).ToBinding(),
+                        [!MenuItem.IconProperty] = item.GetObservable(NativeMenuItem.IconProperty)
+                            .Select(i => i is {} bitmap ? new Image { Source = bitmap } : null).ToBinding(),
+                        [!MenuItem.IsEnabledProperty] = item.GetObservable(NativeMenuItem.IsEnabledProperty).ToBinding(),
+                        [!MenuItem.CommandProperty] = item.GetObservable(NativeMenuItem.CommandProperty).ToBinding(),
+                        [!MenuItem.CommandParameterProperty] = item.GetObservable(NativeMenuItem.CommandParameterProperty).ToBinding(),
+                        [!MenuItem.InputGestureProperty] = item.GetObservable(NativeMenuItem.GestureProperty).ToBinding()
+                    };
 
                     if (item.Menu != null)
                     {
@@ -36,7 +48,7 @@ namespace Avalonia.Win32
                     }
                     else if (item.HasClickHandlers && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
-                        newItem.Click += (_, __) => bridge.RaiseClicked();
+                        newItem.Click += (_, _) => bridge.RaiseClicked();
                     }
 
                     result.Add(newItem);
