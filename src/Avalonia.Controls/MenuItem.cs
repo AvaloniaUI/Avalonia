@@ -304,7 +304,7 @@ namespace Avalonia.Controls
         bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false;
 
         /// <inheritdoc/>
-        IMenuElement? IMenuItem.Parent => this.FindLogicalAncestorOfType<IMenuElement>();
+        IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
 
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
