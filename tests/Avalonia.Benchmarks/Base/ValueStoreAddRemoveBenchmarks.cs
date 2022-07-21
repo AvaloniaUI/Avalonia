@@ -179,17 +179,15 @@ internal class MockProperty : StyledProperty<int>
 
 internal static class MockProperties
 {
-    public static readonly AvaloniaProperty[] LinearProperties;
     public static readonly AvaloniaProperty[] ShuffledProperties;
 
     static MockProperties()
     {
-        LinearProperties = new AvaloniaProperty[32];
         ShuffledProperties = new AvaloniaProperty[32];
 
-        for (int i = 0; i < LinearProperties.Length; i++)
+        for (int i = 0; i < ShuffledProperties.Length; i++)
         {
-            LinearProperties[i] = ShuffledProperties[i] = new MockProperty($"Property#{i}");
+            ShuffledProperties[i] = new MockProperty($"Property#{i}");
         }
         
         Shuffle(ShuffledProperties, 42);
@@ -216,10 +214,7 @@ public class ValueStore_Lookup
     [Params(2, 6, 10, 20, 30)]
     public int PropertyCount;
 
-    [Params(false, true)]
-    public bool UseShuffledProperties;
-
-    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+    public AvaloniaProperty[] Properties => MockProperties.ShuffledProperties;
 
     private AvaloniaPropertyValueStore<object> _store;
     private AvaloniaPropertyValueStoreOld<object> _oldStore;
@@ -249,7 +244,8 @@ public class ValueStore_Lookup
         }
     }
 
-    [Benchmark(Baseline = true)] public void LookupProperties_Old()
+    [Benchmark(Baseline = true)] 
+    public void LookupProperties_Old()
     {
         for (int i = 0; i < PropertyCount; i++)
         {
@@ -273,10 +269,7 @@ public class ValueStore_AddBenchmarks
     [Params(2, 6, 10, 20, 30)]
     public int PropertyCount;
 
-    [Params(false, true)]
-    public bool UseShuffledProperties;
-
-    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+    public AvaloniaProperty[] Properties => MockProperties.ShuffledProperties;
 
     [Benchmark]
     public void Add()
@@ -312,17 +305,13 @@ public class ValueStore_AddBenchmarks
     }
 }
 
-
 [MemoryDiagnoser]
 public class ValueStore_AddRemoveBenchmarks
 {
     [Params(2, 6, 10, 20, 30)]
     public int PropertyCount;
 
-    [Params(false, true)]
-    public bool UseShuffledProperties;
-
-    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+    public AvaloniaProperty[] Properties => MockProperties.ShuffledProperties;
 
     [Benchmark]
     public void AddAndRemoveValue()
@@ -379,10 +368,7 @@ public class ValueStore_AddRemoveInterleavedBenchmarks
     [Params(2, 6, 10, 20, 30)]
     public int PropertyCount;
 
-    [Params(false, true)]
-    public bool UseShuffledProperties;
-
-    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+    public AvaloniaProperty[] Properties => MockProperties.ShuffledProperties;
 
     [Benchmark]
     public void AddAndRemoveValueInterleaved()
@@ -428,10 +414,7 @@ public class ValueStore_Enumeration
     [Params(2, 6, 10, 20, 30)]
     public int PropertyCount;
 
-    [Params(false, true)]
-    public bool UseShuffledProperties;
-
-    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+    public AvaloniaProperty[] Properties => MockProperties.ShuffledProperties;
 
     private AvaloniaPropertyValueStore<object> _store;
     private AvaloniaPropertyValueStoreOld<object> _oldStore;
