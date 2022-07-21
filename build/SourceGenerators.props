@@ -5,6 +5,5 @@
       OutputItemType="Analyzer" 
       ReferenceOutputAssembly="false"
       PrivateAssets="all" />
-    <Compile Include="$(MSBuildThisFileDirectory)/../src/Shared/SourceGeneratorAttributes.cs" />
   </ItemGroup>
 </Project>

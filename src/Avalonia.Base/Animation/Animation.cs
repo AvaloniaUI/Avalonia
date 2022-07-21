@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -222,20 +223,22 @@ namespace Avalonia.Animation
             s_animators[setter] = value;
         }
 
-        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
+        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new();
+
+        static Animation()
         {
-            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator) ),
-            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator) ),
-            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator) ),
-            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator) ),
-            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator) ),
-            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator) ),
-            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator) ),
-            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator) ),
-            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator) ),
-            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) ),
-            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
-        };
+            RegisterAnimator<BoolAnimator>(prop => typeof(bool).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<ByteAnimator>(prop => typeof(byte).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<Int16Animator>(prop => typeof(Int16).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<Int32Animator>(prop => typeof(Int32).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<Int64Animator>(prop => typeof(Int64).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<UInt16Animator>(prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<UInt32Animator>(prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<UInt64Animator>(prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<FloatAnimator>(prop => typeof(float).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<DoubleAnimator>(prop => typeof(double).IsAssignableFrom(prop.PropertyType));
+            RegisterAnimator<DecimalAnimator>(prop => typeof(decimal).IsAssignableFrom(prop.PropertyType));
+        }
 
         /// <summary>
         /// Registers a <see cref="Animator{T}"/> that can handle
@@ -248,7 +251,11 @@ namespace Avalonia.Animation
         /// <typeparam name="TAnimator">
         /// The type of the animator to instantiate.
         /// </typeparam>
-        public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
+        public static void RegisterAnimator<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicMethods)]
+#endif
+            TAnimator>(Func<AvaloniaProperty, bool> condition)
             where TAnimator : IAnimator
         {
             Animators.Insert(0, (condition, typeof(TAnimator)));

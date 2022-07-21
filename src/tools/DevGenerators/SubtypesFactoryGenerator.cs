@@ -12,7 +12,7 @@ namespace Avalonia.SourceGenerator
     public class SubtypesFactoryGenerator : IIncrementalGenerator
     {
         private record struct MethodTarget(IMethodSymbol Method, string MethodDecl, ITypeSymbol BaseType, string Namespace);
-        private static readonly string s_attributeName = typeof(SubtypesFactoryAttribute).FullName;
+        private const string AttributeName = "Avalonia.SourceGenerator.SubtypesFactoryAttribute";
 
         private static bool IsSubtypeOf(ITypeSymbol type, ITypeSymbol baseType)
         {
@@ -63,7 +63,7 @@ namespace {method.ContainingNamespace}
                 {
                     var attributeTypeInfo = semanticModel.GetTypeInfo(attribute);
                     if (attributeTypeInfo.Type is null ||
-                        attributeTypeInfo.Type.ToString() != s_attributeName ||
+                        attributeTypeInfo.Type.ToString() != AttributeName ||
                         attribute.ArgumentList is null)
                     {
                         continue;
@@ -112,6 +112,27 @@ namespace {method.ContainingNamespace}
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            context.RegisterPostInitializationOutput(ctx =>
+            {
+                ctx.AddSource("Avalonia.SourceGenerator.Attributes.cs", @"using System;
+
+namespace Avalonia.SourceGenerator
+{
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
+    internal sealed class SubtypesFactoryAttribute : Attribute
+    {
+        public SubtypesFactoryAttribute(Type baseType, string @namespace)
+        {
+            BaseType = baseType;
+            Namespace = @namespace;
+        }
+
+        public string Namespace { get; }
+        public Type BaseType { get; }
+    }
+}");
+            });
+
             var typesProvider = context.SyntaxProvider.CreateSyntaxProvider(
                 static (syntaxNode, token) =>
                 {
