@@ -264,8 +264,6 @@ namespace Avalonia.X11.NativeDialogs
         public static Task<bool> StartGtk()
         {
             return StartGtkCore();
-            lock (s_startGtkLock)
-                return s_startGtkTask ??= StartGtkCore();
         }
 
         private static void GtkThread(TaskCompletionSource<bool> tcs)

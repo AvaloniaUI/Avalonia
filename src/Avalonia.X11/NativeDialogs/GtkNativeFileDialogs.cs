@@ -17,10 +17,10 @@ namespace Avalonia.X11.NativeDialogs
 {
     internal class GtkSystemDialog : BclStorageProvider
     {
-        private Task<bool>? _initialized;
+        private static Task<bool>? _initialized;
         private readonly X11Window _window;
 
-        public GtkSystemDialog(X11Window window)
+        private GtkSystemDialog(X11Window window)
         {
             _window = window;
         }
@@ -31,10 +31,15 @@ namespace Avalonia.X11.NativeDialogs
 
         public override bool CanPickFolder => true;
 
+        internal static async Task<IStorageProvider?> TryCreate(X11Window window)
+        {
+            _initialized ??= StartGtk();
+
+            return await _initialized ? new GtkSystemDialog(window) : null;
+        }
+
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
-            await EnsureInitialized();
-
             return await await RunOnGlibThread(async () =>
             {
                 var res = await ShowDialog(options.Title, _window, GtkFileChooserAction.Open,
@@ -46,8 +51,6 @@ namespace Avalonia.X11.NativeDialogs
 
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
         {
-            await EnsureInitialized();
-
             return await await RunOnGlibThread(async () =>
             {
                 var res = await ShowDialog(options.Title, _window, GtkFileChooserAction.SelectFolder,
@@ -59,8 +62,6 @@ namespace Avalonia.X11.NativeDialogs
 
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
-            await EnsureInitialized();
-
             return await await RunOnGlibThread(async () =>
             {
                 var res = await ShowDialog(options.Title, _window, GtkFileChooserAction.Save,
@@ -223,19 +224,6 @@ namespace Avalonia.X11.NativeDialogs
 
             gtk_window_present(dlg);
             return tcs.Task;
-        }
-
-        private async Task EnsureInitialized()
-        {
-            if (_initialized == null)
-            {
-                _initialized = StartGtk();
-            }
-
-            if (!(await _initialized))
-            {
-                throw new Exception("Unable to initialize GTK on separate thread");
-            }
         }
 
         private static void UpdateParent(IntPtr chooser, IWindowImpl parentWindow)
