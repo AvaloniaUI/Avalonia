@@ -45,7 +45,7 @@ namespace Avalonia.Utilities
             while (iHi - iLo > 3)
             {
                 int iPv = (iHi + iLo) / 2;
-                checkIndex = _entries![iPv].PropertyId;
+                checkIndex = _entries![iPv].Property.Id;
 
                 if (propertyId == checkIndex)
                 {
@@ -66,7 +66,7 @@ namespace Avalonia.Utilities
             // Now we only have three values to search; switch to a linear search
             do
             {
-                checkIndex = _entries![iLo].PropertyId;
+                checkIndex = _entries![iLo].Property.Id;
 
                 if (checkIndex == propertyId)
                 {
@@ -146,16 +146,14 @@ namespace Avalonia.Utilities
 
         public void AddValue(AvaloniaProperty property, TValue value)
         {
-            var propertyId = property.Id;
-            TryGetEntry(propertyId, out var index);
-            InsertEntry(new Entry(propertyId, value), index);
+            TryGetEntry(property.Id, out var index);
+            InsertEntry(new Entry(property, value), index);
         }
 
         public void SetValue(AvaloniaProperty property, TValue value)
         {
-            var propertyId = property.Id;
-            TryGetEntry(propertyId, out var index);
-            _entries![index] = new Entry(propertyId, value);
+            TryGetEntry(property.Id, out var index);
+            _entries![index] = new Entry(property, value);
         }
 
         public bool Remove(AvaloniaProperty property)
@@ -173,12 +171,12 @@ namespace Avalonia.Utilities
 
         private readonly struct Entry
         {
-            public readonly int PropertyId;
+            public readonly AvaloniaProperty Property;
             public readonly TValue Value;
 
-            public Entry(int propertyId, TValue value)
+            public Entry(AvaloniaProperty property, TValue value)
             {
-                PropertyId = propertyId;
+                Property = property;
                 Value = value;
             }
         }
