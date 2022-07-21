@@ -1,17 +1,17 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.FreeDesktop;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.X11.NativeDialogs;
 
-internal class LinuxStorageProvider : IStorageProvider
+internal class CompositeStorageProvider : IStorageProvider
 {
-    private readonly X11Window _window;
-    public LinuxStorageProvider(X11Window window)
+    private readonly IEnumerable<Func<Task<IStorageProvider?>>> _factories;
+    public CompositeStorageProvider(IEnumerable<Func<Task<IStorageProvider?>>> factories)
     {
-        _window = window;
+        _factories = factories;
     }
 
     public bool CanOpen => true;
@@ -20,21 +20,13 @@ internal class LinuxStorageProvider : IStorageProvider
 
     private async Task<IStorageProvider> EnsureStorageProvider()
     {
-        var options = AvaloniaLocator.Current.GetService<X11PlatformOptions>() ?? new X11PlatformOptions();
-
-        if (options.UseDBusFilePicker)
+        foreach (var factory in _factories)
         {
-            var dBusDialog = await DBusSystemDialog.TryCreate(_window.Handle);
-            if (dBusDialog is not null)
+            var provider = await factory();
+            if (provider is not null)
             {
-                return dBusDialog;
+                return provider;
             }
-        }
-        
-        var gtkDialog = await GtkSystemDialog.TryCreate(_window);
-        if (gtkDialog is not null)
-        {
-            return gtkDialog;
         }
 
         throw new InvalidOperationException("Neither DBus nor GTK are available on the system");
@@ -46,7 +38,7 @@ internal class LinuxStorageProvider : IStorageProvider
         return await provider.OpenFilePickerAsync(options).ConfigureAwait(false);
     }
 
-    public async Task<IStorageFile> SaveFilePickerAsync(FilePickerSaveOptions options)
+    public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
         var provider = await EnsureStorageProvider().ConfigureAwait(false);
         return await provider.SaveFilePickerAsync(options).ConfigureAwait(false);
@@ -58,13 +50,13 @@ internal class LinuxStorageProvider : IStorageProvider
         return await provider.OpenFolderPickerAsync(options).ConfigureAwait(false);
     }
 
-    public async Task<IStorageBookmarkFile> OpenFileBookmarkAsync(string bookmark)
+    public async Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
         var provider = await EnsureStorageProvider().ConfigureAwait(false);
         return await provider.OpenFileBookmarkAsync(bookmark).ConfigureAwait(false);
     }
 
-    public async Task<IStorageBookmarkFolder> OpenFolderBookmarkAsync(string bookmark)
+    public async Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
         var provider = await EnsureStorageProvider().ConfigureAwait(false);
         return await provider.OpenFolderBookmarkAsync(bookmark).ConfigureAwait(false);

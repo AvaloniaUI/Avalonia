@@ -18,7 +18,7 @@ namespace Avalonia.FreeDesktop
         private static readonly Lazy<IFileChooser?> s_fileChooser = new(() => DBusHelper.Connection?
             .CreateProxy<IFileChooser>("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop"));
 
-        internal static async Task<DBusSystemDialog?> TryCreate(IPlatformHandle handle)
+        internal static async Task<IStorageProvider?> TryCreate(IPlatformHandle handle)
         {
             if (handle.HandleDescriptor == "XID" && s_fileChooser.Value is { } fileChooser)
             {

@@ -22,6 +22,7 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.X11.Glx;
+using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -215,7 +216,11 @@ namespace Avalonia.X11
                     _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
-            StorageProvider = new NativeDialogs.LinuxStorageProvider(this);
+            StorageProvider = new CompositeStorageProvider(new Func<Task<IStorageProvider>>[]
+            {
+                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreate(Handle) : Task.FromResult<IStorageProvider>(null),
+                () => GtkSystemDialog.TryCreate(this),
+            });
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo

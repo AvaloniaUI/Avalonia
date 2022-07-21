@@ -31,7 +31,7 @@ namespace Avalonia.X11.NativeDialogs
 
         public override bool CanPickFolder => true;
 
-        internal static async Task<GtkSystemDialog?> TryCreate(X11Window window)
+        internal static async Task<IStorageProvider?> TryCreate(X11Window window)
         {
             _initialized ??= StartGtk();
 
