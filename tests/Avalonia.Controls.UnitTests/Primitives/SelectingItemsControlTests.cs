@@ -1605,8 +1605,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "Bar" }, selectedItems);
         }
 
-        [Fact]
-        public void MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
         {
             // Issue #3094.
             var target = new TestSelector
@@ -1622,11 +1622,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
-            target.MoveSelection(NavigationDirection.Next, true);
+
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.Next, true));
         }
 
-        [Fact(Timeout = 2000)]
-        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_First_Item()
+        [Fact]
+        public void MoveSelection_Skips_Non_Focusable_Controls_When_Moving_To_Last_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Last, true);
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void MoveSelection_Skips_Non_Focusable_Controls_When_Moving_To_First_Item()
         {
             var target = new TestSelector
             {
@@ -1640,22 +1663,43 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Last, true);
 
-            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_First_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem { Focusable = false },
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
             // https://github.com/xunit/xunit/issues/2222
             await Task.Run(() => target.MoveSelection(NavigationDirection.First, true));
+
             Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact(Timeout = 2000)]
-        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_Last_Item()
+        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_Last_Item()
         {
             var target = new TestSelector
             {
                 Template = Template(),
                 Items = new[]
                 {
-                    new ListBoxItem(),
+                    new ListBoxItem { Focusable = false },
                     new ListBoxItem { Focusable = false },
                 }
             };
@@ -1663,9 +1707,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
             // https://github.com/xunit/xunit/issues/2222
             await Task.Run(() => target.MoveSelection(NavigationDirection.Last, true));
+
             Assert.Equal(-1, target.SelectedIndex);
         }
 

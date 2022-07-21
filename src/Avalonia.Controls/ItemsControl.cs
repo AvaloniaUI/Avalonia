@@ -503,29 +503,50 @@ namespace Avalonia.Controls
             IInputElement from,
             bool wrap)
         {
-            IInputElement result;
-            var c = from;
+            var current = from;
 
-            do
+            for (;;)
             {
-                result = container.GetControl(direction, c, wrap);
-                from = from ?? result;
+                var result = container.GetControl(direction, current, wrap);
 
-                if (result != null &&
-                    result.Focusable &&
+                if (result is null)
+                {
+                    return null;
+                }
+
+                if (result.Focusable &&
                     result.IsEffectivelyEnabled &&
                     result.IsEffectivelyVisible)
                 {
                     return result;
                 }
 
-                c = result;
-            } while (c != null && c != from && direction != NavigationDirection.First && direction != NavigationDirection.Last);
+                current = result;
 
-            return null;
+                if (current == from)
+                {
+                    return null;
+                }
+
+                switch (direction)
+                {
+                    //We did not find an enabled first item. Move downwards until we find one.
+                    case NavigationDirection.First:
+                        direction = NavigationDirection.Down;
+                        from = result;
+                        break;
+
+                    //We did not find an enabled last item. Move upwards until we find one.
+                    case NavigationDirection.Last:
+                        direction = NavigationDirection.Up;
+                        from = result;
+                        break;
+
+                }
+            }
         }
 
-        private void PresenterChildIndexChanged(object sender, ChildIndexChangedEventArgs e)
+        private void PresenterChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
         {
             _childIndexChanged?.Invoke(this, e);
         }
