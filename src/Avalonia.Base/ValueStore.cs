@@ -33,12 +33,6 @@ namespace Avalonia
             _values = new AvaloniaPropertyValueStore<IValue>();
         }
 
-        public bool IsInitializing
-        {
-            get => _values.IsInitializing;
-            set => _values.IsInitializing = value;
-        }
-
         public void BeginBatchUpdate()
         {
             _batchUpdate ??= new BatchUpdate(this);

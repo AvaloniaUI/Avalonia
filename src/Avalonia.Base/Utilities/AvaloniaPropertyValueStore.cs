@@ -9,6 +9,7 @@ namespace Avalonia.Utilities
     /// <typeparam name="TValue">Stored value type.</typeparam>
     internal struct AvaloniaPropertyValueStore<TValue>
     {
+        private const int DefaultInitialCapacity = 4;
         private Entry[]? _entries;
         private int _entryCount;
 
@@ -16,19 +17,19 @@ namespace Avalonia.Utilities
         {
             _entries = null;
             _entryCount = 0;
-            IsInitializing = false;
-            InitialSize = 4;
+        }
+
+        public AvaloniaPropertyValueStore(int capactity)
+        {
+            _entries = new Entry[capactity];
+            _entryCount = 0;
         }
 
         public int Count => _entryCount;
         
-        public bool IsInitializing { get; set; }
-
-        public int InitialSize { get; set; }
-
         public TValue this[int index] => _entries![index].Value;
 
-        private EntryIndex LookupEntry(int propertyId)
+        private bool TryGetEntry(int propertyId, out int index)
         {
             int checkIndex;
             int iLo = 0;
@@ -36,7 +37,8 @@ namespace Avalonia.Utilities
 
             if (iHi <= 0)
             {
-                return new EntryIndex(0, found: false);
+                index = 0;
+                return false;
             }
 
             // Do a binary search to find the value
@@ -47,7 +49,8 @@ namespace Avalonia.Utilities
 
                 if (propertyId == checkIndex)
                 {
-                    return new EntryIndex(iPv, found: true);
+                    index = iPv;
+                    return true;
                 }
 
                 if (propertyId <= checkIndex)
@@ -67,7 +70,8 @@ namespace Avalonia.Utilities
 
                 if (checkIndex == propertyId)
                 {
-                    return new EntryIndex(iLo, found: true);
+                    index = iLo;
+                    return true;
                 }
 
                 if (checkIndex > propertyId)
@@ -79,22 +83,20 @@ namespace Avalonia.Utilities
                 iLo++;
             } while (iLo < iHi);
 
-            return new EntryIndex(iLo, found: false);
+            index = iLo;
+            return false;
         }
 
         public bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
         {
-            var entryIndex = LookupEntry(property.Id);
-            
-            if (!entryIndex.Found)
+            if (TryGetEntry(property.Id, out var index))
             {
-                value = default;
-                return false;
+                value = _entries![index].Value;
+                return true;
             }
 
-            value = _entries![entryIndex.Index].Value;
-            
-            return true;
+            value = default;
+            return false;
         }
 
         private void InsertEntry(Entry entry, int entryIndex)
@@ -103,9 +105,7 @@ namespace Avalonia.Utilities
             {
                 if (_entryCount == _entries!.Length)
                 {
-                    // We want to have more aggressive resizing when initializing.
-                    var growthFactor = IsInitializing ? 2.0 : 1.2;
-                    
+                    const double growthFactor = 1.2;
                     var newSize = (int)(_entryCount * growthFactor);
 
                     if (newSize == _entryCount)
@@ -137,11 +137,7 @@ namespace Avalonia.Utilities
             }
             else
             {
-                if (_entries is null)
-                {
-                    _entries = new Entry[InitialSize];
-                }
-                
+                _entries ??= new Entry[DefaultInitialCapacity];
                 _entries[0] = entry;
             }
 
@@ -151,41 +147,28 @@ namespace Avalonia.Utilities
         public void AddValue(AvaloniaProperty property, TValue value)
         {
             var propertyId = property.Id;
-            var index = LookupEntry(propertyId);
-
-            InsertEntry(new Entry(propertyId, value), index.Index);
+            TryGetEntry(propertyId, out var index);
+            InsertEntry(new Entry(propertyId, value), index);
         }
 
         public void SetValue(AvaloniaProperty property, TValue value)
         {
             var propertyId = property.Id;
-            var entryIndex = LookupEntry(propertyId);
-            
-            _entries![entryIndex.Index] = new Entry(propertyId, value);
+            TryGetEntry(propertyId, out var index);
+            _entries![index] = new Entry(propertyId, value);
         }
 
-        public void Remove(AvaloniaProperty property)
+        public bool Remove(AvaloniaProperty property)
         {
-            var entry = LookupEntry(property.Id);
-
-            if (!entry.Found) return;
-            
-            Array.Copy(_entries!, entry.Index + 1, _entries!, entry.Index, _entryCount - entry.Index - 1);
-
-            _entryCount--;
-            _entries![_entryCount] = default;
-        }
-
-        private readonly struct EntryIndex
-        {
-            public readonly int Index;
-            public readonly bool Found;
-
-            public EntryIndex(int index, bool found)
+            if (TryGetEntry(property.Id, out var index))
             {
-                Index = index;
-                Found = found;
+                Array.Copy(_entries!, index + 1, _entries!, index, _entryCount - index - 1);
+                _entryCount--;
+                _entries![_entryCount] = default;
+                return true;
             }
+
+            return false;
         }
 
         private readonly struct Entry

@@ -279,11 +279,9 @@ public class ValueStore_AddBenchmarks
     public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
 
     [Benchmark]
-    [Arguments(false)]
-    [Arguments(true)]
-    public void Add(bool isInitializing)
+    public void Add()
     {
-        var store = new AvaloniaPropertyValueStore<object> { IsInitializing = isInitializing };
+        var store = new AvaloniaPropertyValueStore<object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
@@ -327,11 +325,9 @@ public class ValueStore_AddRemoveBenchmarks
     public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
 
     [Benchmark]
-    [Arguments(false)]
-    [Arguments(true)]
-    public void AddAndRemoveValue(bool isInitializing)
+    public void AddAndRemoveValue()
     {
-        var store = new AvaloniaPropertyValueStore<object> { IsInitializing = isInitializing };
+        var store = new AvaloniaPropertyValueStore<object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
@@ -389,11 +385,9 @@ public class ValueStore_AddRemoveInterleavedBenchmarks
     public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
 
     [Benchmark]
-    [Arguments(false)]
-    [Arguments(true)]
-    public void AddAndRemoveValueInterleaved(bool isInitializing)
+    public void AddAndRemoveValueInterleaved()
     {
-        var store = new AvaloniaPropertyValueStore<object> { IsInitializing = isInitializing };
+        var store = new AvaloniaPropertyValueStore<object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {

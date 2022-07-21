@@ -25,7 +25,6 @@ namespace Avalonia
         private List<AvaloniaObject>? _inheritanceChildren;
         private ValueStore? _values;
         private bool _batchUpdate;
-        private bool _isInitializing;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
@@ -126,10 +125,6 @@ namespace Avalonia
                 if (_values is null)
                 {
                     _values = new ValueStore(this);
-
-                    _values.IsInitializing = _isInitializing;
-                    _isInitializing = false;
-                    
                     if (_batchUpdate)
                         _values.BeginBatchUpdate();
                 }
@@ -496,18 +491,6 @@ namespace Avalonia
 
             _batchUpdate = false;
             _values?.EndBatchUpdate();
-        }
-        
-        internal void SetValueStoreIsInitializing(bool isInitializing)
-        {
-            if (_values is null)
-            {
-                _isInitializing = isInitializing;
-                
-                return;
-            }
-
-            _values.IsInitializing = isInitializing;
         }
 
         /// <inheritdoc/>

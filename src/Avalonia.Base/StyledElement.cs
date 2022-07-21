@@ -306,11 +306,6 @@ namespace Avalonia
         public virtual void BeginInit()
         {
             ++_initCount;
-
-            if (_initCount == 1)
-            {
-                SetValueStoreIsInitializing(true);
-            }
         }
 
         /// <inheritdoc/>
@@ -328,8 +323,6 @@ namespace Avalonia
                     ApplyStyling();
                     InitializeIfNeeded();
                 }
-                
-                SetValueStoreIsInitializing(false);
             }
         }
 
@@ -347,13 +340,11 @@ namespace Avalonia
                 try
                 {
                     BeginBatchUpdate();
-                    SetValueStoreIsInitializing(true);
                     AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
                 }
                 finally
                 {
                     EndBatchUpdate();
-                    SetValueStoreIsInitializing(false);
                 }
 
                 _styled = true;
