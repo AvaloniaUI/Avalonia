@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Utilities;
 using BenchmarkDotNet.Attributes;
@@ -210,7 +211,7 @@ internal static class MockProperties
 }
 
 [MemoryDiagnoser]
-public class ValueStoreLookupBenchmarks
+public class ValueStore_Lookup
 {
     [Params(2, 6, 10, 20, 30)]
     public int PropertyCount;
@@ -222,17 +223,20 @@ public class ValueStoreLookupBenchmarks
 
     private AvaloniaPropertyValueStore<object> _store;
     private AvaloniaPropertyValueStoreOld<object> _oldStore;
+    private Dictionary<AvaloniaProperty, object> _dictionary;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
         _store = new AvaloniaPropertyValueStore<object>();
         _oldStore = new AvaloniaPropertyValueStoreOld<object>();
+        _dictionary = new Dictionary<AvaloniaProperty, object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
             _store.AddValue(Properties[i], null);
             _oldStore.AddValue(Properties[i], null);
+            _dictionary.Add(Properties[i], null);
         }
     }
 
@@ -245,17 +249,26 @@ public class ValueStoreLookupBenchmarks
         }
     }
 
-    [Benchmark] public void LookupProperties_Old()
+    [Benchmark(Baseline = true)] public void LookupProperties_Old()
     {
         for (int i = 0; i < PropertyCount; i++)
         {
             _oldStore.TryGetValue(Properties[i], out _);
         }
     }
+
+    [Benchmark]
+    public void LookupProperties_Dict()
+    {
+        for (int i = 0; i < PropertyCount; i++)
+        {
+            _dictionary.TryGetValue(Properties[i], out _);
+        }
+    }
 }
 
 [MemoryDiagnoser]
-public class ValueStoreAddRemoveBenchmarks
+public class ValueStore_AddBenchmarks
 {
     [Params(2, 6, 10, 20, 30)]
     public int PropertyCount;
@@ -264,11 +277,11 @@ public class ValueStoreAddRemoveBenchmarks
     public bool UseShuffledProperties;
 
     public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
-    
+
     [Benchmark]
     [Arguments(false)]
     [Arguments(true)]
-    public void AddValue(bool isInitializing)
+    public void Add(bool isInitializing)
     {
         var store = new AvaloniaPropertyValueStore<object> { IsInitializing = isInitializing };
 
@@ -277,7 +290,42 @@ public class ValueStoreAddRemoveBenchmarks
             store.AddValue(Properties[i], null);
         }
     }
-    
+
+    [Benchmark(Baseline = true)]
+    public void Add_Old()
+    {
+        var store = new AvaloniaPropertyValueStoreOld<object>();
+
+        for (int i = 0; i < PropertyCount; i++)
+        {
+            store.AddValue(Properties[i], null);
+        }
+    }
+
+    [Benchmark]
+    public void Add_Dict()
+    {
+        var store = new Dictionary<AvaloniaProperty, object>();
+
+        for (int i = 0; i < PropertyCount; i++)
+        {
+            store.Add(Properties[i], null);
+        }
+    }
+}
+
+
+[MemoryDiagnoser]
+public class ValueStore_AddRemoveBenchmarks
+{
+    [Params(2, 6, 10, 20, 30)]
+    public int PropertyCount;
+
+    [Params(false, true)]
+    public bool UseShuffledProperties;
+
+    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+
     [Benchmark]
     [Arguments(false)]
     [Arguments(true)]
@@ -289,13 +337,57 @@ public class ValueStoreAddRemoveBenchmarks
         {
             store.AddValue(Properties[i], null);
         }
-        
+
         for (int i = PropertyCount - 1; i >= 0; i--)
         {
             store.Remove(Properties[i]);
         }
     }
-    
+
+    [Benchmark(Baseline = true)]
+    public void AddAndRemoveValue_Old()
+    {
+        var store = new AvaloniaPropertyValueStoreOld<object>();
+
+        for (int i = 0; i < PropertyCount; i++)
+        {
+            store.AddValue(Properties[i], null);
+        }
+
+        for (int i = PropertyCount - 1; i >= 0; i--)
+        {
+            store.Remove(Properties[i]);
+        }
+    }
+
+    [Benchmark]
+    public void AddAndRemoveValue_Dict()
+    {
+        var store = new Dictionary<AvaloniaProperty, object>();
+
+        for (int i = 0; i < PropertyCount; i++)
+        {
+            store.Add(Properties[i], null);
+        }
+
+        for (int i = PropertyCount - 1; i >= 0; i--)
+        {
+            store.Remove(Properties[i]);
+        }
+    }
+}
+
+[MemoryDiagnoser]
+public class ValueStore_AddRemoveInterleavedBenchmarks
+{
+    [Params(2, 6, 10, 20, 30)]
+    public int PropertyCount;
+
+    [Params(false, true)]
+    public bool UseShuffledProperties;
+
+    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+
     [Benchmark]
     [Arguments(false)]
     [Arguments(true)]
@@ -310,34 +402,7 @@ public class ValueStoreAddRemoveBenchmarks
         }
     }
     
-    [Benchmark]
-    public void AddValue_Old()
-    {
-        var store = new AvaloniaPropertyValueStoreOld<object>();
-
-        for (int i = 0; i < PropertyCount; i++)
-        {
-            store.AddValue(Properties[i], null);
-        }
-    }
-    
-    [Benchmark]
-    public void AddAndRemoveValue_Old()
-    {
-        var store = new AvaloniaPropertyValueStoreOld<object>();
-
-        for (int i = 0; i < PropertyCount; i++)
-        {
-            store.AddValue(Properties[i], null);
-        }
-        
-        for (int i = PropertyCount - 1; i >= 0; i--)
-        {
-            store.Remove(Properties[i]);
-        }
-    }
-    
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public void AddAndRemoveValueInterleaved_Old()
     {
         var store = new AvaloniaPropertyValueStoreOld<object>();
@@ -347,5 +412,101 @@ public class ValueStoreAddRemoveBenchmarks
             store.AddValue(Properties[i], null);
             store.Remove(Properties[i]);
         }
+    }
+
+    [Benchmark]
+    public void AddAndRemoveValueInterleaved_Dict()
+    {
+        var store = new Dictionary<AvaloniaProperty, object>();
+
+        for (int i = 0; i < PropertyCount; i++)
+        {
+            store.Add(Properties[i], null);
+            store.Remove(Properties[i]);
+        }
+    }
+}
+
+
+[MemoryDiagnoser]
+public class ValueStore_Enumeration
+{
+    [Params(2, 6, 10, 20, 30)]
+    public int PropertyCount;
+
+    [Params(false, true)]
+    public bool UseShuffledProperties;
+
+    public AvaloniaProperty[] Properties => UseShuffledProperties ? MockProperties.ShuffledProperties : MockProperties.LinearProperties;
+
+    private AvaloniaPropertyValueStore<object> _store;
+    private AvaloniaPropertyValueStoreOld<object> _oldStore;
+    private Dictionary<AvaloniaProperty, object> _dictionary;
+
+    [GlobalSetup]
+    public void GlobalSetup()
+    {
+        _store = new AvaloniaPropertyValueStore<object>();
+        _oldStore = new AvaloniaPropertyValueStoreOld<object>();
+        _dictionary = new Dictionary<AvaloniaProperty, object>();
+
+        for (int i = 0; i < PropertyCount; i++)
+        {
+            _store.AddValue(Properties[i], null);
+            _oldStore.AddValue(Properties[i], null);
+            _dictionary.Add(Properties[i], null);
+        }
+    }
+
+    [Benchmark]
+    public int Enumerate()
+    {
+        var result = 0;
+
+        for (int i = 0; i < _store.Count; i++)
+        {
+            result += _store[i] is null ? 1 : 0;
+        }
+
+        return result;
+    }
+
+    [Benchmark(Baseline = true)]
+    public int Enumerate_Old()
+    {
+        var result = 0;
+
+        for (int i = 0; i < _store.Count; i++)
+        {
+            result += _oldStore[i] is null ? 1 : 0;
+        }
+
+        return result;
+    }
+
+    [Benchmark]
+    public int Enumerate_Dict()
+    {
+        var result = 0;
+
+        foreach (var i in _dictionary)
+        {
+            result += i.Value is null ? 1 : 0;
+        }
+
+        return result;
+    }
+
+    [Benchmark]
+    public int Enumerate_DictValues()
+    {
+        var result = 0;
+
+        foreach (var i in _dictionary.Values)
+        {
+            result += i is null ? 1 : 0;
+        }
+
+        return result;
     }
 }
