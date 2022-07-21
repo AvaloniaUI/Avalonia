@@ -54,13 +54,20 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
 
     internal override bool HitTest(Point pt, Func<IVisual, bool>? filter)
     {
-        if (DrawList == null)
+        var custom = Visual as ICustomHitTest;
+        if (DrawList == null && custom == null)
             return false;
         if (filter != null && !filter(Visual))
             return false;
-        if (Visual is ICustomHitTest custom)
+        if (custom != null)
+        {
+            // Simulate the old behavior
+            // TODO: Change behavior once legacy renderers are removed
+            pt += new Point(Offset.X, Offset.Y);
             return custom.HitTest(pt);
-        foreach (var op in DrawList)
+        }
+
+        foreach (var op in DrawList!)
             if (op.Item.HitTest(pt))
                 return true;
         return false;

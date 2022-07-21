@@ -15,6 +15,7 @@
         <Menu.Styles>
           <Style x:CompileBindings="False" Selector="MenuItem">
             <Setter Property="Header" Value="{Binding Header}"/>
+            <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
             <Setter Property="InputGesture" Value="{Binding Gesture}"/>
             <Setter Property="Items" Value="{Binding Menu.Items}"/>
             <Setter Property="Command" Value="{Binding Command}"/>

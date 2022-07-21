@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition.Transport;
@@ -17,6 +17,7 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
     int _usage;
     readonly int[] _usageStatistics = new int[10];
     int _usageStatisticsSlot;
+    bool _reclaimImmediately;
 
     public int CurrentUsage => _usage;
     public int CurrentPool => _pool.Count;
@@ -27,7 +28,10 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
             GC.SuppressFinalize(needsFinalize);
 
         var updateRef = new WeakReference<BatchStreamPoolBase<T>>(this);
-        StartUpdateTimer(startTimer, updateRef);
+        if (AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() == null)
+            _reclaimImmediately = true;
+        else
+            StartUpdateTimer(startTimer, updateRef);
     }
 
     static void StartUpdateTimer(Action<Func<bool>>? startTimer, WeakReference<BatchStreamPoolBase<T>> updateRef)
@@ -90,7 +94,7 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
         lock (_pool)
         {
             _usage--;
-            if (!_disposed)
+            if (!_disposed && !_reclaimImmediately)
             {
                 _pool.Push(item);
                 return;

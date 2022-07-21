@@ -33,7 +33,7 @@ namespace Avalonia.Rendering.Composition.Server
         private HashSet<ServerCompositionVisual> _attachedVisuals = new();
         private Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
 
-
+        public ICompositionTargetDebugEvents? DebugEvents { get; set; }
         public ReadbackIndices Readback { get; } = new();
         public int RenderedVisuals { get; set; }
 
@@ -173,6 +173,7 @@ namespace Avalonia.Rendering.Composition.Server
             if(rect.IsEmpty)
                 return;
             var snapped = SnapToDevicePixels(rect, Scaling);
+            DebugEvents?.RectInvalidated(rect);
             _dirtyRect = _dirtyRect.Union(snapped);
             _redrawRequested = true;
         }

@@ -31,7 +31,7 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        internal Matrix4x4? TryGetServerTransform()
+        internal Matrix4x4? TryGetServerGlobalTransform()
         {
             if (Root == null)
                 return null;
