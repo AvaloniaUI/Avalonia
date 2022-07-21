@@ -508,7 +508,7 @@ namespace Avalonia.Controls
             {
                 var result = container.GetControl(direction, current, wrap);
 
-                if (result is null || current == from)
+                if (result is null)
                 {
                     return null;
                 }
@@ -520,21 +520,28 @@ namespace Avalonia.Controls
                     return result;
                 }
 
+                current = result;
+
+                if (current == from)
+                {
+                    return null;
+                }
+
                 switch (direction)
                 {
                     //We did not find an enabled first item. Move downwards until we find one.
                     case NavigationDirection.First:
                         direction = NavigationDirection.Down;
+                        from = result;
                         break;
 
                     //We did not find an enabled last item. Move upwards until we find one.
                     case NavigationDirection.Last:
                         direction = NavigationDirection.Up;
+                        from = result;
                         break;
-               
-                }
 
-                current = result;
+                }
             }
         }
 
