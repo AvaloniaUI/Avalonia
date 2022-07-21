@@ -216,20 +216,20 @@ public class ValueStore_Lookup
 
     public AvaloniaProperty[] Properties => MockProperties.ShuffledProperties;
 
-    private AvaloniaPropertyValueStore<object> _store;
+    private AvaloniaPropertyDictionary<object> _store;
     private AvaloniaPropertyValueStoreOld<object> _oldStore;
     private Dictionary<AvaloniaProperty, object> _dictionary;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _store = new AvaloniaPropertyValueStore<object>();
+        _store = new AvaloniaPropertyDictionary<object>();
         _oldStore = new AvaloniaPropertyValueStoreOld<object>();
         _dictionary = new Dictionary<AvaloniaProperty, object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
-            _store.AddValue(Properties[i], null);
+            _store.Add(Properties[i], null);
             _oldStore.AddValue(Properties[i], null);
             _dictionary.Add(Properties[i], null);
         }
@@ -274,11 +274,11 @@ public class ValueStore_AddBenchmarks
     [Benchmark]
     public void Add()
     {
-        var store = new AvaloniaPropertyValueStore<object>();
+        var store = new AvaloniaPropertyDictionary<object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
-            store.AddValue(Properties[i], null);
+            store.Add(Properties[i], null);
         }
     }
 
@@ -316,11 +316,11 @@ public class ValueStore_AddRemoveBenchmarks
     [Benchmark]
     public void AddAndRemoveValue()
     {
-        var store = new AvaloniaPropertyValueStore<object>();
+        var store = new AvaloniaPropertyDictionary<object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
-            store.AddValue(Properties[i], null);
+            store.Add(Properties[i], null);
         }
 
         for (int i = PropertyCount - 1; i >= 0; i--)
@@ -373,11 +373,11 @@ public class ValueStore_AddRemoveInterleavedBenchmarks
     [Benchmark]
     public void AddAndRemoveValueInterleaved()
     {
-        var store = new AvaloniaPropertyValueStore<object>();
+        var store = new AvaloniaPropertyDictionary<object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
-            store.AddValue(Properties[i], null);
+            store.Add(Properties[i], null);
             store.Remove(Properties[i]);
         }
     }
@@ -416,20 +416,20 @@ public class ValueStore_Enumeration
 
     public AvaloniaProperty[] Properties => MockProperties.ShuffledProperties;
 
-    private AvaloniaPropertyValueStore<object> _store;
+    private AvaloniaPropertyDictionary<object> _store;
     private AvaloniaPropertyValueStoreOld<object> _oldStore;
     private Dictionary<AvaloniaProperty, object> _dictionary;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _store = new AvaloniaPropertyValueStore<object>();
+        _store = new AvaloniaPropertyDictionary<object>();
         _oldStore = new AvaloniaPropertyValueStoreOld<object>();
         _dictionary = new Dictionary<AvaloniaProperty, object>();
 
         for (int i = 0; i < PropertyCount; i++)
         {
-            _store.AddValue(Properties[i], null);
+            _store.Add(Properties[i], null);
             _oldStore.AddValue(Properties[i], null);
             _dictionary.Add(Properties[i], null);
         }

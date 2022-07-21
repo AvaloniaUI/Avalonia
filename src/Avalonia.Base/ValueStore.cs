@@ -24,13 +24,13 @@ namespace Avalonia
     internal class ValueStore
     {
         private readonly AvaloniaObject _owner;
-        private AvaloniaPropertyValueStore<IValue> _values;
+        private AvaloniaPropertyDictionary<IValue> _values;
         private BatchUpdate? _batchUpdate;
 
         public ValueStore(AvaloniaObject owner)
         {
             _owner = owner;
-            _values = new AvaloniaPropertyValueStore<IValue>();
+            _values = new AvaloniaPropertyDictionary<IValue>();
         }
 
         public void BeginBatchUpdate()
@@ -187,7 +187,7 @@ namespace Avalonia
                         // them to a constant value entry with Unset priority in the event of a local value being
                         // cleared during a batch update.
                         var sentinel = new ConstantValueEntry<T>(property, Optional<T>.Empty, BindingPriority.Unset, new(this));
-                        _values.SetValue(property, sentinel);
+                        _values[property] = sentinel;
                     }
 
                     NotifyValueChanged<T>(property, old, default, BindingPriority.Unset);
@@ -267,7 +267,7 @@ namespace Avalonia
             if (slot is IPriorityValueEntry<T> e)
             {
                 var priorityValue = new PriorityValue<T>(_owner, property, this, e);
-                _values.SetValue(property, priorityValue);
+                _values[property] = priorityValue;
                 result = priorityValue.SetValue(value, priority);
             }
             else if (slot is PriorityValue<T> p)
@@ -288,7 +288,7 @@ namespace Avalonia
                     if (IsBatchUpdating())
                         priorityValue.BeginBatchUpdate();
                     result = priorityValue.SetValue(value, priority);
-                    _values.SetValue(property, priorityValue);
+                    _values[property] = priorityValue;
                 }
             }
             else
@@ -330,14 +330,14 @@ namespace Avalonia
             }
 
             var binding = priorityValue.AddBinding(source, priority);
-            _values.SetValue(property, priorityValue);
+            _values[property] = priorityValue;
             priorityValue.UpdateEffectiveValue();
             return binding;
         }
 
         private void AddValue(AvaloniaProperty property, IValue value)
         {
-            _values.AddValue(property, value);
+            _values[property] = value;
             if (IsBatchUpdating() && value is IBatchUpdate batch)
                 batch.BeginBatchUpdate();
             value.Start();
