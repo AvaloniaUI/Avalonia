@@ -86,9 +86,9 @@ namespace Avalonia.Utilities
         {
             get
             {
-                if (_entries is null)
-                    ThrowArgumentOutOfRange();
-                return _entries[index].Value;
+                if (index >= _entryCount)
+                    ThrowOutOfRange();
+                return _entries![index].Value;
             }
         }
 
@@ -124,9 +124,9 @@ namespace Avalonia.Utilities
         /// </param>
         public void GetKeyValue(int index, out AvaloniaProperty key, out TValue value)
         {
-            if (_entries is null)
-                ThrowArgumentOutOfRange();
-            ref var entry = ref _entries[index];
+            if (index >= _entryCount)
+                ThrowOutOfRange();
+            ref var entry = ref _entries![index];
             key = entry.Property;
             value = entry.Value;
         }
@@ -318,7 +318,7 @@ namespace Avalonia.Utilities
         }
 
         [DoesNotReturn]
-        private static void ThrowArgumentOutOfRange() => throw new ArgumentOutOfRangeException();
+        private static void ThrowOutOfRange() => throw new IndexOutOfRangeException();
 
         [DoesNotReturn]
         private static void ThrowDuplicate() => 
