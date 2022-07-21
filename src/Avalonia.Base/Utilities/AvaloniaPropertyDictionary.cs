@@ -105,6 +105,12 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
+        /// Determines whether the collection contains the specified key.
+        /// </summary>
+        /// <param name="property">The key.</param>
+        public bool ContainsKey(AvaloniaProperty property) => TryGetEntry(property.Id, out _);
+
+        /// <summary>
         /// Gets the key and value at the specified index.
         /// </summary>
         /// <param name="index">
