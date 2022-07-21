@@ -82,7 +82,15 @@ namespace Avalonia.Utilities
         /// <param name="index">
         /// The index of the entry, between 0 and <see cref="Count"/> - 1.
         /// </param>
-        public TValue this[int index] => _entries![index].Value;
+        public TValue this[int index]
+        {
+            get
+            {
+                if (_entries is null)
+                    ThrowArgumentOutOfRange();
+                return _entries[index].Value;
+            }
+        }
 
         /// <summary>
         /// Adds the specified key and value to the dictionary.
