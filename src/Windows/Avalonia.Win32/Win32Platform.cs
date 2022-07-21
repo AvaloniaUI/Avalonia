@@ -359,7 +359,7 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
-                return new IconImpl(new System.Drawing.Bitmap(memoryStream));
+                return CreateIconImpl(memoryStream);
             }
         }
 
@@ -367,11 +367,15 @@ namespace Avalonia.Win32
         {
             try
             {
+                // new Icon() will work only if stream is an "ico" file.
                 return new IconImpl(new System.Drawing.Icon(stream));
             }
             catch (ArgumentException)
             {
-                return new IconImpl(new System.Drawing.Bitmap(stream));
+                // Fallback to Bitmap creation and converting into a windows icon. 
+                using var icon = new System.Drawing.Bitmap(stream);
+                var hIcon = icon.GetHicon();
+                return new IconImpl(System.Drawing.Icon.FromHandle(hIcon));
             }
         }
 
