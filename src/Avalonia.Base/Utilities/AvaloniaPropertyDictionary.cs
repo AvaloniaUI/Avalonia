@@ -65,12 +65,12 @@ namespace Avalonia.Utilities
             {
                 if (!TryGetEntry(property.Id, out var index))
                     ThrowNotFound();
-                return _entries![index].Value;
+                return _entries[index].Value;
             }
             set
             {
                 if (TryGetEntry(property.Id, out var index))
-                    _entries![index] = new Entry(property, value);
+                    _entries[index] = new Entry(property, value);
                 else
                     InsertEntry(new Entry(property, value), index);
             }
@@ -120,7 +120,7 @@ namespace Avalonia.Utilities
         {
             if (_entries is null)
                 ThrowArgumentOutOfRange();
-            ref var entry = ref _entries![index];
+            ref var entry = ref _entries[index];
             key = entry.Property;
             value = entry.Value;
         }
@@ -137,9 +137,9 @@ namespace Avalonia.Utilities
         {
             if (TryGetEntry(property.Id, out var index))
             {
-                Array.Copy(_entries!, index + 1, _entries!, index, _entryCount - index - 1);
+                Array.Copy(_entries, index + 1, _entries, index, _entryCount - index - 1);
                 _entryCount--;
-                _entries![_entryCount] = default;
+                _entries[_entryCount] = default;
                 return true;
             }
 
@@ -160,10 +160,10 @@ namespace Avalonia.Utilities
         {
             if (TryGetEntry(property.Id, out var index))
             {
-                value = _entries![index].Value;
-                Array.Copy(_entries!, index + 1, _entries!, index, _entryCount - index - 1);
+                value = _entries[index].Value;
+                Array.Copy(_entries, index + 1, _entries, index, _entryCount - index - 1);
                 _entryCount--;
-                _entries![_entryCount] = default;
+                _entries[_entryCount] = default;
                 return true;
             }
 
@@ -198,7 +198,7 @@ namespace Avalonia.Utilities
         {
             if (TryGetEntry(property.Id, out var index))
             {
-                value = _entries![index].Value;
+                value = _entries[index].Value;
                 return true;
             }
 
@@ -206,6 +206,7 @@ namespace Avalonia.Utilities
             return false;
         }
 
+        [MemberNotNullWhen(true, nameof(_entries))]
         private bool TryGetEntry(int propertyId, out int index)
         {
             int checkIndex;
@@ -264,6 +265,7 @@ namespace Avalonia.Utilities
             return false;
         }
 
+        [MemberNotNull(nameof(_entries))]
         private void InsertEntry(Entry entry, int entryIndex)
         {
             if (_entryCount > 0)
