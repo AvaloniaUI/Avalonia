@@ -8,10 +8,9 @@ namespace Avalonia.FreeDesktop
     {
         private readonly Func<Exception, Task> _errorHandler;
 
-        class Item
+        record Item(Func<Task> Callback)
         {
-            public Func<Task> Callback;
-            public Action<Exception> OnFinish;
+            public Action<Exception?>? OnFinish;
         }
         private Queue<Item> _q = new Queue<Item>();
         private bool _processing;
@@ -23,19 +22,15 @@ namespace Avalonia.FreeDesktop
         
         public void Enqueue(Func<Task> cb)
         {
-            _q.Enqueue(new Item
-            {
-                Callback = cb
-            });
+            _q.Enqueue(new Item(cb));
             Process();
         }
 
         public Task EnqueueAsync(Func<Task> cb)
         {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _q.Enqueue(new Item
+            _q.Enqueue(new Item(cb)
             {
-                Callback = cb,
                 OnFinish = e =>
                 {
                     if (e == null)
@@ -51,13 +46,12 @@ namespace Avalonia.FreeDesktop
         public Task<T> EnqueueAsync<T>(Func<Task<T>> cb)
         {
             var tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _q.Enqueue(new Item
-            {
-                Callback = async () =>
+            _q.Enqueue(new Item(async () =>
                 {
                     var res = await cb();
                     tcs.TrySetResult(res);
-                },
+                })
+            {
                 OnFinish = e =>
                 {
                     if (e != null)

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform.Interop;
+using Avalonia.X11.Interop;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.NativeDialogs.Gtk;
 using static Avalonia.X11.NativeDialogs.Glib;
@@ -10,8 +11,6 @@ namespace ControlCatalog.NetCore;
 
 internal class GtkHelper
 {
-    private static Task<bool> s_gtkTask;
-
     class FileChooser : INativeControlHostDestroyableControlHandle
     {
         private readonly IntPtr _widget;
@@ -38,11 +37,7 @@ internal class GtkHelper
 
     public static INativeControlHostDestroyableControlHandle CreateGtkFileChooser(IntPtr parentXid)
     {
-        if (s_gtkTask == null)
-            s_gtkTask = StartGtk();
-        if (!s_gtkTask.Result)
-            return null;
-        return RunOnGlibThread(() =>
+        return GtkInteropHelper.RunOnGlibThread(() =>
         {
             using (var title = new Utf8Buffer("Embedded"))
             {

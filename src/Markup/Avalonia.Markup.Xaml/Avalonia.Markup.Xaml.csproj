@@ -15,7 +15,6 @@
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Extensions.cs" />
-        <Compile Include="IAddChild.cs" />
         <Compile Include="MarkupExtension.cs" />
         <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\ArrayElementPlugin.cs" />

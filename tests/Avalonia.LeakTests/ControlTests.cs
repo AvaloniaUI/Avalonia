@@ -314,7 +314,7 @@ namespace Avalonia.LeakTests
 
                 // The TextBox should have subscriptions to its Classes collection from the
                 // default theme.
-                Assert.NotEmpty(((INotifyCollectionChangedDebug)textBox.Classes).GetCollectionChangedSubscribers());
+                Assert.NotEqual(0, textBox.Classes.ListenerCount);
 
                 // Clear the content and ensure the TextBox is removed.
                 window.Content = null;

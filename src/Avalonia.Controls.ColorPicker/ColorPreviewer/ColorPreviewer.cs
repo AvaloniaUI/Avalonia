@@ -10,10 +10,10 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Presents a preview color with optional accent colors.
     /// </summary>
-    [TemplatePart(Name = nameof(AccentDec1Border), Type = typeof(Border))]
-    [TemplatePart(Name = nameof(AccentDec2Border), Type = typeof(Border))]
-    [TemplatePart(Name = nameof(AccentInc1Border), Type = typeof(Border))]
-    [TemplatePart(Name = nameof(AccentInc2Border), Type = typeof(Border))]
+    [TemplatePart("PART_AccentDecrement1Border", typeof(Border))]
+    [TemplatePart("PART_AccentDecrement2Border", typeof(Border))]
+    [TemplatePart("PART_AccentIncrement1Border", typeof(Border))]
+    [TemplatePart("PART_AccentIncrement2Border", typeof(Border))]
     public partial class ColorPreviewer : TemplatedControl
     {
         /// <summary>
@@ -24,10 +24,11 @@ namespace Avalonia.Controls.Primitives
 
         private bool eventsConnected = false;
 
-        private Border? AccentDec1Border;
-        private Border? AccentDec2Border;
-        private Border? AccentInc1Border;
-        private Border? AccentInc2Border;
+        // XAML template parts
+        private Border? _accentDecrement1Border;
+        private Border? _accentDecrement2Border;
+        private Border? _accentIncrement1Border;
+        private Border? _accentIncrement2Border;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorPreviewer"/> class.
@@ -45,20 +46,20 @@ namespace Avalonia.Controls.Primitives
             if (connected == true && eventsConnected == false)
             {
                 // Add all events
-                if (AccentDec1Border != null) { AccentDec1Border.PointerPressed += AccentBorder_PointerPressed; }
-                if (AccentDec2Border != null) { AccentDec2Border.PointerPressed += AccentBorder_PointerPressed; }
-                if (AccentInc1Border != null) { AccentInc1Border.PointerPressed += AccentBorder_PointerPressed; }
-                if (AccentInc2Border != null) { AccentInc2Border.PointerPressed += AccentBorder_PointerPressed; }
+                if (_accentDecrement1Border != null) { _accentDecrement1Border.PointerPressed += AccentBorder_PointerPressed; }
+                if (_accentDecrement2Border != null) { _accentDecrement2Border.PointerPressed += AccentBorder_PointerPressed; }
+                if (_accentIncrement1Border != null) { _accentIncrement1Border.PointerPressed += AccentBorder_PointerPressed; }
+                if (_accentIncrement2Border != null) { _accentIncrement2Border.PointerPressed += AccentBorder_PointerPressed; }
 
                 eventsConnected = true;
             }
             else if (connected == false && eventsConnected == true)
             {
                 // Remove all events
-                if (AccentDec1Border != null) { AccentDec1Border.PointerPressed -= AccentBorder_PointerPressed; }
-                if (AccentDec2Border != null) { AccentDec2Border.PointerPressed -= AccentBorder_PointerPressed; }
-                if (AccentInc1Border != null) { AccentInc1Border.PointerPressed -= AccentBorder_PointerPressed; }
-                if (AccentInc2Border != null) { AccentInc2Border.PointerPressed -= AccentBorder_PointerPressed; }
+                if (_accentDecrement1Border != null) { _accentDecrement1Border.PointerPressed -= AccentBorder_PointerPressed; }
+                if (_accentDecrement2Border != null) { _accentDecrement2Border.PointerPressed -= AccentBorder_PointerPressed; }
+                if (_accentIncrement1Border != null) { _accentIncrement1Border.PointerPressed -= AccentBorder_PointerPressed; }
+                if (_accentIncrement2Border != null) { _accentIncrement2Border.PointerPressed -= AccentBorder_PointerPressed; }
 
                 eventsConnected = false;
             }
@@ -70,10 +71,10 @@ namespace Avalonia.Controls.Primitives
             // Remove any existing events present if the control was previously loaded then unloaded
             ConnectEvents(false);
 
-            AccentDec1Border = e.NameScope.Find<Border>(nameof(AccentDec1Border));
-            AccentDec2Border = e.NameScope.Find<Border>(nameof(AccentDec2Border));
-            AccentInc1Border = e.NameScope.Find<Border>(nameof(AccentInc1Border));
-            AccentInc2Border = e.NameScope.Find<Border>(nameof(AccentInc2Border));
+            _accentDecrement1Border = e.NameScope.Find<Border>("PART_AccentDecrement1Border");
+            _accentDecrement2Border = e.NameScope.Find<Border>("PART_AccentDecrement2Border");
+            _accentIncrement1Border = e.NameScope.Find<Border>("PART_AccentIncrement1Border");
+            _accentIncrement2Border = e.NameScope.Find<Border>("PART_AccentIncrement2Border");
 
             // Must connect after controls are found
             ConnectEvents(true);
@@ -116,15 +117,15 @@ namespace Avalonia.Controls.Primitives
             // Get the value component delta
             try
             {
-                accentStep = int.Parse(border?.Tag?.ToString() ?? "", CultureInfo.InvariantCulture);
+                accentStep = int.Parse(border?.Tag?.ToString() ?? "0", CultureInfo.InvariantCulture);
             }
             catch { }
 
-            HsvColor newHsvColor = AccentColorConverter.GetAccent(hsvColor, accentStep);
-            HsvColor oldHsvColor = HsvColor;
-
-            HsvColor = newHsvColor;
-            OnColorChanged(new ColorChangedEventArgs(oldHsvColor.ToRgb(), newHsvColor.ToRgb()));
+            if (accentStep != 0)
+            {
+                // ColorChanged will be invoked in OnPropertyChanged if the value is different
+                HsvColor = AccentColorConverter.GetAccent(hsvColor, accentStep);
+            }
         }
     }
 }

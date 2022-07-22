@@ -43,6 +43,7 @@
                 <NativeMenuItemSeparator />
                 <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" Command="{Binding ToggleCommand}" />
                 <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Restore Defaults" Command="{Binding ToggleCommand}" />
+                <NativeMenuItem Header="Disabled option" IsEnabled="False" />
               </NativeMenu>
             </NativeMenuItem>
             <NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />

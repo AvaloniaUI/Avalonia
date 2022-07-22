@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
@@ -11,10 +13,13 @@
     </Border>
   </Design.PreviewWith>
   <Style Selector="ProgressBar">
+    <Style.Resources>
+      <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+    </Style.Resources>
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
     <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate TargetType="ProgressBar">
         <Grid>
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
             <Panel>
@@ -23,7 +28,17 @@
             </Panel>
           </Border>
           <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding ShowProgressText, RelativeSource={RelativeSource TemplatedParent}}" Name="PART_LayoutTransformControl">
-            <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}" Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
+            <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}">
+              <TextBlock.Text>
+                <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                  <TemplateBinding Property="ProgressTextFormat"/>
+                  <Binding Path="Value" RelativeSource="{RelativeSource TemplatedParent}"/>
+                  <TemplateBinding Property="Percentage"/>
+                  <TemplateBinding Property="Minimum"/>
+                  <TemplateBinding Property="Maximum"/>
+                </MultiBinding>
+              </TextBlock.Text>
+            </TextBlock>
           </LayoutTransformControl>
         </Grid>
       </ControlTemplate>

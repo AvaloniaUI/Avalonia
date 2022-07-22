@@ -170,6 +170,8 @@ namespace Avalonia.Controls
             remove => RemoveHandler(CopyingToClipboardEvent, value);
         }
 
+        internal bool HasComplexContent => Inlines.Count > 0;
+
         /// <summary>
         /// Copies the current selection to the Clipboard.
         /// </summary>
@@ -251,6 +253,30 @@ namespace Avalonia.Controls
             SelectionEnd = SelectionStart;
         }
 
+        protected void AddText(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            if (!HasComplexContent && string.IsNullOrEmpty(_text))
+            {
+                _text = text;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(_text))
+                {
+                    Inlines.Add(_text);
+
+                    _text = null;
+                }
+
+                Inlines.Add(text);
+            }
+        }
+
         protected override string? GetText()
         {
             return _text ?? Inlines.Text;
@@ -259,17 +285,8 @@ namespace Avalonia.Controls
         protected override void SetText(string? text)
         {
             var oldValue = _text ?? Inlines?.Text;
-
-            if (Inlines is not null && Inlines.HasComplexContent)
-            {
-                Inlines.Text = text;
-
-                _text = null;
-            }
-            else
-            {
-                _text = text;
-            }
+      
+            AddText(text);        
 
             RaisePropertyChanged(TextProperty, oldValue, text);
         }
@@ -293,7 +310,7 @@ namespace Avalonia.Controls
 
             var inlines = Inlines;
 
-            if (inlines is not null && inlines.HasComplexContent)
+            if (HasComplexContent)
             {
                 var textRuns = new List<TextRun>();
 
