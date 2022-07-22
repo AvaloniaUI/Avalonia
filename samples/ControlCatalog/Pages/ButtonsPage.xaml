@@ -90,6 +90,7 @@
               </Style>
             </Button.Styles>
           </Button>
+          <Button Classes="accent">Accent</Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"

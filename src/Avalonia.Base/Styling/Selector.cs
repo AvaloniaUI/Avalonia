@@ -86,7 +86,36 @@ namespace Avalonia.Styling
         /// </summary>
         protected abstract Selector? MovePrevious();
 
-        internal abstract bool HasValidNestingSelector();
+        /// <summary>
+        /// Moves to the previous selector or the parent selector.
+        /// </summary>
+        protected abstract Selector? MovePreviousOrParent();
+
+        internal virtual void ValidateNestingSelector(bool inControlTheme)
+        {
+            var s = this;
+            var templateCount = 0;
+
+            do
+            {
+                if (inControlTheme)
+                {
+                    if (!s.InTemplate && s.IsCombinator)
+                        throw new InvalidOperationException(
+                            "ControlTheme style may not directly contain a child or descendent selector.");
+                    if (s is TemplateSelector && templateCount++ > 0)
+                        throw new InvalidOperationException(
+                            "ControlTemplate styles cannot contain multiple template selectors.");
+                }
+
+                var previous = s.MovePreviousOrParent();
+
+                if (previous is null && s is not NestingSelector)
+                    throw new InvalidOperationException("Child styles must have a nesting selector.");
+
+                s = previous;
+            } while (s is not null);
+        }
 
         private static SelectorMatch MatchUntilCombinator(
             IStyleable control,
