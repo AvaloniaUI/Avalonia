@@ -66,7 +66,7 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue(typeof(RichTextBlock), true);
 
-            AffectsRender<RichTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
+            AffectsRender<RichTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty, IsTextSelectionEnabledProperty);
         }
 
         public RichTextBlock()
