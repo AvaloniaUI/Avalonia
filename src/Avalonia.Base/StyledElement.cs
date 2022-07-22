@@ -638,13 +638,15 @@ namespace Avalonia
 
             if (change.Property == ThemeProperty)
             {
+                var (oldValue, newValue) = change.GetOldAndNewValue<ControlTheme?>();
+
                 // Changing the theme detaches all styles, meaning that if the theme property was
                 // set via a style, it will get cleared! To work around this, if the value was
                 // applied at less than local value priority then promote the value to local value
                 // priority until styling is re-applied.
                 if (change.Priority > BindingPriority.LocalValue)
                 {
-                    Theme = change.GetNewValue<ControlTheme?>();
+                    Theme = newValue;
                     _hasPromotedTheme = true;
                 }
                 else if (_hasPromotedTheme && change.Priority == BindingPriority.LocalValue)
@@ -653,7 +655,14 @@ namespace Avalonia
                 }
 
                 InvalidateStyles();
+
+                if (oldValue is not null)
+                    DetachControlThemeFromTemplateChildren(oldValue);
             }
+        }
+
+        internal virtual void DetachControlThemeFromTemplateChildren(ControlTheme theme)
+        {
         }
 
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
