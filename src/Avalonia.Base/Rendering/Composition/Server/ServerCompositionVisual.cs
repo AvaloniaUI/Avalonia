@@ -119,14 +119,15 @@ namespace Avalonia.Rendering.Composition.Server
 
             var oldTransformedContentBounds = TransformedOwnContentBounds;
             var oldCombinedTransformedClipBounds = _combinedTransformedClipBounds;
-
-            var dirtyOldBounds = false; 
+            
             if (_parent?.IsDirtyComposition == true)
             {
                 IsDirtyComposition = true;
                 _isDirtyForUpdate = true;
-                dirtyOldBounds = true;
             }
+            
+            var invalidateOldBounds = _isDirtyForUpdate;
+            var invalidateNewBounds = _isDirtyForUpdate;
 
             GlobalTransformMatrix = newTransform;
             
@@ -157,30 +158,20 @@ namespace Avalonia.Rendering.Composition.Server
             
             EffectiveOpacity = Opacity * (Parent?.EffectiveOpacity ?? 1);
 
-            IsVisibleInFrame = Visible && EffectiveOpacity > 0.04 && !_isBackface &&
+            IsVisibleInFrame = _parent?.IsVisibleInFrame != false && Visible && EffectiveOpacity > 0.04 && !_isBackface &&
                                !_combinedTransformedClipBounds.IsEmpty;
-            
-            if (wasVisible != IsVisibleInFrame)
-                _isDirtyForUpdate = true;
-            
-            // Invalidate previous rect and queue new rect based on visibility
-            if (positionChanged)
-            {
-                if (wasVisible)
-                    dirtyOldBounds = true;
 
-                if (IsVisibleInFrame)
-                    _isDirtyForUpdate = true;
+            if (wasVisible != IsVisibleInFrame || positionChanged)
+            {
+                invalidateOldBounds |= wasVisible;
+                invalidateNewBounds |= IsVisibleInFrame;
             }
-            
+
             // Invalidate new bounds
-            if (IsVisibleInFrame && _isDirtyForUpdate)
-            {
-                dirtyOldBounds = true;
+            if (invalidateNewBounds)
                 AddDirtyRect(TransformedOwnContentBounds.Intersect(_combinedTransformedClipBounds));
-            }
 
-            if (dirtyOldBounds && wasVisible)
+            if (invalidateOldBounds)
                 AddDirtyRect(oldTransformedContentBounds.Intersect(oldCombinedTransformedClipBounds));
 
 
@@ -190,7 +181,7 @@ namespace Avalonia.Rendering.Composition.Server
             var i = Root!.Readback;
             ref var readback = ref GetReadback(i.WriteIndex);
             readback.Revision = root.Revision;
-            readback.Matrix = CombinedTransformMatrix;
+            readback.Matrix = GlobalTransformMatrix;
             readback.TargetId = Root.Id;
             readback.Visible = IsVisibleInFrame;
         }

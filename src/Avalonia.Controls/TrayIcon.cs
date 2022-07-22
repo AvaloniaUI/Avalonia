@@ -61,6 +61,10 @@ namespace Avalonia.Controls
                         args.NewValue.Value.CollectionChanged += Icons_CollectionChanged;
                     }
                 }
+                else
+                {
+                    throw new InvalidOperationException("TrayIcon.Icons must be set on the Application.");
+                }
             });
 
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
@@ -123,9 +127,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsVisibleProperty =
             Visual.IsVisibleProperty.AddOwner<TrayIcon>();
 
-        public static void SetIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
+        public static void SetIcons(Application o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
 
-        public static TrayIcons GetIcons(AvaloniaObject o) => o.GetValue(IconsProperty);
+        public static TrayIcons GetIcons(Application o) => o.GetValue(IconsProperty);
         
         /// <summary>
         /// Gets or sets the <see cref="Command"/> property of a TrayIcon.
