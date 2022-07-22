@@ -23,6 +23,6 @@ namespace Avalonia.Styling
         /// <returns>
         /// A <see cref="SelectorMatchResult"/> describing how the style matches the control.
         /// </returns>
-        SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host);
+        SelectorMatchResult TryAttach(IStyleable target, object? host);
     }
 }
