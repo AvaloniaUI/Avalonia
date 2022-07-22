@@ -1317,8 +1317,14 @@ namespace Avalonia.Media.TextFormatting
             switch (textAlignment)
             {
                 case TextAlignment.Center:
-                    return Math.Max(0, (_paragraphWidth - width) / 2);
+                    var start = (_paragraphWidth - width) / 2;
 
+                    if(paragraphFlowDirection == FlowDirection.RightToLeft)
+                    {
+                        start -= (widthIncludingTrailingWhitespace - width);
+                    }
+
+                    return Math.Max(0,  start);                         
                 case TextAlignment.Right:
                     return Math.Max(0, _paragraphWidth - widthIncludingTrailingWhitespace);
 
