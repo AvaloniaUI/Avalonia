@@ -10,11 +10,11 @@
         <TextBlock Text="{Binding}"/>
       </StackPanel>
     </DataTemplate>
+    <ControlTheme x:Key="GdpCell" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+      <Setter Property="Background" Value="{Binding Path=GDP, Mode=OneWay, Converter={StaticResource GDPConverter}}" />
+    </ControlTheme>
   </UserControl.Resources>
   <UserControl.Styles>
-    <Style Selector="DataGridCell.gdp">
-      <Setter Property="Background" Value="{Binding Path=GDP, Mode=OneWay, Converter={StaticResource GDPConverter}}" />
-    </Style>
     <Style Selector="DataGridColumnHeader:nth-last-child(1)">
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
@@ -54,7 +54,8 @@
               <DataGridTextColumn Header="Region" Binding="{CompiledBinding Region}" Width="4*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
               <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
-              <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" CellStyleClasses="gdp"
+              <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*"
+                                  CellTheme="{StaticResource GdpCell}"
                                   MinWidth="200"
                                   IsVisible="{Binding #ShowGDP.IsChecked}"/>
             </DataGrid.Columns>
