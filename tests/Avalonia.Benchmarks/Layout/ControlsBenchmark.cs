@@ -64,8 +64,9 @@ namespace Avalonia.Benchmarks.Layout
             _root.Child = control;
 
             _root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
         }
-        
+
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void CreateDecorator()
@@ -75,8 +76,9 @@ namespace Avalonia.Benchmarks.Layout
             _root.Child = control;
 
             _root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
         }
-        
+
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void CreateScrollViewer()
@@ -86,8 +88,9 @@ namespace Avalonia.Benchmarks.Layout
             _root.Child = control;
 
             _root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
         }
-        
+
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void CreateButton()
