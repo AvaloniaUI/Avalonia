@@ -45,7 +45,12 @@ namespace Avalonia.Styling
         public void Add(ISetterInstance instance)
         {
             if (instance is IValueEntry valueEntry)
-                base.Add(valueEntry);
+            {
+                if (Contains(valueEntry.Property))
+                    throw new InvalidOperationException(
+                        $"Duplicate setter encountered for property '{valueEntry.Property}' in '{Source}'.");
+                Add(valueEntry);
+            }
             else
                 (_setters ??= new()).Add(instance);
         }
