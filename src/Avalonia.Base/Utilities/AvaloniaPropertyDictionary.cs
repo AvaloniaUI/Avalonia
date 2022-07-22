@@ -103,6 +103,22 @@ namespace Avalonia.Utilities
                 ThrowDuplicate();
             InsertEntry(new Entry(property, value), index);
         }
+        
+        /// <summary>
+        /// Removes all keys and values from the collection.
+        /// </summary>
+        /// <remarks>
+        /// The Count property is set to 0, and references to other objects from elements of the
+        /// collection are also released. The capacity remains unchanged.
+        /// </remarks>
+        public void Clear()
+        {
+            if (_entries is not null)
+            {
+                Array.Clear(_entries, 0, _entries.Length);
+                _entryCount = 0;
+            }
+        }
 
         /// <summary>
         /// Determines whether the collection contains the specified key.
