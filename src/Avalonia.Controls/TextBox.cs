@@ -202,6 +202,7 @@ namespace Avalonia.Controls
         private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
+        private bool _hasWordSelection;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private const int _maxCharsBeforeUndoSnapshot = 7;
@@ -1170,16 +1171,27 @@ namespace Avalonia.Controls
                     case 1:
                         if (clickToSelect)
                         {
-                            SelectionStart = Math.Min(oldIndex, index);
-                            SelectionEnd = Math.Max(oldIndex, index);
+                            if (_hasWordSelection)
+                            {
+                                SelectionEnd = StringUtils.NextWord(text, index);
+                            }
+                            else
+                            {
+                                SelectionStart = Math.Min(oldIndex, index);
+                                SelectionEnd = Math.Max(oldIndex, index);
+                            }                           
                         }
                         else
                         {
+                            _hasWordSelection = false;
+
                             SelectionStart = SelectionEnd = index;
                         }
 
                         break;
                     case 2:
+                        _hasWordSelection = true;
+
                         if (!StringUtils.IsStartOfWord(text, index))
                         {
                             SelectionStart = StringUtils.PreviousWord(text, index);
@@ -1188,6 +1200,8 @@ namespace Avalonia.Controls
                         SelectionEnd = StringUtils.NextWord(text, index);
                         break;
                     case 3:
+                        _hasWordSelection = false;
+
                         SelectAll();
                         break;
                 }
@@ -1215,7 +1229,16 @@ namespace Avalonia.Controls
 
                 _presenter.MoveCaretToPoint(point);
 
-                SelectionEnd = _presenter.CaretIndex;
+                var text = Text;
+
+                if (text != null && _hasWordSelection)
+                {
+                    SelectionEnd = StringUtils.NextWord(text, _presenter.CaretIndex);
+                }
+                else
+                {
+                    SelectionEnd = _presenter.CaretIndex;
+                }
             }
         }
 

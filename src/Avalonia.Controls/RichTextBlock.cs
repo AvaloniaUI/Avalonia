@@ -338,6 +338,8 @@ namespace Avalonia.Controls
             e.Handled = handled;
         }
 
+        private bool _hasWordSelection;
+
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -363,8 +365,6 @@ namespace Avalonia.Controls
                 var hit = TextLayout.HitTestPoint(point);
                 var index = hit.TextPosition;
 
-                SelectionStart = SelectionEnd = index;
-
 #pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -372,16 +372,27 @@ namespace Avalonia.Controls
                     case 1:
                         if (clickToSelect)
                         {
-                            SelectionStart = Math.Min(oldIndex, index);
-                            SelectionEnd = Math.Max(oldIndex, index);
+                            if (_hasWordSelection)
+                            {
+                                SelectionEnd = StringUtils.NextWord(text, index);
+                            }
+                            else
+                            {
+                                SelectionStart = Math.Min(oldIndex, index);
+                                SelectionEnd = Math.Max(oldIndex, index);
+                            }
                         }
                         else
                         {
+                            _hasWordSelection = false;
+
                             SelectionStart = SelectionEnd = index;
                         }
 
                         break;
                     case 2:
+                        _hasWordSelection = true;
+
                         if (!StringUtils.IsStartOfWord(text, index))
                         {
                             SelectionStart = StringUtils.PreviousWord(text, index);
@@ -390,6 +401,8 @@ namespace Avalonia.Controls
                         SelectionEnd = StringUtils.NextWord(text, index);
                         break;
                     case 3:
+                        _hasWordSelection = false;
+
                         SelectAll();
                         break;
                 }
@@ -411,6 +424,7 @@ namespace Avalonia.Controls
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
+                var text = Text;
                 var padding = Padding;
 
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
@@ -421,7 +435,16 @@ namespace Avalonia.Controls
 
                 var hit = TextLayout.HitTestPoint(point);
 
-                SelectionEnd = hit.TextPosition;
+                if (text != null && _hasWordSelection)
+                {
+                    SelectionEnd = StringUtils.NextWord(text, hit.TextPosition);
+                }
+                else
+                {
+                    SelectionEnd = hit.TextPosition;
+                }
+
+              
             }
         }
 
