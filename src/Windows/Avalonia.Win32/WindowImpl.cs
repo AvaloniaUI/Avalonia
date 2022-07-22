@@ -290,6 +290,7 @@ namespace Avalonia.Win32
                     ShowWindow(value, value != WindowState.Minimized); // If the window is minimized, it shouldn't be activated
                 }
 
+                _lastWindowState = value;
                 _showWindowState = value;
             }
         }
