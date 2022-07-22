@@ -60,6 +60,7 @@ namespace Avalonia.Controls
         private bool _canCopy;
         private int _selectionStart;
         private int _selectionEnd;
+        private int _wordSelectionStart = -1;
 
         static RichTextBlock()
         {
@@ -338,8 +339,6 @@ namespace Avalonia.Controls
             e.Handled = handled;
         }
 
-        private bool _hasWordSelection;
-
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -372,9 +371,19 @@ namespace Avalonia.Controls
                     case 1:
                         if (clickToSelect)
                         {
-                            if (_hasWordSelection)
+                            if (_wordSelectionStart >= 0)
                             {
-                                SelectionEnd = StringUtils.NextWord(text, index);
+                                var previousWord = StringUtils.PreviousWord(text, index);
+
+                                if (index > _wordSelectionStart)
+                                {
+                                    SelectionEnd = StringUtils.NextWord(text, index);
+                                }
+
+                                if (index < _wordSelectionStart || previousWord == _wordSelectionStart)
+                                {
+                                    SelectionStart = previousWord;
+                                }
                             }
                             else
                             {
@@ -384,24 +393,27 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            _hasWordSelection = false;
+                            if (_wordSelectionStart == -1 || index < SelectionStart || index > SelectionEnd)
+                            {
+                                SelectionStart = SelectionEnd = index;
 
-                            SelectionStart = SelectionEnd = index;
+                                _wordSelectionStart = -1;
+                            }
                         }
 
                         break;
                     case 2:
-                        _hasWordSelection = true;
-
                         if (!StringUtils.IsStartOfWord(text, index))
                         {
                             SelectionStart = StringUtils.PreviousWord(text, index);
                         }
 
+                        _wordSelectionStart = SelectionStart;
+
                         SelectionEnd = StringUtils.NextWord(text, index);
                         break;
                     case 3:
-                        _hasWordSelection = false;
+                        _wordSelectionStart = -1;
 
                         SelectAll();
                         break;
@@ -434,17 +446,32 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Bounds.Width, 0)));
 
                 var hit = TextLayout.HitTestPoint(point);
+                var textPosition = hit.TextPosition;
 
-                if (text != null && _hasWordSelection)
+                if (text != null && _wordSelectionStart >= 0)
                 {
-                    SelectionEnd = StringUtils.NextWord(text, hit.TextPosition);
+                    var distance = textPosition - _wordSelectionStart;
+
+                    if (distance <= 0)
+                    {
+                        SelectionStart = StringUtils.PreviousWord(text, textPosition);
+                    }
+
+                    if (distance >= 0)
+                    {
+                        if (SelectionStart != _wordSelectionStart)
+                        {
+                            SelectionStart = _wordSelectionStart;
+                        }
+
+                        SelectionEnd = StringUtils.NextWord(text, textPosition);
+                    }
                 }
                 else
                 {
-                    SelectionEnd = hit.TextPosition;
+                    SelectionEnd = textPosition;
                 }
 
-              
             }
         }
 
