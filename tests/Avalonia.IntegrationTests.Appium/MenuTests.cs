@@ -57,7 +57,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
         }
 
-        [PlatformFact(TestPlatforms.Windows)]
+        /*[PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Alt_Arrow_Keys()
         {
             new Actions(_session)
@@ -103,7 +103,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
-        }
+        }*/
 
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Click_Arrow_Keys()
