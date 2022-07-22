@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
@@ -17,10 +18,55 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                   && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
                 return node;
 
-            var targetTypeNode = context.ParentNodes()
+            IXamlType targetType = null;
+            IXamlLineInfo lineInfo = null;
+
+            var styleParent = context.ParentNodes()
                 .OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
-                .FirstOrDefault(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style) ??
-                throw new XamlParseException("Can not find parent Style Selector or ControlTemplate TargetType", node);
+                .FirstOrDefault(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
+
+            if (styleParent != null)
+            {
+                var selectorProperty = styleParent.Children.OfType<XamlAstXamlPropertyValueNode>()
+                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Selector");
+
+                if (selectorProperty == null)
+                    throw new XamlParseException(
+                        "Can not find parent Style Selector", node);
+
+                var selector = selectorProperty.Values.FirstOrDefault() as XamlIlSelectorNode;
+
+                targetType = selector?.TargetType
+                             ?? throw new XamlParseException("Can not resolve parent Style Selector type", node);
+                lineInfo = selector;
+            }
+            else
+            {
+                foreach (var p in context.ParentNodes().OfType<XamlAstObjectNode>())
+                {
+                    for (var index = 0; index < p.Children.Count; index++)
+                    {
+                        if (p.Children[index] is XamlAstXmlDirective d &&
+                            d.Namespace == XamlNamespaces.Xaml2006 &&
+                            d.Name == "SetterTargetType")
+                        {
+                            //p.Children.RemoveAt(index);
+
+                            targetType = context.Configuration.TypeSystem.GetType(((XamlAstTextNode)d.Values[0]).Text);
+                            lineInfo = d;
+
+                            break;
+                        }
+                    }
+
+                    if (targetType != null) break;
+                }
+            }
+
+            if (targetType == null)
+            {
+                throw new XamlParseException("Could not determine target type of Setter", node);
+            }
 
             IXamlType propType = null;
             var property = @on.Children.OfType<XamlAstXamlPropertyValueNode>()
@@ -31,9 +77,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 if (propertyName == null)
                     throw new XamlParseException("Setter.Property must be a string", node);
 
-
                 var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                    new XamlAstClrTypeReference(targetTypeNode, targetTypeNode.TargetType.GetClrType(), false), property.Values[0]);
+                    new XamlAstClrTypeReference(lineInfo, targetType, false), property.Values[0]);
                 property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
                 propType = avaloniaPropertyNode.AvaloniaPropertyType;
             }
