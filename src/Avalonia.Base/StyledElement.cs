@@ -316,13 +316,10 @@ namespace Avalonia
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0)
+            if (--_initCount == 0 && _logicalRoot is not null)
             {
-                if (_logicalRoot is not null)
-                {
-                    ApplyStyling();
-                    InitializeIfNeeded();
-                }
+                ApplyStyling();
+                InitializeIfNeeded();
             }
         }
 
