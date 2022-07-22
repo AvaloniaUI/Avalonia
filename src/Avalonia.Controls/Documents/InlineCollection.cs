@@ -92,12 +92,46 @@ namespace Avalonia.Controls.Documents
         /// <param name="text"></param>
         public void Add(string text)
         {
-            Add(new Run(text));
+            AddText(text);
+        }
+
+        public override void Add(Inline inline)
+        {
+            OnAdd();
+
+            base.Add(inline);
         }
 
         public void Add(IControl child)
         {
-            Add(new InlineUIContainer(child));
+            OnAdd();
+
+            base.Add(new InlineUIContainer(child));
+        }
+
+        private void AddText(string text)
+        {
+            if(Parent is RichTextBlock textBlock && !textBlock.HasComplexContent)
+            {
+                textBlock._text += text;
+            }
+            else
+            {
+                base.Add(new Run(text));
+            }
+        }
+
+        private void OnAdd()
+        {
+            if (Parent is RichTextBlock textBlock)
+            {
+                if (!textBlock.HasComplexContent && !string.IsNullOrEmpty(textBlock._text))
+                {
+                    base.Add(new Run(textBlock._text));
+
+                    textBlock._text = null;
+                }
+            }
         }
 
         /// <summary>

@@ -129,7 +129,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
             AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
 
-        protected string? _text;
+        internal string? _text;
         protected TextLayout? _textLayout;
         protected Size _constraint;
 
