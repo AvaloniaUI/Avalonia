@@ -70,8 +70,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 InnerServiceProviderFactoryMethod =
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
-                IAddChild = typeSystem.GetType("Avalonia.Markup.Xaml.IAddChild"),
-                IAddChildOfT = typeSystem.GetType("Avalonia.Markup.Xaml.IAddChild`1")
+                IAddChild = typeSystem.GetType("Avalonia.Metadata.IAddChild"),
+                IAddChildOfT = typeSystem.GetType("Avalonia.Metadata.IAddChild`1")
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
 
