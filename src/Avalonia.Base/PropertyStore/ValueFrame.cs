@@ -7,14 +7,14 @@ namespace Avalonia.PropertyStore
 {
     internal abstract class ValueFrame
     {
-        private readonly AvaloniaPropertyValueStore<IValueEntry> _entries = new();
+        private AvaloniaPropertyDictionary<IValueEntry> _entries = new();
 
         public int EntryCount => _entries.Count;
         public abstract bool IsActive { get; }
         public ValueStore? Owner { get; private set; }
         public BindingPriority Priority { get; protected set; }
 
-        public bool Contains(AvaloniaProperty property) => _entries.Contains(property);
+        public bool Contains(AvaloniaProperty property) => _entries.ContainsKey(property);
 
         public IValueEntry GetEntry(int index) => _entries[index];
 
@@ -40,10 +40,10 @@ namespace Avalonia.PropertyStore
         protected void Add(IValueEntry value)
         {
             Debug.Assert(!value.Property.IsDirect);
-            _entries.AddValue(value.Property, value);
+            _entries.Add(value.Property, value);
         }
 
         protected void Remove(AvaloniaProperty property) => _entries.Remove(property);
-        protected void Set(IValueEntry value) => _entries.SetValue(value.Property, value);
+        protected void Set(IValueEntry value) => _entries[value.Property] = value;
     }
 }

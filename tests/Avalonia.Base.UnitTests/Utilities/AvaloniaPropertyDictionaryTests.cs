@@ -188,6 +188,9 @@ namespace Avalonia.Base.UnitTests.Utilities
         [MemberData(nameof(Counts))]
         public void Remove_Removes_Value(int count)
         {
+            if (count == 0)
+                return;
+
             var target = CreateTarget(count);
             var index = count / 2;
             var property = TestProperties[index];

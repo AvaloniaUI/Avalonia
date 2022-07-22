@@ -6,6 +6,7 @@ using Avalonia.Collections.Pooled;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
+using Avalonia.Utilities;
 
 namespace Avalonia.PropertyStore
 {
@@ -13,7 +14,7 @@ namespace Avalonia.PropertyStore
     {
         private readonly List<ValueFrame> _frames = new();
         private Dictionary<int, IDisposable>? _localValueBindings;
-        private Dictionary<AvaloniaProperty, EffectiveValue>? _effectiveValues;
+        private AvaloniaPropertyDictionary<EffectiveValue> _effectiveValues;
         private int _inheritedValueCount;
         private int _frameGeneration;
         private int _styling;
@@ -158,7 +159,7 @@ namespace Avalonia.PropertyStore
 
         public object? GetValue(AvaloniaProperty property)
         {
-            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
+            if (_effectiveValues.TryGetValue(property, out var v))
                 return v.Value;
             if (property.Inherits && TryGetInheritedValue(property, out v))
                 return v.Value;
@@ -168,7 +169,7 @@ namespace Avalonia.PropertyStore
 
         public T GetValue<T>(StyledPropertyBase<T> property)
         {
-            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
+            if (_effectiveValues.TryGetValue(property, out var v))
                 return ((EffectiveValue<T>)v).Value;
             if (property.Inherits && TryGetInheritedValue(property, out v))
                 return ((EffectiveValue<T>)v).Value;
@@ -177,21 +178,21 @@ namespace Avalonia.PropertyStore
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
+            if (_effectiveValues.TryGetValue(property, out var v))
                 return v.Priority <= BindingPriority.Animation;
             return false;
         }
 
         public bool IsSet(AvaloniaProperty property)
         {
-            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
+            if (_effectiveValues.TryGetValue(property, out var v))
                 return v.Priority < BindingPriority.Inherited;
             return false;
         }
 
         public void CoerceValue(AvaloniaProperty property)
         {
-            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var v))
+            if (_effectiveValues.TryGetValue(property, out var v))
                 v.CoerceValue(this, property);
         }
 
@@ -227,7 +228,7 @@ namespace Avalonia.PropertyStore
 
         public void SetInheritanceParent(AvaloniaObject? oldParent, AvaloniaObject? newParent)
         {
-            var values = DictionaryPool<AvaloniaProperty, OldNewValue>.Get();
+            var values = AvaloniaPropertyDictionaryPool<OldNewValue>.Get();
             var oldAncestor = InheritanceAncestor;
             var newAncestor = newParent?.GetValueStore();
 
@@ -243,15 +244,13 @@ namespace Avalonia.PropertyStore
 
             while (f is not null)
             {
-                Debug.Assert(f._effectiveValues is not null);
+                var count = f._effectiveValues.Count;
 
-                if (f._effectiveValues is not null)
+                for (var i = 0; i < count; ++i)
                 {
-                    foreach (var i in f._effectiveValues)
-                    {
-                        if (i.Key.Inherits)
-                            values.TryAdd(i.Key, new(i.Value));
-                    }
+                    f._effectiveValues.GetKeyValue(i, out var key, out var value);
+                    if (key.Inherits)
+                        values.TryAdd(key, new(value));
                 }
 
                 f = f.InheritanceAncestor;
@@ -262,17 +261,19 @@ namespace Avalonia.PropertyStore
             // Get the new values from the new inheritance ancestor.
             while (f is not null)
             {
-                Debug.Assert(f._effectiveValues is not null);
+                var count = f._effectiveValues.Count;
 
-                foreach (var i in f._effectiveValues)
+                for (var i = 0; i < count; ++i)
                 {
-                    if (i.Key.Inherits)
-                    {
-                        if (values.TryGetValue(i.Key, out var existing))
-                            values[i.Key] = existing.WithNewValue(i.Value);
-                        else
-                            values.Add(i.Key, new(null, i.Value));
-                    }
+                    f._effectiveValues.GetKeyValue(i, out var key, out var value);
+
+                    if (!key.Inherits)
+                        continue;
+
+                    if (values.TryGetValue(key, out var existing))
+                        values[key] = existing.WithNewValue(value);
+                    else
+                        values.Add(key, new(null, value));
                 }
 
                 f = f.InheritanceAncestor;
@@ -281,16 +282,20 @@ namespace Avalonia.PropertyStore
             OnInheritanceAncestorChanged(newAncestor);
 
             // Raise PropertyChanged events where necessary on this object and inheritance children.
-            foreach (var i in values)
             {
-                var oldValue = i.Value.OldValue;
-                var newValue = i.Value.NewValue;
+                var count = values.Count;
+                for (var i = 0; i < count; ++i)
+                {
+                    values.GetKeyValue(i, out var key, out var v);
+                    var oldValue = v.OldValue;
+                    var newValue = v.NewValue;
 
-                if (oldValue != newValue)
-                    InheritedValueChanged(i.Key, oldValue, newValue);
+                    if (oldValue != newValue)
+                        InheritedValueChanged(key, oldValue, newValue);
+                }
             }
 
-            DictionaryPool<AvaloniaProperty, OldNewValue>.Release(values);
+            AvaloniaPropertyDictionaryPool<OldNewValue>.Release(values);
         }
 
         /// <summary>
@@ -497,7 +502,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(property.Inherits);
 
             // If the inherited value is set locally, propagation stops here.
-            if (_effectiveValues is not null && _effectiveValues.ContainsKey(property))
+            if (_effectiveValues.ContainsKey(property))
                 return;
 
             using var notifying = PropertyNotifying.Start(Owner, property);
@@ -626,7 +631,6 @@ namespace Avalonia.PropertyStore
 
         private void AddEffectiveValue(AvaloniaProperty property, EffectiveValue effectiveValue)
         {
-            _effectiveValues ??= new();
             _effectiveValues.Add(property, effectiveValue);
 
             if (property.Inherits && _inheritedValueCount++ == 0)
@@ -668,7 +672,7 @@ namespace Avalonia.PropertyStore
 
         private bool RemoveEffectiveValue(AvaloniaProperty property)
         {
-            if (_effectiveValues is not null && _effectiveValues.Remove(property))
+            if (_effectiveValues.Remove(property))
             {
                 if (property.Inherits && --_inheritedValueCount == 0)
                     OnInheritanceAncestorChanged(InheritanceAncestor);
@@ -680,7 +684,7 @@ namespace Avalonia.PropertyStore
 
         private bool RemoveEffectiveValue(AvaloniaProperty property, [NotNullWhen(true)] out EffectiveValue? result)
         {
-            if (_effectiveValues is not null && _effectiveValues.Remove(property, out result))
+            if (_effectiveValues.Remove(property, out result))
             {
                 if (property.Inherits && --_inheritedValueCount == 0)
                     OnInheritanceAncestorChanged(InheritanceAncestor);
@@ -793,7 +797,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(oldValue is not null || newValue is not null);
 
             // If the value is set locally, propagaton ends here.
-            if (_effectiveValues?.ContainsKey(property) == true)
+            if (_effectiveValues.ContainsKey(property) == true)
                 return;
 
             using var notifying = PropertyNotifying.Start(Owner, property);
@@ -823,19 +827,17 @@ namespace Avalonia.PropertyStore
                 return;
 
             var generation = _frameGeneration;
-            
-            // Reset all non-LocalValue effective values to Unset priority.
-            if (_effectiveValues is not null)
-            {
-                foreach (var v in _effectiveValues)
-                {
-                    var e = v.Value;
+            var count = _effectiveValues.Count;
 
-                    if (e.Priority != BindingPriority.LocalValue)
-                        e.SetPriority(BindingPriority.Unset);
-                    if (e.BasePriority != BindingPriority.LocalValue)
-                        e.SetBasePriority(BindingPriority.Unset);
-                }
+            // Reset all non-LocalValue effective values to Unset priority.
+            for (var i = 0; i < count; ++i)
+            {
+                var e = _effectiveValues[i];
+
+                if (e.Priority != BindingPriority.LocalValue)
+                    e.SetPriority(BindingPriority.Unset);
+                if (e.BasePriority != BindingPriority.LocalValue)
+                    e.SetBasePriority(BindingPriority.Unset);
             }
 
             // Iterate the frames, setting and creating effective values.
@@ -847,16 +849,17 @@ namespace Avalonia.PropertyStore
                     continue;
 
                 var priority = frame.Priority;
-                var count = frame.EntryCount;
+                
+                count = frame.EntryCount;
 
                 for (var j = 0; j < count; ++j)
                 {
                     var entry = frame.GetEntry(j);
                     var property = entry.Property;
-                    EffectiveValue? effectiveValue = null;
+                    EffectiveValue? effectiveValue;
 
                     // Skip if we already have a value/base value for this property.
-                    if (_effectiveValues?.TryGetValue(property, out effectiveValue) == true &&
+                    if (_effectiveValues.TryGetValue(property, out effectiveValue) == true &&
                         effectiveValue.BasePriority < BindingPriority.Unset)
                         continue;
 
@@ -880,39 +883,37 @@ namespace Avalonia.PropertyStore
             }
 
             // Remove all effective values that are still unset.
-            if (_effectiveValues is not null)
+            PooledList<AvaloniaProperty>? remove = null;
+
+            count = _effectiveValues.Count;
+
+            for (var i = 0; i < count; ++i)
             {
-                PooledList<AvaloniaProperty>? remove = null;
+                _effectiveValues.GetKeyValue(i, out var key, out var e);
 
-                foreach (var v in _effectiveValues)
+                if (e.Priority == BindingPriority.Unset)
                 {
-                    var e = v.Value;
-
-                    if (e.Priority == BindingPriority.Unset)
-                    {
-                        remove ??= new();
-                        remove.Add(v.Key);
-                    }
+                    remove ??= new();
+                    remove.Add(key);
                 }
+            }
 
-                if (remove is not null)
+            if (remove is not null)
+            {
+                foreach (var v in remove)
                 {
-                    foreach (var v in remove)
-                    {
-                        if (RemoveEffectiveValue(v, out var e))
-                            e.DisposeAndRaiseUnset(this, v);
-                    }
-                    remove.Dispose();
+                    if (RemoveEffectiveValue(v, out var e))
+                        e.DisposeAndRaiseUnset(this, v);
                 }
+                remove.Dispose();
             }
         }
 
-        [MemberNotNullWhen(true, nameof(_effectiveValues))]
         private bool TryGetEffectiveValue(
             AvaloniaProperty property, 
             [NotNullWhen(true)] out EffectiveValue? value)
         {
-            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out value))
+            if (_effectiveValues.TryGetValue(property, out value))
                 return true;
             value = null;
             return false;
@@ -920,7 +921,7 @@ namespace Avalonia.PropertyStore
 
         private EffectiveValue? GetEffectiveValue(AvaloniaProperty property)
         {
-            if (_effectiveValues is not null && _effectiveValues.TryGetValue(property, out var value))
+            if (_effectiveValues.TryGetValue(property, out var value))
                 return value;
             return null;
         }
