@@ -32,6 +32,7 @@ using System.Collections;
 using System.Drawing;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
@@ -545,7 +546,7 @@ namespace Avalonia.X11 {
         {
             if (data == null)
                 throw new InvalidOperationException();
-            return *(T*)data;
+            return Unsafe.ReadUnaligned<T>(data);
         }
     }
 
