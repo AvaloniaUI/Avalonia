@@ -68,6 +68,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlCompiledBindingsMetadataRemover()
                 );
 
+            Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
