@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Utilities;
@@ -7,14 +9,15 @@ namespace Avalonia.PropertyStore
 {
     internal abstract class ValueFrame
     {
-        private AvaloniaPropertyDictionary<IValueEntry> _entries = new();
+        private readonly List<IValueEntry> _entries = new();
+        private AvaloniaPropertyDictionary<IValueEntry> _index;
 
         public int EntryCount => _entries.Count;
         public abstract bool IsActive { get; }
         public ValueStore? Owner { get; private set; }
         public BindingPriority Priority { get; protected set; }
 
-        public bool Contains(AvaloniaProperty property) => _entries.ContainsKey(property);
+        public bool Contains(AvaloniaProperty property) => _index.ContainsKey(property);
 
         public IValueEntry GetEntry(int index) => _entries[index];
 
@@ -22,7 +25,7 @@ namespace Avalonia.PropertyStore
 
         public bool TryGetEntry(AvaloniaProperty property, [NotNullWhen(true)] out IValueEntry? entry)
         {
-            return _entries.TryGetValue(property, out entry);
+            return _index.TryGetValue(property, out entry);
         }
 
         public void OnBindingCompleted(IValueEntry binding)
@@ -40,10 +43,26 @@ namespace Avalonia.PropertyStore
         protected void Add(IValueEntry value)
         {
             Debug.Assert(!value.Property.IsDirect);
-            _entries.Add(value.Property, value);
+            _entries.Add(value);
+            _index.Add(value.Property, value);
         }
 
-        protected void Remove(AvaloniaProperty property) => _entries.Remove(property);
-        protected void Set(IValueEntry value) => _entries[value.Property] = value;
+        protected void Remove(AvaloniaProperty property)
+        {
+            Debug.Assert(!property.IsDirect);
+
+            var count = _entries.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (_entries[i].Property == property)
+                {
+                    _entries.RemoveAt(i);
+                    break;
+                }
+            }
+
+            _index.Remove(property);
+        }
     }
 }
