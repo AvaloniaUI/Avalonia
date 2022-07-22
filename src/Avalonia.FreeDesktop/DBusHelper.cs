@@ -24,8 +24,7 @@ namespace Avalonia.FreeDesktop
                     if (_ctx is not null)
                         _ctx?.Post(d, state);
                     else
-                        lock (_lock)
-                            d(state);
+                        d(state);
                 }
             }
 
