@@ -479,6 +479,11 @@ namespace Avalonia.Media.TextFormatting
                 //Fulfill max lines constraint
                 if (MaxLines > 0 && textLines.Count >= MaxLines)
                 {
+                    if(textLine.TextLineBreak is TextLineBreak lineBreak && lineBreak.RemainingRuns != null)
+                    {
+                        textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
+                    }
+
                     break;
                 }
             }
