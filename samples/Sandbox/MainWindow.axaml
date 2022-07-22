@@ -1,17 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
-  <RichTextBlock 
-    HorizontalAlignment="Center" 
-    VerticalAlignment="Center" 
-    Background="AliceBlue" 
-    Padding="5" 
-    IsTextSelectionEnabled="True" 
-    FontSize="18" 
-    FontWeight="Bold" 
-    SelectionStart="24" 
-    SelectionEnd="23">
-    <LineBreak/>
-    <Run>أَبْجَدِيَّة عَرَبِيَّة</Run>
-  </RichTextBlock>
+  <TextBlock TextDecorations="Underline" Text="Underline "/>
 </Window>

@@ -445,7 +445,7 @@ namespace Avalonia.Media
         /// </returns>
         public int FindGlyphIndex(int characterIndex)
         {
-            if (GlyphClusters == null)
+            if (GlyphClusters == null || GlyphClusters.Count == 0)
             {
                 return characterIndex;
             }
