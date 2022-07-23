@@ -285,6 +285,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IRenderer Renderer { get; private set; }
 
+        internal PixelPoint? LastPointerPosition => _pointerOverPreProcessor?.LastPosition;
+        
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
