@@ -80,7 +80,7 @@ namespace Avalonia.X11
                         var r = y * _width;
                         var fbr = y * fb.RowBytes / 4;
                         for (var x = 0; x < _width; x++)
-                            fbp[fbr + x] = Data[r + x].ToUInt32();
+                            fbp[fbr + x] = Data[r + x + 2].ToUInt32();
                     }
                 }
                 wr.Save(outputStream);
