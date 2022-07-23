@@ -21,49 +21,11 @@ namespace Avalonia.Input
 
         private readonly Pointer _pointer;
         private bool _disposed;
-        private PixelPoint? _position;
         private MouseButton _lastMouseDownButton;
 
         public MouseDevice(Pointer? pointer = null)
         {
             _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
-        }
-
-        [Obsolete("Use IPointer instead")]
-        public IInputElement? Captured => _pointer.Captured;
-
-        [Obsolete("Use events instead")]
-        public PixelPoint Position
-        {
-            get => _position ?? new PixelPoint(-1, -1);
-            protected set => _position = value;
-        }
-
-        [Obsolete("Use IPointer instead")]
-        public void Capture(IInputElement? control)
-        {
-            _pointer.Capture(control);
-        }
-
-        /// <summary>
-        /// Gets the mouse position relative to a control.
-        /// </summary>
-        /// <param name="relativeTo">The control.</param>
-        /// <returns>The mouse position in the control's coordinates.</returns>
-        public Point GetPosition(IVisual relativeTo)
-        {
-            relativeTo = relativeTo ?? throw new ArgumentNullException(nameof(relativeTo));
-
-            if (relativeTo.VisualRoot == null)
-            {
-                throw new InvalidOperationException("Control is not attached to visual tree.");
-            }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            var rootPoint = relativeTo.VisualRoot.PointToClient(Position);
-#pragma warning restore CS0618 // Type or member is obsolete
-            var transform = relativeTo.VisualRoot.TransformToVisual(relativeTo);
-            return rootPoint * transform!.Value;
         }
 
         public void ProcessRawEvent(RawInputEventArgs e)
@@ -96,7 +58,6 @@ namespace Avalonia.Input
             if(mouse._disposed)
                 return;
 
-            _position = e.Root.PointToScreen(e.Position);
             var props = CreateProperties(e);
             var keyModifiers = e.InputModifiers.ToKeyModifiers();
             switch (e.Type)
@@ -145,7 +106,6 @@ namespace Avalonia.Input
 
         private void LeaveWindow()
         {
-            _position = null;
         }
 
         PointerPointProperties CreateProperties(RawPointerEventArgs args)
@@ -324,19 +284,7 @@ namespace Avalonia.Input
             _disposed = true;
             _pointer?.Dispose();
         }
-
-        [Obsolete]
-        public void TopLevelClosed(IInputRoot root)
-        {
-            // no-op
-        }
-
-        [Obsolete]
-        public void SceneInvalidated(IInputRoot root, Rect rect)
-        {
-            // no-op
-        }
-
+        
         public IPointer? TryGetPointer(RawPointerEventArgs ev)
         {
             return _pointer;
