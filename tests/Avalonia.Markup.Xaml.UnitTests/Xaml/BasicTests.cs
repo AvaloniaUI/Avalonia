@@ -17,6 +17,7 @@ using System.Linq;
 using System.Xml;
 using Xunit;
 using Avalonia.Controls.Documents;
+using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -947,7 +948,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
     }
 
-    public class ObjectWithAddChildOfT : IAddChild<string>
+    public class ObjectWithAddChildOfT : IAddChild, IAddChild<string>
     {
         public string Text { get; set; }
 

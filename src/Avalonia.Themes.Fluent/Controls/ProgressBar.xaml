@@ -1,7 +1,7 @@
-<ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:CompileBindings="True">
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
+                    x:CompileBindings="True">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Orientation="Horizontal" Spacing="10">
@@ -11,12 +11,19 @@
           <ProgressBar Value="50" Minimum="25" Maximum="75" />
           <ProgressBar IsIndeterminate="True" />
           <ProgressBar ShowProgressText="True" Value="50"/>
+          <ProgressBar ShowProgressText="True" 
+                       ProgressTextFormat="\{1\} percent"
+                       Minimum="50" 
+                       Maximum="100" 
+                       Value="70"/>
         </StackPanel>
         <ProgressBar IsIndeterminate="True" Orientation="Vertical" />
         <ProgressBar ShowProgressText="True" Value="50" Orientation="Vertical"/>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
+
+  <converters:StringFormatConverter x:Key="StringFormatConverter"/>
 
   <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar">
     <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
@@ -27,7 +34,7 @@
     <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate TargetType="ProgressBar">
         <Border
             x:Name="ProgressBarRoot"
             Background="{TemplateBinding Background}"
@@ -70,9 +77,17 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsVisible="{TemplateBinding ShowProgressText}">
-              <TextBlock
-                Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
-                Text="{ReflectionBinding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
+              <TextBlock Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+                  <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                      <TemplateBinding Property="ProgressTextFormat"/>
+                      <Binding Path="Value" RelativeSource="{RelativeSource TemplatedParent}"/>
+                      <TemplateBinding Property="Percentage"/>
+                      <TemplateBinding Property="Minimum"/>
+                      <TemplateBinding Property="Maximum"/>
+                    </MultiBinding>
+                  </TextBlock.Text>
+                </TextBlock>
             </LayoutTransformControl>
           </Panel>
         </Border>

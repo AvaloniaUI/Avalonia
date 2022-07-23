@@ -302,5 +302,6 @@ namespace Avalonia.Win32.WinRT.Composition
         }
 
         public event Action<TimeSpan> Tick;
+        public bool RunsInBackground => true;
     }
 }

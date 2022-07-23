@@ -19,8 +19,5 @@ namespace Avalonia.Input.Raw
         {
             RawPointerId = rawPointerId;
         }
-
-        [Obsolete("Use RawPointerId")]
-        public long TouchPointId { get => RawPointerId; set => RawPointerId = value; }
     }
 }

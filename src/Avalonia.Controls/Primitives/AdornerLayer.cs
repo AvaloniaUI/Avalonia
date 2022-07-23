@@ -164,6 +164,9 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateAdornedElement(Visual adorner, Visual? adorned)
         {
+            if (adorner.CompositionVisual != null)
+                adorner.CompositionVisual.AdornedVisual = adorned?.CompositionVisual;
+            
             var info = adorner.GetValue(s_adornedElementInfoProperty);
 
             if (info != null)
@@ -184,11 +187,18 @@ namespace Avalonia.Controls.Primitives
                     adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
-                info.Subscription = adorned.GetObservable(TransformedBoundsProperty).Subscribe(x =>
-                {
-                    info.Bounds = x;
-                    InvalidateMeasure();
-                });
+                if (adorner.CompositionVisual != null)
+                    info.Subscription = adorned.GetObservable(BoundsProperty).Subscribe(x =>
+                    {
+                        info.Bounds = new TransformedBounds(new Rect(adorned.Bounds.Size), new Rect(adorned.Bounds.Size), Matrix.Identity);
+                        InvalidateMeasure();
+                    });
+                else
+                    info.Subscription = adorned.GetObservable(TransformedBoundsProperty).Subscribe(x =>
+                    {
+                        info.Bounds = x;
+                        InvalidateMeasure();
+                    });
             }
         }
 

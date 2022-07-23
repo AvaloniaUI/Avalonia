@@ -133,7 +133,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             var device = gbm_create_device(card.Fd);
             _gbmTargetSurface = gbm_surface_create(device, modeInfo.Resolution.Width, modeInfo.Resolution.Height,
                 GbmColorFormats.GBM_FORMAT_XRGB8888, GbmBoFlags.GBM_BO_USE_SCANOUT | GbmBoFlags.GBM_BO_USE_RENDERING);
-            if(_gbmTargetSurface == null)
+            if(_gbmTargetSurface == IntPtr.Zero)
                 throw new InvalidOperationException("Unable to create GBM surface");
 
             _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, 0x31D7, device, null);

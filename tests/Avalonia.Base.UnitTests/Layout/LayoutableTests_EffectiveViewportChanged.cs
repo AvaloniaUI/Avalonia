@@ -312,6 +312,30 @@ namespace Avalonia.Base.UnitTests.Layout
             });
         }
 
+        [Fact]
+        public async Task Event_Unsubscribed_While_Inside_Callback()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas();
+                var raised = 0;
+
+                void OnTargetOnEffectiveViewportChanged(object s, EffectiveViewportChangedEventArgs e)
+                {
+                    target.EffectiveViewportChanged -= OnTargetOnEffectiveViewportChanged;
+                    ++raised;
+                }
+                target.EffectiveViewportChanged += OnTargetOnEffectiveViewportChanged;
+
+                root.Child = target;
+
+                await ExecuteInitialLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
+
         private TestRoot CreateRoot() => new TestRoot { Width = 1200, Height = 900 };
 
         private Task ExecuteInitialLayoutPass(TestRoot root)

@@ -21,12 +21,12 @@
     <RunAOTCompilation>True</RunAOTCompilation>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(RunAOTCompilation)'=='True'">
+  <!-- PropertyGroup Condition="'$(RunAOTCompilation)'=='True'">
     <EnableLLVM>True</EnableLLVM>
     <AndroidAotAdditionalArguments>no-write-symbols,nodebug</AndroidAotAdditionalArguments>
     <AndroidAotMode>Hybrid</AndroidAotMode>
     <AndroidGenerateJniMarshalMethods>True</AndroidGenerateJniMarshalMethods>
-  </PropertyGroup>
+  </PropertyGroup -->
 
   <PropertyGroup Condition="'$(AndroidEnableProfiler)'=='True'">
     <IsEmulator Condition="'$(IsEmulator)' == ''">True</IsEmulator>

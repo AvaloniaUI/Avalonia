@@ -25,14 +25,13 @@ namespace Avalonia.Rendering.SceneGraph
             IPen pen,
             Point p1,
             Point p2,
-            IDictionary<IVisual, Scene>? childScenes = null)
-            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform)
+            IDisposable? aux = null)
+            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform, aux)
         {
             Transform = transform;
             Pen = pen.ToImmutable();
             P1 = p1;
             P2 = p2;
-            ChildScenes = childScenes;
         }
 
         /// <summary>
@@ -54,9 +53,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the end point of the line.
         /// </summary>
         public Point P2 { get; }
-
-        /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.

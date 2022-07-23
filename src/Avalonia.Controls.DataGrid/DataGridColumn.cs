@@ -1091,7 +1091,7 @@ namespace Avalonia.Controls
                 {
                     return
                         OwningGrid.DataConnection.SortDescriptions
-                                  .OfType<DataGridComparerSortDesctiption>()
+                                  .OfType<DataGridComparerSortDescription>()
                                   .FirstOrDefault(s => s.SourceComparer == CustomSortComparer);
                 }
 

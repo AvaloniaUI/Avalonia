@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Controls;
 using Avalonia.Styling.Activators;
 
 #nullable enable
@@ -125,7 +126,7 @@ namespace Avalonia.Styling
             {
                 if (subscribe)
                 {
-                    var observable = new StyleClassActivator(control.Classes, _classes.Value);
+                    var observable = new StyleClassActivator((Classes)control.Classes, _classes.Value);
 
                     return new SelectorMatch(observable);
                 }
