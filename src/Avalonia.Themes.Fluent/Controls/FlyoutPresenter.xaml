@@ -1,9 +1,7 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Styles.Resources>
-    <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
-  </Styles.Resources>
-  
-  <Style Selector="FlyoutPresenter">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
+  <ControlTheme x:Key="{x:Type FlyoutPresenter}" TargetType="FlyoutPresenter">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Background" Value="{DynamicResource FlyoutPresenterBackground}" />
@@ -38,5 +36,5 @@
         </Border>
       </ControlTemplate>
     </Setter>
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>
