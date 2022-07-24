@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -14,7 +12,6 @@ namespace Avalonia.Input
     public class PenDevice : IPenDevice, IDisposable
     {
         private readonly Dictionary<long, Pointer> _pointers = new();
-        private readonly Dictionary<long, PixelPoint> _lastPositions = new();
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
@@ -41,9 +38,7 @@ namespace Avalonia.Input
                 _pointers[e.RawPointerId] = pointer = new Pointer(Pointer.GetNextFreeId(),
                     PointerType.Pen, _pointers.Count == 0);
             }
-
-            _lastPositions[e.RawPointerId] = e.Root.PointToScreen(e.Position);
-
+            
             var props = new PointerPointProperties(e.InputModifiers, e.Type.ToUpdateKind(),
                 e.Point.Twist, e.Point.Pressure, e.Point.XTilt, e.Point.YTilt);
             var keyModifiers = e.InputModifiers.ToKeyModifiers();
@@ -69,7 +64,6 @@ namespace Avalonia.Input
             {
                 pointer.Dispose();
                 _pointers.Remove(e.RawPointerId);
-                _lastPositions.Remove(e.RawPointerId);
             }
         }
 
@@ -152,17 +146,6 @@ namespace Avalonia.Input
             foreach (var p in values)
                 p.Dispose();
         }
-
-        [Obsolete]
-        IInputElement? IPointerDevice.Captured => _pointers.Values
-            .FirstOrDefault(p => p.IsPrimary)?.Captured;
-
-        [Obsolete]
-        void IPointerDevice.Capture(IInputElement? control) => _pointers.Values
-            .FirstOrDefault(p => p.IsPrimary)?.Capture(control);
-
-        [Obsolete]
-        Point IPointerDevice.GetPosition(IVisual relativeTo) => new Point(-1, -1);
 
         public IPointer? TryGetPointer(RawPointerEventArgs ev)
         {

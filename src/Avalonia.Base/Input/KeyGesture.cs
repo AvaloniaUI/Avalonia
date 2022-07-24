@@ -15,13 +15,6 @@ namespace Avalonia.Input
             { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }, { ",", Key.OemComma }
         };
 
-        [Obsolete("Use constructor taking KeyModifiers")]
-        public KeyGesture(Key key, InputModifiers modifiers)
-        {
-            Key = key;
-            KeyModifiers = (KeyModifiers)(((int)modifiers) & 0xf);
-        }
-
         public KeyGesture(Key key, KeyModifiers modifiers = KeyModifiers.None)
         {
             Key = key;
@@ -63,10 +56,7 @@ namespace Avalonia.Input
         }
 
         public Key Key { get; }
-
-        [Obsolete("Use KeyModifiers")]
-        public InputModifiers Modifiers => (InputModifiers)KeyModifiers;
-
+        
         public KeyModifiers KeyModifiers { get; }
 
         public static KeyGesture Parse(string gesture)

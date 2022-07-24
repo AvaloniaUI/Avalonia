@@ -454,7 +454,7 @@ namespace Avalonia.Controls.Primitives
                 children.Add(new ListBoxItem
                 {
                     Height = ItemHeight,
-                    Classes = new Classes("DateTimePickerItem", $"{PanelType}Item"),
+                    Classes = new Classes($"{PanelType}Item"),
                     VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     Focusable = false
                 });
