@@ -1,31 +1,30 @@
-<Style xmlns="https://github.com/avaloniaui"
-       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:local="clr-namespace:Avalonia.Themes.Fluent"
-       x:CompileBindings="True"
-       Selector="NativeMenuBar">
-  <Style.Resources>
-    <local:InverseBooleanValueConverter x:Key="AvaloniaThemesFluentNativeMenuBarInverseBooleanValueConverter" Default="True"/>
-    <local:IBitmapToImageConverter x:Key="AvaloniaThemesFluentNativeMenuBarIBitmapToImageConverter"/>
-  </Style.Resources>
-  <Setter Property="Template">
-    <ControlTemplate>
-      <Menu
-        IsVisible="{Binding $parent[TopLevel].(NativeMenu.IsNativeMenuExported), Converter={StaticResource AvaloniaThemesFluentNativeMenuBarInverseBooleanValueConverter}}"
-        Items="{Binding $parent[TopLevel].(NativeMenu.Menu).Items}">
-        <Menu.Styles>
-          <Style x:CompileBindings="False" Selector="MenuItem">
-            <Setter Property="Header" Value="{Binding Header}"/>
-            <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
-            <Setter Property="InputGesture" Value="{Binding Gesture}"/>
-            <Setter Property="Items" Value="{Binding Menu.Items}"/>
-            <Setter Property="Command" Value="{Binding Command}"/>
-            <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
-            <Setter Property="(NativeMenuBar.EnableMenuItemClickForwarding)" Value="True"/>
-            <!--NativeMenuItem is IBitmap and MenuItem is Image-->
-            <Setter Property="Icon" Value="{Binding Icon , Converter={StaticResource AvaloniaThemesFluentNativeMenuBarIBitmapToImageConverter}}"/>
-          </Style>
-        </Menu.Styles>
-      </Menu>
-    </ControlTemplate>
-  </Setter>
-</Style>
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Avalonia.Themes.Fluent"
+                    x:CompileBindings="True">
+  <local:InverseBooleanValueConverter x:Key="AvaloniaThemesFluentNativeMenuBarInverseBooleanValueConverter" Default="True"/>
+  <local:IBitmapToImageConverter x:Key="AvaloniaThemesFluentNativeMenuBarIBitmapToImageConverter"/>
+  <ControlTheme x:Key="{x:Type NativeMenuBar}" TargetType="NativeMenuBar">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Menu
+          IsVisible="{Binding $parent[TopLevel].(NativeMenu.IsNativeMenuExported), Converter={StaticResource AvaloniaThemesFluentNativeMenuBarInverseBooleanValueConverter}}"
+          Items="{Binding $parent[TopLevel].(NativeMenu.Menu).Items}">
+          <Menu.Styles>
+            <Style x:CompileBindings="False" Selector="MenuItem">
+              <Setter Property="Header" Value="{Binding Header}"/>
+              <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+              <Setter Property="InputGesture" Value="{Binding Gesture}"/>
+              <Setter Property="Items" Value="{Binding Menu.Items}"/>
+              <Setter Property="Command" Value="{Binding Command}"/>
+              <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+              <Setter Property="(NativeMenuBar.EnableMenuItemClickForwarding)" Value="True"/>
+              <!--NativeMenuItem is IBitmap and MenuItem is Image-->
+              <Setter Property="Icon" Value="{Binding Icon , Converter={StaticResource AvaloniaThemesFluentNativeMenuBarIBitmapToImageConverter}}"/>
+            </Style>
+          </Menu.Styles>
+        </Menu>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

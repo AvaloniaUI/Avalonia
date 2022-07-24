@@ -308,6 +308,7 @@
    
     <!--Resources for NotificationCard.xaml -->
     <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444" />
+    <StaticResource x:Key="NotificationCardForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <SolidColorBrush x:Key="NotificationCardProgressBackgroundBrush" Color="#9A9A9A" />
     <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="#007ACC" Opacity="0.75"/>
     <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#1F9E45" Opacity="0.75"/>

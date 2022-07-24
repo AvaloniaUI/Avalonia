@@ -873,9 +873,12 @@ namespace Avalonia
 
                     if (applied.Source == styles[i])
                     {
-                        applied.Dispose();
                         _appliedStyles.RemoveAt(j);
+                        applied.Dispose();
                     }
+
+                    if (j > _appliedStyles.Count)
+                        j = _appliedStyles.Count;
                 }
             }
         }
