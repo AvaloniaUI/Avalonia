@@ -12,7 +12,6 @@ using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
-using InputModifiers = Avalonia.Input.InputModifiers;
 using Key = Avalonia.Input.Key;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;

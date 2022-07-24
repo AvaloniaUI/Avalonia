@@ -8,10 +8,10 @@ namespace Avalonia.Controls.Chrome
     /// <summary>
     /// Draws window minimize / maximize / close buttons in a <see cref="TitleBar"/> when managed client decorations are enabled.
     /// </summary>
-    [TemplatePart("PART_CloseButton",      typeof(Panel))]
-    [TemplatePart("PART_RestoreButton",    typeof(Panel))]
-    [TemplatePart("PART_MinimiseButton",   typeof(Panel))]
-    [TemplatePart("PART_FullScreenButton", typeof(Panel))]
+    [TemplatePart("PART_CloseButton",      typeof(Button))]
+    [TemplatePart("PART_RestoreButton",    typeof(Button))]
+    [TemplatePart("PART_MinimiseButton",   typeof(Button))]
+    [TemplatePart("PART_FullScreenButton", typeof(Button))]
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class CaptionButtons : TemplatedControl
     {
@@ -88,18 +88,15 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnApplyTemplate(e);
 
-            var closeButton = e.NameScope.Get<Panel>("PART_CloseButton");
-            var restoreButton = e.NameScope.Get<Panel>("PART_RestoreButton");
-            var minimiseButton = e.NameScope.Get<Panel>("PART_MinimiseButton");
-            var fullScreenButton = e.NameScope.Get<Panel>("PART_FullScreenButton");
+            var closeButton = e.NameScope.Get<Button>("PART_CloseButton");
+            var restoreButton = e.NameScope.Get<Button>("PART_RestoreButton");
+            var minimiseButton = e.NameScope.Get<Button>("PART_MinimiseButton");
+            var fullScreenButton = e.NameScope.Get<Button>("PART_FullScreenButton");
 
-            closeButton.PointerReleased += (sender, e) => OnClose();
-
-            restoreButton.PointerReleased += (sender, e) => OnRestore();
-
-            minimiseButton.PointerReleased += (sender, e) => OnMinimize();
-
-            fullScreenButton.PointerReleased += (sender, e) => OnToggleFullScreen();
+            closeButton.Click += (sender, e) => OnClose();
+            restoreButton.Click += (sender, e) => OnRestore();
+            minimiseButton.Click += (sender, e) => OnMinimize();
+            fullScreenButton.Click += (sender, e) => OnToggleFullScreen();
         }
     }
 }
