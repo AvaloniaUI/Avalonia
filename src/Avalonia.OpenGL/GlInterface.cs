@@ -335,7 +335,7 @@ namespace Avalonia.OpenGL
         public partial void DeleteShader(int shader);
 
         [GetProcAddress("glGetRenderbufferParameteriv")]
-        public partial void GLGetRenderbufferParameteriv(int target, int name, int* value);
+        public partial void GetRenderbufferParameteriv(int target, int name, out int value);
         // ReSharper restore UnassignedGetOnlyAutoProperty
 
         [GetProcAddress(true)]
