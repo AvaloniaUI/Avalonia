@@ -987,6 +987,35 @@ namespace Avalonia.Base.UnitTests
             subscription.Dispose();
         }
 
+        [Fact]
+        public void Produces_Correct_Values_And_Base_Values_With_Multiple_Animation_Bindings()
+        {
+            var target = new Class1();
+            var source1 = new BehaviorSubject<BindingValue<double>>(12.2);
+            var source2 = new BehaviorSubject<BindingValue<double>>(13.3);
+
+            target.SetValue(Class1.QuxProperty, 11.1);
+            target.Bind(Class1.QuxProperty, source1, BindingPriority.Animation);
+
+            Assert.Equal(12.2, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(11.1, target.GetBaseValue(Class1.QuxProperty));
+
+            target.Bind(Class1.QuxProperty, source2, BindingPriority.Animation);
+
+            Assert.Equal(13.3, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(11.1, target.GetBaseValue(Class1.QuxProperty));
+
+            source2.OnCompleted();
+
+            Assert.Equal(12.2, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(11.1, target.GetBaseValue(Class1.QuxProperty));
+
+            source1.OnCompleted();
+
+            Assert.Equal(11.1, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(11.1, target.GetBaseValue(Class1.QuxProperty));
+        }
+
         /// <summary>
         /// Returns an observable that returns a single value but does not complete.
         /// </summary>

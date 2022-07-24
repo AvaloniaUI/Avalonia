@@ -769,6 +769,9 @@ namespace Avalonia.PropertyStore
             {
                 var frame = _frames[i];
 
+                if (frame.Priority <= BindingPriority.LocalValue)
+                    continue;
+
                 if (frame.IsActive &&
                     frame.TryGetEntry(property, out var entry) && 
                     entry.TryGetValue(out var v))
