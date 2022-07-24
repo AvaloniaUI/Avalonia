@@ -231,19 +231,64 @@ namespace Avalonia.Data
 
         /// <summary>
         /// Creates a <see cref="BindingValue{T}"/> from an object, handling the special values
-        /// <see cref="AvaloniaProperty.UnsetValue"/> and <see cref="BindingOperations.DoNothing"/>.
+        /// <see cref="AvaloniaProperty.UnsetValue"/>, <see cref="BindingOperations.DoNothing"/> and
+        /// <see cref="BindingNotification"/>.
         /// </summary>
         /// <param name="value">The untyped value.</param>
         /// <returns>The typed binding value.</returns>
         public static BindingValue<T> FromUntyped(object? value)
         {
-            return value switch
+            if (value == AvaloniaProperty.UnsetValue)
+                return Unset;
+            else if (value == BindingOperations.DoNothing)
+                return DoNothing;
+
+            var type = BindingValueType.Value;
+            T? v = default;
+            Exception? error = null;
+            List<Exception>? errors = null;
+
+            if (value is BindingNotification n)
             {
-                UnsetValueType _ => Unset,
-                DoNothingType _ => DoNothing,
-                BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => new BindingValue<T>((T)value!)
-            };
+                error = n.Error;
+                type = n.ErrorType switch
+                {
+                    BindingErrorType.Error => BindingValueType.BindingError,
+                    BindingErrorType.DataValidationError => BindingValueType.DataValidationError,
+                    _ => BindingValueType.Value,
+                };
+
+                if (n.HasValue)
+                    type |= BindingValueType.HasValue;
+                value = n.Value;
+            }
+
+            if ((type & BindingValueType.HasValue) != 0)
+            {
+                if (TypeUtilities.TryConvertImplicit(typeof(T), value, out var typed))
+                    v = (T)typed!;
+                else
+                {
+                    var e = new InvalidCastException(
+                        $"Unable to convert object '{value ?? "(null)"}' " +
+                        $"of type '{value?.GetType()}' to type '{typeof(T)}'.");
+
+                    if (error is null)
+                        error = e;
+                    else
+                    {
+                        errors ??= new List<Exception>() { error };
+                        errors.Add(e);
+                    }
+
+                    type = BindingValueType.BindingError;
+                }
+            }
+
+            if (errors is not null)
+                error = new AggregateException(errors);
+
+            return new BindingValue<T>(type, v, error);
         }
 
         public static bool operator !=(BindingValue<T> x, Optional<T> y)
@@ -399,63 +444,6 @@ namespace Avalonia.Data
             {
                 throw new InvalidOperationException("BindingValue<object> cannot be wrapped in a BindingValue<>.");
             }
-        }
-    }
-
-    public static class BindingValueExtensions
-    {
-        /// <summary>
-        /// Casts the type of a <see cref="BindingValue{T}"/> using only the C# cast operator.
-        /// </summary>
-        /// <typeparam name="T">The target type.</typeparam>
-        /// <param name="value">The binding value.</param>
-        /// <returns>The cast value.</returns>
-        public static BindingValue<T> Cast<T>(this BindingValue<object?> value)
-        {
-            return value.Type switch
-            {
-                BindingValueType.DoNothing => BindingValue<T>.DoNothing,
-                BindingValueType.UnsetValue => BindingValue<T>.Unset,
-                BindingValueType.Value => new BindingValue<T>((T)value.Value!),
-                BindingValueType.BindingError => BindingValue<T>.BindingError(value.Error!),
-                BindingValueType.BindingErrorWithFallback => BindingValue<T>.BindingError(
-                        value.Error!,
-                        (T)value.Value!),
-                BindingValueType.DataValidationError => BindingValue<T>.DataValidationError(value.Error!),
-                BindingValueType.DataValidationErrorWithFallback => BindingValue<T>.DataValidationError(
-                        value.Error!,
-                        (T)value.Value!),
-                _ => throw new NotSupportedException("Invalid BindingValue type."),
-            };
-        }
-
-        /// <summary>
-        /// Casts the type of a <see cref="BindingValue{T}"/> using the implicit conversions
-        /// allowed by the C# language.
-        /// </summary>
-        /// <typeparam name="T">The target type.</typeparam>
-        /// <param name="value">The binding value.</param>
-        /// <returns>The cast value.</returns>
-        /// <remarks>
-        /// Note that this method uses reflection and as such may be slow.
-        /// </remarks>
-        public static BindingValue<T> Convert<T>(this BindingValue<object?> value)
-        {
-            return value.Type switch
-            {
-                BindingValueType.DoNothing => BindingValue<T>.DoNothing,
-                BindingValueType.UnsetValue => BindingValue<T>.Unset,
-                BindingValueType.Value => new BindingValue<T>(TypeUtilities.ConvertImplicit<T>(value.Value!)),
-                BindingValueType.BindingError => BindingValue<T>.BindingError(value.Error!),
-                BindingValueType.BindingErrorWithFallback => BindingValue<T>.BindingError(
-                        value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value!)),
-                BindingValueType.DataValidationError => BindingValue<T>.DataValidationError(value.Error!),
-                BindingValueType.DataValidationErrorWithFallback => BindingValue<T>.DataValidationError(
-                        value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value!)),
-                _ => throw new NotSupportedException("Invalid BindingValue type."),
-            };
         }
     }
 }

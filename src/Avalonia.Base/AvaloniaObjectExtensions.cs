@@ -261,7 +261,6 @@ namespace Avalonia
             }
 
             throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
-
         }
 
         /// <summary>
@@ -280,14 +279,17 @@ namespace Avalonia
             IObservable<T> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
+            if (target is AvaloniaObject ao)
+            {
+                return property switch
+                {
+                    StyledPropertyBase<T> styled => ao.Bind(styled, source, priority),
+                    DirectPropertyBase<T> direct => ao.Bind(direct, source),
+                    _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
+                };
+            }
 
-            return target.Bind(
-                property,
-                source.ToBindingValue(),
-                priority);
+            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
         }
 
         /// <summary>

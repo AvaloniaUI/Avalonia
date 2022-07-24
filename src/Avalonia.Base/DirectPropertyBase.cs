@@ -178,19 +178,7 @@ namespace Avalonia
             IObservable<object?> source,
             BindingPriority priority)
         {
-            // TODO: this requires a double adapter, we should make AvaloniaObject
-            // accept an `IObservable<object?>` for direct properties directly.
-            return RouteBind(o, source.ToBindingValue(), priority);
-        }
-
-        /// <inheritdoc/>
-        internal override IDisposable RouteBind(
-            AvaloniaObject o,
-            IObservable<BindingValue<object?>> source,
-            BindingPriority priority)
-        {
-            var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
-            return o.Bind<TValue>(this, adapter);
+            return o.Bind(this, source);
         }
     }
 }

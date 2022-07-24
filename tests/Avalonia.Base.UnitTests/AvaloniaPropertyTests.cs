@@ -156,14 +156,6 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override IDisposable RouteBind(
-                AvaloniaObject o,
-                IObservable<BindingValue<object>> source,
-                BindingPriority priority)
-            {
-                throw new NotImplementedException();
-            }
-
             internal override void RouteClearValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();

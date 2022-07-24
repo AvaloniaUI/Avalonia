@@ -120,6 +120,36 @@ namespace Avalonia.PropertyStore
             }
         }
 
+        public IDisposable AddBinding<T>(DirectPropertyBase<T> property, IObservable<BindingValue<T>> source)
+        {
+            var observer = new DirectBindingObserver<T>(this, property);
+            DisposeExistingLocalValueBinding(property);
+            _localValueBindings ??= new();
+            _localValueBindings[property.Id] = observer;
+            observer.Start(source);
+            return observer;
+        }
+
+        public IDisposable AddBinding<T>(DirectPropertyBase<T> property, IObservable<T> source)
+        {
+            var observer = new DirectBindingObserver<T>(this, property);
+            DisposeExistingLocalValueBinding(property);
+            _localValueBindings ??= new();
+            _localValueBindings[property.Id] = observer;
+            observer.Start(source);
+            return observer;
+        }
+
+        public IDisposable AddBinding<T>(DirectPropertyBase<T> property, IObservable<object?> source)
+        {
+            var observer = new DirectUntypedBindingObserver<T>(this, property);
+            DisposeExistingLocalValueBinding(property);
+            _localValueBindings ??= new();
+            _localValueBindings[property.Id] = observer;
+            observer.Start(source);
+            return observer;
+        }
+
         public void ClearLocalValue(AvaloniaProperty property)
         {
             if (TryGetEffectiveValue(property, out var effective) &&
@@ -470,7 +500,8 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
-        /// Called when a <see cref="LocalValueBindingObserver{T}"/> completes.
+        /// Called when a <see cref="LocalValueBindingObserver{T}"/> or
+        /// <see cref="DirectBindingObserver{T}"/> completes.
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
@@ -641,7 +672,6 @@ namespace Avalonia.PropertyStore
         /// Adds a new effective value, raises the initial <see cref="AvaloniaObject.PropertyChanged"/>
         /// event and notifies inheritance children if necessary .
         /// </summary>
-        /// <typeparam name="T">The property type.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The property value.</param>
         /// <param name="priority">The value priority.</param>

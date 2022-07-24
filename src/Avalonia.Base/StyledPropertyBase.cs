@@ -239,16 +239,6 @@ namespace Avalonia
             return target.Bind<TValue>(this, source, priority);
         }
 
-        /// <inheritdoc/>
-        internal override IDisposable RouteBind(
-            AvaloniaObject o,
-            IObservable<BindingValue<object?>> source,
-            BindingPriority priority)
-        {
-            var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
-            return o.Bind<TValue>(this, adapter, priority);
-        }
-
         private object? GetDefaultBoxedValue(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));

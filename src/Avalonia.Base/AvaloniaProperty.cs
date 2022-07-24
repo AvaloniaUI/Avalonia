@@ -506,17 +506,6 @@ namespace Avalonia
             BindingPriority priority);
 
         /// <summary>
-        /// Routes an untyped Bind call to a typed call.
-        /// </summary>
-        /// <param name="o">The object instance.</param>
-        /// <param name="source">The binding source.</param>
-        /// <param name="priority">The priority.</param>
-        internal abstract IDisposable RouteBind(
-            AvaloniaObject o,
-            IObservable<BindingValue<object?>> source,
-            BindingPriority priority);
-
-        /// <summary>
         /// Overrides the metadata for the property on the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
