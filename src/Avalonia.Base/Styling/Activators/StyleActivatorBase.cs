@@ -29,6 +29,9 @@ namespace Avalonia.Styling.Activators
 
         public void Unsubscribe(IStyleActivatorSink sink)
         {
+            if (_sink is null)
+                return;
+
             if (_sink != sink)
             {
                 throw new AvaloniaInternalException("StyleActivatorSink is not subscribed.");
