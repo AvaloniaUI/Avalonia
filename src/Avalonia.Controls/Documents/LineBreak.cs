@@ -21,7 +21,13 @@ namespace Avalonia.Controls.Documents
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            textRuns.Add(new TextEndOfLine(Environment.NewLine.Length));
+            var text = Environment.NewLine.AsMemory();
+
+            var textRunProperties = CreateTextRunProperties();
+
+            var textCharacters = new TextCharacters(text, textRunProperties);
+
+            textRuns.Add(textCharacters);
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
