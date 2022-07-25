@@ -251,7 +251,8 @@ namespace Avalonia.Build.Tasks
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
                             typeSystem.CreateTypeBuilder(classTypeDefinition);
-                        compiler.Compile(parsed, contextClass,
+                        compiler.Compile(parsed, 
+                            contextClass,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null),
                             buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true),

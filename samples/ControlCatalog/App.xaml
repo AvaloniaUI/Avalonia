@@ -5,6 +5,13 @@
              x:CompileBindings="True"
              Name="Avalonia ControlCatalog"
              x:Class="ControlCatalog.App">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
   <Application.Styles>
     <Style Selector="TextBlock.h1, TextBlock.h2, TextBlock.h3">
       <Setter Property="TextWrapping" Value="Wrap" />
@@ -29,7 +36,6 @@
     <Style Selector="Label.h3">
       <Setter Property="FontSize" Value="12" />
     </Style>
-    <StyleInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
   </Application.Styles>
   <TrayIcon.Icons>
     <TrayIcons>

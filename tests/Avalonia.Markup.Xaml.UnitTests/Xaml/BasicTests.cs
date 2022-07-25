@@ -284,70 +284,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void ControlTemplate_With_Nested_Child_Is_Operational()
-        {
-            var xaml = @"
-<ControlTemplate xmlns='https://github.com/avaloniaui'>
-    <ContentControl Name='parent'>
-        <ContentControl Name='child' />
-    </ContentControl>
-</ControlTemplate>
-";
-            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
-
-            var parent = (ContentControl)template.Build(new ContentControl()).Control;
-
-            Assert.Equal("parent", parent.Name);
-
-            var child = parent.Content as ContentControl;
-
-            Assert.NotNull(child);
-
-            Assert.Equal("child", child.Name);
-        }
-
-        [Fact]
-        public void ControlTemplate_With_TargetType_Is_Operational()
-        {
-            var xaml = @"
-<ControlTemplate xmlns='https://github.com/avaloniaui' 
-                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                 TargetType='{x:Type ContentControl}'>
-    <ContentPresenter Content='{TemplateBinding Content}' />
-</ControlTemplate>
-";
-            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
-
-            Assert.Equal(typeof(ContentControl), template.TargetType);
-
-            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Control);
-        }
-
-        [Fact]
-        public void ControlTemplate_With_Panel_Children_Are_Added()
-        {
-            var xaml = @"
-<ControlTemplate xmlns='https://github.com/avaloniaui'>
-    <Panel Name='panel'>
-        <ContentControl Name='Foo' />
-        <ContentControl Name='Bar' />
-    </Panel>
-</ControlTemplate>
-";
-            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
-
-            var panel = (Panel)template.Build(new ContentControl()).Control;
-
-            Assert.Equal(2, panel.Children.Count);
-
-            var foo = panel.Children[0];
-            var bar = panel.Children[1];
-
-            Assert.Equal("Foo", foo.Name);
-            Assert.Equal("Bar", bar.Name);
-        }
-
-        [Fact]
         public void Named_x_Control_Is_Added_To_NameScope_Simple()
         {
             var xaml = @"
@@ -363,7 +299,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Standart_TypeConverter_Is_Used()
+        public void Standard_TypeConverter_Is_Used()
         {
             var xaml = @"<UserControl xmlns='https://github.com/avaloniaui' Width='200.5' />";
 
