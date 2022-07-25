@@ -644,37 +644,6 @@ namespace Avalonia.PropertyStore
             return result;
         }
 
-        private void ReevaluateEffectiveValue(
-            AvaloniaProperty property,
-            EffectiveValue? current,
-            bool ignoreLocalValue = false)
-        {
-            if (EvaluateEffectiveValue(
-                property, 
-                !ignoreLocalValue ? current : null,
-                out var value, 
-                out var priority,
-                out var baseValue,
-                out var basePriority))
-            {
-                if (current is null)
-                {
-                    current = property.CreateEffectiveValue(Owner);
-                    AddEffectiveValue(property, current);
-                }
-
-                if (basePriority != BindingPriority.Unset)
-                    current.SetAndRaise(this, property, value, priority, baseValue, basePriority);
-                else
-                    current.SetAndRaise(this, property, value, priority);
-            }
-            else if (current is not null)
-            {
-                RemoveEffectiveValue(property);
-                current.DisposeAndRaiseUnset(this, property);
-            }
-        }
-
         private void AddEffectiveValue(AvaloniaProperty property, EffectiveValue effectiveValue)
         {
             _effectiveValues.Add(property, effectiveValue);
@@ -740,102 +709,6 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
-        /// <summary>
-        /// Evaluates the current value and base value for a property based on the current frames and optionally
-        /// local values. Does not evaluate inherited values.
-        /// </summary>
-        /// <param name="property">The property to evaluation</param>
-        /// <param name="current">The current effective value if the local value is to be considered.</param>
-        /// <param name="value">When the method exits will contain the current value if it exists.</param>
-        /// <param name="priority">When the method exits will contain the current value priority.</param>
-        /// <param name="baseValue">>When the method exits will contain the current base value if it exists.</param>
-        /// <param name="basePriority">When the method exits will contain the current base value priority.</param>
-        /// <returns>
-        /// True if a value was found, otherwise false.
-        /// </returns>
-        private bool EvaluateEffectiveValue(
-            AvaloniaProperty property,
-            EffectiveValue? current,
-            out object? value,
-            out BindingPriority priority,
-            out object? baseValue,
-            out BindingPriority basePriority)
-        {
-            var i = _frames.Count - 1;
-
-            value = baseValue = AvaloniaProperty.UnsetValue;
-            priority = basePriority = BindingPriority.Unset;
-
-            // First try to find an animation value.
-            for (; i >= 0; --i)
-            {
-                var frame = _frames[i];
-
-                if (frame.Priority > BindingPriority.Animation)
-                    break;
-
-                if (frame.IsActive && 
-                    frame.TryGetEntry(property, out var entry) && 
-                    entry.TryGetValue(out value))
-                {
-                    priority = frame.Priority;
-                    --i;
-                    break;
-                }
-            }
-
-            // Local values come from the current EffectiveValue.
-            if (current?.Priority == BindingPriority.LocalValue)
-            {
-                // If there's a current effective local value and no animated value then we use the
-                // effective local value.
-                if (priority == BindingPriority.Unset)
-                {
-                    value = current.Value;
-                    priority = BindingPriority.LocalValue;
-                }
-
-                // The local value is always the base value.
-                baseValue = current.Value;
-                basePriority = BindingPriority.LocalValue;
-                return true;
-            }
-
-            // Or the current effective base value if there's no longer an animated value.
-            if (priority == BindingPriority.Unset && current?.BasePriority == BindingPriority.LocalValue)
-            {
-                value = baseValue = current.BaseValue;
-                priority = basePriority = BindingPriority.LocalValue;
-                return true;
-            }
-
-            // Now try the rest of the frames.
-            for (; i >= 0; --i)
-            {
-                var frame = _frames[i];
-
-                if (frame.Priority <= BindingPriority.LocalValue)
-                    continue;
-
-                if (frame.IsActive &&
-                    frame.TryGetEntry(property, out var entry) && 
-                    entry.TryGetValue(out var v))
-                {
-                    if (priority == BindingPriority.Unset)
-                    {
-                        value = v;
-                        priority = frame.Priority;
-                    }
-
-                    baseValue = v;
-                    basePriority = frame.Priority;
-                    return true;
-                }
-            }
-
-            return priority != BindingPriority.Unset;
-        }
-
         private void InheritedValueChanged(
             AvaloniaProperty property,
             EffectiveValue? oldValue,
@@ -863,6 +736,74 @@ namespace Avalonia.PropertyStore
             for (var i = 0; i < count; ++i)
             {
                 children[i].GetValueStore().InheritedValueChanged(property, oldValue, newValue);
+            }
+        }
+
+        private void ReevaluateEffectiveValue(
+            AvaloniaProperty property,
+            EffectiveValue? current,
+            bool ignoreLocalValue = false)
+        {
+        restart:
+            // Don't reevaluate if a styling pass is in effect, reevaluation will be done when
+            // it has finished.
+            if (_styling > 0)
+                return;
+
+            var generation = _frameGeneration;
+
+            // Reset all non-LocalValue effective value to Unset priority.
+            if (current is not null)
+            {
+                if (ignoreLocalValue || current.Priority != BindingPriority.LocalValue)
+                    current.SetPriority(BindingPriority.Unset);
+                if (ignoreLocalValue || current.BasePriority != BindingPriority.LocalValue)
+                    current.SetBasePriority(BindingPriority.Unset);
+            }
+
+            // Iterate the frames to get the effective value.
+            for (var i = _frames.Count - 1; i >= 0; --i)
+            {
+                var frame = _frames[i];
+
+                if (!frame.IsActive)
+                    continue;
+
+                var priority = frame.Priority;
+
+                if (frame.TryGetEntry(property, out var entry) && entry.HasValue)
+                {
+                    if (current is not null)
+                    {
+                        current.SetAndRaise(this, entry, priority);
+                    }
+                    else
+                    {
+                        current = property.CreateEffectiveValue(Owner);
+                        AddEffectiveValue(property, current);
+                        current.SetAndRaise(this, entry, priority);
+                    }
+                }
+
+                if (current is not null &&
+                    current.Priority < BindingPriority.Unset &&
+                    current.BasePriority < BindingPriority.Unset)
+                    return;
+                if (generation != _frameGeneration)
+                    goto restart;
+            }
+
+            if (current?.Priority == BindingPriority.Unset)
+            {
+                if (current.BasePriority == BindingPriority.Unset)
+                {
+                    RemoveEffectiveValue(property);
+                    current.DisposeAndRaiseUnset(this, property);
+                }
+                else
+                {
+                    current.SetAndRaise(this, property, current.BaseValue, current.BasePriority);
+                }
             }
         }
 
