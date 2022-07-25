@@ -373,6 +373,12 @@ namespace Avalonia.X11
         public static extern void XSetWMHints(IntPtr display, IntPtr window, ref XWMHints wmhints);
 
         [DllImport(libX11)]
+        public static extern IntPtr XAllocClassHint();
+
+        [DllImport(libX11)]
+        public static extern IntPtr XSetClassHint(IntPtr display, IntPtr window, IntPtr classHints);
+
+        [DllImport(libX11)]
         public static extern int XGetIconSizes(IntPtr display, IntPtr window, out IntPtr size_list, out int count);
 
         [DllImport(libX11)]
@@ -643,6 +649,13 @@ namespace Avalonia.X11
         public struct XSyncValue {
             public int Hi;
             public uint Lo;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct XClassHint
+        {
+            public IntPtr ResName;
+            public IntPtr ResClass;
         }
 
         public static bool XGetGeometry(IntPtr display, IntPtr window, out XGeometry geo)

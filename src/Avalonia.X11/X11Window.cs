@@ -171,6 +171,9 @@ namespace Avalonia.X11
             if (platform.Options.WmClass != null)
                 SetWmClass(platform.Options.WmClass);
 
+            // TODO: how do we get the Application.Name here as we don't have direct access to that
+            SetApplicationName("Avalonia Application");
+
             var surfaces = new List<object>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
@@ -1143,6 +1146,35 @@ namespace Avalonia.X11
             else
             {
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON);
+            }
+        }
+
+        /// <summary>
+        ///   Sets the application name that is visible for example in the Gnome desktop top bar
+        /// </summary>
+        /// <param name="name">The application name to set</param>
+        public void SetApplicationName(string name)
+        {
+            var classHint = XAllocClassHint();
+
+            if (classHint == IntPtr.Zero)
+            {
+                return;
+            }
+
+            var classHintData = Marshal.PtrToStructure<XClassHint>(classHint);
+
+            var classTextData = Encoding.ASCII.GetBytes(name);
+            fixed (void* textPtr = classTextData)
+            {
+                classHintData.ResClass = new IntPtr(textPtr);
+                classHintData.ResName = new IntPtr(textPtr);
+
+                Marshal.StructureToPtr(classHintData, classHint, true);
+
+                XSetClassHint(_x11.Display, _handle, classHint);
+
+                XFree(classHint);
             }
         }
 
