@@ -9,14 +9,6 @@
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <AvaloniaResource Include="**/*.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Controls\RichTextBlock.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <AvaloniaResource Update="Controls\RichTextBlock.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-  </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />
