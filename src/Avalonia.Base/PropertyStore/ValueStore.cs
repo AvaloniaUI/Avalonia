@@ -419,7 +419,16 @@ namespace Avalonia.PropertyStore
         /// <param name="frame">The frame which produced the change.</param>
         public void OnFrameActivationChanged(ValueFrame frame)
         {
-            ReevaluateEffectiveValues();
+            if (frame.EntryCount == 0)
+                return;
+            else if (frame.EntryCount == 1)
+            {
+                var property = frame.GetEntry(0).Property;
+                _effectiveValues.TryGetValue(property, out var current);
+                ReevaluateEffectiveValue(property, current);
+            }
+            else
+                ReevaluateEffectiveValues();
         }
 
         /// <summary>
@@ -637,7 +646,7 @@ namespace Avalonia.PropertyStore
 
         private void ReevaluateEffectiveValue(
             AvaloniaProperty property,
-            EffectiveValue current,
+            EffectiveValue? current,
             bool ignoreLocalValue = false)
         {
             if (EvaluateEffectiveValue(
@@ -648,12 +657,18 @@ namespace Avalonia.PropertyStore
                 out var baseValue,
                 out var basePriority))
             {
+                if (current is null)
+                {
+                    current = property.CreateEffectiveValue(Owner);
+                    AddEffectiveValue(property, current);
+                }
+
                 if (basePriority != BindingPriority.Unset)
                     current.SetAndRaise(this, property, value, priority, baseValue, basePriority);
                 else
                     current.SetAndRaise(this, property, value, priority);
             }
-            else
+            else if (current is not null)
             {
                 RemoveEffectiveValue(property);
                 current.DisposeAndRaiseUnset(this, property);
