@@ -19,14 +19,6 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
     
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        /*
-        Console.WriteLine("PID: " + Process.GetCurrentProcess().Id);
-
-        File.WriteAllText("/tmp/pid", "PID: " + Process.GetCurrentProcess().Id);
-        while (!Debugger.IsAttached)
-        {
-            Thread.Sleep(1000);
-        }*/
         var allMethodsWithAttributes = context.SyntaxProvider
             .CreateSyntaxProvider(
                 static (s, _) => s is MethodDeclarationSyntax
