@@ -27,18 +27,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             if (styleParent != null)
             {
-                var selectorProperty = styleParent.Children.OfType<XamlAstXamlPropertyValueNode>()
-                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Selector");
-
-                if (selectorProperty == null)
-                    throw new XamlParseException(
-                        "Can not find parent Style Selector", node);
-
-                var selector = selectorProperty.Values.FirstOrDefault() as XamlIlSelectorNode;
-
-                targetType = selector?.TargetType
+                targetType = styleParent.TargetType.GetClrType()
                              ?? throw new XamlParseException("Can not resolve parent Style Selector type", node);
-                lineInfo = selector;
+                lineInfo = on;
             }
             else
             {
