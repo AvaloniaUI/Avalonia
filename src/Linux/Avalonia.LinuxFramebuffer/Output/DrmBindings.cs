@@ -164,7 +164,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             else 
             {
                 Fd = open(path, 2, 0);
-                if(Fd != -1) throw new Win32Exception($"Couldn't open {path}");
+                if(Fd == -1) throw new Win32Exception($"Couldn't open {path}");
             }
         }
 
