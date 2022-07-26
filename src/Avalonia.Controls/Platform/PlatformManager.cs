@@ -25,9 +25,7 @@ namespace Avalonia.Controls.Platform
             var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
 
             if (platform == null)
-            {
-                throw new Exception("Could not CreateTrayIcon(): IWindowingPlatform is not registered.");
-            }
+                return null;
 
             return s_designerMode ? null : platform.CreateTrayIcon();
         }
