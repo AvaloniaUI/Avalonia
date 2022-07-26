@@ -261,7 +261,8 @@ namespace Avalonia
             // and sometimes attempts to use GLX might cause a segfault
             "llvmpipe"
         };
-        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
+
+        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name;
 
         /// <summary>
         /// Enables multitouch support. The default value is true.

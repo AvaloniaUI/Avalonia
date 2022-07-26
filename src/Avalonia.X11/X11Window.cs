@@ -164,8 +164,7 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] {_x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL}, 1);
 
-            if (platform.Options.WmClass != null)
-                SetWmClass(platform.Options.WmClass);
+            SetWmClass(_platform.Options.WmClass);
 
             var surfaces = new List<object>
             {
@@ -1068,12 +1067,24 @@ namespace Avalonia.X11
 
         public void SetWmClass(string wmClass)
         {
-            var data = Encoding.ASCII.GetBytes(wmClass);
-            fixed (void* pdata = data)
+            // See https://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS
+            // We don't actually parse the application's command line, so we only use RESOURCE_NAME and argv[0]
+            var appId = Environment.GetEnvironmentVariable("RESOURCE_NAME") 
+                        ?? Process.GetCurrentProcess().ProcessName;
+            
+            var encodedAppId = Encoding.ASCII.GetBytes(appId);
+            var encodedWmClass = Encoding.ASCII.GetBytes(wmClass ?? appId);
+
+            var hint = XAllocClassHint();
+            fixed(byte* pAppId = encodedAppId)
+            fixed (byte* pWmClass = encodedWmClass)
             {
-                XChangeProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_CLASS, _x11.Atoms.XA_STRING, 8,
-                    PropertyMode.Replace, pdata, data.Length);
+                hint->res_name = pAppId;
+                hint->res_class = pWmClass;
+                XSetClassHint(_x11.Display, _handle, hint);
             }
+
+            XFree(hint);
         }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
