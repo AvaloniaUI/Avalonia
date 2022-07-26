@@ -50,7 +50,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         [DllImport("libEGL.so.1")]
-        static extern IntPtr eglGetProcAddress(Utf8Buffer proc);
+        static extern IntPtr eglGetProcAddress(string proc);
 
         private GbmBoUserDataDestroyCallbackDelegate FbDestroyDelegate;
         private drmModeModeInfo _mode;

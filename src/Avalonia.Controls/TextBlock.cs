@@ -505,7 +505,12 @@ namespace Avalonia.Controls
                 }
             }
 
-            TextLayout.Draw(context, new Point(padding.Left, top));
+            RenderTextLayout(context, new Point(padding.Left, top));
+        }
+
+        protected virtual void RenderTextLayout(DrawingContext context, Point origin)
+        {
+            TextLayout.Draw(context, origin);
         }
 
         void IAddChild<string>.AddChild(string text)
