@@ -7,6 +7,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform.Interop;
+using JetBrains.Annotations;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
@@ -15,27 +16,32 @@ namespace Avalonia.LinuxFramebuffer.Output
 {
     public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface
     {
-        private LinuxDrmOptions _options;
+        private DrmOutputOptions _outputOptions = new();
         private DrmCard _card;
         public PixelSize PixelSize => _mode.Resolution;
 
         public double Scaling
         {
-            get => _options.Scaling;
-            set => _options.Scaling = value;
+            get => _outputOptions.Scaling;
+            set => _outputOptions.Scaling = value;
         }
         public IGlContext PrimaryContext => _deferredContext;
 
         private EglPlatformOpenGlInterface _platformGl;
         public IPlatformOpenGlInterface PlatformOpenGlInterface => _platformGl;
 
-        public DrmOutput(LinuxDrmOptions drmOptions)
+        public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo,
+            DrmOutputOptions? options = null)
         {
-            _options = drmOptions;
-            CreateDrmOutput(_options.Card, _options.DrmConnectorsForceProbe);
+            if(options != null) 
+                _outputOptions = options;
+            Init(card, resources, connector, modeInfo);
         }
-        public DrmOutput(string path = null) : this(new LinuxDrmOptions() { Card = path })
+        public DrmOutput(string path = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
         {
+            if(options != null) 
+                _outputOptions = options;
+            CreateDrmOutput(path, connectorsForceProbe);
         }
 
         private void CreateDrmOutput(string path = null, bool connectorsForceProbe = false)
@@ -158,9 +164,9 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             using (_deferredContext.MakeCurrent(_eglSurface))
             {
-                _deferredContext.GlInterface.ClearColor(_options.InitialBufferSwappingColor.R,
-                    _options.InitialBufferSwappingColor.G, _options.InitialBufferSwappingColor.B,
-                    _options.InitialBufferSwappingColor.A);
+                _deferredContext.GlInterface.ClearColor(_outputOptions.InitialBufferSwappingColor.R,
+                    _outputOptions.InitialBufferSwappingColor.G, _outputOptions.InitialBufferSwappingColor.B,
+                    _outputOptions.InitialBufferSwappingColor.A);
                 _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                 _eglSurface.SwapBuffers();
             }
@@ -178,15 +184,15 @@ namespace Avalonia.LinuxFramebuffer.Output
             _mode = mode;
             _currentBo = bo;
             
-            if (_options.EnableInitialBufferSwapping)
+            if (_outputOptions.EnableInitialBufferSwapping)
             {
                 //Go trough two cycles of buffer swapping (there are render artifacts otherwise)
                 for(var c=0;c<2;c++)
                     using (CreateGlRenderTarget().BeginDraw())
                     {
-                        _deferredContext.GlInterface.ClearColor(_options.InitialBufferSwappingColor.R,
-                            _options.InitialBufferSwappingColor.G, _options.InitialBufferSwappingColor.B,
-                            _options.InitialBufferSwappingColor.A);
+                        _deferredContext.GlInterface.ClearColor(_outputOptions.InitialBufferSwappingColor.R,
+                            _outputOptions.InitialBufferSwappingColor.G, _outputOptions.InitialBufferSwappingColor.B,
+                            _outputOptions.InitialBufferSwappingColor.A);
                         _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                     }
             }
