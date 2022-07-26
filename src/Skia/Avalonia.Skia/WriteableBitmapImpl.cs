@@ -25,8 +25,9 @@ namespace Avalonia.Skia
         public WriteableBitmapImpl(Stream stream)
         {
             using (var skiaStream = new SKManagedStream(stream))
+            using (var skData = SKData.Create(skiaStream))
             {
-                _bitmap = SKBitmap.Decode(skiaStream);
+                _bitmap = SKBitmap.Decode(skData);
 
                 if (_bitmap == null)
                 {
@@ -41,7 +42,8 @@ namespace Avalonia.Skia
         public WriteableBitmapImpl(Stream stream, int decodeSize, bool horizontal, BitmapInterpolationMode interpolationMode)
         {
             using (var skStream = new SKManagedStream(stream))
-            using (var codec = SKCodec.Create(skStream))
+            using (var skData = SKData.Create(skStream))
+            using (var codec = SKCodec.Create(skData))
             {
                 var info = codec.Info;
 
