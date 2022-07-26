@@ -15,20 +15,34 @@ namespace Avalonia.LinuxFramebuffer.Output
 {
     public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface
     {
+        private LinuxDrmOptions _options;
         private DrmCard _card;
         public PixelSize PixelSize => _mode.Resolution;
-        public double Scaling { get; set; }
+
+        public double Scaling
+        {
+            get => _options.Scaling;
+            set => _options.Scaling = value;
+        }
         public IGlContext PrimaryContext => _deferredContext;
 
         private EglPlatformOpenGlInterface _platformGl;
         public IPlatformOpenGlInterface PlatformOpenGlInterface => _platformGl;
 
-        public DrmOutput(string path = null)
+        public DrmOutput(LinuxDrmOptions drmOptions)
+        {
+            _options = drmOptions;
+            CreateDrmOutput(_options.Card, _options.DrmConnectorsForceProbe);
+        }
+        public DrmOutput(string path = null) : this(new LinuxDrmOptions() { Card = path })
+        {
+        }
+
+        private void CreateDrmOutput(string path = null, bool connectorsForceProbe = false)
         {
             var card = new DrmCard(path);
 
-            var resources = card.GetResources();
-
+            var resources = card.GetResources(connectorsForceProbe);
 
             var connector =
                 resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
@@ -144,7 +158,9 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             using (_deferredContext.MakeCurrent(_eglSurface))
             {
-                _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
+                _deferredContext.GlInterface.ClearColor(_options.InitialBufferSwappingColor.R,
+                    _options.InitialBufferSwappingColor.G, _options.InitialBufferSwappingColor.B,
+                    _options.InitialBufferSwappingColor.A);
                 _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                 _eglSurface.SwapBuffers();
             }
@@ -162,13 +178,18 @@ namespace Avalonia.LinuxFramebuffer.Output
             _mode = mode;
             _currentBo = bo;
             
-            // Go trough two cycles of buffer swapping (there are render artifacts otherwise)
-            for(var c=0;c<2;c++)
-                using (CreateGlRenderTarget().BeginDraw())
-                {
-                    _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
-                    _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
-                }
+            if (_options.EnableInitialBufferSwapping)
+            {
+                //Go trough two cycles of buffer swapping (there are render artifacts otherwise)
+                for(var c=0;c<2;c++)
+                    using (CreateGlRenderTarget().BeginDraw())
+                    {
+                        _deferredContext.GlInterface.ClearColor(_options.InitialBufferSwappingColor.R,
+                            _options.InitialBufferSwappingColor.G, _options.InitialBufferSwappingColor.B,
+                            _options.InitialBufferSwappingColor.A);
+                        _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                    }
+            }
             
         }
 
