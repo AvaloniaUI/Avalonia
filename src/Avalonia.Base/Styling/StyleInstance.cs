@@ -61,6 +61,8 @@ namespace Avalonia.Styling
             _activator?.Dispose();
         }
 
+        public new void MakeShared() => base.MakeShared();
+
         void IStyleActivatorSink.OnNext(bool value, int tag) => Owner?.OnFrameActivationChanged(this);
     }
 }

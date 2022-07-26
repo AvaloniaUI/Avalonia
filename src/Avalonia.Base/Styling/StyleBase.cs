@@ -110,7 +110,10 @@ namespace Avalonia.Styling
                 }
 
                 if (canShareInstance)
+                {
+                    instance.MakeShared();
                     _sharedInstance = instance;
+                }
             }
 
             ao.GetValueStore().AddFrame(instance);

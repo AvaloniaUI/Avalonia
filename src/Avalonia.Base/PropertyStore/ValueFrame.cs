@@ -11,17 +11,26 @@ namespace Avalonia.PropertyStore
     {
         private readonly List<IValueEntry> _entries = new();
         private AvaloniaPropertyDictionary<IValueEntry> _index;
+        private ValueStore? _owner;
+        private bool _isShared;
 
         public int EntryCount => _entries.Count;
         public abstract bool IsActive { get; }
-        public ValueStore? Owner { get; private set; }
+        public ValueStore? Owner => !_isShared ? _owner : 
+            throw new AvaloniaInternalException("Cannot get owner for shared ValueFrame");
         public BindingPriority Priority { get; protected set; }
 
         public bool Contains(AvaloniaProperty property) => _index.ContainsKey(property);
 
         public IValueEntry GetEntry(int index) => _entries[index];
 
-        public void SetOwner(ValueStore? owner) => Owner = owner;
+        public void SetOwner(ValueStore? owner)
+        {
+            if (_owner is not null && owner is not null)
+                throw new AvaloniaInternalException("ValueFrame already has an owner.");
+            if (!_isShared)
+                _owner = owner;
+        }
 
         public bool TryGetEntry(AvaloniaProperty property, [NotNullWhen(true)] out IValueEntry? entry)
         {
@@ -38,6 +47,12 @@ namespace Avalonia.PropertyStore
         {
             for (var i = 0; i < _entries.Count; ++i)
                 _entries[i].Unsubscribe();
+        }
+
+        protected void MakeShared()
+        {
+            _isShared = true;
+            _owner = null;
         }
 
         protected void Add(IValueEntry value)
