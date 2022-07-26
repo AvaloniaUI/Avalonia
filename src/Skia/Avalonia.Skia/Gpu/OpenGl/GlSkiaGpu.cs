@@ -54,7 +54,7 @@ namespace Avalonia.Skia
                 return null;
 
             // Blit feature requires glBlitFramebuffer
-            if (_glContext.GlInterface.BlitFramebuffer == null)
+            if (!_glContext.GlInterface.IsBlitFramebufferAvailable)
                 return null;
             
             size = new PixelSize(Math.Max(size.Width, 1), Math.Max(size.Height, 1));
