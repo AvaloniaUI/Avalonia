@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         [Fact]
         public void Setter_Should_Work_Outside_Of_Style_With_SetterTargetType_Attribute()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = @"
 <Animation xmlns='https://github.com/avaloniaui' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:SetterTargetType='Avalonia.Controls.Button'>
