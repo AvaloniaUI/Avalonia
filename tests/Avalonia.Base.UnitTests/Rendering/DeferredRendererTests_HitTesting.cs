@@ -537,6 +537,37 @@ namespace Avalonia.Base.UnitTests.Rendering
             }
         }
 
+        [Fact]
+        public void HitTest_Should_Not_Hit_Controls_Next_Pixel()
+        {
+            using (TestApplication())
+            {
+                Button targetButton;
+
+                var root = new TestRoot
+                {
+                    Width = 300,
+                    Height = 200,
+                    Child = new StackPanel
+                    {
+                        Orientation = Orientation.Vertical,
+                        Children =
+                            {
+                                new Button { Width = 10, Height = 10 },
+                                { targetButton = new Button { Width = 10, Height = 10 } }
+                            }
+                    }
+                }; 
+
+                root.Renderer = new DeferredRenderer(root, null);
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                var result = root.Renderer.HitTest(new Point(5, 10), root, null);
+                Assert.Equal(new[] { targetButton }, result);
+            }
+        }
+
         private IDisposable TestApplication()
         {
             return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
