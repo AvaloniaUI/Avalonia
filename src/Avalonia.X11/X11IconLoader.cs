@@ -48,12 +48,6 @@ namespace Avalonia.X11
             _width = Math.Min(bitmap.PixelSize.Width, 128);
             _height = Math.Min(bitmap.PixelSize.Height, 128);
             _bdata = new uint[_width * _height];
-            fixed (void* ptr = _bdata)
-            {
-                var iptr = (int*)ptr;
-                iptr[0] = _width;
-                iptr[1] = _height;
-            }
             using(var rt = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderTarget(new[]{this}))
             using (var ctx = rt.CreateDrawingContext(null))
                 ctx.DrawBitmap(bitmap.PlatformImpl, 1, new Rect(bitmap.Size),
@@ -65,7 +59,7 @@ namespace Avalonia.X11
             {
                 var r = y * _width;
                 for (var x = 0; x < _width; x++)
-                    Data[r + x] = new UIntPtr(_bdata[r + x]);
+                    Data[r + x + 2] = new UIntPtr(_bdata[r + x]);
             }
 
             _bdata = null;
@@ -86,7 +80,7 @@ namespace Avalonia.X11
                         var r = y * _width;
                         var fbr = y * fb.RowBytes / 4;
                         for (var x = 0; x < _width; x++)
-                            fbp[fbr + x] = Data[r + x].ToUInt32();
+                            fbp[fbr + x] = Data[r + x + 2].ToUInt32();
                     }
                 }
                 wr.Save(outputStream);

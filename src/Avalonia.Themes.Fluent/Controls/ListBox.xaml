@@ -1,4 +1,5 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="20">
       <ListBox>
@@ -9,15 +10,16 @@
       </ListBox>
     </Border>
   </Design.PreviewWith>
-  <Style Selector="ListBox">
+
+  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />        
-    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />        
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />    
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
@@ -36,10 +38,10 @@
                             ItemsPanel="{TemplateBinding ItemsPanel}"
                             ItemTemplate="{TemplateBinding ItemTemplate}"
                             Margin="{TemplateBinding Padding}"
-                            VirtualizationMode="{TemplateBinding VirtualizationMode}"/>
+                            VirtualizationMode="{TemplateBinding VirtualizationMode}" />
           </ScrollViewer>
         </Border>
       </ControlTemplate>
     </Setter>
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>

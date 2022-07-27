@@ -14,6 +14,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
 using static Avalonia.X11.XLib;
@@ -29,6 +30,7 @@ namespace Avalonia.X11
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
+        public Compositor Compositor { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
@@ -100,7 +102,13 @@ namespace Avalonia.X11
                     GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
             }
 
-            
+            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            if (gl != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGpu>().ToConstant(gl);
+
+            if (options.UseCompositor)
+                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
+
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -208,16 +216,16 @@ namespace Avalonia
         public bool OverlayPopups { get; set; }
 
         /// <summary>
-        /// Enables native file dialogs as well as global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
+        /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
         /// The default value is true.
         /// </summary>
         public bool UseDBusMenu { get; set; } = true;
 
         /// <summary>
-        /// Enables GTK file picker instead of default FreeDesktop.
-        /// The default value is true. And FreeDesktop file picker is used instead if available.
+        /// Enables DBus file picker instead of GTK.
+        /// The default value is true.
         /// </summary>
-        public bool UseGtkFilePicker { get; set; } = false;
+        public bool UseDBusFilePicker { get; set; } = true;
 
         /// <summary>
         /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
@@ -227,6 +235,8 @@ namespace Avalonia
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+
+        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use IME.
@@ -267,7 +277,8 @@ namespace Avalonia
             // and sometimes attempts to use GLX might cause a segfault
             "llvmpipe"
         };
-        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
+
+        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name;
 
         /// <summary>
         /// Enables multitouch support. The default value is true.

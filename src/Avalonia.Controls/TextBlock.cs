@@ -4,6 +4,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -11,7 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    public class TextBlock : Control
+    public class TextBlock : Control, IAddChild<string>
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -128,7 +129,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
             AvaloniaProperty.Register<TextBlock, TextDecorationCollection?>(nameof(TextDecorations));
 
-        protected string? _text;
+        internal string? _text;
         protected TextLayout? _textLayout;
         protected Size _constraint;
 
@@ -473,11 +474,6 @@ namespace Avalonia.Controls
             control.SetValue(MaxLinesProperty, maxLines);
         }
 
-        public void Add(string text)
-        {
-            _text = text;
-        }
-
         /// <summary>
         /// Renders the <see cref="TextBlock"/> to a drawing context.
         /// </summary>
@@ -509,7 +505,17 @@ namespace Avalonia.Controls
                 }
             }
 
-            TextLayout.Draw(context, new Point(padding.Left, top));
+            RenderTextLayout(context, new Point(padding.Left, top));
+        }
+
+        protected virtual void RenderTextLayout(DrawingContext context, Point origin)
+        {
+            TextLayout.Draw(context, origin);
+        }
+
+        void IAddChild<string>.AddChild(string text)
+        {
+            _text = text;
         }
 
         protected virtual string? GetText()

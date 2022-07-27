@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.CompositionPage">
+    <StackPanel>
+        <TextBlock Classes="h1">Implicit animations</TextBlock>
+        <Grid ColumnDefinitions="*,10,40" Margin="0 0 40 0">
+            <ItemsControl x:Name="Items">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.DataTemplates>
+                    <DataTemplate DataType="pages:CompositionPageColorItem">
+                        <Border 
+                            pages:CompositionPage.EnableAnimations="True"
+                            Padding="10" BorderBrush="Gray" BorderThickness="2"
+                            Background="{Binding ColorBrush}" Width="100" Height="100" Margin="10">
+                            <TextBlock Text="{Binding ColorHexValue}"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.DataTemplates>
+            </ItemsControl>
+            <GridSplitter Margin="2" BorderThickness="1" BorderBrush="Gray" 
+                          Background="#e0e0e0" Grid.Column="1"
+                          ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
+            />
+            <Border Grid.Column="2">
+                <LayoutTransformControl
+                    HorizontalAlignment="Center"
+            
+                    MinWidth="30">
+                    <LayoutTransformControl.LayoutTransform>
+                        <RotateTransform Angle="90"/>
+                    </LayoutTransformControl.LayoutTransform>
+            
+                    <TextBlock>Resize me</TextBlock>
+                </LayoutTransformControl>
+            </Border>
+        </Grid>
+
+     
+    </StackPanel>
+</UserControl>

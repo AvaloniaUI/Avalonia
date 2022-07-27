@@ -20,17 +20,8 @@ namespace Avalonia.Controls.Platform
         {
         }
 
-        public static ITrayIconImpl? CreateTrayIcon()
-        {
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-
-            if (platform == null)
-            {
-                throw new Exception("Could not CreateTrayIcon(): IWindowingPlatform is not registered.");
-            }
-
-            return s_designerMode ? null : platform.CreateTrayIcon();
-        }
+        public static ITrayIconImpl? CreateTrayIcon() =>
+            s_designerMode ? null : AvaloniaLocator.Current.GetService<IWindowingPlatform>()?.CreateTrayIcon();
 
 
         public static IWindowImpl CreateWindow()

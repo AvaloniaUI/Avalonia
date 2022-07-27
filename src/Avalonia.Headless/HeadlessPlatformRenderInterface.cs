@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -349,6 +350,7 @@ namespace Avalonia.Headless
             }
 
             public Matrix Transform { get; set; }
+
             public void Clear(Color color)
             {
 
@@ -416,7 +418,6 @@ namespace Avalonia.Headless
 
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
-                throw new NotImplementedException();
             }
 
             public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)

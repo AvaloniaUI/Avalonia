@@ -367,6 +367,17 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ThemeProperty)
+            {
+                foreach (var child in this.GetTemplateChildren())
+                    child.InvalidateStyles();
+            }
+        }
+
         /// <summary>
         /// Called when the control's template is applied.
         /// </summary>

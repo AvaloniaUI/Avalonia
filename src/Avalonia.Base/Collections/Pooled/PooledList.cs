@@ -1434,7 +1434,7 @@ namespace Avalonia.Collections.Pooled
         /// <summary>
         /// Returns the internal buffers to the ArrayPool.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             ReturnArray();
             _size = 0;

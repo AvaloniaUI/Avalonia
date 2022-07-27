@@ -15,6 +15,7 @@ using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -35,6 +36,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<ItemsControl, IEnumerable?> ItemsProperty =
             AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
+
+        /// <summary>
+        /// Defines the <see cref="ItemContainerTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> ItemContainerThemeProperty =
+            AvaloniaProperty.Register<ItemsControl, ControlTheme?>(nameof(ItemContainerTheme));
 
         /// <summary>
         /// Defines the <see cref="ItemCount"/> property.
@@ -88,6 +95,7 @@ namespace Avalonia.Controls
                 {
                     _itemContainerGenerator = CreateItemContainerGenerator();
 
+                    _itemContainerGenerator.ItemContainerTheme = ItemContainerTheme;
                     _itemContainerGenerator.ItemTemplate = ItemTemplate;
                     _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
                     _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
@@ -106,6 +114,15 @@ namespace Avalonia.Controls
         {
             get { return _items; }
             set { SetAndRaise(ItemsProperty, ref _items, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for each item.
+        /// </summary>
+        public ControlTheme? ItemContainerTheme
+        {
+            get { return GetValue(ItemContainerThemeProperty); }
+            set { SetValue(ItemContainerThemeProperty, value); }
         }
 
         /// <summary>
@@ -349,6 +366,10 @@ namespace Avalonia.Controls
             {
                 UpdatePseudoClasses(change.GetNewValue<int>());
             }
+            else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
+            {
+                _itemContainerGenerator.ItemContainerTheme = change.GetNewValue<ControlTheme?>();
+            }
         }
 
         /// <summary>
@@ -502,25 +523,47 @@ namespace Avalonia.Controls
             IInputElement? from,
             bool wrap)
         {
-            IInputElement? result;
-            var c = from;
+            var current = from;
 
-            do
+            for (;;)
             {
-                result = container.GetControl(direction, c, wrap);
+                var result = container.GetControl(direction, current, wrap);
 
-                if (result != null &&
-                    result.Focusable &&
+                if (result is null)
+                {
+                    return null;
+                }
+
+                if (result.Focusable &&
                     result.IsEffectivelyEnabled &&
                     result.IsEffectivelyVisible)
                 {
                     return result;
                 }
 
-                c = result;
-            } while (c != null && c != from && direction != NavigationDirection.First && direction != NavigationDirection.Last);
+                current = result;
 
-            return null;
+                if (current == from)
+                {
+                    return null;
+                }
+
+                switch (direction)
+                {
+                    //We did not find an enabled first item. Move downwards until we find one.
+                    case NavigationDirection.First:
+                        direction = NavigationDirection.Down;
+                        from = result;
+                        break;
+
+                    //We did not find an enabled last item. Move upwards until we find one.
+                    case NavigationDirection.Last:
+                        direction = NavigationDirection.Up;
+                        from = result;
+                        break;
+
+                }
+            }
         }
 
         private void PresenterChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
