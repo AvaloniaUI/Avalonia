@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using System.Threading;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
@@ -14,6 +15,15 @@ namespace Avalonia.IntegrationTests.Appium
     {
         public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
             element.FindElementsByXPath("*/*");
+
+        public static void SendKeysWithDelay(this IWebDriver driver, string keys, int millisecondsDelay = 200)
+        {
+            foreach (var key in keys)
+            {
+                new Actions(driver).SendKeys(key.ToString()).Perform();
+                Thread.Sleep(millisecondsDelay);
+            }
+        }
 
         public static (AppiumWebElement close, AppiumWebElement minimize, AppiumWebElement maximize) GetChromeButtons(this AppiumWebElement window)
         {

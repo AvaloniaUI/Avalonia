@@ -60,10 +60,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Alt_Arrow_Keys()
         {
-            new Actions(_session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys(Keys.Down + Keys.Enter)
-                .Perform();
+            _session.SendKeysWithDelay(Keys.Alt + Keys.Alt + Keys.Down + Keys.Enter);
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Child 1", clickedMenuItem.Text);
@@ -72,10 +69,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Grandchild_With_Alt_Arrow_Keys()
         {
-            new Actions(_session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter)
-                .Perform();
+            _session.SendKeysWithDelay(Keys.Alt + Keys.Alt + Keys.Down + Keys.Down + Keys.Right + Keys.Enter);
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
@@ -84,10 +78,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Child_With_Alt_Access_Keys()
         {
-            new Actions(_session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys("rc")
-                .Perform();
+            _session.SendKeysWithDelay(Keys.Alt + Keys.Alt + "rc");
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Child 1", clickedMenuItem.Text);
@@ -96,10 +87,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Select_Grandchild_With_Alt_Access_Keys()
         {
-            new Actions(_session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys("rhg")
-                .Perform();
+            _session.SendKeysWithDelay(Keys.Alt + Keys.Alt + "rhg");
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
@@ -111,9 +99,7 @@ namespace Avalonia.IntegrationTests.Appium
             var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
             rootMenuItem.SendClick();
 
-            new Actions(_session)
-                .SendKeys(Keys.Down + Keys.Enter)
-                .Perform();
+            _session.SendKeysWithDelay(Keys.Down + Keys.Enter);
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Child 1", clickedMenuItem.Text);
@@ -125,9 +111,7 @@ namespace Avalonia.IntegrationTests.Appium
             var rootMenuItem = _session.FindElementByAccessibilityId("RootMenuItem");
             rootMenuItem.SendClick();
 
-            new Actions(_session)
-                .SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter)
-                .Perform();
+            _session.SendKeysWithDelay(Keys.Down + Keys.Down + Keys.Right + Keys.Enter);
 
             var clickedMenuItem = _session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
