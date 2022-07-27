@@ -41,8 +41,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             d.Namespace == XamlNamespaces.Xaml2006 &&
                             d.Name == "SetterTargetType")
                         {
-                            p.Children.RemoveAt(index);
-
                             targetType = context.Configuration.TypeSystem.GetType(((XamlAstTextNode)d.Values[0]).Text);
                             lineInfo = d;
 
