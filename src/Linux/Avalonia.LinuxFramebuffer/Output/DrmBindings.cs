@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -144,31 +145,43 @@ namespace Avalonia.LinuxFramebuffer.Output
         public int Fd { get; private set; }
         public DrmCard(string path = null)
         {
-            if(path == null)
+            path = path ?? "/dev/dri/card0";
+            Fd = open(path, 2, 0);
+            if (Fd == -1)
+                throw new Win32Exception("Couldn't open " + path);
+        }
+
+        public static bool TryCreate(string path, [CanBeNull] out DrmCard drmCard)
+        {
+            try
             {
-                var files = Directory.GetFiles("/dev/dri/");
-
-                foreach(var file in files) 
-                {
-                    var match = Regex.Match(file, "card[0-9]+");
-
-                    if(match.Success)
-                    {
-                        Fd = open(file, 2, 0);
-                        if(Fd != -1) break; 
-                    }    
-                }
-
-                if(Fd == -1) throw new Win32Exception("Couldn't open /dev/dri/card[0-9]+");
+                var card = new DrmCard(path);
+                drmCard = card;
+                return true;
             }
-            else 
+            catch (Exception e)
             {
-                Fd = open(path, 2, 0);
-                if(Fd == -1) throw new Win32Exception($"Couldn't open {path}");
+                drmCard = null;
+                return false;
             }
         }
 
         public DrmResources GetResources(bool connectorsForceProbe = false) => new DrmResources(Fd, connectorsForceProbe);
+        
+        public bool TryGetResources([CanBeNull] out DrmResources drmResources, bool connectorsForceProbe = false)
+        {
+            try
+            {
+                drmResources = GetResources(connectorsForceProbe);
+                return true;
+            }
+            catch (Exception e)
+            {
+                drmResources = null;
+                return false;
+            }
+        }
+        
         public void Dispose()
         {
             close(Fd);
