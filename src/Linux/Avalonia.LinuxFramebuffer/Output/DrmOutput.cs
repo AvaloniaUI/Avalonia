@@ -63,7 +63,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         public static DrmOutput Create(string path = null, bool connectorsForceProbe = false,
-            [CanBeNull] DrmOutputOptions options = null) => new DrmOutput(path, connectorsForceProbe, options);
+            [CanBeNull] DrmOutputOptions options = null) => string.IsNullOrEmpty(path) ? 
+            CreateWithAutoDetect(connectorsForceProbe, options) : new DrmOutput(path, connectorsForceProbe, options);
 
         private static DrmOutput CreateWithAutoDetect(bool connectorsForceProbe = false,
             [CanBeNull] DrmOutputOptions options = null)
