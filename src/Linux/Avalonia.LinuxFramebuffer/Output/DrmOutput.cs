@@ -162,11 +162,14 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             _deferredContext = _platformGl.PrimaryEglContext;
 
+            var initialBufferSwappingColorR = _outputOptions.InitialBufferSwappingColor.R / 255.0f;
+            var initialBufferSwappingColorG = _outputOptions.InitialBufferSwappingColor.G / 255.0f;
+            var initialBufferSwappingColorB = _outputOptions.InitialBufferSwappingColor.B / 255.0f;
+            var initialBufferSwappingColorA = _outputOptions.InitialBufferSwappingColor.A / 255.0f;
             using (_deferredContext.MakeCurrent(_eglSurface))
             {
-                _deferredContext.GlInterface.ClearColor(_outputOptions.InitialBufferSwappingColor.R,
-                    _outputOptions.InitialBufferSwappingColor.G, _outputOptions.InitialBufferSwappingColor.B,
-                    _outputOptions.InitialBufferSwappingColor.A);
+                _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG, 
+                    initialBufferSwappingColorB, initialBufferSwappingColorA);
                 _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                 _eglSurface.SwapBuffers();
             }
@@ -190,9 +193,8 @@ namespace Avalonia.LinuxFramebuffer.Output
                 for(var c=0;c<2;c++)
                     using (CreateGlRenderTarget().BeginDraw())
                     {
-                        _deferredContext.GlInterface.ClearColor(_outputOptions.InitialBufferSwappingColor.R,
-                            _outputOptions.InitialBufferSwappingColor.G, _outputOptions.InitialBufferSwappingColor.B,
-                            _outputOptions.InitialBufferSwappingColor.A);
+                        _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG, 
+                            initialBufferSwappingColorB, initialBufferSwappingColorA);
                         _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                     }
             }
