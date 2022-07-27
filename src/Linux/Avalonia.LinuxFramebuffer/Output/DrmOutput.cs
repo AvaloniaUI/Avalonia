@@ -84,35 +84,16 @@ namespace Avalonia.LinuxFramebuffer.Output
         private static bool TryCreateDrmOutputForCard(string path, [CanBeNull] out DrmOutput drmOutput, 
             bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
         {
-            drmOutput = null;
-            DrmCard drmCard = null;
-            DrmResources drmResources = null;
-            DrmConnector drmConnector = null;
-            DrmModeInfo drmMode = null;
-            
-            if (DrmCard.TryCreate(path, out var card))
-                drmCard = card;
-            else
+            try
+            {
+                drmOutput = new DrmOutput(path, connectorsForceProbe, options);
+                return true;
+            }
+            catch (Exception e)
+            {
+                drmOutput = null;
                 return false;
-
-            if (card!.TryGetResources(out var resources, connectorsForceProbe))
-                drmResources = resources;
-            else
-                return false;
-
-            drmConnector =
-                resources!.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
-            if(drmConnector == null)
-                return false;
-            
-            drmMode = drmConnector.Modes.OrderByDescending(x => x.IsPreferred)
-                .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
-                .FirstOrDefault();
-            if(drmMode == null)
-                return false;
-
-            drmOutput = new DrmOutput(drmCard, drmResources, drmConnector, drmMode, options);
-            return true;
+            }
         }
 
         [DllImport("libEGL.so.1")]
