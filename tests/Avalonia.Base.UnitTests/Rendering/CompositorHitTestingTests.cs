@@ -408,6 +408,29 @@ public class CompositorHitTestingTests : CompositorTestsBase
             s.AssertHitTest(175, 100, null);
         }
     }
+    
+    [Fact]
+    public void HitTest_Should_Not_Hit_Controls_Next_Pixel()
+    {
+        using (var s = new CompositorServices(new Size(200, 200)))
+        {
+            Button targetButton;
+
+            var stackPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                Children =
+                {
+                    new Button { Width = 10, Height = 10 },
+                    { targetButton = new Button { Width = 10, Height = 10 } }
+                }
+            };
+
+            s.TopLevel.Content = stackPanel;
+            
+            s.AssertHitTest(new Point(5, 10), null, targetButton);
+        }
+    }
 
     private IDisposable TestApplication()
     {
