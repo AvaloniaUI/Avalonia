@@ -158,13 +158,17 @@ public static class LinuxFramebufferPlatformExtensions
         return lifetime.ExitCode;
     }
 
+    public static DrmOutput CreateDrmOutput<T>(this T builder, string path = null, bool connectorsForceProbe = false,
+        [CanBeNull] DrmOutputOptions options = null)
+        where T : AppBuilderBase<T>, new() => CreateDrmOutput(path, connectorsForceProbe, options);
+    
     private static DrmOutput CreateDrmOutput(string path = null, bool connectorsForceProbe = false,
         [CanBeNull] DrmOutputOptions options = null)
     {
         DrmCard card = null;
         DrmResources resources = null;
         
-        if (path == null)
+        if (path != null)
         {
             if (TryCreateDrmOutputForCard(path, out var drmCard, out var drmResources, connectorsForceProbe))
             {
@@ -203,6 +207,7 @@ public static class LinuxFramebufferPlatformExtensions
             throw new InvalidOperationException("Unable to find a usable DRM mode");
         return new DrmOutput(card, resources, connector, mode);
     }
+    
     private static bool TryCreateDrmOutputForCard(string path, [CanBeNull] out DrmCard drmCard, [CanBeNull] out DrmResources drmResources, 
         bool connectorsForceProbe = false)
     {
