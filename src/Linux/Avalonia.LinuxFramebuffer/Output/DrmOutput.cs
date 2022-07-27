@@ -41,11 +41,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         {
             if(options != null) 
                 _outputOptions = options;
-            CreateDrmOutput(path, connectorsForceProbe);
-        }
-
-        private void CreateDrmOutput(string path = null, bool connectorsForceProbe = false)
-        {
+            
             var card = new DrmCard(path);
 
             var resources = card.GetResources(connectorsForceProbe);
