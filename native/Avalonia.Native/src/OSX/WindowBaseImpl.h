@@ -106,6 +106,8 @@ protected:
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
+                           
+    bool IsHidden ();
 
 private:
     void CreateNSWindow (bool isDialog);
@@ -124,6 +126,7 @@ protected:
     AvnPoint lastPositionSet;
     AutoFitContentView *StandardContainer;
     bool _shown;
+    bool _hidden;
 
 public:
     NSObject <IRenderTarget> *renderTarget;

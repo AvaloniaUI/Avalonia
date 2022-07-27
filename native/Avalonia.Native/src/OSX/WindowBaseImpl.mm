@@ -23,6 +23,7 @@ WindowBaseImpl::~WindowBaseImpl() {
 
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel) {
     _shown = false;
+    _hidden = false;
     _inResize = false;
     BaseEvents = events;
     _glContext = gl;
@@ -154,6 +155,7 @@ HRESULT WindowBaseImpl::Hide() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window orderOut:Window];
+            _hidden = true;
         }
 
         return S_OK;
@@ -591,6 +593,11 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
 void WindowBaseImpl::BringToFront()
 {
     // do nothing.
+}
+
+bool WindowBaseImpl::IsHidden()
+{
+    return _hidden;
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)
