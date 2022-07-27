@@ -168,7 +168,7 @@ public static class LinuxFramebufferPlatformExtensions
         DrmCard card = null;
         DrmResources resources = null;
         
-        if (path != null)
+        if (!string.IsNullOrEmpty(path))
         {
             if (TryCreateDrmOutputForCard(path, out var drmCard, out var drmResources, connectorsForceProbe))
             {
