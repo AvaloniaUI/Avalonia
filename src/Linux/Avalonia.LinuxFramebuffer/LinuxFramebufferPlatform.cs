@@ -193,7 +193,8 @@ public static class LinuxFramebufferPlatformExtensions
         }
 
         if (card == null || resources == null)
-            throw new InvalidOperationException("Unable to find connected DRM connector");
+            throw new InvalidOperationException(string.IsNullOrEmpty(path) ?
+                "Unable to auto-detect an DrmCard" : $"Unable to open DrmCard or create DrmResources for {path}");
         
         var connector =
             resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
@@ -205,7 +206,8 @@ public static class LinuxFramebufferPlatformExtensions
             .FirstOrDefault();
         if(mode == null)
             throw new InvalidOperationException("Unable to find a usable DRM mode");
-        return new DrmOutput(card, resources, connector, mode);
+        
+        return new DrmOutput(card, resources, connector, mode, options);
     }
     
     private static bool TryCreateDrmOutputForCard(string path, [CanBeNull] out DrmCard drmCard, [CanBeNull] out DrmResources drmResources, 

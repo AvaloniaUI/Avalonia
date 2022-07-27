@@ -37,33 +37,6 @@ namespace Avalonia.LinuxFramebuffer.Output
                 _outputOptions = options;
             Init(card, resources, connector, modeInfo);
         }
-        // public DrmOutput(string path = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
-        // {
-        //     if(options != null) 
-        //         _outputOptions = options;
-        //     
-        //     var card = new DrmCard(path);
-        //
-        //     var resources = card.GetResources(connectorsForceProbe);
-        //
-        //     var connector =
-        //         resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
-        //     if(connector == null)
-        //         throw new InvalidOperationException("Unable to find connected DRM connector");
-        //
-        //     var mode = connector.Modes.OrderByDescending(x => x.IsPreferred)
-        //         .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
-        //         //.OrderByDescending(x => x.Resolution.Width * x.Resolution.Height)
-        //         .FirstOrDefault();
-        //     if(mode == null)
-        //         throw new InvalidOperationException("Unable to find a usable DRM mode");
-        //     Init(card, resources, connector, mode);
-        // }
-
-        public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
-        {
-            Init(card, resources, connector, modeInfo);
-        }
 
         [DllImport("libEGL.so.1")]
         static extern IntPtr eglGetProcAddress(string proc);
