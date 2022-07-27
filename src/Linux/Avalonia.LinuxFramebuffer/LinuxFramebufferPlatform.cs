@@ -143,10 +143,10 @@ public static class LinuxFramebufferPlatformExtensions
         StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling });
 
     public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1)
-        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, CreateDrmOutput(card, 
+        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card, 
         false, new DrmOutputOptions() { Scaling = scaling}) );
     public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
-        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, CreateDrmOutput(card, connectorsForceProbe, options));
+        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card, connectorsForceProbe, options));
     
     public static int StartLinuxDirect<T>(this T builder, string[] args, IOutputBackend backend)
         where T : AppBuilderBase<T>, new()
@@ -156,80 +156,6 @@ public static class LinuxFramebufferPlatformExtensions
         lifetime.Start(args);
         builder.Instance.Run(lifetime.Token);
         return lifetime.ExitCode;
-    }
-
-    public static DrmOutput CreateDrmOutput<T>(this T builder, string path = null, bool connectorsForceProbe = false,
-        [CanBeNull] DrmOutputOptions options = null)
-        where T : AppBuilderBase<T>, new() => CreateDrmOutput(path, connectorsForceProbe, options);
-    
-    private static DrmOutput CreateDrmOutput(string path = null, bool connectorsForceProbe = false,
-        [CanBeNull] DrmOutputOptions options = null)
-    {
-        DrmCard card = null;
-        DrmResources resources = null;
-        
-        if (!string.IsNullOrEmpty(path))
-        {
-            if (TryCreateDrmOutputForCard(path, out var drmCard, out var drmResources, connectorsForceProbe))
-            {
-                card = drmCard;
-                resources = drmResources;
-            }
-        }
-        else
-        {
-            var files = Directory.GetFiles("/dev/dri/")
-                .Where(w => Regex.Match(w, "card[0-9]+").Success)
-                .OrderBy(o => o);
-            foreach(var file in files) 
-            {
-                if (TryCreateDrmOutputForCard(path, out var drmCard, out var drmResources, connectorsForceProbe))
-                {
-                    card = drmCard;
-                    resources = drmResources;
-                    break;
-                } 
-            }
-        }
-
-        if (card == null || resources == null)
-            throw new InvalidOperationException(string.IsNullOrEmpty(path) ?
-                "Unable to auto-detect an DrmCard" : $"Unable to open DrmCard or create DrmResources for {path}");
-        
-        var connector =
-            resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
-        if(connector == null)
-            throw new InvalidOperationException("Unable to find connected DRM connector");
-        
-        var mode = connector.Modes.OrderByDescending(x => x.IsPreferred)
-            .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
-            .FirstOrDefault();
-        if(mode == null)
-            throw new InvalidOperationException("Unable to find a usable DRM mode");
-        
-        return new DrmOutput(card, resources, connector, mode, options);
-    }
-    
-    private static bool TryCreateDrmOutputForCard(string path, [CanBeNull] out DrmCard drmCard, [CanBeNull] out DrmResources drmResources, 
-        bool connectorsForceProbe = false)
-    {
-        if (!DrmCard.TryCreate(path, out var card))
-        {
-            drmCard = null;
-            drmResources = null;
-            return false;
-        }
-
-        if (!card!.TryGetResources(out var resources, connectorsForceProbe))
-        {
-            drmCard = null;
-            drmResources = null;
-            return false;
-        }
-
-        drmCard = card;
-        drmResources = resources;
-        return true;
     }
 }
 

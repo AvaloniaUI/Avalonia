@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
@@ -36,6 +38,81 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(options != null) 
                 _outputOptions = options;
             Init(card, resources, connector, modeInfo);
+        }
+
+        public DrmOutput(string path = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
+        {
+            if(options != null) 
+                _outputOptions = options;
+
+            var card = new DrmCard(path);
+
+            var resources = card.GetResources(connectorsForceProbe);
+
+            var connector =
+                resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
+            if(connector == null)
+                throw new InvalidOperationException("Unable to find connected DRM connector");
+
+            var mode = connector.Modes.OrderByDescending(x => x.IsPreferred)
+                .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
+                .FirstOrDefault();
+            if(mode == null)
+                throw new InvalidOperationException("Unable to find a usable DRM mode");
+            Init(card, resources, connector, mode);
+        }
+
+        public static DrmOutput Create(string path = null, bool connectorsForceProbe = false,
+            [CanBeNull] DrmOutputOptions options = null) => new DrmOutput(path, connectorsForceProbe, options);
+
+        private static DrmOutput CreateWithAutoDetect(bool connectorsForceProbe = false,
+            [CanBeNull] DrmOutputOptions options = null)
+        {
+            var files = Directory.GetFiles("/dev/dri/")
+                .Where(w => Regex.Match(w, "card[0-9]+").Success)
+                .OrderBy(o => o);
+            
+            foreach (var file in files)
+            {
+                if (TryCreateDrmOutputForCard(file, out var drmOutput, connectorsForceProbe, options))
+                    return drmOutput;
+            }
+
+            throw new InvalidOperationException("Unable to auto-detect an drmOutput");
+        }
+        
+        private static bool TryCreateDrmOutputForCard(string path, [CanBeNull] out DrmOutput drmOutput, 
+            bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
+        {
+            drmOutput = null;
+            DrmCard drmCard = null;
+            DrmResources drmResources = null;
+            DrmConnector drmConnector = null;
+            DrmModeInfo drmMode = null;
+            
+            if (DrmCard.TryCreate(path, out var card))
+                drmCard = card;
+            else
+                return false;
+
+            if (card!.TryGetResources(out var resources, connectorsForceProbe))
+                drmResources = resources;
+            else
+                return false;
+
+            drmConnector =
+                resources!.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
+            if(drmConnector == null)
+                return false;
+            
+            drmMode = drmConnector.Modes.OrderByDescending(x => x.IsPreferred)
+                .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
+                .FirstOrDefault();
+            if(drmMode == null)
+                return false;
+
+            drmOutput = new DrmOutput(drmCard, drmResources, drmConnector, drmMode, options);
+            return true;
         }
 
         [DllImport("libEGL.so.1")]
@@ -92,8 +169,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             
             return fbHandle;
         }
-        
-        
+
         void Init(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
             FbDestroyDelegate = FbDestroyCallback;
@@ -167,6 +243,8 @@ namespace Avalonia.LinuxFramebuffer.Output
                         _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                     }
             }
+            
+            
             
         }
 
@@ -263,6 +341,4 @@ namespace Avalonia.LinuxFramebuffer.Output
             throw new NotImplementedException();
         }
     }
-
-
 }
