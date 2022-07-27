@@ -15,6 +15,7 @@ using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -35,6 +36,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<ItemsControl, IEnumerable?> ItemsProperty =
             AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
+
+        /// <summary>
+        /// Defines the <see cref="ItemContainerTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> ItemContainerThemeProperty =
+            AvaloniaProperty.Register<ItemsControl, ControlTheme?>(nameof(ItemContainerTheme));
 
         /// <summary>
         /// Defines the <see cref="ItemCount"/> property.
@@ -88,6 +95,7 @@ namespace Avalonia.Controls
                 {
                     _itemContainerGenerator = CreateItemContainerGenerator();
 
+                    _itemContainerGenerator.ItemContainerTheme = ItemContainerTheme;
                     _itemContainerGenerator.ItemTemplate = ItemTemplate;
                     _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
                     _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
@@ -106,6 +114,15 @@ namespace Avalonia.Controls
         {
             get { return _items; }
             set { SetAndRaise(ItemsProperty, ref _items, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for each item.
+        /// </summary>
+        public ControlTheme? ItemContainerTheme
+        {
+            get { return GetValue(ItemContainerThemeProperty); }
+            set { SetValue(ItemContainerThemeProperty, value); }
         }
 
         /// <summary>
@@ -348,6 +365,10 @@ namespace Avalonia.Controls
             if (change.Property == ItemCountProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<int>());
+            }
+            else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
+            {
+                _itemContainerGenerator.ItemContainerTheme = change.GetNewValue<ControlTheme?>();
             }
         }
 

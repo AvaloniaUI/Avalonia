@@ -1,14 +1,13 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Avalonia.Controls"
-        x:CompileBindings="True">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Controls"
+                    x:CompileBindings="True">
 
-  <Styles.Resources>
-    <!-- This must follow OverlayCornerRadius -->
-    <CornerRadius x:Key="TopOverlayCornerRadius">5,5,0,0</CornerRadius>
-  </Styles.Resources>
+  <!-- This must follow OverlayCornerRadius -->
+  <CornerRadius x:Key="TopOverlayCornerRadius">5,5,0,0</CornerRadius>
 
-  <Style Selector="ColorPicker">
+  <ControlTheme x:Key="{x:Type ColorPicker}"
+                TargetType="ColorPicker">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="64" />
@@ -80,12 +79,12 @@
         </DropDownButton>
       </ControlTemplate>
     </Setter>
-  </Style>
+  </ControlTheme>
 
   <!-- Adjust Background within Flyout -->
   <!-- Note: This is implemented but there seems to be an issue and the selector can't match across the Flyout -->
-  <Style Selector="ColorPicker /template/ ColorView#FlyoutColorView /template/ Border#TabBackgroundBorder">
+  <!--<Style Selector="ColorPicker /template/ ColorView#FlyoutColorView /template/ Border#TabBackgroundBorder">
     <Setter Property="CornerRadius" Value="{DynamicResource TopOverlayCornerRadius}" />
-  </Style>
+  </Style>-->
 
-</Styles>
+</ResourceDictionary>

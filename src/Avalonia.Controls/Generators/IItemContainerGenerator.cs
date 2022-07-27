@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Templates;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls.Generators
 {
@@ -13,6 +14,11 @@ namespace Avalonia.Controls.Generators
         /// Gets the currently realized containers.
         /// </summary>
         IEnumerable<ItemContainerInfo> Containers { get; }
+
+        /// <summary>
+        /// Gets or sets the theme to be applied to the items in the control.
+        /// </summary>
+        ControlTheme? ItemContainerTheme { get; set; }
 
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.

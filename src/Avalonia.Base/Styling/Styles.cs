@@ -26,6 +26,11 @@ namespace Avalonia.Styling
         {
             _styles.ResetBehavior = ResetBehavior.Remove;
             _styles.CollectionChanged += OnCollectionChanged;
+            _styles.Validate = i =>
+            {
+                if (i is ControlTheme)
+                    throw new InvalidOperationException("ControlThemes cannot be added to a Styles collection.");
+            };
         }
 
         public Styles(IResourceHost owner)
@@ -111,7 +116,7 @@ namespace Avalonia.Styling
             set => _styles[index] = value;
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
+        public SelectorMatchResult TryAttach(IStyleable target, object? host)
         {
             _cache ??= new StyleCache();
             return _cache.TryAttach(this, target, host);

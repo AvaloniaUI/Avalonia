@@ -100,6 +100,7 @@ namespace Avalonia.Controls
         private double _indeterminateStartingOffset;
         private double _indeterminateEndingOffset;
         private Border? _indicator;
+        private IDisposable? _trackSizeChangedListener;
 
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));
@@ -195,8 +196,9 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
+            var result = base.ArrangeOverride(finalSize);
             UpdateIndicator();
-            return base.ArrangeOverride(finalSize);
+            return result;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -216,8 +218,15 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            // dispose any previous track size listener
+            _trackSizeChangedListener?.Dispose();
+            
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
+            // listen to size changes of the indicators track (parent) and update the indicator there. 
+            _trackSizeChangedListener = _indicator.Parent?.GetPropertyChangedObservable(BoundsProperty)
+                .Subscribe(_ => UpdateIndicator());
+            
             UpdateIndicator();
         }
 

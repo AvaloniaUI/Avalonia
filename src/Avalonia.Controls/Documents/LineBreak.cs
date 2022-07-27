@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Avalonia.LogicalTree;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 
@@ -22,7 +21,13 @@ namespace Avalonia.Controls.Documents
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            textRuns.Add(new TextEndOfLine());
+            var text = Environment.NewLine.AsMemory();
+
+            var textRunProperties = CreateTextRunProperties();
+
+            var textCharacters = new TextCharacters(text, textRunProperties);
+
+            textRuns.Add(textCharacters);
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
