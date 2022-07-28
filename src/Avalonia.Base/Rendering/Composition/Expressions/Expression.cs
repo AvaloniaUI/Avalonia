@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using Avalonia.Rendering.Composition.Server;
 
-// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
