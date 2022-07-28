@@ -5,6 +5,8 @@ using System.Linq;
 using System.Numerics;
 using Avalonia.Media;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Expressions
 {
     /// <summary>

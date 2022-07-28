@@ -6,6 +6,8 @@ using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>

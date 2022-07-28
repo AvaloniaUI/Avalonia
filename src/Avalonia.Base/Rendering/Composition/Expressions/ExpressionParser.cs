@@ -5,6 +5,8 @@ using System.Linq;
 
 // ReSharper disable StringLiteralTypo
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Expressions
 {
     internal class ExpressionParser

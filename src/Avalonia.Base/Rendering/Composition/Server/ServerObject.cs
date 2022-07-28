@@ -7,6 +7,8 @@ using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>

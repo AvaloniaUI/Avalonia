@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Rendering.Composition.Transport;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Animations
 {
     /// <summary>

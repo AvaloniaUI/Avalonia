@@ -8,6 +8,9 @@ using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition;
 
 /// <summary>

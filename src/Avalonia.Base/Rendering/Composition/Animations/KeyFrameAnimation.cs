@@ -2,6 +2,8 @@ using System;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Animations
 {
     

@@ -1,6 +1,8 @@
 using System.Numerics;
 using Avalonia.Platform;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>

@@ -6,6 +6,8 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Server;
 
 /// <summary>

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Expressions;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Animations
 {
     /// <summary>

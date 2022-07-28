@@ -4,6 +4,8 @@ using System.Numerics;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Utilities;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Expressions
 {
     /// <summary>

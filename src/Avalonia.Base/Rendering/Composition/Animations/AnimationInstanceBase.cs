@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 
-namespace Avalonia.Rendering.Composition.Animations;
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
 
+namespace Avalonia.Rendering.Composition.Animations;
 
 /// <summary>
 /// The base class for both key-frame and expression animation instances

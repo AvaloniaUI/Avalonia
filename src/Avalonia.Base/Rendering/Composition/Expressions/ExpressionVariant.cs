@@ -4,6 +4,8 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Expressions
 {
     internal enum VariantType

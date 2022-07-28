@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Rendering.Composition.Transport;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>

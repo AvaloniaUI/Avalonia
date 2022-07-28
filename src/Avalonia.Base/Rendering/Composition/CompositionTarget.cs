@@ -4,6 +4,8 @@ using System.Numerics;
 using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
 
+// Special license applies, see //file: src/Avalonia.Base/Rendering/Composition/License.md
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
