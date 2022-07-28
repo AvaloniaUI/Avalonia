@@ -414,7 +414,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     {
         using (var s = new CompositorServices(new Size(200, 200)))
         {
-            Rectangle targetRectangle;
+            Border targetRectangle;
 
             var stackPanel = new StackPanel
             {
@@ -422,8 +422,8 @@ public class CompositorHitTestingTests : CompositorTestsBase
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Children =
                 {
-                    new Rectangle { Width = 10, Height = 10, Fill= Brushes.Red},
-                    { targetRectangle = new Rectangle { Width = 10, Height = 10, Fill = Brushes.Green} }
+                    new Border { Width = 10, Height = 10, Background= Brushes.Red},
+                    { targetRectangle = new Border { Width = 10, Height = 10, Background = Brushes.Green} }
                 }
             };
 
