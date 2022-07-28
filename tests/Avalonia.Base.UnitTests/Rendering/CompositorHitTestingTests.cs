@@ -414,21 +414,22 @@ public class CompositorHitTestingTests : CompositorTestsBase
     {
         using (var s = new CompositorServices(new Size(200, 200)))
         {
-            Button targetButton;
+            Rectangle targetRectangle;
 
             var stackPanel = new StackPanel
             {
                 Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Left,
                 Children =
                 {
-                    new Button { Width = 10, Height = 10 },
-                    { targetButton = new Button { Width = 10, Height = 10 } }
+                    new Rectangle { Width = 10, Height = 10, Fill= Brushes.Red},
+                    { targetRectangle = new Rectangle { Width = 10, Height = 10, Fill = Brushes.Green} }
                 }
             };
 
             s.TopLevel.Content = stackPanel;
             
-            s.AssertHitTest(new Point(5, 10), null, targetButton);
+            s.AssertHitTest(new Point(5, 10), null, targetRectangle);
         }
     }
 

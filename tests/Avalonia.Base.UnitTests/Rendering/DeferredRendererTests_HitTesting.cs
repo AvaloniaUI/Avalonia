@@ -542,7 +542,7 @@ namespace Avalonia.Base.UnitTests.Rendering
         {
             using (TestApplication())
             {
-                Button targetButton;
+                Rectangle targetRectangle;
 
                 var root = new TestRoot
                 {
@@ -551,10 +551,11 @@ namespace Avalonia.Base.UnitTests.Rendering
                     Child = new StackPanel
                     {
                         Orientation = Orientation.Vertical,
+                        HorizontalAlignment = HorizontalAlignment.Left,
                         Children =
                             {
-                                new Button { Width = 10, Height = 10 },
-                                { targetButton = new Button { Width = 10, Height = 10 } }
+                                new Rectangle { Width = 10, Height = 10, Fill = Brushes.Red},
+                                { targetRectangle = new Rectangle { Width = 10, Height = 10, Fill = Brushes.Green} }
                             }
                     }
                 }; 
@@ -564,7 +565,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 root.Arrange(new Rect(root.DesiredSize));
 
                 var result = root.Renderer.HitTest(new Point(5, 10), root, null);
-                Assert.Equal(new[] { targetButton }, result);
+                Assert.Equal(new[] { targetRectangle }, result);
             }
         }
 
