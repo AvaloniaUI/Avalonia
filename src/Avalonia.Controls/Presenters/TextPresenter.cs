@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
+using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -496,14 +497,14 @@ namespace Avalonia.Controls.Presenters
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
-            
+
             if (length > 0)
             {
                 textStyleOverrides = new[]
                 {
                     new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(typeface, FontSize,
-                            foregroundBrush: SelectionForegroundBrush ?? Brushes.White))
+                            foregroundBrush: SelectionForegroundBrush ?? Brushes.Red))
                 };
             }
 
