@@ -117,7 +117,8 @@ namespace Avalonia.Win32
                 }
                 catch (COMException ex)
                 {
-                    throw new Win32Exception(ex.HResult);
+                    var message = new Win32Exception(ex.HResult).Message;
+                    throw new COMException(message, ex);
                 }
             })!;
         }
@@ -176,7 +177,8 @@ namespace Avalonia.Win32
                 }
                 catch (COMException ex)
                 {
-                    throw new Win32Exception(ex.HResult);
+                    var message = new Win32Exception(ex.HResult).Message;
+                    throw new COMException(message, ex);
                 }
             });
         }
