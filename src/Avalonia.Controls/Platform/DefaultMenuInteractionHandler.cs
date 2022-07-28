@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Platform
             Menu.PointerPressed += PointerPressed;
             Menu.PointerReleased += PointerReleased;
             Menu.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
-            Menu.AddHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
+            Menu.AddHandler(MenuBase.MenuOpenedEvent, MenuOpened);
             Menu.AddHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
@@ -89,7 +89,7 @@ namespace Avalonia.Controls.Platform
             Menu.PointerPressed -= PointerPressed;
             Menu.PointerReleased -= PointerReleased;
             Menu.RemoveHandler(AccessKeyHandler.AccessKeyPressedEvent, AccessKeyPressed);
-            Menu.RemoveHandler(Avalonia.Controls.Menu.MenuOpenedEvent, MenuOpened);
+            Menu.RemoveHandler(MenuBase.MenuOpenedEvent, MenuOpened);
             Menu.RemoveHandler(MenuItem.PointerEnteredItemEvent, PointerEntered);
             Menu.RemoveHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.RemoveHandler(InputElement.PointerMovedEvent, PointerMoved);
@@ -175,7 +175,11 @@ namespace Avalonia.Controls.Platform
 
                 case Key.Left:
                 {
-                    if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
+                    if (item is { IsSubMenuOpen: true, SelectedItem: null })
+                    {
+                        item.Close();
+                    }
+                    else if (item?.Parent is IMenuItem { IsTopLevel: false, IsSubMenuOpen: true } parent)
                     {
                         parent.Close();
                         parent.Focus();

@@ -11,4 +11,5 @@
     </ItemGroup>
 
     <Import Project="..\..\build\DevAnalyzers.props" />
+    <Import Project="..\..\build\SourceGenerators.props" />
 </Project>

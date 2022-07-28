@@ -11,6 +11,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
@@ -93,7 +94,8 @@ namespace Avalonia.Controls
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
-
+        private IStorageProvider? _storageProvider;
+        
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
         /// </summary>
@@ -283,6 +285,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IRenderer Renderer { get; private set; }
 
+        internal PixelPoint? LastPointerPosition => _pointerOverPreProcessor?.LastPosition;
+        
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
@@ -300,9 +304,6 @@ namespace Avalonia.Controls
             set { SetValue(PointerOverElementProperty, value); }
         }
 
-        /// <inheritdoc/>
-        IMouseDevice? IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
-
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
@@ -319,6 +320,11 @@ namespace Avalonia.Controls
         double IRenderRoot.RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
+        
+        public IStorageProvider StorageProvider => _storageProvider
+            ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
+            ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
+            ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 

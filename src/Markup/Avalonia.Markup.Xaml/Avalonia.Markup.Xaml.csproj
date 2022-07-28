@@ -15,7 +15,6 @@
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Extensions.cs" />
-        <Compile Include="IAddChild.cs" />
         <Compile Include="MarkupExtension.cs" />
         <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\ArrayElementPlugin.cs" />
@@ -49,6 +48,7 @@
         <Compile Include="Templates\Template.cs" />
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlControlTemplateProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />

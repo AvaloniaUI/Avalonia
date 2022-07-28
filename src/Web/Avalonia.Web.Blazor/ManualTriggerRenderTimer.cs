@@ -12,5 +12,6 @@ namespace Avalonia.Web.Blazor
         public void RaiseTick() => Tick?.Invoke(s_sw.Elapsed);
 
         public event Action<TimeSpan>? Tick;
+        public bool RunsInBackground => false;
     }
 }

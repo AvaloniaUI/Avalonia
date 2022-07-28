@@ -4,6 +4,7 @@ using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Rendering;
 using Moq;
 
 namespace Avalonia.UnitTests
@@ -25,9 +26,33 @@ namespace Avalonia.UnitTests
             return Mock.Of<IGeometryImpl>(x => x.Bounds == rect);
         }
 
+        class MockRenderTarget : IRenderTarget
+        {
+            public void Dispose()
+            {
+                
+            }
+
+            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            {
+                var m = new Mock<IDrawingContextImpl>();
+                m.Setup(c => c.CreateLayer(It.IsAny<Size>()))
+                    .Returns(() =>
+                        {
+                            var r = new Mock<IDrawingContextLayerImpl>();
+                            r.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
+                                .Returns(CreateDrawingContext(null));
+                            return r.Object;
+                        }
+                    );
+                return m.Object;
+
+            }
+        }
+        
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            return Mock.Of<IRenderTarget>();
+            return new MockRenderTarget();
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)

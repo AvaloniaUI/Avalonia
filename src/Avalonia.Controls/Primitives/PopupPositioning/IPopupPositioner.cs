@@ -45,6 +45,7 @@ Copyright © 2019 Nikita Tsukanov
 */
 
 using System;
+using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 using Avalonia.Media;
@@ -452,16 +453,14 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect,
             FlowDirection flowDirection)
         {
-            // We need a better way for tracking the last pointer position
-#pragma warning disable CS0618 // Type or member is obsolete
-            var pointer = topLevel.PointToClient(topLevel.PlatformImpl?.MouseDevice.Position ?? default);
-#pragma warning restore CS0618 // Type or member is obsolete
-
             positionerParameters.Offset = offset;
             positionerParameters.ConstraintAdjustment = constraintAdjustment;
             if (placement == PlacementMode.Pointer)
             {
-                positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
+                // We need a better way for tracking the last pointer position
+                var position = topLevel.PointToClient(topLevel.LastPointerPosition ?? default);
+
+                positionerParameters.AnchorRectangle = new Rect(position, new Size(1, 1));
                 positionerParameters.Anchor = PopupAnchor.TopLeft;
                 positionerParameters.Gravity = PopupGravity.BottomRight;
             }

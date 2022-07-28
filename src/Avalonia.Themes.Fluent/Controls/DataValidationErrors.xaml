@@ -1,8 +1,8 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="using:System"
-        x:CompileBindings="True"
-        x:DataType="DataValidationErrors">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    x:CompileBindings="True"
+                    x:DataType="DataValidationErrors">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -26,8 +26,8 @@
     </Border>
   </Design.PreviewWith>
 
-  <Style Selector="DataValidationErrors">
-    <Style.Resources>
+  <ControlTheme x:Key="{x:Type DataValidationErrors}" TargetType="DataValidationErrors">
+    <ControlTheme.Resources>
       <DataTemplate x:Key="InlineDataValidationErrorTemplate">
         <ItemsControl Items="{Binding}" x:DataType="DataValidationErrors" Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}">
           <ItemsControl.Styles>
@@ -96,9 +96,8 @@
                             ContentTemplate="{TemplateBinding ContentTemplate}" />
         </DockPanel>
       </ControlTemplate>
-    </Style.Resources>
-
+    </ControlTheme.Resources>
     <Setter Property="Template" Value="{StaticResource InlineDataValidationContentTemplate}" />
     <Setter Property="ErrorTemplate" Value="{StaticResource InlineDataValidationErrorTemplate}" />
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>

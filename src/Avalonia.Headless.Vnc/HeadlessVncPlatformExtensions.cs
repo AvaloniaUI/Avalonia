@@ -20,7 +20,11 @@ namespace Avalonia
             var tcpServer = new TcpListener(host == null ? IPAddress.Loopback : IPAddress.Parse(host), port);
             tcpServer.Start();    
             return builder
-                .UseHeadless(false)
+                .UseHeadless(new AvaloniaHeadlessPlatformOptions
+                {
+                    UseCompositor = true,
+                    UseHeadlessDrawing = false
+                })
                 .AfterSetup(_ =>
                 {
                     var lt = ((IClassicDesktopStyleApplicationLifetime)builder.Instance.ApplicationLifetime);

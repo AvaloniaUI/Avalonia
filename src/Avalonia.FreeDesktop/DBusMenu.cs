@@ -28,18 +28,18 @@ namespace Avalonia.FreeDesktop.DBusMenu
         Task<int[]> EventGroupAsync((int id, string eventId, object data, uint timestamp)[] events);
         Task<bool> AboutToShowAsync(int Id);
         Task<(int[] updatesNeeded, int[] idErrors)> AboutToShowGroupAsync(int[] Ids);
-        Task<IDisposable> WatchItemsPropertiesUpdatedAsync(Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchLayoutUpdatedAsync(Action<(uint revision, int parent)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchItemActivationRequestedAsync(Action<(int id, uint timestamp)> handler, Action<Exception> onError = null);
+        Task<IDisposable> WatchItemsPropertiesUpdatedAsync(Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchLayoutUpdatedAsync(Action<(uint revision, int parent)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchItemActivationRequestedAsync(Action<(int id, uint timestamp)> handler, Action<Exception>? onError = null);
     }
 
     [Dictionary]
     class DBusMenuProperties
     {
         public uint Version { get; set; } = default (uint);
-        public string TextDirection { get; set; } = default (string);
-        public string Status { get; set; } = default (string);
-        public string[] IconThemePath { get; set; } = default (string[]);
+        public string? TextDirection { get; set; } = default (string);
+        public string? Status { get; set; } = default (string);
+        public string[]? IconThemePath { get; set; } = default (string[]);
     }
 
 
@@ -50,7 +50,7 @@ namespace Avalonia.FreeDesktop.DBusMenu
         Task UnregisterWindowAsync(uint WindowId);
         Task<(string service, ObjectPath menuObjectPath)> GetMenuForWindowAsync(uint WindowId);
         Task<(uint, string, ObjectPath)[]> GetMenusAsync();
-        Task<IDisposable> WatchWindowRegisteredAsync(Action<(uint windowId, string service, ObjectPath menuObjectPath)> handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchWindowUnregisteredAsync(Action<uint> handler, Action<Exception> onError = null);
+        Task<IDisposable> WatchWindowRegisteredAsync(Action<(uint windowId, string service, ObjectPath menuObjectPath)> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchWindowUnregisteredAsync(Action<uint> handler, Action<Exception>? onError = null);
     }
 }

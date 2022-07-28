@@ -39,6 +39,11 @@ namespace Avalonia
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+        
+        /// <summary>
+        /// Enables new compositing rendering with UWP-like API
+        /// </summary>
+        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use GPU for rendering in your project. The default value is true.

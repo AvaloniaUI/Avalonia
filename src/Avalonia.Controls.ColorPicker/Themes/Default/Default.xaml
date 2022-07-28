@@ -1,8 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="using:Avalonia.Controls.Converters">
 
   <Styles.Resources>
-    <VisualBrush x:Key="CheckeredBackgroundBrush"
+    <!-- Shared Resources -->
+    <VisualBrush x:Key="ColorControlCheckeredBackgroundBrush"
                  TileMode="Tile"
                  Stretch="Uniform"
                  DestinationRect="0,0,8,8">
@@ -18,11 +20,25 @@
         </DrawingPresenter>
       </VisualBrush.Visual>
     </VisualBrush>
+    
+    <!-- Shared Converters -->
+    <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+    <converters:ToBrushConverter x:Key="ToBrushConverter" />
+    <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
+    <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="TopLeft, TopRight"/>
+    <converters:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="BottomLeft, BottomRight"/>
+    <converters:CornerRadiusToDoubleConverter x:Key="TopLeftCornerRadiusConverter" Corner="TopLeft" />
+    <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadiusConverter" Corner="BottomRight" />
   </Styles.Resources>
 
   <!-- Primitives -->
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorPreviewer.xaml" />
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSlider.xaml" />
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSpectrum.xaml" />
+
+  <!-- Controls -->
+  <!-- Note the ColorPicker and ColorView are unsupported in the default theme -->
+  <!-- These controls depend on fluent styles for TabControl, Button, TextBox, etc. -->
 
 </Styles>

@@ -7,6 +7,7 @@ using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -313,7 +314,7 @@ namespace Avalonia.LeakTests
 
                 // The TextBox should have subscriptions to its Classes collection from the
                 // default theme.
-                Assert.NotEmpty(((INotifyCollectionChangedDebug)textBox.Classes).GetCollectionChangedSubscribers());
+                Assert.NotEqual(0, textBox.Classes.ListenerCount);
 
                 // Clear the content and ensure the TextBox is removed.
                 window.Content = null;
@@ -877,6 +878,110 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ToolTip_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window();
+                    var source = new Button
+                    {
+                        Template = new FuncControlTemplate<Button>((parent, _) =>
+                            new Decorator
+                            {
+                                [ToolTip.TipProperty] = new TextBlock
+                                {
+                                    [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                                }
+                            }),
+                    };
+
+                    window.Content = source;
+                    window.Show();
+
+                    var templateChild = (Decorator)source.GetVisualChildren().Single();
+                    ToolTip.SetIsOpen(templateChild, true);
+
+                    ToolTip.SetIsOpen(templateChild, false);
+
+                    // Detach the button from the logical tree, so there is no reference to it
+                    window.Content = null;
+                    
+                    // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
+                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                {
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ToolTip>()).ObjectsCount);
+                });
+            }
+        }
+        
+        [Fact]
+        public void Flyout_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window();
+                    var source = new Button
+                    {
+                        Template = new FuncControlTemplate<Button>((parent, _) =>
+                            new Button
+                            {
+                                Flyout = new Flyout
+                                {
+                                    Content = new TextBlock
+                                    {
+                                        [~TextBlock.TextProperty] = new TemplateBinding(ContentControl.ContentProperty)
+                                    }
+                                }
+                            }),
+                    };
+
+                    window.Content = source;
+                    window.Show();
+
+                    var templateChild = (Button)source.GetVisualChildren().Single();
+                    templateChild.Flyout!.ShowAt(templateChild);
+                    
+                    templateChild.Flyout!.Hide();
+
+                    // Detach the button from the logical tree, so there is no reference to it
+                    window.Content = null;
+
+                    // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
+                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    
+                    return window;
+                };
+
+                var result = run();
+
+                // Process all Loaded events to free control reference(s)
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+
+                dotMemory.Check(memory =>
+                {
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBlock>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Flyout>()).ObjectsCount);
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Popup>()).ObjectsCount);
+                });
+            }
+        }
+        
         private FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>
