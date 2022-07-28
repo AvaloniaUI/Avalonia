@@ -27,16 +27,13 @@ namespace Avalonia.Skia
             gl.GetIntegerv(GL_RENDERBUFFER_BINDING, out var oldRenderbuffer);
             gl.GetIntegerv(GL_TEXTURE_BINDING_2D, out var oldTexture);
 
-            var arr = new int[2];
-
+            
             // Generate FBO
-            gl.GenFramebuffers(1, arr);
-            _fbo = arr[0];
+            _fbo = gl.GenFramebuffer();
             gl.BindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
             // Create a texture to render into
-            gl.GenTextures(1, arr);
-            _texture = arr[0];
+            _texture = gl.GenTexture();
             gl.BindTexture(GL_TEXTURE_2D, _texture);
             gl.TexImage2D(GL_TEXTURE_2D, 0,
                 InternalFormat, pixelSize.Width, pixelSize.Height,
@@ -48,8 +45,7 @@ namespace Avalonia.Skia
             var success = false;
             foreach (var useStencil8 in TrueFalse)
             {
-                gl.GenRenderbuffers(1, arr);
-                _depthStencil = arr[0];
+                _depthStencil = gl.GenRenderbuffer();
                 gl.BindRenderbuffer(GL_RENDERBUFFER, _depthStencil);
 
                 if (useStencil8)
@@ -73,7 +69,7 @@ namespace Avalonia.Skia
                 else
                 {
                     gl.BindRenderbuffer(GL_RENDERBUFFER, oldRenderbuffer);
-                    gl.DeleteRenderbuffers(1, arr);
+                    gl.DeleteRenderbuffer(_depthStencil);
                 }
             }
             
@@ -83,10 +79,8 @@ namespace Avalonia.Skia
 
             if (!success)
             {
-                arr[0] = _fbo;
-                gl.DeleteFramebuffers(1, arr);
-                arr[0] = _texture;
-                gl.DeleteTextures(1, arr);
+                gl.DeleteFramebuffer(_fbo);
+                gl.DeleteTexture(_texture);
                 throw new OpenGlException("Unable to create FBO with stencil");
             }
 
@@ -94,7 +88,7 @@ namespace Avalonia.Skia
                 new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
             Surface = SKSurface.Create(_grContext, target,
                 surfaceOrigin, SKColorType.Rgba8888);
-            CanBlit = gl.BlitFramebuffer != null;
+            CanBlit = gl.IsBlitFramebufferAvailable;
         }
         
         public void Dispose()
@@ -106,9 +100,9 @@ namespace Avalonia.Skia
                 var gl = _glContext.GlInterface;
                 if (_fbo != 0)
                 {
-                    gl.DeleteFramebuffers(1, new[] { _fbo });
-                    gl.DeleteTextures(1, new[] { _texture });
-                    gl.DeleteRenderbuffers(1, new[] { _depthStencil });
+                    gl.DeleteFramebuffer(_fbo);
+                    gl.DeleteTexture(_texture);
+                    gl.DeleteRenderbuffer(_depthStencil);
                     _fbo = _texture = _depthStencil = 0;
                 }
             }

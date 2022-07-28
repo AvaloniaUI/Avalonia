@@ -21,7 +21,7 @@ namespace Avalonia.OpenGL.Angle
             var display = IntPtr.Zero;
             AngleOptions.PlatformApi angleApi = default;
             {
-                if (_egl.GetPlatformDisplayEXT == null)
+                if (!_egl.IsGetPlatformDisplayExtAvailable)
                     throw new OpenGlException("eglGetPlatformDisplayEXT is not supported by libegl.dll");
 
                 var allowedApis = AvaloniaLocator.Current.GetService<AngleOptions>()?.AllowedPlatformApis
@@ -37,7 +37,7 @@ namespace Avalonia.OpenGL.Angle
                     else
                         continue;
 
-                    display = _egl.GetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
+                    display = _egl.GetPlatformDisplayExt(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
                         new[] { EGL_PLATFORM_ANGLE_TYPE_ANGLE, dapi, EGL_NONE });
                     if (display != IntPtr.Zero)
                     {

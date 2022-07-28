@@ -37,4 +37,8 @@
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSlider.xaml" />
   <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSpectrum.xaml" />
 
+  <!-- Controls -->
+  <!-- Note the ColorPicker and ColorView are unsupported in the default theme -->
+  <!-- These controls depend on fluent styles for TabControl, Button, TextBox, etc. -->
+
 </Styles>

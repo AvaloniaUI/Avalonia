@@ -38,8 +38,8 @@ namespace Avalonia.Platform
         /// Intersects the geometry with another geometry.
         /// </summary>
         /// <param name="geometry">The other geometry.</param>
-        /// <returns>A new <see cref="IGeometryImpl"/> representing the intersection.</returns>
-        IGeometryImpl Intersect(IGeometryImpl geometry);
+        /// <returns>A new <see cref="IGeometryImpl"/> representing the intersection or <c>null</c> when the operation failed.</returns>
+        IGeometryImpl? Intersect(IGeometryImpl geometry);
 
         /// <summary>
         /// Indicates whether the geometry's stroke contains the specified point.
