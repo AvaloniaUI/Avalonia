@@ -1241,9 +1241,9 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
-                var hit = _presenter.TextLayout.HitTestPoint(point);    
+                _presenter.MoveCaretToPoint(point);  
 
-                var caretIndex = hit.TextPosition;
+                var caretIndex = _presenter.CaretIndex;
 
                 var text = Text;
 

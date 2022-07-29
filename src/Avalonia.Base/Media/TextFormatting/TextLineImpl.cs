@@ -260,18 +260,18 @@ namespace Avalonia.Media.TextFormatting
                     {
                         characterHit = shapedRun.GlyphRun.GetCharacterHitFromDistance(distance, out _);
 
-                        //var offset = 0;
+                        var offset = 0;
 
-                        //if (shapedRun.GlyphRun.IsLeftToRight)
-                        //{
-                        //    offset = Math.Max(0, currentPosition - shapedRun.Text.Start);
-                        //}
-                        //else
-                        //{
-                        //    offset = Math.Max(0, currentPosition - shapedRun.Text.Start + shapedRun.Text.Length);
-                        //}
+                        if (shapedRun.GlyphRun.IsLeftToRight)
+                        {
+                            offset = Math.Max(0, currentPosition - shapedRun.Text.Start);
+                        }
+                        else
+                        {
+                            offset = Math.Max(0, currentPosition - shapedRun.Text.Start + shapedRun.Text.Length);
+                        }
 
-                        //characterHit = new CharacterHit(characterHit.FirstCharacterIndex + offset, characterHit.TrailingLength);
+                        characterHit = new CharacterHit(characterHit.FirstCharacterIndex + offset, characterHit.TrailingLength);
 
                         break;
                     }

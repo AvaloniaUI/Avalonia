@@ -276,7 +276,7 @@ namespace Avalonia.Controls
 
         protected override void SetText(string? text)
         {
-            var oldValue = _text ?? Inlines?.Text;
+            var oldValue = GetText();
       
             AddText(text);        
 
