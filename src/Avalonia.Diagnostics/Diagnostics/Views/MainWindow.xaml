@@ -11,10 +11,7 @@
   
   <Window.Styles>
     <default:SimpleTheme Mode="Light"/>
-    <StyleInclude Source="resm:Avalonia.Controls.DataGrid.Themes.Default.xaml?assembly=Avalonia.Controls.DataGrid"/>
-    <Style Selector="DataGrid ContextMenu">
-      <Setter Property="Foreground" Value="Black"/>
-    </Style>
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />
   </Window.Styles>

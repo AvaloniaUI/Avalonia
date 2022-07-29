@@ -57,8 +57,7 @@
       <Setter Property="VerticalAlignment" Value="Stretch" />
       <Setter Property="Background" Value="Transparent" />
       <Style Selector="^ /template/ DataValidationErrors">
-        <Setter Property="Template" Value="{DynamicResource TooltipDataValidationContentTemplate}" />
-        <Setter Property="ErrorTemplate" Value="{DynamicResource TooltipDataValidationErrorTemplate}" />
+        <Setter Property="Theme" Value="{StaticResource TooltipDataValidationErrors}" />
       </Style>
     </ControlTheme>
 
