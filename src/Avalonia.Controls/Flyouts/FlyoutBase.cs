@@ -16,8 +16,8 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
         public static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
-           AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
-               x => x.IsOpen);
+            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
+                x => x.IsOpen);
 
         /// <summary>
         /// Defines the <see cref="Target"/> property
@@ -39,16 +39,18 @@ namespace Avalonia.Controls.Primitives
                 x => x.ShowMode, (x, v) => x.ShowMode = v);
 
         /// <summary>
+        /// Defines the <see cref="OverlayInputPassThroughElement"/> property
+        /// </summary>
+        public static readonly DirectProperty<FlyoutBase, IInputElement?> OverlayInputPassThroughElementProperty =
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>(
+                o => o._overlayInputPassThroughElement,
+                (o, v) => o._overlayInputPassThroughElement = v);
+
+        /// <summary>
         /// Defines the AttachedFlyout property
         /// </summary>
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
-
-        /// <summary>
-        /// Defines the OverlayDismissEventPassThrough property
-        /// </summary>
-        public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
-            Popup.OverlayDismissEventPassThroughProperty.AddOwner<FlyoutBase>();
 
         private readonly Lazy<Popup> _popupLazy;
         private bool _isOpen;
@@ -58,10 +60,10 @@ namespace Avalonia.Controls.Primitives
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+        private IInputElement? _overlayInputPassThroughElement;
 
         static FlyoutBase()
         {
-            OverlayDismissEventPassThroughProperty.OverrideDefaultValue<FlyoutBase>(true);
             Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
         }
 
@@ -109,25 +111,20 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the event that closes the flyout is passed
-        /// through to the parent window.
+        /// Gets or sets an element that should receive pointer input events even when underneath
+        /// the flyout's overlay.
         /// </summary>
-        /// <remarks>
-        /// Clicks outside the the flyout cause the flyout to close. When <see cref="OverlayDismissEventPassThrough"/> is set to
-        /// false, these clicks will be handled by the flyout and not be registered by the parent
-        /// window. When set to true, the events will be passed through to the parent window.
-        /// </remarks>
-        public bool OverlayDismissEventPassThrough
+        public IInputElement? OverlayInputPassThroughElement
         {
-            get => GetValue(OverlayDismissEventPassThroughProperty);
-            set => SetValue(OverlayDismissEventPassThroughProperty, value);
+            get => _overlayInputPassThroughElement;
+            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
         }
 
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
 
-        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
-        { 
-            add => _popupHostChangedHandler += value; 
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged
+        {
+            add => _popupHostChangedHandler += value;
             remove => _popupHostChangedHandler -= value;
         }
 
@@ -200,7 +197,7 @@ namespace Avalonia.Controls.Primitives
             Popup.OverlayInputPassThroughElement = null;
 
             ((ISetLogicalParent)Popup).SetParent(null);
-            
+
             // Ensure this isn't active
             _transientDisposable?.Dispose();
             _transientDisposable = null;
@@ -255,8 +252,7 @@ namespace Avalonia.Controls.Primitives
                 Popup.Child = CreatePresenter();
             }
 
-            Popup.OverlayInputPassThroughElement = placementTarget;
-            Popup.OverlayDismissEventPassThrough = OverlayDismissEventPassThrough;
+            Popup.OverlayInputPassThroughElement = OverlayInputPassThroughElement;
 
             if (CancelOpening())
             {
@@ -386,7 +382,9 @@ namespace Avalonia.Controls.Primitives
             var popup = new Popup
             {
                 WindowManagerAddShadowHint = false,
-                IsLightDismissEnabled = true
+                IsLightDismissEnabled = true,
+                //Note: This is required to prevent Button.Flyout from opening the flyout again after dismiss.
+                OverlayDismissEventPassThrough = false
             };
 
             popup.Opened += OnPopupOpened;
