@@ -19,6 +19,7 @@
                 Padding="{DynamicResource FlyoutBorderThemePadding}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        Theme="{StaticResource FluentMenuScrollViewer}"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Items="{TemplateBinding Items}"

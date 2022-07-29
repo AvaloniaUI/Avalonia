@@ -29,7 +29,7 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- Added missing resource -->
+  <!--  Added missing resource  -->
   <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
 
   <ControlTheme x:Key="{x:Type ContextMenu}" TargetType="ContextMenu">
@@ -54,7 +54,7 @@
                 MinHeight="{TemplateBinding MinHeight}"
                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                 CornerRadius="{TemplateBinding CornerRadius}">
-          <ScrollViewer Classes="menuscroller">
+          <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
