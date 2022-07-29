@@ -38,7 +38,7 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a list of <see cref="ShapeableTextCharacters"/>.
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
-        internal IReadOnlyList<ShapeableTextCharacters> GetShapeableCharacters(ReadOnlySlice<char> runText, sbyte biDiLevel, 
+        internal IReadOnlyList<ShapeableTextCharacters> GetShapeableCharacters(ReadOnlySlice<char> runText, sbyte biDiLevel,
             ref TextRunProperties? previousProperties)
         {
             var shapeableCharacters = new List<ShapeableTextCharacters>(2);
@@ -65,7 +65,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="biDiLevel">The bidi level of the run.</param>
         /// <param name="previousProperties"></param>
         /// <returns>A list of shapeable text runs.</returns>
-        private static ShapeableTextCharacters CreateShapeableRun(ReadOnlySlice<char> text, 
+        private static ShapeableTextCharacters CreateShapeableRun(ReadOnlySlice<char> text,
             TextRunProperties defaultProperties, sbyte biDiLevel, ref TextRunProperties? previousProperties)
         {
             var defaultTypeface = defaultProperties.Typeface;
@@ -76,7 +76,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 if (script == Script.Common && previousTypeface is not null)
                 {
-                    if(TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out var fallbackCount, out _))
+                    if (TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out var fallbackCount, out _))
                     {
                         return new ShapeableTextCharacters(text.Take(fallbackCount),
                             defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
@@ -86,10 +86,10 @@ namespace Avalonia.Media.TextFormatting
                 return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
                     biDiLevel);
             }
-            
+
             if (previousTypeface is not null)
             {
-                if(TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out count, out _))
+                if (TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out count, out _))
                 {
                     return new ShapeableTextCharacters(text.Take(count),
                         defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
@@ -106,12 +106,12 @@ namespace Avalonia.Media.TextFormatting
                 {
                     continue;
                 }
-                
+
                 codepoint = codepointEnumerator.Current;
-                    
+
                 break;
             }
-            
+
             //ToDo: Fix FontFamily fallback
             var matchFound =
                 FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
@@ -157,14 +157,14 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="script"></param>
         /// <returns></returns>
         protected static bool TryGetShapeableLength(
-            ReadOnlySlice<char> text, 
-            Typeface typeface, 
+            ReadOnlySlice<char> text,
+            Typeface typeface,
             Typeface? defaultTypeface,
             out int length,
             out Script script)
         {
             length = 0;
-            script = Script.Unknown;         
+            script = Script.Unknown;
 
             if (text.Length == 0)
             {
@@ -182,7 +182,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
 
-                if (currentScript != Script.Common && defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                if (defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                 {
                     break;
                 }
@@ -192,7 +192,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     break;
                 }
-                
+
                 if (currentScript != script)
                 {
                     if (script is Script.Unknown || currentScript != Script.Common &&

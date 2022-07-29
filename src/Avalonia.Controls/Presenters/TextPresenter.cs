@@ -498,13 +498,13 @@ namespace Avalonia.Controls.Presenters
 
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
 
-            if (length > 0)
+            if (length > 0 && SelectionForegroundBrush != null)
             {
                 textStyleOverrides = new[]
                 {
                     new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(typeface, FontSize,
-                            foregroundBrush: SelectionForegroundBrush ?? Brushes.Red))
+                            foregroundBrush: SelectionForegroundBrush))
                 };
             }
 

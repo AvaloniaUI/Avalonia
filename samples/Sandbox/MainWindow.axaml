@@ -1,29 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
-  <StackPanel>
-    <TextBox x:Name="txtBox" Text="أَبْجَدِيَّة عَرَبِيَّة" SelectionStart="19" SelectionEnd="23"/>
-    <NumericUpDown Value="{Binding #txtBox.SelectionStart, Mode=TwoWay}"/>
-    <NumericUpDown Value="{Binding #txtBox.SelectionEnd, Mode=TwoWay}"/>
-    <RichTextBlock x:Name="txtBlock" Text="أَبْجَدِيَّة عَرَبِيَّة" IsTextSelectionEnabled="True"/>
-    <NumericUpDown Value="{Binding Distance, Mode=TwoWay}"/>
-    <TextBlock Text="{Binding #txtBlock.SelectionStart}"/>
-    <TextBlock Text="{Binding #txtBlock.SelectionEnd}"/>
-    <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-      <RichTextBlock Name="RichTextBlock"
-                     TextAlignment="Left"
-                     Margin="4,4,4,8"
-                     ClipToBounds="True"
-                     FontSize="30"
-                     MaxLines="3"
-                     TextWrapping="Wrap"
-                     FontWeight="DemiBold"
-                     Text="{Binding Text}"
-                     Inlines="{Binding InlineCollection, Mode=OneWay}">
-      </RichTextBlock>
-      <Button Click="Button_OnClick">Update inlines</Button>
-      <Button Click="TextButton_OnClick">Update text</Button>
-    </DockPanel>
-  </StackPanel>
- 
+    <TextBox Text="C:\привет мир\幸福\幸福"/>
 </Window>

@@ -1245,8 +1245,6 @@ namespace Avalonia.Controls
 
                 var caretIndex = hit.TextPosition;
 
-                Debug.WriteLine($"TextPos: {caretIndex}, X: {point.X}");
-
                 var text = Text;
 
                 if (text != null && _wordSelectionStart >= 0)
