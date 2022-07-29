@@ -101,7 +101,7 @@ namespace Avalonia.Skia
         private bool _disposed;
         private readonly DisposableLock _lock = new DisposableLock();
 
-        public SharedOpenGlBitmapAttachment(GlOpenGlBitmapImpl bitmap, IGlContext context, Action presentCallback)
+        public unsafe SharedOpenGlBitmapAttachment(GlOpenGlBitmapImpl bitmap, IGlContext context, Action presentCallback)
         {
             _bitmap = bitmap;
             _context = context;
@@ -119,7 +119,8 @@ namespace Avalonia.Skia
                     var gl = _context.GlInterface;
                     
                     var textures = new int[2];
-                    gl.GenTextures(2, textures);
+                    fixed (int* ptex = textures)
+                        gl.GenTextures(2, ptex);
                     _texture = textures[0];
                     _frontBuffer = textures[1];
 
@@ -178,7 +179,7 @@ namespace Avalonia.Skia
             _presentCallback();
         }
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
             var gl = _context.GlInterface;
             _bitmap.Present(null);
@@ -191,7 +192,9 @@ namespace Avalonia.Skia
                 if(_disposed)
                     return;
                 _disposed = true;
-                gl.DeleteTextures(2, new[] { _texture, _frontBuffer });
+                var tex = new[] { _texture, _frontBuffer };
+                fixed (int* ptex = tex)
+                    gl.DeleteTextures(2, ptex);
             }
         }
 

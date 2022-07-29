@@ -82,7 +82,7 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
+        public SelectorMatchResult TryAttach(IStyleable target, object? host) => Loaded.TryAttach(target, host);
 
         public bool TryGetResource(object key, out object? value)
         {

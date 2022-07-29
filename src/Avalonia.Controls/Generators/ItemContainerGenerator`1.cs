@@ -44,28 +44,29 @@ namespace Avalonia.Controls.Generators
         {
             var container = item as T;
 
-            if (container != null)
+            if (container is null)
             {
-                return container;
-            }
-            else
-            {
-                var result = new T();
+                container = new T();
 
                 if (ContentTemplateProperty != null)
                 {
-                    result.SetValue(ContentTemplateProperty, ItemTemplate, BindingPriority.Style);
+                    container.SetValue(ContentTemplateProperty, ItemTemplate, BindingPriority.Style);
                 }
 
-                result.SetValue(ContentProperty, item, BindingPriority.Style);
+                container.SetValue(ContentProperty, item, BindingPriority.Style);
 
                 if (!(item is IControl))
                 {
-                    result.DataContext = item;
+                    container.DataContext = item;
                 }
-
-                return result;
             }
+
+            if (ItemContainerTheme != null)
+            {
+                container.SetValue(StyledElement.ThemeProperty, ItemContainerTheme, BindingPriority.Style);
+            }
+
+            return container;
         }
 
         /// <inheritdoc/>

@@ -27,10 +27,5 @@ namespace Avalonia.Input
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
         bool ShowAccessKeys { get; set; }
-
-        /// <summary>
-        /// Gets associated mouse device
-        /// </summary>
-        IMouseDevice? MouseDevice { get; }
     }
 }

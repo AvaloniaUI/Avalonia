@@ -13,9 +13,6 @@ namespace Avalonia.Input
 
         public IDataObject Data { get; private set; }
 
-        [Obsolete("Use KeyModifiers")]
-        public InputModifiers Modifiers { get; private set; }
-
         public KeyModifiers KeyModifiers { get; private set; }
 
         public Point GetPosition(IVisual relativeTo)
@@ -35,17 +32,6 @@ namespace Avalonia.Input
             return point;
         }
 
-        [Obsolete("Use constructor taking KeyModifiers")]
-        public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, InputModifiers modifiers)
-            : base(routedEvent)
-        {
-            Data = data;
-            _target = target;
-            _targetLocation = targetLocation;
-            Modifiers = modifiers;
-            KeyModifiers = (KeyModifiers)(((int)modifiers) & 0xF);
-        }
-
         public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
             : base(routedEvent)
         {
@@ -53,10 +39,6 @@ namespace Avalonia.Input
             _target = target;
             _targetLocation = targetLocation;
             KeyModifiers = keyModifiers;
-#pragma warning disable CS0618 // Type or member is obsolete
-            Modifiers = (InputModifiers)keyModifiers;
-#pragma warning restore CS0618 // Type or member is obsolete
         }
-
     }
 }

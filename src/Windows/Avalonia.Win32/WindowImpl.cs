@@ -72,7 +72,7 @@ namespace Avalonia.Win32
 
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
-        private readonly MouseDevice _mouseDevice;
+        private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
@@ -689,10 +689,9 @@ namespace Avalonia.Win32
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
-            _mouseDevice.Capture(null);
+            e.Pointer.Capture(null);
             DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)HitTestValues.HTCAPTION), IntPtr.Zero);
-            e.Pointer.Capture(null);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -702,7 +701,7 @@ namespace Avalonia.Win32
 #if USE_MANAGED_DRAG
                 _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
-                _mouseDevice.Capture(null);
+                e.Pointer.Capture(null);
                 DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                     new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
 #endif

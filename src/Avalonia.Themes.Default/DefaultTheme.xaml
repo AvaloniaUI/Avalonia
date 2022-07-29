@@ -66,4 +66,5 @@
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/FlyoutPresenter.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/MenuFlyoutPresenter.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/ManagedFileChooser.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Default/Controls/RichTextBlock.xaml"/>
 </Styles>
