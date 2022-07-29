@@ -4,7 +4,8 @@
         xmlns:diag="clr-namespace:Avalonia.Diagnostics"
         xmlns:default="using:Avalonia.Themes.Default"
         Title="Avalonia DevTools"
-        x:Class="Avalonia.Diagnostics.Views.MainWindow">
+        x:Class="Avalonia.Diagnostics.Views.MainWindow"
+        Theme="{StaticResource {x:Type Window}}">
   <Window.DataTemplates>
     <diag:ViewLocator/>
   </Window.DataTemplates>
