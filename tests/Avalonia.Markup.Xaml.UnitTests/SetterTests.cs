@@ -18,6 +18,9 @@ namespace Avalonia.Markup.Xaml.UnitTests
     <KeyFrame>
         <Setter Property='Content' Value='{Binding}'/>
     </KeyFrame>
+    <KeyFrame>
+        <Setter Property='Content' Value='{Binding}'/>
+    </KeyFrame> 
 </Animation>";
                 var animation = (Animation.Animation)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var setter = (Setter)animation.Children[0].Setters[0];
