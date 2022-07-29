@@ -15,6 +15,13 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Justify(TextLine textLine)
         {
+            var lineImpl = textLine as TextLineImpl;
+
+            if(lineImpl is null)
+            {
+                return;
+            }
+
             var paragraphWidth = Width;
 
             if (double.IsInfinity(paragraphWidth))
@@ -22,12 +29,12 @@ namespace Avalonia.Media.TextFormatting
                 return;
             }
 
-            if (textLine.NewLineLength > 0)
+            if (lineImpl.NewLineLength > 0)
             {
                 return;
             }
 
-            var textLineBreak = textLine.TextLineBreak;
+            var textLineBreak = lineImpl.TextLineBreak;
 
             if (textLineBreak is not null && textLineBreak.TextEndOfLine is not null)
             {
@@ -39,7 +46,7 @@ namespace Avalonia.Media.TextFormatting
 
             var breakOportunities = new Queue<int>();
 
-            foreach (var textRun in textLine.TextRuns)
+            foreach (var textRun in lineImpl.TextRuns)
             {
                 var text = textRun.Text;
 
@@ -68,10 +75,10 @@ namespace Avalonia.Media.TextFormatting
                 return;
             }
 
-            var remainingSpace = Math.Max(0, paragraphWidth - textLine.WidthIncludingTrailingWhitespace);
+            var remainingSpace = Math.Max(0, paragraphWidth - lineImpl.WidthIncludingTrailingWhitespace);
             var spacing = remainingSpace / breakOportunities.Count;
 
-            foreach (var textRun in textLine.TextRuns)
+            foreach (var textRun in lineImpl.TextRuns)
             {
                 var text = textRun.Text;
 
