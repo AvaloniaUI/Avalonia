@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Presenters;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 
@@ -11,6 +13,8 @@ namespace Sandbox
 {
     public class MainWindow : Window
     {
+        private TestViewModel _dc;
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -27,12 +31,29 @@ namespace Sandbox
 
             var textPresenter = e.NameScope.Find("PART_TextPresenter") as TextPresenter;
 
-            DataContext = new TestViewModel(textPresenter);
+            _dc = new TestViewModel(textPresenter);
+
+            DataContext = _dc;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void Button_OnClick(object? sender, RoutedEventArgs e)
+        {
+            _dc.InlineCollection = new InlineCollection
+        {
+            new Run(""),
+            new Run("test3") {FontWeight = Avalonia.Media.FontWeight.Bold},
+        };
+            // _dc.Text = "nununu";
+        }
+
+        private void TextButton_OnClick(object? sender, RoutedEventArgs e)
+        {
+            _dc.Text = "nununu";
         }
     }
 
@@ -44,6 +65,29 @@ namespace Sandbox
         public TestViewModel(TextPresenter textPresenter)
         {
             _textPresenter = textPresenter;
+        }
+
+        private InlineCollection _inlineCollection;
+        private string _text;
+
+        public string Text
+        {
+            get => _text;
+            set
+            {
+                _text = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public InlineCollection InlineCollection
+        {
+            get => _inlineCollection;
+            set
+            {
+                _inlineCollection = value;
+                RaisePropertyChanged();
+            }
         }
 
         public double Distance 

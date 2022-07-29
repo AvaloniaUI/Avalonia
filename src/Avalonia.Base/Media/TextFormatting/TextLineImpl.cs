@@ -119,7 +119,7 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc/>
-        public override TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList)
+        public override TextLine Collapse(params TextCollapsingProperties?[] collapsingPropertiesList)
         {
             if (collapsingPropertiesList.Length == 0)
             {
@@ -127,6 +127,11 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var collapsingProperties = collapsingPropertiesList[0];
+
+            if(collapsingProperties is null)
+            {
+                return this;
+            }
 
             var collapsedRuns = collapsingProperties.Collapse(this);
 

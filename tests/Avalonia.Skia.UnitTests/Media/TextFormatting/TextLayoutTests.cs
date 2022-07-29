@@ -993,9 +993,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var currentX = 0.0;
 
-                    for (int j = 0; j < clusters.Count; j++)
-                    {
-                        var cluster = clusters[j];
+                    var cluster = text.Length;
+
+                    for (int j = 0; j < clusters.Count - 1; j++)
+                    {                     
+                        var glyphAdvance = glyphAdvances[j];
 
                         var characterHit = textLine.GetCharacterHitFromDistance(currentX);
 
@@ -1005,9 +1007,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                         Assert.Equal(currentX, distance);
 
-                        var glyphAdvance = glyphAdvances[j];
-
                         currentX += glyphAdvance;
+
+                        cluster = clusters[j];
                     }
                 }
             }
