@@ -1,12 +1,14 @@
-﻿<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="DropDownButton">
-    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
-    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-    <Setter Property="VerticalContentAlignment" Value="Center"/>
-    <Setter Property="Padding" Value="4"/>
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type DropDownButton}"
+                TargetType="DropDownButton">
+    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Padding" Value="4" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -14,8 +16,8 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{TemplateBinding CornerRadius}"
-                  ClipToBounds="True">
+                  ClipToBounds="True"
+                  CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="InnerGrid">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -24,44 +26,44 @@
 
               <ContentPresenter Name="PART_ContentPresenter"
                                 Grid.Column="0"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Padding="{TemplateBinding Padding}"
-                                RecognizesAccessKey="True"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                RecognizesAccessKey="True" />
 
               <PathIcon Name="DropDownGlyph"
                         Grid.Column="1"
-                        UseLayoutRounding="False"
-                        IsHitTestVisible="False"
-                        Height="12"
                         Width="12"
+                        Height="12"
                         Margin="0,0,10,0"
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Center" />
+                        VerticalAlignment="Center"
+                        IsHitTestVisible="False"
+                        UseLayoutRounding="False" />
 
             </Grid>
           </Border>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-  </Style>
 
-  <Style Selector="DropDownButton /template/ PathIcon#DropDownGlyph">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-    <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
-  </Style>
+    <Style Selector="^ /template/ PathIcon#DropDownGlyph">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
+    </Style>
 
-  <Style Selector="DropDownButton:pointerover /template/ Border#RootBorder">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-  </Style>
+    <Style Selector="^:pointerover /template/ Border#RootBorder">
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    </Style>
 
-  <Style Selector="DropDownButton:pressed  /template/ Border#RootBorder">
-    <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
-  </Style>
+    <Style Selector="^:pressed  /template/ Border#RootBorder">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}" />
+    </Style>
 
-  <Style Selector="DropDownButton:disabled">
-    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
-  </Style>
-</Styles>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
