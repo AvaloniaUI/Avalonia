@@ -194,7 +194,6 @@ namespace Avalonia.Controls.Primitives
 
             IsOpen = false;
             Popup.IsOpen = false;
-            Popup.OverlayInputPassThroughElement = null;
 
             ((ISetLogicalParent)Popup).SetParent(null);
 
