@@ -176,7 +176,7 @@ namespace Avalonia.Media.TextFormatting
                 return GetRunCharacterHit(firstRun, FirstTextSourceIndex, 0);
             }
 
-            if (distance > WidthIncludingTrailingWhitespace)
+            if (distance >= WidthIncludingTrailingWhitespace)
             {
                 var lastRun = _textRuns[_textRuns.Count - 1];
 
@@ -195,7 +195,7 @@ namespace Avalonia.Media.TextFormatting
                 if(currentRun is ShapedTextCharacters shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
                 {
                     var rightToLeftIndex = i;
-                    var rightToLeftDistance = shapedRun.Size.Width;
+                    currentPosition += currentRun.TextSourceLength;
 
                     while (rightToLeftIndex + 1 <= _textRuns.Count - 1)
                     {
@@ -206,19 +206,24 @@ namespace Avalonia.Media.TextFormatting
                             break;
                         }
 
-                        rightToLeftIndex++;
+                        currentPosition += nextShaped.TextSourceLength;
 
-                        rightToLeftDistance += nextShaped.Size.Width;
+                        rightToLeftIndex++;
                     }
 
-                    for (var j = rightToLeftIndex; rightToLeftIndex >= 0; j--)
+                    for (var j = i; i <= rightToLeftIndex; j++)
                     {
+                        if(j > _textRuns.Count - 1)
+                        {
+                            break;
+                        }
+
                         currentRun = _textRuns[j];
 
-                        if(distance <= currentDistance + rightToLeftDistance - currentRun.Size.Width)
+                        if(currentDistance + currentRun.Size.Width <= distance)
                         {
-                            currentPosition += currentRun.TextSourceLength;
-                            rightToLeftDistance -= currentRun.Size.Width;
+                            currentDistance += currentRun.Size.Width;
+                            currentPosition -= currentRun.TextSourceLength;
 
                             continue;
                         }
@@ -255,14 +260,18 @@ namespace Avalonia.Media.TextFormatting
                     {
                         characterHit = shapedRun.GlyphRun.GetCharacterHitFromDistance(distance, out _);
 
-                        var offset = Math.Max(0, currentPosition - shapedRun.Text.Start);
+                        //var offset = 0;
 
-                        if (!shapedRun.GlyphRun.IsLeftToRight)
-                        {
-                            offset = Math.Max(0, offset - shapedRun.Text.End);
-                        }
+                        //if (shapedRun.GlyphRun.IsLeftToRight)
+                        //{
+                        //    offset = Math.Max(0, currentPosition - shapedRun.Text.Start);
+                        //}
+                        //else
+                        //{
+                        //    offset = Math.Max(0, currentPosition - shapedRun.Text.Start + shapedRun.Text.Length);
+                        //}
 
-                        characterHit = new CharacterHit(characterHit.FirstCharacterIndex + offset, characterHit.TrailingLength);
+                        //characterHit = new CharacterHit(characterHit.FirstCharacterIndex + offset, characterHit.TrailingLength);
 
                         break;
                     }
@@ -303,35 +312,50 @@ namespace Avalonia.Media.TextFormatting
                     {
                         var i = index;
 
+                        var rightToLeftWidth = currentRun.Size.Width;
+
                         while (i + 1 <= _textRuns.Count - 1)
                         {
                             var nextRun = _textRuns[i + 1];
 
-                            if (nextRun is ShapedTextCharacters nextShapedRun)
+                            if (nextRun is ShapedTextCharacters nextShapedRun && !nextShapedRun.ShapedBuffer.IsLeftToRight)
                             {
-                                if (nextShapedRun.ShapedBuffer.IsLeftToRight)
+                                i++;
+
+                                rightToLeftWidth += nextRun.Size.Width;
+
+                                continue;
+                            }
+                            
+                            break;
+                        }
+
+                        if(i > index)
+                        {
+                            while (i >= index)
+                            {
+                                currentRun = _textRuns[i];
+
+                                rightToLeftWidth -= currentRun.Size.Width;
+
+                                if (currentPosition + currentRun.TextSourceLength >= characterIndex)
                                 {
                                     break;
                                 }
+
+                                currentPosition += currentRun.TextSourceLength;
+
+                                remainingLength -= currentRun.TextSourceLength;
+
+                                i--;
                             }
 
-                            i++;
-                        }
-
-                        while (i > index)
-                        {
-                            var rightToLeftRun = _textRuns[i];
-
-                            currentPosition += rightToLeftRun.TextSourceLength;
-
-                            remainingLength -= rightToLeftRun.TextSourceLength;
-
-                            i--;
+                            currentDistance += rightToLeftWidth;
                         }
                     }
 
-                    if (TryGetDistanceFromCharacterHit(currentRun, characterHit, currentPosition, remainingLength,
-                        flowDirection, out var distance, out _))
+                    if (currentPosition + currentRun.TextSourceLength >= characterIndex && 
+                        TryGetDistanceFromCharacterHit(currentRun, characterHit, currentPosition, remainingLength, flowDirection, out var distance, out _))
                     {
                         return currentDistance + distance;
                     }
@@ -608,6 +632,15 @@ namespace Avalonia.Media.TextFormatting
                     }
                     else
                     {
+                        if (currentPosition + currentRun.TextSourceLength <= firstTextSourceIndex)
+                        {
+                            startX += currentRun.Size.Width;
+
+                            currentPosition += currentRun.TextSourceLength;
+
+                            continue;
+                        }
+
                         if (currentPosition < firstTextSourceIndex)
                         {
                             startX += currentRun.Size.Width;
