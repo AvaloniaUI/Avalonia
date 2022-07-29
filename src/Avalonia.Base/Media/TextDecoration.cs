@@ -209,7 +209,7 @@ namespace Avalonia.Media
             var pen = new Pen(Stroke ?? defaultBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
 
-            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Size.Width, 0));
+            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Metrics.Width, 0));
         }
     }
 }

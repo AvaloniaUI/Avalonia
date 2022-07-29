@@ -42,7 +42,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         class DeferredParentServiceProvider :
             IAvaloniaXamlIlParentStackProvider,
             IServiceProvider,
-            IRootObjectProvider
+            IRootObjectProvider,
+            IAvaloniaXamlIlControlTemplateProvider
         {
             private readonly IServiceProvider _parentProvider;
             private readonly List<IResourceNode> _parentResourceNodes;
@@ -74,6 +75,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
                     return this;
                 if (serviceType == typeof(IRootObjectProvider))
+                    return this;
+                if (serviceType == typeof(IAvaloniaXamlIlControlTemplateProvider))
                     return this;
                 return _parentProvider?.GetService(serviceType);
             }
