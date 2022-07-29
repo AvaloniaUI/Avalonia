@@ -1,5 +1,4 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
-    <TextBox Text="C:\привет мир\幸福\幸福"/>
 </Window>

@@ -1,13 +1,7 @@
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
-using Avalonia.Controls.Presenters;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.VisualTree;
+using Avalonia.Win32.WinRT.Composition;
 
 namespace Sandbox
 {
@@ -16,12 +10,12 @@ namespace Sandbox
         public MainWindow()
         {
             this.InitializeComponent();
-            this.AttachDevTools();        
+            this.AttachDevTools();
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
-    }    
+    }
 }
