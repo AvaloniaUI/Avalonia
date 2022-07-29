@@ -182,7 +182,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
 
-                if (defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                if (!currentGrapheme.FirstCodepoint.IsWhiteSpace && defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                 {
                     break;
                 }
