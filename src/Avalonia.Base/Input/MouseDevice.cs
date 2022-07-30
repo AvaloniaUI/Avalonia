@@ -196,6 +196,7 @@ namespace Avalonia.Input
             PointerPointProperties props,
             Vector delta, KeyModifiers inputModifiers, IInputElement? hitTest)
         {
+            var rawDelta = delta;
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
@@ -210,7 +211,7 @@ namespace Avalonia.Input
 
             if (source is not null)
             {
-                var e = new PointerWheelEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
+                var e = new PointerWheelEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta, rawDelta);
 
                 source?.RaiseEvent(e);
                 return e.Handled;
