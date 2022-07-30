@@ -301,7 +301,7 @@ namespace Avalonia.Rendering.SceneGraph
                     if (node.ClipToBounds)
                     {
                         clip = clip == null ? node.ClipBounds : clip.Value.Intersect(node.ClipBounds);
-                        clipped = !clip.Value.Contains(_point);
+                        clipped = !clip.Value.ContainsExclusive(_point);
                     }
 
                     if (node.GeometryClip != null)

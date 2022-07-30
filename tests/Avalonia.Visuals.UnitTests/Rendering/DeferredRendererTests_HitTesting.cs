@@ -538,6 +538,38 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
+        [Fact]
+        public void HitTest_Should_Not_Hit_Controls_Next_Pixel()
+        {
+            using (TestApplication())
+            {
+                Border targetRectangle;
+
+                var root = new TestRoot
+                {
+                    Width = 50,
+                    Height = 200,
+                    Child = new StackPanel
+                    {
+                        Orientation = Orientation.Vertical,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Children =
+                            {
+                                new Border { Width = 50, Height = 50, Background = Brushes.Red},
+                                { targetRectangle = new Border { Width = 50, Height = 50, Background = Brushes.Green} }
+                            }
+                    }
+                }; 
+
+                root.Renderer = new DeferredRenderer(root, null);
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                var result = root.Renderer.HitTest(new Point(25, 50), root, null);
+                Assert.Equal(new[] { targetRectangle }, result);
+            }
+        }
+
         private IDisposable TestApplication()
         {
             return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);

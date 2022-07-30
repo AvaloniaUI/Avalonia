@@ -106,13 +106,13 @@ namespace Avalonia.Rendering.SceneGraph
                 if (Brush != null)
                 {
                     var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    return rect.Contains(p);
+                    return rect.ContainsExclusive(p);
                 }
                 else
                 {
                     var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
                     var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
-                    return borderRect.Contains(p) && !emptyRect.Contains(p);
+                    return borderRect.ContainsExclusive(p) && !emptyRect.ContainsExclusive(p);
                 }
             }
 
