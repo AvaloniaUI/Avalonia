@@ -83,7 +83,7 @@ namespace Avalonia.Rendering.SceneGraph
                 if (Material != null)
                 {
                     var rect = Rect.Rect;
-                    return rect.Contains(p);
+                    return rect.ContainsExclusive(p);
                 }
             }
 
