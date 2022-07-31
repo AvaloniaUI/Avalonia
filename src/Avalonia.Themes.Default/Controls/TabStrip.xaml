@@ -1,11 +1,13 @@
-<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="TabStrip">
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type TabStrip}"
+                TargetType="TabStrip">
     <Setter Property="Template">
       <ControlTemplate>
         <ItemsPresenter Name="PART_ItemsPresenter"
+                        ItemTemplate="{TemplateBinding ItemTemplate}"
                         Items="{TemplateBinding Items}"
-                        ItemsPanel="{TemplateBinding ItemsPanel}"
-                        ItemTemplate="{TemplateBinding ItemTemplate}"/>
+                        ItemsPanel="{TemplateBinding ItemsPanel}" />
       </ControlTemplate>
     </Setter>
     <Setter Property="ItemsPanel">
@@ -13,8 +15,5 @@
         <WrapPanel />
       </ItemsPanelTemplate>
     </Setter>
-  </Style>
-  <Style Selector="TabStrip > TabStripItem">
-    <Setter Property="Margin" Value="16"/>
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>
