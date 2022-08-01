@@ -291,7 +291,9 @@ namespace Avalonia.Controls.Primitives
                     
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
+                    {
                         nameScope = new NameScope();
+                    }
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
@@ -365,6 +367,17 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ThemeProperty)
+            {
+                foreach (var child in this.GetTemplateChildren())
+                    child.InvalidateStyles();
+            }
+        }
+
         /// <summary>
         /// Called when the control's template is applied.
         /// </summary>
@@ -387,6 +400,7 @@ namespace Avalonia.Controls.Primitives
         /// Sets the TemplatedParent property for the created template children.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="templatedParent">The templated parent to apply.</param>
         internal static void ApplyTemplatedParent(IStyledElement control, ITemplatedControl? templatedParent)
         {
             control.SetValue(TemplatedParentProperty, templatedParent);
@@ -396,7 +410,7 @@ namespace Avalonia.Controls.Primitives
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IStyledElement child)
+                if (children[i] is IStyledElement child && child.TemplatedParent is null)
                 {
                     ApplyTemplatedParent(child, templatedParent);
                 }

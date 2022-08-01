@@ -14,7 +14,6 @@ namespace Avalonia.Controls.Documents
     {
         private ILogical? _parent;
         private IInlineHost? _inlineHost;
-        private string? _text = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InlineCollection"/> class.
@@ -22,7 +21,7 @@ namespace Avalonia.Controls.Documents
         public InlineCollection()
         {
             ResetBehavior = ResetBehavior.Remove;
-            
+
             this.ForEachItem(
                 x =>
                 {
@@ -36,16 +35,16 @@ namespace Avalonia.Controls.Documents
                     x.InlineHost = InlineHost;
                     Invalidate();
                 },
-                () => throw new NotSupportedException());         
+                () => throw new NotSupportedException());
         }
 
-        internal ILogical? Parent 
+        internal ILogical? Parent
         {
             get => _parent;
             set
             {
                 _parent = value;
-              
+
                 OnParentChanged(value);
             }
         }
@@ -61,8 +60,6 @@ namespace Avalonia.Controls.Documents
             }
         }
 
-        public bool HasComplexContent => Count > 0;
-
         /// <summary>
         /// Gets or adds the text held by the inlines collection.
         /// <remarks>
@@ -73,11 +70,6 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
-                if (!HasComplexContent)
-                {
-                    return _text;
-                }
-
                 var builder = StringBuilderCache.Acquire();
 
                 foreach (var inline in this)
@@ -87,17 +79,7 @@ namespace Avalonia.Controls.Documents
 
                 return StringBuilderCache.GetStringAndRelease(builder);
             }
-            set
-            {
-                if (HasComplexContent)
-                {
-                    Add(new Run(value));
-                }
-                else
-                {
-                    _text = value;
-                }
-            }
+
         }
 
         /// <summary>
@@ -110,36 +92,46 @@ namespace Avalonia.Controls.Documents
         /// <param name="text"></param>
         public void Add(string text)
         {
-            if (HasComplexContent)
-            {
-                Add(new Run(text));
-            }
-            else
-            {
-                _text = text;
-            }
+            AddText(text);
+        }
+
+        public override void Add(Inline inline)
+        {
+            OnAdd();
+
+            base.Add(inline);
         }
 
         public void Add(IControl child)
         {
-            var implicitRun = new InlineUIContainer(child);
+            OnAdd();
 
-            Add(implicitRun);
+            base.Add(new InlineUIContainer(child));
         }
 
-        public override void Add(Inline item)
+        private void AddText(string text)
         {
-            if (!HasComplexContent)
+            if(Parent is RichTextBlock textBlock && !textBlock.HasComplexContent)
             {
-                if (!string.IsNullOrEmpty(_text))
-                {
-                    base.Add(new Run(_text));
-                }
-                             
-                _text = null;
+                textBlock._text += text;
             }
-            
-            base.Add(item);
+            else
+            {
+                base.Add(new Run(text));
+            }
+        }
+
+        private void OnAdd()
+        {
+            if (Parent is RichTextBlock textBlock)
+            {
+                if (!textBlock.HasComplexContent && !string.IsNullOrEmpty(textBlock._text))
+                {
+                    base.Add(new Run(textBlock._text));
+
+                    textBlock._text = null;
+                }
+            }
         }
 
         /// <summary>
@@ -152,7 +144,7 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         protected void Invalidate()
         {
-            if(InlineHost != null)
+            if (InlineHost != null)
             {
                 InlineHost.Invalidate();
             }
@@ -162,7 +154,7 @@ namespace Avalonia.Controls.Documents
 
         private void OnParentChanged(ILogical? parent)
         {
-            foreach(var child in this)
+            foreach (var child in this)
             {
                 ((ISetLogicalParent)child).SetParent(parent);
             }

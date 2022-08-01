@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls.Generators
 {
@@ -34,6 +35,11 @@ namespace Avalonia.Controls.Generators
 
         /// <inheritdoc/>
         public event EventHandler<ItemContainerEventArgs>? Recycled;
+
+        /// <summary>
+        /// Gets or sets the theme to be applied to the items in the control.
+        /// </summary>
+        public ControlTheme? ItemContainerTheme { get; set; }
 
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
@@ -190,8 +196,16 @@ namespace Avalonia.Controls.Generators
                     result.SetValue(
                         ContentPresenter.ContentTemplateProperty,
                         ItemTemplate,
-                        BindingPriority.TemplatedParent);
+                        BindingPriority.Style);
                 }
+            }
+
+            if (ItemContainerTheme != null)
+            {
+                result.SetValue(
+                    StyledElement.ThemeProperty,
+                    ItemContainerTheme,
+                    BindingPriority.TemplatedParent);
             }
 
             return result;

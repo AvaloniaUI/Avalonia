@@ -120,16 +120,14 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private void RunLoop()
         {
+            using (var act = _compositor5.RequestCommitAsync())
+                act.SetCompleted(new RunLoopHandler(this));
+
+            while (true)
             {
-                var st = Stopwatch.StartNew();
-                using (var act = _compositor5.RequestCommitAsync())
-                    act.SetCompleted(new RunLoopHandler(this));
-                while (true)
-                {
-                    UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
-                    lock (_pumpLock)
-                        UnmanagedMethods.DispatchMessage(ref msg);
-                }
+                UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
+                lock (_pumpLock)
+                    UnmanagedMethods.DispatchMessage(ref msg);
             }
         }
 
@@ -302,5 +300,6 @@ namespace Avalonia.Win32.WinRT.Composition
         }
 
         public event Action<TimeSpan> Tick;
+        public bool RunsInBackground => true;
     }
 }

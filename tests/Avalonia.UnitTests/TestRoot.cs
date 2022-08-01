@@ -58,9 +58,7 @@ namespace Avalonia.UnitTests
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
 
         public IInputElement PointerOverElement { get; set; }
-
-        public IMouseDevice MouseDevice { get; set; }
-
+        
         public bool ShowAccessKeys { get; set; }
 
         public IStyleHost StylingParent { get; set; }

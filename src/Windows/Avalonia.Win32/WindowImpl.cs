@@ -15,6 +15,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
@@ -71,7 +72,7 @@ namespace Avalonia.Win32
 
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
-        private readonly MouseDevice _mouseDevice;
+        private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
@@ -543,6 +544,9 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
+            if (Win32Platform.Compositor != null)
+                return new CompositingRenderer(root, Win32Platform.Compositor);
+            
             return Win32Platform.UseDeferredRendering
                 ? _isUsingComposition
                     ? new DeferredRenderer(root, loop)
@@ -685,10 +689,9 @@ namespace Avalonia.Win32
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
-            _mouseDevice.Capture(null);
+            e.Pointer.Capture(null);
             DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)HitTestValues.HTCAPTION), IntPtr.Zero);
-            e.Pointer.Capture(null);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -698,7 +701,7 @@ namespace Avalonia.Win32
 #if USE_MANAGED_DRAG
                 _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
-                _mouseDevice.Capture(null);
+                e.Pointer.Capture(null);
                 DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                     new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
 #endif

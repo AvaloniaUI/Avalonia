@@ -1,18 +1,22 @@
-<Style xmlns="https://github.com/avaloniaui" Selector="ToolTip">
-  <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-  <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-  <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-  <Setter Property="Padding" Value="4,2"/>
-  <Setter Property="Template">
-    <ControlTemplate>
-      <ContentPresenter Name="PART_ContentPresenter"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Content="{TemplateBinding Content}" 
-                        Padding="{TemplateBinding Padding}"/>
-    </ControlTemplate>
-  </Setter>
-</Style>
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type ToolTip}"
+                TargetType="ToolTip">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="Padding" Value="4,2" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Padding="{TemplateBinding Padding}"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          CornerRadius="{TemplateBinding CornerRadius}" />
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

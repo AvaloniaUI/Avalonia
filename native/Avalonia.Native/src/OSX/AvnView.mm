@@ -127,7 +127,11 @@
         [self updateRenderTarget];
 
         auto reason = [self inLiveResize] ? ResizeUser : _resizeReason;
-        _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height}, reason);
+        
+        if(_parent->IsShown())
+        {
+            _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height}, reason);
+        }
     }
 }
 

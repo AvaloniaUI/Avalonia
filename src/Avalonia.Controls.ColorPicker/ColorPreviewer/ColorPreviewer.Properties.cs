@@ -16,11 +16,11 @@ namespace Avalonia.Controls.Primitives
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
-        /// Defines the <see cref="ShowAccentColors"/> property.
+        /// Defines the <see cref="IsAccentColorsVisible"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> ShowAccentColorsProperty =
+        public static readonly StyledProperty<bool> IsAccentColorsVisibleProperty =
             AvaloniaProperty.Register<ColorPreviewer, bool>(
-                nameof(ShowAccentColors),
+                nameof(IsAccentColorsVisible),
                 true);
 
         /// <summary>
@@ -38,13 +38,13 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether accent colors are shown along
+        /// Gets or sets a value indicating whether accent colors are visible along
         /// with the preview color.
         /// </summary>
-        public bool ShowAccentColors
+        public bool IsAccentColorsVisible
         {
-            get => GetValue(ShowAccentColorsProperty);
-            set => SetValue(ShowAccentColorsProperty, value);
+            get => GetValue(IsAccentColorsVisibleProperty);
+            set => SetValue(IsAccentColorsVisibleProperty, value);
         }
     }
 }

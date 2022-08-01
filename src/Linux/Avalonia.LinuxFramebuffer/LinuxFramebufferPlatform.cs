@@ -140,6 +140,8 @@ public static class LinuxFramebufferPlatformExtensions
 
     public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1)
         where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card) {Scaling = scaling});
+    public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
+        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card, connectorsForceProbe, options));
     
     public static int StartLinuxDirect<T>(this T builder, string[] args, IOutputBackend backend)
         where T : AppBuilderBase<T>, new()

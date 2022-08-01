@@ -64,6 +64,10 @@ namespace Avalonia.Controls.Primitives
             // It is also needlessly large as there are only ~140 known/named colors.
             // Therefore, rounding of the input color's component values is done to
             // reduce the color space into something more useful.
+            //
+            // The rounding value of 5 is specially chosen.
+            // It is a factor of 255 and therefore evenly divisible which improves
+            // the quality of the calculations.
             double rounding = 5;
             var roundedColor = new Color(
                 0xFF,

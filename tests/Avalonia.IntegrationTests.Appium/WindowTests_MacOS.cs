@@ -137,7 +137,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
 
-            using (OpenWindow(new PixelSize(1400, 100), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            using (OpenWindow(new PixelSize(800, 100), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
             {
                 mainWindow.Click();
 

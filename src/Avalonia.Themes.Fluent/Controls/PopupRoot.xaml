@@ -1,10 +1,10 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style Selector="PopupRoot">
-    <Setter Property="Background" Value="{x:Null}"/>
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type PopupRoot}" TargetType="PopupRoot">
+    <Setter Property="Background" Value="{x:Null}" />
     <Setter Property="TransparencyLevelHint" Value="Transparent" />
-    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}"/>
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="FontWeight" Value="400" />
     <Setter Property="FontStyle" Value="Normal" />
@@ -15,14 +15,14 @@
             <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
             <VisualLayerManager IsPopup="True">
               <ContentPresenter Name="PART_ContentPresenter"
-                              Background="{TemplateBinding Background}"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Content="{TemplateBinding Content}"
-                              Padding="{TemplateBinding Padding}"/>
+                                Background="{TemplateBinding Background}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}"
+                                Padding="{TemplateBinding Padding}" />
             </VisualLayerManager>
           </Panel>
         </LayoutTransformControl>
       </ControlTemplate>
     </Setter>
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>
