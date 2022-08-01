@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Collections.Generic;
 using Avalonia.Media;
-using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {

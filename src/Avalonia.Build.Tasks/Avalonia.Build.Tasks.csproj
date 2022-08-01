@@ -50,7 +50,7 @@
       <Compile Include="../Avalonia.Base/Utilities/MathUtilities.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="..\Avalonia.Base\StringBuilderCache.cs" Link="StringBuilderCache.cs" />
+      <Compile Include="..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
       <Compile Include="..\Markup\Avalonia.Markup\Markup\Parsers\ArgumentListParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>

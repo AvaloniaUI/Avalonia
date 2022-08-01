@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Converters
 {

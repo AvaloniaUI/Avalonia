@@ -1,6 +1,6 @@
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Input

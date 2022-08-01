@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using Avalonia.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Utilities;
 
 namespace Avalonia.Win32
 {

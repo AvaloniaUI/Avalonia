@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Text;
 using Avalonia.Animation.Animators;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {

@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {

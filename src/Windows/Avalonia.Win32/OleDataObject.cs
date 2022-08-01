@@ -6,9 +6,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using Avalonia.Input;
 using Avalonia.MicroCom;
+using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 
 using IDataObject = Avalonia.Input.IDataObject;

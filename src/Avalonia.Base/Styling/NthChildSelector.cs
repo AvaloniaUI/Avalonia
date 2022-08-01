@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
-using System.Text;
 using Avalonia.LogicalTree;
 using Avalonia.Styling.Activators;
+using Avalonia.Utilities;
 
 namespace Avalonia.Styling
 {
