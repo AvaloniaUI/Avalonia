@@ -59,7 +59,7 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   pool:
-    vmImage: 'macos-12'
+    vmImage: 'macos-11'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.418'
@@ -91,7 +91,7 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx13.1'
+      sdk: 'macosx12.2'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: '12' # Options: 8, 9, default, specifyPath
