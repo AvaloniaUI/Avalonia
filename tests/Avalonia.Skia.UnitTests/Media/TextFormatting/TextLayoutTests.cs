@@ -1005,7 +1005,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
-                        Assert.Equal(currentX, distance);
+                        Assert.Equal(currentX, distance, 5);
 
                         currentX += glyphAdvance;
 

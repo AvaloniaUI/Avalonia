@@ -357,7 +357,7 @@ namespace Avalonia.Media.TextFormatting
                     if (currentPosition + currentRun.TextSourceLength >= characterIndex && 
                         TryGetDistanceFromCharacterHit(currentRun, characterHit, currentPosition, remainingLength, flowDirection, out var distance, out _))
                     {
-                        return currentDistance + distance;
+                        return Math.Max(0, currentDistance + distance);
                     }
 
                     //No hit hit found so we add the full width
@@ -382,7 +382,7 @@ namespace Avalonia.Media.TextFormatting
                             distance = currentGlyphRun.Size.Width - distance;
                         }
 
-                        return currentDistance - distance;
+                        return Math.Max(0, currentDistance - distance);
                     }
 
                     //No hit hit found so we add the full width
@@ -392,7 +392,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            return currentDistance;
+            return Math.Max(0, currentDistance);
         }
 
         private static bool TryGetDistanceFromCharacterHit(
