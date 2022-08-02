@@ -19,7 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform.</param>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run to draw.</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
+        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public GlyphRunNode(
             Matrix transform,
             IBrush foreground,
