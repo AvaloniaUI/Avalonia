@@ -1,9 +1,10 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Avalonia.Controls"
-        x:CompileBindings="True">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Controls"
+                    x:CompileBindings="True">
 
-  <Style Selector="ColorSpectrum">
+  <ControlTheme x:Key="{x:Type ColorSpectrum}"
+                TargetType="ColorSpectrum">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ColorSpectrum}">
@@ -79,50 +80,51 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-  </Style>
 
-  <!-- Normal -->
-  <!-- Separating this allows easier customization in applications -->
-  <Style Selector="ColorSpectrum /template/ Ellipse#BorderEllipse,
-                   ColorSpectrum /template/ Rectangle#BorderRectangle">
-    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderLowBrush}" />
-    <Setter Property="StrokeThickness" Value="1" />
-  </Style>
+    <!-- Normal -->
+    <!-- Separating this allows easier customization in applications -->
+    <Style Selector="^ /template/ Ellipse#BorderEllipse,
+                     ^ /template/ Rectangle#BorderRectangle">
+      <Setter Property="Stroke" Value="{DynamicResource ThemeBorderLowBrush}" />
+      <Setter Property="StrokeThickness" Value="1" />
+    </Style>
 
-  <!-- Focus -->
-  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
-    <Setter Property="IsVisible" Value="False" />
-  </Style>
-  <Style Selector="ColorSpectrum:focus-visible /template/ Ellipse#FocusEllipse">
-    <Setter Property="IsVisible" Value="True" />
-  </Style>
+    <!-- Focus -->
+    <Style Selector="^ /template/ Ellipse#FocusEllipse">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ Ellipse#FocusEllipse">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
 
-  <!-- Selector Color -->
-  <Style Selector="ColorSpectrum /template/ Ellipse#FocusEllipse">
-    <Setter Property="Stroke" Value="White" />
-  </Style>
-  <Style Selector="ColorSpectrum /template/ Ellipse#SelectionEllipse">
-    <Setter Property="Stroke" Value="Black" />
-  </Style>
-  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#FocusEllipse">
-    <Setter Property="Stroke" Value="Black" />
-  </Style>
-  <Style Selector="ColorSpectrum:light-selector /template/ Ellipse#SelectionEllipse">
-    <Setter Property="Stroke" Value="White" />
-  </Style>
+    <!-- Selector Color -->
+    <Style Selector="^ /template/ Ellipse#FocusEllipse">
+      <Setter Property="Stroke" Value="White" />
+    </Style>
+    <Style Selector="^ /template/ Ellipse#SelectionEllipse">
+      <Setter Property="Stroke" Value="Black" />
+    </Style>
+    <Style Selector="^:light-selector /template/ Ellipse#FocusEllipse">
+      <Setter Property="Stroke" Value="Black" />
+    </Style>
+    <Style Selector="^:light-selector /template/ Ellipse#SelectionEllipse">
+      <Setter Property="Stroke" Value="White" />
+    </Style>
 
-  <Style Selector="ColorSpectrum:pointerover /template/ Ellipse#SelectionEllipse">
-    <Setter Property="Opacity" Value="0.8" />
-  </Style>
+    <Style Selector="^:pointerover /template/ Ellipse#SelectionEllipse">
+      <Setter Property="Opacity" Value="0.8" />
+    </Style>
 
-  <!-- Selector Size -->
-  <Style Selector="ColorSpectrum /template/ Panel#PART_SelectionEllipsePanel">
-    <Setter Property="Width" Value="16" />
-    <Setter Property="Height" Value="16" />
-  </Style>
-  <Style Selector="ColorSpectrum:large-selector /template/ Panel#PART_SelectionEllipsePanel">
-    <Setter Property="Width" Value="48" />
-    <Setter Property="Height" Value="48" />
-  </Style>
+    <!-- Selector Size -->
+    <Style Selector="^ /template/ Panel#PART_SelectionEllipsePanel">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+    </Style>
+    <Style Selector="^:large-selector /template/ Panel#PART_SelectionEllipsePanel">
+      <Setter Property="Width" Value="48" />
+      <Setter Property="Height" Value="48" />
+    </Style>
 
-</Styles>
+  </ControlTheme>
+
+</ResourceDictionary>

@@ -18,7 +18,7 @@ public interface IStorageFile : IStorageItem
     /// <summary>
     /// Opens a stream for read access.
     /// </summary>
-    Task<Stream> OpenRead();
+    Task<Stream> OpenReadAsync();
 
     /// <summary>
     /// Returns true, if file is writeable. 
@@ -28,5 +28,5 @@ public interface IStorageFile : IStorageItem
     /// <summary>
     /// Opens stream for writing to the file.
     /// </summary>
-    Task<Stream> OpenWrite();
+    Task<Stream> OpenWriteAsync();
 }

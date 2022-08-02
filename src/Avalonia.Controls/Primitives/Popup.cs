@@ -501,7 +501,7 @@ namespace Avalonia.Controls.Primitives
                 if (dismissLayer != null)
                 {
                     dismissLayer.IsVisible = true;
-                    dismissLayer.InputPassThroughElement = _overlayInputPassThroughElement;
+                    dismissLayer.InputPassThroughElement = OverlayInputPassThroughElement;
                     
                     Disposable.Create(() =>
                     {
