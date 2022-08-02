@@ -153,7 +153,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// A <see cref="TextLine"/> value that represents a collapsed line that can be displayed.
         /// </returns>
-        public abstract TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList);
+        public abstract TextLine Collapse(params TextCollapsingProperties?[] collapsingPropertiesList);
 
         /// <summary>
         /// Create a justified line based on justification text properties.
