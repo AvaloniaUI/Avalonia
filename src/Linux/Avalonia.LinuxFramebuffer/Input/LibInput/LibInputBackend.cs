@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Threading;
 using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods; 
 namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
     public class LibInputBackend : IInputBackend
     {
-        private const string LibInput = nameof(Logging.LogArea.X11Platform) + "/" + nameof(LibInput);
         private IScreenInfoProvider _screen;
         private IInputRoot _inputRoot;
         private readonly Queue<Action> _inputThreadActions = new Queue<Action>();
@@ -28,21 +29,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             new Thread(()=>InputThread(ctx)).Start();
         }
 
+        
+        
         private unsafe void InputThread(IntPtr ctx)
         {
             var fd = libinput_get_fd(ctx);
             
             var timeval = stackalloc IntPtr[2];
 
-            if (!Directory.Exists("/dev/input"))
-            {
-                if (Logging.Logger.IsEnabled(Logging.LogEventLevel.Warning,LibInput))
-                {
-                    Logging.Logger.TryGet(Logging.LogEventLevel.Warning, LibInput)
-                        ?.Log(this, "Not connect any input device.");
-                }
-                return;
-            }
+
             foreach (var f in Directory.GetFiles("/dev/input", "event*"))
                 libinput_path_add_device(ctx, f);
             while (true)
