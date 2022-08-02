@@ -45,7 +45,6 @@
             <Flyout FlyoutPresenterClasses="nopadding"
                     Placement="Bottom">
               <ColorView x:Name="FlyoutColorView"
-                         Classes="topoverlay"
                          Color="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ColorModel="{Binding ColorModel, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ColorSpectrumComponents="{TemplateBinding ColorSpectrumComponents}"
@@ -72,7 +71,12 @@
                          PaletteColors="{TemplateBinding PaletteColors}"
                          PaletteColumnCount="{TemplateBinding PaletteColumnCount}"
                          Palette="{TemplateBinding Palette}"
-                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                <ColorView.Resources>
+                  <!-- This radius must follow OverlayCornerRadius -->
+                  <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">5,5,0,0</CornerRadius>
+                </ColorView.Resources>
+              </ColorView>
             </Flyout>
           </DropDownButton.Flyout>
         </DropDownButton>
