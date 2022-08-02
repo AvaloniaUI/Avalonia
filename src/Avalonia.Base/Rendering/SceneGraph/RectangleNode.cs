@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="rect">The rectangle to draw.</param>
         /// <param name="boxShadows">The box shadow parameters</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
+        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public RectangleNode(
             Matrix transform,
             IBrush? brush,
