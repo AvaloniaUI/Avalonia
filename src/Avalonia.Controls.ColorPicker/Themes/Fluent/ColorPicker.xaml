@@ -42,8 +42,7 @@
             </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
-            <Flyout FlyoutPresenterClasses="nopadding"
-                    Placement="Bottom">
+            <Flyout FlyoutPresenterClasses="nopadding">
               <ColorView x:Name="FlyoutColorView"
                          Color="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ColorModel="{Binding ColorModel, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
