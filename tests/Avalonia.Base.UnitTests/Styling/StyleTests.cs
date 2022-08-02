@@ -70,6 +70,13 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void Should_Throw_For_Selector_With_Trailing_Template_Selector()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                new Style(x => x.OfType<Button>().Template()));
+        }
+
+        [Fact]
         public void Style_With_No_Selector_Should_Not_Apply_To_Other_Control()
         {
             Style style = new Style

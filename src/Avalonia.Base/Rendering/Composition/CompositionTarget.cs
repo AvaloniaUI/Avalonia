@@ -4,6 +4,8 @@ using System.Numerics;
 using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -62,7 +64,7 @@ namespace Avalonia.Rendering.Composition
 
         bool TryGetInvertedTransform(CompositionVisual visual, out Matrix matrix)
         {
-            var m = visual.TryGetServerTransform();
+            var m = visual.TryGetServerGlobalTransform();
             if (m == null)
             {
                 matrix = default;
@@ -73,52 +75,44 @@ namespace Avalonia.Rendering.Composition
             return m33.TryInvert(out matrix);
         }
 
-        bool TryTransformTo(CompositionVisual visual, ref Point v)
+        bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point v)
         {
+            v = default;
             if (TryGetInvertedTransform(visual, out var m))
             {
-                v = v * m;
+                v = globalPoint * m;
                 return true;
             }
 
             return false;
         }
         
-        bool HitTestCore(CompositionVisual visual, Point point, PooledList<CompositionVisual> result,
+        void HitTestCore(CompositionVisual visual, Point globalPoint, PooledList<CompositionVisual> result,
             Func<IVisual, bool>? filter)
         {
-            //TODO: Check readback too
             if (visual.Visible == false)
-                return false;
-            if (!TryTransformTo(visual, ref point))
-                return false;
+                return;
+            if (!TryTransformTo(visual, globalPoint, out var point))
+                return;
 
             if (visual.ClipToBounds
                 && (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
-                return false;
+                return;
+
             if (visual.Clip?.FillContains(point) == false)
-                return false;
-
-            bool success = false;
-            // Hit-test the current node
-            if (visual.HitTest(point, filter))
-            {
-                result.Add(visual);
-                success = true;
-            }
-
-            // Inspect children too
+                return;
+            
+            // Inspect children
             if (visual is CompositionContainerVisual cv)
                 for (var c = cv.Children.Count - 1; c >= 0; c--)
                 {
                     var ch = cv.Children[c];
-                    var hit = HitTestCore(ch, point, result, filter);
-                    if (hit)
-                        return true;
+                    HitTestCore(ch, globalPoint, result, filter);
                 }
-
-            return success;
-
+            
+            // Hit-test the current node
+            if (visual.HitTest(point, filter)) 
+                result.Add(visual);
         }
 
         /// <summary>

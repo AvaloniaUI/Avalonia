@@ -7,6 +7,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform.Interop;
+using JetBrains.Annotations;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
@@ -15,20 +16,35 @@ namespace Avalonia.LinuxFramebuffer.Output
 {
     public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface
     {
+        private DrmOutputOptions _outputOptions = new();
         private DrmCard _card;
         public PixelSize PixelSize => _mode.Resolution;
-        public double Scaling { get; set; }
+
+        public double Scaling
+        {
+            get => _outputOptions.Scaling;
+            set => _outputOptions.Scaling = value;
+        }
         public IGlContext PrimaryContext => _deferredContext;
 
         private EglPlatformOpenGlInterface _platformGl;
         public IPlatformOpenGlInterface PlatformOpenGlInterface => _platformGl;
 
-        public DrmOutput(string path = null)
+        public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo,
+            DrmOutputOptions? options = null)
         {
+            if(options != null) 
+                _outputOptions = options;
+            Init(card, resources, connector, modeInfo);
+        }
+        public DrmOutput(string path = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
+        {
+            if(options != null) 
+                _outputOptions = options;
+            
             var card = new DrmCard(path);
 
-            var resources = card.GetResources();
-
+            var resources = card.GetResources(connectorsForceProbe);
 
             var connector =
                 resources.Connectors.FirstOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
@@ -50,7 +66,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         [DllImport("libEGL.so.1")]
-        static extern IntPtr eglGetProcAddress(Utf8Buffer proc);
+        static extern IntPtr eglGetProcAddress(string proc);
 
         private GbmBoUserDataDestroyCallbackDelegate FbDestroyDelegate;
         private drmModeModeInfo _mode;
@@ -142,9 +158,14 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             _deferredContext = _platformGl.PrimaryEglContext;
 
+            var initialBufferSwappingColorR = _outputOptions.InitialBufferSwappingColor.R / 255.0f;
+            var initialBufferSwappingColorG = _outputOptions.InitialBufferSwappingColor.G / 255.0f;
+            var initialBufferSwappingColorB = _outputOptions.InitialBufferSwappingColor.B / 255.0f;
+            var initialBufferSwappingColorA = _outputOptions.InitialBufferSwappingColor.A / 255.0f;
             using (_deferredContext.MakeCurrent(_eglSurface))
             {
-                _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
+                _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG, 
+                    initialBufferSwappingColorB, initialBufferSwappingColorA);
                 _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                 _eglSurface.SwapBuffers();
             }
@@ -162,13 +183,17 @@ namespace Avalonia.LinuxFramebuffer.Output
             _mode = mode;
             _currentBo = bo;
             
-            // Go trough two cycles of buffer swapping (there are render artifacts otherwise)
-            for(var c=0;c<2;c++)
-                using (CreateGlRenderTarget().BeginDraw())
-                {
-                    _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
-                    _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
-                }
+            if (_outputOptions.EnableInitialBufferSwapping)
+            {
+                //Go trough two cycles of buffer swapping (there are render artifacts otherwise)
+                for(var c=0;c<2;c++)
+                    using (CreateGlRenderTarget().BeginDraw())
+                    {
+                        _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG, 
+                            initialBufferSwappingColorB, initialBufferSwappingColorA);
+                        _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                    }
+            }
             
         }
 

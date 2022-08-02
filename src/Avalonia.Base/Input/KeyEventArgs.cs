@@ -9,8 +9,6 @@ namespace Avalonia.Input
 
         public Key Key { get; set; }
 
-        [Obsolete("Use KeyModifiers")]
-        public InputModifiers Modifiers => (InputModifiers)KeyModifiers;
         public KeyModifiers KeyModifiers { get; set; }
     }
 }

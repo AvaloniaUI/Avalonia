@@ -66,11 +66,9 @@ namespace Avalonia.OpenGL.Controls
                 return;
                     
             gl.GetIntegerv(GL_RENDERBUFFER_BINDING, out var oldRenderBuffer);
-            if (_depthBuffer != 0) gl.DeleteRenderbuffers(1, new[] { _depthBuffer });
+            if (_depthBuffer != 0) gl.DeleteRenderbuffer(_depthBuffer);
 
-            var oneArr = new int[1];
-            gl.GenRenderbuffers(1, oneArr);
-            _depthBuffer = oneArr[0];
+            _depthBuffer = gl.GenRenderbuffer();
             gl.BindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
             gl.RenderbufferStorage(GL_RENDERBUFFER,
                 GlVersion.Type == GlProfileType.OpenGLES ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT,
@@ -88,9 +86,9 @@ namespace Avalonia.OpenGL.Controls
                     var gl = _context.GlInterface;
                     gl.BindTexture(GL_TEXTURE_2D, 0);
                     gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
-                    gl.DeleteFramebuffers(1, new[] { _fb });
+                    gl.DeleteFramebuffer(_fb);
                     _fb = 0;
-                    gl.DeleteRenderbuffers(1, new[] { _depthBuffer });
+                    gl.DeleteRenderbuffer(_depthBuffer);
                     _depthBuffer = 0;
                     _attachment?.Dispose();
                     _attachment = null;
@@ -174,9 +172,7 @@ namespace Avalonia.OpenGL.Controls
                 {
                     _depthBufferSize = GetPixelSize();
                     var gl = _context.GlInterface;
-                    var oneArr = new int[1];
-                    gl.GenFramebuffers(1, oneArr);
-                    _fb = oneArr[0];
+                    _fb = gl.GenFramebuffer();
                     gl.BindFramebuffer(GL_FRAMEBUFFER, _fb);
                     
                     EnsureDepthBufferAttachment(gl);

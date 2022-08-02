@@ -11,6 +11,8 @@ using Avalonia.Rendering.Composition.Server;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition;
 
 /// <summary>
@@ -24,11 +26,12 @@ public class CompositingRenderer : IRendererWithCompositor
     DrawingContext _recordingContext;
     private HashSet<Visual> _dirty = new();
     private HashSet<Visual> _recalculateChildren = new();
-    private readonly CompositionTarget _target;
     private bool _queuedUpdate;
     private Action _update;
     private Action _invalidateScene;
 
+    internal CompositionTarget CompositionTarget;
+    
     /// <summary>
     /// Asks the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered.
     /// </summary>
@@ -40,8 +43,8 @@ public class CompositingRenderer : IRendererWithCompositor
         _root = root;
         _compositor = compositor;
         _recordingContext = new DrawingContext(_recorder);
-        _target = compositor.CreateCompositionTarget(root.CreateRenderTarget);
-        _target.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
+        CompositionTarget = compositor.CreateCompositionTarget(root.CreateRenderTarget);
+        CompositionTarget.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
         _update = Update;
         _invalidateScene = InvalidateScene;
     }
@@ -49,15 +52,15 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public bool DrawFps
     {
-        get => _target.DrawFps;
-        set => _target.DrawFps = value;
+        get => CompositionTarget.DrawFps;
+        set => CompositionTarget.DrawFps = value;
     }
     
     /// <inheritdoc/>
     public bool DrawDirtyRects
     {
-        get => _target.DrawDirtyRects;
-        set => _target.DrawDirtyRects = value;
+        get => CompositionTarget.DrawDirtyRects;
+        set => CompositionTarget.DrawDirtyRects = value;
     }
 
     /// <inheritdoc/>
@@ -81,12 +84,11 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
     {
-        var res = _target.TryHitTest(p, filter);
+        var res = CompositionTarget.TryHitTest(p, filter);
         if(res == null)
             yield break;
-        for (var index = res.Count - 1; index >= 0; index--)
+        foreach(var v in res)
         {
-            var v = res[index];
             if (v is CompositionDrawListVisual dv)
             {
                 if (filter == null || filter(dv.Visual))
@@ -234,8 +236,8 @@ public class CompositingRenderer : IRendererWithCompositor
                 SyncChildren(v);
         _dirty.Clear();
         _recalculateChildren.Clear();
-        _target.Size = _root.ClientSize;
-        _target.Scaling = _root.RenderScaling;
+        CompositionTarget.Size = _root.ClientSize;
+        CompositionTarget.Scaling = _root.RenderScaling;
         Compositor.InvokeOnNextCommit(_invalidateScene);
     }
     
@@ -246,24 +248,24 @@ public class CompositingRenderer : IRendererWithCompositor
     public void Paint(Rect rect)
     {
         Update();
-        _target.RequestRedraw();
+        CompositionTarget.RequestRedraw();
         if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground)
             Compositor.RequestCommitAsync().Wait();
         else
-            _target.ImmediateUIThreadRender();
+            CompositionTarget.ImmediateUIThreadRender();
     }
 
-    public void Start() => _target.IsEnabled = true;
+    public void Start() => CompositionTarget.IsEnabled = true;
 
     public void Stop()
     {
-        _target.IsEnabled = false;
+        CompositionTarget.IsEnabled = false;
     }
     
     public void Dispose()
     {
         Stop();
-        _target.Dispose();
+        CompositionTarget.Dispose();
         
         // Wait for the composition batch to be applied and rendered to guarantee that
         // render target is not used anymore and can be safely disposed
