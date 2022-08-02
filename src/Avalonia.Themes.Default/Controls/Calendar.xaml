@@ -1,12 +1,14 @@
 <!--
-// (c) Copyright Microsoft Corporation.
-// This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
-// All other rights reserved.
+  // (c) Copyright Microsoft Corporation.
+  // This source is subject to the Microsoft Public License (Ms-PL).
+  // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+  // All other rights reserved.
 -->
 
-<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="Calendar">
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type Calendar}"
+                TargetType="Calendar">
     <!--<Setter Property="Focusable" Value="False" />-->
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
@@ -17,16 +19,14 @@
         <StackPanel Name="Root"
                     HorizontalAlignment="Center"
                     ClipToBounds="True">
-
-                    <CalendarItem Name="CalendarItem"
+          <CalendarItem Name="CalendarItem"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
-                        HeaderBackground="{TemplateBinding HeaderBackground}"/>
-
+                        HeaderBackground="{TemplateBinding HeaderBackground}" />
         </StackPanel>
       </ControlTemplate>
     </Setter>
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>
