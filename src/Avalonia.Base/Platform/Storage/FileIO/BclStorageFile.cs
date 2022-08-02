@@ -47,22 +47,22 @@ public class BclStorageFile : IStorageBookmarkFile
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public Task<Stream> OpenRead()
+    public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(_fileInfo.OpenRead());
     }
 
-    public Task<Stream> OpenWrite()
+    public Task<Stream> OpenWriteAsync()
     {
         return Task.FromResult<Stream>(_fileInfo.OpenWrite());
     }
 
-    public virtual Task<string?> SaveBookmark()
+    public virtual Task<string?> SaveBookmarkAsync()
     {
         return Task.FromResult<string?>(_fileInfo.FullName);
     }
 
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         // No-op
         return Task.CompletedTask;

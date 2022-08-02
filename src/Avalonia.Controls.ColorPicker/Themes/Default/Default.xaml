@@ -3,42 +3,48 @@
         xmlns:converters="using:Avalonia.Controls.Converters">
 
   <Styles.Resources>
-    <!-- Shared Resources -->
-    <VisualBrush x:Key="ColorControlCheckeredBackgroundBrush"
-                 TileMode="Tile"
-                 Stretch="Uniform"
-                 DestinationRect="0,0,8,8">
-      <VisualBrush.Visual>
-        <DrawingPresenter Width="8"
-                          Height="8">
-          <DrawingGroup>
-            <GeometryDrawing Geometry="M0,0 L2,0 2,2, 0,2Z"
-                             Brush="Transparent" />
-            <GeometryDrawing Geometry="M0,1 L2,1 2,2, 1,2 1,0 0,0Z"
-                             Brush="#19808080" />
-          </DrawingGroup>
-        </DrawingPresenter>
-      </VisualBrush.Visual>
-    </VisualBrush>
-    
-    <!-- Shared Converters -->
-    <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
-    <converters:ToBrushConverter x:Key="ToBrushConverter" />
-    <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
-    <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
-    <converters:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="TopLeft, TopRight"/>
-    <converters:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="BottomLeft, BottomRight"/>
-    <converters:CornerRadiusToDoubleConverter x:Key="TopLeftCornerRadiusConverter" Corner="TopLeft" />
-    <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadiusConverter" Corner="BottomRight" />
+    <ResourceDictionary>
+
+      <!-- Shared Resources -->
+      <VisualBrush x:Key="ColorControlCheckeredBackgroundBrush"
+                   TileMode="Tile"
+                   Stretch="Uniform"
+                   DestinationRect="0,0,8,8">
+        <VisualBrush.Visual>
+          <DrawingPresenter Width="8"
+                            Height="8">
+            <DrawingGroup>
+              <GeometryDrawing Geometry="M0,0 L2,0 2,2, 0,2Z"
+                               Brush="Transparent" />
+              <GeometryDrawing Geometry="M0,1 L2,1 2,2, 1,2 1,0 0,0Z"
+                               Brush="#19808080" />
+            </DrawingGroup>
+          </DrawingPresenter>
+        </VisualBrush.Visual>
+      </VisualBrush>
+
+      <!-- Shared Converters -->
+      <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+      <converters:ToBrushConverter x:Key="ToBrushConverter" />
+      <converters:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="TopLeft, BottomLeft"/>
+      <converters:CornerRadiusFilterConverter x:Key="RightCornerRadiusFilterConverter" Filter="TopRight, BottomRight"/>
+      <converters:CornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter" Filter="TopLeft, TopRight"/>
+      <converters:CornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter" Filter="BottomLeft, BottomRight"/>
+      <converters:CornerRadiusToDoubleConverter x:Key="TopLeftCornerRadiusConverter" Corner="TopLeft" />
+      <converters:CornerRadiusToDoubleConverter x:Key="BottomRightCornerRadiusConverter" Corner="BottomRight" />
+
+      <ResourceDictionary.MergedDictionaries>
+
+        <!-- Primitives -->
+        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorPreviewer.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSlider.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSpectrum.xaml" />
+
+        <!-- Controls -->
+        <!-- Note the ColorPicker and ColorView are unsupported in the default theme -->
+        <!-- These controls depend on fluent styles for TabControl, Button, TextBox, etc. -->
+
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
   </Styles.Resources>
-
-  <!-- Primitives -->
-  <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorPreviewer.xaml" />
-  <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSlider.xaml" />
-  <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSpectrum.xaml" />
-
-  <!-- Controls -->
-  <!-- Note the ColorPicker and ColorView are unsupported in the default theme -->
-  <!-- These controls depend on fluent styles for TabControl, Button, TextBox, etc. -->
-
 </Styles>

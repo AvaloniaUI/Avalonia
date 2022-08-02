@@ -13,10 +13,10 @@ namespace Avalonia.Rendering.Composition.Animations
     /// This is the base class for ExpressionAnimation and KeyFrameAnimation.
     /// </summary>
     /// <remarks>
-    /// Use the <see cref="CompositionObject.StartAnimation"/> method to start the animation.
+    /// Use the <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> method to start the animation.
     /// Value parameters (as opposed to reference parameters which are set using <see cref="SetReferenceParameter"/>)
     /// are copied and "embedded" into an expression at the time CompositionObject.StartAnimation is called.
-    /// Changing the value of the variable after <see cref="CompositionObject.StartAnimation"/> is called will not affect
+    /// Changing the value of the variable after <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> is called will not affect
     /// the value of the ExpressionAnimation.
     /// See the remarks section of ExpressionAnimation for additional information.
     /// </remarks>
