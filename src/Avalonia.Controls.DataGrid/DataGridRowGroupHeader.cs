@@ -113,7 +113,6 @@ namespace Avalonia.Controls
         /// </summary>
         public DataGridRowGroupHeader()
         {
-            //DefaultStyleKey = typeof(DataGridRowGroupHeader);
             AddHandler(InputElement.PointerPressedEvent, (s, e) => DataGridRowGroupHeader_PointerPressed(e), handledEventsToo: true);
         }
 

@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Documents
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, FontFamily>(
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, FontFamily>(
                 nameof(FontFamily),
                 defaultValue: FontFamily.Default,
                 inherits: true);
@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Documents
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly AttachedProperty<double> FontSizeProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, double>(
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, double>(
                 nameof(FontSize),
                 defaultValue: 12,
                 inherits: true);
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Documents
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
         public static readonly AttachedProperty<FontStyle> FontStyleProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, FontStyle>(
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, FontStyle>(
                 nameof(FontStyle),
                 inherits: true);
 
@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Documents
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
         public static readonly AttachedProperty<FontWeight> FontWeightProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, FontWeight>(
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, FontWeight>(
                 nameof(FontWeight),
                 inherits: true,
                 defaultValue: FontWeight.Normal);
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Documents
         /// Defines the <see cref="FontStretch"/> property.
         /// </summary>
         public static readonly AttachedProperty<FontStretch> FontStretchProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, FontStretch>(
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, FontStretch>(
                 nameof(FontStretch),
                 inherits: true,
                 defaultValue: FontStretch.Normal);
@@ -62,10 +62,12 @@ namespace Avalonia.Controls.Documents
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly AttachedProperty<IBrush?> ForegroundProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, IBrush?>(
+            AvaloniaProperty.RegisterAttached<TextElement, TextElement, IBrush?>(
                 nameof(Foreground),
                 Brushes.Black,
                 inherits: true);
+
+        private IInlineHost? _inlineHost;
 
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
@@ -250,7 +252,21 @@ namespace Avalonia.Controls.Documents
             control.SetValue(ForegroundProperty, value);
         }
 
-        internal IInlineHost? InlineHost { get; set; }
+        internal IInlineHost? InlineHost
+        {
+            get => _inlineHost;
+            set
+            {
+                var oldValue = _inlineHost;
+                _inlineHost = value;
+                OnInlineHostChanged(oldValue, value);
+            }
+        }
+
+        internal virtual void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+
+        }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

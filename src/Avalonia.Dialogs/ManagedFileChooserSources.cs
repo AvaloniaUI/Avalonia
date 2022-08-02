@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Dialogs
 {
@@ -60,7 +61,7 @@ namespace Avalonia.Dialogs
 
                        if (displayName == null & x.VolumeSizeBytes > 0)
                        {
-                           displayName = $"{ByteSizeHelper.ToString(x.VolumeSizeBytes)} Volume";
+                           displayName = $"{ByteSizeHelper.ToString(x.VolumeSizeBytes, true)} Volume";
                        };
 
                        try

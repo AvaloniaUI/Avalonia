@@ -1,6 +1,8 @@
-<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="MenuFlyoutPresenter">
-    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type MenuFlyoutPresenter}"
+                TargetType="MenuFlyoutPresenter">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
@@ -13,17 +15,18 @@
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        Theme="{StaticResource DefaultMenuScrollViewer}"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
             <ItemsPresenter Name="PART_ItemsPresenter"
+                            Margin="{TemplateBinding Padding}"
+                            Grid.IsSharedSizeScope="True"
+                            ItemTemplate="{TemplateBinding ItemTemplate}"
                             Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Margin="{TemplateBinding Padding}"
-                            KeyboardNavigation.TabNavigation="Continue"
-                            Grid.IsSharedSizeScope="True" />
+                            KeyboardNavigation.TabNavigation="Continue" />
           </ScrollViewer>
         </Border>
       </ControlTemplate>
     </Setter>
-  </Style>
-</Styles>
+  </ControlTheme>
+</ResourceDictionary>

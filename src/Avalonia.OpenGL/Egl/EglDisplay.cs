@@ -34,9 +34,9 @@ namespace Avalonia.OpenGL.Egl
             }
             else
             {
-                if (egl.GetPlatformDisplayEXT == null)
+                if (!egl.IsGetPlatformDisplayExtAvailable)
                     throw new OpenGlException("eglGetPlatformDisplayEXT is not supported by libegl");
-                display = egl.GetPlatformDisplayEXT(platformType, platformDisplay, attrs);
+                display = egl.GetPlatformDisplayExt(platformType, platformDisplay, attrs);
             }
             
             if (display == IntPtr.Zero)

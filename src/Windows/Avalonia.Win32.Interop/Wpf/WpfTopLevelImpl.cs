@@ -101,7 +101,6 @@ namespace Avalonia.Win32.Interop.Wpf
 
         Size ITopLevelImpl.ClientSize => _finalSize;
         Size? ITopLevelImpl.FrameSize => null;
-        IMouseDevice ITopLevelImpl.MouseDevice => _mouse;
 
         double ITopLevelImpl.RenderScaling => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1;
 

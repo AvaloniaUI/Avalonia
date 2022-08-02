@@ -121,6 +121,11 @@ namespace Avalonia.Controls
             {
                 ItemTemplate = _treeView.ItemTemplate;
             }
+
+            if (ItemContainerTheme == null && _treeView?.ItemContainerTheme != null)
+            {
+                ItemContainerTheme = _treeView.ItemContainerTheme;
+            }
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

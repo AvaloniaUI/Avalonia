@@ -17,19 +17,18 @@ namespace Avalonia.FreeDesktop
             private readonly object _lock = new();
             private SynchronizationContext? _ctx;
 
-            public override void Post(SendOrPostCallback d, object state)
+            public override void Post(SendOrPostCallback d, object? state)
             {
                 lock (_lock)
                 {
                     if (_ctx is not null)
                         _ctx?.Post(d, state);
                     else
-                        lock (_lock)
-                            d(state);
+                        d(state);
                 }
             }
 
-            public override void Send(SendOrPostCallback d, object state)
+            public override void Send(SendOrPostCallback d, object? state)
             {
                 lock (_lock)
                 {

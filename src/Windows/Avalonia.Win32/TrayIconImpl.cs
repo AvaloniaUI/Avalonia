@@ -18,6 +18,8 @@ namespace Avalonia.Win32
     [Unstable]
     public class TrayIconImpl : ITrayIconImpl
     {
+        private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
+        
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private bool _iconAdded;
@@ -86,7 +88,7 @@ namespace Avalonia.Win32
                 uID = _uniqueId,
                 uFlags = NIF.TIP | NIF.MESSAGE,
                 uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE,
-                hIcon = _icon?.HIcon ?? new IconImpl(new System.Drawing.Bitmap(32, 32)).HIcon,
+                hIcon = _icon?.HIcon ?? s_emptyIcon,
                 szTip = _tooltipText ?? ""
             };
 

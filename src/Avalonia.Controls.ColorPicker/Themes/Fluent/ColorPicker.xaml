@@ -1,0 +1,90 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Controls"
+                    x:CompileBindings="True">
+
+  <!-- This must follow OverlayCornerRadius -->
+  <CornerRadius x:Key="TopOverlayCornerRadius">5,5,0,0</CornerRadius>
+
+  <ControlTheme x:Key="{x:Type ColorPicker}"
+                TargetType="ColorPicker">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Width" Value="64" />
+    <Setter Property="MinWidth" Value="64" />
+    <Setter Property="Palette">
+      <controls:FluentColorPalette />
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate TargetType="{x:Type ColorPicker}">
+        <DropDownButton CornerRadius="{TemplateBinding CornerRadius}"
+                        Height="{TemplateBinding Height}"
+                        Width="{TemplateBinding Width}"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Padding="0,0,10,0"
+                        UseLayoutRounding="False">
+          <DropDownButton.Styles>
+            <Style Selector="FlyoutPresenter.NoPadding">
+              <Setter Property="Padding" Value="0" />
+            </Style>
+          </DropDownButton.Styles>
+          <DropDownButton.Content>
+            <!-- Preview color -->
+            <Panel>
+              <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}"
+                      CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Margin="1,1,0,1" />
+              <Border Background="{TemplateBinding HsvColor, Converter={StaticResource ToBrushConverter}}"
+                      CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Margin="1,1,0,1" />
+            </Panel>
+          </DropDownButton.Content>
+          <DropDownButton.Flyout>
+            <Flyout FlyoutPresenterClasses="NoPadding">
+              <ColorView x:Name="FlyoutColorView"
+                         Color="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                         ColorModel="{Binding ColorModel, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                         ColorSpectrumComponents="{TemplateBinding ColorSpectrumComponents}"
+                         ColorSpectrumShape="{TemplateBinding ColorSpectrumShape}"
+                         HsvColor="{Binding HsvColor, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                         IsAccentColorsVisible="{TemplateBinding IsAccentColorsVisible}"
+                         IsAlphaEnabled="{TemplateBinding IsAlphaEnabled}"
+                         IsAlphaVisible="{TemplateBinding IsAlphaVisible}"
+                         IsColorComponentsVisible="{TemplateBinding IsColorComponentsVisible}"
+                         IsColorModelVisible="{TemplateBinding IsColorModelVisible}"
+                         IsColorPaletteVisible="{TemplateBinding IsColorPaletteVisible}"
+                         IsColorPreviewVisible="{TemplateBinding IsColorPreviewVisible}"
+                         IsColorSpectrumVisible="{TemplateBinding IsColorSpectrumVisible}"
+                         IsColorSpectrumSliderVisible="{TemplateBinding IsColorSpectrumSliderVisible}"
+                         IsComponentSliderVisible="{TemplateBinding IsComponentSliderVisible}"
+                         IsComponentTextInputVisible="{TemplateBinding IsComponentTextInputVisible}"
+                         IsHexInputVisible="{TemplateBinding IsHexInputVisible}"
+                         MaxHue="{TemplateBinding MaxHue}"
+                         MaxSaturation="{TemplateBinding MaxSaturation}"
+                         MaxValue="{TemplateBinding MaxValue}"
+                         MinHue="{TemplateBinding MinHue}"
+                         MinSaturation="{TemplateBinding MinSaturation}"
+                         MinValue="{TemplateBinding MinValue}"
+                         PaletteColors="{TemplateBinding PaletteColors}"
+                         PaletteColumnCount="{TemplateBinding PaletteColumnCount}"
+                         Palette="{TemplateBinding Palette}"
+                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+            </Flyout>
+          </DropDownButton.Flyout>
+        </DropDownButton>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <!-- Adjust Background within Flyout -->
+  <!-- Note: This is implemented but there seems to be an issue and the selector can't match across the Flyout -->
+  <!--<Style Selector="ColorPicker /template/ ColorView#FlyoutColorView /template/ Border#TabBackgroundBorder">
+    <Setter Property="CornerRadius" Value="{DynamicResource TopOverlayCornerRadius}" />
+  </Style>-->
+
+</ResourceDictionary>

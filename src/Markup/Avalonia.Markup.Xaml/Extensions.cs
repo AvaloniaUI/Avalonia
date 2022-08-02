@@ -24,9 +24,9 @@ namespace Avalonia.Markup.Xaml
         public static IEnumerable<T> GetParents<T>(this IServiceProvider sp)
         {
             return sp.GetService<IAvaloniaXamlIlParentStackProvider>().Parents.OfType<T>();
-            
-            
         }
+
+        public static bool IsInControlTemplate(this IServiceProvider sp) => sp.GetService<IAvaloniaXamlIlControlTemplateProvider>() != null;
 
         public static Type ResolveType(this IServiceProvider ctx, string namespacePrefix, string type)
         {

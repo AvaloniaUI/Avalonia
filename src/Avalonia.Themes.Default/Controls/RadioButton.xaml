@@ -1,61 +1,64 @@
-<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="RadioButton">
-    <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type RadioButton}"
+                TargetType="RadioButton">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
+        <Grid Background="{TemplateBinding Background}"
+              ColumnDefinitions="Auto,*">
           <Ellipse Name="border"
-                   Stroke="{TemplateBinding BorderBrush}"
-                   StrokeThickness="1"
                    Width="18"
                    Height="18"
-                   VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"
+                   Stroke="{TemplateBinding BorderBrush}"
+                   StrokeThickness="1" />
           <Ellipse Name="checkMark"
                    Width="10"
                    Height="10"
-                   Stretch="Uniform"
-                   UseLayoutRounding="False"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"
+                   Stretch="Uniform"
+                   UseLayoutRounding="False" />
           <Ellipse Name="indeterminateMark"
-                   Fill="{DynamicResource ThemeAccentBrush}"
                    Width="10"
                    Height="10"
-                   Stretch="Uniform"
-                   UseLayoutRounding="False"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"
+                   Fill="{DynamicResource ThemeAccentBrush}"
+                   Stretch="Uniform"
+                   UseLayoutRounding="False" />
           <ContentPresenter Name="PART_ContentPresenter"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
+                            Grid.Column="1"
                             Margin="4,0,0,0"
-                            RecognizesAccessKey="True"
                             VerticalAlignment="Center"
-                            Grid.Column="1"/>
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            RecognizesAccessKey="True" />
         </Grid>
       </ControlTemplate>
     </Setter>
-  </Style>
-  
-  <Style Selector="RadioButton:pointerover /template/ Ellipse#border">
-    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderHighBrush}"/>
-  </Style>
-  <Style Selector="RadioButton /template/ Ellipse#checkMark">
-    <Setter Property="Fill" Value="{DynamicResource HighlightBrush}"/>
-    <Setter Property="IsVisible" Value="False"/>
-  </Style>
-  <Style Selector="RadioButton /template/ Ellipse#indeterminateMark">
-    <Setter Property="IsVisible" Value="False"/>
-  </Style>
-  <Style Selector="RadioButton:checked /template/ Ellipse#checkMark">
-    <Setter Property="IsVisible" Value="True"/>
-  </Style>
-  <Style Selector="RadioButton:indeterminate /template/ Ellipse#indeterminateMark">
-    <Setter Property="IsVisible" Value="True"/>
-  </Style>
-  <Style Selector="RadioButton:disabled /template/ Ellipse#border">
-    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
-  </Style>
-</Styles>
+
+    <Style Selector="^:pointerover /template/ Ellipse#border">
+      <Setter Property="Stroke" Value="{DynamicResource ThemeBorderHighBrush}" />
+    </Style>
+    <Style Selector="^ /template/ Ellipse#checkMark">
+      <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^ /template/ Ellipse#indeterminateMark">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:checked /template/ Ellipse#checkMark">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Ellipse#indeterminateMark">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled /template/ Ellipse#border">
+      <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

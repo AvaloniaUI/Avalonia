@@ -17,7 +17,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                     new DBusInputMethodFactory<IBusX11TextInputMethod>(_ => new IBusX11TextInputMethod(conn))
             };
         
-        static Func<Connection, IX11InputMethodFactory> DetectInputMethod()
+        static Func<Connection, IX11InputMethodFactory>? DetectInputMethod()
         {
             foreach (var name in new[] { "AVALONIA_IM_MODULE", "GTK_IM_MODULE", "QT_IM_MODULE" })
             {

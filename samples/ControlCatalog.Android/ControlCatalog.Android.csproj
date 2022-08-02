@@ -9,7 +9,6 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
-    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
     <AndroidResource Include="..\..\build\Assets\Icon.png">
@@ -21,12 +20,12 @@
     <RunAOTCompilation>True</RunAOTCompilation>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(RunAOTCompilation)'=='True'">
+  <!-- PropertyGroup Condition="'$(RunAOTCompilation)'=='True'">
     <EnableLLVM>True</EnableLLVM>
     <AndroidAotAdditionalArguments>no-write-symbols,nodebug</AndroidAotAdditionalArguments>
     <AndroidAotMode>Hybrid</AndroidAotMode>
     <AndroidGenerateJniMarshalMethods>True</AndroidGenerateJniMarshalMethods>
-  </PropertyGroup>
+  </PropertyGroup -->
 
   <PropertyGroup Condition="'$(AndroidEnableProfiler)'=='True'">
     <IsEmulator Condition="'$(IsEmulator)' == ''">True</IsEmulator>
