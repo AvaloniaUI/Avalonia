@@ -22,7 +22,7 @@ namespace Avalonia.Data.Core
             where TIn : class
     {
         private readonly IObservable<TIn?> _rootSource;
-        private readonly Func<TIn, TOut> _read;
+        private readonly Func<TIn, TOut>? _read;
         private readonly Action<TIn, TOut>? _write;
         private readonly Link[]? _chain;
         private readonly Optional<TOut> _fallbackValue;
@@ -33,9 +33,9 @@ namespace Avalonia.Data.Core
 
         public TypedBindingExpression(
             IObservable<TIn?> root,
-            Func<TIn, TOut> read,
+            Func<TIn, TOut>? read,
             Action<TIn, TOut>? write,
-            Func<TIn, object>[] links,
+            Func<TIn, object>[]? links,
             Optional<TOut> fallbackValue)
         {
             _rootSource = root ?? throw new ArgumentNullException(nameof(root));
@@ -271,6 +271,9 @@ namespace Avalonia.Data.Core
 
         private BindingValue<TOut>? GetResult()
         {
+            if (_read is null)
+                return BindingValue<TOut>.DoNothing;
+
             if (_root != null && _root.TryGetTarget(out var root))
             {
                 try

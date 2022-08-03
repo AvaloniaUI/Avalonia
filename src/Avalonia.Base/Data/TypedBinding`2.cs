@@ -120,7 +120,9 @@ namespace Avalonia.Data
                         System.Reactive.Linq.Observable.TakeUntil(expression, x => x.HasValue),
                         Priority);
                 case BindingMode.OneWayToSource:
-                    throw new NotImplementedException();
+                    return new CompositeDisposable(
+                        target.Bind(property, expression, Priority),
+                        target.GetBindingObservable(property).Subscribe(expression));
                 default:
                     throw new ArgumentException("Invalid binding mode.");
             }
@@ -159,8 +161,11 @@ namespace Avalonia.Data
 
         private TypedBindingExpression<TIn, TOut> Instance(IObservable<TIn?> source, BindingMode mode, Optional<TOut> fallback)
         {
-            _ = Read ?? throw new InvalidOperationException("Cannot bind TypedBinding: Read is uninitialized.");
-            _ = Links ?? throw new InvalidOperationException("Cannot bind TypedBinding: Links is uninitialized.");
+            if (mode != BindingMode.OneWayToSource)
+            {
+                _ = Read ?? throw new InvalidOperationException("Cannot bind TypedBinding: Read is uninitialized.");
+                _ = Links ?? throw new InvalidOperationException("Cannot bind TypedBinding: Links is uninitialized.");
+            }
 
             if ((mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource) && Write is null)
                 throw new InvalidOperationException($"Cannot bind TypedBinding {Mode}: Write is uninitialized.");

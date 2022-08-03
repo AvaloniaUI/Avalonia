@@ -116,47 +116,69 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("bar", source.Foo);
         }
 
-        ////[Fact]
-        ////public void OneWayToSource_Binding_Should_Be_Set_Up()
-        ////{
-        ////    var source = new Source { Foo = "foo" };
-        ////    var target = new TextBlock { DataContext = source, Text = "bar" };
-        ////    var binding = new Binding
-        ////    {
-        ////        Path = "Foo",
-        ////        Mode = BindingMode.OneWayToSource,
-        ////    };
+        [Fact]
+        public void OneWayToSource_Binding_Should_Be_Set_Up()
+        {
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source, Text = "bar" };
+            var binding = TypedBinding<Source>.OneWayToSource<string?>((o, v) => o.Foo = v);
 
-        ////    target.Bind(TextBox.TextProperty, binding);
+            binding.Bind(target, TextBox.TextProperty);
 
-        ////    Assert.Equal("bar", source.Foo);
-        ////    target.Text = "baz";
-        ////    Assert.Equal("baz", source.Foo);
-        ////    source.Foo = "quz";
-        ////    Assert.Equal("baz", target.Text);
-        ////}
+            Assert.Equal("bar", source.Foo);
+            target.Text = "baz";
+            Assert.Equal("baz", source.Foo);
+            source.Foo = "quz";
+            Assert.Equal("baz", target.Text);
+        }
 
-        ////[Fact]
-        ////public void OneWayToSource_Binding_Should_React_To_DataContext_Changed()
-        ////{
-        ////    var target = new TextBlock { Text = "bar" };
-        ////    var binding = new Binding
-        ////    {
-        ////        Path = "Foo",
-        ////        Mode = BindingMode.OneWayToSource,
-        ////    };
+        [Fact]
+        public void OneWayToSource_Binding_Should_React_To_DataContext_Changed()
+        {
+            var target = new TextBlock { Text = "bar" };
+            var binding = new Binding
+            {
+                Path = "Foo",
+                Mode = BindingMode.OneWayToSource,
+            };
 
-        ////    target.Bind(TextBox.TextProperty, binding);
+            target.Bind(TextBox.TextProperty, binding);
 
-        ////    var source = new Source { Foo = "foo" };
-        ////    target.DataContext = source;
+            var source = new Source { Foo = "foo" };
+            target.DataContext = source;
 
-        ////    Assert.Equal("bar", source.Foo);
-        ////    target.Text = "baz";
-        ////    Assert.Equal("baz", source.Foo);
-        ////    source.Foo = "quz";
-        ////    Assert.Equal("baz", target.Text);
-        ////}
+            Assert.Equal("bar", source.Foo);
+            target.Text = "baz";
+            Assert.Equal("baz", source.Foo);
+            source.Foo = "quz";
+            Assert.Equal("baz", target.Text);
+        }
+
+        [Fact]
+        public void OneWayToSource_Binding_Does_Not_Override_TwoWay_Binding()
+        {
+            // Issue #2983
+            var target1 = new TextBlock();
+            var target2 = new TextBlock { Text = "OneWayToSource" };
+            var source = new Source { Foo = "foo" };
+            var root = new Panel
+            {
+                DataContext = source,
+                Children = { target1, target2 }
+            };
+
+            var binding1 = TypedBinding<Source>.TwoWay(o => o.Foo);
+            var binding2 = TypedBinding<Source>.OneWayToSource<string?>((o, v) => o.Foo = v);
+
+            binding1.Bind(target1, TextBlock.TextProperty);
+            binding2.Bind(target2, TextBlock.TextProperty);
+
+            Assert.Equal("OneWayToSource", source.Foo);
+
+            target1.Text = "TwoWay";
+
+            Assert.Equal("TwoWay", source.Foo);
+        }
 
         [Fact]
         public void Default_BindingMode_Should_Be_Used()

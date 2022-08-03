@@ -94,5 +94,14 @@ namespace Avalonia.Data
                 Mode = BindingMode.OneTime,
             };
         }
+
+        public static TypedBinding<TIn, TOut> OneWayToSource<TOut>(Action<TIn, TOut> write)
+        {
+            return new TypedBinding<TIn, TOut>
+            {
+                Write = write,
+                Mode = BindingMode.OneWayToSource,
+            };
+        }
     }
 }
