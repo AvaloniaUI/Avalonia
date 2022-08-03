@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using Avalonia.Data;
 using Avalonia.Data.Core.Parsers;
 
 namespace Avalonia.Data

@@ -235,7 +235,7 @@ namespace Avalonia.Markup.UnitTests.Data
             // When binding to DataContext and the target isn't found, the binding should produce
             // null rather than UnsetValue in order to not propagate incorrect DataContexts from
             // parent controls while things are being set up. This logic is implemented in 
-            // `Avalonia.Data.TypedBinding<TIn,TOut>.Initiate`.
+            // `TypedBinding<TIn,TOut>.CreateExpression`.
             Assert.True(child.IsSet(Control.DataContextProperty));
 
             root.Child = child;
@@ -251,125 +251,23 @@ namespace Avalonia.Markup.UnitTests.Data
             var binding = TypedBinding<Source>.OneWay(x => x.Foo);
 
             binding.Source = viewModel;
-
             binding.Bind(target, TextBlock.TextProperty);
 
             Assert.Equal("bar", target.Text);
         }
 
-        ////[Fact]
-        ////public void Should_Use_DefaultValueConverter_When_No_Converter_Specified()
-        ////{
-        ////    var target = new TextBlock(); ;
-        ////    var binding = new Binding
-        ////    {
-        ////        Path = "Foo",
-        ////    };
+        [Fact]
+        public void Should_Return_FallbackValue_When_Path_Not_Resolved()
+        {
+            var target = new TextBlock();
+            var source = new Source();
+            var binding = TypedBinding<Source>.OneWay(x => x.Foo);
 
-        ////    var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+            binding.FallbackValue = "fallback";
+            binding.Bind(target, TextBlock.TextProperty);
 
-        ////    Assert.IsType<DefaultValueConverter>(((BindingExpression)result).Converter);
-        ////}
-
-        ////[Fact]
-        ////public void Should_Use_Supplied_Converter()
-        ////{
-        ////    var target = new TextBlock();
-        ////    var converter = new Mock<IValueConverter>();
-        ////    var binding = new Binding
-        ////    {
-        ////        Converter = converter.Object,
-        ////        Path = "Foo",
-        ////    };
-
-        ////    var result = binding.Initiate(target, TextBox.TextProperty).Subject;
-
-        ////    Assert.Same(converter.Object, ((BindingExpression)result).Converter);
-        ////}
-
-        ////[Fact]
-        ////public void Should_Pass_ConverterParameter_To_Supplied_Converter()
-        ////{
-        ////    var target = new TextBlock();
-        ////    var converter = new Mock<IValueConverter>();
-        ////    var binding = new Binding
-        ////    {
-        ////        Converter = converter.Object,
-        ////        ConverterParameter = "foo",
-        ////        Path = "Bar",
-        ////    };
-
-        ////    var result = binding.Initiate(target, TextBox.TextProperty).Subject;
-
-        ////    Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
-        ////}
-
-        ////[Fact]
-        ////public void Should_Return_FallbackValue_When_Path_Not_Resolved()
-        ////{
-        ////    var target = new TextBlock();
-        ////    var source = new Source();
-        ////    var binding = new Binding
-        ////    {
-        ////        Source = source,
-        ////        Path = "BadPath",
-        ////        FallbackValue = "foofallback",
-        ////    };
-
-        ////    target.Bind(TextBlock.TextProperty, binding);
-
-        ////    Assert.Equal("foofallback", target.Text);
-        ////}
-
-        ////[Fact]
-        ////public void Should_Return_FallbackValue_When_Invalid_Source_Type()
-        ////{
-        ////    var target = new ProgressBar();
-        ////    var source = new Source { Foo = "foo" };
-        ////    var binding = new Binding
-        ////    {
-        ////        Source = source,
-        ////        Path = "Foo",
-        ////        FallbackValue = 42,
-        ////    };
-
-        ////    target.Bind(ProgressBar.ValueProperty, binding);
-
-        ////    Assert.Equal(42, target.Value);
-        ////}
-
-        ////[Fact]
-        ////public void Null_Path_Should_Bind_To_DataContext()
-        ////{
-        ////    var target = new TextBlock { DataContext = "foo" };
-        ////    var binding = new Binding();
-
-        ////    target.Bind(TextBlock.TextProperty, binding);
-
-        ////    Assert.Equal("foo", target.Text);
-        ////}
-
-        ////[Fact]
-        ////public void Empty_Path_Should_Bind_To_DataContext()
-        ////{
-        ////    var target = new TextBlock { DataContext = "foo" };
-        ////    var binding = new Binding { Path = string.Empty };
-
-        ////    target.Bind(TextBlock.TextProperty, binding);
-
-        ////    Assert.Equal("foo", target.Text);
-        ////}
-
-        ////[Fact]
-        ////public void Dot_Path_Should_Bind_To_DataContext()
-        ////{
-        ////    var target = new TextBlock { DataContext = "foo" };
-        ////    var binding = new Binding { Path = "." };
-
-        ////    target.Bind(TextBlock.TextProperty, binding);
-
-        ////    Assert.Equal("foo", target.Text);
-        ////}
+            Assert.Equal("fallback", target.Text);
+        }
 
         /// <summary>
         /// Tests a problem discovered with ListBox with selection.
@@ -428,156 +326,79 @@ namespace Avalonia.Markup.UnitTests.Data
         ////    Assert.Equal("foo", target.Content);
         ////}
 
-        ////[Fact]
-        ////public void StyledProperty_SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
-        ////{
-        ////    var viewModel = new TestStackOverflowViewModel()
-        ////    {
-        ////        Value = 50
-        ////    };
-
-        ////    var target = new StyledPropertyClass();
-
-        ////    target.Bind(StyledPropertyClass.DoubleValueProperty,
-        ////        new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
-
-        ////    var child = new StyledPropertyClass();
-
-        ////    child.Bind(StyledPropertyClass.DoubleValueProperty,
-        ////        new Binding("DoubleValue")
-        ////        {
-        ////            Mode = BindingMode.TwoWay,
-        ////            Source = target
-        ////        });
-
-        ////    Assert.Equal(1, viewModel.SetterInvokedCount);
-
-        ////    //here in real life stack overflow exception is thrown issue #855 and #824
-        ////    target.DoubleValue = 51.001;
-
-        ////    Assert.Equal(2, viewModel.SetterInvokedCount);
-
-        ////    double expected = 51;
-
-        ////    Assert.Equal(expected, viewModel.Value);
-        ////    Assert.Equal(expected, target.DoubleValue);
-        ////    Assert.Equal(expected, child.DoubleValue);
-        ////}
-
-        ////[Fact]
-        ////public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
-        ////{
-        ////    var viewModel = new TestStackOverflowViewModel()
-        ////    {
-        ////        Value = 50
-        ////    };
-
-        ////    var target = new DirectPropertyClass();
-
-        ////    target.Bind(DirectPropertyClass.DoubleValueProperty, new Binding("Value")
-        ////    {
-        ////        Mode = BindingMode.TwoWay,
-        ////        Source = viewModel
-        ////    });
-
-        ////    var child = new DirectPropertyClass();
-
-        ////    child.Bind(DirectPropertyClass.DoubleValueProperty,
-        ////        new Binding("DoubleValue")
-        ////        {
-        ////            Mode = BindingMode.TwoWay,
-        ////            Source = target
-        ////        });
-
-        ////    Assert.Equal(1, viewModel.SetterInvokedCount);
-
-        ////    //here in real life stack overflow exception is thrown issue #855 and #824
-        ////    target.DoubleValue = 51.001;
-
-        ////    Assert.Equal(2, viewModel.SetterInvokedCount);
-
-        ////    double expected = 51;
-
-        ////    Assert.Equal(expected, viewModel.Value);
-        ////    Assert.Equal(expected, target.DoubleValue);
-        ////    Assert.Equal(expected, child.DoubleValue);
-        ////}
-
-        ////private class StyledPropertyClass : AvaloniaObject
-        ////{
-        ////    public static readonly StyledProperty<double> DoubleValueProperty =
-        ////                AvaloniaProperty.Register<StyledPropertyClass, double>(nameof(DoubleValue));
-
-        ////    public double DoubleValue
-        ////    {
-        ////        get { return GetValue(DoubleValueProperty); }
-        ////        set { SetValue(DoubleValueProperty, value); }
-        ////    }
-        ////}
-
-        ////private class DirectPropertyClass : AvaloniaObject
-        ////{
-        ////    public static readonly DirectProperty<DirectPropertyClass, double> DoubleValueProperty =
-        ////        AvaloniaProperty.RegisterDirect<DirectPropertyClass, double>(
-        ////            nameof(DoubleValue),
-        ////            o => o.DoubleValue,
-        ////            (o, v) => o.DoubleValue = v);
-
-        ////    private double _doubleValue;
-        ////    public double DoubleValue
-        ////    {
-        ////        get { return _doubleValue; }
-        ////        set { SetAndRaise(DoubleValueProperty, ref _doubleValue, value); }
-        ////    }
-        ////}
-
-        ////private class TestStackOverflowViewModel : INotifyPropertyChanged
-        ////{
-        ////    public int SetterInvokedCount { get; private set; }
-
-        ////    public const int MaxInvokedCount = 1000;
-
-        ////    private double _value;
-
-        ////    public event PropertyChangedEventHandler PropertyChanged;
-
-        ////    public double Value
-        ////    {
-        ////        get { return _value; }
-        ////        set
-        ////        {
-        ////            if (_value != value)
-        ////            {
-        ////                SetterInvokedCount++;
-        ////                if (SetterInvokedCount < MaxInvokedCount)
-        ////                {
-        ////                    _value = (int)value;
-        ////                    if (_value > 75) _value = 75;
-        ////                    if (_value < 25) _value = 25;
-        ////                }
-        ////                else
-        ////                {
-        ////                    _value = value;
-        ////                }
-
-        ////                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
-        ////            }
-        ////        }
-        ////    }
-        ////}
-
-        private class TwoWayBindingTest : Control
+        [Fact]
+        public void StyledProperty_SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
         {
-            public static readonly StyledProperty<string?> TwoWayProperty =
-                AvaloniaProperty.Register<TwoWayBindingTest, string?>(
-                    "TwoWay",
-                    defaultBindingMode: BindingMode.TwoWay);
-
-            public string? TwoWay
+            var viewModel = new TestStackOverflowViewModel()
             {
-                get { return GetValue(TwoWayProperty); }
-                set { SetValue(TwoWayProperty, value); }
-            }
+                Value = 50
+            };
+
+            var target = new StyledPropertyClass();
+
+            target.Bind(StyledPropertyClass.DoubleValueProperty,
+                new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
+
+            var child = new StyledPropertyClass();
+
+            child.Bind(StyledPropertyClass.DoubleValueProperty,
+                new Binding("DoubleValue")
+                {
+                    Mode = BindingMode.TwoWay,
+                    Source = target
+                });
+
+            Assert.Equal(1, viewModel.SetterInvokedCount);
+
+            //here in real life stack overflow exception is thrown issue #855 and #824
+            target.DoubleValue = 51.001;
+
+            Assert.Equal(2, viewModel.SetterInvokedCount);
+
+            double expected = 51;
+
+            Assert.Equal(expected, viewModel.Value);
+            Assert.Equal(expected, target.DoubleValue);
+            Assert.Equal(expected, child.DoubleValue);
+        }
+
+        [Fact]
+        public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
+        {
+            var viewModel = new TestStackOverflowViewModel()
+            {
+                Value = 50
+            };
+
+            var target = new DirectPropertyClass();
+
+            target.Bind(DirectPropertyClass.DoubleValueProperty, new Binding("Value")
+            {
+                Mode = BindingMode.TwoWay,
+                Source = viewModel
+            });
+
+            var child = new DirectPropertyClass();
+
+            child.Bind(DirectPropertyClass.DoubleValueProperty,
+                new Binding("DoubleValue")
+                {
+                    Mode = BindingMode.TwoWay,
+                    Source = target
+                });
+
+            Assert.Equal(1, viewModel.SetterInvokedCount);
+
+            //here in real life stack overflow exception is thrown issue #855 and #824
+            target.DoubleValue = 51.001;
+
+            Assert.Equal(2, viewModel.SetterInvokedCount);
+
+            double expected = 51;
+
+            Assert.Equal(expected, viewModel.Value);
+            Assert.Equal(expected, target.DoubleValue);
+            Assert.Equal(expected, child.DoubleValue);
         }
 
         public class Source : INotifyPropertyChanged
@@ -599,6 +420,20 @@ namespace Avalonia.Markup.UnitTests.Data
             private void RaisePropertyChanged([CallerMemberName] string prop = "")
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+            }
+        }
+
+        private class TwoWayBindingTest : Control
+        {
+            public static readonly StyledProperty<string?> TwoWayProperty =
+                AvaloniaProperty.Register<TwoWayBindingTest, string?>(
+                    "TwoWay",
+                    defaultBindingMode: BindingMode.TwoWay);
+
+            public string? TwoWay
+            {
+                get { return GetValue(TwoWayProperty); }
+                set { SetValue(TwoWayProperty, value); }
             }
         }
 
@@ -680,7 +515,6 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-
         private class DummyObject : ICloneable
         {
             private readonly string _val;
@@ -717,16 +551,69 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        ////private class InheritanceTest : Decorator
-        ////{
-        ////    public static readonly StyledProperty<int> BazProperty =
-        ////        AvaloniaProperty.Register<InheritanceTest, int>(nameof(Baz), defaultValue: 6, inherits: true);
+        private class StyledPropertyClass : AvaloniaObject
+        {
+            public static readonly StyledProperty<double> DoubleValueProperty =
+                        AvaloniaProperty.Register<StyledPropertyClass, double>(nameof(DoubleValue));
 
-        ////    public int Baz
-        ////    {
-        ////        get { return GetValue(BazProperty); }
-        ////        set { SetValue(BazProperty, value); }
-        ////    }
-        ////}
+            public double DoubleValue
+            {
+                get { return GetValue(DoubleValueProperty); }
+                set { SetValue(DoubleValueProperty, value); }
+            }
+        }
+
+        private class DirectPropertyClass : AvaloniaObject
+        {
+            public static readonly DirectProperty<DirectPropertyClass, double> DoubleValueProperty =
+                AvaloniaProperty.RegisterDirect<DirectPropertyClass, double>(
+                    nameof(DoubleValue),
+                    o => o.DoubleValue,
+                    (o, v) => o.DoubleValue = v);
+
+            private double _doubleValue;
+            public double DoubleValue
+            {
+                get { return _doubleValue; }
+                set { SetAndRaise(DoubleValueProperty, ref _doubleValue, value); }
+            }
+        }
+
+        private class TestStackOverflowViewModel : INotifyPropertyChanged
+        {
+            public int SetterInvokedCount { get; private set; }
+
+            public const int MaxInvokedCount = 1000;
+
+            private double _value;
+
+            public event PropertyChangedEventHandler? PropertyChanged;
+
+            public double Value
+            {
+                get { return _value; }
+                set
+                {
+                    if (_value != value)
+                    {
+                        SetterInvokedCount++;
+                        if (SetterInvokedCount < MaxInvokedCount)
+                        {
+                            _value = (int)value;
+                            if (_value > 75)
+                                _value = 75;
+                            if (_value < 25)
+                                _value = 25;
+                        }
+                        else
+                        {
+                            _value = value;
+                        }
+
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+                    }
+                }
+            }
+        }
     }
 }
