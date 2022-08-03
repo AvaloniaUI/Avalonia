@@ -9,7 +9,7 @@ namespace Avalonia.Controls
 {
     internal class TextBoxTextInputMethodClient : ITextInputMethodClient
     {
-        private InputElement? _parent;
+        private TextBox? _parent;
         private TextPresenter? _presenter;
 
         public Rect CursorRectangle
@@ -36,19 +36,29 @@ namespace Avalonia.Controls
         public event EventHandler? CursorRectangleChanged;
         public IVisual TextViewVisual => _presenter!;
         public event EventHandler? TextViewVisualChanged;
-        public bool SupportsPreedit => false;
-        public void SetPreeditText(string text) => throw new NotSupportedException();
+        public bool SupportsPreedit => true;
+        public void SetPreeditText(string? text)
+        {
+            if(_presenter == null)
+            {
+                return;
+            }
+
+            _presenter.PreeditText = text;
+        }
 
         public bool SupportsSurroundingText => false;
-        public TextInputMethodSurroundingText SurroundingText => throw new NotSupportedException();
+
+
         public event EventHandler? SurroundingTextChanged { add { } remove { } }
+        public TextInputMethodSurroundingText SurroundingText => throw new NotSupportedException();
         public string? TextBeforeCursor => null;
         public string? TextAfterCursor => null;
 
         private void OnCaretBoundsChanged(object? sender, EventArgs e) => CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
 
 
-        public void SetPresenter(TextPresenter? presenter, InputElement? parent)
+        public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
             _parent = parent;
 
@@ -62,6 +72,11 @@ namespace Avalonia.Controls
             if (_presenter != null)
             {
                 _presenter.CaretBoundsChanged += OnCaretBoundsChanged;
+            }
+
+            if(presenter == null)
+            {
+                SetPreeditText(null);
             }
             
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);

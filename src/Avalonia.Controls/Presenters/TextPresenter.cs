@@ -55,6 +55,15 @@ namespace Avalonia.Controls.Presenters
                 (o, v) => o.Text = v);
 
         /// <summary>
+        /// Defines the <see cref="PreeditText"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TextPresenter, string?> PreeditTextProperty =
+            AvaloniaProperty.RegisterDirect<TextPresenter, string?>(
+                nameof(PreeditText),
+                o => o.PreeditText,
+                 (o, v) => o.PreeditText = v);
+
+        /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
@@ -90,6 +99,7 @@ namespace Avalonia.Controls.Presenters
         private CharacterHit _lastCharacterHit;
         private Rect _caretBounds;
         private Point _navigationPosition;
+        private string? _preeditText;
 
         static TextPresenter()
         {
@@ -122,6 +132,12 @@ namespace Avalonia.Controls.Presenters
         {
             get => _text;
             set => SetAndRaise(TextProperty, ref _text, value);
+        }
+
+        public string? PreeditText
+        {
+            get => _preeditText;
+            set => SetAndRaise(PreeditTextProperty, ref _preeditText, value);
         }
 
         /// <summary>
@@ -479,6 +495,18 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        private string? GetText()
+        {
+            if (!string.IsNullOrEmpty(_preeditText))
+            {
+                var text = _text?.Substring(0, _caretIndex) + _preeditText + _text?.Substring(_caretIndex);
+
+                return text;
+            }
+
+            return _text;
+        }
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -487,7 +515,7 @@ namespace Avalonia.Controls.Presenters
         {
             TextLayout result;
 
-            var text = Text;
+            var text = GetText();
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
@@ -496,16 +524,38 @@ namespace Avalonia.Controls.Presenters
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
-            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+            List<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
 
             if (length > 0 && SelectionForegroundBrush != null)
             {
-                textStyleOverrides = new[]
+                textStyleOverrides = new List<ValueSpan<TextRunProperties>>
                 {
                     new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(typeface, FontSize,
                             foregroundBrush: SelectionForegroundBrush))
                 };
+            }
+
+            var foreground = Foreground;
+
+            if (!string.IsNullOrEmpty(_preeditText))
+            {
+                var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
+                        new GenericTextRunProperties(typeface, FontSize,
+                        foregroundBrush: foreground,
+                        textDecorations: TextDecorations.Underline));
+
+                if (textStyleOverrides == null)
+                {
+                    textStyleOverrides = new List<ValueSpan<TextRunProperties>>
+                    {
+                        preeditHighlight
+                    };
+                }
+                else
+                {
+                    textStyleOverrides.Add(preeditHighlight);
+                }
             }
 
             if (PasswordChar != default(char) && !RevealPassword)
@@ -814,6 +864,7 @@ namespace Avalonia.Controls.Presenters
                 case nameof (FontStretch):
 
                 case nameof (Text):
+                case nameof (PreeditText):
                 case nameof (TextAlignment):
                 case nameof (TextWrapping):
 
