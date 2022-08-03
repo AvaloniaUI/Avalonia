@@ -1,0 +1,42 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type AutoCompleteBox}"
+                TargetType="AutoCompleteBox">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <TextBox Name="PART_TextBox"
+                   Padding="{TemplateBinding Padding}"
+                   Background="{TemplateBinding Background}"
+                   BorderBrush="{TemplateBinding BorderBrush}"
+                   BorderThickness="{TemplateBinding BorderThickness}"
+                   CornerRadius="{TemplateBinding CornerRadius}"
+                   DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   Watermark="{TemplateBinding Watermark}" />
+
+          <Popup Name="PART_Popup"
+                 MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                 MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                 IsLightDismissEnabled="True"
+                 PlacementTarget="{TemplateBinding}">
+            <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                    BorderThickness="1">
+              <ListBox Name="PART_SelectingItemsControl"
+                       Background="{TemplateBinding Background}"
+                       BorderThickness="0"
+                       Foreground="{TemplateBinding Foreground}"
+                       ItemTemplate="{TemplateBinding ItemTemplate}"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            </Border>
+          </Popup>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

@@ -10,7 +10,7 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\IncludeXamlIlSre.props" />
   <ItemGroup>

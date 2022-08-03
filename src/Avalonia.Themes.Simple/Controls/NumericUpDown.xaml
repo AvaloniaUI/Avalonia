@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type NumericUpDown}"
+                TargetType="NumericUpDown">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ButtonSpinner Name="PART_Spinner"
+                       HorizontalContentAlignment="Stretch"
+                       VerticalContentAlignment="Stretch"
+                       AllowSpin="{TemplateBinding AllowSpin}"
+                       Background="{TemplateBinding Background}"
+                       BorderBrush="{TemplateBinding BorderBrush}"
+                       BorderThickness="{TemplateBinding BorderThickness}"
+                       ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}"
+                       CornerRadius="{TemplateBinding CornerRadius}"
+                       ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}">
+          <TextBox Name="PART_TextBox"
+                   MinWidth="20"
+                   Margin="4"
+                   Padding="{TemplateBinding Padding}"
+                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                   AcceptsReturn="False"
+                   Background="{TemplateBinding Background}"
+                   BorderThickness="0"
+                   DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   IsReadOnly="{TemplateBinding IsReadOnly}"
+                   Text="{TemplateBinding Text}"
+                   TextWrapping="NoWrap"
+                   Watermark="{TemplateBinding Watermark}" />
+        </ButtonSpinner>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

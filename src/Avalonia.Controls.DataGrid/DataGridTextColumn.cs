@@ -11,6 +11,7 @@ using System.ComponentModel;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Controls.Documents;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -19,12 +20,20 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridTextColumn : DataGridBoundColumn
     {
+        private readonly Lazy<ControlTheme> _cellTextBoxTheme;
+        private readonly Lazy<ControlTheme> _cellTextBlockTheme;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridTextColumn" /> class.
         /// </summary>
         public DataGridTextColumn()
         {
             BindingTarget = TextBox.TextProperty;
+
+            _cellTextBoxTheme = new Lazy<ControlTheme>(() =>
+                OwningGrid.TryFindResource("DataGridCellTextBoxTheme", out var theme) ? (ControlTheme)theme : null);
+            _cellTextBlockTheme = new Lazy<ControlTheme>(() =>
+                OwningGrid.TryFindResource("DataGridCellTextBlockTheme", out var theme) ? (ControlTheme)theme : null);
         }
 
         /// <summary>
@@ -156,16 +165,19 @@ namespace Avalonia.Controls
         protected override IControl GenerateEditingElementDirect(DataGridCell cell, object dataItem)
         {
             var textBox = new TextBox
-            {
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Colors.Transparent)
+            {                
+                Name = "CellTextBox"
             };
+            if (_cellTextBoxTheme.Value is { } theme)
+            {
+                textBox.Theme = theme;
+            }
 
             SyncProperties(textBox);
 
             return textBox;
         }
-
+        
         /// <summary>
         /// Gets a read-only <see cref="T:Avalonia.Controls.TextBlock" /> element that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.
         /// </summary>
@@ -174,10 +186,14 @@ namespace Avalonia.Controls
         /// <returns>A new, read-only <see cref="T:Avalonia.Controls.TextBlock" /> element that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.</returns>
         protected override IControl GenerateElement(DataGridCell cell, object dataItem)
         {
-            TextBlock textBlockElement = new TextBlock
+            var textBlockElement = new TextBlock
             {
                 Name = "CellTextBlock"
             };
+            if (_cellTextBlockTheme.Value is { } theme)
+            {
+                textBlockElement.Theme = theme;
+            }
 
             SyncProperties(textBlockElement);
 
@@ -227,7 +243,7 @@ namespace Avalonia.Controls
         {
             if (element == null)
             {
-                throw new ArgumentNullException("element");
+                throw new ArgumentNullException(nameof(element));
             }
 
             if (element is AvaloniaObject content)

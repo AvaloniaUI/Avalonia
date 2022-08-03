@@ -44,7 +44,7 @@ public interface IStorageItem : IDisposable
     /// <returns>
     /// Returns identifier of a bookmark. Can be null if OS denied request.
     /// </returns>
-    Task<string?> SaveBookmark();
+    Task<string?> SaveBookmarkAsync();
 
     /// <summary>
     /// Gets the parent folder of the current storage item.

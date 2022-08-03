@@ -11,5 +11,5 @@
         <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
         <Compile Include="..\Shared\RawEventGrouping.cs" />
     </ItemGroup>
-
+    <Import Project="..\..\build\SourceGenerators.props" />
 </Project>

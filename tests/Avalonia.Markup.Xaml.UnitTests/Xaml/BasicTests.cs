@@ -466,7 +466,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='avares://Avalonia.Themes.Default/Controls/ContextMenu.xaml'/>
+    <StyleInclude Source='avares://Avalonia.Themes.Simple/Controls/UserControl.xaml'/>
 </Styles>";
 
                 var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);

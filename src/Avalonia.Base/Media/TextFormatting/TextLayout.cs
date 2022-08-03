@@ -63,7 +63,7 @@ namespace Avalonia.Media.TextFormatting
 
             MaxHeight = maxHeight;
 
-            MaxLines = maxLines;      
+            MaxLines = maxLines;
 
             TextLines = CreateTextLines();
         }
@@ -80,7 +80,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxLines">The maximum number of text lines.</param>
         public TextLayout(
             ITextSource textSource,
-            TextParagraphProperties paragraphProperties, 
+            TextParagraphProperties paragraphProperties,
             TextTrimming? textTrimming = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
@@ -178,24 +178,18 @@ namespace Avalonia.Media.TextFormatting
                 return new Rect();
             }
 
-            if (textPosition < 0 || textPosition >= _textSourceLength)
+            if (textPosition < 0)
             {
-                var lastLine = TextLines[TextLines.Count - 1];
-
-                var lineX = lastLine.Width;
-
-                var lineY = Bounds.Bottom - lastLine.Height;
-
-                return new Rect(lineX, lineY, 0, lastLine.Height);
+                textPosition = _textSourceLength;
             }
 
             var currentY = 0.0;
 
             foreach (var textLine in TextLines)
             {
-                var end = textLine.FirstTextSourceIndex + textLine.Length - 1;
+                var end = textLine.FirstTextSourceIndex + textLine.Length;
 
-                if (end < textPosition)
+                if (end <= textPosition && end < _textSourceLength)
                 {
                     currentY += textLine.Height;
 
@@ -224,7 +218,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var result = new List<Rect>(TextLines.Count);
-            
+
             var currentY = 0d;
 
             foreach (var textLine in TextLines)
@@ -239,7 +233,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(start, length);
 
-                if(textBounds.Count > 0)
+                if (textBounds.Count > 0)
                 {
                     foreach (var bounds in textBounds)
                     {
@@ -262,7 +256,7 @@ namespace Avalonia.Media.TextFormatting
                     }
                 }
 
-                if(textLine.FirstTextSourceIndex + textLine.Length >= start + length)
+                if (textLine.FirstTextSourceIndex + textLine.Length >= start + length)
                 {
                     break;
                 }
@@ -305,7 +299,7 @@ namespace Avalonia.Media.TextFormatting
             return GetHitTestResult(currentLine, characterHit, point);
         }
 
-        
+
         public int GetLineIndexFromCharacterIndex(int charIndex, bool trailingEdge)
         {
             if (charIndex < 0)
@@ -327,7 +321,7 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                if (charIndex >= textLine.FirstTextSourceIndex && 
+                if (charIndex >= textLine.FirstTextSourceIndex &&
                     charIndex <= textLine.FirstTextSourceIndex + textLine.Length - (trailingEdge ? 0 : 1))
                 {
                     return index;
@@ -398,7 +392,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="left">The current left.</param>
         /// <param name="width">The current width.</param>
         /// <param name="height">The current height.</param>
-        private static void UpdateBounds(TextLine textLine,ref double left,  ref double width, ref double height)
+        private static void UpdateBounds(TextLine textLine, ref double left, ref double width, ref double height)
         {
             var lineWidth = textLine.WidthIncludingTrailingWhitespace;
 
@@ -421,7 +415,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
 
-                Bounds = new Rect(0,0,0, textLine.Height);
+                Bounds = new Rect(0, 0, 0, textLine.Height);
 
                 return new List<TextLine> { textLine };
             }
@@ -439,9 +433,9 @@ namespace Avalonia.Media.TextFormatting
                 var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-                if(textLine == null || textLine.Length == 0 || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
+                if (textLine == null || textLine.Length == 0 || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
                 {
-                    if(previousLine != null && previousLine.NewLineLength  > 0)
+                    if (previousLine != null && previousLine.NewLineLength > 0)
                     {
                         var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth, _paragraphProperties);
 
@@ -454,7 +448,7 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 _textSourceLength += textLine.Length;
-                
+
                 //Fulfill max height constraint
                 if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight) && height + textLine.Height > MaxHeight)
                 {
@@ -485,12 +479,17 @@ namespace Avalonia.Media.TextFormatting
                 //Fulfill max lines constraint
                 if (MaxLines > 0 && textLines.Count >= MaxLines)
                 {
+                    if(textLine.TextLineBreak is TextLineBreak lineBreak && lineBreak.RemainingRuns != null)
+                    {
+                        textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
+                    }
+
                     break;
                 }
             }
 
             //Make sure the TextLayout always contains at least on empty line
-            if(textLines.Count == 0)
+            if (textLines.Count == 0)
             {
                 var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties);
 
@@ -501,7 +500,7 @@ namespace Avalonia.Media.TextFormatting
 
             Bounds = new Rect(left, 0, width, height);
 
-            if(_paragraphProperties.TextAlignment == TextAlignment.Justify)
+            if (_paragraphProperties.TextAlignment == TextAlignment.Justify)
             {
                 var whitespaceWidth = 0d;
 
@@ -509,7 +508,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var lineWhitespaceWidth = line.Width - line.WidthIncludingTrailingWhitespace;
 
-                    if(lineWhitespaceWidth > whitespaceWidth)
+                    if (lineWhitespaceWidth > whitespaceWidth)
                     {
                         whitespaceWidth = lineWhitespaceWidth;
                     }
@@ -517,7 +516,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var justificationWidth = width - whitespaceWidth;
 
-                if(justificationWidth > 0)
+                if (justificationWidth > 0)
                 {
                     var justificationProperties = new InterWordJustification(justificationWidth);
 
@@ -538,8 +537,13 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="width">The collapsing width.</param>
         /// <returns>The <see cref="TextCollapsingProperties"/>.</returns>
-        private TextCollapsingProperties GetCollapsingProperties(double width)
+        private TextCollapsingProperties? GetCollapsingProperties(double width)
         {
+            if(_textTrimming == TextTrimming.None)
+            {
+                return null;
+            }
+
             return _textTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties));
         }
     }
