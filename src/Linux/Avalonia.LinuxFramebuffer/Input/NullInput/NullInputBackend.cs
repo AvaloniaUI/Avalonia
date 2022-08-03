@@ -4,9 +4,8 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.LinuxFramebuffer.Input.NullInput;
 
-internal class NullInputBackend : IInputBackend
+public class NullInputBackend : IInputBackend
 {
-
     public void Initialize(IScreenInfoProvider screen, Action<RawInputEventArgs> onInput)
     {
     }
