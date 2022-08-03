@@ -78,9 +78,9 @@ namespace ControlCatalog
 
         public override void Initialize()
         {
-            Styles.Insert(0, Simple);
-            Styles.Insert(1, ColorPickerSimple);
-            Styles.Insert(2, DataGridSimple);
+            Styles.Insert(0, Fluent);
+            Styles.Insert(1, ColorPickerFluent);
+            Styles.Insert(2, DataGridFluent);
             AvaloniaXamlLoader.Load(this);
         }
 
