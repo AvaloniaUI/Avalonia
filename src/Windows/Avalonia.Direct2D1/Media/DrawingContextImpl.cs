@@ -614,5 +614,6 @@ namespace Avalonia.Direct2D1.Media
         }
         
         public void Custom(ICustomDrawOperation custom) => custom.Render(this);
+        public object GetFeature(Type t) => null;
     }
 }

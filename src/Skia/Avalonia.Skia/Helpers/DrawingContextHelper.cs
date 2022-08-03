@@ -33,7 +33,7 @@ namespace Avalonia.Skia.Helpers
         /// Unsupported - Wraps a GPU Backed SkiaSurface in an Avalonia DrawingContext.
         /// </summary>
         [Obsolete]
-        public static ISkiaDrawingContextImpl WrapSkiaSurface(this SKSurface surface, GRContext grContext, Vector dpi, params IDisposable[] disposables)
+        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, GRContext grContext, Vector dpi, params IDisposable[] disposables)
         {
             var createInfo = new DrawingContextImpl.CreateInfo
             {
@@ -50,7 +50,7 @@ namespace Avalonia.Skia.Helpers
         /// Unsupported - Wraps a non-GPU Backed SkiaSurface in an Avalonia DrawingContext.
         /// </summary>
         [Obsolete]
-        public static ISkiaDrawingContextImpl WrapSkiaSurface(this SKSurface surface, Vector dpi, params IDisposable[] disposables)
+        public static IDrawingContextImpl WrapSkiaSurface(this SKSurface surface, Vector dpi, params IDisposable[] disposables)
         {
             var createInfo = new DrawingContextImpl.CreateInfo
             {
@@ -63,7 +63,7 @@ namespace Avalonia.Skia.Helpers
         }
 
         [Obsolete]
-        public static ISkiaDrawingContextImpl CreateDrawingContext(Size size, Vector dpi, GRContext grContext = null)
+        public static IDrawingContextImpl CreateDrawingContext(Size size, Vector dpi, GRContext grContext = null)
         {
             if (grContext is null)
             {
@@ -90,9 +90,11 @@ namespace Avalonia.Skia.Helpers
         }
         
         [Obsolete]
-        public static void DrawTo(this ISkiaDrawingContextImpl source, ISkiaDrawingContextImpl destination, SKPaint paint = null)
+        public static void DrawTo(this IDrawingContextImpl source, IDrawingContextImpl destination, SKPaint paint = null)
         {
-            destination.SkCanvas.DrawSurface(source.SkSurface, new SKPoint(0, 0), paint);
+            var src = (DrawingContextImpl)source;
+            var dst = (DrawingContextImpl)destination;
+            dst.Canvas.DrawSurface(src.Surface, new SKPoint(0, 0), paint);
         }
     }
 }
