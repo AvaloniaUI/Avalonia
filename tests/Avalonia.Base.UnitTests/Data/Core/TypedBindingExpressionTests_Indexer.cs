@@ -247,84 +247,84 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
-        ////[Fact]
-        ////public void Should_SetArrayIndex()
-        ////{
-        ////    var data = new { Foo = new[] { "foo", "bar" } };
-        ////    var target = ExpressionObserver.Create(data, o => o.Foo[1]);
+        [Fact]
+        public void Should_SetArrayIndex()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Foo[1], (o, v) => o.Foo[1] = v);
 
-        ////    using (target.Subscribe(_ => { }))
-        ////    {
-        ////        Assert.True(target.SetValue("baz"));
-        ////    }
+            using (binding.Subscribe(_ => { }))
+            {
+                Assert.True(binding.Write("baz"));
+            }
 
-        ////    Assert.Equal("baz", data.Foo[1]);
+            Assert.Equal("baz", data.Foo[1]);
 
-        ////    GC.KeepAlive(data);
-        ////}
+            GC.KeepAlive(data);
+        }
 
-        ////[Fact]
-        ////public void Should_Set_ExistingDictionaryEntry()
-        ////{
-        ////    var data = new
-        ////    {
-        ////        Foo = new Dictionary<string, int>
-        ////        {
-        ////            {"foo", 1 }
-        ////        }
-        ////    };
+        [Fact]
+        public void Should_Set_ExistingDictionaryEntry()
+        {
+            var data = new
+            {
+                Foo = new Dictionary<string, int>
+                {
+                    {"foo", 1 }
+                }
+            };
 
-        ////    var target = ExpressionObserver.Create(data, o => o.Foo["foo"]);
-        ////    using (target.Subscribe(_ => { }))
-        ////    {
-        ////        Assert.True(target.SetValue(4));
-        ////    }
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Foo["foo"], (o, v) => o.Foo["foo"] = v);
+            using (binding.Subscribe(_ => { }))
+            {
+                Assert.True(binding.Write(4));
+            }
 
-        ////    Assert.Equal(4, data.Foo["foo"]);
+            Assert.Equal(4, data.Foo["foo"]);
 
-        ////    GC.KeepAlive(data);
-        ////}
+            GC.KeepAlive(data);
+        }
 
-        ////[Fact]
-        ////public void Should_Add_NewDictionaryEntry()
-        ////{
-        ////    var data = new
-        ////    {
-        ////        Foo = new Dictionary<string, int>
-        ////        {
-        ////            {"foo", 1 }
-        ////        }
-        ////    };
+        [Fact]
+        public void Should_Add_NewDictionaryEntry()
+        {
+            var data = new
+            {
+                Foo = new Dictionary<string, int>
+                {
+                    {"foo", 1 }
+                }
+            };
 
-        ////    var target = ExpressionObserver.Create(data, o => o.Foo["bar"]);
-        ////    using (target.Subscribe(_ => { }))
-        ////    {
-        ////        Assert.True(target.SetValue(4));
-        ////    }
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Foo["bar"], (o, v) => o.Foo["bar"] = v);
+            using (binding.Subscribe(_ => { }))
+            {
+                Assert.True(binding.Write(4));
+            }
 
-        ////    Assert.Equal(4, data.Foo["bar"]);
+            Assert.Equal(4, data.Foo["bar"]);
 
-        ////    GC.KeepAlive(data);
-        ////}
+            GC.KeepAlive(data);
+        }
 
-        ////[Fact]
-        ////public void Should_Set_NonIntegerIndexer()
-        ////{
-        ////    var data = new { Foo = new NonIntegerIndexer() };
-        ////    data.Foo["foo"] = "bar";
-        ////    data.Foo["baz"] = "qux";
+        [Fact]
+        public void Should_Set_NonIntegerIndexer()
+        {
+            var data = new { Foo = new NonIntegerIndexer() };
+            data.Foo["foo"] = "bar";
+            data.Foo["baz"] = "qux";
 
-        ////    var target = ExpressionObserver.Create(data, o => o.Foo["foo"]);
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Foo["foo"], (o, v) => o.Foo["foo"] = v);
 
-        ////    using (target.Subscribe(_ => { }))
-        ////    {
-        ////        Assert.True(target.SetValue("bar2"));
-        ////    }
+            using (binding.Subscribe(_ => { }))
+            {
+                Assert.True(binding.Write("bar2"));
+            }
 
-        ////    Assert.Equal("bar2", data.Foo["foo"]);
+            Assert.Equal("bar2", data.Foo["foo"]);
 
-        ////    GC.KeepAlive(data);
-        ////}
+            GC.KeepAlive(data);
+        }
 
         [Fact]
         public async Task Indexer_Only_Binding_Works()

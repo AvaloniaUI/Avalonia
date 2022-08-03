@@ -60,7 +60,10 @@ namespace Avalonia.Data.Core
         /// Writes the specified value to the binding source if a write function was supplied.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        public void Write(TOut value)
+        /// <returns>
+        /// True if the value could be written to the binding source; otherwise false.
+        /// </returns>
+        public bool Write(TOut value)
         {
             if (_write is not null &&
                 _root is not null &&
@@ -73,12 +76,15 @@ namespace Avalonia.Data.Core
                         _write.Invoke(root, value);
                     if (_publishCount == c)
                         PublishValue();
+                    return true;
                 }
                 catch
                 {
                     PublishValue();
                 }
             }
+
+            return false;
         }
 
         /// <summary>
