@@ -18,8 +18,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Array_Value()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, x => x.Foo[1]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, x => x.Foo[1]);
+            var result = await binding.Take(1);
 
             Assert.Equal("bar", result.Value);
 
@@ -30,8 +30,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_MultiDimensional_Array_Value()
         {
             var data = new { Foo = new[,] { { "foo", "bar" }, { "baz", "qux" } } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[1, 1]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[1, 1]);
+            var result = await binding.Take(1);
 
             Assert.Equal("qux", result.Value);
 
@@ -42,8 +42,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Value_For_String_Indexer()
         {
             var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo["foo"]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo["foo"]);
+            var result = await binding.Take(1);
 
             Assert.Equal("bar", result.Value);
 
@@ -54,8 +54,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Value_For_Non_String_Indexer()
         {
             var data = new { Foo = new Dictionary<double, string> { { 1.0, "bar" }, { 2.0, "qux" } } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[1.0]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[1.0]);
+            var result = await binding.Take(1);
 
             Assert.Equal("bar", result.Value);
 
@@ -66,8 +66,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Array_Out_Of_Bounds_Should_Return_Error()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[2]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[2]);
+            var result = await binding.Take(1);
 
             Assert.IsType<IndexOutOfRangeException>(result.Error);
 
@@ -78,8 +78,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task List_Out_Of_Bounds_Should_Return_Error()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[2]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[2]);
+            var result = await binding.Take(1);
 
             Assert.IsType<ArgumentOutOfRangeException>(result.Error);
 
@@ -90,8 +90,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_List_Value()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
+            var result = await binding.Take(1);
 
             Assert.Equal("bar", result.Value);
 
@@ -102,10 +102,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Add()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[2]);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[2]);
             var result = new List<BindingValue<string>>();
 
-            using (var sub = target.Subscribe(x => result.Add(x)))
+            using (var sub = binding.Subscribe(x => result.Add(x)))
             {
                 data.Foo.Add("baz");
             }
@@ -121,10 +121,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Remove()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[0]);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[0]);
             var result = new List<string>();
 
-            using (var sub = target.Subscribe(x => result.Add(x.Value)))
+            using (var sub = binding.Subscribe(x => result.Add(x.Value)))
             {
                 data.Foo.RemoveAt(0);
             }
@@ -140,10 +140,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Replace()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
             var result = new List<string>();
 
-            using (var sub = target.Subscribe(x => result.Add(x.Value)))
+            using (var sub = binding.Subscribe(x => result.Add(x.Value)))
             {
                 data.Foo[1] = "baz";
             }
@@ -161,10 +161,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             // method, but even if it did we need to test with ObservableCollection as well
             // as AvaloniaList as it implements PropertyChanged as an explicit interface event.
             var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
             var result = new List<string>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = binding.Subscribe(x => result.Add(x.Value));
             data.Foo.Move(0, 1);
 
             // Second "foo" comes from Count property changing.
@@ -178,10 +178,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Reset()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo[1]);
             var result = new List<BindingValue<string>>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = binding.Subscribe(x => result.Add(x));
             data.Foo.Clear();
 
             Assert.Equal("bar", result[0].Value);
@@ -198,10 +198,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             data.Foo["foo"] = "bar";
             data.Foo["baz"] = "qux";
 
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo["foo"]);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo["foo"]);
             var result = new List<string>();
 
-            using (var sub = target.Subscribe(x => result.Add(x.Value)))
+            using (var sub = binding.Subscribe(x => result.Add(x.Value)))
             {
                 data.Foo["foo"] = "bar2";
             }
@@ -217,10 +217,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Property_On_Array_Item()
         {
             var data = new[] { new Class1 { Foo = "foo" } };
-            var target = TypedBindingExpression.OneWay(data, o => o[0].Foo);
+            var binding = TypedBindingExpression.OneWay(data, o => o[0].Foo);
             var result = new List<string>();
 
-            using (var sub = target.Subscribe(x => result.Add(x.Value)))
+            using (var sub = binding.Subscribe(x => result.Add(x.Value)))
             {
                 data[0].Foo = "bar";
             }
@@ -234,10 +234,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Property_On_List_Item()
         {
             var data = new List<Class1> { new Class1 { Foo = "foo" } };
-            var target = TypedBindingExpression.OneWay(data, o => o[0].Foo);
+            var binding = TypedBindingExpression.OneWay(data, o => o[0].Foo);
             var result = new List<string>();
 
-            using (var sub = target.Subscribe(x => result.Add(x.Value)))
+            using (var sub = binding.Subscribe(x => result.Add(x.Value)))
             {
                 data[0].Foo = "bar";
             }

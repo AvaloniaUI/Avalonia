@@ -12,8 +12,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Convert_Simple_Property_Value()
         {
             var data = new { Foo = "123" };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo, x => int.Parse(x));
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo, x => int.Parse(x));
+            var result = await binding.Take(1);
 
             Assert.Equal(123, result.Value);
 
@@ -24,8 +24,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Convert_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "321" } } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo.Bar.Baz, x => int.Parse(x));
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo.Bar.Baz, x => int.Parse(x));
+            var result = await binding.Take(1);
 
             Assert.Equal(321, result.Value);
 
@@ -36,16 +36,16 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Convert_TwoWay()
         {
             var data = new Class1 { Foo = "123" };
-            var target = TypedBindingExpression.TwoWay(
+            var binding = TypedBindingExpression.TwoWay(
                 data,
                 o => o.Foo,
                 (o, v) => o.Foo = v,
                 x => int.Parse(x),
                 x => x.ToString());
 
-            using (target.Subscribe())
+            using (binding.Subscribe())
             {
-                target.OnNext(321);
+                binding.Write(321);
 
                 Assert.Equal("321", data.Foo);
             }

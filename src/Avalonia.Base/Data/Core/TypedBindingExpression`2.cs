@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reactive.Subjects;
-using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
@@ -57,10 +56,13 @@ namespace Avalonia.Data.Core
 
         public string Description => "TODO";
 
-        public void OnNext(BindingValue<TOut> value)
+        /// <summary>
+        /// Writes the specified value to the binding source if a write function was supplied.
+        /// </summary>
+        /// <param name="value">The value to write.</param>
+        public void Write(TOut value)
         {
-            if (value.HasValue &&
-                _write is not null &&
+            if (_write is not null &&
                 _root is not null &&
                 _root.TryGetTarget(out var root))
             {
@@ -68,7 +70,7 @@ namespace Avalonia.Data.Core
                 {
                     var c = _publishCount;
                     if ((_flags & Flags.Initialized) != 0)
-                        _write.Invoke(root, value.Value);
+                        _write.Invoke(root, value);
                     if (_publishCount == c)
                         PublishValue();
                 }
@@ -77,6 +79,17 @@ namespace Avalonia.Data.Core
                     PublishValue();
                 }
             }
+        }
+
+        /// <summary>
+        /// Reads from the binding source to produce a new value.
+        /// </summary>
+        public void Read() => PublishValue();
+
+        void IObserver<BindingValue<TOut>>.OnNext(BindingValue<TOut> value)
+        {
+            if (value.HasValue)
+                Write(value.Value);
         }
 
         void IObserver<BindingValue<TOut>>.OnCompleted()

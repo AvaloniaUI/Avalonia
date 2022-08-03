@@ -15,11 +15,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Simple_Property_Value()
         {
             var data = new Class1 { Foo = "123" };
-            var target = TypedBindingExpression.TwoWay(data, o => o.Foo, (o, v) => o.Foo = v);
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Foo, (o, v) => o.Foo = v);
 
-            using (target.Subscribe())
+            using (binding.Subscribe())
             {
-                target.OnNext("321");
+                binding.Write("321");
 
                 Assert.Equal("321", data.Foo);
             }
@@ -31,11 +31,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Nested_Property_Value()
         {
             var data = new Class1 { Next = new Class2 { Bar = "123" } };
-            var target = TypedBindingExpression.TwoWay(data, o => o.Next.Bar, (o, v) => o.Next.Bar = v);
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Next.Bar, (o, v) => o.Next.Bar = v);
 
-            using (target.Subscribe())
+            using (binding.Subscribe())
             {
-                target.OnNext("321");
+                binding.Write("321");
 
                 Assert.Equal("321", data.Next.Bar);
             }
@@ -47,12 +47,12 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Notify_Changed_Value()
         {
             var data = new Class1 { Foo = "123" };
-            var target = TypedBindingExpression.TwoWay(data, o => o.Foo, (o, v) => o.Foo = v);
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Foo, (o, v) => o.Foo = v);
             var result = new List<string>();
 
-            using (target.Subscribe(x => result.Add(x.Value)))
+            using (binding.Subscribe(x => result.Add(x.Value)))
             {
-                target.OnNext("321");
+                binding.Write("321");
 
                 Assert.Equal(new[] { "123", "321" }, result);
             }
@@ -64,12 +64,12 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Notify_Changed_Value_Non_INPC()
         {
             var data = new NoInpc { Foo = "123" };
-            var target = TypedBindingExpression.TwoWay(data, o => o.Foo, (o, v) => o.Foo = v);
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Foo, (o, v) => o.Foo = v);
             var result = new List<string>();
 
-            using (target.Subscribe(x => result.Add(x.Value)))
+            using (binding.Subscribe(x => result.Add(x.Value)))
             {
-                target.OnNext("321");
+                binding.Write("321");
 
                 Assert.Equal(new[] { "123", "321" }, result);
             }
@@ -81,13 +81,13 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Handle_Broken_Chain()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = TypedBindingExpression.TwoWay(data, o => o.Next.Bar, (o, v) => o.Next.Bar = v);
+            var binding = TypedBindingExpression.TwoWay(data, o => o.Next.Bar, (o, v) => o.Next.Bar = v);
             var result = new List<BindingValue<string>>();
 
-            using (target.Subscribe(x => result.Add(x)))
+            using (binding.Subscribe(x => result.Add(x)))
             {
                 data.Next = null;
-                target.OnNext("foo");
+                binding.Write("foo");
 
                 Assert.Equal(3, result.Count);
                 Assert.Equal("bar", result[0].Value);
@@ -109,12 +109,12 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
             var rootObservable = new BehaviorSubject<Class1>(data);
-            var target = TypedBindingExpression.TwoWay(rootObservable, o => o.Next.Bar, (o, v) => o.Next.Bar = v);
+            var binding = TypedBindingExpression.TwoWay(rootObservable, o => o.Next.Bar, (o, v) => o.Next.Bar = v);
 
-            using (target.Subscribe())
+            using (binding.Subscribe())
             {
                 rootObservable.OnNext(null);
-                target.OnNext("baz");
+                binding.Write("baz");
                 Assert.Equal("bar", data.Next.Bar);
             }
         }

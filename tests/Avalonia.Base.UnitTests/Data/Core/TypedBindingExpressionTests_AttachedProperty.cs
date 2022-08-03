@@ -14,8 +14,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Attached_Property_Value()
         {
             var data = new Class1();
-            var target = TypedBindingExpression.OneWay(data, o => o[Owner.FooProperty]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o[Owner.FooProperty]);
+            var result = await binding.Take(1);
 
             Assert.Equal("foo", result.Value);
 
@@ -33,8 +33,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = TypedBindingExpression.OneWay(data, o => o.Next[Owner.FooProperty]);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Next[Owner.FooProperty]);
+            var result = await binding.Take(1);
 
             Assert.Equal("bar", result.Value);
 
@@ -45,10 +45,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Simple_Attached_Value()
         {
             var data = new Class1();
-            var target = TypedBindingExpression.OneWay(data, o => o[Owner.FooProperty]);
+            var binding = TypedBindingExpression.OneWay(data, o => o[Owner.FooProperty]);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = binding.Subscribe(x => result.Add(x.Value));
             data.SetValue(Owner.FooProperty, "bar");
 
             Assert.Equal(new[] { "foo", "bar" }, result);
@@ -69,10 +69,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = TypedBindingExpression.OneWay(data, o => o.Next[Owner.FooProperty]);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Next[Owner.FooProperty]);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = binding.Subscribe(x => result.Add(x.Value));
             data.Next.SetValue(Owner.FooProperty, "bar");
 
             Assert.Equal(new[] { "foo", "bar" }, result);

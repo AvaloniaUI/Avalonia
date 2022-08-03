@@ -17,8 +17,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         [Fact]
         public async Task Should_Get_Root_Value()
         {
-            var target = TypedBindingExpression.OneWay("foo", o => o);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay("foo", o => o);
+            var result = await binding.Take(1);
 
             Assert.Equal("foo", result.Value);
         }
@@ -27,8 +27,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value()
         {
             var data = new { Foo = "foo" };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo);
+            var result = await binding.Take(1);
 
             Assert.Equal("foo", result.Value);
 
@@ -39,8 +39,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value_Null()
         {
             var data = new { Foo = (string)null };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo);
+            var result = await binding.Take(1);
 
             Assert.Null(result.Value);
 
@@ -51,8 +51,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_From_Base_Class()
         {
             var data = new Class3 { Foo = "foo" };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo);
+            var result = await binding.Take(1);
 
             Assert.Equal("foo", result.Value);
 
@@ -63,10 +63,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Produce_Error_When_Root_Null()
         {
             var source = new BehaviorSubject<Class1>(null);
-            var target = TypedBindingExpression.OneWay(source, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(source, o => o.Foo);
             var result = new List<BindingValue<string>>();
 
-            target.Subscribe(x => result.Add(x));
+            binding.Subscribe(x => result.Add(x));
 
             Assert.Equal(1, result.Count);
             Assert.IsType<NullReferenceException>(result[0].Error);
@@ -76,10 +76,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Produce_FallbackValue_When_Root_Null()
         {
             var source = new BehaviorSubject<Class1>(null);
-            var target = TypedBindingExpression.OneWay(source, o => o.Foo, "fallback");
+            var binding = TypedBindingExpression.OneWay(source, o => o.Foo, "fallback");
             var result = new List<BindingValue<string>>();
 
-            target.Subscribe(x => result.Add(x));
+            binding.Subscribe(x => result.Add(x));
 
             Assert.Equal(1, result.Count);
             Assert.IsType<NullReferenceException>(result[0].Error);
@@ -90,10 +90,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Produce_Error_When_Root_Changed_To_Null()
         {
             var source = new BehaviorSubject<Class1>(new Class1 { Foo = "foo" });
-            var target = TypedBindingExpression.OneWay(source, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(source, o => o.Foo);
             var result = new List<BindingValue<string>>();
 
-            target.Subscribe(x => result.Add(x));
+            binding.Subscribe(x => result.Add(x));
             source.OnNext(null);
 
             Assert.Equal(2, result.Count);
@@ -105,15 +105,15 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Not_Produce_Anything_Until_Root_Produces_First_Value()
         {
             var source = new Subject<Class1>();
-            var target = TypedBindingExpression.OneWay(source, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(source, o => o.Foo);
             var result = new List<BindingValue<string>>();
 
-            using (target.Subscribe(x => result.Add(x)))
+            using (binding.Subscribe(x => result.Add(x)))
             {
                 Assert.Empty(result);
 
                 // Ensure that the second subscription doesn't produce a value either.
-                target.Subscribe(x => result.Add(x)).Dispose();
+                binding.Subscribe(x => result.Add(x)).Dispose();
 
                 Assert.Empty(result);
 
@@ -128,8 +128,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } } };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo.Bar.Baz);
-            var result = await target.Take(1);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo.Bar.Baz);
+            var result = await binding.Take(1);
 
             Assert.Equal("baz", result.Value);
 
@@ -140,10 +140,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Simple_Property_Value()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = binding.Subscribe(x => result.Add(x.Value));
             data.Foo = "bar";
 
             Assert.Equal(new[] { "foo", "bar" }, result);
@@ -159,10 +159,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_End_Of_Property_Chain_Changing()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => (o.Next as Class2).Bar);
+            var binding = TypedBindingExpression.OneWay(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = binding.Subscribe(x => result.Add(x.Value));
             ((Class2)data.Next).Bar = "baz";
             ((Class2)data.Next).Bar = null;
 
@@ -180,10 +180,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Property_Chain_Changing()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => (o.Next as Class2).Bar);
+            var binding = TypedBindingExpression.OneWay(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x.Value));
+            var sub = binding.Subscribe(x => result.Add(x.Value));
             var old = data.Next;
             data.Next = new Class2 { Bar = "baz" };
             data.Next = new Class2 { Bar = null };
@@ -217,10 +217,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = TypedBindingExpression.OneWay(data, o => ((o.Next as Class2).Next as Class2).Bar);
+            var binding = TypedBindingExpression.OneWay(data, o => ((o.Next as Class2).Next as Class2).Bar);
             var result = new List<BindingValue<string>>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = binding.Subscribe(x => result.Add(x));
             var old = data.Next;
             data.Next = new Class2 { Bar = "baz" };
             data.Next = old;
@@ -243,10 +243,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Property_Chain_Breaking_With_Missing_Member_Then_Mending()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = TypedBindingExpression.OneWay(data, o => (o.Next as Class2).Bar);
+            var binding = TypedBindingExpression.OneWay(data, o => (o.Next as Class2).Bar);
             var result = new List<BindingValue<string>>();
 
-            var sub = target.Subscribe(x => result.Add(x));
+            var sub = binding.Subscribe(x => result.Add(x));
             var old = data.Next;
             var breaking = new WithoutBar();
             data.Next = breaking;
@@ -272,10 +272,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var update = new Subject<Unit>();
             var source = new BehaviorSubject<Class1>(new Class1 { Foo = "foo" });
-            var target = TypedBindingExpression.OneWay(source, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(source, o => o.Foo);
             var result = new List<string>();
 
-            target.Subscribe(x => result.Add(x.Value));
+            binding.Subscribe(x => result.Add(x.Value));
 
             source.OnNext(new Class1 { Foo = "bar" });
 
@@ -289,10 +289,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var source = scheduler.CreateColdObservable(
                 OnNext(1, new Class1 { Foo = "foo" }),
                 OnNext(2, new Class1 { Foo = "bar" }));
-            var target = TypedBindingExpression.OneWay(source, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(source, o => o.Foo);
             var result = new List<string>();
 
-            using (target.Subscribe(x => result.Add(x.Value)))
+            using (binding.Subscribe(x => result.Add(x.Value)))
             {
                 scheduler.Start();
             }
@@ -305,17 +305,17 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Subscribing_Multiple_Times_Should_Return_Values_To_All()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo);
             var result1 = new List<string>();
             var result2 = new List<string>();
             var result3 = new List<string>();
 
-            target.Subscribe(x => result1.Add(x.Value));
-            target.Subscribe(x => result2.Add(x.Value));
+            binding.Subscribe(x => result1.Add(x.Value));
+            binding.Subscribe(x => result2.Add(x.Value));
 
             data.Foo = "bar";
 
-            target.Subscribe(x => result3.Add(x.Value));
+            binding.Subscribe(x => result3.Add(x.Value));
 
             Assert.Equal(new[] { "foo", "bar" }, result1);
             Assert.Equal(new[] { "foo", "bar" }, result2);
@@ -328,10 +328,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Subscribing_Multiple_Times_Should_Only_Add_PropertyChanged_Handlers_Once()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = TypedBindingExpression.OneWay(data, o => o.Foo);
+            var binding = TypedBindingExpression.OneWay(data, o => o.Foo);
 
-            var sub1 = target.Subscribe(x => { });
-            var sub2 = target.Subscribe(x => { });
+            var sub1 = binding.Subscribe(x => { });
+            var sub2 = binding.Subscribe(x => { });
 
             Assert.Equal(1, data.PropertyChangedSubscriptionCount);
 
