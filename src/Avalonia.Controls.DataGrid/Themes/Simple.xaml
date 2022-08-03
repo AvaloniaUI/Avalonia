@@ -223,7 +223,7 @@
       </Style>
     </ControlTheme>
 
-    <ControlTheme x:Key="DefaultDataGridRowGroupExpanderButtonTheme"
+    <ControlTheme x:Key="SimpleDataGridRowGroupExpanderButtonTheme"
                   TargetType="ToggleButton">
       <Setter Property="Template">
         <ControlTemplate>
@@ -270,7 +270,7 @@
                           BorderThickness="{TemplateBinding BorderThickness}"
                           CornerRadius="{TemplateBinding CornerRadius}"
                           Foreground="{TemplateBinding Foreground}"
-                          Theme="{StaticResource DefaultDataGridRowGroupExpanderButtonTheme}" />
+                          Theme="{StaticResource SimpleDataGridRowGroupExpanderButtonTheme}" />
 
             <StackPanel Grid.Row="1"
                         Grid.Column="3"

@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 #nullable enable
 
-namespace Avalonia.Themes.Default
+namespace Avalonia.Themes.Simple
 {
     public class SimpleTheme : AvaloniaObject, IStyle, IResourceProvider
     {
@@ -23,9 +23,9 @@ namespace Avalonia.Themes.Default
         /// Initializes a new instance of the <see cref="SimpleTheme"/> class.
         /// </summary>
         /// <param name="baseUri">The base URL for the XAML context.</param>
-        public SimpleTheme(Uri baseUri)
+        public SimpleTheme(Uri? baseUri = null)
         {
-            _baseUri = baseUri;
+            _baseUri = baseUri ?? new Uri("avares://Avalonia.Themes.Simple/");
             InitStyles(_baseUri);
         }
 
@@ -138,18 +138,18 @@ namespace Avalonia.Themes.Default
             {
                 new StyleInclude(baseUri)
                 {
-                    Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
+                    Source = new Uri("avares://Avalonia.Themes.Simple/Controls/SimpleControls.xaml")
                 },
                 new StyleInclude(baseUri)
                 {
-                    Source = new Uri("avares://Avalonia.Themes.Default/Accents/Base.xaml")
+                    Source = new Uri("avares://Avalonia.Themes.Simple/Accents/Base.xaml")
                 }
             };
             _simpleLight = new Styles
             {
                 new StyleInclude(baseUri)
                 {
-                    Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml")
+                    Source = new Uri("avares://Avalonia.Themes.Simple/Accents/BaseLight.xaml")
                 }
             };
 
@@ -157,7 +157,7 @@ namespace Avalonia.Themes.Default
             {
                 new StyleInclude(baseUri)
                 {
-                    Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseDark.xaml")
+                    Source = new Uri("avares://Avalonia.Themes.Simple/Accents/BaseDark.xaml")
                 }
             };
         }

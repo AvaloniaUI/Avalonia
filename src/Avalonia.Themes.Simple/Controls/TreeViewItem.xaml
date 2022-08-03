@@ -5,7 +5,7 @@
                                         Indent="16"
                                         Left="True" />
 
-  <ControlTheme x:Key="DefaultTreeViewItemToggleButtonTheme"
+  <ControlTheme x:Key="SimpleTreeViewItemToggleButtonTheme"
                 TargetType="ToggleButton">
     <Setter Property="Template">
       <ControlTemplate>
@@ -52,7 +52,7 @@
                             Focusable="False"
                             IsChecked="{TemplateBinding IsExpanded,
                                                         Mode=TwoWay}"
-                            Theme="{StaticResource DefaultTreeViewItemToggleButtonTheme}" />
+                            Theme="{StaticResource SimpleTreeViewItemToggleButtonTheme}" />
               <ContentPresenter Name="PART_HeaderPresenter"
                                 Grid.Column="1"
                                 Padding="{TemplateBinding Padding}"

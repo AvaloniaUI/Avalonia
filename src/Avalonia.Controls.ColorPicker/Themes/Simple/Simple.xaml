@@ -36,9 +36,9 @@
       <ResourceDictionary.MergedDictionaries>
 
         <!-- Primitives -->
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorPreviewer.xaml" />
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSlider.xaml" />
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Default/ColorSpectrum.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/ColorPreviewer.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/ColorSlider.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/ColorSpectrum.xaml" />
 
         <!-- Controls -->
         <!-- Note the ColorPicker and ColorView are unsupported in the default theme -->

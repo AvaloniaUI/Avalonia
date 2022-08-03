@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using Avalonia.Themes.Default;
+using Avalonia.Themes.Simple;
 using Avalonia.Rendering;
 using System.Reactive.Concurrency;
 using System.Collections.Generic;
@@ -81,7 +81,7 @@ namespace Avalonia.UnitTests
             IScheduler scheduler = null,
             ICursorFactory standardCursorFactory = null,
             IStyler styler = null,
-            Func<Styles> theme = null,
+            Func<IStyle> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
@@ -122,7 +122,7 @@ namespace Avalonia.UnitTests
         public IScheduler Scheduler { get; }
         public ICursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
-        public Func<Styles> Theme { get; }
+        public Func<IStyle> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
         public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
@@ -169,18 +169,9 @@ namespace Avalonia.UnitTests
                 windowImpl: windowImpl ?? WindowImpl);
         }
 
-        private static Styles CreateDefaultTheme()
+        private static IStyle CreateDefaultTheme()
         {
-            var result = new Styles
-            {
-                new DefaultTheme(),
-            };
-
-            var baseLight = (IStyle)AvaloniaXamlLoader.Load(
-                new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"));
-            result.Add(baseLight);
-
-            return result;
+            return new SimpleTheme { Mode = SimpleThemeMode.Light };
         }
 
         private static IPlatformRenderInterface CreateRenderInterfaceMock()
