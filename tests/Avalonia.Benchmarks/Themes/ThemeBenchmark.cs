@@ -37,8 +37,8 @@ namespace Avalonia.Benchmarks.Themes
         }
 
         [Benchmark]
-        [Arguments("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml")]
-        [Arguments("avares://Avalonia.Themes.Default/Accents/BaseDark.xaml")]
+        [Arguments("avares://Avalonia.Themes.Simple/Accents/BaseLight.xaml")]
+        [Arguments("avares://Avalonia.Themes.Simple/Accents/BaseDark.xaml")]
         public bool InitDefaultTheme(string themeUri)
         {
             UnitTestApplication.Current.Styles[0] = new Styles
@@ -49,7 +49,7 @@ namespace Avalonia.Benchmarks.Themes
                 },
                 new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
                 {
-                    Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
+                    Source = new Uri("avares://Avalonia.Themes.Simple/DefaultTheme.xaml")
                 }
             };
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("ThemeAccentColor", out _);

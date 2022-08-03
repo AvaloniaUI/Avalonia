@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Themes.Default
+﻿namespace Avalonia.Themes.Simple
 {
     public enum SimpleThemeMode
     {

@@ -56,7 +56,7 @@
     </Setter>
   </ControlTheme>
 
-  <ControlTheme x:Key="DefaultMenuScrollViewer"
+  <ControlTheme x:Key="SimpleMenuScrollViewer"
                 TargetType="ScrollViewer">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">

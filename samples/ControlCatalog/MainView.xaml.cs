@@ -60,14 +60,14 @@ namespace ControlCatalog
                     }
                     else if (theme == CatalogTheme.DefaultLight)
                     {
-                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Light;
+                        App.Default.Mode = Avalonia.Themes.Simple.SimpleThemeMode.Light;
                         Application.Current.Styles[0] = App.DefaultLight;
                         Application.Current.Styles[1] = App.ColorPickerDefault;
                         Application.Current.Styles[2] = App.DataGridDefault;
                     }
                     else if (theme == CatalogTheme.DefaultDark)
                     {
-                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Dark;
+                        App.Default.Mode = Avalonia.Themes.Simple.SimpleThemeMode.Dark;
                         Application.Current.Styles[0] = App.DefaultDark;
                         Application.Current.Styles[1] = App.ColorPickerDefault;
                         Application.Current.Styles[2] = App.DataGridDefault;

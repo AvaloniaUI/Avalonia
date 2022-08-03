@@ -8,7 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Media.Imaging;
 
-namespace Avalonia.Themes.Default
+namespace Avalonia.Themes.Simple
 {
     internal class IBitmapToImageConverter : IValueConverter
     {
