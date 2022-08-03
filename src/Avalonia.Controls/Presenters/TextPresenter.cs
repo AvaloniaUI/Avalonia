@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
+using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -496,14 +497,14 @@ namespace Avalonia.Controls.Presenters
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
-            
-            if (length > 0)
+
+            if (length > 0 && SelectionForegroundBrush != null)
             {
                 textStyleOverrides = new[]
                 {
                     new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(typeface, FontSize,
-                            foregroundBrush: SelectionForegroundBrush ?? Brushes.White))
+                            foregroundBrush: SelectionForegroundBrush))
                 };
             }
 
@@ -543,9 +544,11 @@ namespace Avalonia.Controls.Presenters
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (finalSize.Width < TextLayout.Bounds.Width)
+            var textWidth = Math.Ceiling(TextLayout.Bounds.Width);
+
+            if (finalSize.Width < textWidth)
             {
-                finalSize = finalSize.WithWidth(TextLayout.Bounds.Width);
+                finalSize = finalSize.WithWidth(textWidth);
             }
 
             if (MathUtilities.AreClose(_constraint.Width, finalSize.Width))
@@ -553,7 +556,7 @@ namespace Avalonia.Controls.Presenters
                 return finalSize;
             }
 
-            _constraint = new Size(finalSize.Width, double.PositiveInfinity);
+            _constraint = new Size(Math.Ceiling(finalSize.Width), double.PositiveInfinity);
 
             _textLayout = null;
 

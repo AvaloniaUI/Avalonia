@@ -11,6 +11,8 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
 
 namespace Avalonia.DesignerSupport.Remote
@@ -222,15 +224,6 @@ namespace Avalonia.DesignerSupport.Remote
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
     }
 
-    class SystemDialogsStub : ISystemDialogImpl
-    {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
-            Task.FromResult((string[])null);
-
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
-            Task.FromResult((string)null);
-    }
-
     class ScreenStub : IScreenImpl
     {
         public int ScreenCount => 1;
@@ -251,6 +244,27 @@ namespace Avalonia.DesignerSupport.Remote
         public Screen ScreenFromWindow(IWindowBaseImpl window)
         {
             return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
+    }
+
+    internal class NoopStorageProvider : BclStorageProvider
+    {
+        public override bool CanOpen => false;
+        public override Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFile>>(Array.Empty<IStorageFile>());
+        }
+
+        public override bool CanSave => false;
+        public override Task<IStorageFile> SaveFilePickerAsync(FilePickerSaveOptions options)
+        {
+            return Task.FromResult<IStorageFile>(null);
+        }
+
+        public override bool CanPickFolder => false;
+        public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFolder>>(Array.Empty<IStorageFolder>());
         }
     }
 }

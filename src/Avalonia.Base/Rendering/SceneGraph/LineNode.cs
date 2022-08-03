@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -19,20 +17,19 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The start point of the line.</param>
         /// <param name="p2">The end point of the line.</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
+        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public LineNode(
             Matrix transform,
             IPen pen,
             Point p1,
             Point p2,
-            IDictionary<IVisual, Scene>? childScenes = null)
-            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform)
+            IDisposable? aux = null)
+            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform, aux)
         {
             Transform = transform;
             Pen = pen.ToImmutable();
             P1 = p1;
             P2 = p2;
-            ChildScenes = childScenes;
         }
 
         /// <summary>
@@ -54,9 +51,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the end point of the line.
         /// </summary>
         public Point P2 { get; }
-
-        /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.

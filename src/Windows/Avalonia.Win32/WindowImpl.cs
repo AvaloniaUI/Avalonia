@@ -15,6 +15,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
@@ -22,7 +23,9 @@ using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.WinRT;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
+using Avalonia.Platform.Storage;
 
 namespace Avalonia.Win32
 {
@@ -32,7 +35,8 @@ namespace Avalonia.Win32
     [Unstable]
     public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
         ITopLevelImplWithNativeControlHost,
-        ITopLevelImplWithTextInputMethod
+        ITopLevelImplWithTextInputMethod,
+        ITopLevelImplWithStorageProvider
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -68,19 +72,20 @@ namespace Avalonia.Win32
 
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
-        private readonly MouseDevice _mouseDevice;
+        private readonly WindowsMouseDevice _mouseDevice;
+        private readonly PenDevice _penDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
+        private readonly bool _wmPointerEnabled;
 
         private Win32NativeControlHost _nativeControlHost;
         private WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
-        private bool _multitouch;
         private IInputRoot _owner;
         private WindowProperties _windowProperties;
-        private bool _trackingMouse;
+        private bool _trackingMouse;//ToDo - there is something missed. Needs investigation @Steven Kirk
         private bool _topmost;
         private double _scaling = 1;
         private WindowState _showWindowState;
@@ -97,10 +102,17 @@ namespace Avalonia.Win32
         private uint _langid;
         private bool _ignoreWmChar;
 
+        private const int MaxPointerHistorySize = 512;
+        private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
+        private static readonly POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
+        private static readonly POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
+        private static readonly POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
+
         public WindowImpl()
         {
             _touchDevice = new TouchDevice();
             _mouseDevice = new WindowsMouseDevice();
+            _penDevice = new PenDevice();
 
 #if USE_MANAGED_DRAG
             _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>
@@ -129,6 +141,8 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
+            _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
+
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
             UpdateInputMethod(GetKeyboardLayout(0));
@@ -153,6 +167,7 @@ namespace Avalonia.Win32
             }
 
             Screen = new ScreenImpl();
+            StorageProvider = new Win32StorageProvider(this);
 
             _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
             s_instances.Add(this);
@@ -282,6 +297,8 @@ namespace Avalonia.Win32
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         protected IntPtr Hwnd => _hwnd;
+
+        private bool IsMouseInPointerEnabled => _wmPointerEnabled && IsMouseInPointerEnabled();
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
@@ -527,6 +544,9 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
+            if (Win32Platform.Compositor != null)
+                return new CompositingRenderer(root, Win32Platform.Compositor);
+            
             return Win32Platform.UseDeferredRendering
                 ? _isUsingComposition
                     ? new DeferredRenderer(root, loop)
@@ -669,10 +689,9 @@ namespace Avalonia.Win32
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
-            _mouseDevice.Capture(null);
+            e.Pointer.Capture(null);
             DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)HitTestValues.HTCAPTION), IntPtr.Zero);
-            e.Pointer.Capture(null);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
@@ -682,7 +701,7 @@ namespace Avalonia.Win32
 #if USE_MANAGED_DRAG
                 _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
-                _mouseDevice.Capture(null);
+                e.Pointer.Capture(null);
                 DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                     new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
 #endif
@@ -815,12 +834,7 @@ namespace Avalonia.Win32
 
             Handle = new WindowImplPlatformHandle(this);
 
-            _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
-
-            if (_multitouch)
-            {
-                RegisterTouchWindow(_hwnd, 0);
-            }
+            RegisterTouchWindow(_hwnd, 0);
 
             if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
             {
@@ -859,7 +873,14 @@ namespace Avalonia.Win32
             if (fullscreen)
             {
                 GetWindowRect(_hwnd, out var windowRect);
-                _savedWindowInfo.WindowRect = windowRect;
+                GetClientRect(_hwnd, out var clientRect);
+
+                clientRect.left += windowRect.left;
+                clientRect.right += windowRect.left;
+                clientRect.top += windowRect.top;
+                clientRect.bottom += windowRect.top;
+                
+                _savedWindowInfo.WindowRect = clientRect;
 
                 var current = GetStyle();
                 var currentEx = GetExtendedStyle();
@@ -896,10 +917,10 @@ namespace Avalonia.Win32
                 SetExtendedStyle(_savedWindowInfo.ExStyle, false);
 
                 // On restore, resize to the previous saved rect size.
-                var new_rect = _savedWindowInfo.WindowRect.ToPixelRect();
+                var newClientRect = _savedWindowInfo.WindowRect.ToPixelRect();
 
-                SetWindowPos(_hwnd, IntPtr.Zero, new_rect.X, new_rect.Y, new_rect.Width,
-                             new_rect.Height,
+                SetWindowPos(_hwnd, IntPtr.Zero, newClientRect.X, newClientRect.Y, newClientRect.Width,
+                             newClientRect.Height,
                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
 
                 UpdateWindowProperties(_windowProperties, true);
@@ -1412,6 +1433,8 @@ namespace Avalonia.Win32
         }
 
         public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
+
+        public IStorageProvider StorageProvider { get; }
 
         private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
         {

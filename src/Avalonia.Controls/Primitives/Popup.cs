@@ -501,7 +501,7 @@ namespace Avalonia.Controls.Primitives
                 if (dismissLayer != null)
                 {
                     dismissLayer.IsVisible = true;
-                    dismissLayer.InputPassThroughElement = _overlayInputPassThroughElement;
+                    dismissLayer.InputPassThroughElement = OverlayInputPassThroughElement;
                     
                     Disposable.Create(() =>
                     {
@@ -860,22 +860,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (control != null)
             {
-                var templatedParent = TemplatedParent;
-
-                if (control.TemplatedParent == null)
-                {
-                    control.SetValue(TemplatedParentProperty, templatedParent);
-                }
-
-                control.ApplyTemplate();
-
-                if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
-                {
-                    foreach (IControl child in control.VisualChildren)
-                    {
-                        SetTemplatedParentAndApplyChildTemplates(child);
-                    }
-                }
+                TemplatedControl.ApplyTemplatedParent(control, TemplatedParent);
             }
         }
 

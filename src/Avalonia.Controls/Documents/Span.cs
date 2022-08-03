@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media.TextFormatting;
@@ -14,61 +13,81 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
-        public static readonly DirectProperty<Span, InlineCollection> InlinesProperty =
-            AvaloniaProperty.RegisterDirect<Span, InlineCollection>(
-                nameof(Inlines),
-                o => o.Inlines);
+        public static readonly StyledProperty<InlineCollection> InlinesProperty =
+            AvaloniaProperty.Register<Span, InlineCollection>(
+                nameof(Inlines));
 
-        /// <summary>
-        /// Initializes a new instance of a Span element.
-        /// </summary>
         public Span()
         {
-            Inlines = new InlineCollection(this);
-            Inlines.Invalidated += (s, e) => InlineHost?.Invalidate();
+            Inlines = new InlineCollection
+            {
+                Parent = this
+            };
         }
 
         /// <summary>
         /// Gets or sets the inlines.
         /// </summary>
         [Content]
-        public InlineCollection Inlines { get; }
+        public InlineCollection Inlines
+        {
+            get => GetValue(InlinesProperty);
+            set => SetValue(InlinesProperty, value);
+        }
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            if (Inlines.HasComplexContent)
+            foreach (var inline in Inlines)
             {
-                foreach (var inline in Inlines)
-                {
-                    inline.BuildTextRun(textRuns);
-                }
-            }
-            else
-            {
-                if (Inlines.Text is string text)
-                {
-                    var textRunProperties = CreateTextRunProperties();
-
-                    var textCharacters = new TextCharacters(text.AsMemory(), textRunProperties);
-
-                    textRuns.Add(textCharacters);
-                }          
+                inline.BuildTextRun(textRuns);
             }
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
         {
-            if (Inlines.HasComplexContent)
+            foreach (var inline in Inlines)
             {
-                foreach (var inline in Inlines)
-                {
-                    inline.AppendText(stringBuilder);
-                }
+                inline.AppendText(stringBuilder);
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            switch (change.Property.Name)
+            {
+                case nameof(InlinesProperty):
+                    OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
+                    InlineHost?.Invalidate();
+                    break;
+            }
+        }
+
+        internal override void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+            base.OnInlineHostChanged(oldValue, newValue);
+
+            if (Inlines is not null)
+            {
+                Inlines.InlineHost = newValue;
+            }
+        }
+
+        private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
+        {
+            if (oldValue is not null)
+            {
+                oldValue.Parent = null;
+                oldValue.InlineHost = null;
+                oldValue.Invalidated -= (s, e) => InlineHost?.Invalidate();
             }
 
-            if (Inlines.Text is string text)
+            if (newValue is not null)
             {
-                stringBuilder.Append(text);
+                newValue.Parent = this;
+                newValue.InlineHost = InlineHost;
+                newValue.Invalidated += (s, e) => InlineHost?.Invalidate();
             }
         }
     }

@@ -350,7 +350,7 @@ namespace Avalonia.Layout
                 {
                     for (var i = 0; i < count; ++i)
                     {
-                        var l = _effectiveViewportChangedListeners[i];
+                        var l = listeners[i];
 
                         if (!l.Listener.IsAttachedToVisualTree)
                         {
@@ -362,7 +362,7 @@ namespace Avalonia.Layout
                         if (viewport != l.Viewport)
                         {
                             l.Listener.EffectiveViewportChanged(new EffectiveViewportChangedEventArgs(viewport));
-                            _effectiveViewportChangedListeners[i] = new EffectiveViewportChangedListener(l.Listener, viewport);
+                            l.Viewport = viewport;
                         }
                     }
                 }
@@ -414,7 +414,7 @@ namespace Avalonia.Layout
             }
         }
 
-        private readonly struct EffectiveViewportChangedListener
+        private class EffectiveViewportChangedListener
         {
             public EffectiveViewportChangedListener(ILayoutable listener, Rect viewport)
             {
@@ -423,7 +423,7 @@ namespace Avalonia.Layout
             }
 
             public ILayoutable Listener { get; }
-            public Rect Viewport { get; }
+            public Rect Viewport { get; set; }
         }
     }
 }

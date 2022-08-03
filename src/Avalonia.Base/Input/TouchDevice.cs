@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -20,9 +19,6 @@ namespace Avalonia.Input
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
-        private Pointer? _lastPointer;
-
-        IInputElement? IPointerDevice.Captured => _lastPointer?.Captured;
 
         RawInputModifiers GetModifiers(RawInputModifiers modifiers, bool isLeftButtonDown)
         {
@@ -32,26 +28,21 @@ namespace Avalonia.Input
             return rv;
         }
 
-        void IPointerDevice.Capture(IInputElement? control) => _lastPointer?.Capture(control);
-
-        Point IPointerDevice.GetPosition(IVisual relativeTo) => default;
-
         public void ProcessRawEvent(RawInputEventArgs ev)
         {
             if (ev.Handled || _disposed)
                 return;
-            var args = (RawTouchEventArgs)ev;
-            if (!_pointers.TryGetValue(args.TouchPointId, out var pointer))
+            var args = (RawPointerEventArgs)ev;
+            if (!_pointers.TryGetValue(args.RawPointerId, out var pointer))
             {
                 if (args.Type == RawPointerEventType.TouchEnd)
                     return;
                 var hit = args.InputHitTestResult;
 
-                _pointers[args.TouchPointId] = pointer = new Pointer(Pointer.GetNextFreeId(),
+                _pointers[args.RawPointerId] = pointer = new Pointer(Pointer.GetNextFreeId(),
                     PointerType.Touch, _pointers.Count == 0);
                 pointer.Capture(hit);
             }
-            _lastPointer = pointer;
 
             var target = pointer.Captured ?? args.Root;
             var updateKind = args.Type.ToUpdateKind();
@@ -88,7 +79,7 @@ namespace Avalonia.Input
 
             if (args.Type == RawPointerEventType.TouchEnd)
             {
-                _pointers.Remove(args.TouchPointId);
+                _pointers.Remove(args.RawPointerId);
                 using (pointer)
                 {
                     target.RaiseEvent(new PointerReleasedEventArgs(target, pointer,
@@ -96,15 +87,13 @@ namespace Avalonia.Input
                         new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind),
                         keyModifier, MouseButton.Left));
                 }
-                _lastPointer = null;
             }
 
             if (args.Type == RawPointerEventType.TouchCancel)
             {
-                _pointers.Remove(args.TouchPointId);
+                _pointers.Remove(args.RawPointerId);
                 using (pointer)
                     pointer.Capture(null);
-                _lastPointer = null;
             }
 
             if (args.Type == RawPointerEventType.TouchUpdate)
@@ -129,8 +118,7 @@ namespace Avalonia.Input
 
         public IPointer? TryGetPointer(RawPointerEventArgs ev)
         {
-            return ev is RawTouchEventArgs args
-                && _pointers.TryGetValue(args.TouchPointId, out var pointer)
+            return _pointers.TryGetValue(ev.RawPointerId, out var pointer)
                 ? pointer
                 : null;
         }

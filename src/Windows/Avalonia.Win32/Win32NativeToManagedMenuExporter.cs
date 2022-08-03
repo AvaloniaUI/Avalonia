@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Reactive.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Media.Imaging;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -15,17 +19,28 @@ namespace Avalonia.Win32
             _nativeMenu = nativeMenu;
         }
 
-        private IEnumerable<MenuItem> Populate(NativeMenu nativeMenu)
+        private AvaloniaList<MenuItem> Populate(NativeMenu nativeMenu)
         {
+            var result = new AvaloniaList<MenuItem>();
+            
             foreach (var menuItem in nativeMenu.Items)
             {
                 if (menuItem is NativeMenuItemSeparator)
                 {
-                    yield return new MenuItem { Header = "-" };
+                    result.Add(new MenuItem { Header = "-" });
                 }
                 else if (menuItem is NativeMenuItem item)
                 {
-                    var newItem = new MenuItem { Header = item.Header, Icon = item.Icon, Command = item.Command, CommandParameter = item.CommandParameter };
+                    var newItem = new MenuItem
+                    {
+                        [!MenuItem.HeaderProperty] = item.GetObservable(NativeMenuItem.HeaderProperty).ToBinding(),
+                        [!MenuItem.IconProperty] = item.GetObservable(NativeMenuItem.IconProperty)
+                            .Select(i => i is {} bitmap ? new Image { Source = bitmap } : null).ToBinding(),
+                        [!MenuItem.IsEnabledProperty] = item.GetObservable(NativeMenuItem.IsEnabledProperty).ToBinding(),
+                        [!MenuItem.CommandProperty] = item.GetObservable(NativeMenuItem.CommandProperty).ToBinding(),
+                        [!MenuItem.CommandParameterProperty] = item.GetObservable(NativeMenuItem.CommandParameterProperty).ToBinding(),
+                        [!MenuItem.InputGestureProperty] = item.GetObservable(NativeMenuItem.GestureProperty).ToBinding()
+                    };
 
                     if (item.Menu != null)
                     {
@@ -33,15 +48,17 @@ namespace Avalonia.Win32
                     }
                     else if (item.HasClickHandlers && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
-                        newItem.Click += (_, __) => bridge.RaiseClicked();
+                        newItem.Click += (_, _) => bridge.RaiseClicked();
                     }
 
-                    yield return newItem;
+                    result.Add(newItem);
                 }
             }
+
+            return result;
         }
 
-        public IEnumerable<MenuItem>? GetMenu()
+        public AvaloniaList<MenuItem>? GetMenu()
         {
             if (_nativeMenu != null)
             {

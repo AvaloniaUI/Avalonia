@@ -251,6 +251,20 @@ namespace Avalonia.Utilities
                 return val;
             }
         }
+        
+        /// <summary>
+        /// Clamps a value between a minimum and maximum value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="min">The minimum value.</param>
+        /// <param name="max">The maximum value.</param>
+        /// <returns>The clamped value.</returns>
+        public static float Clamp(float value, float min, float max)
+        {
+            var amax = Math.Max(min, max);
+            var amin = Math.Min(min, max);
+            return Math.Min(Math.Max(value, amin), amax);
+        }
 
         /// <summary>
         /// Clamps a value between a minimum and maximum value.

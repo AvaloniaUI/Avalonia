@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1", "src\W
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls", "src\Avalonia.Controls\Avalonia.Controls.csproj", "{D2221C82-4A25-4583-9B43-D791E3F6820C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Default", "src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj", "{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Simple", "src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj", "{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Diagnostics", "src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj", "{7062AE20-5DCC-4442-9645-8195BDECE63E}"
 EndProject
@@ -38,6 +38,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A689DEF5-D50F-4975-8B72-124C9EB54066}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		src\Shared\IsExternalInit.cs = src\Shared\IsExternalInit.cs
 		src\Shared\ModuleInitializer.cs = src\Shared\ModuleInitializer.cs
 		src\Shared\SourceGeneratorAttributes.cs = src\Shared\SourceGeneratorAttributes.cs
 	EndProjectSection
@@ -205,13 +206,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlSamples", "samples\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{70B9F5CC-E2F9-4314-9514-EDE762ACCC4B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.SourceGenerator", "src\Avalonia.SourceGenerator\Avalonia.SourceGenerator.csproj", "{CA932DF3-2616-4BF6-8F28-1AD0EC40F1FF}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DevAnalyzers", "src\tools\DevAnalyzers\DevAnalyzers.csproj", "{2B390431-288C-435C-BB6B-A374033BD8D1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ColorPicker", "src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj", "{7BF6C69D-FC14-43EB-9ED0-782C16F3D5D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DesignerSupport.Tests", "tests\Avalonia.DesignerSupport.Tests\Avalonia.DesignerSupport.Tests.csproj", "{EABE2161-989B-42BF-BD8D-1E34B20C21F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevGenerators", "src\tools\DevGenerators\DevGenerators.csproj", "{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -485,10 +486,6 @@ Global
 		{70B9F5CC-E2F9-4314-9514-EDE762ACCC4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70B9F5CC-E2F9-4314-9514-EDE762ACCC4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70B9F5CC-E2F9-4314-9514-EDE762ACCC4B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA932DF3-2616-4BF6-8F28-1AD0EC40F1FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA932DF3-2616-4BF6-8F28-1AD0EC40F1FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA932DF3-2616-4BF6-8F28-1AD0EC40F1FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA932DF3-2616-4BF6-8F28-1AD0EC40F1FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2B390431-288C-435C-BB6B-A374033BD8D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2B390431-288C-435C-BB6B-A374033BD8D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B390431-288C-435C-BB6B-A374033BD8D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -501,6 +498,10 @@ Global
 		{EABE2161-989B-42BF-BD8D-1E34B20C21F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EABE2161-989B-42BF-BD8D-1E34B20C21F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EABE2161-989B-42BF-BD8D-1E34B20C21F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -557,6 +558,8 @@ Global
 		{70B9F5CC-E2F9-4314-9514-EDE762ACCC4B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{2B390431-288C-435C-BB6B-A374033BD8D1} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 		{EABE2161-989B-42BF-BD8D-1E34B20C21F1} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

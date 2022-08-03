@@ -1,0 +1,67 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+jobs:
+- job: Mac
+  pool:
+    name: 'AvaloniaMacPool'
+
+  steps:
+  - script: system_profiler SPDisplaysDataType |grep Resolution
+  
+  - script: |
+      pkill node
+      appium &
+      pkill IntegrationTestApp
+      ./build.sh CompileNative
+      rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
+      pkill IntegrationTestApp
+      ./samples/IntegrationTestApp/bundle.sh
+      open -n ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
+      pkill IntegrationTestApp
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+
+  - script: |
+      pkill IntegrationTestApp
+      pkill node
+
+
+- job: Windows
+  pool:
+    vmImage: 'windows-2022'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.202'
+    inputs:
+      version: 6.0.202
+
+  - task: Windows Application Driver@0
+    inputs:
+      OperationType: 'Start'
+      AgentResolution: '4K'
+    displayName: 'Start WinAppDriver'
+  
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+      projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+
+  - task: Windows Application Driver@0
+    inputs:
+      OperationType: 'Stop'
+    displayName: 'Stop WinAppDriver'

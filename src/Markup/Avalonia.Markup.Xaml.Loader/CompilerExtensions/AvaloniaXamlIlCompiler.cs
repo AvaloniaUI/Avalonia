@@ -45,10 +45,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlReorderClassesPropertiesTransformer()
             );
 
-            InsertBefore<ContentConvertTransformer>(                
-                new AvaloniaXamlIlBindingPathParser(),
+            InsertBefore<ContentConvertTransformer>(
+                new AvaloniaXamlIlControlThemeTransformer(),
                 new AvaloniaXamlIlSelectorTransformer(),
-                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
+                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),                 
+                new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
@@ -71,6 +72,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlCompiledBindingsMetadataRemover()
                 );
 
+            Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 

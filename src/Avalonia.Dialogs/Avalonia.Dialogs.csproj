@@ -14,10 +14,6 @@
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="InternalsVisibleTo">
-    <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
-  </ItemGroup>
-
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
 </Project>

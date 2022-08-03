@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-
+﻿using System;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -18,18 +15,17 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform.</param>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run to draw.</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
+        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public GlyphRunNode(
             Matrix transform,
             IBrush foreground,
             GlyphRun glyphRun,
-            IDictionary<IVisual, Scene>? childScenes = null)
-            : base(new Rect(glyphRun.Size), transform)
+            IDisposable? aux = null)
+            : base(new Rect(glyphRun.Size), transform, aux)
         {
             Transform = transform;
             Foreground = foreground.ToImmutable();
             GlyphRun = glyphRun;
-            ChildScenes = childScenes;
         }
 
         /// <summary>
@@ -46,9 +42,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the glyph run to draw.
         /// </summary>
         public GlyphRun GlyphRun { get; }
-
-        /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
@@ -76,6 +69,6 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => Bounds.Contains(p);
+        public override bool HitTest(Point p) => Bounds.ContainsExclusive(p);
     }
 }

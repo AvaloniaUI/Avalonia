@@ -15,6 +15,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType AvaloniaObjectExtensions { get; }
         public IXamlType AvaloniaProperty { get; }
         public IXamlType AvaloniaPropertyT { get; }
+        public IXamlType StyledPropertyT { get; }
+        public IXamlMethod AvaloniaObjectSetStyledPropertyValue { get; }
         public IXamlType AvaloniaAttachedPropertyT { get; }
         public IXamlType IBinding { get; }
         public IXamlMethod AvaloniaObjectBindMethod { get; }
@@ -108,8 +110,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaObjectExtensions = cfg.TypeSystem.GetType("Avalonia.AvaloniaObjectExtensions");
             AvaloniaProperty = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty");
             AvaloniaPropertyT = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty`1");
+            StyledPropertyT = cfg.TypeSystem.GetType("Avalonia.StyledProperty`1");
             AvaloniaAttachedPropertyT = cfg.TypeSystem.GetType("Avalonia.AttachedProperty`1");
             BindingPriority = cfg.TypeSystem.GetType("Avalonia.Data.BindingPriority");
+            AvaloniaObjectSetStyledPropertyValue = AvaloniaObject
+                .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
+                                 && m.Parameters.Count == 3
+                                 && m.Parameters[0].Name == "StyledPropertyBase`1"
+                                 && m.Parameters[2].Equals(BindingPriority));
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
             ICommand = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");

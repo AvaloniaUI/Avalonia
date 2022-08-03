@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -19,21 +20,20 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="rect">The rectangle to draw.</param>
         /// <param name="boxShadows">The box shadow parameters</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
+        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public RectangleNode(
             Matrix transform,
             IBrush? brush,
             IPen? pen,
             RoundedRect rect,
             BoxShadows boxShadows,
-            IDictionary<IVisual, Scene>? childScenes = null)
-            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform)
+            IDisposable? aux = null)
+            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform, aux)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
-            ChildScenes = childScenes;
             BoxShadows = boxShadows;
         }
 
@@ -61,9 +61,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// The parameters for the box-shadow effect
         /// </summary>
         public BoxShadows BoxShadows { get; }
-
-        /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -106,13 +103,13 @@ namespace Avalonia.Rendering.SceneGraph
                 if (Brush != null)
                 {
                     var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    return rect.Contains(p);
+                    return rect.ContainsExclusive(p);
                 }
                 else
                 {
                     var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
                     var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
-                    return borderRect.Contains(p) && !emptyRect.Contains(p);
+                    return borderRect.ContainsExclusive(p) && !emptyRect.ContainsExclusive(p);
                 }
             }
 

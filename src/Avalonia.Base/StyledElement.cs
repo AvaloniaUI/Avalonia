@@ -12,8 +12,6 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
-#nullable enable
-
 namespace Avalonia
 {
     /// <summary>
@@ -55,7 +53,14 @@ namespace Avalonia
                 nameof(TemplatedParent),
                 o => o.TemplatedParent,
                 (o ,v) => o.TemplatedParent = v);
+        
+        /// <summary>
+        /// Defines the <see cref="Theme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> ThemeProperty =
+            AvaloniaProperty.Register<StyledElement, ControlTheme?>(nameof(Theme));
 
+        private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
         private string? _name;
         private readonly Classes _classes = new Classes();
@@ -67,6 +72,8 @@ namespace Avalonia
         private List<IStyleInstance>? _appliedStyles;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
+        private bool _hasPromotedTheme;
+        private ControlTheme? _implicitTheme;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -231,6 +238,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets or sets the theme to be applied to the element.
+        /// </summary>
+        public ControlTheme? Theme
+        {
+            get => GetValue(ThemeProperty);
+            set => SetValue(ThemeProperty, value);
+        }
+
+        /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
         protected IAvaloniaList<ILogical> LogicalChildren
@@ -302,6 +318,7 @@ namespace Avalonia
         /// <inheritdoc/>
         IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
 
+
         /// <inheritdoc/>
         public virtual void BeginInit()
         {
@@ -341,10 +358,15 @@ namespace Avalonia
                 }
                 finally
                 {
+                    _styled = true;
                     EndBatchUpdate();
                 }
 
-                _styled = true;
+                if (_hasPromotedTheme)
+                {
+                    _hasPromotedTheme = false;
+                    ClearValue(ThemeProperty);
+                }
             }
 
             return _styled;
@@ -475,6 +497,31 @@ namespace Avalonia
             };
         }
 
+        ControlTheme? IStyleable.GetEffectiveTheme()
+        {
+            var theme = Theme;
+
+            // Explitly set Theme property takes precedence.
+            if (theme is not null)
+                return theme;
+
+            // If the Theme property is not set, try to find a ControlTheme resource with our StyleKey.
+            if (_implicitTheme is null)
+            {
+                var key = ((IStyleable)this).StyleKey;
+
+                if (this.TryFindResource(key, out var value) && value is ControlTheme t)
+                    _implicitTheme = t;
+                else
+                    _implicitTheme = s_invalidTheme;
+            }
+
+            if (_implicitTheme != s_invalidTheme)
+                return _implicitTheme;
+
+            return null;
+        }
+
         void IStyleable.StyleApplied(IStyleInstance instance)
         {
             instance = instance ?? throw new ArgumentNullException(nameof(instance));
@@ -590,6 +637,30 @@ namespace Avalonia
         {
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ThemeProperty)
+            {
+                // Changing the theme detaches all styles, meaning that if the theme property was
+                // set via a style, it will get cleared! To work around this, if the value was
+                // applied at less than local value priority then promote the value to local value
+                // priority until styling is re-applied.
+                if (change.Priority > BindingPriority.LocalValue)
+                {
+                    Theme = change.GetNewValue<ControlTheme?>();
+                    _hasPromotedTheme = true;
+                }
+                else if (_hasPromotedTheme && change.Priority == BindingPriority.LocalValue)
+                {
+                    _hasPromotedTheme = false;
+                }
+
+                InvalidateStyles();
+            }
+        }
+
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
         {
             if (o is StyledElement element)
@@ -696,6 +767,7 @@ namespace Avalonia
             if (_logicalRoot != null)
             {
                 _logicalRoot = null;
+                _implicitTheme = null;
                 DetachStyles();
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
@@ -760,7 +832,7 @@ namespace Avalonia
 
         private void DetachStyles()
         {
-            if (_appliedStyles is object)
+            if (_appliedStyles?.Count > 0)
             {
                 BeginBatchUpdate();
 
@@ -801,9 +873,12 @@ namespace Avalonia
 
                     if (applied.Source == styles[i])
                     {
-                        applied.Dispose();
                         _appliedStyles.RemoveAt(j);
+                        applied.Dispose();
                     }
+
+                    if (j > _appliedStyles.Count)
+                        j = _appliedStyles.Count;
                 }
             }
         }

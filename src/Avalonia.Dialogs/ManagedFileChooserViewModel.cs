@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
 namespace Avalonia.Dialogs
@@ -106,7 +107,7 @@ namespace Avalonia.Dialogs
             QuickLinks.AddRange(quickSources.GetAllItems().Select(i => new ManagedFileChooserItemViewModel(i)));
         }
 
-        public ManagedFileChooserViewModel(FileSystemDialog dialog, ManagedFileDialogOptions options)
+        public ManagedFileChooserViewModel(ManagedFileDialogOptions options)
         {
             _options = options;
             _disposables = new CompositeDisposable();
@@ -131,50 +132,63 @@ namespace Avalonia.Dialogs
             CancelRequested += delegate { _disposables?.Dispose(); };
 
             RefreshQuickLinks(quickSources);
-
-            Title = dialog.Title ?? (
-                        dialog is OpenFileDialog ? "Open file"
-                        : dialog is SaveFileDialog ? "Save file"
-                        : dialog is OpenFolderDialog ? "Select directory"
-                        : throw new ArgumentException(nameof(dialog)));
-
-            var directory = dialog.Directory;
-
-            if (directory == null || !Directory.Exists(directory))
-            {
-                directory = Directory.GetCurrentDirectory();
-            }
-
-            if (dialog is FileDialog fd)
-            {
-                if (fd.Filters?.Count > 0)
-                {
-                    Filters.AddRange(fd.Filters.Select(f => new ManagedFileChooserFilterViewModel(f)));
-                    _selectedFilter = Filters[0];
-                    ShowFilters = true;
-                }
-
-                if (dialog is OpenFileDialog ofd)
-                {
-                    if (ofd.AllowMultiple)
-                    {
-                        SelectionMode = SelectionMode.Multiple;
-                    }
-                }
-            }
-
-            _selectingDirectory = dialog is OpenFolderDialog;
-
-            if (dialog is SaveFileDialog sfd)
-            {
-                _savingFile = true;
-                _defaultExtension = sfd.DefaultExtension;
-                _overwritePrompt = sfd.ShowOverwritePrompt ?? true;
-                FileName = sfd.InitialFileName;
-            }
-
-            Navigate(directory, (dialog as FileDialog)?.InitialFileName);
+            
             SelectedItems.CollectionChanged += OnSelectionChangedAsync;
+        }
+
+        public ManagedFileChooserViewModel(FilePickerOpenOptions filePickerOpen,  ManagedFileDialogOptions options)
+            : this(options)
+        {
+            Title = filePickerOpen.Title ?? "Open file";
+            
+            if (filePickerOpen.FileTypeFilter?.Count > 0)
+            {
+                Filters.AddRange(filePickerOpen.FileTypeFilter.Select(f => new ManagedFileChooserFilterViewModel(f)));
+                _selectedFilter = Filters[0];
+                ShowFilters = true;
+            }
+
+            if (filePickerOpen.AllowMultiple)
+            {
+                SelectionMode = SelectionMode.Multiple;
+            }
+
+            Navigate(filePickerOpen.SuggestedStartLocation);
+        }
+        
+        public ManagedFileChooserViewModel(FilePickerSaveOptions filePickerSave,  ManagedFileDialogOptions options)
+            : this(options)
+        {
+            Title = filePickerSave.Title ?? "Save file";
+            
+            if (filePickerSave.FileTypeChoices?.Count > 0)
+            {
+                Filters.AddRange(filePickerSave.FileTypeChoices.Select(f => new ManagedFileChooserFilterViewModel(f)));
+                _selectedFilter = Filters[0];
+                ShowFilters = true;
+            }
+            
+            _savingFile = true;
+            _defaultExtension = filePickerSave.DefaultExtension;
+            _overwritePrompt = filePickerSave.ShowOverwritePrompt ?? true;
+            FileName = filePickerSave.SuggestedFileName;
+            
+            Navigate(filePickerSave.SuggestedStartLocation, FileName);
+        }
+        
+        public ManagedFileChooserViewModel(FolderPickerOpenOptions folderPickerOpen,  ManagedFileDialogOptions options)
+            : this(options)
+        {
+            Title = folderPickerOpen.Title ?? "Select directory";
+
+            _selectingDirectory = true;
+
+            if (folderPickerOpen.AllowMultiple)
+            {
+                SelectionMode = SelectionMode.Multiple;
+            }
+
+            Navigate(folderPickerOpen.SuggestedStartLocation);
         }
 
         public void EnterPressed()
@@ -247,6 +261,23 @@ namespace Avalonia.Dialogs
 
         public void Refresh() => Navigate(Location);
 
+        public void Navigate(IStorageFolder path, string initialSelectionName = null)
+        {
+            string fullDirectoryPath;
+
+            if (path?.TryGetUri(out var fullDirectoryUri) == true
+                && fullDirectoryUri.IsAbsoluteUri)
+            {
+                fullDirectoryPath = fullDirectoryUri.LocalPath;
+            }
+            else
+            {
+                fullDirectoryPath = Directory.GetCurrentDirectory();
+            }
+            
+            Navigate(fullDirectoryPath, initialSelectionName);
+        }
+        
         public void Navigate(string path, string initialSelectionName = null)
         {
             if (!Directory.Exists(path))
