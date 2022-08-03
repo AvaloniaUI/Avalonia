@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using Avalonia.Data;
 using Avalonia.Data.Converters;
 
 namespace Avalonia.Controls.Converters;
@@ -15,13 +13,25 @@ public class StringFormatConverter : IMultiValueConverter
 {
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
-        try
+        if (values != null &&
+            values.Count == 5 &&
+            values[0] is string format &&
+            values[1] is double &&
+            values[2] is double &&
+            values[3] is double &&
+            values[4] is double)
+
         {
-            return string.Format((string)values[0]!, values.Skip(1).ToArray());
+
+            try
+            {
+                return string.Format(format, values[1], values[2], values[3], values[4]);
+            }
+            catch
+            {
+                return AvaloniaProperty.UnsetValue;
+            }
         }
-        catch (Exception e)
-        {
-            return new BindingNotification(e, BindingErrorType.Error);
-        }
+        return AvaloniaProperty.UnsetValue;
     }
 }
