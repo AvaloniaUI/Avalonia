@@ -41,7 +41,7 @@ namespace Avalonia.Benchmarks.Themes
         [Benchmark]
         [Arguments(SimpleThemeMode.Dark)]
         [Arguments(SimpleThemeMode.Light)]
-        public bool InitDefaultTheme(SimpleThemeMode mode)
+        public bool InitSimpleTheme(SimpleThemeMode mode)
         {
             UnitTestApplication.Current.Styles[0] = new SimpleTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
             {
