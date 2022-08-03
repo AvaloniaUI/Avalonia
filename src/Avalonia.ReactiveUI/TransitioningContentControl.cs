@@ -57,7 +57,7 @@ namespace Avalonia.ReactiveUI
         
         /// <summary>
         /// TransitioningContentControl uses the default ContentControl 
-        /// template from Avalonia simple theme.
+        /// template from Avalonia default theme.
         /// </summary>
         Type IStyleable.StyleKey => typeof(ContentControl);
 
