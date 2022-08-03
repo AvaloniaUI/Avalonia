@@ -41,7 +41,7 @@
         <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/ColorSpectrum.xaml" />
 
         <!-- Controls -->
-        <!-- Note the ColorPicker and ColorView are unsupported in the default theme -->
+        <!-- Note the ColorPicker and ColorView are currently unsupported in the simple theme -->
         <!-- These controls depend on fluent styles for TabControl, Button, TextBox, etc. -->
 
       </ResourceDictionary.MergedDictionaries>

@@ -24,7 +24,7 @@ namespace Avalonia.UnitTests
             renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             styler: new Styler(),
-            theme: () => CreateDefaultTheme(),
+            theme: () => CreateSimpleTheme(),
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
             fontManagerImpl: new MockFontManagerImpl(),
             textShaperImpl: new MockTextShaperImpl(),
@@ -169,7 +169,7 @@ namespace Avalonia.UnitTests
                 windowImpl: windowImpl ?? WindowImpl);
         }
 
-        private static IStyle CreateDefaultTheme()
+        private static IStyle CreateSimpleTheme()
         {
             return new SimpleTheme { Mode = SimpleThemeMode.Light };
         }

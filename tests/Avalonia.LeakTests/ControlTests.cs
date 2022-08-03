@@ -313,7 +313,7 @@ namespace Avalonia.LeakTests
                 var border = textBox.GetTemplateChildren().FirstOrDefault(x => x.Name == "border");
 
                 // The TextBox should have subscriptions to its Classes collection from the
-                // default theme.
+                // simple theme.
                 Assert.NotEqual(0, textBox.Classes.ListenerCount);
 
                 // Clear the content and ensure the TextBox is removed.
