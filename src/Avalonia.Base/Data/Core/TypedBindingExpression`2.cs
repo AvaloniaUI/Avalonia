@@ -19,7 +19,7 @@ namespace Avalonia.Data.Core
     public class TypedBindingExpression<TIn, TOut> : LightweightObservableBase<BindingValue<TOut>>,
         ISubject<BindingValue<TOut>>,
         IDescription
-            where TIn : class
+            where TIn : class?
     {
         private readonly IObservable<TIn?> _rootSource;
         private readonly Func<TIn, TOut>? _read;

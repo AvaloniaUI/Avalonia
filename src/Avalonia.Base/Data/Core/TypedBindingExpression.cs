@@ -2,8 +2,6 @@
 using System.Linq.Expressions;
 using Avalonia.Data.Core.Parsers;
 
-#nullable enable
-
 namespace Avalonia.Data.Core
 {
     /// <summary>
@@ -16,7 +14,7 @@ namespace Avalonia.Data.Core
             TIn root,
             Expression<Func<TIn, TOut>> read,
             Optional<TOut> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             return new TypedBindingExpression<TIn, TOut>(
                 new Single<TIn>(root),
@@ -30,7 +28,7 @@ namespace Avalonia.Data.Core
             IObservable<TIn> root,
             Expression<Func<TIn, TOut>> read,
             Optional<TOut> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             return new TypedBindingExpression<TIn, TOut>(
                 root,
@@ -45,7 +43,7 @@ namespace Avalonia.Data.Core
             Expression<Func<TIn, TOut>> read,
             Func<TOut, TConverted> convert,
             Optional<TConverted> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             var compiledRead = read.Compile();
 
@@ -62,7 +60,7 @@ namespace Avalonia.Data.Core
             Expression<Func<TIn, TOut>> read,
             Func<TOut, TConverted> convert,
             Optional<TConverted> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             var compiledRead = read.Compile();
 
@@ -79,7 +77,7 @@ namespace Avalonia.Data.Core
             Expression<Func<TIn, TOut>> read,
             Action<TIn, TOut> write,
             Optional<TOut> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             return new TypedBindingExpression<TIn, TOut>(
                 new Single<TIn>(root),
@@ -94,7 +92,7 @@ namespace Avalonia.Data.Core
             Expression<Func<TIn, TOut>> read,
             Action<TIn, TOut> write,
             Optional<TOut> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             return new TypedBindingExpression<TIn, TOut>(
                 root,
@@ -111,7 +109,7 @@ namespace Avalonia.Data.Core
             Func<TOut, TConverted> convert,
             Func<TConverted, TOut> convertBack,
             Optional<TConverted> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             var compiledRead = read.Compile();
 
@@ -130,7 +128,7 @@ namespace Avalonia.Data.Core
             Func<TOut, TConverted> convert,
             Func<TConverted, TOut> convertBack,
             Optional<TConverted> fallbackValue = default)
-                where TIn : class
+                where TIn : class?
         {
             var compiledRead = read.Compile();
 
@@ -142,7 +140,7 @@ namespace Avalonia.Data.Core
                 fallbackValue);
         }
 
-        private class Single<T> : IObservable<T?>, IDisposable where T : class
+        private class Single<T> : IObservable<T?>, IDisposable where T : class?
         {
             private WeakReference<T> _value;
 
