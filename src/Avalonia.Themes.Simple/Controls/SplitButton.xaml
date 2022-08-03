@@ -3,7 +3,7 @@
                     x:CompileBindings="True"
                     xmlns:converters="using:Avalonia.Controls.Converters">
 
-  <!-- This style is heavily based on the Default v1 style.
+  <!-- This style is heavily based on the Fluent v1 style.
        The base resources are switched out along with a few minor changes such as Padding, CornerRadius. -->
 
   <Design.PreviewWith>
@@ -58,7 +58,7 @@
   <SolidColorBrush x:Key="SplitButtonBorderBrushCheckedDisabled" Color="{DynamicResource ThemeControlMidColor}"
                    Opacity="{DynamicResource ThemeDisabledOpacity}" />
 
-  <ControlTheme x:Key="DefaultSplitButtonComponent" TargetType="Button">
+  <ControlTheme x:Key="SimpleSplitButtonComponent" TargetType="Button">
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter x:Name="PART_ContentPresenter"
@@ -156,7 +156,7 @@
 
           <Button x:Name="PART_PrimaryButton"
                   Grid.Column="0"
-                  Theme="{StaticResource DefaultSplitButtonComponent}"
+                  Theme="{StaticResource SimpleSplitButtonComponent}"
                   MinWidth="{DynamicResource SplitButtonPrimaryButtonSize}"
                   Foreground="{TemplateBinding Foreground}"
                   Background="{TemplateBinding Background}"
@@ -187,7 +187,7 @@
 
           <Button x:Name="PART_SecondaryButton"
                   Grid.Column="2"
-                  Theme="{StaticResource DefaultSplitButtonComponent}"
+                  Theme="{StaticResource SimpleSplitButtonComponent}"
                   MinWidth="{DynamicResource SplitButtonSecondaryButtonSize}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   Foreground="{TemplateBinding Foreground}"

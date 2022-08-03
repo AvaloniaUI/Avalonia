@@ -44,7 +44,7 @@
     </Border>
   </Design.PreviewWith>
 
-  <ControlTheme x:Key="DefaultExpanderToggleButtonTheme"
+  <ControlTheme x:Key="SimpleExpanderToggleButtonTheme"
                 TargetType="ToggleButton">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
@@ -80,8 +80,8 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}" />
     </Style>
   </ControlTheme>
-  <ControlTheme x:Key="DefaultExpanderToggleButtonUpTheme"
-                BasedOn="{StaticResource DefaultExpanderToggleButtonTheme}"
+  <ControlTheme x:Key="SimpleExpanderToggleButtonUpTheme"
+                BasedOn="{StaticResource SimpleExpanderToggleButtonTheme}"
                 TargetType="ToggleButton">
     <Style Selector="^ /template/ Path">
       <Setter Property="RenderTransform">
@@ -89,8 +89,8 @@
       </Setter>
     </Style>
   </ControlTheme>
-  <ControlTheme x:Key="DefaultExpanderToggleButtonDownTheme"
-                BasedOn="{StaticResource DefaultExpanderToggleButtonTheme}"
+  <ControlTheme x:Key="SimpleExpanderToggleButtonDownTheme"
+                BasedOn="{StaticResource SimpleExpanderToggleButtonTheme}"
                 TargetType="ToggleButton">
     <Style Selector="^ /template/ Path">
       <Setter Property="RenderTransform">
@@ -98,8 +98,8 @@
       </Setter>
     </Style>
   </ControlTheme>
-  <ControlTheme x:Key="DefaultExpanderToggleButtonLeftTheme"
-                BasedOn="{StaticResource DefaultExpanderToggleButtonTheme}"
+  <ControlTheme x:Key="SimpleExpanderToggleButtonLeftTheme"
+                BasedOn="{StaticResource SimpleExpanderToggleButtonTheme}"
                 TargetType="ToggleButton">
     <Style Selector="^ /template/ Path">
       <Setter Property="RenderTransform">
@@ -107,8 +107,8 @@
       </Setter>
     </Style>
   </ControlTheme>
-  <ControlTheme x:Key="DefaultExpanderToggleButtonRightTheme"
-                BasedOn="{StaticResource DefaultExpanderToggleButtonTheme}"
+  <ControlTheme x:Key="SimpleExpanderToggleButtonRightTheme"
+                BasedOn="{StaticResource SimpleExpanderToggleButtonTheme}"
                 TargetType="ToggleButton">
     <Style Selector="^ /template/ Path">
       <Setter Property="RenderTransform">
@@ -139,7 +139,7 @@
                             Content="{TemplateBinding Header}"
                             IsChecked="{TemplateBinding IsExpanded,
                                                         Mode=TwoWay}"
-                            Theme="{StaticResource DefaultExpanderToggleButtonRightTheme}" />
+                            Theme="{StaticResource SimpleExpanderToggleButtonRightTheme}" />
               <ContentPresenter Name="PART_ContentPresenter"
                                 Grid.Row="1"
                                 Padding="{TemplateBinding Padding}"
@@ -153,7 +153,7 @@
         </ControlTemplate>
       </Setter>
       <Style Selector="^:expanded /template/ ToggleButton#PART_toggle">
-        <Setter Property="Theme" Value="{StaticResource DefaultExpanderToggleButtonDownTheme}" />
+        <Setter Property="Theme" Value="{StaticResource SimpleExpanderToggleButtonDownTheme}" />
       </Style>
     </Style>
     <Style Selector="^[ExpandDirection=Up]">
@@ -171,7 +171,7 @@
                             Content="{TemplateBinding Header}"
                             IsChecked="{TemplateBinding IsExpanded,
                                                         Mode=TwoWay}"
-                            Theme="{StaticResource DefaultExpanderToggleButtonRightTheme}" />
+                            Theme="{StaticResource SimpleExpanderToggleButtonRightTheme}" />
               <ContentPresenter Name="PART_ContentPresenter"
                                 Grid.Row="0"
                                 Padding="{TemplateBinding Padding}"
@@ -185,7 +185,7 @@
         </ControlTemplate>
       </Setter>
       <Style Selector="^:expanded /template/ ToggleButton#PART_toggle">
-        <Setter Property="Theme" Value="{StaticResource DefaultExpanderToggleButtonUpTheme}" />
+        <Setter Property="Theme" Value="{StaticResource SimpleExpanderToggleButtonUpTheme}" />
       </Style>
     </Style>
     <Style Selector="^[ExpandDirection=Right]">
@@ -203,7 +203,7 @@
                             Content="{TemplateBinding Header}"
                             IsChecked="{TemplateBinding IsExpanded,
                                                         Mode=TwoWay}"
-                            Theme="{StaticResource DefaultExpanderToggleButtonLeftTheme}" />
+                            Theme="{StaticResource SimpleExpanderToggleButtonLeftTheme}" />
               <ContentPresenter Name="PART_ContentPresenter"
                                 Grid.Column="1"
                                 Padding="{TemplateBinding Padding}"
@@ -217,7 +217,7 @@
         </ControlTemplate>
       </Setter>
       <Style Selector="^:expanded /template/ ToggleButton#PART_toggle">
-        <Setter Property="Theme" Value="{StaticResource DefaultExpanderToggleButtonRightTheme}" />
+        <Setter Property="Theme" Value="{StaticResource SimpleExpanderToggleButtonRightTheme}" />
       </Style>
     </Style>
     <Style Selector="^[ExpandDirection=Left]">
@@ -235,7 +235,7 @@
                             Content="{TemplateBinding Header}"
                             IsChecked="{TemplateBinding IsExpanded,
                                                         Mode=TwoWay}"
-                            Theme="{StaticResource DefaultExpanderToggleButtonRightTheme}" />
+                            Theme="{StaticResource SimpleExpanderToggleButtonRightTheme}" />
               <ContentPresenter Name="PART_ContentPresenter"
                                 Grid.Column="0"
                                 Padding="{TemplateBinding Padding}"
@@ -249,7 +249,7 @@
         </ControlTemplate>
       </Setter>
       <Style Selector="^:expanded /template/ ToggleButton#PART_toggle">
-        <Setter Property="Theme" Value="{StaticResource DefaultExpanderToggleButtonLeftTheme}" />
+        <Setter Property="Theme" Value="{StaticResource SimpleExpanderToggleButtonLeftTheme}" />
       </Style>
     </Style>
   </ControlTheme>

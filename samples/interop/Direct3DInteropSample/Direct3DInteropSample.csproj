@@ -22,7 +22,7 @@
       </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+        <ProjectReference Include="..\..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
         <ProjectReference Include="..\..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
         <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
         <ProjectReference Include="..\..\MiniMvvm\MiniMvvm.csproj" />

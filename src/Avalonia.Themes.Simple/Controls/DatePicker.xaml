@@ -42,7 +42,7 @@
   <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
   <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
 
-  <ControlTheme x:Key="DefaultDatePickerFlyoutButton"
+  <ControlTheme x:Key="SimpleDatePickerFlyoutButton"
                 TargetType="Button">
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Template">
@@ -115,7 +115,7 @@
                     Foreground="{TemplateBinding Foreground}"
                     IsEnabled="{TemplateBinding IsEnabled}"
                     TemplatedControl.IsTemplateFocusTarget="True"
-                    Theme="{StaticResource DefaultDatePickerFlyoutButton}">
+                    Theme="{StaticResource SimpleDatePickerFlyoutButton}">
               <Grid Name="ButtonContentGrid"
                     ColumnDefinitions="78*,Auto,132*,Auto,78*">
                 <TextBlock Name="DayText"
@@ -200,7 +200,7 @@
             <Grid Name="PickerContainer">
               <Grid.Styles>
                 <Style Selector="DateTimePickerPanel > ListBoxItem">
-                  <Setter Property="Theme" Value="{StaticResource DefaultDateTimePickerItem}" />
+                  <Setter Property="Theme" Value="{StaticResource SimpleDateTimePickerItem}" />
                 </Style>
               </Grid.Styles>
               <!--  Column Definitions set in code, ignore here  -->
@@ -213,9 +213,9 @@
                                        ShouldLoop="True" />
                 </ScrollViewer>
                 <RepeatButton Name="MonthUpButton"
-                              Theme="{StaticResource DefaultDateTimePickerUpButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerUpButton}" />
                 <RepeatButton Name="MonthDownButton"
-                              Theme="{StaticResource DefaultDateTimePickerDownButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerDownButton}" />
               </Panel>
               <Panel Name="DayHost">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
@@ -226,9 +226,9 @@
                                        ShouldLoop="True" />
                 </ScrollViewer>
                 <RepeatButton Name="DayUpButton"
-                              Theme="{StaticResource DefaultDateTimePickerUpButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerUpButton}" />
                 <RepeatButton Name="DayDownButton"
-                              Theme="{StaticResource DefaultDateTimePickerDownButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerDownButton}" />
               </Panel>
               <Panel Name="YearHost">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
@@ -239,9 +239,9 @@
                                        ShouldLoop="False" />
                 </ScrollViewer>
                 <RepeatButton Name="YearUpButton"
-                              Theme="{StaticResource DefaultDateTimePickerUpButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerUpButton}" />
                 <RepeatButton Name="YearDownButton"
-                              Theme="{StaticResource DefaultDateTimePickerDownButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerDownButton}" />
               </Panel>
               <Rectangle Name="HighlightRect"
                          Grid.Column="0"
@@ -279,7 +279,7 @@
                       Height="{DynamicResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Theme="{StaticResource DefaultDateTimePickerButton}">
+                      Theme="{StaticResource SimpleDateTimePickerButton}">
                 <Path Data="M0.5,8.5 5,13.5 15.5,3"
                       Stroke="{Binding $parent[Button].Foreground}"
                       StrokeLineCap="Round"
@@ -290,7 +290,7 @@
                       Height="{DynamicResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Theme="{StaticResource DefaultDateTimePickerButton}">
+                      Theme="{StaticResource SimpleDateTimePickerButton}">
                 <Path Data="M2,2 14,14 M2,14 14 2"
                       Stroke="{Binding $parent[Button].Foreground}"
                       StrokeLineCap="Round"

@@ -2,7 +2,7 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        Selector=":is(UserControl)">
   <Style.Resources>
-    <ControlTheme x:Key="DefaultUserControl"
+    <ControlTheme x:Key="SimpleUserControl"
                   TargetType="UserControl">
       <Setter Property="Template">
         <ControlTemplate>
@@ -21,5 +21,5 @@
     </ControlTheme>
   </Style.Resources>
 
-  <Setter Property="Theme" Value="{StaticResource DefaultUserControl}" />
+  <Setter Property="Theme" Value="{StaticResource SimpleUserControl}" />
 </Style>

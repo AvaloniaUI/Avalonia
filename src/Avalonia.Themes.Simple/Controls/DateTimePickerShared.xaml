@@ -13,17 +13,17 @@
     <Border Width="200"
             Padding="20">
       <StackPanel Spacing="20">
-        <ListBoxItem Theme="{DynamicResource DefaultDateTimePickerItem}">Standard Item</ListBoxItem>
-        <ListBoxItem Theme="{DynamicResource DefaultDateTimePickerItem}" Classes="MonthItem">Month Item</ListBoxItem>
-        <RepeatButton Theme="{DynamicResource DefaultDateTimePickerButton}">Button</RepeatButton>
-        <RepeatButton Theme="{DynamicResource DefaultDateTimePickerUpButton}" IsVisible="True"/>
-        <RepeatButton Theme="{DynamicResource DefaultDateTimePickerDownButton}" IsVisible="True"/>
+        <ListBoxItem Theme="{DynamicResource SimpleDateTimePickerItem}">Standard Item</ListBoxItem>
+        <ListBoxItem Theme="{DynamicResource SimpleDateTimePickerItem}" Classes="MonthItem">Month Item</ListBoxItem>
+        <RepeatButton Theme="{DynamicResource SimpleDateTimePickerButton}">Button</RepeatButton>
+        <RepeatButton Theme="{DynamicResource SimpleDateTimePickerUpButton}" IsVisible="True"/>
+        <RepeatButton Theme="{DynamicResource SimpleDateTimePickerDownButton}" IsVisible="True"/>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
 
   <!--  Theme for the items displayed in the selectors  -->
-  <ControlTheme x:Key="DefaultDateTimePickerItem"
+  <ControlTheme x:Key="SimpleDateTimePickerItem"
                 BasedOn="{StaticResource {x:Type ListBoxItem}}"
                 TargetType="ListBoxItem">
     <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterItemPadding}" />
@@ -47,7 +47,7 @@
   </ControlTheme>
 
   <!--  This is used for both the accept/dismiss & repeatbuttons in the presenter  -->
-  <ControlTheme x:Key="DefaultDateTimePickerButton"
+  <ControlTheme x:Key="SimpleDateTimePickerButton"
                 TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource ThemeControlTransparentBrush}" />
     <Setter Property="Height" Value="22" />
@@ -91,8 +91,8 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="DefaultDateTimePickerUpButton"
-                BasedOn="{StaticResource DefaultDateTimePickerButton}"
+  <ControlTheme x:Key="SimpleDateTimePickerUpButton"
+                BasedOn="{StaticResource SimpleDateTimePickerButton}"
                 TargetType="RepeatButton">
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="Height" Value="22" />
@@ -114,8 +114,8 @@
     </Setter>
   </ControlTheme>
 
-  <ControlTheme x:Key="DefaultDateTimePickerDownButton"
-                BasedOn="{StaticResource DefaultDateTimePickerButton}"
+  <ControlTheme x:Key="SimpleDateTimePickerDownButton"
+                BasedOn="{StaticResource SimpleDateTimePickerButton}"
                 TargetType="RepeatButton">
     <Setter Property="VerticalAlignment" Value="Bottom" />
     <Setter Property="Height" Value="22" />

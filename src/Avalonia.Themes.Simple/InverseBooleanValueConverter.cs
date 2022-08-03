@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
 
-namespace Avalonia.Themes.Default
+namespace Avalonia.Themes.Simple
 {
     class InverseBooleanValueConverter : IValueConverter
     {

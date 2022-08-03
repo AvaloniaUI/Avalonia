@@ -1,14 +1,14 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:default="clr-namespace:Avalonia.Themes.Default">
-  <default:InverseBooleanValueConverter x:Key="AvaloniaThemesDefaultNativeMenuBarInverseBooleanValueConverter"
+                    xmlns:default="clr-namespace:Avalonia.Themes.Simple">
+  <default:InverseBooleanValueConverter x:Key="AvaloniaThemesSimpleNativeMenuBarInverseBooleanValueConverter"
                                         Default="True" />
-  <default:IBitmapToImageConverter x:Key="AvaloniaThemesDefaultNativeMenuBarIBitmapToImageConverter" />
+  <default:IBitmapToImageConverter x:Key="AvaloniaThemesSimpleNativeMenuBarIBitmapToImageConverter" />
   <ControlTheme x:Key="{x:Type NativeMenuBar}"
                 TargetType="NativeMenuBar">
     <Setter Property="Template">
       <ControlTemplate>
-        <Menu IsVisible="{Binding $parent[TopLevel].(NativeMenu.IsNativeMenuExported), Converter={StaticResource AvaloniaThemesDefaultNativeMenuBarInverseBooleanValueConverter}}"
+        <Menu IsVisible="{Binding $parent[TopLevel].(NativeMenu.IsNativeMenuExported), Converter={StaticResource AvaloniaThemesSimpleNativeMenuBarInverseBooleanValueConverter}}"
               Items="{Binding $parent[TopLevel].(NativeMenu.Menu).Items}">
           <Menu.Styles>
             <Style Selector="MenuItem">
@@ -20,7 +20,7 @@
               <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
               <Setter Property="(NativeMenuBar.EnableMenuItemClickForwarding)" Value="True" />
               <!--  NativeMenuItem is IBitmap and MenuItem is Image  -->
-              <Setter Property="Icon" Value="{Binding Icon, Converter={StaticResource AvaloniaThemesDefaultNativeMenuBarIBitmapToImageConverter}}" />
+              <Setter Property="Icon" Value="{Binding Icon, Converter={StaticResource AvaloniaThemesSimpleNativeMenuBarIBitmapToImageConverter}}" />
             </Style>
           </Menu.Styles>
         </Menu>

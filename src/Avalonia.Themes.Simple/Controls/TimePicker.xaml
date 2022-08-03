@@ -41,7 +41,7 @@
   <Thickness x:Key="TimePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
   <Thickness x:Key="TimePickerHostPadding">0,3,0,6</Thickness>
 
-  <ControlTheme x:Key="DefaultTimePickerFlyoutButton"
+  <ControlTheme x:Key="SimpleTimePickerFlyoutButton"
                 TargetType="Button">
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Template">
@@ -114,7 +114,7 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     Foreground="{TemplateBinding Foreground}"
                     IsEnabled="{TemplateBinding IsEnabled}"
-                    Theme="{StaticResource DefaultTimePickerFlyoutButton}">
+                    Theme="{StaticResource SimpleTimePickerFlyoutButton}">
 
               <Grid Name="FlyoutButtonContentGrid">
                 <!--  Ignore col defs here, set in code  -->
@@ -226,9 +226,9 @@
                                        ShouldLoop="True" />
                 </ScrollViewer>
                 <RepeatButton Name="HourUpButton"
-                              Theme="{StaticResource DefaultDateTimePickerUpButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerUpButton}" />
                 <RepeatButton Name="HourDownButton"
-                              Theme="{StaticResource DefaultDateTimePickerDownButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerDownButton}" />
               </Panel>
 
               <Panel Name="MinuteHost"
@@ -241,9 +241,9 @@
                                        ShouldLoop="True" />
                 </ScrollViewer>
                 <RepeatButton Name="MinuteUpButton"
-                              Theme="{StaticResource DefaultDateTimePickerUpButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerUpButton}" />
                 <RepeatButton Name="MinuteDownButton"
-                              Theme="{StaticResource DefaultDateTimePickerDownButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerDownButton}" />
               </Panel>
 
               <Panel Name="PeriodHost"
@@ -256,9 +256,9 @@
                                        ShouldLoop="False" />
                 </ScrollViewer>
                 <RepeatButton Name="PeriodUpButton"
-                              Theme="{StaticResource DefaultDateTimePickerUpButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerUpButton}" />
                 <RepeatButton Name="PeriodDownButton"
-                              Theme="{StaticResource DefaultDateTimePickerDownButton}" />
+                              Theme="{StaticResource SimpleDateTimePickerDownButton}" />
               </Panel>
 
               <Rectangle x:Name="HighlightRect"
@@ -296,7 +296,7 @@
                       Height="{DynamicResource TimePickerFlyoutPresenterAcceptDismissHostGridHeight}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Theme="{StaticResource DefaultDateTimePickerButton}">
+                      Theme="{StaticResource SimpleDateTimePickerButton}">
                 <Path Data="M0.5,8.5 5,13.5 15.5,3"
                       Stroke="{Binding $parent[Button].Foreground}"
                       StrokeLineCap="Round"
@@ -308,7 +308,7 @@
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       FontSize="16"
-                      Theme="{StaticResource DefaultDateTimePickerButton}">
+                      Theme="{StaticResource SimpleDateTimePickerButton}">
                 <Path Data="M2,2 14,14 M2,14 14 2"
                       Stroke="{Binding $parent[Button].Foreground}"
                       StrokeLineCap="Round"
