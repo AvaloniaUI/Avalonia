@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Simple;
 using Avalonia.UnitTests;
 
 using BenchmarkDotNet.Attributes;
@@ -25,32 +27,25 @@ namespace Avalonia.Benchmarks.Themes
         }
 
         [Benchmark]
-        [Arguments("avares://Avalonia.Themes.Fluent/FluentDark.xaml")]
-        [Arguments("avares://Avalonia.Themes.Fluent/FluentLight.xaml")]
-        public bool InitFluentTheme(string themeUri)
+        [Arguments(FluentThemeMode.Dark)]
+        [Arguments(FluentThemeMode.Light)]
+        public bool InitFluentTheme(FluentThemeMode mode)
         {
-            UnitTestApplication.Current.Styles[0] = new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
+            UnitTestApplication.Current.Styles[0] = new FluentTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
             {
-                Source = new Uri(themeUri)
+                Mode = mode
             };
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("SystemAccentColor", out _);
         }
 
         [Benchmark]
-        [Arguments("avares://Avalonia.Themes.Simple/Accents/BaseLight.xaml")]
-        [Arguments("avares://Avalonia.Themes.Simple/Accents/BaseDark.xaml")]
-        public bool InitDefaultTheme(string themeUri)
+        [Arguments(SimpleThemeMode.Dark)]
+        [Arguments(SimpleThemeMode.Light)]
+        public bool InitDefaultTheme(SimpleThemeMode mode)
         {
-            UnitTestApplication.Current.Styles[0] = new Styles
+            UnitTestApplication.Current.Styles[0] = new SimpleTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
             {
-                new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
-                {
-                    Source = new Uri(themeUri)
-                },
-                new StyleInclude(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
-                {
-                    Source = new Uri("avares://Avalonia.Themes.Simple/DefaultTheme.xaml")
-                }
+                Mode = mode
             };
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("ThemeAccentColor", out _);
         }

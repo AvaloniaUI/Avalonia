@@ -1,10 +1,7 @@
-﻿<Application
-    x:Class="Avalonia.DesignerSupport.TestApp.App"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Application.Styles>
-        <StyleInclude Source="avares://Avalonia.Themes.Simple/DefaultTheme.xaml" />
-        <StyleInclude Source="avares://Avalonia.Themes.Simple/Accents/Base.xaml" />
-        <StyleInclude Source="avares://Avalonia.Themes.Simple/Accents/BaseLight.xaml" />
-    </Application.Styles>
+﻿<Application x:Class="Avalonia.DesignerSupport.TestApp.App"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Styles>
+    <SimpleTheme />
+  </Application.Styles>
 </Application>
