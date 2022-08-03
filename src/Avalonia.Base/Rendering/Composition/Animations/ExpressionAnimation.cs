@@ -3,6 +3,8 @@ using System;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Animations
 {
     /// <summary>
@@ -14,7 +16,7 @@ namespace Avalonia.Rendering.Composition.Animations
     /// This contrasts <see cref="KeyFrameAnimation"/>s, which use an interpolator to define how the animating
     /// property changes over time. The mathematical equation can be defined using references to properties
     /// of Composition objects, mathematical functions and operators and Input.
-    /// Use the <see cref="CompositionObject.StartAnimation"/> method to start the animation.
+    /// Use the <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> method to start the animation.
     /// </remarks>
     public class ExpressionAnimation : CompositionAnimation
     {

@@ -187,8 +187,8 @@
               <ComboBox.Items>
                 <models:CatalogTheme>FluentLight</models:CatalogTheme>
                 <models:CatalogTheme>FluentDark</models:CatalogTheme>
-                <models:CatalogTheme>DefaultLight</models:CatalogTheme>
-                <models:CatalogTheme>DefaultDark</models:CatalogTheme>
+                <models:CatalogTheme>SimpleLight</models:CatalogTheme>
+                <models:CatalogTheme>SimpleDark</models:CatalogTheme>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"
