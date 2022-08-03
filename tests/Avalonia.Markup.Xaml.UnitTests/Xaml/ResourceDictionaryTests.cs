@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -235,6 +236,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 
                 Assert.False(windowResources.ContainsDeferredKey("Red"));
                 Assert.False(buttonResources.ContainsDeferredKey("Red2"));
+            }
+        }
+        
+        [Fact]
+        public void Value_Type_With_Parse_Should_Not_Be_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Color x:Key='Red'>Red</Color>
+</ResourceDictionary>";
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+                Assert.False(resources.ContainsDeferredKey("Red"));
+                Assert.IsType<Color>(resources["Red"]);
             }
         }
 

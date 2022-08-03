@@ -15,6 +15,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (!(node is XamlPropertyAssignmentNode pa) || pa.Values.Count != 2)
                 return node;
 
+            if (!ShouldBeDeferred(pa.Values[1]))
+                return node;
+
             var types = context.GetAvaloniaTypes();
 
             if (pa.Property.DeclaringType == types.ResourceDictionary && pa.Property.Name == "Content")
@@ -37,6 +40,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
+        private static bool ShouldBeDeferred(IXamlAstValueNode node)
+        {
+            // XAML compiler is currently strict about value types, allowing them to be created only through converters.
+            // At the moment it should be safe to not defer structs.
+            return !node.Type.GetClrType().IsValueType;
+        }
+        
         class AdderSetter : IXamlPropertySetter, IXamlEmitablePropertySetter<IXamlILEmitter>
         {
             private readonly IXamlMethod _getter;
