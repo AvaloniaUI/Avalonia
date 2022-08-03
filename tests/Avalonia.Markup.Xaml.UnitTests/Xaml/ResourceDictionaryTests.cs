@@ -74,11 +74,31 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-  <Color x:Key='Red'>Red</Color>
+    <SolidColorBrush x:Key='Red' Color='Red' />
 </ResourceDictionary>";
                 var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
 
                 Assert.True(resources.ContainsDeferredKey("Red"));
+            }
+        }
+        
+        [Fact]
+        public void Item_Added_To_ResourceDictionary_Is_UnDeferred_On_Read()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <SolidColorBrush x:Key='Red' Color='Red' />
+</ResourceDictionary>";
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+                Assert.True(resources.ContainsDeferredKey("Red"));
+
+                Assert.IsType<SolidColorBrush>(resources["Red"]);
+                
+                Assert.False(resources.ContainsDeferredKey("Red"));
             }
         }
 
@@ -91,7 +111,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Resources>
-        <Color x:Key='Red'>Red</Color>
+        <SolidColorBrush x:Key='Red' Color='Red' />
     </Window.Resources>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
@@ -113,7 +133,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
-                    <Color x:Key='Red'>Red</Color>
+                    <SolidColorBrush x:Key='Red' Color='Red' />
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -135,7 +155,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Style xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Style.Resources>
-        <Color x:Key='Red'>Red</Color>
+        <SolidColorBrush x:Key='Red' Color='Red' />
     </Style.Resources>
 </Style>";
                 var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
@@ -154,13 +174,67 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Styles.Resources>
-        <Color x:Key='Red'>Red</Color>
+        <SolidColorBrush x:Key='Red' Color='Red' />
     </Styles.Resources>
 </Styles>";
                 var style = (Styles)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var resources = (ResourceDictionary)style.Resources;
 
                 Assert.True(resources.ContainsDeferredKey("Red"));
+            }
+        }
+
+        [Fact]
+        public void Item_Can_Be_StaticReferenced_As_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <SolidColorBrush x:Key='Red' Color='Red' />
+    </Window.Resources>
+    <Button>
+        <Button.Resources>
+            <StaticResource x:Key='Red2' ResourceKey='Red' />
+        </Button.Resources>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var windowResources = (ResourceDictionary)window.Resources;
+                var buttonResources = (ResourceDictionary)((Button)window.Content!).Resources;
+                
+                Assert.True(windowResources.ContainsDeferredKey("Red"));
+                Assert.True(buttonResources.ContainsDeferredKey("Red2"));
+            }
+        }
+        
+        [Fact]
+        public void Item_StaticReferenced_Is_UnDeferred_On_Read()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <SolidColorBrush x:Key='Red' Color='Red' />
+    </Window.Resources>
+    <Button>
+        <Button.Resources>
+            <StaticResource x:Key='Red2' ResourceKey='Red' />
+        </Button.Resources>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var windowResources = (ResourceDictionary)window.Resources;
+                var buttonResources = (ResourceDictionary)((Button)window.Content!).Resources;
+                
+                Assert.IsType<SolidColorBrush>(buttonResources["Red2"]);
+                
+                Assert.False(windowResources.ContainsDeferredKey("Red"));
+                Assert.False(buttonResources.ContainsDeferredKey("Red2"));
             }
         }
 
