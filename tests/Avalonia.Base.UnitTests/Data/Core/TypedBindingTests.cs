@@ -100,21 +100,21 @@ namespace Avalonia.Markup.UnitTests.Data
             return new WeakReference(obj);
         }
 
-        ////[Fact]
-        ////public void OneTime_Binding_Should_Be_Set_Up()
-        ////{
-        ////    var source = new Source { Foo = "foo" };
-        ////    var target = new TextBlock { DataContext = source };
-        ////    var binding = TypedBinding<Source>.OneTime(o => o.Foo);
+        [Fact]
+        public void OneTime_Binding_Should_Be_Set_Up()
+        {
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source };
+            var binding = TypedBinding<Source>.OneTime(o => o.Foo);
 
-        ////    binding.Bind(target, TextBox.TextProperty);
+            binding.Bind(target, TextBox.TextProperty);
 
-        ////    Assert.Equal("foo", target.Text);
-        ////    source.Foo = "bar";
-        ////    Assert.Equal("foo", target.Text);
-        ////    target.Text = "baz";
-        ////    Assert.Equal("bar", source.Foo);
-        ////}
+            Assert.Equal("foo", target.Text);
+            source.Foo = "bar";
+            Assert.Equal("foo", target.Text);
+            target.Text = "baz";
+            Assert.Equal("bar", source.Foo);
+        }
 
         ////[Fact]
         ////public void OneWayToSource_Binding_Should_Be_Set_Up()

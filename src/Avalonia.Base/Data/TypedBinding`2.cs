@@ -115,6 +115,10 @@ namespace Avalonia.Data
                         target.GetBindingObservable(property).Subscribe(expression),
                         target.Bind(property, expression, Priority));
                 case BindingMode.OneTime:
+                    return target.Bind(
+                        property,
+                        System.Reactive.Linq.Observable.TakeUntil(expression, x => x.HasValue),
+                        Priority);
                 case BindingMode.OneWayToSource:
                     throw new NotImplementedException();
                 default:
