@@ -146,7 +146,9 @@ namespace Avalonia.Rendering.Composition
             if (_lastBatchCompleted == null || _lastBatchCompleted.IsCompleted)
                 Dispatcher.UIThread.Post(action, DispatcherPriority.Composition);
             else
-                _lastBatchCompleted.ContinueWith(_ => Dispatcher.UIThread.Post(action, DispatcherPriority.Composition));
+                _lastBatchCompleted.ContinueWith(
+                    static (_, state) => Dispatcher.UIThread.Post((Action)state!, DispatcherPriority.Composition),
+                    action);
         }
     }
 }
