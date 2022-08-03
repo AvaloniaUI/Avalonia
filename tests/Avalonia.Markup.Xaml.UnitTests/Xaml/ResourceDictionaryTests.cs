@@ -240,7 +240,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
         
         [Fact]
-        public void Value_Type_With_Parse_Should_Not_Be_Deferred()
+        public void Value_Type_With_Parse_Converter_Should_Not_Be_Deferred()
         {
             using (StyledWindow())
             {
@@ -253,6 +253,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.False(resources.ContainsDeferredKey("Red"));
                 Assert.IsType<Color>(resources["Red"]);
+            }
+        }
+        
+        [Fact]
+        public void Value_Type_With_Ctor_Converter_Should_Not_Be_Deferred()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Thickness x:Key='Margin'>1 1 1 1</Thickness>
+</ResourceDictionary>";
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+                Assert.False(resources.ContainsDeferredKey("Margin"));
+                Assert.IsType<Thickness>(resources["Margin"]);
             }
         }
 
