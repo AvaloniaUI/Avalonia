@@ -327,7 +327,7 @@ namespace Avalonia.Build.Tasks
                                         
                                         // TODO: Throw an error
                                         // This usually happens when the same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named simple theme resources
+                                        // We currently support it for dual-named default theme resources
                                         if (op != null
                                             && op.Name == TrampolineName)
                                         {
