@@ -266,10 +266,6 @@ namespace Avalonia.Media.TextFormatting
                         {
                             offset = Math.Max(0, currentPosition - shapedRun.Text.Start);
                         }
-                        //else
-                        //{
-                        //    offset = Math.Max(0, currentPosition - shapedRun.Text.Start + shapedRun.Text.Length);
-                        //}
 
                         characterHit = new CharacterHit(characterHit.FirstCharacterIndex + offset, characterHit.TrailingLength);
 
