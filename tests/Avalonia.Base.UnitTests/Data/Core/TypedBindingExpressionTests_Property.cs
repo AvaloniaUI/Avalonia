@@ -268,6 +268,32 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
+        public void Should_Ignore_Unrelated_Property_Changes()
+        {
+            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
+            var binding = TypedBindingExpression.OneWay(data, o => (o.Next as Class2).Bar);
+            var result = new List<object>();
+
+            binding.Subscribe(x => result.Add(x.Value));
+
+            Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(1, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(1, data.PropertyChangedGeneration);
+            Assert.Equal(1, ((Class2)data.Next).PropertyChangedGeneration);
+            Assert.Equal(new[] { "bar" }, result);
+
+            data.Foo = "unrelated";
+
+            Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(1, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(1, data.PropertyChangedGeneration);
+            Assert.Equal(1, ((Class2)data.Next).PropertyChangedGeneration);
+            Assert.Equal(new[] { "bar" }, result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
         public void Empty_Expression_Should_Track_Root()
         {
             var update = new Subject<Unit>();

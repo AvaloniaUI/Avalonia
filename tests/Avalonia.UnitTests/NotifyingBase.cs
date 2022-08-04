@@ -14,6 +14,7 @@ namespace Avalonia.UnitTests
             {
                 _propertyChanged += value;
                 ++PropertyChangedSubscriptionCount;
+                ++PropertyChangedGeneration;
             }
 
             remove
@@ -22,15 +23,13 @@ namespace Avalonia.UnitTests
                 {
                     _propertyChanged -= value;
                     --PropertyChangedSubscriptionCount;
+                    ++PropertyChangedGeneration;
                 }
             }
         }
 
-        public int PropertyChangedSubscriptionCount
-        {
-            get;
-            private set;
-        }
+        public int PropertyChangedGeneration { get; private set; }
+        public int PropertyChangedSubscriptionCount { get; private set; }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
