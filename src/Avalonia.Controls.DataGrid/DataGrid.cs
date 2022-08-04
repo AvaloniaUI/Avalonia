@@ -2167,6 +2167,38 @@ namespace Avalonia.Controls
 
             return desiredSize;
         }
+        
+        /// <inheritdoc/>
+        protected override void OnDataContextBeginUpdate()
+        {
+            base.OnDataContextBeginUpdate();
+            foreach (DataGridRow row in GetAllRows())
+            {
+                foreach (DataGridCell cell in row.Cells)
+                {
+                    if (cell.Content is StyledElement)
+                    {
+                        DataContextProperty.Notifying?.Invoke((IAvaloniaObject)cell.Content, true);
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDataContextEndUpdate()
+        {
+            base.OnDataContextEndUpdate();
+            foreach (DataGridRow row in GetAllRows())
+            {
+                foreach (DataGridCell cell in row.Cells)
+                {
+                    if (cell.Content is StyledElement)
+                    {
+                        DataContextProperty.Notifying?.Invoke((IAvaloniaObject)cell.Content, false);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Raises the BeginningEdit event.
