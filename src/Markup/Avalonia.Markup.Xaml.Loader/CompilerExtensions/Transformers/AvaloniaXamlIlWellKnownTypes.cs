@@ -98,6 +98,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType TextDecorations { get; }
         public IXamlType TextTrimming { get; }
         public IXamlType ISetter { get; }
+        public IXamlType IResourceDictionary { get; }
+        public IXamlType ResourceDictionary { get; }
+        public IXamlMethod ResourceDictionaryDeferredAdd { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -218,6 +221,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TextDecorations = cfg.TypeSystem.GetType("Avalonia.Media.TextDecorations");
             TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
             ISetter = cfg.TypeSystem.GetType("Avalonia.Styling.ISetter");
+            IResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.IResourceDictionary");
+            ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
+            ResourceDictionaryDeferredAdd = ResourceDictionary.FindMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,
+                cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
+                    cfg.TypeSystem.GetType("System.IServiceProvider"),
+                    XamlIlTypes.Object));
         }
     }
 

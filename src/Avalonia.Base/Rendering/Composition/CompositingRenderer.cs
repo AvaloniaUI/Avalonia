@@ -71,7 +71,7 @@ public class CompositingRenderer : IRendererWithCompositor
         if(_queuedUpdate)
             return;
         _queuedUpdate = true;
-        Dispatcher.UIThread.Post(_update, DispatcherPriority.Composition);
+        _compositor.InvokeWhenReadyForNextCommit(_update);
     }
     
     /// <inheritdoc/>
