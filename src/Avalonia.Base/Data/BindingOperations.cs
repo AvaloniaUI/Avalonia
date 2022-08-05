@@ -96,11 +96,10 @@ namespace Avalonia.Data
                                 BindingNotification.ExtractValue(x),
                                 bindingCopy.Priority));
                     }
-                    else
-                    {
-                        target.SetValue(property, binding.Value, binding.Priority);
-                        return Disposable.Empty;
-                    }
+
+                    target.SetValue(property, binding.Value, binding.Priority);
+
+                    return Disposable.Empty;
 
                 case BindingMode.OneWayToSource:
                 {
@@ -141,20 +140,30 @@ namespace Avalonia.Data
                 _target = new WeakReference<IAvaloniaObject>(target);
                 _property = property;
                 _updateSourceTrigger = updateSourceTrigger;
+
+                if (_updateSourceTrigger is UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged)
+                {
+                    PublishNext();
+                }
             }
 
             private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
             {
-                if (_updateSourceTrigger == UpdateSourceTrigger.LostFocus &&
-                    e.Property == InputElement.IsFocusedProperty &&
-                    e.OldValue is true &&
-                    e.NewValue is false)
+                switch (_updateSourceTrigger)
                 {
-                    PublishNext();
-                }
-                else if (e.Property == _property)
-                {
-                    PublishNext(e.NewValue);
+                    case UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged when e.Property == _property:
+
+                        PublishNext(e.NewValue);
+
+                        break;
+
+                    case UpdateSourceTrigger.LostFocus when 
+                        e.Property == InputElement.IsFocusedProperty && 
+                        e.OldValue is true &&
+                        e.NewValue is false:
+
+                        PublishNext();
+                        break;
                 }
             }
 
