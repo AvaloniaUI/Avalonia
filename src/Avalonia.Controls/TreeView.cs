@@ -529,7 +529,7 @@ namespace Avalonia.Controls
                         e.Source,
                         true,
                         e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
+                        e.KeyModifiers.HasAllFlags(AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>().CommandModifiers),
                         point.Properties.IsRightButtonPressed);
                 }
             }
