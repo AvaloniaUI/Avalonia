@@ -119,14 +119,12 @@ namespace Avalonia.Controls
                 nameof(Percentage),
                 o => o.Percentage);
 
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(IndeterminateStartingOffset),
                 p => p.IndeterminateStartingOffset,
                 (p, o) => p.IndeterminateStartingOffset = o);
 
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(IndeterminateEndingOffset),
@@ -139,14 +137,12 @@ namespace Avalonia.Controls
             private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
         }
         
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public double IndeterminateStartingOffset
         {
             get => _indeterminateStartingOffset;
             set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
         }
 
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public double IndeterminateEndingOffset
         {
             get => _indeterminateEndingOffset;

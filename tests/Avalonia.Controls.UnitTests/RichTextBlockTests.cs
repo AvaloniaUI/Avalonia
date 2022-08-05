@@ -48,5 +48,49 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(target.IsMeasureValid);
             }
         }
+
+        [Fact]
+        public void Changing_Inlines_Should_Invalidate_Measure()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new RichTextBlock();
+
+                var inlines = new InlineCollection { new Run("Hello") };
+
+                target.Measure(Size.Infinity);
+
+                Assert.True(target.IsMeasureValid);
+
+                target.Inlines = inlines;
+
+                Assert.False(target.IsMeasureValid);
+            }
+        }
+
+        [Fact]
+        public void Changing_Inlines_Should_Reset_Inlines_Parent()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new RichTextBlock();
+
+                var run = new Run("Hello");
+
+                target.Inlines.Add(run);
+
+                target.Measure(Size.Infinity);
+
+                Assert.True(target.IsMeasureValid);
+
+                target.Inlines = null;
+
+                Assert.Null(run.Parent);
+
+                target.Inlines = new InlineCollection { run };
+
+                Assert.Equal(target, run.Parent);
+            }
+        }
     }
 }

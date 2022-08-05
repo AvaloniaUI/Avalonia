@@ -255,7 +255,7 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Clamps a value between a minimum and maximum value.
         /// </summary>
-        /// <param name="val">The value.</param>
+        /// <param name="value">The value.</param>
         /// <param name="min">The minimum value.</param>
         /// <param name="max">The maximum value.</param>
         /// <returns>The clamped value.</returns>

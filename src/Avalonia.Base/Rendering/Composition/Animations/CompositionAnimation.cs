@@ -1,12 +1,11 @@
 // ReSharper disable InconsistentNaming
 // ReSharper disable CheckNamespace
 
-using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
-using Avalonia.Rendering.Composition.Transport;
+
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
 
 namespace Avalonia.Rendering.Composition.Animations
 {
@@ -14,10 +13,10 @@ namespace Avalonia.Rendering.Composition.Animations
     /// This is the base class for ExpressionAnimation and KeyFrameAnimation.
     /// </summary>
     /// <remarks>
-    /// Use the <see cref="CompositionObject.StartAnimation"/> method to start the animation.
+    /// Use the <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> method to start the animation.
     /// Value parameters (as opposed to reference parameters which are set using <see cref="SetReferenceParameter"/>)
     /// are copied and "embedded" into an expression at the time CompositionObject.StartAnimation is called.
-    /// Changing the value of the variable after <see cref="CompositionObject.StartAnimation"/> is called will not affect
+    /// Changing the value of the variable after <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> is called will not affect
     /// the value of the ExpressionAnimation.
     /// See the remarks section of ExpressionAnimation for additional information.
     /// </remarks>

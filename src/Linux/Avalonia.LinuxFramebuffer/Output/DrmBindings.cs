@@ -84,7 +84,7 @@ namespace Avalonia.LinuxFramebuffer.Output
     {
         public List<DrmConnector> Connectors { get; }= new List<DrmConnector>();
         internal Dictionary<uint, DrmEncoder> Encoders { get; } = new Dictionary<uint, DrmEncoder>();
-        public DrmResources(int fd)
+        public DrmResources(int fd, bool connectorsForceProbe = false)
         {
             var res = drmModeGetResources(fd);
             if (res == null)
@@ -107,7 +107,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             
             for (var c = 0; c < res->count_connectors; c++)
             {
-                var conn = drmModeGetConnector(fd, res->connectors[c]);
+                var conn = connectorsForceProbe ? drmModeGetConnector(fd, res->connectors[c]) : drmModeGetConnectorCurrent(fd, res->connectors[c]);
                 Connectors.Add(new DrmConnector(conn));
                 drmModeFreeConnector(conn);
             }
@@ -168,7 +168,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
         }
 
-        public DrmResources GetResources() => new DrmResources(Fd);
+        public DrmResources GetResources(bool connectorsForceProbe = false) => new DrmResources(Fd, connectorsForceProbe);
         public void Dispose()
         {
             close(Fd);

@@ -11,7 +11,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
-using Avalonia.Themes.Default;
+using Avalonia.Themes.Simple;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views

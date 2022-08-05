@@ -12,6 +12,8 @@ using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Threading;
 
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition
 {
     /// <summary>
@@ -31,6 +33,7 @@ namespace Avalonia.Rendering.Composition
         internal IEasing DefaultEasing { get; }
         private List<Action>? _invokeOnNextCommit;
         private readonly Stack<List<Action>> _invokeListPool = new();
+        private Task? _lastBatchCompleted;
 
         /// <summary>
         /// Creates a new compositor on a specified render loop that would use a particular GPU
@@ -84,7 +87,7 @@ namespace Avalonia.Rendering.Composition
             if (_invokeOnNextCommit != null) 
                 ScheduleCommitCallbacks(batch.Completed);
             
-            return batch.Completed;
+            return _lastBatchCompleted = batch.Completed;
         }
 
         async void ScheduleCommitCallbacks(Task task)
@@ -136,6 +139,16 @@ namespace Avalonia.Rendering.Composition
         {
             _invokeOnNextCommit ??= _invokeListPool.Count > 0 ? _invokeListPool.Pop() : new();
             _invokeOnNextCommit.Add(action);
+        }
+
+        public void InvokeWhenReadyForNextCommit(Action action)
+        {
+            if (_lastBatchCompleted == null || _lastBatchCompleted.IsCompleted)
+                Dispatcher.UIThread.Post(action, DispatcherPriority.Composition);
+            else
+                _lastBatchCompleted.ContinueWith(
+                    static (_, state) => Dispatcher.UIThread.Post((Action)state!, DispatcherPriority.Composition),
+                    action);
         }
     }
 }

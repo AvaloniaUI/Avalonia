@@ -1,11 +1,8 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -57,7 +54,8 @@ namespace Avalonia.Skia
         public ImmutableBitmap(Stream stream, int decodeSize, bool horizontal, BitmapInterpolationMode interpolationMode)
         {
             using (var skStream = new SKManagedStream(stream))
-            using (var codec = SKCodec.Create(skStream))
+            using (var skData = SKData.Create(skStream))
+            using (var codec = SKCodec.Create(skData))
             {
                 var info = codec.Info;
 
