@@ -153,29 +153,31 @@ namespace Avalonia.Data
 
                         break;
 
-                    case UpdateSourceTrigger.LostFocus when
-                        e.Property == InputElement.IsFocusedProperty &&
-                        e.OldValue is true &&
-                        e.NewValue is false:
+                    case UpdateSourceTrigger.LostFocus
+                        when e.Property == InputElement.IsFocusedProperty &&
+                             e.OldValue is true &&
+                             e.NewValue is false &&
+                             _target.TryGetTarget(out var target):
 
-                        PublishNext();
+                        PublishNext(target);
                         break;
                 }
             }
 
-            private void PublishNext()
+            private void PublishNext(IAvaloniaObject target)
             {
-                if (_target.TryGetTarget(out var target))
-                {
-                    var value = target.GetValue(_property);
+                var value = target.GetValue(_property);
 
-                    PublishNext(value);
-                }
+                PublishNext(value);
             }
 
             protected override void Unsubscribed()
             {
-                if (_target.TryGetTarget(out var target))
+                if (_updateSourceTrigger is
+                        UpdateSourceTrigger.Default or
+                        UpdateSourceTrigger.PropertyChanged or
+                        UpdateSourceTrigger.LostFocus &&
+                    _target.TryGetTarget(out var target))
                 {
                     target.PropertyChanged -= OnTargetPropertyChanged;
                 }
@@ -184,19 +186,14 @@ namespace Avalonia.Data
             protected override void Subscribed()
             {
                 if (_updateSourceTrigger is
-                    UpdateSourceTrigger.Default or
-                    UpdateSourceTrigger.PropertyChanged or
-                    UpdateSourceTrigger.LostFocus)
+                        UpdateSourceTrigger.Default or
+                        UpdateSourceTrigger.PropertyChanged or
+                        UpdateSourceTrigger.LostFocus &&
+                    _target.TryGetTarget(out var target))
                 {
-                    if (_target.TryGetTarget(out var target))
-                    {
-                        target.PropertyChanged += OnTargetPropertyChanged;
-                    }
+                    target.PropertyChanged += OnTargetPropertyChanged;
 
-                    if (_updateSourceTrigger is UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged)
-                    {
-                        PublishNext();
-                    }
+                    PublishNext(target);
                 }
             }
         }
