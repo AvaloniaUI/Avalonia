@@ -67,14 +67,14 @@ namespace Avalonia.Data
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
 
                     var targetPropertyObservable = new TargetPropertyObservable(
-                            target, 
-                            property, 
-                            updateSourceTrigger);
+                        target,
+                        property,
+                        updateSourceTrigger);
 
                     return new TwoWayBindingDisposable(
                         target.Bind(
-                            property, 
-                            binding.Subject, 
+                            property,
+                            binding.Subject,
                             binding.Priority),
                         targetPropertyObservable.Subscribe(binding.Subject));
 
@@ -140,25 +140,21 @@ namespace Avalonia.Data
                 _target = new WeakReference<IAvaloniaObject>(target);
                 _property = property;
                 _updateSourceTrigger = updateSourceTrigger;
-
-                if (_updateSourceTrigger is UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged)
-                {
-                    PublishNext();
-                }
             }
 
             private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
             {
                 switch (_updateSourceTrigger)
                 {
-                    case UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged when e.Property == _property:
+                    case UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged
+                        when e.Property == _property:
 
                         PublishNext(e.NewValue);
 
                         break;
 
-                    case UpdateSourceTrigger.LostFocus when 
-                        e.Property == InputElement.IsFocusedProperty && 
+                    case UpdateSourceTrigger.LostFocus when
+                        e.Property == InputElement.IsFocusedProperty &&
                         e.OldValue is true &&
                         e.NewValue is false:
 
@@ -195,6 +191,11 @@ namespace Avalonia.Data
                     if (_target.TryGetTarget(out var target))
                     {
                         target.PropertyChanged += OnTargetPropertyChanged;
+                    }
+
+                    if (_updateSourceTrigger is UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged)
+                    {
+                        PublishNext();
                     }
                 }
             }
