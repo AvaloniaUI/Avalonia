@@ -20,7 +20,7 @@ namespace Avalonia.Data.Core
                 new Single<TIn>(root),
                 read.Compile(),
                 null,
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 
@@ -34,7 +34,7 @@ namespace Avalonia.Data.Core
                 root,
                 read.Compile(),
                 null,
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 
@@ -51,7 +51,7 @@ namespace Avalonia.Data.Core
                 new Single<TIn>(root),
                 x => convert(compiledRead(x)),
                 null,
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 
@@ -68,7 +68,7 @@ namespace Avalonia.Data.Core
                 root,
                 x => convert(compiledRead(x)),
                 null,
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 
@@ -83,7 +83,7 @@ namespace Avalonia.Data.Core
                 new Single<TIn>(root),
                 read.Compile(),
                 write,
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 
@@ -98,7 +98,7 @@ namespace Avalonia.Data.Core
                 root,
                 read.Compile(),
                 write,
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 
@@ -117,7 +117,7 @@ namespace Avalonia.Data.Core
                 new Single<TIn>(root),
                 x => convert(compiledRead(x)),
                 (o, v) => write(o, convertBack(v)),
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 
@@ -136,7 +136,7 @@ namespace Avalonia.Data.Core
                 root,
                 x => convert(compiledRead(x)),
                 (o, v) => write(o, convertBack(v)),
-                ExpressionChainVisitor<TIn>.Build(read),
+                ExpressionChainVisitor<TIn>.BuildTriggers(read),
                 fallbackValue);
         }
 

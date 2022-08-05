@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Reactive.Subjects;
 using Avalonia.Reactive;
-using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core
 {
@@ -24,34 +21,29 @@ namespace Avalonia.Data.Core
         private readonly IObservable<TIn?> _rootSource;
         private readonly Func<TIn, TOut>? _read;
         private readonly Action<TIn, TOut>? _write;
-        private readonly Link[]? _chain;
+        private readonly TypedBindingTrigger<TIn>[]? _triggers;
         private readonly Optional<TOut> _fallbackValue;
+        private readonly Action<int> _triggerFired;
         private IDisposable? _rootSourceSubsciption;
         private WeakReference<TIn>? _root;
-        private Flags _flags;
+        private bool _initialized;
+        private bool _rootHasFired;
+        private bool _listening;
         private int _publishCount;
 
-        public TypedBindingExpression(
+        internal TypedBindingExpression(
             IObservable<TIn?> root,
             Func<TIn, TOut>? read,
             Action<TIn, TOut>? write,
-            Func<TIn, object>[]? links,
+            TypedBindingTrigger<TIn>[]? triggers,
             Optional<TOut> fallbackValue)
         {
             _rootSource = root ?? throw new ArgumentNullException(nameof(root));
             _read = read;
             _write = write;
+            _triggers = triggers;
             _fallbackValue = fallbackValue;
-
-            if (links != null)
-            {
-                _chain = new Link[links.Length];
-
-                for (var i = 0; i < links.Length; ++i)
-                {
-                    _chain[i] = new Link(links[i]);
-                }
-            }
+            _triggerFired = TriggerFired;
         }
 
         public string Description => "TODO";
@@ -72,7 +64,7 @@ namespace Avalonia.Data.Core
                 try
                 {
                     var c = _publishCount;
-                    if ((_flags & Flags.Initialized) != 0)
+                    if (_initialized)
                         _write.Invoke(root, value);
                     if (_publishCount == c)
                         PublishValue();
@@ -108,9 +100,9 @@ namespace Avalonia.Data.Core
 
         protected override void Initialize()
         {
-            _flags &= ~Flags.RootHasFired;
+            _rootHasFired = false;
             _rootSourceSubsciption = _rootSource.Subscribe(RootChanged);
-            _flags |= Flags.Initialized;
+            _initialized = true;
         }
 
         protected override void Deinitialize()
@@ -118,7 +110,7 @@ namespace Avalonia.Data.Core
             StopListeningToChain(0);
             _rootSourceSubsciption?.Dispose();
             _rootSourceSubsciption = null;
-            _flags &= ~Flags.Initialized;
+            _initialized = false;
         }
 
         protected override void Subscribed(IObserver<BindingValue<TOut>> observer, bool first)
@@ -139,7 +131,7 @@ namespace Avalonia.Data.Core
         private void RootChanged(TIn? value)
         {
             _root = value is null ? null : new WeakReference<TIn>(value);
-            _flags |= Flags.RootHasFired;
+            _rootHasFired = true;
             StopListeningToChain(0);
             ListenToChain(0);
             PublishValue();
@@ -147,126 +139,27 @@ namespace Avalonia.Data.Core
 
         private void ListenToChain(int from)
         {
-            if (_chain != null && _root != null && _root.TryGetTarget(out var root))
+            if (_triggers != null && _root != null && _root.TryGetTarget(out var root))
             {
-                object? last = null;
-
-                try
-                {
-                    for (var i = from; i < _chain.Length; ++i)
-                    {
-                        var o = _chain[i].Eval(root);
-
-                        if (o != last)
-                        {
-                            _chain[i].Value = new WeakReference<object>(o);
-
-                            if (SubscribeToChanges(o))
-                            {
-                                last = o;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Broken expression chain.
-                }
-                finally
-                {
-                    _flags |= Flags.ListeningToChain;
-                }
+                for (var i = from; i < _triggers.Length; ++i)
+                    if (!_triggers[i].Subscribe(root, _triggerFired))
+                        break;
+                _listening = true;
             }
         }
 
         private void StopListeningToChain(int from)
         {
-            if ((_flags & Flags.ListeningToChain) == 0)
+            if (!_listening)
                 return;
 
-            if (_chain != null && _root != null && _root.TryGetTarget(out _))
+            if (_triggers != null && _root != null && _root.TryGetTarget(out _))
             {
-                for (var i = from; i < _chain.Length; ++i)
-                {
-                    var link = _chain[i];
-
-                    if (link.Value is not null && link.Value.TryGetTarget(out var o))
-                    {
-                        UnsubscribeToChanges(o);
-                    }
-                }
+                for (var i = from; i < _triggers.Length; ++i)
+                    _triggers[i].Unsubscribe();
             }
 
-            _flags &= ~Flags.ListeningToChain;
-        }
-
-        private bool SubscribeToChanges(object o)
-        {
-            if (o is null)
-            {
-                return false;
-            }
-
-            var result = false;
-
-            if (o is IAvaloniaObject ao)
-            {
-                WeakEventHandlerManager.Subscribe<IAvaloniaObject, AvaloniaPropertyChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
-                    ao,
-                    nameof(ao.PropertyChanged),
-                    ChainPropertyChanged);
-                result |= true;
-            }
-            else if (o is INotifyPropertyChanged inpc)
-            {
-                WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
-                    inpc,
-                    nameof(inpc.PropertyChanged),
-                    ChainPropertyChanged);
-                result |= true;
-            }
-
-            if (o is INotifyCollectionChanged incc)
-            {
-                WeakEventHandlerManager.Subscribe<INotifyCollectionChanged, NotifyCollectionChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
-                    incc,
-                    nameof(incc.CollectionChanged),
-                    ChainCollectionChanged);
-                result |= true;
-            }
-
-            return result;
-        }
-
-        private void UnsubscribeToChanges(object o)
-        {
-            if (o is null)
-            {
-                return;
-            }
-
-            if (o is IAvaloniaObject ao)
-            {
-                WeakEventHandlerManager.Unsubscribe<AvaloniaPropertyChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
-                    ao,
-                    nameof(ao.PropertyChanged),
-                    ChainPropertyChanged);
-            }
-            else if (o is INotifyPropertyChanged inpc)
-            {
-                WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
-                    inpc,
-                    nameof(inpc.PropertyChanged),
-                    ChainPropertyChanged);
-            }
-
-            if (o is INotifyCollectionChanged incc)
-            {
-                WeakEventHandlerManager.Unsubscribe<NotifyCollectionChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
-                    incc,
-                    nameof(incc.CollectionChanged),
-                    ChainCollectionChanged);
-            }
+            _listening = false;
         }
 
         private BindingValue<TOut>? GetResult()
@@ -286,7 +179,7 @@ namespace Avalonia.Data.Core
                     return BindingValue<TOut>.BindingError(e, _fallbackValue);
                 }
             }
-            else if ((_flags & Flags.RootHasFired) != 0)
+            else if (_rootHasFired)
             {
                 return BindingValue<TOut>.BindingError(new NullReferenceException(), _fallbackValue);
             }
@@ -307,45 +200,12 @@ namespace Avalonia.Data.Core
             }
         }
 
-        private int ChainIndexOf(object o)
+        private void TriggerFired(int index)
         {
-            if (_chain != null)
-            {
-                for (var i = 0; i < _chain.Length; ++i)
-                {
-                    var link = _chain[i];
-
-                    if (link.Value != null &&
-                        link.Value.TryGetTarget(out var q) &&
-                        ReferenceEquals(o, q))
-                    {
-                        return i;
-                    }
-                }
-            }
-
-            return -1;
-        }
-
-        private void ChainPropertyChanged(object? sender)
-        {
-            if (sender is null)
-                return;
-
-            var index = ChainIndexOf(sender);
-
-            if (index != -1)
-            {
-                StopListeningToChain(index);
-                ListenToChain(index);
-            }
-
+            StopListeningToChain(index + 1);
+            ListenToChain(index + 1);
             PublishValue();
         }
-
-        private void ChainPropertyChanged(object? sender, PropertyChangedEventArgs e) => ChainPropertyChanged(sender);
-        private void ChainPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => ChainPropertyChanged(sender);
-        private void ChainCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => ChainPropertyChanged(sender);
 
         private struct Link
         {

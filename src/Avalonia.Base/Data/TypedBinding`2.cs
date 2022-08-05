@@ -13,14 +13,15 @@ namespace Avalonia.Data
     /// <typeparam name="TOut">The binding output.</typeparam>
     /// <remarks>
     /// <see cref="TypedBinding{TIn, TOut}"/> represents a strongly-typed binding as opposed to
-    /// <see cref="Binding"/> which boxes value types. It is represented as a set of delegates:
+    /// Binding which boxes value types. It is represented as a read and write delegate plus a
+    /// collection of triggers:
     /// 
     /// - <see cref="Read"/> reads the value given a binding input
     /// - <see cref="Write"/> writes a value given a binding input
-    /// - <see cref="Links"/> holds a collection of delegates which when passed a binding input
-    ///   return each object traversed by <see cref="Read"/>. For example if Read is implemented
-    ///   as `x => x.Foo.Bar.Baz` then there would be three links: `x => x.Foo`, `x => x.Foo.Bar`
-    ///   and `x => x.Foo.Bar.Baz`. These links are used to subscribe to change notifications.
+    /// - <see cref="ReadTriggers"/> holds a collection of objects which listen for changes in each
+    ///   object traversed by <see cref="Read"/>. For example if Read is implemented as 
+    ///   `x => x.Foo.Bar.Baz` then there would be three triggers: `x => x.Foo`, `x => x.Foo.Bar`
+    ///   and `x => x.Foo.Bar.Baz`.
     ///   
     /// This class represents a binding which has not been instantiated on an object. When the
     /// <see cref="Bind(IAvaloniaObject, DirectPropertyBase{TOut})"/> or
@@ -34,32 +35,32 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the read function.
         /// </summary>
-        public Func<TIn, TOut>? Read { get; set; }
+        internal Func<TIn, TOut>? Read { get; set; }
 
         /// <summary>
         /// Gets or sets the write function.
         /// </summary>
-        public Action<TIn, TOut>? Write { get; set; }
+        internal Action<TIn, TOut>? Write { get; set; }
 
         /// <summary>
-        /// Gets or sets the links in the binding chain.
+        /// Gets or sets the read triggers.
         /// </summary>
-        public Func<TIn, object>[]? Links { get; set; }
+        internal TypedBindingTrigger<TIn>[]? ReadTriggers { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
-        public BindingMode Mode { get; set; }
+        internal BindingMode Mode { get; set; }
 
         /// <summary>
         /// Gets or sets the binding priority.
         /// </summary>
-        public BindingPriority Priority { get; set; }
+        internal BindingPriority Priority { get; set; }
 
         /// <summary>
         /// Gets or sets the value to use when the binding is unable to produce a value.
         /// </summary>
-        public Optional<TOut> FallbackValue { get; set; }
+        internal Optional<TOut> FallbackValue { get; set; }
 
         /// <summary>
         /// Gets or sets the source for the binding.
@@ -67,7 +68,7 @@ namespace Avalonia.Data
         /// <remarks>
         /// If unset the source is the target control's <see cref="StyledElement.DataContext"/> property.
         /// </remarks>
-        public Optional<TIn> Source { get; set; }
+        internal Optional<TIn> Source { get; set; }
 
         /// <summary>
         /// Creates a binding to the specified styled property.
@@ -164,13 +165,13 @@ namespace Avalonia.Data
             if (mode != BindingMode.OneWayToSource)
             {
                 _ = Read ?? throw new InvalidOperationException("Cannot bind TypedBinding: Read is uninitialized.");
-                _ = Links ?? throw new InvalidOperationException("Cannot bind TypedBinding: Links is uninitialized.");
+                _ = ReadTriggers ?? throw new InvalidOperationException("Cannot bind TypedBinding: Links is uninitialized.");
             }
 
             if ((mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource) && Write is null)
                 throw new InvalidOperationException($"Cannot bind TypedBinding {Mode}: Write is uninitialized.");
             
-            return new TypedBindingExpression<TIn, TOut>(source, Read, Write, Links, fallback);
+            return new TypedBindingExpression<TIn, TOut>(source, Read, Write, ReadTriggers, fallback);
         }
 
         private BindingMode GetMode(IAvaloniaObject target, AvaloniaProperty property)

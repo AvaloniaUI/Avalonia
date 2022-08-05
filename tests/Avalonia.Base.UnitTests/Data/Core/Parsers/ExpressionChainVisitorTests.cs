@@ -24,7 +24,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             //
             // In this case we don't want to subscribe to INPC notifications from `this`.
             var data = new Class2();
-            var result = ExpressionChainVisitor<Class1>.Build(x => data.PrependHello(x.Foo));
+            var result = ExpressionChainVisitor<Class1>.BuildTriggers(x => data.PrependHello(x.Foo));
 
             Assert.Equal(1, result.Length);
         }

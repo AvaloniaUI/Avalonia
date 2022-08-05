@@ -129,8 +129,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 data.Foo.RemoveAt(0);
             }
 
-            // Second "bar" comes from Count property changing.
-            Assert.Equal(new[] { "foo", "bar", "bar" }, result);
+            Assert.Equal(new[] { "foo", "bar" }, result);
             Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
 
             GC.KeepAlive(data);
@@ -167,8 +166,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var sub = binding.Subscribe(x => result.Add(x.Value));
             data.Foo.Move(0, 1);
 
-            // Second "foo" comes from Count property changing.
-            Assert.Equal(new[] { "bar", "foo", "foo" }, result);
+            Assert.Equal(new[] { "bar", "foo" }, result);
 
             GC.KeepAlive(sub);
             GC.KeepAlive(data);
