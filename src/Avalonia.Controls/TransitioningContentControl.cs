@@ -84,13 +84,19 @@ public class TransitioningContentControl : ContentControl
 
         _lastTransitionCts?.Cancel();
         _lastTransitionCts = new CancellationTokenSource();
+        var localToken = _lastTransitionCts.Token;
 
         if (PageTransition != null)
-            await PageTransition.Start(this, null, true, _lastTransitionCts.Token);
+            await PageTransition.Start(this, null, true, localToken);
+
+        if (localToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         CurrentContent = content;
 
         if (PageTransition != null)
-            await PageTransition.Start(null, this, true, _lastTransitionCts.Token);
+            await PageTransition.Start(null, this, true, localToken);
     }
 }
