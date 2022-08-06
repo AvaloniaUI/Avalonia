@@ -8,7 +8,8 @@ using Avalonia.Input.Platform;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Skia;
+using Avalonia.Rendering.Composition;
+using Avalonia.OpenGL;
 
 namespace Avalonia
 {
@@ -42,6 +43,8 @@ namespace Avalonia.Android
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500);
 
+        internal static Compositor Compositor { get; private set; }
+
         public static void Initialize(AndroidPlatformOptions options)
         {
             Options = options;
@@ -62,12 +65,20 @@ namespace Avalonia.Android
             {
                 EglPlatformOpenGlInterface.TryInitialize();
             }
+            
+            if (options.UseCompositor)
+            {
+                Compositor = new Compositor(
+                    AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
+                    AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
+            }
         }
     }
 
     public sealed class AndroidPlatformOptions
     {
-        public bool UseDeferredRendering { get; set; } = true;
+        public bool UseDeferredRendering { get; set; } = false;
         public bool UseGpu { get; set; } = true;
+        public bool UseCompositor { get; set; } = true;
     }
 }

@@ -19,6 +19,7 @@ using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -84,9 +85,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
-            AndroidPlatform.Options.UseDeferredRendering
-            ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
-            : new ImmediateRenderer(root);
+            AndroidPlatform.Options.UseCompositor
+                ? new CompositingRenderer(root, AndroidPlatform.Compositor) { DrawFps = true }
+                : AndroidPlatform.Options.UseDeferredRendering
+                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
+                    : new ImmediateRenderer(root);
 
         public virtual void Hide()
         {
