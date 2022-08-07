@@ -14,6 +14,7 @@ namespace Avalonia.Android
     internal sealed class AndroidThreadingInterface : IPlatformThreadingInterface
     {
         private Handler _handler;
+        private static Thread s_uiThread;
 
         public AndroidThreadingInterface()
         {
@@ -76,7 +77,21 @@ namespace Avalonia.Android
             EnsureInvokeOnMainThread(() => Signaled?.Invoke(null));
         }
 
-        public bool CurrentThreadIsLoopThread => Looper.MainLooper.Thread.Equals(Java.Lang.Thread.CurrentThread());
+        public bool CurrentThreadIsLoopThread
+        {
+            get
+            {
+                if (s_uiThread != null)
+                    return s_uiThread == Thread.CurrentThread;
+
+                if (Looper.MainLooper.IsCurrentThread)
+                {
+                    s_uiThread = Thread.CurrentThread;
+                    return true;
+                }
+                return false;
+            }
+        }
         public event Action<DispatcherPriority?> Signaled;
     }
 }
