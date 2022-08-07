@@ -65,6 +65,12 @@ namespace Avalonia.ReactiveUI
             AvaloniaProperty.Register<RoutedViewHost, string?>(nameof(ViewContract));
 
         /// <summary>
+        /// <see cref="AvaloniaProperty"/> for the <see cref="DefaultContent"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> DefaultContentProperty =
+            ViewModelViewHost.DefaultContentProperty.AddOwner<RoutedViewHost>();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RoutedViewHost"/> class.
         /// </summary>
         public RoutedViewHost()
@@ -104,6 +110,15 @@ namespace Avalonia.ReactiveUI
         {
             get => GetValue(ViewContractProperty);
             set => SetValue(ViewContractProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the content displayed whenever there is no page currently routed.
+        /// </summary>
+        public object? DefaultContent
+        {
+            get => GetValue(DefaultContentProperty);
+            set => SetValue(DefaultContentProperty, value);
         }
 
         /// <summary>
