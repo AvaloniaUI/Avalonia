@@ -84,11 +84,15 @@ namespace Avalonia.Android
                 if (s_uiThread != null)
                     return s_uiThread == Thread.CurrentThread;
 
-                if (Looper.MainLooper.IsCurrentThread)
+                var isOnMainThread = OperatingSystem.IsAndroidVersionAtLeast(23)
+                    ? Looper.MainLooper.IsCurrentThread
+                    : Looper.MainLooper.Thread.Equals(Java.Lang.Thread.CurrentThread());
+                if (isOnMainThread)
                 {
                     s_uiThread = Thread.CurrentThread;
                     return true;
                 }
+
                 return false;
             }
         }
