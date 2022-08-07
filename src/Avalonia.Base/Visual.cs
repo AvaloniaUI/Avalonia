@@ -667,14 +667,8 @@ namespace Avalonia
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.FindAncestorOfType<IRenderRoot>();
-                if (root is null)
-                {
-                    Logger.TryGet(LogEventLevel.Error, "Visual")?.Log("Visual",
-                        "Visual is atached to visual tree but root could not be found.");
-                    return;
-                }
-
+                var root = this.FindAncestorOfType<IRenderRoot>() ??
+                    throw new AvaloniaInternalException("Visual is atached to visual tree but root could not be found.");
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
