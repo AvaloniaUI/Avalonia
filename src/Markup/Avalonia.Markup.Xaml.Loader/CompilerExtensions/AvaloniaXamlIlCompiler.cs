@@ -46,6 +46,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             );
 
             InsertBefore<ContentConvertTransformer>(
+                new AvaloniaXamlIlControlThemeTransformer(),
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),                 
                 new AvaloniaXamlIlBindingPathParser(),
@@ -59,6 +60,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertAfter<TypeReferenceResolver>(
                 new XDataTypeTransformer());
 
+            InsertBefore<DeferredContentTransformer>(
+                new AvaloniaXamlIlDeferredResourceTransformer()
+            );
+
             // After everything else
             InsertBefore<NewObjectTransformer>(
                 new AddNameScopeRegistration(),
@@ -67,6 +72,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlCompiledBindingsMetadataRemover()
                 );
 
+            Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 

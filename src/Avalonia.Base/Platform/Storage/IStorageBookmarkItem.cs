@@ -6,7 +6,7 @@ namespace Avalonia.Platform.Storage;
 [NotClientImplementable]
 public interface IStorageBookmarkItem : IStorageItem
 {
-    Task ReleaseBookmark();
+    Task ReleaseBookmarkAsync();
 }
 
 [NotClientImplementable]

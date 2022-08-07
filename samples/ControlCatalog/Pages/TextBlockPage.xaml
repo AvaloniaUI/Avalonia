@@ -118,7 +118,7 @@
         </StackPanel>
       </Border>
       <Border>
-        <RichTextBlock Margin="10" TextWrapping="Wrap">
+        <RichTextBlock SelectionBrush="LightBlue" IsTextSelectionEnabled="True" Margin="10" TextWrapping="Wrap">
           This <Span FontWeight="Bold">is</Span> a
           <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
           with <Span TextDecorations="Underline">several</Span>

@@ -15,6 +15,8 @@ namespace Avalonia.Input
             _inputRoot = inputRoot ?? throw new ArgumentNullException(nameof(inputRoot));
         }
 
+        public PixelPoint? LastPosition => _lastPointer?.position;
+        
         public void OnCompleted()
         {
             ClearPointerOver();

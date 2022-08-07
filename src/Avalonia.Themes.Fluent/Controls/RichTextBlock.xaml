@@ -1,0 +1,14 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <RichTextBlock IsTextSelectionEnabled="True" Text="Preview"/>
+    </Design.PreviewWith>
+
+  <ControlTheme x:Key="{x:Type RichTextBlock}" TargetType="RichTextBlock">
+    <Style Selector="^[IsTextSelectionEnabled=True]">
+      <Setter Property="Cursor" Value="IBeam" />
+    </Style>
+  </ControlTheme>
+
+
+</ResourceDictionary>

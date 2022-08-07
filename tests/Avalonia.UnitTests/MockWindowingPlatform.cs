@@ -34,7 +34,6 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
             windowImpl.Setup(x => x.Position).Returns(() => position);
-            SetupToplevel(windowImpl);
 
             windowImpl.Setup(x => x.CreatePopup()).Returns(() =>
             {
@@ -100,8 +99,6 @@ namespace Avalonia.UnitTests
             {
                 popupImpl.Object.Closed?.Invoke();
             });
-
-            SetupToplevel(popupImpl);
             
             return popupImpl;
         }
@@ -143,11 +140,6 @@ namespace Avalonia.UnitTests
         public ITrayIconImpl CreateTrayIcon()
         {
             return null;
-        }
-
-        private static void SetupToplevel<T>(Mock<T> mock) where T : class, ITopLevelImpl
-        {
-            mock.SetupGet(x => x.MouseDevice).Returns(new MouseDevice());
         }
     }
 }

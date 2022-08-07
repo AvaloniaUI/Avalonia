@@ -1,14 +1,10 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Avalonia.Controls"
-        x:CompileBindings="True">
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Controls"
+                    x:CompileBindings="True">
 
-  <Styles.Resources>
-    <!-- This must follow OverlayCornerRadius -->
-    <CornerRadius x:Key="TopOverlayCornerRadius">5,5,0,0</CornerRadius>
-  </Styles.Resources>
-
-  <Style Selector="ColorPicker">
+  <ControlTheme x:Key="{x:Type ColorPicker}"
+                TargetType="ColorPicker">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="64" />
@@ -26,7 +22,7 @@
                         Padding="0,0,10,0"
                         UseLayoutRounding="False">
           <DropDownButton.Styles>
-            <Style Selector="FlyoutPresenter.NoPadding">
+            <Style Selector="FlyoutPresenter.nopadding">
               <Setter Property="Padding" Value="0" />
             </Style>
           </DropDownButton.Styles>
@@ -46,7 +42,7 @@
             </Panel>
           </DropDownButton.Content>
           <DropDownButton.Flyout>
-            <Flyout FlyoutPresenterClasses="NoPadding">
+            <Flyout FlyoutPresenterClasses="nopadding">
               <ColorView x:Name="FlyoutColorView"
                          Color="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ColorModel="{Binding ColorModel, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
@@ -74,18 +70,17 @@
                          PaletteColors="{TemplateBinding PaletteColors}"
                          PaletteColumnCount="{TemplateBinding PaletteColumnCount}"
                          Palette="{TemplateBinding Palette}"
-                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                         SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                <ColorView.Resources>
+                  <!-- This radius must follow OverlayCornerRadius -->
+                  <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">5,5,0,0</CornerRadius>
+                </ColorView.Resources>
+              </ColorView>
             </Flyout>
           </DropDownButton.Flyout>
         </DropDownButton>
       </ControlTemplate>
     </Setter>
-  </Style>
+  </ControlTheme>
 
-  <!-- Adjust Background within Flyout -->
-  <!-- Note: This is implemented but there seems to be an issue and the selector can't match across the Flyout -->
-  <Style Selector="ColorPicker /template/ ColorView#FlyoutColorView /template/ Border#TabBackgroundBorder">
-    <Setter Property="CornerRadius" Value="{DynamicResource TopOverlayCornerRadius}" />
-  </Style>
-
-</Styles>
+</ResourceDictionary>

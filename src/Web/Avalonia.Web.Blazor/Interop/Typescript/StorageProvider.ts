@@ -14,6 +14,8 @@ declare global {
 
         queryPermission(options?: { mode: PermissionsMode }): Promise<"granted" | "denied" | "prompt">;
         requestPermission(options?: { mode: PermissionsMode }): Promise<"granted" | "denied" | "prompt">;
+
+        entries(): AsyncIterableIterator<[string, FileSystemFileHandle]>;
     }
     type WellKnownDirectory = "desktop" | "documents" | "downloads" | "music" | "pictures" | "videos"; 
     type StartInDirectory =  WellKnownDirectory | FileSystemFileHandle;
@@ -53,7 +55,7 @@ class IndexedDbWrapper {
     }
 
     public connect(): Promise<InnerDbConnection> {
-        var conn = window.indexedDB.open(this.databaseName, 1);
+        const conn = window.indexedDB.open(this.databaseName, 1);
 
         conn.onupgradeneeded = event => {
             const db = (<IDBRequest<IDBDatabase>>event.target).result;
@@ -85,7 +87,7 @@ class InnerDbConnection {
         const os = this.openStore(store, "readwrite");
 
         return new Promise((resolve, reject) => {
-            var response = os.put(obj, key);
+            const response = os.put(obj, key);
             response.onsuccess = () => {
                 resolve(response.result);
             };
@@ -99,7 +101,7 @@ class InnerDbConnection {
         const os = this.openStore(store, "readonly");
 
         return new Promise((resolve, reject) => {
-            var response = os.get(key);
+            const response = os.get(key);
             response.onsuccess = () => {
                 resolve(response.result);
             };
@@ -113,7 +115,7 @@ class InnerDbConnection {
         const os = this.openStore(store, "readwrite");
 
         return new Promise((resolve, reject) => {
-            var response = os.delete(key);
+            const response = os.delete(key);
             response.onsuccess = () => {
                 resolve();
             };
@@ -134,17 +136,20 @@ const avaloniaDb = new IndexedDbWrapper("AvaloniaDb", [
 ])
 
 class StorageItem {
-    constructor(private handle: FileSystemFileHandle, private bookmarkId?: string) { }
+    constructor(public handle: FileSystemFileHandle, private bookmarkId?: string) { }
 
     public getName(): string {
         return this.handle.name
     }
 
+    public getKind(): string {
+        return this.handle.kind;
+    }
+
     public async openRead(): Promise<Blob> {
         await this.verityPermissions('read');
 
-        var file = await this.handle.getFile();
-        return file;
+        return await this.handle.getFile();
     }
 
     public async openWrite(): Promise<FileSystemWritableFileStream> {
@@ -154,7 +159,7 @@ class StorageItem {
     }
 
     public async getProperties(): Promise<{ Size: number, LastModified: number, Type: string }> {
-        var file = this.handle.getFile && await this.handle.getFile();
+        const file = this.handle.getFile && await this.handle.getFile();
         
         return file && {
             Size: file.size,
@@ -163,6 +168,18 @@ class StorageItem {
         }
     }
 
+    public async getItems(): Promise<StorageItems> {
+        if (this.handle.kind !== "directory"){
+            return new StorageItems([]);
+        }
+        
+        const items: StorageItem[] = [];
+        for await (const [key, value] of this.handle.entries()) {
+            items.push(new StorageItem(value));
+        }
+        return new StorageItems(items);
+    }
+    
     private async verityPermissions(mode: PermissionsMode): Promise<void | never> {
         if (await this.handle.queryPermission({ mode }) === 'granted') {
             return;
@@ -235,12 +252,12 @@ export class StorageProvider {
     }
 
     public static async selectFolderDialog(
-        startIn: StartInDirectory | null)
+        startIn: StorageItem | null)
         : Promise<StorageItem> {
 
         // 'Picker' API doesn't accept "null" as a parameter, so it should be set to undefined.
         const options: DirectoryPickerOptions = {
-            startIn: (startIn || undefined)
+            startIn: (startIn?.handle || undefined)
         };
 
         const handle = await window.showDirectoryPicker(options);
@@ -248,12 +265,12 @@ export class StorageProvider {
     }
 
     public static async openFileDialog(
-        startIn: StartInDirectory | null, multiple: boolean,
+        startIn: StorageItem | null, multiple: boolean,
         types: FilePickerAcceptType[] | null, excludeAcceptAllOption: boolean)
         : Promise<StorageItems> {
 
         const options: OpenFilePickerOptions = {
-            startIn: (startIn || undefined),
+            startIn: (startIn?.handle || undefined),
             multiple,
             excludeAcceptAllOption,
             types: (types || undefined)
@@ -264,12 +281,12 @@ export class StorageProvider {
     }
 
     public static async saveFileDialog(
-        startIn: StartInDirectory | null, suggestedName: string | null,
+        startIn: StorageItem | null, suggestedName: string | null,
         types: FilePickerAcceptType[] | null, excludeAcceptAllOption: boolean)
         : Promise<StorageItem> {
 
         const options: SaveFilePickerOptions = {
-            startIn: (startIn || undefined),
+            startIn: (startIn?.handle || undefined),
             suggestedName: (suggestedName || undefined),
             excludeAcceptAllOption,
             types: (types || undefined)

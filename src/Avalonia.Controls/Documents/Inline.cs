@@ -50,8 +50,38 @@ namespace Avalonia.Controls.Documents
 
         protected TextRunProperties CreateTextRunProperties()
         {
-            return new GenericTextRunProperties(new Typeface(FontFamily, FontStyle, FontWeight), FontSize,
-                TextDecorations, Foreground, Background, BaselineAlignment);
+            var textDecorations = TextDecorations;
+            var background = Background;
+
+            if(Parent is Inline inline)
+            {
+                if(textDecorations == null)
+                {
+                    textDecorations = inline.TextDecorations;
+                }
+
+                if(background == null)
+                {
+                    background = inline.Background;
+                }
+            }
+            
+            var fontStyle = FontStyle;
+
+            if(Parent is Italic)
+            {
+                fontStyle = FontStyle.Italic;
+            }
+
+            var fontWeight = FontWeight;
+
+            if(Parent is Bold)
+            {
+                fontWeight = FontWeight.Bold;
+            }
+
+            return new GenericTextRunProperties(new Typeface(FontFamily, fontStyle, fontWeight), FontSize,
+                textDecorations, Foreground, background, BaselineAlignment);
         }
         
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

@@ -6,6 +6,8 @@ using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -106,6 +108,7 @@ namespace Avalonia.Rendering.Composition.Server
         private void RenderCore()
         {
             ApplyPendingBatches();
+            CompletePendingBatches();
             
             foreach(var animation in _activeAnimations)
                 _animationsToUpdate.Add(animation);
@@ -117,8 +120,6 @@ namespace Avalonia.Rendering.Composition.Server
             
             foreach (var t in _activeTargets)
                 t.Render();
-            
-            CompletePendingBatches();
         }
 
         public void AddCompositionTarget(ServerCompositionTarget target)

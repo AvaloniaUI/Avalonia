@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -35,13 +36,13 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
     public bool CanBookmark => true;
 
-    public Task<string?> SaveBookmark()
+    public Task<string?> SaveBookmarkAsync()
     {
         Context.ContentResolver?.TakePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
         return Task.FromResult(Uri.ToString());
     }
 
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         Context.ContentResolver?.ReleasePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
         return Task.CompletedTask;
@@ -106,6 +107,30 @@ internal sealed class AndroidStorageFolder : AndroidStorageItem, IStorageBookmar
     {
         return Task.FromResult(new StorageItemProperties());
     }
+
+    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    {
+        using var javaFile = new JavaFile(Uri.Path!);
+
+        // Java file represents files AND directories. Don't be confused.
+        var files = await javaFile.ListFilesAsync().ConfigureAwait(false);
+        if (files is null)
+        {
+            return Array.Empty<IStorageItem>();
+        }
+
+        return files
+            .Select(f => (file: f, uri: AndroidUri.FromFile(f)))
+            .Where(t => t.uri is not null)
+            .Select(t => t.file switch
+            {
+                { IsFile: true } => (IStorageItem)new AndroidStorageFile(Context, t.uri!),
+                { IsDirectory: true } => new AndroidStorageFolder(Context, t.uri!),
+                _ => null
+            })
+            .Where(i => i is not null)
+            .ToArray()!;
+    }
 }
 
 internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkFile
@@ -118,10 +143,10 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
     public bool CanOpenWrite => true;
 
-    public Task<Stream> OpenRead() => Task.FromResult(OpenContentStream(Context, Uri, false)
+    public Task<Stream> OpenReadAsync() => Task.FromResult(OpenContentStream(Context, Uri, false)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 
-    public Task<Stream> OpenWrite() => Task.FromResult(OpenContentStream(Context, Uri, true)
+    public Task<Stream> OpenWriteAsync() => Task.FromResult(OpenContentStream(Context, Uri, true)
         ?? throw new InvalidOperationException("Failed to open content stream"));
 
     private Stream? OpenContentStream(Context context, AndroidUri uri, bool isOutput)

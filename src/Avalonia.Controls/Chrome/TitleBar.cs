@@ -44,13 +44,13 @@ namespace Avalonia.Controls.Chrome
             base.OnApplyTemplate(e);
 
             _captionButtons?.Detach();
-            
+
             _captionButtons = e.NameScope.Get<CaptionButtons>("PART_CaptionButtons");
 
             if (VisualRoot is Window window)
             {
-                _captionButtons?.Attach(window);   
-                
+                _captionButtons?.Attach(window);
+
                 UpdateSize(window);
             }
         }
@@ -90,7 +90,7 @@ namespace Avalonia.Controls.Chrome
             base.OnDetachedFromVisualTree(e);
 
             _disposables?.Dispose();
-            
+
             _captionButtons?.Detach();
             _captionButtons = null;
         }
