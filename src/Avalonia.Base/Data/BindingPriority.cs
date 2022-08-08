@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.Data
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace Avalonia.Data
         LocalValue = 0,
 
         /// <summary>
-        /// A triggered style binding.
+        /// A triggered style value or binding.
         /// </summary>
         /// <remarks>
         /// A style trigger is a selector such as .class which overrides a
@@ -29,13 +31,24 @@ namespace Avalonia.Data
         /// <summary>
         /// A binding to a property on the templated parent.
         /// </summary>
+        [Obsolete]
         TemplatedParent,
 
         /// <summary>
-        /// A style binding.
+        /// A style value or binding.
         /// </summary>
         Style,
-        
+
+        /// <summary>
+        /// A triggered style value or binding within a control theme.
+        /// </summary>
+        ControlThemeTrigger,
+
+        /// <summary>
+        /// A control theme value or binding.
+        /// </summary>
+        ControlTheme,
+
         /// <summary>
         /// The value is inherited from an ancestor element.
         /// </summary>
