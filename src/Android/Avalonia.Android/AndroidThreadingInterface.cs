@@ -27,46 +27,33 @@ namespace Avalonia.Android
         {
             if (interval.TotalMilliseconds < 10)
                 interval = TimeSpan.FromMilliseconds(10);
-            object l = new object();
+
             var stopped = false;
             Timer timer = null;
-            var scheduled = false;
             timer = new Timer(_ =>
             {
-                lock (l)
+                if (stopped)
+                    return;
+
+                EnsureInvokeOnMainThread(() =>
                 {
-                    if (stopped)
+                    try
                     {
-                        timer.Dispose();
-                        return;
+                        tick();
                     }
-                    if (scheduled)
-                        return;
-                    scheduled = true;
-                    EnsureInvokeOnMainThread(() =>
+                    finally
                     {
-                        try
-                        {
-                            tick();
-                        }
-                        finally
-                        {
-                            lock (l)
-                            {
-                                scheduled = false;
-                            }
-                        }
-                    });
-                }
-            }, null, TimeSpan.Zero, interval);
+                        if (!stopped)
+                            timer.Change(interval, Timeout.InfiniteTimeSpan);
+                    }
+                });
+            },
+            null, interval, Timeout.InfiniteTimeSpan);
 
             return Disposable.Create(() =>
             {
-                lock (l)
-                {
-                    stopped = true;
-                    timer.Dispose();
-                }
+                stopped = true;
+                timer.Dispose();
             });
         }
 
