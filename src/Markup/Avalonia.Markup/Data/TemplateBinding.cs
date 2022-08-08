@@ -50,7 +50,7 @@ namespace Avalonia.Data
                 return new InstancedBinding(
                     this,
                     Mode == BindingMode.Default ? BindingMode.OneWay : Mode,
-                    BindingPriority.TemplatedParent);
+                    Priority);
             }
             else
             {
@@ -58,6 +58,7 @@ namespace Avalonia.Data
                 {
                     Converter = Converter,
                     ConverterParameter = ConverterParameter,
+                    Priority = Priority,
                     Property = Property,
                 };
 
@@ -79,6 +80,11 @@ namespace Avalonia.Data
         /// Gets or sets the binding mode.
         /// </summary>
         public BindingMode Mode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the priority of the binding.
+        /// </summary>
+        public BindingPriority Priority { get; set; } = BindingPriority.Style;
 
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.

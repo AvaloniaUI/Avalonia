@@ -19,7 +19,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             var targetTypeNode = context.ParentNodes()
                 .OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
-                .FirstOrDefault(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style) ??
+                .FirstOrDefault(x => 
+                    x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style ||
+                    x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTheme) ??
                 throw new XamlParseException("Can not find parent Style Selector or ControlTemplate TargetType", node);
 
             IXamlType propType = null;

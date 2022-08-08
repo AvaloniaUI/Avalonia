@@ -21,11 +21,11 @@ namespace Avalonia.Styling
         private readonly IStyleActivator? _activator;
         private List<ISetterInstance>? _setters;
 
-        public StyleInstance(IStyle style, IStyleActivator? activator)
+        public StyleInstance(IStyle style, IStyleActivator? activator, BindingPriority priority)
         {
             _activator = activator;
-            Priority = activator is object ? BindingPriority.StyleTrigger : BindingPriority.Style;
             Source = style;
+            Priority = priority;
         }
 
         public bool HasActivator => _activator is object;

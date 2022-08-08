@@ -33,7 +33,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             return new AvaloniaXamlIlTargetTypeMetadataNode(on,
                 new XamlAstClrTypeReference(targetTypeNode, targetType, false),
-                AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
+                AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTheme);
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Metadata;
 using Avalonia.PropertyStore;
 using Avalonia.Styling.Activators;
@@ -82,7 +83,7 @@ namespace Avalonia.Styling
             return _resources?.TryGetResource(key, out result) ?? false;
         }
 
-        internal ValueFrame Attach(IStyleable target, IStyleActivator? activator)
+        internal ValueFrame Attach(IStyleable target, IStyleActivator? activator, BindingPriority priority)
         {
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");
@@ -97,7 +98,7 @@ namespace Avalonia.Styling
             {
                 var canShareInstance = activator is null;
 
-                instance = new StyleInstance(this, activator);
+                instance = new StyleInstance(this, activator, priority);
 
                 if (_setters is object)
                 {

@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia.Data;
 using XamlX.Ast;
 using XamlX.Transform;
+using ScopeTypes = Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers.AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
@@ -17,12 +18,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             // The node is a candidate for transformation if:
             // - It's a property assignment to an Avalonia property
-            // - There's a ControlTemplate ancestor
             // - The property has a single value
+            // - The priority from the parent nodes is not LocalValue
             if (node is XamlPropertyAssignmentNode prop &&
                 prop.Property is XamlIlAvaloniaProperty avaloniaProperty &&
-                context.ParentNodes().Any(IsControlTemplate) &&
-                prop.Values.Count == 1)
+                prop.Values.Count == 1 &&
+                GetPriority(context.ParentNodes()) is var priority &&
+                priority != BindingPriority.LocalValue)
             {
                 var priorityValueSetters = new List<IXamlPropertySetter>();
 
@@ -42,11 +44,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 if (priorityValueSetters.Count > 0)
                 {
                     prop.PossibleSetters = priorityValueSetters;
-                    prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, (int)BindingPriority.TemplatedParent));
+                    prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, (int)priority));
                 }
             }
 
             return node;
+        }
+
+        private static BindingPriority GetPriority(IEnumerable<IXamlAstNode> nodes)
+        {
+            var result = BindingPriority.LocalValue;
+
+            foreach (var node in nodes)
+            {
+                if (node is AvaloniaXamlIlTargetTypeMetadataNode tt)
+                {
+                    var priority = tt.ScopeType switch
+                    {
+                        ScopeTypes.ControlTheme => BindingPriority.ControlTheme,
+                        ScopeTypes.Style => BindingPriority.Style,
+                        ScopeTypes.ControlTemplate => BindingPriority.Style,
+                        _ => BindingPriority.LocalValue,
+                    };
+
+                    if (priority > result)
+                        result = priority;
+                }
+            }
+
+            return result;
         }
 
         private static bool IsControlTemplate(IXamlAstNode node)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Subjects;
+using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Microsoft.Reactive.Testing;
@@ -101,7 +102,7 @@ namespace Avalonia.Base.UnitTests.PropertyStore
 
         private static StyleInstance InstanceStyle(Style style, StyledElement target)
         {
-            var result = new StyleInstance(style, null);
+            var result = new StyleInstance(style, null, BindingPriority.Style);
 
             foreach (var setter in style.Setters)
                 result.Add(setter.Instance(result, target));

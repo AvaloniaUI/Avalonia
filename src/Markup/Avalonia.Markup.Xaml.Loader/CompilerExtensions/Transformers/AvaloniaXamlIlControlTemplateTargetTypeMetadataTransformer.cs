@@ -1,4 +1,5 @@
 using System.Linq;
+using Avalonia.Data;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.TypeSystem;
@@ -55,6 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public enum ScopeTypes
         {
+            ControlTheme,
             Style,
             ControlTemplate,
             Transitions

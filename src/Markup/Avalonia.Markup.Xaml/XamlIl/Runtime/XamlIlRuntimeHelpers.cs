@@ -22,14 +22,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
-            var resourceNodes = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents
-                .OfType<IResourceNode>().ToList();
+            var parents = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents;
+            var resourceNodes = parents.OfType<IResourceNode>().ToList();
             var rootObject = provider.GetService<IRootObjectProvider>().RootObject;
             var parentScope = provider.GetService<INameScope>();
+            var priority = parents.Any(x => x is Avalonia.Styling.ControlTheme) ? BindingPriority.ControlTheme : BindingPriority.Style;
             return sp =>
             {
                 var scope = parentScope != null ? new ChildNameScope(parentScope) : (INameScope)new NameScope();
-                var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
+                var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope, priority));
                 scope.Complete();
                 
                 if(typeof(T) == typeof(IControl))
@@ -43,18 +44,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             IAvaloniaXamlIlParentStackProvider,
             IServiceProvider,
             IRootObjectProvider,
-            IAvaloniaXamlIlControlTemplateProvider
+            IAvaloniaXamlIlValuePriorityProvider
         {
             private readonly IServiceProvider _parentProvider;
             private readonly List<IResourceNode> _parentResourceNodes;
             private readonly INameScope _nameScope;
+            private readonly BindingPriority _valuePriority;
 
             public DeferredParentServiceProvider(IServiceProvider parentProvider, List<IResourceNode> parentResourceNodes,
-                object rootObject, INameScope nameScope)
+                object rootObject, INameScope nameScope, BindingPriority valuePriority)
             {
                 _parentProvider = parentProvider;
                 _parentResourceNodes = parentResourceNodes;
                 _nameScope = nameScope;
+                _valuePriority = valuePriority;
                 RootObject = rootObject;
             }
 
@@ -76,10 +79,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return this;
                 if (serviceType == typeof(IRootObjectProvider))
                     return this;
-                if (serviceType == typeof(IAvaloniaXamlIlControlTemplateProvider))
+                if (serviceType == typeof(IAvaloniaXamlIlValuePriorityProvider))
                     return this;
                 return _parentProvider?.GetService(serviceType);
             }
+
+            public BindingPriority GetValuePriority() => _valuePriority;
 
             public object RootObject { get; }
             public object IntermediateRootObject => RootObject;

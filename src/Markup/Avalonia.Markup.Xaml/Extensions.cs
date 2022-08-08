@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Styling;
 
@@ -26,7 +27,12 @@ namespace Avalonia.Markup.Xaml
             return sp.GetService<IAvaloniaXamlIlParentStackProvider>().Parents.OfType<T>();
         }
 
-        public static bool IsInControlTemplate(this IServiceProvider sp) => sp.GetService<IAvaloniaXamlIlControlTemplateProvider>() != null;
+        public static BindingPriority GetValuePriority(this IServiceProvider sp)
+        {
+            if (sp.GetService<IAvaloniaXamlIlValuePriorityProvider>() is { } valuePriority)
+                return valuePriority.GetValuePriority();
+            return BindingPriority.LocalValue;
+        }
 
         public static Type ResolveType(this IServiceProvider ctx, string namespacePrefix, string type)
         {

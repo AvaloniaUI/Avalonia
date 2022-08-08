@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data;
 using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
@@ -40,7 +41,7 @@ namespace Avalonia.Styling
 
             if (HasSettersOrAnimations && TargetType.IsAssignableFrom(target.StyleKey))
             {
-                Attach(target, null);
+                Attach(target, null, BindingPriority.ControlTheme);
                 result = SelectorMatchResult.AlwaysThisType;
             }
 
