@@ -527,22 +527,22 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_PAINT:
-                {
-                    using(NonPumpingSyncContext.Use())
-                    using (_rendererLock.Lock())
                     {
-                        if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
+                        using (NonPumpingSyncContext.Use())
+                        using (_rendererLock.Lock())
                         {
-                            var f = RenderScaling;
-                            var r = ps.rcPaint;
-                            Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
-                                (r.bottom - r.top) / f));
-                            EndPaint(_hwnd, ref ps);
+                            if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
+                            {
+                                var f = RenderScaling;
+                                var r = ps.rcPaint;
+                                Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
+                                    (r.bottom - r.top) / f));
+                                EndPaint(_hwnd, ref ps);
+                            }
                         }
-                    }
 
-                    return IntPtr.Zero;
-                }
+                        return IntPtr.Zero;
+                    }
 
 
                 case WindowsMessage.WM_ENTERSIZEMOVE:
@@ -551,7 +551,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_SIZE:
                     {
-                        using(NonPumpingSyncContext.Use())
+                        using (NonPumpingSyncContext.Use())
                         using (_rendererLock.Lock())
                         {
                             // Do nothing here, just block until the pending frame render is completed on the render thread
@@ -651,13 +651,19 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_SETCONTEXT:
                     {
-                        // TODO if we implement preedit, disable the composition window:
-                        // lParam = new IntPtr((int)(((uint)lParam.ToInt64()) & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        DefWindowProc(Hwnd, msg, wParam, (IntPtr)(lParam.ToInt64() & ~ISC_SHOWUICOMPOSITIONWINDOW));
+
                         UpdateInputMethod(GetKeyboardLayout(0));
+
+                        return IntPtr.Zero;
+                    }
+                case WindowsMessage.WM_IME_COMPOSITION:
+                    {
+                        Imm32InputMethod.Current.CompositionChanged();
+
                         break;
                     }
                 case WindowsMessage.WM_IME_CHAR:
-                case WindowsMessage.WM_IME_COMPOSITION:
                 case WindowsMessage.WM_IME_COMPOSITIONFULL:
                 case WindowsMessage.WM_IME_CONTROL:
                 case WindowsMessage.WM_IME_KEYDOWN:
@@ -667,6 +673,7 @@ namespace Avalonia.Win32
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
                     Imm32InputMethod.Current.IsComposing = true;
+                    return IntPtr.Zero;
                     break;
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     Imm32InputMethod.Current.IsComposing = false;
@@ -687,7 +694,7 @@ namespace Avalonia.Win32
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
 #endif
 
-            if(shouldTakeFocus)
+            if (shouldTakeFocus)
             {
                 SetFocus(_hwnd);
             }
@@ -916,14 +923,15 @@ namespace Avalonia.Win32
         {
             // note: for non-ime language, also create it so that emoji panel tracks cursor
             var langid = LGID(hkl);
+
             if (langid == _langid && Imm32InputMethod.Current.HWND == Hwnd)
             {
                 return;
             }
+
             _langid = langid;
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
-
         }
 
         private static int ToInt32(IntPtr ptr)
