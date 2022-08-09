@@ -203,6 +203,8 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
         }
 
+        public object? GetFeature(Type t) => null;
+
         /// <inheritdoc/>
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {

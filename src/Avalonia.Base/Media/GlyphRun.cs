@@ -265,7 +265,7 @@ namespace Avalonia.Media
                 //RightToLeft
                 var glyphIndex = FindGlyphIndex(characterIndex);
 
-                if (GlyphClusters != null)
+                if (GlyphClusters != null && GlyphClusters.Count > 0)
                 {
                     if (characterIndex > GlyphClusters[0])
                     {
