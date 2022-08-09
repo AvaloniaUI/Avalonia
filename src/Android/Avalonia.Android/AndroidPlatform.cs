@@ -17,10 +17,8 @@ namespace Avalonia
     {
         public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            var options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
-
             return builder
-                .UseWindowingSubsystem(() => AndroidPlatform.Initialize(options), "Android")
+                .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
                 .UseSkia();
         }
     }
@@ -45,9 +43,9 @@ namespace Avalonia.Android
 
         internal static Compositor Compositor { get; private set; }
 
-        public static void Initialize(AndroidPlatformOptions options)
+        public static void Initialize()
         {
-            Options = options;
+            Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
@@ -61,12 +59,12 @@ namespace Avalonia.Android
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
-            if (options.UseGpu)
+            if (Options.UseGpu)
             {
                 EglPlatformOpenGlInterface.TryInitialize();
             }
             
-            if (options.UseCompositor)
+            if (Options.UseCompositor)
             {
                 Compositor = new Compositor(
                     AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
