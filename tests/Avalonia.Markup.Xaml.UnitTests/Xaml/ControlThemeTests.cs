@@ -364,36 +364,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-        [Fact]
-        public void Setter_TemplateBinding_Is_Set_With_ControlTheme_Priority()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = $@"
-<Window xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
-    <u:TestTemplatedControl Background='Red'>
-        <u:TestTemplatedControl.Theme>
-            <ControlTheme TargetType='u:TestTemplatedControl'>
-                <Setter Property='Background' Value='{{TemplateBinding Background}}'/>
-            </ControlTheme>
-        </u:TestTemplatedControl.Theme>
-    </u:TestTemplatedControl>
-</Window>";
-
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = Assert.IsType<TestTemplatedControl>(window.Content);
-
-                window.LayoutManager.ExecuteInitialLayoutPass();
-
-                Assert.Equal(Brushes.Red, target.Background);
-
-                var diagnostic = target.GetDiagnostic(Border.BackgroundProperty);
-                Assert.Equal(BindingPriority.ControlTheme, diagnostic.Priority);
-            }
-        }
-
         [Theory]
         [InlineData(false)]
         [InlineData(true)]

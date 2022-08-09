@@ -32,7 +32,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 var parentScope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                     .FirstOrDefault();
-                if (parentScope?.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style)
+                if (parentScope?.ScopeType is AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style or
+                                              AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTheme)
                     targetType = parentScope.TargetType;
                 else if (context.ParentNodes().Skip(1).FirstOrDefault() is XamlAstObjectNode directParentNode
                          && templatableBaseType.IsAssignableFrom(directParentNode.Type.GetClrType()))
