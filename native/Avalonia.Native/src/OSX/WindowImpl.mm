@@ -120,7 +120,7 @@ void WindowImpl::BringToFront()
 {
     if(Window != nullptr)
     {
-        if (![Window isMiniaturized])
+        if ([Window isVisible] && ![Window isMiniaturized])
         {
             if(IsDialog())
             {
