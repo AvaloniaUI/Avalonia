@@ -224,7 +224,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if <paramref name="value"/> is between
+        /// Returns <see langword="true"/> if <paramref name="cp"/> is between
         /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -326,8 +326,8 @@ namespace Avalonia.Build.Tasks
                                         var op = i[c].Operand as MethodReference;
                                         
                                         // TODO: Throw an error
-                                        // This usually happens when same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named default theme resource
+                                        // This usually happens when the same XAML resource was added twice for some weird reason
+                                        // We currently support it for dual-named default theme resources
                                         if (op != null
                                             && op.Name == TrampolineName)
                                         {

@@ -537,8 +537,13 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="width">The collapsing width.</param>
         /// <returns>The <see cref="TextCollapsingProperties"/>.</returns>
-        private TextCollapsingProperties GetCollapsingProperties(double width)
+        private TextCollapsingProperties? GetCollapsingProperties(double width)
         {
+            if(_textTrimming == TextTrimming.None)
+            {
+                return null;
+            }
+
             return _textTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties));
         }
     }

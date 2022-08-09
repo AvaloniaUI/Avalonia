@@ -2,6 +2,8 @@ using System;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Animations
 {
     
@@ -22,9 +24,9 @@ namespace Avalonia.Rendering.Composition.Animations
         /// The delay behavior of the key frame animation.
         /// </summary>
         public AnimationDelayBehavior DelayBehavior { get; set; }
-        
+
         /// <summary>
-        /// Delay before the animation starts after <see cref="CompositionObject.StartAnimation"/> is called.
+        /// Delay before the animation starts after <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> is called.
         /// </summary>
         public System.TimeSpan DelayTime { get; set; }
         

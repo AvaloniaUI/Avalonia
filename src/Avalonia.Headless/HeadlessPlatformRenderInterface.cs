@@ -416,6 +416,11 @@ namespace Avalonia.Headless
 
             }
 
+            public object GetFeature(Type t)
+            {
+                return null;
+            }
+
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
             }
