@@ -674,7 +674,6 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
                     Imm32InputMethod.Current.IsComposing = true;
                     return IntPtr.Zero;
-                    break;
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
                     Imm32InputMethod.Current.IsComposing = false;
                     break;
