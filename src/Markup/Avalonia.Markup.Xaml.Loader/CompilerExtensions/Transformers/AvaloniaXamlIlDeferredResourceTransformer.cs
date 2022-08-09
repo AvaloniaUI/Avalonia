@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -47,7 +48,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return !node.Type.GetClrType().IsValueType;
         }
         
-        class AdderSetter : IXamlPropertySetter, IXamlEmitablePropertySetter<IXamlILEmitter>
+        class AdderSetter : IXamlILOptimizedEmitablePropertySetter, IEquatable<AdderSetter>
         {
             private readonly IXamlMethod _getter;
             private readonly IXamlMethod _adder;
@@ -58,16 +59,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 _adder = adder;
                 TargetType = getter.DeclaringType;
                 Parameters = adder.ParametersWithThis().Skip(1).ToList();
+
+                bool allowNull = Parameters.Last().AcceptsNull();
+                BinderParameters = new PropertySetterBinderParameters
+                {
+                    AllowMultiple = true,
+                    AllowXNull = allowNull,
+                    AllowRuntimeNull = allowNull
+                };
             }
 
             public IXamlType TargetType { get; }
 
-            public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters
-            {
-                AllowMultiple = true
-            };
+            public PropertySetterBinderParameters BinderParameters { get; }
 
             public IReadOnlyList<IXamlType> Parameters { get; }
+
             public void Emit(IXamlILEmitter emitter)
             {
                 var locals = new Stack<XamlLocalsPool.PooledLocal>();
@@ -80,11 +87,40 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
 
                 emitter.EmitCall(_getter);
-                while (locals.Count > 0)
+                while (locals.Count>0)
                     using (var loc = locals.Pop())
                         emitter.Ldloc(loc.Local);
                 emitter.EmitCall(_adder, true);
             }
+
+            public void EmitWithArguments(
+                XamlEmitContextWithLocals<IXamlILEmitter, XamlILNodeEmitResult> context,
+                IXamlILEmitter emitter,
+                IReadOnlyList<IXamlAstValueNode> arguments)
+            {
+                emitter.EmitCall(_getter);
+
+                for (var i = 0; i < arguments.Count; ++i)
+                    context.Emit(arguments[i], emitter, Parameters[i]);
+
+                emitter.EmitCall(_adder, true);
+            }
+
+            public bool Equals(AdderSetter other)
+            {
+                if (ReferenceEquals(null, other))
+                    return false;
+                if (ReferenceEquals(this, other))
+                    return true;
+
+                return _getter.Equals(other._getter) && _adder.Equals(other._adder);
+            }
+
+            public override bool Equals(object obj)
+                => Equals(obj as AdderSetter);
+
+            public override int GetHashCode()
+                => (_getter.GetHashCode() * 397) ^ _adder.GetHashCode();
         }
     }
 }
