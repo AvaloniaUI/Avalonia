@@ -99,6 +99,7 @@ namespace IntegrationTestApp
 
             foreach (var window in lifetime.Windows)
             {
+                window.Show();
                 if (window.WindowState == WindowState.Minimized)
                     window.WindowState = WindowState.Normal;
             }
