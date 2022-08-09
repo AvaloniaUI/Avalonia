@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using Avalonia.Data;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.TypeSystem;
+using ScopeTypes = Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers.AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
@@ -23,7 +25,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IXamlAstTypeReference targetType;
 
             var templatableBaseType = context.Configuration.TypeSystem.GetType("Avalonia.Controls.Control");
-            
+            var scope = ScopeTypes.ControlTemplate;
+
             if ((tt?.Values.FirstOrDefault() is XamlTypeExtensionNode tn))
             {
                 targetType = tn.Value;
@@ -32,9 +35,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 var parentScope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                     .FirstOrDefault();
-                if (parentScope?.ScopeType is AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style or
-                                              AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTheme)
+                if (parentScope != null && (parentScope.ScopeType & ScopeTypes.Style) != 0)
+                {
                     targetType = parentScope.TargetType;
+                    scope |= parentScope.ScopeType & ScopeTypes.InControlTheme;
+                }
                 else if (context.ParentNodes().Skip(1).FirstOrDefault() is XamlAstObjectNode directParentNode
                          && templatableBaseType.IsAssignableFrom(directParentNode.Type.GetClrType()))
                     targetType = directParentNode.Type;
@@ -42,11 +47,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     targetType = new XamlAstClrTypeReference(node,
                         templatableBaseType, false);
             }
-                
-                
 
-            return new AvaloniaXamlIlTargetTypeMetadataNode(on, targetType,
-                AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate);
+            return new AvaloniaXamlIlTargetTypeMetadataNode(on, targetType, scope);
         }
     }
 
@@ -55,12 +57,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlAstTypeReference TargetType { get; set; }
         public ScopeTypes ScopeType { get; }
 
+        [Flags]
         public enum ScopeTypes
         {
-            ControlTheme,
-            Style,
-            ControlTemplate,
-            Transitions
+            Transitions = 0x00,
+            Style = 0x01,
+            ControlTemplate = 0x02,
+            InControlTheme = 0x10,
+            ControlTheme = Style | InControlTheme,
+            ControlThemeTemplate = ControlTemplate | InControlTheme,
         }
         
         public AvaloniaXamlIlTargetTypeMetadataNode(IXamlAstValueNode value, IXamlAstTypeReference targetType,

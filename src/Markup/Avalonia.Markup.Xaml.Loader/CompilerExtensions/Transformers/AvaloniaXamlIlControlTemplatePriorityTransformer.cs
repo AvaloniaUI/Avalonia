@@ -15,6 +15,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
+            if (node is XamlPropertyAssignmentNode p1 && p1.Property.Name == "Background")
+            {
+            }
+
             // The node is a candidate for transformation if:
             // - It's a property assignment
             // - The property has a single value
@@ -62,13 +66,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 if (node is AvaloniaXamlIlTargetTypeMetadataNode tt)
                 {
-                    var priority = tt.ScopeType switch
-                    {
-                        ScopeTypes.ControlTheme => BindingPriority.ControlTheme,
-                        ScopeTypes.Style => BindingPriority.Style,
-                        ScopeTypes.ControlTemplate => BindingPriority.Style,
-                        _ => BindingPriority.LocalValue,
-                    };
+                    var priority = (tt.ScopeType & ScopeTypes.InControlTheme) != 0 ?
+                        BindingPriority.ControlTheme : BindingPriority.Style;
 
                     if (priority > result)
                         result = priority;
