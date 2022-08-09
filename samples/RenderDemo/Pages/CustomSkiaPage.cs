@@ -40,14 +40,16 @@ namespace RenderDemo.Pages
             static Stopwatch St = Stopwatch.StartNew();
             public void Render(IDrawingContextImpl context)
             {
-                var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
-                if (canvas == null)
+                var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
+                if (leaseFeature == null)
                     using (var c = new DrawingContext(context, false))
                     {
                         c.DrawText(_noSkia, new Point());
                     }
                 else
                 {
+                    using var lease = leaseFeature.Lease();
+                    var canvas = lease.SkCanvas;
                     canvas.Save();
                     // create the first shader
                     var colors = new SKColor[] {

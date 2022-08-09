@@ -211,6 +211,35 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void Hidden_Child_Window_Is_Not_Reshown_When_Parent_Clicked()
+        {
+            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+
+            // We don't use dispose to close the window here, because it seems that hiding and re-showing a window
+            // causes Appium to think it's a different window.
+            OpenWindow(null, ShowWindowMode.Owned, WindowStartupLocation.Manual);
+            
+            var secondaryWindow = FindWindow(_session, "SecondaryWindow");
+            var hideButton = secondaryWindow.FindElementByAccessibilityId("HideButton");
+
+            hideButton.Click();
+                
+            var windows = _session.FindElementsByXPath("XCUIElementTypeWindow");
+            Assert.Single(windows);
+                
+            mainWindow.Click();
+                
+            windows = _session.FindElementsByXPath("XCUIElementTypeWindow");
+            Assert.Single(windows);
+                
+            _session.FindElementByAccessibilityId("RestoreAll").Click();
+
+            // Close the window manually.
+            secondaryWindow = FindWindow(_session, "SecondaryWindow");
+            secondaryWindow.GetChromeButtons().close.Click();
+        }
+
         private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
