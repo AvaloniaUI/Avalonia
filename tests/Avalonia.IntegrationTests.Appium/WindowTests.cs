@@ -131,7 +131,8 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.True(clientSize.Width >= current.ScreenRect.Width);
                 Assert.True(clientSize.Height >= current.ScreenRect.Height);
 
-                windowState.Click();
+                windowState.SendClick();
+                
                 _session.FindElementByName("Normal").SendClick();
 
                 current = GetWindowInfo();
