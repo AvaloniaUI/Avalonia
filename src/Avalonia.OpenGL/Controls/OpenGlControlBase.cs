@@ -146,6 +146,13 @@ namespace Avalonia.OpenGL.Controls
                 return false;
             }
 
+            if (_context == null)
+            {
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
+                    "Unable to initialize OpenGL: unable to create additional OpenGL context.");
+                return false;
+            }
+
             GlVersion = _context.Version;
             try
             {

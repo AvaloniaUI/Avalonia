@@ -9,6 +9,8 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
+// Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
+
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -76,6 +78,13 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (Root == null) 
                 return;
+
+            if ((_renderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+            {
+                _renderTarget!.Dispose();
+                _renderTarget = null;
+            }
+
             _renderTarget ??= _renderTargetFactory();
 
             Compositor.UpdateServerTime();
