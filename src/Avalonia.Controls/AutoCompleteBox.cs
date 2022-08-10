@@ -392,6 +392,8 @@ namespace Avalonia.Controls
         private AutoCompleteSelector<object>? _itemSelector;
         private AutoCompleteSelector<string?>? _textSelector;
 
+        private readonly EventHandler _populateDropDownHandler;
+
         public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
             RoutedEvent.Register<SelectionChangedEventArgs>(nameof(SelectionChanged), RoutingStrategies.Bubble, typeof(AutoCompleteBox));
 
@@ -668,6 +670,7 @@ namespace Avalonia.Controls
 
                 if (newValue == TimeSpan.Zero)
                 {
+                    _delayTimer.Tick -= _populateDropDownHandler;
                     _delayTimer = null;
                 }
             }
@@ -678,7 +681,7 @@ namespace Avalonia.Controls
                 if (_delayTimer == null)
                 {
                     _delayTimer = new DispatcherTimer();
-                    _delayTimer.Tick += PopulateDropDown;
+                    _delayTimer.Tick += _populateDropDownHandler;
                 }
 
                 // Set the new tick interval
@@ -864,6 +867,7 @@ namespace Avalonia.Controls
         /// </summary>
         public AutoCompleteBox()
         {
+            _populateDropDownHandler = PopulateDropDown;
             ClearView();
         }
 
@@ -1771,10 +1775,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event arguments.</param>
         private void PopulateDropDown(object? sender, EventArgs e)
         {
-            if (_delayTimer != null)
-            {
-                _delayTimer.Stop();
-            }
+            _delayTimer?.Stop();
 
             // Update the prefix/search text.
             SearchText = Text;
