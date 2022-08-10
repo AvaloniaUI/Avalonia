@@ -68,7 +68,7 @@ namespace ControlCatalog.Pages
             set => SetAndRaise(DiscoProperty, ref _disco, value);
         }
 
-        private string _info;
+        private string _info = string.Empty;
 
         public static readonly DirectProperty<OpenGlPageControl, string> InfoProperty =
             AvaloniaProperty.RegisterDirect<OpenGlPageControl, string>("Info", o => o.Info, (o, v) => o.Info = v);
@@ -205,7 +205,7 @@ namespace ControlCatalog.Pages
         public OpenGlPageControl()
         {
             var name = typeof(OpenGlPage).Assembly.GetManifestResourceNames().First(x => x.Contains("teapot.bin"));
-            using (var sr = new BinaryReader(typeof(OpenGlPage).Assembly.GetManifestResourceStream(name)))
+            using (var sr = new BinaryReader(typeof(OpenGlPage).Assembly.GetManifestResourceStream(name)!))
             {
                 var buf = new byte[sr.ReadInt32()];
                 sr.Read(buf, 0, buf.Length);

@@ -19,7 +19,7 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
-        public void OnRepeatButtonClick(object sender, object args)
+        public void OnRepeatButtonClick(object? sender, object args)
         {
             repeatButtonClickCount++;
             var textBlock = this.Get<TextBlock>("RepeatButtonTextBlock");

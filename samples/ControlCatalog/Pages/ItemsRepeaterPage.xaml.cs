@@ -123,7 +123,7 @@ namespace ControlCatalog.Pages
             element.BringIntoView();
         }
 
-        private void RepeaterClick(object sender, PointerPressedEventArgs e)
+        private void RepeaterClick(object? sender, PointerPressedEventArgs e)
         {
             if ((e.Source as TextBlock)?.DataContext is ItemsRepeaterPageViewModel.Item item)
             {
@@ -132,7 +132,7 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private void RepeaterOnKeyDown(object sender, KeyEventArgs e)
+        private void RepeaterOnKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.F5)
             {
@@ -140,17 +140,17 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private void scrollToLast_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void scrollToLast_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ScrollTo(_viewModel.Items.Count - 1);
         }
 
-        private void scrollToRandom_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void scrollToRandom_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ScrollTo(_random.Next(_viewModel.Items.Count - 1));
         }
 
-        private void scrollToSelected_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void scrollToSelected_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ScrollTo(_selectedIndex);
         }

@@ -117,9 +117,9 @@ namespace ControlCatalog.ViewModels
             PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlide.SlideAxis.Vertical);
 
             var compositeTransition = new CompositePageTransition();
-            compositeTransition.PageTransitions.Add(PageTransitions[1].Transition);
-            compositeTransition.PageTransitions.Add(PageTransitions[2].Transition);
-            compositeTransition.PageTransitions.Add(PageTransitions[3].Transition);
+            compositeTransition.PageTransitions.Add(PageTransitions[1].Transition!);
+            compositeTransition.PageTransitions.Add(PageTransitions[2].Transition!);
+            compositeTransition.PageTransitions.Add(PageTransitions[3].Transition!);
             PageTransitions[4].Transition = compositeTransition;
 
             PageTransitions[5].Transition = new CustomTransition(TimeSpan.FromMilliseconds(Duration));
