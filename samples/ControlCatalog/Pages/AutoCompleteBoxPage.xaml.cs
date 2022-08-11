@@ -1,8 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
-using Avalonia.Markup;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -161,23 +159,23 @@ namespace ControlCatalog.Pages
         private bool LastWordContains(string? searchText, string? item)
         {
             var words = searchText?.Split(' ') ?? Array.Empty<string>();
-            var options = Sentences.Select(x => x.First).ToArray();
+            var options = Sentences.Select(x => x.First)
+                .ToArray<LinkedListNode<string>?>();
             for (var i = 0; i < words.Length; ++i)
             {
                 var word = words[i];
                 for (var j = 0; word is { } && j < options.Length; ++j)
                 {
-                    var option = options[j];
-                    if (option == null)
-                        continue;
-
-                    if (i == words.Length - 1)
+                    if (options[i] is { } option)
                     {
-                        options[j] = option.Value.ToLower().Contains(word.ToLower()) ? option : null;
-                    }
-                    else
-                    {
-                        options[j] = option.Value.Equals(word, StringComparison.InvariantCultureIgnoreCase) ? option.Next : null;
+                        if (i == words.Length - 1)
+                        {
+                            options[j] = option.Value.ToLower().Contains(word.ToLower()) ? option : null;
+                        }
+                        else
+                        {
+                            options[j] = option.Value.Equals(word, StringComparison.InvariantCultureIgnoreCase) ? option.Next : null;
+                        }
                     }
                 }
             }
