@@ -62,7 +62,7 @@ namespace ControlCatalog.Pages
             addButton.Click += (a, b) => collectionView3.AddNew();
         }
 
-        private void Dg1_LoadingRow(object sender, DataGridRowEventArgs e)
+        private void Dg1_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
             e.Row.Header = e.Row.GetIndex() + 1;
         }
@@ -74,7 +74,7 @@ namespace ControlCatalog.Pages
 
         private class ReversedStringComparer : IComparer<object>, IComparer
         {
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 if (x is string left && y is string right)
                 {

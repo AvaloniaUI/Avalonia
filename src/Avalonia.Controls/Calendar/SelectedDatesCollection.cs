@@ -297,7 +297,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    if (item != null && DateTime.Compare(this[index], item) != 0 && Calendar.IsValidDateSelection(_owner, item))
+                    if (DateTime.Compare(this[index], item) != 0 && Calendar.IsValidDateSelection(_owner, item))
                     {
                         removedItems.Add(this[index]);
                         base.SetItem(index, item);
