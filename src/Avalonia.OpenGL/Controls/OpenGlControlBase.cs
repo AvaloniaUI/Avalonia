@@ -34,7 +34,7 @@ namespace Avalonia.OpenGL.Controls
                 _attachment.Present();
             }
 
-            context.DrawImage(_bitmap, new Rect(_bitmap.Size), Bounds);
+            context.DrawImage(_bitmap, new Rect(_bitmap.Size), new Rect(Bounds.Size));
             base.Render(context);
         }
         
