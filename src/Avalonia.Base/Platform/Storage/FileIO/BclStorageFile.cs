@@ -12,6 +12,11 @@ public class BclStorageFile : IStorageBookmarkFile
 {
     private readonly FileInfo _fileInfo;
 
+    public BclStorageFile(string fileName)
+    {
+        _fileInfo = new FileInfo(fileName);
+    }
+
     public BclStorageFile(FileInfo fileInfo)
     {
         _fileInfo = fileInfo ?? throw new ArgumentNullException(nameof(fileInfo));
@@ -27,15 +32,14 @@ public class BclStorageFile : IStorageBookmarkFile
 
     public Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
-        var props = new StorageItemProperties();
         if (_fileInfo.Exists)
         {
-            props = new StorageItemProperties(
+            return Task.FromResult(new StorageItemProperties(
                 (ulong)_fileInfo.Length,
                 _fileInfo.CreationTimeUtc,
-                _fileInfo.LastAccessTimeUtc);
+                _fileInfo.LastAccessTimeUtc));
         }
-        return Task.FromResult(props);
+        return Task.FromResult(new StorageItemProperties());
     }
 
     public Task<IStorageFolder?> GetParentAsync()
