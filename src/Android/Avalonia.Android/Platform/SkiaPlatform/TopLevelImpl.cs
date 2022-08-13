@@ -86,7 +86,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
             AndroidPlatform.Options.UseCompositor
-                ? new CompositingRenderer(root, AndroidPlatform.Compositor) { DrawFps = true }
+                ? new CompositingRenderer(root, AndroidPlatform.Compositor)
                 : AndroidPlatform.Options.UseDeferredRendering
                     ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
                     : new ImmediateRenderer(root);

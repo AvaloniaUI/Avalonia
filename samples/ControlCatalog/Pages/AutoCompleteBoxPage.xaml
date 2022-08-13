@@ -28,7 +28,7 @@
       </StackPanel>
       <StackPanel>
         <TextBlock Text="MinimumPopulateDelay: 1s" />
-        <AutoCompleteBox MinimumPopulateDelay="1" />
+        <AutoCompleteBox MinimumPopulateDelay="00:00:01" />
       </StackPanel>
       <StackPanel>
         <TextBlock Text="MaxDropDownHeight: 60" />
