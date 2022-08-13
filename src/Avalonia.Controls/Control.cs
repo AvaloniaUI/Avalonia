@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -104,7 +105,6 @@ namespace Avalonia.Controls
         private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
         private static readonly HashSet<Control> _loadedProcessingQueue = new HashSet<Control>();
 
-        private bool _isAttachedToVisualTree = false;
         private bool _isLoaded = false;
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
@@ -344,10 +344,10 @@ namespace Avalonia.Controls
         /// Invoked as the first step of marking the control as loaded and raising the
         /// <see cref="Loaded"/> event.
         /// </summary>
-        internal void OnLoadedCore()
+        internal virtual void OnLoadedCore()
         {
             if (_isLoaded == false &&
-                _isAttachedToVisualTree)
+                ((ILogical)this).IsAttachedToLogicalTree)
             {
                 _isLoaded = true;
                 OnLoaded();
@@ -395,7 +395,6 @@ namespace Avalonia.Controls
         protected sealed override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTreeCore(e);
-            _isAttachedToVisualTree = true;
 
             InitializeIfNeeded();
 
@@ -406,7 +405,6 @@ namespace Avalonia.Controls
         protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTreeCore(e);
-            _isAttachedToVisualTree = false;
 
             OnUnloadedCore();
         }
