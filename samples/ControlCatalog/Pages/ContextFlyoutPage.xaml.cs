@@ -52,13 +52,13 @@ namespace ControlCatalog.Pages
             base.OnDataContextChanged(e);
         }
 
-        private void ContextFlyoutPage_Closing(object sender, CancelEventArgs e)
+        private void ContextFlyoutPage_Closing(object? sender, CancelEventArgs e)
         {
             var cancelCloseCheckBox = this.FindControl<CheckBox>("CancelCloseCheckBox");
             e.Cancel = cancelCloseCheckBox?.IsChecked ?? false;
         }
 
-        private void ContextFlyoutPage_Opening(object sender, EventArgs e)
+        private void ContextFlyoutPage_Opening(object? sender, EventArgs e)
         {
             if (e is CancelEventArgs cancelArgs)
             {
@@ -67,20 +67,20 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private void CloseFlyout(object sender, RoutedEventArgs e)
+        private void CloseFlyout(object? sender, RoutedEventArgs e)
         {
             _textBox.ContextFlyout?.Hide();
         }
 
-        public void CustomContextRequested(object sender, ContextRequestedEventArgs e)
+        public void CustomContextRequested(object? sender, ContextRequestedEventArgs e)
         {
-            var border = (Border)sender;
-            var textBlock = (TextBlock)border.Child;
-
-            textBlock.Text = e.TryGetPosition(border, out var point)
-                ? $"Context was requested with pointer at: {point.X:N0}, {point.Y:N0}"
-                : "Context was requested without pointer";
-            e.Handled = true;
+            if (sender is Border border && border.Child is TextBlock textBlock)
+            {
+                textBlock.Text = e.TryGetPosition(border, out var point)
+                    ? $"Context was requested with pointer at: {point.X:N0}, {point.Y:N0}"
+                    : "Context was requested without pointer";
+                e.Handled = true;
+            }
         }
 
         private void InitializeComponent()
