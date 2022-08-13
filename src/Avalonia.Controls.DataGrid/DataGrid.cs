@@ -2172,34 +2172,18 @@ namespace Avalonia.Controls
         protected override void OnDataContextBeginUpdate()
         {
             base.OnDataContextBeginUpdate();
-            foreach (DataGridRow row in GetAllRows())
-            {
-                foreach (DataGridCell cell in row.Cells)
-                {
-                    if (cell.Content is StyledElement)
-                    {
-                        DataContextProperty.Notifying?.Invoke((IAvaloniaObject)cell.Content, true);
-                    }
-                }
-            }
+
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), true);
         }
 
         /// <inheritdoc/>
         protected override void OnDataContextEndUpdate()
         {
             base.OnDataContextEndUpdate();
-            foreach (DataGridRow row in GetAllRows())
-            {
-                foreach (DataGridCell cell in row.Cells)
-                {
-                    if (cell.Content is StyledElement)
-                    {
-                        DataContextProperty.Notifying?.Invoke((IAvaloniaObject)cell.Content, false);
-                    }
-                }
-            }
-        }
 
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), false);
+        }
+        
         /// <summary>
         /// Raises the BeginningEdit event.
         /// </summary>
@@ -3194,6 +3178,20 @@ namespace Avalonia.Controls
                 // Update layout when RowDetails are expanded or collapsed, just updating the vertical scroll bar is not enough
                 // since rows could be added or removed
                 InvalidateMeasure();
+            }
+        }
+
+        private static void NotifyDataContextPropertyForAllRowCells(IEnumerable<DataGridRow> rowSource, bool arg2)
+        {
+            foreach (DataGridRow row in rowSource)
+            {
+                foreach (DataGridCell cell in row.Cells)
+                {
+                    if (cell.Content is StyledElement cellContent)
+                    {
+                        DataContextProperty.Notifying?.Invoke(cellContent, arg2);
+                    }
+                }
             }
         }
 
