@@ -344,7 +344,7 @@ namespace Avalonia.Controls
         /// Invoked as the first step of marking the control as loaded and raising the
         /// <see cref="Loaded"/> event.
         /// </summary>
-        internal virtual void OnLoadedCore()
+        internal void OnLoadedCore()
         {
             if (_isLoaded == false &&
                 ((ILogical)this).IsAttachedToLogicalTree)
