@@ -1,7 +1,7 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="2.88.1-preview.1" />
-    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1-preview.1" />
-    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.1-preview.1" />
+    <PackageReference Include="SkiaSharp" Version="2.88.1-preview.108" />
+    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1-preview.108" />
+    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.1-preview.108" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,8 @@
 using System;
 using System.Reactive.Disposables;
+
+using Avalonia.Controls;
+
 using ReactiveUI;
 using Splat;
 
@@ -23,6 +26,12 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public static readonly StyledProperty<string?> ViewContractProperty =
             AvaloniaProperty.Register<ViewModelViewHost, string?>(nameof(ViewContract));
+
+        /// <summary>
+        /// <see cref="AvaloniaProperty"/> for the <see cref="DefaultContent"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> DefaultContentProperty =
+            AvaloniaProperty.Register<ViewModelViewHost, object?>(nameof(DefaultContent));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewModelViewHost"/> class.
@@ -53,6 +62,15 @@ namespace Avalonia.ReactiveUI
         {
             get => GetValue(ViewContractProperty);
             set => SetValue(ViewContractProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the content displayed whenever there is no page currently routed.
+        /// </summary>
+        public object? DefaultContent
+        {
+            get => GetValue(DefaultContentProperty);
+            set => SetValue(DefaultContentProperty, value);
         }
 
         /// <summary>

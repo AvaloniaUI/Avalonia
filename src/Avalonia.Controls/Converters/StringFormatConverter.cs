@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Avalonia.Data;
 using Avalonia.Data.Converters;
 
 namespace Avalonia.Controls.Converters;
@@ -15,13 +14,17 @@ public class StringFormatConverter : IMultiValueConverter
 {
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
-        try
+        if (values[0] is string format)
         {
-            return string.Format((string)values[0]!, values.Skip(1).ToArray());
+            try
+            {
+                return string.Format(format, values.Skip(1).ToArray());
+            }
+            catch
+            {
+                return AvaloniaProperty.UnsetValue;
+            }
         }
-        catch (Exception e)
-        {
-            return new BindingNotification(e, BindingErrorType.Error);
-        }
+        return AvaloniaProperty.UnsetValue;
     }
 }
