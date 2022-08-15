@@ -7,11 +7,13 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -221,30 +223,33 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Toggle_Selection_Should_Update_Containers()
         {
-            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = ListBoxTemplate(),
-                Items = items,
-                SelectionMode = SelectionMode.Toggle,
-                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
-            };
+                var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = items,
+                    SelectionMode = SelectionMode.Toggle,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                Prepare(target);
 
-            Prepare(target);
+                var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
 
-            var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
+                var item = lbItems[0];
 
-            var item = lbItems[0];
+                Assert.Equal(false, item.IsSelected);
 
-            Assert.Equal(false, item.IsSelected);
+                RaisePressedEvent(target, item, MouseButton.Left);
 
-            RaisePressedEvent(target, item, MouseButton.Left);
+                Assert.Equal(true, item.IsSelected);
 
-            Assert.Equal(true, item.IsSelected);
+                RaisePressedEvent(target, item, MouseButton.Left);
 
-            RaisePressedEvent(target, item, MouseButton.Left);
-
-            Assert.Equal(false, item.IsSelected);
+                Assert.Equal(false, item.IsSelected);
+            }
         }
 
         [Fact]
@@ -374,41 +379,44 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Item_Should_Raise_BringIntoView_For_Correct_Control()
         {
-            // Issue #3934
-            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = ListBoxTemplate(),
-                Items = items,
-                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
-                SelectionMode = SelectionMode.AlwaysSelected,
-                VirtualizationMode = ItemVirtualizationMode.None,
-            };
+                // Issue #3934
+                var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = items,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
+                    SelectionMode = SelectionMode.AlwaysSelected,
+                    VirtualizationMode = ItemVirtualizationMode.None,
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                Prepare(target);
 
-            Prepare(target);
+                // First an item that is not index 0 must be selected.
+                _mouse.Click(target.Presenter.Panel.Children[1]);
+                Assert.Equal(1, target.Selection.AnchorIndex);
 
-            // First an item that is not index 0 must be selected.
-            _mouse.Click(target.Presenter.Panel.Children[1]);
-            Assert.Equal(1, target.Selection.AnchorIndex);
+                // We're going to be clicking on item 9.
+                var item = (ListBoxItem)target.Presenter.Panel.Children[9];
+                var raised = 0;
 
-            // We're going to be clicking on item 9.
-            var item = (ListBoxItem)target.Presenter.Panel.Children[9];
-            var raised = 0;
+                // Make sure a RequestBringIntoView event is raised for item 9. It won't be handled
+                // by the ScrollContentPresenter as the item is already visible, so we don't need
+                // handledEventsToo: true. Issue #3934 failed here because item 0 was being scrolled
+                // into view due to SelectionMode.AlwaysSelected.
+                target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) =>
+                {
+                    Assert.Same(item, e.TargetObject);
+                    ++raised;
+                });
 
-            // Make sure a RequestBringIntoView event is raised for item 9. It won't be handled
-            // by the ScrollContentPresenter as the item is already visible, so we don't need
-            // handledEventsToo: true. Issue #3934 failed here because item 0 was being scrolled
-            // into view due to SelectionMode.AlwaysSelected.
-            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) =>
-            {
-                Assert.Same(item, e.TargetObject);
-                ++raised;
-            });
+                // Click item 9.
+                _mouse.Click(item);
 
-            // Click item 9.
-            _mouse.Click(item);
-
-            Assert.Equal(1, raised);
+                Assert.Equal(1, raised);
+            }
         }
 
         [Fact]
