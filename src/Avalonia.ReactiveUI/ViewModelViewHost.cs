@@ -2,7 +2,7 @@ using System;
 using System.Reactive.Disposables;
 
 using Avalonia.Controls;
-
+using Avalonia.Styling;
 using ReactiveUI;
 using Splat;
 
@@ -13,7 +13,7 @@ namespace Avalonia.ReactiveUI
     /// the ViewModel property and display it. This control is very useful
     /// inside a DataTemplate to display the View associated with a ViewModel.
     /// </summary>
-    public class ViewModelViewHost : TransitioningContentControl, IViewFor, IEnableLogger
+    public class ViewModelViewHost : TransitioningContentControl, IViewFor, IEnableLogger, IStyleable
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="ViewModel"/> property.
@@ -77,6 +77,8 @@ namespace Avalonia.ReactiveUI
         /// Gets or sets the view locator.
         /// </summary>
         public IViewLocator? ViewLocator { get; set; }
+
+        Type IStyleable.StyleKey => typeof(TransitioningContentControl);
 
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.
