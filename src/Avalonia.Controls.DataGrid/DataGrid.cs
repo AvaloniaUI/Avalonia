@@ -2167,7 +2167,23 @@ namespace Avalonia.Controls
 
             return desiredSize;
         }
+        
+        /// <inheritdoc/>
+        protected override void OnDataContextBeginUpdate()
+        {
+            base.OnDataContextBeginUpdate();
 
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), true);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDataContextEndUpdate()
+        {
+            base.OnDataContextEndUpdate();
+
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), false);
+        }
+        
         /// <summary>
         /// Raises the BeginningEdit event.
         /// </summary>
@@ -3162,6 +3178,20 @@ namespace Avalonia.Controls
                 // Update layout when RowDetails are expanded or collapsed, just updating the vertical scroll bar is not enough
                 // since rows could be added or removed
                 InvalidateMeasure();
+            }
+        }
+
+        private static void NotifyDataContextPropertyForAllRowCells(IEnumerable<DataGridRow> rowSource, bool arg2)
+        {
+            foreach (DataGridRow row in rowSource)
+            {
+                foreach (DataGridCell cell in row.Cells)
+                {
+                    if (cell.Content is StyledElement cellContent)
+                    {
+                        DataContextProperty.Notifying?.Invoke(cellContent, arg2);
+                    }
+                }
             }
         }
 
