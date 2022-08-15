@@ -88,14 +88,6 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
-#pragma warning disable 618
-        /// <summary>
-        /// Defines the <see cref="ObeyScreenEdges"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
-            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges), true);
-#pragma warning restore 618
-
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
@@ -122,17 +114,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<double> VerticalOffsetProperty =
             AvaloniaProperty.Register<Popup, double>(nameof(VerticalOffset));
-
-        /// <summary>
-        /// Defines the <see cref="StaysOpen"/> property.
-        /// </summary>
-        [Obsolete("Use IsLightDismissEnabledProperty")]
-        public static readonly DirectProperty<Popup, bool> StaysOpenProperty =
-            AvaloniaProperty.RegisterDirect<Popup, bool>(
-                nameof(StaysOpen),
-                o => o.StaysOpen,
-                (o, v) => o.StaysOpen = v,
-                true);
 
         /// <summary>
         /// Defines the <see cref="Topmost"/> property.
@@ -299,13 +280,6 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(PlacementTargetProperty, value); }
         }
 
-        [Obsolete("This property has no effect")]
-        public bool ObeyScreenEdges
-        {
-            get => GetValue(ObeyScreenEdgesProperty);
-            set => SetValue(ObeyScreenEdgesProperty, value);
-        }
-
         /// <summary>
         /// Gets or sets a value indicating whether the event that closes the popup is passed
         /// through to the parent window.
@@ -348,17 +322,6 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(VerticalOffsetProperty); }
             set { SetValue(VerticalOffsetProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the popup should stay open when the popup is
-        /// pressed or loses focus.
-        /// </summary>
-        [Obsolete("Use IsLightDismissEnabled")]
-        public bool StaysOpen
-        {
-            get => !IsLightDismissEnabled;
-            set => IsLightDismissEnabled = !value;
         }
 
         /// <summary>

@@ -1,134 +1,141 @@
-<UserControl 
-    xmlns="https://github.com/avaloniaui" 
+<UserControl
+    xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="RenderDemo.Pages.DrawingPage">
-    <UserControl.Styles>
-        <Style>
-            <Style.Resources>
-                <DrawingGroup x:Key="Bulb">
-                    <DrawingGroup.Transform>
-                        <MatrixTransform Matrix="1,0,0,1,0,-1028.4" />
-                    </DrawingGroup.Transform>
-                    <DrawingGroup>
-                        <DrawingGroup.Transform>
-                            <MatrixTransform Matrix="1,0,0,1.25,-10,1031.4" />
-                        </DrawingGroup.Transform>
-                        <GeometryDrawing Brush="#FF7F8C8D"
-                                         Geometry="F1 M24,14 A2,2,0,1,1,20,14 A2,2,0,1,1,24,14 z" />
-                    </DrawingGroup>
-                    <GeometryDrawing Brush="#FFF39C12"
-                                     Geometry="F1 M12,1030.4 C8.134,1030.4 5,1033.6 5,1037.6 5,1040.7 8.125,1043.5 9,1045.4 9.875,1047.2 9,1050.4 9,1050.4 L12,1049.9 15,1050.4 C15,1050.4 14.125,1047.2 15,1045.4 15.875,1043.5 19,1040.7 19,1037.6 19,1033.6 15.866,1030.4 12,1030.4 z" />
-                    <GeometryDrawing Brush="#FFF1C40F"
-                                     Geometry="F1 M12,1030.4 C15.866,1030.4 19,1033.6 19,1037.6 19,1040.7 15.875,1043.5 15,1045.4 14.125,1047.2 15,1050.4 15,1050.4 L12,1049.9 12,1030.4 z" />
-                    <GeometryDrawing Brush="#FFE67E22"
-                                     Geometry="F1 M9,1036.4 L8,1037.4 12,1049.4 16,1037.4 15,1036.4 14,1037.4 13,1036.4 12,1037.4 11,1036.4 10,1037.4 9,1036.4 z M9,1037.4 L10,1038.4 10.5,1037.9 11,1037.4 11.5,1037.9 12,1038.4 12.5,1037.9 13,1037.4 13.5,1037.9 14,1038.4 15,1037.4 15.438,1037.8 12,1048.1 8.5625,1037.8 9,1037.4 z" />
-                    <DrawingGroup>
-                        <DrawingGroup.Transform>
-                            <MatrixTransform Matrix="1,0,0,1,9,1045.4" />
-                        </DrawingGroup.Transform>
-                        <GeometryDrawing Brush="#FFBDC3C7">
-                            <GeometryDrawing.Geometry>
-                                <RectangleGeometry Rect="0,0,6,5" />
-                            </GeometryDrawing.Geometry>
-                        </GeometryDrawing>
-                    </DrawingGroup>
-                    <GeometryDrawing Brush="#FF95A5A6"
-                                     Geometry="F1 M9,1045.4 L9,1050.4 12,1050.4 12,1049.4 15,1049.4 15,1048.4 12,1048.4 12,1047.4 15,1047.4 15,1046.4 12,1046.4 12,1045.4 9,1045.4 z" />
-                    <GeometryDrawing Brush="#FF7F8C8D"
-                                     Geometry="F1 M9,1046.4 L9,1047.4 12,1047.4 12,1046.4 9,1046.4 z M9,1048.4 L9,1049.4 12,1049.4 12,1048.4 9,1048.4 z" />
-                </DrawingGroup>
-            </Style.Resources>
-        </Style>
-    </UserControl.Styles>
-    <Grid RowDefinitions="Auto,Auto,Auto"
-          ColumnDefinitions="Auto,Auto,Auto,Auto">
-        <TextBlock Text="None"
-                   Margin="3" />
-        <Border Grid.Column="0"
-                Grid.Row="1"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Left"
-                BorderThickness="1"
-                BorderBrush="Gray"
-                Margin="5">
-            <DrawingPresenter Drawing="{DynamicResource Bulb}" />
-        </Border>
-        <TextBlock Text="Fill"
-                   Margin="3"
-                   Grid.Column="1" />
-        <Border Grid.Column="1"
-                Grid.Row="1"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Left"
-                BorderThickness="1"
-                BorderBrush="Gray"
-                Margin="5">
-            <DrawingPresenter Drawing="{DynamicResource Bulb}"
-                              Width="100"
-                              Height="50"
-                              Stretch="Fill" />
-        </Border>
-        <TextBlock Text="Uniform"
-                   Margin="3"
-                   Grid.Column="2" />
-        <Border Grid.Column="2"
-                Grid.Row="1"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Left"
-                BorderThickness="1"
-                BorderBrush="Gray"
-                Margin="5">
-            <DrawingPresenter Drawing="{DynamicResource Bulb}"
-                              Width="100"
-                              Height="50"
-                              Stretch="Uniform" />
-        </Border>
-        <TextBlock Text="UniformToFill"
-                   Margin="3"
-                   Grid.Column="3" />
-        <Border Grid.Column="3"
-                Grid.Row="1"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Left"
-                BorderThickness="1"
-                BorderBrush="Gray"
-                Margin="5">
-            <DrawingPresenter Drawing="{DynamicResource Bulb}"
-                              Width="100"
-                              Height="50"
-                              Stretch="UniformToFill" />
-        </Border>
+  <UserControl.Styles>
+    <Style>
+      <Style.Resources>
+        <DrawingGroup x:Key="Bulb">
+          <DrawingGroup.Transform>
+            <MatrixTransform Matrix="1,0,0,1,0,-1028.4" />
+          </DrawingGroup.Transform>
+          <DrawingGroup>
+            <DrawingGroup.Transform>
+              <MatrixTransform Matrix="1,0,0,1.25,-10,1031.4" />
+            </DrawingGroup.Transform>
+            <GeometryDrawing Brush="#FF7F8C8D"
+                             Geometry="F1 M24,14 A2,2,0,1,1,20,14 A2,2,0,1,1,24,14 z" />
+          </DrawingGroup>
+          <GeometryDrawing Brush="#FFF39C12"
+                           Geometry="F1 M12,1030.4 C8.134,1030.4 5,1033.6 5,1037.6 5,1040.7 8.125,1043.5 9,1045.4 9.875,1047.2 9,1050.4 9,1050.4 L12,1049.9 15,1050.4 C15,1050.4 14.125,1047.2 15,1045.4 15.875,1043.5 19,1040.7 19,1037.6 19,1033.6 15.866,1030.4 12,1030.4 z" />
+          <GeometryDrawing Brush="#FFF1C40F"
+                           Geometry="F1 M12,1030.4 C15.866,1030.4 19,1033.6 19,1037.6 19,1040.7 15.875,1043.5 15,1045.4 14.125,1047.2 15,1050.4 15,1050.4 L12,1049.9 12,1030.4 z" />
+          <GeometryDrawing Brush="#FFE67E22"
+                           Geometry="F1 M9,1036.4 L8,1037.4 12,1049.4 16,1037.4 15,1036.4 14,1037.4 13,1036.4 12,1037.4 11,1036.4 10,1037.4 9,1036.4 z M9,1037.4 L10,1038.4 10.5,1037.9 11,1037.4 11.5,1037.9 12,1038.4 12.5,1037.9 13,1037.4 13.5,1037.9 14,1038.4 15,1037.4 15.438,1037.8 12,1048.1 8.5625,1037.8 9,1037.4 z" />
+          <DrawingGroup>
+            <DrawingGroup.Transform>
+              <MatrixTransform Matrix="1,0,0,1,9,1045.4" />
+            </DrawingGroup.Transform>
+            <GeometryDrawing Brush="#FFBDC3C7">
+              <GeometryDrawing.Geometry>
+                <RectangleGeometry Rect="0,0,6,5" />
+              </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+          </DrawingGroup>
+          <GeometryDrawing Brush="#FF95A5A6"
+                           Geometry="F1 M9,1045.4 L9,1050.4 12,1050.4 12,1049.4 15,1049.4 15,1048.4 12,1048.4 12,1047.4 15,1047.4 15,1046.4 12,1046.4 12,1045.4 9,1045.4 z" />
+          <GeometryDrawing Brush="#FF7F8C8D"
+                           Geometry="F1 M9,1046.4 L9,1047.4 12,1047.4 12,1046.4 9,1046.4 z M9,1048.4 L9,1049.4 12,1049.4 12,1048.4 9,1048.4 z" />
+        </DrawingGroup>
+      </Style.Resources>
+    </Style>
+  </UserControl.Styles>
+  <Grid RowDefinitions="Auto,Auto,Auto"
+        ColumnDefinitions="Auto,Auto,Auto,Auto">
+    <TextBlock Text="None"
+               Margin="3" />
+    <Border Grid.Column="0"
+            Grid.Row="1"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            BorderThickness="1"
+            BorderBrush="Gray"
+            Margin="5">
+      <Image>
+        <Image.Source>
+          <DrawingImage Drawing="{DynamicResource Bulb}" />
+        </Image.Source>
+      </Image>
+    </Border>
+    <TextBlock Text="Fill"
+               Margin="3"
+               Grid.Column="1" />
+    <Border Grid.Column="1"
+            Grid.Row="1"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            BorderThickness="1"
+            BorderBrush="Gray"
+            Margin="5">
+      <Image Width="100" Height="50" Stretch="Fill">
+        <Image.Source>
+          <DrawingImage Drawing="{DynamicResource Bulb}" />
+        </Image.Source>
+      </Image>
+    </Border>
+    <TextBlock Text="Uniform"
+               Margin="3"
+               Grid.Column="2" />
+    <Border Grid.Column="2"
+            Grid.Row="1"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            BorderThickness="1"
+            BorderBrush="Gray"
+            Margin="5">
+      <Image Width="100" Height="50" Stretch="Uniform">
+        <Image.Source>
+          <DrawingImage Drawing="{DynamicResource Bulb}" />
+        </Image.Source>
+      </Image>
+    </Border>
+    <TextBlock Text="UniformToFill"
+               Margin="3"
+               Grid.Column="3" />
+    <Border Grid.Column="3"
+            Grid.Row="1"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            BorderThickness="1"
+            BorderBrush="Gray"
+            Margin="5">
+      <Image Width="100" Height="50" Stretch="UniformToFill">
+        <Image.Source>
+          <DrawingImage Drawing="{DynamicResource Bulb}" />
+        </Image.Source>
+      </Image>
+    </Border>
 
-        <!-- For comparison -->
+    <!-- For comparison -->
 
-        <Ellipse Grid.Row="2"
-                 Grid.Column="0"
-                 Width="100"
-                 Height="50"
-                 Stretch="None"
-                 Fill="Blue"
-                 Margin="5"/>
-        <Ellipse Grid.Row="2"
-                 Grid.Column="1"
-                 Width="100"
-                 Height="50"
-                 Stretch="Fill"
-                 Fill="Blue"
-                 Margin="5" />
-        <Ellipse Grid.Row="2"
-                 Grid.Column="2"
-                 Width="100"
-                 Height="50"
-                 Stretch="Uniform"
-                 Fill="Blue"
-                 Margin="5" />
-        <Ellipse Grid.Row="2"
-                 Grid.Column="3"
-                 Width="100"
-                 Height="50"
-                 Stretch="UniformToFill"
-                 Fill="Blue"
-                 Margin="5" />
+    <Ellipse Grid.Row="2"
+             Grid.Column="0"
+             Width="100"
+             Height="50"
+             Stretch="None"
+             Fill="Blue"
+             Margin="5"/>
+    <Ellipse Grid.Row="2"
+             Grid.Column="1"
+             Width="100"
+             Height="50"
+             Stretch="Fill"
+             Fill="Blue"
+             Margin="5" />
+    <Ellipse Grid.Row="2"
+             Grid.Column="2"
+             Width="100"
+             Height="50"
+             Stretch="Uniform"
+             Fill="Blue"
+             Margin="5" />
+    <Ellipse Grid.Row="2"
+             Grid.Column="3"
+             Width="100"
+             Height="50"
+             Stretch="UniformToFill"
+             Fill="Blue"
+             Margin="5" />
 
-    </Grid>
+  </Grid>
 </UserControl>

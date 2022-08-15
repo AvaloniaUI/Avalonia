@@ -76,7 +76,11 @@
     </Canvas>
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="18">
       <Border Height="70" Width="70">
-        <DrawingPresenter Drawing="{DynamicResource AvaloniaLogo}" />
+        <Image>
+          <Image.Source>
+            <DrawingImage Drawing="{DynamicResource AvaloniaLogo}"/>
+          </Image.Source>
+        </Image>
       </Border>
       <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,-10,0,0">
         <TextBlock Text="{Binding Version, StringFormat=Avalonia {0}}" FontSize="40" Foreground="White" />
