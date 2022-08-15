@@ -43,7 +43,7 @@ namespace Avalonia.Controls.Platform
                 _priority = priority;
                 _interval = interval;
                 _tick = tick;
-                _timer = new Timer(OnTimer, null, interval, TimeSpan.FromMilliseconds(-1));
+                _timer = new Timer(OnTimer, null, interval, Timeout.InfiniteTimeSpan);
                 _handle = GCHandle.Alloc(_timer);
             }
 
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Platform
                     if (_timer == null)
                         return;
                     _tick();
-                    _timer?.Change(_interval, TimeSpan.FromMilliseconds(-1));
+                    _timer?.Change(_interval, Timeout.InfiniteTimeSpan);
                 });
             }
 

@@ -22,8 +22,8 @@ namespace ControlCatalog
 
             if (AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo().IsDesktop == true)
             {
-                IList tabItems = ((IList)sideBar.Items);
-                tabItems.Add(new TabItem()
+                var tabItems = (sideBar.Items as IList);
+                tabItems?.Add(new TabItem()
                 {
                     Header = "Screens",
                     Content = new ScreenPage()
@@ -36,7 +36,7 @@ namespace ControlCatalog
             {
                 if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    var themeStyle = Application.Current.Styles[0];
+                    var themeStyle = Application.Current!.Styles[0];
                     if (theme == CatalogTheme.FluentLight)
                     {
                         if (App.Fluent.Mode != FluentThemeMode.Light)

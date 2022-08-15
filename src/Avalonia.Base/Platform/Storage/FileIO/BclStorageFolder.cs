@@ -14,6 +14,15 @@ public class BclStorageFolder : IStorageBookmarkFolder
 {
     private readonly DirectoryInfo _directoryInfo;
 
+    public BclStorageFolder(string path)
+    {
+        _directoryInfo = new DirectoryInfo(path);
+        if (!_directoryInfo.Exists)
+        {
+            throw new ArgumentException("Directory must exist");
+        }
+    }
+
     public BclStorageFolder(DirectoryInfo directoryInfo)
     {
         _directoryInfo = directoryInfo ?? throw new ArgumentNullException(nameof(directoryInfo));
