@@ -102,9 +102,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgba8888)]
         public void WriteableBitmapShouldBeUsable(PixelFormat fmt)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             var writeableBitmap = new WriteableBitmap(new PixelSize(256, 256), new Vector(96, 96), fmt);
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var data = new int[256 * 256];
             for (int y = 0; y < 256; y++)
