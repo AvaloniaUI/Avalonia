@@ -34,7 +34,7 @@ namespace Avalonia.OpenGL.Controls
                 _attachment.Present();
             }
 
-            context.DrawImage(_bitmap, new Rect(_bitmap.Size), Bounds);
+            context.DrawImage(_bitmap, new Rect(_bitmap.Size), new Rect(Bounds.Size));
             base.Render(context);
         }
         
@@ -84,6 +84,7 @@ namespace Avalonia.OpenGL.Controls
                 using (_context.MakeCurrent())
                 {
                     var gl = _context.GlInterface;
+                    gl.ActiveTexture(GL_TEXTURE0);
                     gl.BindTexture(GL_TEXTURE_2D, 0);
                     gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
                     gl.DeleteFramebuffer(_fb);

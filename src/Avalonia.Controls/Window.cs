@@ -80,16 +80,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, SizeToContent>(nameof(SizeToContent));
 
         /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
-        /// </summary>
-        [Obsolete("Use SystemDecorationsProperty instead")]
-        public static readonly DirectProperty<Window, bool> HasSystemDecorationsProperty =
-            AvaloniaProperty.RegisterDirect<Window, bool>(
-                nameof(HasSystemDecorations),
-                o => o.HasSystemDecorations,
-                (o, v) => o.HasSystemDecorations = v);
-
-        /// <summary>
         /// Defines the <see cref="ExtendClientAreaToDecorationsHint"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
@@ -287,25 +277,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(TitleProperty); }
             set { SetValue(TitleProperty, value); }
-        }
-
-        /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
-        /// </summary>
-        [Obsolete("Use SystemDecorations instead")]
-        public bool HasSystemDecorations
-        {
-            get => SystemDecorations == SystemDecorations.Full;
-            set
-            {
-                var oldValue = HasSystemDecorations;
-
-                if (oldValue != value)
-                {
-                    SystemDecorations = value ? SystemDecorations.Full : SystemDecorations.None;
-                    RaisePropertyChanged(HasSystemDecorationsProperty, oldValue, value);
-                }
-            }
         }
 
         /// <summary>
@@ -985,9 +956,6 @@ namespace Avalonia.Controls
             Owner = null;
         }
 
-        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected sealed override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
-
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
@@ -1033,19 +1001,9 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
             if (change.Property == SystemDecorationsProperty)
             {
-                var (typedOldValue, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
+                var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
-
-                var o = typedOldValue == SystemDecorations.Full;
-                var n = typedNewValue == SystemDecorations.Full;
-
-                if (o != n)
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    RaisePropertyChanged(HasSystemDecorationsProperty, o, n);
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
             }
         }
 

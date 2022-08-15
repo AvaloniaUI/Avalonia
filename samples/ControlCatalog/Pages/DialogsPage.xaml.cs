@@ -111,9 +111,16 @@ namespace ControlCatalog.Pages
                     Title = "Select folder",
                     Directory = lastSelectedDirectory?.TryGetUri(out var path) == true ? path.LocalPath : null
                 }.ShowAsync(GetWindow());
-                lastSelectedDirectory = new BclStorageFolder(new System.IO.DirectoryInfo(result));
-                results.Items = new [] { result };
-                resultsVisible.IsVisible = result != null;
+                if (string.IsNullOrEmpty(result))
+                {
+                    resultsVisible.IsVisible = false;
+                }
+                else
+                {
+                    lastSelectedDirectory = new BclStorageFolder(new System.IO.DirectoryInfo(result));
+                    results.Items = new[] { result };
+                    resultsVisible.IsVisible = true;
+                }
             };
             this.Get<Button>("OpenBoth").Click += async delegate
             {

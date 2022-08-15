@@ -46,14 +46,6 @@ namespace Avalonia.Controls
                 updown => updown.ClipValueToMinMax, (updown, b) => updown.ClipValueToMinMax = b);
 
         /// <summary>
-        /// Defines the <see cref="CultureInfo"/> property.
-        /// </summary>
-        [Obsolete]
-        public static readonly DirectProperty<NumericUpDown, CultureInfo?> CultureInfoProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, CultureInfo?>(nameof(CultureInfo), o => o.CultureInfo,
-                (o, v) => o.CultureInfo = v, CultureInfo.CurrentCulture);
-
-        /// <summary>
         /// Defines the <see cref="NumberFormat"/> property.
         /// </summary>
         public static readonly DirectProperty<NumericUpDown, NumberFormatInfo?> NumberFormatProperty =
@@ -185,21 +177,6 @@ namespace Avalonia.Controls
         {
             get { return _clipValueToMinMax; }
             set { SetAndRaise(ClipValueToMinMaxProperty, ref _clipValueToMinMax, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the current CultureInfo.
-        /// </summary>
-        [Obsolete("CultureInfo is obsolete, please use NumberFormat instead.")]
-        public CultureInfo? CultureInfo
-        {
-            get { return _cultureInfo; }
-            set
-            {
-                SetAndRaise(CultureInfoProperty, ref _cultureInfo, value);
-                //Set and Raise the NumberFormatProperty when CultureInfo is changed.
-                SetAndRaise(NumberFormatProperty, ref _numberFormat, value?.NumberFormat);
-            }
         }
 
         /// <summary>
@@ -335,9 +312,6 @@ namespace Avalonia.Controls
         /// </summary>
         static NumericUpDown()
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            CultureInfoProperty.Changed.Subscribe(OnCultureInfoChanged);
-#pragma warning restore CS0612 // Type or member is obsolete
             NumberFormatProperty.Changed.Subscribe(OnNumberFormatChanged);
             FormatStringProperty.Changed.Subscribe(FormatStringChanged);
             IncrementProperty.Changed.Subscribe(IncrementChanged);
@@ -413,19 +387,6 @@ namespace Avalonia.Controls
             if (property == TextProperty || property == ValueProperty)
             {
                 DataValidationErrors.SetError(this, error);
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="CultureInfo"/> property value changed.
-        /// </summary>
-        /// <param name="oldValue">The old value.</param>
-        /// <param name="newValue">The new value.</param>
-        protected virtual void OnCultureInfoChanged(CultureInfo? oldValue, CultureInfo? newValue)
-        {
-            if (IsInitialized)
-            {
-                SyncTextAndValueProperties(false, null);
             }
         }
 
@@ -726,20 +687,6 @@ namespace Avalonia.Controls
             if (Spinner != null)
             {
                 Spinner.ValidSpinDirection = validDirections;
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="CultureInfo"/> property value changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void OnCultureInfoChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Sender is NumericUpDown upDown)
-            {
-                var oldValue = (CultureInfo?)e.OldValue;
-                var newValue = (CultureInfo?)e.NewValue;
-                upDown.OnCultureInfoChanged(oldValue, newValue);
             }
         }
 

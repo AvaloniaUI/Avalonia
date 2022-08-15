@@ -138,7 +138,11 @@
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
-                  <DrawingPresenter Width="16" Height="16" Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                  <Image Width="16" Height="16">
+                    <Image.Source>
+                      <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                    </Image.Source>
+                  </Image>
                   <TextBlock Text="{Binding DisplayName}"/>
                 </StackPanel>
               </DataTemplate>
@@ -231,7 +235,11 @@
                       <ColumnDefinition SharedSizeGroup="Splitter" />
                       <ColumnDefinition SharedSizeGroup="Size" />
                     </Grid.ColumnDefinitions>
-                    <DrawingPresenter Width="16" Height="16" Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                    <Image Width="16" Height="16">
+                      <Image.Source>
+                        <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                      </Image.Source>
+                    </Image>
                     <TextBlock Grid.Column="2" Text="{Binding DisplayName}"/>
                     <TextBlock Grid.Column="4" Text="{Binding Modified}" />
                     <TextBlock Grid.Column="6" Text="{Binding Type}" />
