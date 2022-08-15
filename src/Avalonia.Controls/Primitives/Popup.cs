@@ -22,9 +22,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Displays a popup window.
     /// </summary>
-#pragma warning disable CS0612 // Type or member is obsolete
-    public class Popup : Control, IVisualTreeHost, IPopupHostProvider
-#pragma warning restore CS0612 // Type or member is obsolete
+    public class Popup : Control, IPopupHostProvider
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(WindowManagerAddShadowHint), false);
@@ -371,11 +369,6 @@ namespace Avalonia.Controls.Primitives
             get { return GetValue(TopmostProperty); }
             set { SetValue(TopmostProperty, value); }
         }
-
-        /// <summary>
-        /// Gets the root of the popup window.
-        /// </summary>
-        IVisual? IVisualTreeHost.Root => _openState?.PopupHost.HostedVisualTreeRoot;
 
         IPopupHost? IPopupHostProvider.PopupHost => Host;
 
