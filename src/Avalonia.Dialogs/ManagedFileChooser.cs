@@ -36,9 +36,8 @@ namespace Avalonia.Dialogs
             if (_quickLinksRoot != null)
             {
                 var isQuickLink = _quickLinksRoot.IsLogicalAncestorOf(e.Source as Control);
-#pragma warning disable CS0618 // Type or member is obsolete
+
                 if (e.ClickCount == 2 || isQuickLink)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     if (model.ItemType == ManagedFileChooserItemType.File)
                     {
