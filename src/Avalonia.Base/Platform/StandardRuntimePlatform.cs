@@ -33,11 +33,30 @@ namespace Avalonia.Platform
             else
                 throw new Exception("Unknown OS platform " + RuntimeInformation.OSDescription);
 
-            // Source: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/tests/TestUtilities/System/PlatformDetection.cs
-            var isCoreClr = Environment.Version.Major >= 5 || RuntimeInformation.FrameworkDescription.StartsWith(".NET Core", StringComparison.OrdinalIgnoreCase);
-            var isMonoRuntime = Type.GetType("Mono.Runtime") != null;
-            var isFramework = !isCoreClr && RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.OrdinalIgnoreCase);
+            bool isCoreClr, isMonoRuntime, isFramework;
             
+            // Environment.Version fails in reflection free mode
+#if NET6_0_OR_GREATER
+            try
+            {
+#endif
+                // Source: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/tests/TestUtilities/System/PlatformDetection.cs
+                isCoreClr = Environment.Version.Major >= 5 ||
+                                RuntimeInformation.FrameworkDescription.StartsWith(".NET Core",
+                                    StringComparison.OrdinalIgnoreCase);
+                isMonoRuntime = Type.GetType("Mono.Runtime") != null;
+                isFramework = !isCoreClr &&
+                                  RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework",
+                                      StringComparison.OrdinalIgnoreCase);
+#if NET6_0_OR_GREATER
+            }
+            catch
+            {
+                isCoreClr = true;
+                isMonoRuntime = false;
+                isFramework = false;
+            }
+#endif            
             return new RuntimePlatformInfo
             {
                 IsCoreClr = isCoreClr,

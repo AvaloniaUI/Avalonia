@@ -40,6 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Rendering\Composition\Utils" />
+    <Compile Include="..\Shared\ModuleInitializer.cs" />
   </ItemGroup>
 </Project>

@@ -15,6 +15,8 @@ namespace Avalonia
         /// <param name="property">Property to check.</param>
         public static bool CanValueAffectRender(this AvaloniaProperty property)
         {
+
+            return true;
             var propertyType = property.PropertyType;
 
             // Only case that we are sure that property value CAN'T affect render are sealed types that don't implement

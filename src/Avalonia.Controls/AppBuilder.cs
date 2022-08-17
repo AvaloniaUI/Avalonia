@@ -1,4 +1,6 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using System.Reflection;
+using Avalonia.Controls;
 using Avalonia.Platform;
 
 namespace Avalonia
@@ -13,8 +15,20 @@ namespace Avalonia
         /// </summary>
         public AppBuilder()
             : base(new StandardRuntimePlatform(),
-                builder => StandardRuntimePlatformServices.Register(builder.ApplicationType?.Assembly))
+                builder => StandardRuntimePlatformServices.Register(GetAssemblyOrNull(builder.ApplicationType)))
         {
+        }
+
+        static Assembly? GetAssemblyOrNull(Type? t)
+        {
+            try
+            {
+                return t?.Assembly;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

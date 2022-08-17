@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Input.Navigation;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input

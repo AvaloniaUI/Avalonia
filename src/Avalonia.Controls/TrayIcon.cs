@@ -67,6 +67,8 @@ namespace Avalonia.Controls
                 }
             });
 
+            return;
+            // TODO: WTF???
             var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
 
             if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)

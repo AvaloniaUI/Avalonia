@@ -31,10 +31,17 @@ namespace Avalonia.Platform
         /// </param>
         public AssetLoader(Assembly? assembly = null)
         {
-            if (assembly == null)
-                assembly = Assembly.GetEntryAssembly();
-            if (assembly != null)
-                _defaultResmAssembly = new AssemblyDescriptor(assembly);
+            try
+            {
+                if (assembly == null)
+                    assembly = Assembly.GetEntryAssembly();
+                if (assembly != null)
+                    _defaultResmAssembly = new AssemblyDescriptor(assembly);
+            }
+            catch
+            {
+                // Ignore
+            }
         }
 
         /// <summary>

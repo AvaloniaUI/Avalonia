@@ -56,8 +56,11 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ITemplate<IControl>> PreviewContentProperty =
             AvaloniaProperty.Register<GridSplitter, ITemplate<IControl>>(nameof(PreviewContent));
 
-        private static readonly Cursor s_columnSplitterCursor = new Cursor(StandardCursorType.SizeWestEast);
-        private static readonly Cursor s_rowSplitterCursor = new Cursor(StandardCursorType.SizeNorthSouth);
+        private static readonly Lazy<Cursor> s_columnSplitterCursor =
+            new(() => new Cursor(StandardCursorType.SizeWestEast));
+
+        private static readonly Lazy<Cursor> s_rowSplitterCursor =
+            new(() => new Cursor(StandardCursorType.SizeNorthSouth));
 
         private ResizeData? _resizeData;
 
@@ -358,10 +361,10 @@ namespace Avalonia.Controls
             switch (direction)
             {
                 case GridResizeDirection.Columns:
-                    Cursor = s_columnSplitterCursor;
+                    Cursor = s_columnSplitterCursor.Value;
                     break;
                 case GridResizeDirection.Rows:
-                    Cursor = s_rowSplitterCursor;
+                    Cursor = s_rowSplitterCursor.Value;
                     break;
             }
         }

@@ -57,7 +57,8 @@ namespace Avalonia
             while (t != null)
             {
                 // Ensure the type's static ctor has been run.
-                RuntimeHelpers.RunClassConstructor(t.TypeHandle);
+                //RuntimeHelpers.RunClassConstructor(t.TypeHandle);
+
 
                 if (_registered.TryGetValue(t, out var registered))
                 {

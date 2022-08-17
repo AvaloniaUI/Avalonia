@@ -18,28 +18,7 @@ namespace Avalonia.Interactivity
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
         IInteractive? IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
-
-        /// <summary>
-        /// Adds a handler for the specified routed event.
-        /// </summary>
-        /// <param name="routedEvent">The routed event.</param>
-        /// <param name="handler">The handler.</param>
-        /// <param name="routes">The routing strategies to listen to.</param>
-        /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        public void AddHandler(
-            RoutedEvent routedEvent,
-            Delegate handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false)
-        {
-            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
-            handler = handler ?? throw new ArgumentNullException(nameof(handler));
-
-            var subscription = new EventSubscription(handler, routes, handledEventsToo);
-
-            AddEventSubscription(routedEvent, subscription);
-        }
-
+        
         /// <summary>
         /// Adds a handler for the specified routed event.
         /// </summary>

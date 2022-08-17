@@ -15,21 +15,7 @@ namespace Avalonia.Interactivity
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
         IInteractive? InteractiveParent { get; }
-
-        /// <summary>
-        /// Adds a handler for the specified routed event.
-        /// </summary>
-        /// <param name="routedEvent">The routed event.</param>
-        /// <param name="handler">The handler.</param>
-        /// <param name="routes">The routing strategies to listen to.</param>
-        /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        /// <returns>A disposable that terminates the event subscription.</returns>
-        void AddHandler(
-            RoutedEvent routedEvent,
-            Delegate handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false);
-
+        
         /// <summary>
         /// Removes a handler for the specified routed event.
         /// </summary>
@@ -49,5 +35,18 @@ namespace Avalonia.Interactivity
         /// </summary>
         /// <param name="e">The event args.</param>
         void RaiseEvent(RoutedEventArgs e);
+    }
+
+    public static class InteractiveHackExtensions
+    {
+        public static void AddHandler<TEventArgs>(this IInteractive i,
+            RoutedEvent<TEventArgs> routedEvent,
+            EventHandler<TEventArgs>? handler,
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
+        {
+            var c = (Interactive)i;
+            c.AddHandler(routedEvent, handler, routes, handledEventsToo);
+        }
     }
 }

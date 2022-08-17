@@ -52,22 +52,22 @@ namespace Avalonia.Input
             InputElement.PointerReleasedEvent.RouteFinished.Subscribe(PointerReleased);
         }
 
-        public static void AddTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        public static void AddTappedHandler(IInteractive element, EventHandler<TappedEventArgs> handler)
         {
             element.AddHandler(TappedEvent, handler);
         }
 
-        public static void AddDoubleTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        public static void AddDoubleTappedHandler(IInteractive element, EventHandler<TappedEventArgs> handler)
         {
             element.AddHandler(DoubleTappedEvent, handler);
         }
 
-        public static void AddRightTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        public static void AddRightTappedHandler(IInteractive element, EventHandler<TappedEventArgs> handler)
         {
             element.AddHandler(RightTappedEvent, handler);
         }
 
-        public static void RemoveTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        public static void RemoveTappedHandler(IInteractive element, EventHandler<TappedEventArgs> handler)
         {
             element.RemoveHandler(TappedEvent, handler);
         }
