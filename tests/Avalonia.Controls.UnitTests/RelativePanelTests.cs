@@ -141,9 +141,9 @@ namespace Avalonia.Controls.UnitTests
 
         [Theory]
         [InlineData(100, 100, 100, 100)]
-        [InlineData(100, double.PositiveInfinity, 100, 20)]
+        [InlineData(100, double.PositiveInfinity, 100, 40)]
         [InlineData(double.PositiveInfinity, 100, 20, 100)]
-        [InlineData(double.PositiveInfinity, double.PositiveInfinity, 20, 20)]
+        [InlineData(double.PositiveInfinity, double.PositiveInfinity, 20, 40)]
         public void StretchedPanel_Measures_Correctly(double availableWidth, double availableHeight, double desiredWidth, double desiredHeight)
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
                 }
             };
 
-            RelativePanel.SetAbove(rect2, rect1);
+            RelativePanel.SetBelow(rect2, rect1);
             target.Measure(new Size(availableWidth, availableHeight));
             target.Arrange(new Rect(target.DesiredSize));
             
