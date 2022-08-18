@@ -137,9 +137,13 @@ namespace Avalonia.Input.Raw
         /// </summary>
         public Point Position { get; set; }
 
+        /// <inheritdoc cref="PointerPointProperties.Twist" />
         public float Twist { get; set; }
+        /// <inheritdoc cref="PointerPointProperties.Pressure" />
         public float Pressure { get; set; }
+        /// <inheritdoc cref="PointerPointProperties.XTilt" />
         public float XTilt { get; set; }
+        /// <inheritdoc cref="PointerPointProperties.YTilt" />
         public float YTilt { get; set; }
 
 

@@ -174,9 +174,9 @@ Twist: {_lastProperties?.Twist}";
         var lastPointer = e.GetCurrentPoint(this);
         _lastProperties = lastPointer.Properties;
 
-        if (_lastProperties.PointerUpdateKind != PointerUpdateKind.Other)
+        if (_lastProperties?.PointerUpdateKind != PointerUpdateKind.Other)
         {
-            _lastNonOtherUpdateKind = _lastProperties.PointerUpdateKind;
+            _lastNonOtherUpdateKind = _lastProperties?.PointerUpdateKind;
         }
 
         if (e.RoutedEvent == PointerReleasedEvent && e.Pointer.Type == PointerType.Touch)
