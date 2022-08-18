@@ -62,7 +62,7 @@ Position: ??? ???";
             e.Pointer.Capture(null);
             e.Handled = true;
         }
-        else
+        else if (e.Pointer.Captured is not null)
         {
             throw new InvalidOperationException("How?");
         }

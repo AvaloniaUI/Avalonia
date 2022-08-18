@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
@@ -30,7 +31,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly IFramebufferPlatformSurface _framebuffer;
 
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
-        private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
+        private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly ITextInputMethodImpl _textInputMethod;
         private ViewImpl _view;
 
@@ -39,8 +40,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view = new ViewImpl(avaloniaView.Context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
-            _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
-                GetAvaloniaPointFromEvent);
+            _pointerHelper = new AndroidMotionEventsHelper(this);
             _gl = GlPlatformSurface.TryCreate(this);
             _framebuffer = new FramebufferManager(this);
 
@@ -160,10 +160,19 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _tl.Draw();
             }
 
+            protected override bool DispatchGenericPointerEvent(MotionEvent e)
+            {
+                bool callBase;
+                bool? result = _tl._pointerHelper.DispatchMotionEvent(e, out callBase);
+                bool baseResult = callBase ? base.DispatchGenericPointerEvent(e) : false;
+
+                return result != null ? result.Value : baseResult;
+            }
+
             public override bool DispatchTouchEvent(MotionEvent e)
             {
                 bool callBase;
-                bool? result = _tl._touchHelper.DispatchTouchEvent(e, out callBase);
+                bool? result = _tl._pointerHelper.DispatchMotionEvent(e, out callBase);
                 bool baseResult = callBase ? base.DispatchTouchEvent(e) : false;
 
                 return result != null ? result.Value : baseResult;
