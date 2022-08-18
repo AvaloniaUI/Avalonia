@@ -38,4 +38,12 @@ namespace Avalonia.SourceGenerator
 
         }
     }
+
+    internal class GenerateEnumValueDictionaryAttribute : Attribute
+    {
+    }
+    
+    internal class GenerateEnumValueListAttribute : Attribute
+    {
+    }
 }

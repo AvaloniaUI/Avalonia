@@ -36,7 +36,10 @@ namespace Avalonia.Controls
             foreach (Layoutable child in Children)
             {
                 if (child == null)
+                {
                     continue;
+                }
+
                 var node = _childGraph.AddNode(child);
 
                 node.AlignLeftWithNode = _childGraph.AddLink(node, GetDependencyElement(AlignLeftWithProperty, child));
@@ -51,17 +54,18 @@ namespace Avalonia.Controls
 
                 node.AlignHorizontalCenterWith = _childGraph.AddLink(node, GetDependencyElement(AlignHorizontalCenterWithProperty, child));
                 node.AlignVerticalCenterWith = _childGraph.AddLink(node, GetDependencyElement(AlignVerticalCenterWithProperty, child));
-
             }
+
             _childGraph.Measure(availableSize);
 
             _childGraph.Reset(false);
-            var calcWidth = Width.IsNaN() && HorizontalAlignment != HorizontalAlignment.Stretch;
-            var calcHeight = Height.IsNaN() && VerticalAlignment != VerticalAlignment.Stretch;
+            var calcWidth = Width.IsNaN() && (HorizontalAlignment != HorizontalAlignment.Stretch);
+            var calcHeight = Height.IsNaN() && (VerticalAlignment != VerticalAlignment.Stretch);
 
             var boundingSize = _childGraph.GetBoundingSize(calcWidth, calcHeight);
             _childGraph.Reset();
             _childGraph.Measure(boundingSize);
+            
             return boundingSize;
         }
 
@@ -171,6 +175,7 @@ namespace Avalonia.Controls
                                 prevSize = prevSize.WithWidth(prevSize.Width + prevNode.OriginDesiredSize.Width);
                                 prevNode.HorizontalOffsetFlag = true;
                             }
+
                             if (node.VerticalOffsetFlag)
                             {
                                 prevNode.VerticalOffsetFlag = true;
@@ -186,6 +191,7 @@ namespace Avalonia.Controls
                                 prevSize = prevSize.WithHeight(prevSize.Height + node.OriginDesiredSize.Height);
                                 prevNode.VerticalOffsetFlag = true;
                             }
+
                             if (node.HorizontalOffsetFlag)
                             {
                                 prevNode.HorizontalOffsetFlag = true;
@@ -269,16 +275,16 @@ namespace Avalonia.Controls
                         MeasureChild(node);
                         continue;
                     }
-                    
+
                     if (node.OutgoingNodes.All(item => item.Measured))
                     {
                         MeasureChild(node);
                         continue;
                     }
-                    
+
                     if (!set.Add(node.Element))
                         throw new Exception("RelativePanel error: Circular dependency detected. Layout could not complete.");
-                    
+
                     Measure(node.OutgoingNodes, set);
 
                     if (!node.Measured)
@@ -507,8 +513,11 @@ namespace Avalonia.Controls
                     boundingSize = boundingSize.WithHeight(Math.Max(boundingSize.Height, size.Height));
                 }
 
-                boundingSize = boundingSize.WithWidth(calcWidth ? boundingSize.Width : AvailableSize.Width);
-                boundingSize = boundingSize.WithHeight(calcHeight ? boundingSize.Height : AvailableSize.Height);
+                var availableWidth = double.IsInfinity(AvailableSize.Width) ? boundingSize.Width : AvailableSize.Width;
+                var availableHeight = double.IsInfinity(AvailableSize.Height) ? boundingSize.Height : AvailableSize.Height;
+
+                boundingSize = boundingSize.WithWidth(calcWidth ? boundingSize.Width : availableWidth);
+                boundingSize = boundingSize.WithHeight(calcHeight ? boundingSize.Height : availableHeight);
                 return boundingSize;
             }
         }

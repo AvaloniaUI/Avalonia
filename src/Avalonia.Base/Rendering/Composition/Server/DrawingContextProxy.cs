@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -154,6 +155,8 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
     {
         _impl.Custom(custom);
     }
+
+    public object? GetFeature(Type t) => _impl.GetFeature(t);
 
     public class VisualBrushRenderer : IVisualBrushRenderer
     {
