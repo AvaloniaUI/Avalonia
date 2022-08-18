@@ -48,5 +48,15 @@ namespace Avalonia.Interactivity
             var c = (Interactive)i;
             c.AddHandler(routedEvent, handler, routes, handledEventsToo);
         }
+        
+        public static void AddHandler(this IInteractive i,
+            RoutedEvent routedEvent,
+            EventHandler<RoutedEventArgs>? handler,
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false)
+        {
+            var c = (Interactive)i;
+            c.AddHandler(routedEvent, handler, routes, handledEventsToo);
+        }
     }
 }
