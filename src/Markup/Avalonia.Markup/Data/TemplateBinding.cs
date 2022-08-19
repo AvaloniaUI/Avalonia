@@ -19,6 +19,7 @@ namespace Avalonia.Data
         private bool _isSetterValue;
         private IStyledElement _target = default!;
         private Type? _targetType;
+        private bool _hasProducedValue;
 
         public TemplateBinding()
         {
@@ -143,10 +144,12 @@ namespace Avalonia.Data
                 }
 
                 PublishNext(value);
+                _hasProducedValue = true;
             }
-            else
+            else if (_hasProducedValue)
             {
                 PublishNext(AvaloniaProperty.UnsetValue);
+                _hasProducedValue = false;
             }
         }
 

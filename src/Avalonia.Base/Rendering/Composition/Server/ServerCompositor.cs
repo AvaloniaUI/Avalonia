@@ -108,6 +108,7 @@ namespace Avalonia.Rendering.Composition.Server
         private void RenderCore()
         {
             ApplyPendingBatches();
+            CompletePendingBatches();
             
             foreach(var animation in _activeAnimations)
                 _animationsToUpdate.Add(animation);
@@ -119,8 +120,6 @@ namespace Avalonia.Rendering.Composition.Server
             
             foreach (var t in _activeTargets)
                 t.Render();
-            
-            CompletePendingBatches();
         }
 
         public void AddCompositionTarget(ServerCompositionTarget target)

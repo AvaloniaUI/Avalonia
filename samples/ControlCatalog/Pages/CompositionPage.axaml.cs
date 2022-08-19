@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
@@ -18,7 +12,7 @@ namespace ControlCatalog.Pages;
 
 public partial class CompositionPage : UserControl
 {
-    private ImplicitAnimationCollection _implicitAnimations;
+    private ImplicitAnimationCollection? _implicitAnimations;
 
     public CompositionPage()
     {
@@ -28,7 +22,7 @@ public partial class CompositionPage : UserControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        this.FindControl<ItemsControl>("Items").Items = CreateColorItems();
+        this.Get<ItemsControl>("Items").Items = CreateColorItems();
     }
 
     private List<CompositionPageColorItem> CreateColorItems()
@@ -115,7 +109,6 @@ public partial class CompositionPage : UserControl
 
     public static void SetEnableAnimations(Border border, bool value)
     {
-        
         var page = border.FindAncestorOfType<CompositionPage>();
         if (page == null)
         {
@@ -127,8 +120,11 @@ public partial class CompositionPage : UserControl
             return;
 
         page.EnsureImplicitAnimations();
-        ElementComposition.GetElementVisual((Visual)border.GetVisualParent()).ImplicitAnimations =
-            page._implicitAnimations;
+        if (border.GetVisualParent() is Visual visualParent 
+            && ElementComposition.GetElementVisual(visualParent) is CompositionVisual compositionVisual)
+        {
+            compositionVisual.ImplicitAnimations = page._implicitAnimations;
+        }
     }
 }
 

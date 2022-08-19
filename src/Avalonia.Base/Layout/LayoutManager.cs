@@ -196,17 +196,6 @@ namespace Avalonia.Layout
             ExecuteLayoutPass();
         }
 
-        [Obsolete("Call ExecuteInitialLayoutPass without parameter")]
-        public void ExecuteInitialLayoutPass(ILayoutRoot root)
-        {
-            if (root != _owner)
-            {
-                throw new ArgumentException("ExecuteInitialLayoutPass called with incorrect root.");
-            }
-
-            ExecuteInitialLayoutPass();
-        }
-
         public void Dispose()
         {
             _disposed = true;

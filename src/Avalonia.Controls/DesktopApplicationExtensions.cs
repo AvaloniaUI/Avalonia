@@ -8,8 +8,6 @@ namespace Avalonia.Controls
 {
     public static class DesktopApplicationExtensions
     {
-        [Obsolete("Running application without a cancellation token and a lifetime is no longer supported, see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details", true)]
-        public static void Run(this Application app) => throw new NotSupportedException();
 
         /// <summary>
         /// On desktop-style platforms runs the application's main loop until closable is closed

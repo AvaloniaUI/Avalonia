@@ -324,6 +324,41 @@ namespace Avalonia.Utilities
             return angle * 2 * Math.PI;
         }
 
+        /// <summary>
+        /// Calculates the point of an angle on an ellipse.
+        /// </summary>
+        /// <param name="centre">The centre point of the ellipse.</param>
+        /// <param name="radiusX">The x radius of the ellipse.</param>
+        /// <param name="radiusY">The y radius of the ellipse.</param>
+        /// <param name="angle">The angle in radians.</param>
+        /// <returns>A point on the ellipse.</returns>
+        public static Point GetEllipsePoint(Point centre, double radiusX, double radiusY, double angle)
+        {
+            return new Point(radiusX * Math.Cos(angle) + centre.X, radiusY * Math.Sin(angle) + centre.Y);
+        }
+
+        /// <summary>
+        /// Gets the minimum and maximum from the specified numbers.
+        /// </summary>
+        /// <param name="a">The first number.</param>
+        /// <param name="b">The second number.</param>
+        /// <returns>A tuple containing the minimum and maximum of the two specified numbers.</returns>
+        public static (double min, double max) GetMinMax(double a, double b)
+        {
+            return a < b ? (a, b) : (b, a);
+        }
+
+        /// <summary>
+        /// Gets the minimum and maximum from the specified number and the difference with that number.
+        /// </summary>
+        /// <param name="initialValue">The initial value to use.</param>
+        /// <param name="delta">The difference for <paramref name="initialValue"/>.</param>
+        /// <returns>A tuple containing the minimum and maximum of the specified number and the difference with that number.</returns>
+        public static (double min, double max) GetMinMaxFromDelta(double initialValue, double delta)
+        {
+            return GetMinMax(initialValue, initialValue + delta);
+        }
+
         private static void ThrowCannotBeGreaterThanException<T>(T min, T max)
         {
             throw new ArgumentException($"{min} cannot be greater than {max}.");

@@ -78,6 +78,13 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (Root == null) 
                 return;
+
+            if ((_renderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+            {
+                _renderTarget!.Dispose();
+                _renderTarget = null;
+            }
+
             _renderTarget ??= _renderTargetFactory();
 
             Compositor.UpdateServerTime();

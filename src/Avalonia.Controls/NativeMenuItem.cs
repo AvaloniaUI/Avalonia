@@ -186,13 +186,6 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler? Click;
 
-        [Obsolete("Use Click event.")]
-        public event EventHandler Clicked
-        {
-            add => Click += value;
-            remove => Click -= value;
-        }
-
         void INativeMenuItemExporterEventsImplBridge.RaiseClicked()
         {
             Click?.Invoke(this, new EventArgs());
