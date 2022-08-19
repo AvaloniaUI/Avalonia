@@ -158,6 +158,8 @@ namespace Avalonia.Input
                     ClearPointerOver(pointer, root, timestamp, position, properties, inputModifiers);
                 }
             }
+
+            _lastPointer = (pointer, root.PointToScreen(position));
         }
 
         private void SetPointerOverToElement(IPointer pointer, IInputRoot root, IInputElement element,
@@ -195,7 +197,6 @@ namespace Avalonia.Input
             }
 
             el = root.PointerOverElement = element;
-            _lastPointer = (pointer, root.PointToScreen(position));
 
             e.RoutedEvent = InputElement.PointerEnteredEvent;
 

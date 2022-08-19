@@ -1165,9 +1165,7 @@ namespace Avalonia.Controls
 
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, index);
 
-#pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
                         if (clickToSelect)

@@ -102,15 +102,12 @@ namespace Avalonia.Controls.Notifications
                 Content = content
             };
 
-            if (notification != null)
+            notificationControl.NotificationClosed += (sender, args) =>
             {
-                notificationControl.NotificationClosed += (sender, args) =>
-                {
-                    notification.OnClose?.Invoke();
+                notification?.OnClose?.Invoke();
 
-                    _items?.Remove(sender);
-                };
-            }
+                _items?.Remove(sender);
+            };
 
             notificationControl.PointerPressed += (sender, args) =>
             {
