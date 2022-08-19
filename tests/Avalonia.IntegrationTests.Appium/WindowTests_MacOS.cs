@@ -30,7 +30,7 @@ namespace Avalonia.IntegrationTests.Appium
                     tab.Click();
                     return;
                 }
-                catch (WebDriverException e) when (retry++ < 3)
+                catch (WebDriverException) when (retry++ < 3)
                 {
                     // MacOS sometimes seems to need a bit of time to get itself back in order after switching out
                     // of fullscreen.
