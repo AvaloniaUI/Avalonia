@@ -42,7 +42,6 @@ namespace Avalonia.Web.Blazor
         private GRGlInterface? _glInterface;
         private const SKColorType ColorType = SKColorType.Rgba8888;
 
-        private bool _initialised;
         private bool _useGL;
         private bool _inputElementFocused;
 
@@ -299,8 +298,6 @@ namespace Avalonia.Web.Blazor
                 }
                 
                 _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
-
-                _initialised = true;
 
                 Threading.Dispatcher.UIThread.Post(async () =>
                 {
