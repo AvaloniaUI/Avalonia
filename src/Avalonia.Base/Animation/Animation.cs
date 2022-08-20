@@ -186,7 +186,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="setter">The animation setter.</param>
         /// <returns>The property animator type.</returns>
-        public static (Type, Func<IAnimator>)? GetAnimator(IAnimationSetter setter)
+        public static (Type Type, Func<IAnimator> Factory)? GetAnimator(IAnimationSetter setter)
         {
             if (s_animators.TryGetValue(setter, out var type))
             {
