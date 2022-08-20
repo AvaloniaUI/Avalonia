@@ -179,14 +179,14 @@ namespace Avalonia.Animation
         public KeyFrames Children { get; } = new KeyFrames();
 
         // Store values for the Animator attached properties for IAnimationSetter objects.
-        private static readonly Dictionary<IAnimationSetter, Type> s_animators = new Dictionary<IAnimationSetter, Type>();
+        private static readonly Dictionary<IAnimationSetter, (Type Type, Func<IAnimator> Factory)> s_animators = new();
 
         /// <summary>
         /// Gets the value of the Animator attached property for a setter.
         /// </summary>
         /// <param name="setter">The animation setter.</param>
         /// <returns>The property animator type.</returns>
-        public static Type? GetAnimator(IAnimationSetter setter)
+        public static (Type, Func<IAnimator>)? GetAnimator(IAnimationSetter setter)
         {
             if (s_animators.TryGetValue(setter, out var type))
             {
@@ -199,25 +199,25 @@ namespace Avalonia.Animation
         /// Sets the value of the Animator attached property for a setter.
         /// </summary>
         /// <param name="setter">The animation setter.</param>
-        /// <param name="value">The property animator value.</param>
-        public static void SetAnimator(IAnimationSetter setter, Type value)
+        public static void SetAnimator<TAnimator>(IAnimationSetter setter)
+            where TAnimator : IAnimator, new()
         {
-            s_animators[setter] = value;
+            s_animators[setter] = (typeof(TAnimator), () => new TAnimator());
         }
 
-        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
+        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator, Func<IAnimator> Factory)> Animators = new()
         {
-            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator) ),
-            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator) ),
-            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator) ),
-            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator) ),
-            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator) ),
-            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator) ),
-            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator) ),
-            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator) ),
-            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator) ),
-            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) ),
-            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
+            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator), () => new BoolAnimator() ),
+            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator), () => new ByteAnimator() ),
+            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator), () => new Int16Animator() ),
+            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator), () => new Int32Animator() ),
+            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator), () => new Int64Animator() ),
+            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator), () => new UInt16Animator() ),
+            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator), () => new UInt32Animator() ),
+            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator), () => new UInt64Animator() ),
+            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator), () => new FloatAnimator() ),
+            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator), () => new DoubleAnimator() ),
+            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator), () => new DecimalAnimator() ),
         };
 
         /// <summary>
@@ -232,18 +232,18 @@ namespace Avalonia.Animation
         /// The type of the animator to instantiate.
         /// </typeparam>
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
-            where TAnimator : IAnimator
+            where TAnimator : IAnimator, new()
         {
-            Animators.Insert(0, (condition, typeof(TAnimator)));
+            Animators.Insert(0, (condition, typeof(TAnimator), () => new TAnimator()));
         }
 
-        private static Type? GetAnimatorType(AvaloniaProperty property)
+        private static (Type Type, Func<IAnimator> Factory)? GetAnimatorType(AvaloniaProperty property)
         {
-            foreach (var (condition, type) in Animators)
+            foreach (var (condition, type, factory) in Animators)
             {
                 if (condition(property))
                 {
-                    return type;
+                    return (type, factory);
                 }
             }
             return null;
@@ -251,7 +251,7 @@ namespace Avalonia.Animation
 
         private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
-            var handlerList = new List<(Type type, AvaloniaProperty property)>();
+            var handlerList = new Dictionary<(Type type, AvaloniaProperty Property), Func<IAnimator>>();
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
             var subscriptions = new List<IDisposable>();
 
@@ -271,8 +271,10 @@ namespace Avalonia.Animation
                         throw new InvalidOperationException($"No animator registered for the property {setter.Property}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
                     }
 
-                    if (!handlerList.Contains((handler, setter.Property)))
-                        handlerList.Add((handler, setter.Property));
+                    var (type, factory) = handler.Value;
+
+                    if (!handlerList.ContainsKey((type, setter.Property)))
+                        handlerList[(type, setter.Property)] = factory;
 
                     var cue = keyframe.Cue;
 
@@ -281,7 +283,7 @@ namespace Avalonia.Animation
                         cue = new Cue(keyframe.KeyTime.TotalSeconds / Duration.TotalSeconds);
                     }
 
-                    var newKF = new AnimatorKeyFrame(handler, cue, keyframe.KeySpline);
+                    var newKF = new AnimatorKeyFrame(type, factory, cue, keyframe.KeySpline);
 
                     subscriptions.Add(newKF.BindSetter(setter, control));
 
@@ -291,10 +293,10 @@ namespace Avalonia.Animation
 
             var newAnimatorInstances = new List<IAnimator>();
 
-            foreach (var (handlerType, property) in handlerList)
+            foreach (var handler in handlerList)
             {
-                var newInstance = (IAnimator)Activator.CreateInstance(handlerType)!;
-                newInstance.Property = property;
+                var newInstance = handler.Value();
+                newInstance.Property = handler.Key.Property;
                 newAnimatorInstances.Add(newInstance);
             }
 
