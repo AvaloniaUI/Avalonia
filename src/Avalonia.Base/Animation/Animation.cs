@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -199,10 +200,14 @@ namespace Avalonia.Animation
         /// Sets the value of the Animator attached property for a setter.
         /// </summary>
         /// <param name="setter">The animation setter.</param>
-        public static void SetAnimator<TAnimator>(IAnimationSetter setter)
-            where TAnimator : IAnimator, new()
+        /// <param name="value">The property animator value.</param>
+        public static void SetAnimator(IAnimationSetter setter, 
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicMethods)]
+#endif
+            Type value)
         {
-            s_animators[setter] = (typeof(TAnimator), () => new TAnimator());
+            s_animators[setter] = (value, () => (IAnimator)Activator.CreateInstance(value)!);
         }
 
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator, Func<IAnimator> Factory)> Animators = new()
