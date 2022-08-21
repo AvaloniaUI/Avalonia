@@ -2109,8 +2109,8 @@ namespace Avalonia.Controls
             RemovedItems = new Collection<DateTime>();
         }
 
-        private const string PART_ElementRoot = "Root";
-        private const string PART_ElementMonth = "CalendarItem";
+        private const string PART_ElementRoot = "PART_Root";
+        private const string PART_ElementMonth = "PART_CalendarItem";
 
         /// <summary>
         /// Builds the visual tree for the
