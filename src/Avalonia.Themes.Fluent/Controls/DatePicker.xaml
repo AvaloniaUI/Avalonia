@@ -101,7 +101,7 @@
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Top"/>
 
-            <Button Name="FlyoutButton"
+            <Button Name="PART_FlyoutButton"
                     Grid.Row="1"
                     Theme="{StaticResource FluentDatePickerFlyoutButton}"
                     Foreground="{TemplateBinding Foreground}"
@@ -115,28 +115,28 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     TemplatedControl.IsTemplateFocusTarget="True">
-              <Grid Name="ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
-                <TextBlock Name="DayText" Text="day" HorizontalAlignment="Center"
+              <Grid Name="PART_ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
+                <TextBlock Name="PART_DayText" Text="day" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <TextBlock Name="MonthText" Text="month" TextAlignment="Left"
+                <TextBlock Name="PART_MonthText" Text="month" TextAlignment="Left"
                            Padding="{DynamicResource DatePickerHostMonthPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <TextBlock Name="YearText" Text="year" HorizontalAlignment="Center"
+                <TextBlock Name="PART_YearText" Text="year" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <Rectangle x:Name="FirstSpacer"
+                <Rectangle x:Name="PART_FirstSpacer"
                       Fill="{DynamicResource DatePickerSpacerFill}"
                       HorizontalAlignment="Center"
                       Width="1"
                       Grid.Column="1" />
-                <Rectangle x:Name="SecondSpacer"
+                <Rectangle x:Name="PART_SecondSpacer"
                       Fill="{DynamicResource DatePickerSpacerFill}"
                       HorizontalAlignment="Center"
                       Width="1"
@@ -144,10 +144,10 @@
               </Grid>
             </Button>
 
-            <Popup Name="Popup" WindowManagerAddShadowHint="False"
+            <Popup Name="PART_Popup" WindowManagerAddShadowHint="False"
                    IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}"
                    PlacementMode="Bottom">
-              <DatePickerPresenter Name="PickerPresenter" />
+              <DatePickerPresenter Name="PART_PickerPresenter" />
             </Popup>
 
           </Grid>

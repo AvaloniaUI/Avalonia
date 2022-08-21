@@ -14,15 +14,15 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a date
     /// </summary>
-    [TemplatePart("ButtonContentGrid", typeof(Grid))]
-    [TemplatePart("DayText",           typeof(TextBlock))]
-    [TemplatePart("FirstSpacer",       typeof(Rectangle))]
-    [TemplatePart("FlyoutButton",      typeof(Button))]
-    [TemplatePart("MonthText",         typeof(TextBlock))]
-    [TemplatePart("PickerPresenter",   typeof(DatePickerPresenter))]
-    [TemplatePart("Popup",             typeof(Popup))]
-    [TemplatePart("SecondSpacer",      typeof(Rectangle))]
-    [TemplatePart("YearText",          typeof(TextBlock))]
+    [TemplatePart("PART_ButtonContentGrid", typeof(Grid))]
+    [TemplatePart("PART_DayText",           typeof(TextBlock))]
+    [TemplatePart("PART_FirstSpacer",       typeof(Rectangle))]
+    [TemplatePart("PART_FlyoutButton",      typeof(Button))]
+    [TemplatePart("PART_MonthText",         typeof(TextBlock))]
+    [TemplatePart("PART_PickerPresenter",   typeof(DatePickerPresenter))]
+    [TemplatePart("PART_Popup",             typeof(Popup))]
+    [TemplatePart("PART_SecondSpacer",      typeof(Rectangle))]
+    [TemplatePart("PART_YearText",          typeof(TextBlock))]
     [PseudoClasses(":hasnodate")]
     public class DatePicker : TemplatedControl
     {
