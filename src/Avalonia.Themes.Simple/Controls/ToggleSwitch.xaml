@@ -149,11 +149,11 @@
                     BorderBrush="{DynamicResource ToggleSwitchStrokeOn}"
                     BorderThickness="{DynamicResource ToggleSwitchOnStrokeThickness}" />
 
-            <Canvas x:Name="SwitchKnob" Grid.Row="1"
+            <Canvas x:Name="PART_SwitchKnob" Grid.Row="1"
                     HorizontalAlignment="Left"
                     Width="20" Height="20">
 
-              <Grid x:Name="MovingKnobs"
+              <Grid x:Name="PART_MovingKnobs"
                     Width="20" Height="20">
                 <Grid.Transitions>
                   <Transitions>
