@@ -116,17 +116,17 @@
                     VerticalAlignment="Stretch"
                     TemplatedControl.IsTemplateFocusTarget="True">
               <Grid Name="PART_ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
-                <TextBlock Name="PART_DayText" Text="day" HorizontalAlignment="Center"
+                <TextBlock Name="PART_DayTextBlock" Text="day" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <TextBlock Name="PART_MonthText" Text="month" TextAlignment="Left"
+                <TextBlock Name="PART_MonthTextBlock" Text="month" TextAlignment="Left"
                            Padding="{DynamicResource DatePickerHostMonthPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <TextBlock Name="PART_YearText" Text="year" HorizontalAlignment="Center"
+                <TextBlock Name="PART_YearTextBlock" Text="year" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"

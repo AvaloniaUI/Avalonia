@@ -15,14 +15,14 @@ namespace Avalonia.Controls
     /// A control to allow the user to select a date
     /// </summary>
     [TemplatePart("PART_ButtonContentGrid", typeof(Grid))]
-    [TemplatePart("PART_DayText",           typeof(TextBlock))]
+    [TemplatePart("PART_DayTextBlock",      typeof(TextBlock))]
     [TemplatePart("PART_FirstSpacer",       typeof(Rectangle))]
     [TemplatePart("PART_FlyoutButton",      typeof(Button))]
-    [TemplatePart("PART_MonthText",         typeof(TextBlock))]
+    [TemplatePart("PART_MonthTextBlock",    typeof(TextBlock))]
     [TemplatePart("PART_PickerPresenter",   typeof(DatePickerPresenter))]
     [TemplatePart("PART_Popup",             typeof(Popup))]
     [TemplatePart("PART_SecondSpacer",      typeof(Rectangle))]
-    [TemplatePart("PART_YearText",          typeof(TextBlock))]
+    [TemplatePart("PART_YearTextBlock",     typeof(TextBlock))]
     [PseudoClasses(":hasnodate")]
     public class DatePicker : TemplatedControl
     {
@@ -281,9 +281,9 @@ namespace Avalonia.Controls
 
             base.OnApplyTemplate(e);
             _flyoutButton = e.NameScope.Find<Button>("PART_FlyoutButton");
-            _dayText = e.NameScope.Find<TextBlock>("PART_DayText");
-            _monthText = e.NameScope.Find<TextBlock>("PART_MonthText");
-            _yearText = e.NameScope.Find<TextBlock>("PART_YearText");
+            _dayText = e.NameScope.Find<TextBlock>("PART_DayTextBlock");
+            _monthText = e.NameScope.Find<TextBlock>("PART_MonthTextBlock");
+            _yearText = e.NameScope.Find<TextBlock>("PART_YearTextBlock");
             _container = e.NameScope.Find<Grid>("PART_ButtonContentGrid");
             _spacer1 = e.NameScope.Find<Rectangle>("PART_FirstSpacer");
             _spacer2 = e.NameScope.Find<Rectangle>("PART_SecondSpacer");
