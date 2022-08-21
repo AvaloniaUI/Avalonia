@@ -10,8 +10,8 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Dialogs
 {
-    [TemplatePart("QuickLinks", typeof(Control))]
-    [TemplatePart("Files",      typeof(ListBox))]
+    [TemplatePart("PART_QuickLinks", typeof(Control))]
+    [TemplatePart("PART_Files",      typeof(ListBox))]
     public class ManagedFileChooser : TemplatedControl
     {
         private Control _quickLinksRoot;
