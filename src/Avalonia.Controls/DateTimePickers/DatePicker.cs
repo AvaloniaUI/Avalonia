@@ -280,15 +280,15 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
-            _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
-            _dayText = e.NameScope.Find<TextBlock>("DayText");
-            _monthText = e.NameScope.Find<TextBlock>("MonthText");
-            _yearText = e.NameScope.Find<TextBlock>("YearText");
-            _container = e.NameScope.Find<Grid>("ButtonContentGrid");
-            _spacer1 = e.NameScope.Find<Rectangle>("FirstSpacer");
-            _spacer2 = e.NameScope.Find<Rectangle>("SecondSpacer");
-            _popup = e.NameScope.Find<Popup>("Popup");
-            _presenter = e.NameScope.Find<DatePickerPresenter>("PickerPresenter");
+            _flyoutButton = e.NameScope.Find<Button>("PART_FlyoutButton");
+            _dayText = e.NameScope.Find<TextBlock>("PART_DayText");
+            _monthText = e.NameScope.Find<TextBlock>("PART_MonthText");
+            _yearText = e.NameScope.Find<TextBlock>("PART_YearText");
+            _container = e.NameScope.Find<Grid>("PART_ButtonContentGrid");
+            _spacer1 = e.NameScope.Find<Rectangle>("PART_FirstSpacer");
+            _spacer2 = e.NameScope.Find<Rectangle>("PART_SecondSpacer");
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+            _presenter = e.NameScope.Find<DatePickerPresenter>("PART_PickerPresenter");
 
             _areControlsAvailable = true;
 
