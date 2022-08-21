@@ -410,9 +410,9 @@
                               ColumnDefinitions="Auto,Auto,Auto,Auto,*"
                               RowDefinitions="*,Auto">
 
-            <Rectangle Name="IndentSpacer"
+            <Rectangle Name="PART_IndentSpacer"
                        Grid.Column="1" />
-            <ToggleButton Name="ExpanderButton"
+            <ToggleButton Name="PART_ExpanderButton"
                           Grid.Column="2"
                           Width="12"
                           Height="12"
@@ -429,14 +429,14 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Margin="12,0,0,0">
-              <TextBlock Name="PropertyNameElement"
+              <TextBlock Name="PART_PropertyNameElement"
                          Margin="4,0,0,0"
                          IsVisible="{TemplateBinding IsPropertyNameVisible}"
                          Foreground="{TemplateBinding Foreground}" />
               <TextBlock Margin="4,0,0,0"
                          Text="{ReflectionBinding Key}"
                          Foreground="{TemplateBinding Foreground}" />
-              <TextBlock Name="ItemCountElement"
+              <TextBlock Name="PART_ItemCountElement"
                          Margin="4,0,0,0"
                          IsVisible="{TemplateBinding IsItemCountVisible}"
                          Foreground="{TemplateBinding Foreground}" />
