@@ -23,6 +23,8 @@ namespace Avalonia.Win32.Input
         private ushort _langId;
         private const int _caretMargin = 1;
 
+        public ITextInputMethodClient Client => _client;
+
         public bool IsActive => _client != null;
 
         public bool IsComposing { get; set; }

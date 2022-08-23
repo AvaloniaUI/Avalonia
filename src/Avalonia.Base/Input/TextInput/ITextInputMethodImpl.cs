@@ -5,7 +5,7 @@ namespace Avalonia.Input.TextInput
     [Unstable]
     public interface ITextInputMethodImpl
     {
-        ITextInputMethodClient Client { get; }
+        ITextInputMethodClient? Client { get; }
 
         bool IsActive { get; }
 

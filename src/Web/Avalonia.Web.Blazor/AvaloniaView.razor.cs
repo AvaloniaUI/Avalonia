@@ -46,6 +46,9 @@ namespace Avalonia.Web.Blazor
         private bool _useGL;
         private bool _inputElementFocused;
 
+        private ITextInputMethodClient? _client;
+
+
         [Inject] private IJSRuntime Js { get; set; } = null!;
 
         public AvaloniaView()
@@ -59,6 +62,10 @@ namespace Avalonia.Web.Blazor
                 _topLevel.Content = lifetime.MainView;
             }
         }
+
+        public ITextInputMethodClient? Client => _client;
+
+        public bool IsActive => _client != null;
 
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
@@ -391,9 +398,9 @@ namespace Avalonia.Web.Blazor
 
             _inputHelper.Clear();
 
-            var active = client is { };
+            _client = client;
             
-            if (active)
+            if (IsActive)
             {
                 _inputHelper.Show();
                 _inputElementFocused = true;
