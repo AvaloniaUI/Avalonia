@@ -1,10 +1,14 @@
 ﻿using System;
 using Android.Content;
+using Android.OS;
 using Android.Runtime;
+using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
+using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
+using Java.Lang;
 
 namespace Avalonia.Android
 {
@@ -13,6 +17,8 @@ namespace Avalonia.Android
     {
         private readonly TView _host;
         private readonly InputMethodManager _imm;
+        private ITextInputMethodClient _client;
+        private InputConnectionImpl _inputConnection;
 
         public AndroidInputMethod(TView host)
         {
@@ -27,6 +33,10 @@ namespace Avalonia.Android
             _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListener(_host));
         }
 
+        public bool IsActive => Client != null;
+
+        public ITextInputMethodClient Client => _client;
+
         public void Reset()
         {
             _imm.RestartInput(_host);
@@ -34,16 +44,16 @@ namespace Avalonia.Android
 
         public void SetClient(ITextInputMethodClient client)
         {
-            var active = client is { };
+            _client = client;
             
-            if (active)
+            if (IsActive)
             {
                 _host.RequestFocus();
                 Reset();
                 _imm.ShowSoftInput(_host, ShowFlags.Implicit);
             }
             else
-                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.None);
+                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.None);         
         }
 
         public void SetCursorRect(Rect rect)
@@ -52,7 +62,9 @@ namespace Avalonia.Android
 
         public void SetOptions(TextInputOptions options)
         {
-            _host.InitEditorInfo((outAttrs) =>
+            _inputConnection = new InputConnectionImpl(_host, this);
+
+            _host.InitEditorInfo((_host, outAttrs) =>
             {
                 outAttrs.InputType = options.ContentType switch
                 {
@@ -74,6 +86,8 @@ namespace Avalonia.Android
                     outAttrs.InputType |= global::Android.Text.InputTypes.TextFlagMultiLine;
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
+
+                return _inputConnection;
             });
         }
 

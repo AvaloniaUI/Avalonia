@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 using Android.Content;
 using Android.Graphics;
+using Android.Media.TV;
+using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.OpenGL;
@@ -21,6 +24,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Java.Lang;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -148,7 +152,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
-            public ViewImpl(Context context,  TopLevelImpl tl, bool placeOnTop) : base(context)
+
+            public ViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
                 _tl = tl;
                 if (placeOnTop)
@@ -187,7 +192,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return res != null ? res.Value : baseResult;
             }
 
-
             void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
             {
                 var newSize = new PixelSize(width, height).ToSize(_tl.RenderScaling);
@@ -206,9 +210,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return true;
             }
 
-            private Action<EditorInfo> _initEditorInfo;
+            private Func<View, EditorInfo, InputConnectionImpl> _initEditorInfo;
+            protected InputConnectionImpl _inputConnection;
 
-            public void InitEditorInfo(Action<EditorInfo> init)
+            public void InitEditorInfo(Func<View, EditorInfo, InputConnectionImpl> init)
             {
                 _initEditorInfo = init;
             }
@@ -216,9 +221,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             public sealed override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
             {
                 if (_initEditorInfo != null)
-                    _initEditorInfo(outAttrs);
-
-                return base.OnCreateInputConnection(outAttrs);
+                {
+                    return _initEditorInfo(this, outAttrs);
+                }
+                   
+                return null;
             }
 
         }
@@ -247,6 +254,41 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    internal class InputConnectionImpl: BaseInputConnection
+    {
+        private readonly ITextInputMethodImpl _inputMethod;
+
+        public InputConnectionImpl(View? targetView, ITextInputMethodImpl inputMethod) :
+            base(targetView, false)
+        {
+            _inputMethod = inputMethod;
+        }
+
+        public InputConnectionImpl(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+        {
+        }
+
+        public override bool SetComposingText(ICharSequence text, int newCursorPosition)
+        {
+            if (_inputMethod.IsActive)
+            {
+                _inputMethod.Client.SetPreeditText(text.ToString());
+            }
+
+            return base.SetComposingText(text, newCursorPosition);
+        }
+
+        public override bool CommitText(ICharSequence text, int newCursorPosition)
+        {
+            if (_inputMethod.IsActive)
+            {
+                _inputMethod.Client.SetPreeditText(null);
+            }
+
+            return base.CommitText(text, newCursorPosition);
         }
     }
 }
