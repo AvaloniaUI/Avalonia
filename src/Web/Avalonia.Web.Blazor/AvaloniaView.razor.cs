@@ -28,6 +28,7 @@ namespace Avalonia.Web.Blazor
         private SizeWatcherInterop? _sizeWatcher = null;
         private DpiWatcherInterop? _dpiWatcher = null;
         private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null;
+        private AvaloniaModule? _avaloniaModule = null;
         private InputHelperInterop? _inputHelper = null;
         private InputHelperInterop? _canvasHelper = null;
         private NativeControlHostInterop? _nativeControlHost = null;
@@ -241,8 +242,10 @@ namespace Avalonia.Web.Blazor
             {
                 AvaloniaLocator.CurrentMutable.Bind<IJSInProcessRuntime>().ToConstant((IJSInProcessRuntime)Js);
 
-                _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
-                _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
+                _avaloniaModule = await AvaloniaModule.ImportAsync(Js);
+
+                _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
+                _canvasHelper = new InputHelperInterop(_avaloniaModule, _htmlCanvas);
 
                 _inputHelper.Hide();
                 _canvasHelper.SetCursor("default");
@@ -252,11 +255,11 @@ namespace Avalonia.Web.Blazor
                     _canvasHelper.SetCursor(x); //windows
                 };
 
-                _nativeControlHost = await NativeControlHostInterop.ImportAsync(Js, _nativeControlsContainer);
+                _nativeControlHost = new NativeControlHostInterop(_avaloniaModule, _nativeControlsContainer);
                 _storageProvider = await StorageProviderInterop.ImportAsync(Js);
                 
                 Console.WriteLine("starting html canvas setup");
-                _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
+                _interop = new SKHtmlCanvasInterop(_avaloniaModule, _htmlCanvas, OnRenderFrame);
 
                 Console.WriteLine("Interop created");
                 
@@ -306,8 +309,8 @@ namespace Avalonia.Web.Blazor
                 {
                     _interop.RequestAnimationFrame(true);
                     
-                    _sizeWatcher = await SizeWatcherInterop.ImportAsync(Js, _htmlCanvas, OnSizeChanged);
-                    _dpiWatcher = await DpiWatcherInterop.ImportAsync(Js, OnDpiChanged);
+                    _sizeWatcher = new SizeWatcherInterop(_avaloniaModule, _htmlCanvas, OnSizeChanged);
+                    _dpiWatcher = new DpiWatcherInterop(_avaloniaModule, OnDpiChanged);
                     
                     _topLevel.Prepare();
 

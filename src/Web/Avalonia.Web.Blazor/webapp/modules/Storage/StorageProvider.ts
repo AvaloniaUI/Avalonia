@@ -2,7 +2,7 @@
 
 declare global {
     type WellKnownDirectory = "desktop" | "documents" | "downloads" | "music" | "pictures" | "videos";
-    type StartInDirectory = WellKnownDirectory | FileSystemFileHandle;
+    type StartInDirectory = WellKnownDirectory | FileSystemHandle;
     interface OpenFilePickerOptions {
         startIn?: StartInDirectory
     }
@@ -14,10 +14,10 @@ declare global {
 const fileBookmarksStore: string = "fileBookmarks";
 const avaloniaDb = new IndexedDbWrapper("AvaloniaDb", [
     fileBookmarksStore
-])
+]);
 
 class StorageItem {
-    constructor(private handle: FileSystemHandle, private bookmarkId?: string) { }
+    constructor(public handle: FileSystemHandle, private bookmarkId?: string) { }
 
     public getName(): string {
         return this.handle.name
@@ -69,7 +69,7 @@ class StorageItem {
         }
         
         const items: StorageItem[] = [];
-        for await (const [key, value] of this.handle.entries()) {
+        for await (const [key, value] of (this.handle as any).entries()) {
             items.push(new StorageItem(value));
         }
         return new StorageItems(items);
@@ -90,7 +90,7 @@ class StorageItem {
         if (this.bookmarkId) {
             return this.bookmarkId;
         }
-
+        
         const connection = await avaloniaDb.connect();
         try {
             const key = await connection.put(fileBookmarksStore, this.handle, this.generateBookmarkId());
@@ -172,7 +172,7 @@ export class StorageProvider {
         };
 
         const handles = await window.showOpenFilePicker(options);
-        return new StorageItems(handles.map(handle => new StorageItem(handle)));
+        return new StorageItems(handles.map((handle: FileSystemHandle) => new StorageItem(handle)));
     }
 
     public static async saveFileDialog(

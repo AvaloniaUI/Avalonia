@@ -1,41 +1,32 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using SkiaSharp;
 
 namespace Avalonia.Web.Blazor.Interop
 {
-    internal class InputHelperInterop : JSModuleInterop
+    internal class InputHelperInterop
     {
-        private const string JsFilename = "./_content/Avalonia.Web.Blazor/InputHelper.js";
         private const string ClearSymbol = "InputHelper.clear";
         private const string FocusSymbol = "InputHelper.focus";
         private const string SetCursorSymbol = "InputHelper.setCursor";
         private const string HideSymbol = "InputHelper.hide";
         private const string ShowSymbol = "InputHelper.show";
 
-        private readonly ElementReference inputElement;
+        private readonly AvaloniaModule _module;
+        private readonly ElementReference _inputElement;
 
-        public static async Task<InputHelperInterop> ImportAsync(IJSRuntime js, ElementReference element)
+        public InputHelperInterop(AvaloniaModule module, ElementReference element)
         {
-            var interop = new InputHelperInterop(js, element);
-            await interop.ImportAsync();
-            return interop;
+            _module = module;
+            _inputElement = element;
         }
 
-        public InputHelperInterop(IJSRuntime js, ElementReference element)
-            : base(js, JsFilename)
-        {
-            inputElement = element;
-        }
+        public void Clear() => _module.Invoke(ClearSymbol, _inputElement);
 
-        public void Clear() => Invoke(ClearSymbol, inputElement);
+        public void Focus() => _module.Invoke(FocusSymbol, _inputElement);
 
-        public void Focus() => Invoke(FocusSymbol, inputElement);
+        public void SetCursor(string kind) => _module.Invoke(SetCursorSymbol, _inputElement, kind);
 
-        public void SetCursor(string kind) => Invoke(SetCursorSymbol, inputElement, kind);
+        public void Hide() => _module.Invoke(HideSymbol, _inputElement);
 
-        public void Hide() => Invoke(HideSymbol, inputElement);
-
-        public void Show() => Invoke(ShowSymbol, inputElement);
+        public void Show() => _module.Invoke(ShowSymbol, _inputElement);
     }
 }
