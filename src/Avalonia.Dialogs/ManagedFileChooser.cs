@@ -90,8 +90,8 @@ namespace Avalonia.Dialogs
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            _quickLinksRoot = e.NameScope.Get<Control>("QuickLinks");
-            _filesView = e.NameScope.Get<ListBox>("Files");
+            _quickLinksRoot = e.NameScope.Get<Control>("PART_QuickLinks");
+            _filesView = e.NameScope.Get<ListBox>("PART_Files");
         }
     }
 }
