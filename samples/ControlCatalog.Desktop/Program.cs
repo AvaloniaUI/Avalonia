@@ -18,7 +18,8 @@ namespace ControlCatalog
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .LogToTrace()
-                .UsePlatformDetect();
+                .UsePlatformDetect()
+                .With(new Win32PlatformOptions() { UseWgl = true });    //enable use of OpenGL on Windows
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {
