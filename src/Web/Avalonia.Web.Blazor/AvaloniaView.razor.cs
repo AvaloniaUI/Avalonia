@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Web.Blazor.Interop;
 using Avalonia.Web.Blazor.Interop.Storage;
 
@@ -352,9 +353,9 @@ namespace Avalonia.Web.Blazor
             // We also don't want to have it as a meaningful public API.
             // Therefore we have InternalsVisibleTo hack here.
 
-            if (_topLevel.Renderer is DeferredRenderer dr)
+            if (_topLevel.Renderer is CompositingRenderer dr)
             {
-                dr.Render(true);
+                dr.CompositionTarget.ImmediateUIThreadRender();
             }
         }
 
