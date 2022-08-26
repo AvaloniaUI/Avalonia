@@ -312,6 +312,7 @@ namespace Avalonia.Web.Blazor
                     _sizeWatcher = new SizeWatcherInterop(_avaloniaModule, _htmlCanvas, OnSizeChanged);
                     _dpiWatcher = new DpiWatcherInterop(_avaloniaModule, OnDpiChanged);
                     
+                    _sizeWatcher.Start();
                     _topLevel.Prepare();
 
                     _topLevel.Renderer.Start();
