@@ -66,6 +66,11 @@ namespace Avalonia.Base.UnitTests.Media
             var fontFamily = FontFamily.Parse("Courier New");
 
             Assert.Equal("Courier New", fontFamily.Name);
+
+            // Can be returned by SKFontManager.MatchCharacter on Android for emojis
+            fontFamily = FontFamily.Parse("96##fallback");
+
+            Assert.Equal("96##fallback", fontFamily.Name);
         }
 
         [Fact]
