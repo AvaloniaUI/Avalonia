@@ -651,7 +651,7 @@ namespace Avalonia.Controls
         {
             if (TextConverter != null)
             {
-                return TextConverter.ConvertBack(Value, typeof(string), null, _cultureInfo ?? CultureInfo.CurrentUICulture)?.ToString();
+                return TextConverter.ConvertBack(Value, typeof(string), null, CultureInfo.CurrentCulture)?.ToString();
             }
             //Manage FormatString of type "{}{0:N2} °" (in xaml) or "{0:N2} °" in code-behind.
             if (FormatString.Contains("{0"))
@@ -1070,9 +1070,8 @@ namespace Avalonia.Controls
             
             if (TextConverter != null)
             {
-                var valueFromText = TextConverter.Convert(text, typeof(decimal?), currentValueText, _cultureInfo ?? CultureInfo.CurrentUICulture);
-                if (valueFromText is decimal d)
-                    return d;
+                var valueFromText = TextConverter.Convert(text, typeof(decimal?), null, CultureInfo.CurrentCulture);
+                return (decimal?)valueFromText;
             }
 
             if (IsPercent(FormatString))
