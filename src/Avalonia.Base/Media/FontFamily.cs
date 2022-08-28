@@ -108,29 +108,14 @@ namespace Avalonia.Media
 
         private static FontFamilyIdentifier GetFontFamilyIdentifier(string name)
         {
-            var segments = name.Split('#');
+            var hashIndex = name.IndexOf('#');
 
-            switch (segments.Length)
-            {
-                case 1:
-                    {
-                        return new FontFamilyIdentifier(segments[0], null);
-                    }
-
-                case 2:
-                    {
-                        var source = segments[0].StartsWith("/")
-                            ? new Uri(segments[0], UriKind.Relative)
-                            : new Uri(segments[0], UriKind.RelativeOrAbsolute);
-
-                        return new FontFamilyIdentifier(segments[1], source);
-                    }
-
-                default:
-                    {
-                        throw new ArgumentException("Specified family is not supported.");
-                    }
-            }
+            // SKFontManager.MatchCharacter on Android can return typeface names
+            // like "96##fallback" which should be handled just like other SkiaSharp typefaces.
+            return hashIndex != -1 && hashIndex == name.LastIndexOf('#')
+                ? new FontFamilyIdentifier(name.Substring(hashIndex + 1),
+                    new Uri(name.Substring(0, hashIndex), name.StartsWith("/") ? UriKind.Relative : UriKind.RelativeOrAbsolute))
+                : new FontFamilyIdentifier(name, null);
         }
 
         /// <summary>
