@@ -515,12 +515,11 @@ namespace Avalonia.Controls
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         protected virtual void OnTextConverterChanged(IValueConverter? oldValue, IValueConverter? newValue)
-        { 
-            if (!_internalValueSet && IsInitialized)
+        {
+            if (IsInitialized)
             {
-                SyncTextAndValueProperties(false, null, true);
+                SyncTextAndValueProperties(false, null);
             }
-            SetValidSpinDirection();
         }
 
         /// <summary>
