@@ -8,7 +8,6 @@ declare global {
     type PermissionsMode = "read" | "readwrite";
     interface FileSystemFileHandle {
         name: string,
-        kind: "file" | "directory",
         getFile(): Promise<File>;
         createWritable(options?: { keepExistingData?: boolean }): Promise<FileSystemWritableFileStream>;
 
@@ -169,10 +168,6 @@ class StorageItem {
     }
 
     public async getItems(): Promise<StorageItems> {
-        if (this.handle.kind !== "directory"){
-            return new StorageItems([]);
-        }
-        
         const items: StorageItem[] = [];
         for await (const [key, value] of this.handle.entries()) {
             items.push(new StorageItem(value));
