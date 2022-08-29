@@ -87,18 +87,7 @@ namespace Avalonia.Controls.Documents
 
             public override TextRunProperties? Properties { get; }
 
-            public override Size Size
-            {
-                get
-                {
-                    if (!Control.IsMeasureValid)
-                    {
-                        Control.Measure(Size.Infinity);
-                    }
-
-                    return Control.DesiredSize;
-                }
-            }
+            public override Size Size => Control.DesiredSize;
 
             public override double Baseline
             {
@@ -118,7 +107,7 @@ namespace Avalonia.Controls.Documents
 
             public override void Draw(DrawingContext drawingContext, Point origin)
             {             
-                Control.Arrange(new Rect(origin, Size));                
+                //noop            
             }
         }
     }
