@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -97,6 +98,13 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
+        /// Defines the <see cref="TextConverter"/> property.
+        /// </summary>
+        public static readonly DirectProperty<NumericUpDown, IValueConverter?> TextConverterProperty =
+            AvaloniaProperty.RegisterDirect<NumericUpDown, IValueConverter?>(nameof(TextConverter),
+                updown => updown.TextConverter, (o, v) => o.TextConverter = v, null, BindingMode.OneWay, false);
+
+        /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
         public static readonly DirectProperty<NumericUpDown, decimal?> ValueProperty =
@@ -125,6 +133,7 @@ namespace Avalonia.Controls
 
         private decimal? _value;
         private string? _text;
+        private IValueConverter? _textConverter;
         private bool _internalValueSet;
         private bool _clipValueToMinMax;
         private bool _isSyncingTextAndValueProperties;
@@ -235,6 +244,8 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the parsing style (AllowLeadingWhite, Float, AllowHexSpecifier, ...). By default, Any.
+        /// Note that Hex style does not work with decimal. 
+        /// For hexadecimal display, use <see cref="TextConverter"/>.
         /// </summary>
         public NumberStyles ParsingNumberStyle
         {
@@ -249,6 +260,17 @@ namespace Avalonia.Controls
         {
             get { return _text; }
             set { SetAndRaise(TextProperty, ref _text, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom bidirectional Text-Value converter.
+        /// Non-null converter overrides <see cref="ParsingNumberStyle"/>, providing finer control over 
+        /// string representation of the underlying value.
+        /// </summary>
+        public IValueConverter? TextConverter
+        {
+            get { return _textConverter; }
+            set { SetAndRaise(TextConverterProperty, ref _textConverter, value); }
         }
 
         /// <summary>
@@ -319,6 +341,7 @@ namespace Avalonia.Controls
             MaximumProperty.Changed.Subscribe(OnMaximumChanged);
             MinimumProperty.Changed.Subscribe(OnMinimumChanged);
             TextProperty.Changed.Subscribe(OnTextChanged);
+            TextConverterProperty.Changed.Subscribe(OnTextConverterChanged);
             ValueProperty.Changed.Subscribe(OnValueChanged);
         }
 
@@ -485,6 +508,19 @@ namespace Avalonia.Controls
                 SyncTextAndValueProperties(true, Text);
             }
         }
+        
+        /// <summary>
+        /// Called when the <see cref="Text"/> property value changed.
+        /// </summary>
+        /// <param name="oldValue">The old value.</param>
+        /// <param name="newValue">The new value.</param>
+        protected virtual void OnTextConverterChanged(IValueConverter? oldValue, IValueConverter? newValue)
+        {
+            if (IsInitialized)
+            {
+                SyncTextAndValueProperties(false, null);
+            }
+        }
 
         /// <summary>
         /// Called when the <see cref="Value"/> property value changed.
@@ -612,6 +648,10 @@ namespace Avalonia.Controls
         /// <returns></returns>
         private string? ConvertValueToText()
         {
+            if (TextConverter != null)
+            {
+                return TextConverter.ConvertBack(Value, typeof(string), null, CultureInfo.CurrentCulture)?.ToString();
+            }
             //Manage FormatString of type "{}{0:N2} °" (in xaml) or "{0:N2} °" in code-behind.
             if (FormatString.Contains("{0"))
             {
@@ -787,6 +827,21 @@ namespace Avalonia.Controls
                 upDown.OnTextChanged(oldValue, newValue);
             }
         }
+
+        /// <summary>
+        /// Called when the <see cref="TextConverter"/> property value changed.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void OnTextConverterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is NumericUpDown upDown)
+            {
+                var oldValue = (IValueConverter?)e.OldValue;
+                var newValue = (IValueConverter?)e.NewValue;
+                upDown.OnTextConverterChanged(oldValue, newValue);
+            }
+        }
+
 
         /// <summary>
         /// Called when the <see cref="Value"/> property value changed.
@@ -1012,6 +1067,12 @@ namespace Avalonia.Controls
                 return null;
             }
             
+            if (TextConverter != null)
+            {
+                var valueFromText = TextConverter.Convert(text, typeof(decimal?), null, CultureInfo.CurrentCulture);
+                return (decimal?)valueFromText;
+            }
+
             if (IsPercent(FormatString))
             {
                 result = ParsePercent(text, NumberFormat);

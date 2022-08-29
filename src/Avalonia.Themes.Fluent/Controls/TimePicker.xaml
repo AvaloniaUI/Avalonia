@@ -55,18 +55,11 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPointerOver}"/>
-      <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPointerOver}"/>
-      <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForegroundPointerOver}"/>
-    </Style>
-
     <Style Selector="^:pressed">
       <Setter Property="RenderTransform" Value="scale(0.98)" />
     </Style>
 
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPressed}"/>
       <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPressed}"/>
       <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForegroundPressed}"/>
     </Style>
