@@ -84,7 +84,16 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
     {
-        var res = CompositionTarget.TryHitTest(p, filter);
+        Func<CompositionVisual, bool>? f = null;
+        if (filter != null)
+            f = v =>
+            {
+                if (v is CompositionDrawListVisual dlv)
+                    return filter(dlv.Visual);
+                return true;
+            };
+        
+        var res = CompositionTarget.TryHitTest(p, f);
         if(res == null)
             yield break;
         foreach(var v in res)
