@@ -29,6 +29,7 @@ public class CompositingRenderer : IRendererWithCompositor
     private bool _queuedUpdate;
     private Action _update;
     private Action _invalidateScene;
+    private bool _updating;
 
     internal CompositionTarget CompositionTarget;
     
@@ -77,6 +78,8 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public void AddDirty(IVisual visual)
     {
+        if (_updating)
+            throw new InvalidOperationException("Visual was invalidated during the render pass");
         _dirty.Add((Visual)visual);
         QueueUpdate();
     }
@@ -107,6 +110,8 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public void RecalculateChildren(IVisual visual)
     {
+        if (_updating)
+            throw new InvalidOperationException("Visual was invalidated during the render pass");
         _recalculateChildren.Add((Visual)visual);
         QueueUpdate();
     }
@@ -191,7 +196,7 @@ public class CompositingRenderer : IRendererWithCompositor
     private void InvalidateScene() =>
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
 
-    private void Update()
+    private void UpdateCore()
     {
         _queuedUpdate = false;
         foreach (var visual in _dirty)
@@ -239,6 +244,21 @@ public class CompositingRenderer : IRendererWithCompositor
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
         Compositor.InvokeOnNextCommit(_invalidateScene);
+    }
+
+    private void Update()
+    {
+        if(_updating)
+            return;
+        _updating = true;
+        try
+        {
+            UpdateCore();
+        }
+        finally
+        {
+            _updating = false;
+        }
     }
     
     public void Resized(Size size)
