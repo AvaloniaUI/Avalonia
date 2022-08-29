@@ -26,6 +26,11 @@ public class CompositingRenderer : IRendererWithCompositor
     DrawingContext _recordingContext;
     private HashSet<Visual> _dirty = new();
     private HashSet<Visual> _recalculateChildren = new();
+    private HashSet<Visual> _recalculateChildrenAddedDuringUpdate = new();
+    private Queue<Visual> _recalculateChildrenAddedDuringUpdateQueue = new();
+    private bool _inUpdate;
+    private HashSet<Visual> _dirtyVisualsAddedDuringUpdate = new();
+    private Queue<Visual> _dirtyVisualsAddedDuringUpdateQueue = new();
     private bool _queuedUpdate;
     private Action _update;
     private Action _invalidateScene;
@@ -77,8 +82,18 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public void AddDirty(IVisual visual)
     {
-        _dirty.Add((Visual)visual);
-        QueueUpdate();
+        var v = (Visual)visual;
+        // Technically it's an invalid operation to invalidate a visual while renderer is trying to update
+        // composition visual's properties, but some existing code seems to do that, so we enqueue such visuals
+        // to a separate queue
+        if (_inUpdate)
+        {
+            if (_dirtyVisualsAddedDuringUpdate.Add(v))
+                _dirtyVisualsAddedDuringUpdateQueue.Enqueue(v);
+        }
+        else if (_dirty.Add(v))
+            QueueUpdate();
+        
     }
 
     /// <inheritdoc/>
@@ -107,8 +122,17 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public void RecalculateChildren(IVisual visual)
     {
-        _recalculateChildren.Add((Visual)visual);
-        QueueUpdate();
+        var v = (Visual)visual;
+        // Technically it's an invalid operation to invalidate a visual while renderer is trying to update
+        // composition visual's properties, but some existing code seems to do that, so we enqueue such visuals
+        // to a separate queue
+        if (_inUpdate)
+        {
+            if (_recalculateChildrenAddedDuringUpdate.Add(v))
+                _recalculateChildrenAddedDuringUpdateQueue.Enqueue(v);
+        }
+        else if (_recalculateChildren.Add((Visual)visual))
+            QueueUpdate();
     }
 
     private void SyncChildren(Visual v)
@@ -191,54 +215,93 @@ public class CompositingRenderer : IRendererWithCompositor
     private void InvalidateScene() =>
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
 
+    private void ProcessDirtyVisual(Visual visual)
+    {
+        var comp = visual.CompositionVisual;
+        if (comp == null)
+            return;
+
+        // TODO: Optimize all of that by moving to the Visual itself, so we won't have to recalculate every time
+        comp.Offset = new Vector3((float)visual.Bounds.Left, (float)visual.Bounds.Top, 0);
+        comp.Size = new Vector2((float)visual.Bounds.Width, (float)visual.Bounds.Height);
+        comp.Visible = visual.IsVisible;
+        comp.Opacity = (float)visual.Opacity;
+        comp.ClipToBounds = visual.ClipToBounds;
+        comp.Clip = visual.Clip?.PlatformImpl;
+        comp.OpacityMask = visual.OpacityMask;
+
+        var renderTransform = Matrix.Identity;
+
+        if (visual.HasMirrorTransform)
+            renderTransform = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
+
+        if (visual.RenderTransform != null)
+        {
+            var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+            var offset = Matrix.CreateTranslation(origin);
+            renderTransform *= (-offset) * visual.RenderTransform.Value * (offset);
+        }
+
+        comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
+
+        _recorder.BeginUpdate(comp.DrawList);
+        visual.Render(_recordingContext);
+        comp.DrawList = _recorder.EndUpdate();
+
+        SyncChildren(visual);
+
+    }
+
     private void Update()
     {
         _queuedUpdate = false;
-        foreach (var visual in _dirty)
+        try
         {
-            var comp = visual.CompositionVisual;
-            if(comp == null)
-                continue;
+            _inUpdate = true;
+            foreach (var visual in _dirty)
+                ProcessDirtyVisual(visual);
             
-            // TODO: Optimize all of that by moving to the Visual itself, so we won't have to recalculate every time
-            comp.Offset = new Vector3((float)visual.Bounds.Left, (float)visual.Bounds.Top, 0);
-            comp.Size = new Vector2((float)visual.Bounds.Width, (float)visual.Bounds.Height);
-            comp.Visible = visual.IsVisible;
-            comp.Opacity = (float)visual.Opacity;
-            comp.ClipToBounds = visual.ClipToBounds;
-            comp.Clip = visual.Clip?.PlatformImpl;
-            comp.OpacityMask = visual.OpacityMask;
-            
-            var renderTransform = Matrix.Identity;
-
-            if (visual.HasMirrorTransform) 
-                renderTransform = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
-
-            if (visual.RenderTransform != null)
+            while (_dirtyVisualsAddedDuringUpdateQueue.Count > 0)
             {
-                var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
-                var offset = Matrix.CreateTranslation(origin);
-                renderTransform *= (-offset) * visual.RenderTransform.Value * (offset);
+                var visual = _dirtyVisualsAddedDuringUpdateQueue.Dequeue();
+
+                // Add visual to the dirty list to avoid calling SyncChildren later
+                if (!_dirty.Add(visual))
+                    // This can happen only if Visual's properties were updated during the Render call. 
+                    // That is invalid behavior, so we just skip it to avoid potential infinite loops.
+                    continue;
+                
+                ProcessDirtyVisual(visual);
             }
 
+            foreach (var v in _recalculateChildren)
+                if (!_dirty.Contains(v))
+                    SyncChildren(v);
 
-
-            comp.TransformMatrix = MatrixUtils.ToMatrix4x4(renderTransform);
-
-            _recorder.BeginUpdate(comp.DrawList);
-            visual.Render(_recordingContext);
-            comp.DrawList = _recorder.EndUpdate();
-
-            SyncChildren(visual);
+            while (_recalculateChildrenAddedDuringUpdateQueue.Count > 0)
+            {
+                var visual = _recalculateChildrenAddedDuringUpdateQueue.Dequeue();
+                if (_recalculateChildren.Contains(visual))
+                    // This can happen only if Visual's properties were updated during the Render/UpdateChildren call. 
+                    // That is invalid behavior, so we just skip it to avoid potential infinite loops.
+                    continue;
+                SyncChildren(visual);
+            }
+            
+            _dirty.Clear();
+            _dirtyVisualsAddedDuringUpdate.Clear();
+            _dirtyVisualsAddedDuringUpdateQueue.Clear();
+            _recalculateChildren.Clear();
+            _recalculateChildrenAddedDuringUpdate.Clear();
+            _recalculateChildrenAddedDuringUpdateQueue.Clear();
+            CompositionTarget.Size = _root.ClientSize;
+            CompositionTarget.Scaling = _root.RenderScaling;
+            Compositor.InvokeOnNextCommit(_invalidateScene);
         }
-        foreach(var v in _recalculateChildren)
-            if (!_dirty.Contains(v))
-                SyncChildren(v);
-        _dirty.Clear();
-        _recalculateChildren.Clear();
-        CompositionTarget.Size = _root.ClientSize;
-        CompositionTarget.Scaling = _root.RenderScaling;
-        Compositor.InvokeOnNextCommit(_invalidateScene);
+        finally
+        {
+            _inUpdate = false;
+        }
     }
     
     public void Resized(Size size)
