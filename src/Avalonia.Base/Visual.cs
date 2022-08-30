@@ -428,6 +428,8 @@ namespace Avalonia
                     property.Changed.Subscribe(invalidateObserver);
                 }
             }
+
+            MediaInvalidation.AffectsMediaRender(properties);
         }
 
         /// <inheritdoc/>

@@ -28,6 +28,8 @@ namespace Avalonia.Media
         {
             FiguresProperty.Changed.AddClassHandler<PathGeometry>((s, e) =>
                 s.OnFiguresChanged(e.NewValue as PathFigures));
+
+            MediaInvalidation.AffectsMediaRender(FiguresProperty, FillRuleProperty);
         }
 
         /// <summary>
@@ -35,7 +37,7 @@ namespace Avalonia.Media
         /// </summary>
         public PathGeometry()
         {
-            _figures = new PathFigures();
+            Figures = new PathFigures();
         }
 
         /// <summary>
@@ -120,9 +122,9 @@ namespace Avalonia.Media
                     InvalidateGeometry();
                 },
                 InvalidateGeometry);
-            
+
             _figuresPropertiesObserver = figures?.TrackItemPropertyChanged(_ => InvalidateGeometry());
- 
+
         }
 
         private void InvalidateGeometryFromSegments(object? _, EventArgs __)

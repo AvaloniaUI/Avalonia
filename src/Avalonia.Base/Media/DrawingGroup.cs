@@ -28,7 +28,17 @@ namespace Avalonia.Media
                 o => o.Children,
                 (o, v) => o.Children = v);
 
-        private DrawingCollection _children = new DrawingCollection();
+        private DrawingCollection _children;
+
+        public DrawingGroup()
+        {
+            _children = Children = new DrawingCollection();
+        }
+
+        static DrawingGroup()
+        {
+            MediaInvalidation.AffectsMediaRender(OpacityProperty, OpacityMaskProperty, TransformProperty, ClipGeometryProperty, ChildrenProperty);
+        }
 
         public double Opacity
         {
@@ -61,10 +71,7 @@ namespace Avalonia.Media
         public DrawingCollection Children
         {
             get => _children;
-            set
-            {
-                SetAndRaise(ChildrenProperty, ref _children, value);
-            }
+            set => SetAndRaise(ChildrenProperty, ref _children, value ?? throw new ArgumentNullException(nameof(value)));
         }
 
         public DrawingContext Open()

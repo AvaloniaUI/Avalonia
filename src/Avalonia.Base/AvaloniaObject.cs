@@ -20,6 +20,7 @@ namespace Avalonia
     {
         private readonly ValueStore _values;
         private AvaloniaObject? _inheritanceParent;
+        private List<AvaloniaObject>? _mediaParents;
         private PropertyChangedEventHandler? _inpcChanged;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChanged;
         private List<AvaloniaObject>? _inheritanceChildren;
@@ -78,6 +79,9 @@ namespace Avalonia
                 }
             }
         }
+
+        internal List<AvaloniaObject> GetOrCreateMediaParents() => _mediaParents ??= new();
+        internal List<AvaloniaObject>? GetMediaParents() => _mediaParents;
 
         /// <summary>
         /// Gets or sets the value of a <see cref="AvaloniaProperty"/>.

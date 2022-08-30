@@ -1,6 +1,4 @@
-using System;
 using Avalonia.Media.Immutable;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -44,11 +42,6 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<double> MiterLimitProperty =
             AvaloniaProperty.Register<Pen, double>(nameof(MiterLimit), 10.0);
-
-        private EventHandler? _invalidated;
-        private IAffectsRender? _subscribedToBrush;
-        private IAffectsRender? _subscribedToDashes;
-        private TargetWeakEventSubscriber<Pen, EventArgs>? _weakSubscriber;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Pen"/> class.
@@ -101,6 +94,11 @@ namespace Avalonia.Media
             DashStyle = dashStyle;
         }
 
+        static Pen()
+        {
+            MediaInvalidation.AffectsMediaRender(BrushProperty, ThicknessProperty, LineCapProperty, LineJoinProperty, MiterLimitProperty, DashStyleProperty);
+        }
+
         /// <summary>
         /// Gets or sets the brush used to draw the stroke.
         /// </summary>
@@ -109,11 +107,6 @@ namespace Avalonia.Media
             get => GetValue(BrushProperty);
             set => SetValue(BrushProperty, value);
         }
-
-        private static readonly WeakEvent<IAffectsRender, EventArgs> InvalidatedWeakEvent =
-            WeakEvent.Register<IAffectsRender>(
-                (s, h) => s.Invalidated += h,
-                (s, h) => s.Invalidated -= h);
 
         /// <summary>
         /// Gets or sets the stroke thickness.
@@ -162,23 +155,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Raised when the pen changes.
-        /// </summary>
-        public event EventHandler? Invalidated
-        {
-            add
-            {
-                _invalidated += value;
-                UpdateSubscriptions();
-            }
-            remove
-            {
-                _invalidated -= value; 
-                UpdateSubscriptions();
-            }
-        }
-
-        /// <summary>
         /// Creates an immutable clone of the brush.
         /// </summary>
         /// <returns>The immutable clone.</returns>
@@ -191,49 +167,6 @@ namespace Avalonia.Media
                 LineCap,
                 LineJoin,
                 MiterLimit);
-        }
-
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            _invalidated?.Invoke(this, EventArgs.Empty);
-            if(change.Property == BrushProperty)
-                UpdateSubscription(ref _subscribedToBrush, Brush);
-            if(change.Property == DashStyleProperty)
-                UpdateSubscription(ref _subscribedToDashes, DashStyle);
-            base.OnPropertyChanged(change);
-        }
-
-        
-        void UpdateSubscription(ref IAffectsRender? field, object? value)
-        {
-            if ((_invalidated == null || field != value) && field != null)
-            {
-                if (_weakSubscriber != null)
-                    InvalidatedWeakEvent.Unsubscribe(field, _weakSubscriber);
-                field = null;
-            }
-
-            if (_invalidated != null && field != value && value is IAffectsRender affectsRender)
-            {
-                if (_weakSubscriber == null)
-                {
-                    _weakSubscriber = new TargetWeakEventSubscriber<Pen, EventArgs>(
-                        this, static (target, _, ev, _) =>
-                        {
-                            if (ev == InvalidatedWeakEvent)
-                                target._invalidated?.Invoke(target, EventArgs.Empty);
-                        });
-                }
-
-                InvalidatedWeakEvent.Subscribe(affectsRender, _weakSubscriber);
-                field = affectsRender;
-            }
-        }
-
-        void UpdateSubscriptions()
-        {
-            UpdateSubscription(ref _subscribedToBrush, Brush);
-            UpdateSubscription(ref _subscribedToDashes, DashStyle);
         }
     }
 }

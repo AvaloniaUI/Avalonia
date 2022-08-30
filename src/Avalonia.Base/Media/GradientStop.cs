@@ -33,6 +33,11 @@ namespace Avalonia.Media
             Offset = offset;
         }
 
+        static GradientStop()
+        {
+            MediaInvalidation.AffectsMediaRender(OffsetProperty, ColorProperty);
+        }
+
         /// <inheritdoc/>
         public double Offset
         {

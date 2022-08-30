@@ -99,11 +99,17 @@ namespace Avalonia.Media
 
         private void OnPointsChanged(Points? newValue)
         {
+            void Invalidate()
+            {
+                MediaInvalidation.InvalidateAncestors(this);
+                InvalidateGeometry();
+            }
+
             _pointsObserver?.Dispose();
             _pointsObserver = newValue?.ForEachItem(
-                _ => InvalidateGeometry(),
-                _ => InvalidateGeometry(),
-                InvalidateGeometry);
+                _ => Invalidate(),
+                _ => Invalidate(),
+                Invalidate);
         }
     }
 }

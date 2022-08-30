@@ -37,6 +37,11 @@ namespace Avalonia.Media
             set => SetValue(RectProperty, value);
         }
 
+        static ImageDrawing()
+        {
+            MediaInvalidation.AffectsMediaRender(ImageSourceProperty, RectProperty);
+        }
+
         public override void Draw(DrawingContext context)
         {
             var imageSource = ImageSource;

@@ -56,6 +56,8 @@ namespace Avalonia.Media
             SegmentsProperty.Changed.AddClassHandler<PathFigure>(
                 (s, e) =>
                 s.OnSegmentsChanged());
+
+            MediaInvalidation.AffectsMediaRender(IsClosedProperty, IsFilledProperty, SegmentsProperty, StartPointProperty);
         }
 
         private void OnSegmentsChanged()

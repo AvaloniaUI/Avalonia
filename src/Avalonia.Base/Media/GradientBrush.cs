@@ -33,6 +33,8 @@ namespace Avalonia.Media
         {
             GradientStopsProperty.Changed.Subscribe(GradientStopsChanged);
             AffectsRender<LinearGradientBrush>(SpreadMethodProperty);
+
+            MediaInvalidation.AffectsMediaRender(SpreadMethodProperty, GradientStopsProperty);
         }
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace Avalonia.Media
         /// </summary>
         public GradientBrush()
         {
-            this.GradientStops = new GradientStops();
+            GradientStops = new GradientStops();
         }
 
         /// <inheritdoc/>

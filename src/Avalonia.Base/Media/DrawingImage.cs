@@ -17,6 +17,12 @@ namespace Avalonia.Media
         {
             Drawing = drawing;
         }
+
+        static DrawingImage()
+        {
+            MediaInvalidation.AffectsMediaRender(DrawingProperty);
+        }
+
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
         /// </summary>

@@ -58,6 +58,11 @@ namespace Avalonia.Media
             set => SetValue(PenProperty, value);
         }
 
+        static GeometryDrawing()
+        {
+            MediaInvalidation.AffectsMediaRender(GeometryProperty, BrushProperty, PenProperty);
+        }
+
         public override void Draw(DrawingContext context)
         {
             if (Geometry != null)

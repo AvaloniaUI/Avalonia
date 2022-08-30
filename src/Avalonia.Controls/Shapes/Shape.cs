@@ -247,6 +247,8 @@ namespace Avalonia.Controls.Shapes
                     }
                 });
             }
+
+            MediaInvalidation.AffectsMediaRender(properties);
         }
 
         /// <summary>

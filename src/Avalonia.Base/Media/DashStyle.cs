@@ -57,6 +57,8 @@ namespace Avalonia.Media
 
             DashesProperty.Changed.Subscribe(invalidateObserver);
             OffsetProperty.Changed.Subscribe(invalidateObserver);
+
+            MediaInvalidation.AffectsMediaRender(DashesProperty, OffsetProperty);
         }
 
         /// <summary>
@@ -132,6 +134,7 @@ namespace Avalonia.Media
 
         private void DashesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            MediaInvalidation.InvalidateAncestors(this);
             Invalidated?.Invoke(this, e);
         }
     }

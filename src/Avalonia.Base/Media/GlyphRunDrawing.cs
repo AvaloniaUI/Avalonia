@@ -20,6 +20,11 @@
             set => SetValue(GlyphRunProperty, value);
         }
 
+        static GlyphRunDrawing()
+        {
+            MediaInvalidation.AffectsMediaRender(ForegroundProperty, GlyphRunProperty);
+        }
+
         public override void Draw(DrawingContext context)
         {
             if (GlyphRun == null)

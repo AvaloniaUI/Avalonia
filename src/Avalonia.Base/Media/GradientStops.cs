@@ -8,7 +8,7 @@ namespace Avalonia.Media
     /// <summary>
     /// A collection of <see cref="GradientStop"/>s.
     /// </summary>
-    public class GradientStops : AvaloniaList<GradientStop>
+    public class GradientStops : MediaCollection<GradientStop>
     {
         public GradientStops()
         {

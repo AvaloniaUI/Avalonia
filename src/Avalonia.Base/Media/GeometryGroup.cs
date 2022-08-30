@@ -1,4 +1,5 @@
-﻿using Avalonia.Metadata;
+﻿using System;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 #nullable enable
@@ -23,10 +24,12 @@ namespace Avalonia.Media
 
         public GeometryGroup()
         {
-            _children = new GeometryCollection
-            {
-                Parent = this
-            };
+            _children = Children = new GeometryCollection();
+        }
+
+        static GeometryGroup()
+        {
+            MediaInvalidation.AffectsMediaRender(ChildrenProperty, FillRuleProperty);
         }
 
         /// <summary>
@@ -36,11 +39,7 @@ namespace Avalonia.Media
         public GeometryCollection Children
         {
             get => _children;
-            set
-            {
-                OnChildrenChanged(_children, value);
-                SetAndRaise(ChildrenProperty, ref _children, value);             
-            }
+            set =>  SetAndRaise(ChildrenProperty, ref _children, value ?? throw new ArgumentNullException());
         }
 
         /// <summary>
@@ -57,28 +56,21 @@ namespace Avalonia.Media
         {
             var result = new GeometryGroup { FillRule = FillRule, Transform = Transform };
 
-            if (_children.Count > 0)
+            if (Children.Count > 0)
             {
-                result.Children = new GeometryCollection(_children);
+                result.Children = new GeometryCollection(Children);
             }
               
             return result;
         }
 
-        protected void OnChildrenChanged(GeometryCollection oldChildren, GeometryCollection newChildren)
-        {
-            oldChildren.Parent = null;
-
-            newChildren.Parent = this;
-        }
-
         protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            if (_children.Count > 0)
+            if (Children.Count > 0)
             {
                 var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-                return factory.CreateGeometryGroup(FillRule, _children);
+                return factory.CreateGeometryGroup(FillRule, Children);
             }
 
             return null;

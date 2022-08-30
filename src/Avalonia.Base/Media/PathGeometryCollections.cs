@@ -3,7 +3,7 @@ using Avalonia.Visuals.Platform;
 
 namespace Avalonia.Media
 {
-    public sealed class PathFigures : AvaloniaList<PathFigure>
+    public sealed class PathFigures : MediaCollection<PathFigure>
     {
         /// <summary>
         /// Parses the specified path data to a <see cref="PathFigures"/>.
@@ -24,7 +24,7 @@ namespace Avalonia.Media
         }
     }
 
-    public sealed class PathSegments : AvaloniaList<PathSegment>
+    public sealed class PathSegments : MediaCollection<PathSegment>
     {
     }
 }

@@ -64,6 +64,11 @@ namespace Avalonia.Media
         {
         }
 
+        static CombinedGeometry()
+        {
+            MediaInvalidation.AffectsMediaRender(Geometry1Property, Geometry2Property, GeometryCombineModeProperty);
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CombinedGeometry"/> class with the
         /// specified <see cref="Geometry"/> objects.

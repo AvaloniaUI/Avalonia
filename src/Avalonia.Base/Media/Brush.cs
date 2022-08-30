@@ -111,6 +111,8 @@ namespace Avalonia.Media
             {
                 property.Changed.Subscribe(invalidateObserver);
             }
+
+            MediaInvalidation.AffectsMediaRender(properties);
         }
 
         /// <summary>
