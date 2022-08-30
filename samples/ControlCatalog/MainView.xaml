@@ -13,69 +13,64 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
       </Style>
 
-      <Style Selector="TabItem:not(.hasWarning) Panel.warning">
-        <Setter Property="IsVisible" Value="False"/>
-      </Style>
-      
-      <Style Selector="Panel:not(controls|HamburgerMenu TabItem Panel).warning">
-        <Setter Property="IsVisible" Value="False"/>
+      <Style Selector="TabItem.hasWarning /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="ContentTemplate">
+          <DataTemplate>
+            <DockPanel>
+              <Panel Classes="warning"
+                      Width="16"
+                      Height="16"
+                      DockPanel.Dock="Right"
+                      Margin="0,0,4,0"
+                      Background="#01000000">
+                <ToolTip.Tip>
+                  <StackPanel Orientation="Vertical"
+                              Spacing="5">
+                    <TextBlock Text="Experimental feature"
+                                Classes="h2"/>
+                    <TextBlock Text="Expect bugs, instability, etc. for the time being."/>
+                  </StackPanel>
+                </ToolTip.Tip>
+                <Path Stretch="Fill"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Stroke="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                      StrokeThickness="1"
+                      StrokeJoin="Round"
+                      Data="M 7.106 1.789
+                            A 1,1 126.86 0 1 8.894,1.789
+                            L 15.276 14.552
+                            A 1,1 116.57 0 1 14.382,16
+                            L 1.618 16
+                            A 1,1 116.57 0 1 0.724,14.552
+                            Z" />
+                      <UniformGrid Columns="1"
+                                    Width="2">
+                        <Rectangle Fill="Transparent" />
+                        <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                        <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                        <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                        <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                        <Rectangle Fill="Transparent" />
+                        <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                        <Rectangle Fill="Transparent" />
+                      </UniformGrid>
+              </Panel>
+              <TextBlock Padding="0"
+                                Margin="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                TextAlignment="Left"
+                                Text="{Binding}"
+                                FontFamily="{Binding $parent[TabItem].FontFamily, Mode=OneWay}"
+                                FontSize="{Binding $parent[TabItem].FontSize, Mode=OneWay}"
+                                FontWeight="{Binding $parent[TabItem].FontWeight, Mode=OneWay}" />
+            </DockPanel>
+          </DataTemplate>
+        </Setter>
       </Style>
     </Grid.Styles>
     <controls:HamburgerMenu Name="Sidebar">
-      <controls:HamburgerMenu.DataTemplates>
-        <DataTemplate DataType="{x:Type sys:String}">
-          <DockPanel>
-            <Panel Classes="warning"
-                    Width="16"
-                    Height="16"
-                    DockPanel.Dock="Right"
-                    Margin="0,0,4,0"
-                    Background="#01000000">
-              <ToolTip.Tip>
-                <StackPanel Orientation="Vertical"
-                            Spacing="5">
-                  <TextBlock Text="Experimental feature"
-                              Classes="h2"/>
-                  <TextBlock Text="Expect bugs, instability, etc. for the time being."/>
-                </StackPanel>
-              </ToolTip.Tip>
-              <Path Stretch="Fill"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Stroke="{DynamicResource SystemControlErrorTextForegroundBrush}"
-                    StrokeThickness="1"
-                    StrokeJoin="Round"
-                    Data="M 7.106 1.789
-                          A 1,1 126.86 0 1 8.894,1.789
-                          L 15.276 14.552
-                          A 1,1 116.57 0 1 14.382,16
-                          L 1.618 16
-                          A 1,1 116.57 0 1 0.724,14.552
-                          Z" />
-                    <UniformGrid Columns="1"
-                                  Width="2">
-                      <Rectangle Fill="Transparent" />
-                      <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
-                      <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
-                      <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
-                      <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
-                      <Rectangle Fill="Transparent" />
-                      <Rectangle Fill="{DynamicResource SystemControlErrorTextForegroundBrush}" />
-                      <Rectangle Fill="Transparent" />
-                    </UniformGrid>
-            </Panel>
-            <TextBlock Padding="0"
-                              Margin="0"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch"
-                              TextAlignment="Left"
-                              Text="{Binding}"
-                              FontFamily="{Binding $parent[TabItem].FontFamily, Mode=OneWay}"
-                              FontSize="{Binding $parent[TabItem].FontSize, Mode=OneWay}"
-                              FontWeight="{Binding $parent[TabItem].FontWeight, Mode=OneWay}" />
-          </DockPanel>
-        </DataTemplate>
-      </controls:HamburgerMenu.DataTemplates>
       <TabItem Header="Composition">
         <pages:CompositionPage/>
       </TabItem>
