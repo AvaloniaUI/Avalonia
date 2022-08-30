@@ -30,6 +30,8 @@ namespace Avalonia.iOS
             _topLevelImpl = new TopLevelImpl(this);
             _touches = new TouchHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+            _inputDelegate = new TextInputHandler();
+            
             _topLevel.Prepare();
             
             _topLevel.Renderer.Start();
