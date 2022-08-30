@@ -16,7 +16,7 @@ namespace Avalonia.Skia.UnitTests.Media
         private readonly Typeface _defaultTypeface =
             new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono");
         private readonly Typeface _arabicTypeface =
-           new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Kufi Arabic");
+           new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans Arabic");
         private readonly Typeface _italicTypeface =
             new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans", FontStyle.Italic);
         private readonly Typeface _emojiTypeface =
@@ -79,6 +79,12 @@ namespace Avalonia.Skia.UnitTests.Media
                 case "Noto Sans":
                     {
                         var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_italicTypeface.FontFamily);
+                        skTypeface = typefaceCollection.Get(typeface);
+                        break;
+                    }
+                case "Noto Sans Arabic":
+                    {
+                        var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_arabicTypeface.FontFamily);
                         skTypeface = typefaceCollection.Get(typeface);
                         break;
                     }

@@ -13,14 +13,6 @@ namespace Avalonia.ReactiveUI.UnitTests
     public class TransitioningContentControlTest
     {
         [Fact]
-        public void Transitioning_Control_Should_Derive_Template_From_Content_Control()
-        {
-            var target = new TransitioningContentControl();
-            var stylable = (IStyledElement)target;
-            Assert.Equal(typeof(ContentControl),stylable.StyleKey);
-        }
-
-        [Fact]
         public void Transitioning_Control_Template_Should_Be_Instantiated() 
         {
             var target = new TransitioningContentControl

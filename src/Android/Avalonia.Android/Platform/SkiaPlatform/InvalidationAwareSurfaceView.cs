@@ -47,18 +47,6 @@ namespace Avalonia.Android
             }
         }
 
-        [Obsolete("deprecated")]
-        public override void Invalidate(global::Android.Graphics.Rect dirty)
-        {
-            Invalidate();
-        }
-
-        [Obsolete("deprecated")]
-        public override void Invalidate(int l, int t, int r, int b)
-        {
-            Invalidate();
-        }
-
         public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
             Log.Info("AVALONIA", "Surface Changed");

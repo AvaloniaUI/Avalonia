@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
@@ -281,24 +282,29 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            switch (e.Key)
             {
-                OnClick();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Space)
-            {
-                if (ClickMode == ClickMode.Press)
-                {
+                case Key.Enter:
                     OnClick();
+                    e.Handled = true;
+                    break;
+
+                case Key.Space:
+                {
+                    if (ClickMode == ClickMode.Press)
+                    {
+                        OnClick();
+                    }
+
+                    IsPressed = true;
+                    e.Handled = true;
+                    break;
                 }
-                IsPressed = true;
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape && Flyout != null)
-            {
-                // If Flyout doesn't have focusable content, close the flyout here
-                Flyout.Hide();
+
+                case Key.Escape when Flyout != null:
+                    // If Flyout doesn't have focusable content, close the flyout here
+                    CloseFlyout();
+                    break;
             }
 
             base.OnKeyDown(e);
@@ -327,7 +333,14 @@ namespace Avalonia.Controls
         {
             if (IsEffectivelyEnabled)
             {
-                OpenFlyout();
+                if (_isFlyoutOpen)
+                {
+                    CloseFlyout();
+                }
+                else
+                {
+                    OpenFlyout();
+                }
 
                 var e = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(e);
@@ -346,6 +359,14 @@ namespace Avalonia.Controls
         protected virtual void OpenFlyout()
         {
             Flyout?.ShowAt(this);
+        }
+
+        /// <summary>
+        /// Closes the button's flyout.
+        /// </summary>
+        protected virtual void CloseFlyout()
+        {
+            Flyout?.Hide();
         }
 
         /// <summary>
@@ -494,8 +515,7 @@ namespace Avalonia.Controls
 
                 // If flyout is changed while one is already open, make sure we 
                 // close the old one first
-                if (oldFlyout != null &&
-                    oldFlyout.IsOpen)
+                if (oldFlyout != null && oldFlyout.IsOpen)
                 {
                     oldFlyout.Hide();
                 }

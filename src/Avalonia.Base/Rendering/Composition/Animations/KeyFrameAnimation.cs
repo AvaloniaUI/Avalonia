@@ -24,9 +24,9 @@ namespace Avalonia.Rendering.Composition.Animations
         /// The delay behavior of the key frame animation.
         /// </summary>
         public AnimationDelayBehavior DelayBehavior { get; set; }
-        
+
         /// <summary>
-        /// Delay before the animation starts after <see cref="CompositionObject.StartAnimation"/> is called.
+        /// Delay before the animation starts after <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> is called.
         /// </summary>
         public System.TimeSpan DelayTime { get; set; }
         

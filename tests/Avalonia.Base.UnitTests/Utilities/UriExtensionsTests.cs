@@ -10,9 +10,9 @@ public class UriExtensionsTests
     public void Assembly_Name_From_Query_Parsed()
     {
         const string key = "assembly";
-        const string value = "Avalonia.Themes.Default";
+        const string value = "Avalonia.Themes.Simple";
 
-        var uri = new Uri($"resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?{key}={value}");
+        var uri = new Uri($"resm:Avalonia.Themes.Simple.Accents.BaseLight.xaml?{key}={value}");
         var name = uri.GetAssemblyNameFromQuery();
 
         Assert.Equal(value, name);
@@ -21,7 +21,7 @@ public class UriExtensionsTests
     [Fact]
     public void Assembly_Name_From_Empty_Query_Not_Parsed()
     {
-        var uri = new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml");
+        var uri = new Uri("resm:Avalonia.Themes.Simple.Accents.BaseLight.xaml");
         var name = uri.GetAssemblyNameFromQuery();
 
         Assert.Equal(string.Empty, name);

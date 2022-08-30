@@ -1,10 +1,11 @@
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using Avalonia.SourceGenerator;
 
 namespace Avalonia.Media
 {
-    internal static class KnownColors
+    internal static partial class KnownColors
     {
         private static readonly IReadOnlyDictionary<string, KnownColor> _knownColorNames;
         private static readonly IReadOnlyDictionary<uint, string> _knownColors;
@@ -12,23 +13,25 @@ namespace Avalonia.Media
         private static readonly Dictionary<KnownColor, ISolidColorBrush> _knownBrushes;
 #endif
 
+        [GenerateEnumValueDictionary()]
+        private static partial Dictionary<string, KnownColor> GetKnownColors();
+
         static KnownColors()
         {
             var knownColorNames = new Dictionary<string, KnownColor>(StringComparer.OrdinalIgnoreCase);
             var knownColors = new Dictionary<uint, string>();
 
-            foreach (var field in typeof(KnownColor).GetRuntimeFields())
+            foreach (var field in GetKnownColors())
             {
-                if (field.FieldType != typeof(KnownColor)) continue;
-                var knownColor = (KnownColor)field.GetValue(null)!;
+                var knownColor = field.Value;
                 if (knownColor == KnownColor.None) continue;
 
-                knownColorNames.Add(field.Name, knownColor);
+                knownColorNames.Add(field.Key, knownColor);
 
                 // some known colors have the same value, so use the first
                 if (!knownColors.ContainsKey((uint)knownColor))
                 {
-                    knownColors.Add((uint)knownColor, field.Name);
+                    knownColors.Add((uint)knownColor, field.Key);
                 }
             }
 
