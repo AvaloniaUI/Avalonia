@@ -532,9 +532,8 @@ namespace Avalonia.Controls.Presenters
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
-                        foregroundBrush: Foreground,
-                        textDecorations: TextDecorations.Underline,
-                        backgroundBrush: SelectionBrush));
+                        foregroundBrush: foreground/*,
+                        textDecorations: TextDecorations.Underline*/));
 
                 textStyleOverrides = new[]
                 {
