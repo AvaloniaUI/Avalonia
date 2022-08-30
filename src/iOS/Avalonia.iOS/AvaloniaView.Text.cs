@@ -13,8 +13,15 @@ namespace Avalonia.iOS;
 [Adopts("UIKeyInput")]
 public partial class AvaloniaView : ITextInputMethodImpl
 {
-    private ITextInputMethodClient? _currentClient;
+    private IUITextInputDelegate _inputDelegate;
+    private ITextInputMethodClient? _client;
 
+    class TextInputHandler : UITextInputDelegate
+    {
+    }
+    
+    public ITextInputMethodClient? Client => _client;
+    public bool IsActive => _client != null;
     public override bool CanResignFirstResponder => true;
     public override bool CanBecomeFirstResponder => true;
 
@@ -23,8 +30,8 @@ public partial class AvaloniaView : ITextInputMethodImpl
     {
         get
         {
-            if (_currentClient is { } && _currentClient.SupportsSurroundingText &&
-                _currentClient.SurroundingText.Text.Length > 0)
+            if (Client is { } && Client.SupportsSurroundingText &&
+                Client.SurroundingText.Text.Length > 0)
             {
                 return true;
             }
@@ -47,6 +54,8 @@ public partial class AvaloniaView : ITextInputMethodImpl
         }
     }
 
+    public IUITextInputDelegate InputDelegate => _inputDelegate;
+
     [Export("deleteBackward")]
     public void DeleteBackward()
     {
@@ -63,9 +72,9 @@ public partial class AvaloniaView : ITextInputMethodImpl
 
     void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
     {
-        _currentClient = client;
+        _client = client;
 
-        if (client is { })
+        if (_client is { })
         {
             BecomeFirstResponder();
         }
