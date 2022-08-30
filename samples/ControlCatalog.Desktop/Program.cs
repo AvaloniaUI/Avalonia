@@ -19,7 +19,7 @@ namespace ControlCatalog
             => AppBuilder.Configure<App>()
                 .LogToTrace()
                 .UsePlatformDetect()
-                .With(new Win32PlatformOptions() { UseWgl = true });    //enable use of OpenGL on Windows
+                .With(new Win32PlatformOptions() { UseWgl = true } );    //enable use of OpenGL on Windows
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {
