@@ -10,6 +10,7 @@ using Avalonia.iOS.Storage;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using CoreAnimation;
 using Foundation;
 using ObjCRuntime;
@@ -65,8 +66,8 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) => new DeferredRenderer(root,
-                AvaloniaLocator.Current.GetService<IRenderLoop>());
+            public IRenderer CreateRenderer(IRenderRoot root) => new CompositingRenderer(root, Platform.Compositor);
+                    
 
             public void Invalidate(Rect rect)
             {
