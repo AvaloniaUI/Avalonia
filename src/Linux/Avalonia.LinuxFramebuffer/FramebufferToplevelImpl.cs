@@ -33,7 +33,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             var factory = AvaloniaLocator.Current.GetService<IRendererFactory>();
             var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            return factory?.Create(root, renderLoop) ?? new CompositingRenderer(root, new Compositor(renderLoop, null));
+            return factory?.Create(root, renderLoop) ?? new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor);
         }
 
         public void Dispose()
