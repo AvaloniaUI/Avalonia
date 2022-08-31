@@ -41,7 +41,7 @@ namespace Avalonia.Media
 
             if (e.NewValue is IMediaCollection newCollection)
             {
-                newCollection.Parents.Add(e.Sender);
+                newCollection.AddParent(e.Sender);
             }
 
             InvalidateAncestors(e.Sender);
@@ -53,7 +53,7 @@ namespace Avalonia.Media
 
             if (e.OldValue is IMediaCollection oldCollection)
             {
-                oldCollection.Parents.Remove(e.Sender);
+                oldCollection.RemoveParent(e.Sender);
             }
         }
 

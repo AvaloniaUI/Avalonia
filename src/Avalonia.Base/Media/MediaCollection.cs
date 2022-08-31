@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Collections;
 
@@ -8,7 +9,9 @@ namespace Avalonia.Media
 {
     public abstract class MediaCollection<T> : AvaloniaList<T>, IMediaCollection where T : AvaloniaObject
     {
-        public AvaloniaList<AvaloniaObject> Parents { get; } = new() { ResetBehavior = ResetBehavior.Remove };
+        private readonly MediaParentsBag<AvaloniaObject> _parentHandles = new();
+
+        public IEnumerable<AvaloniaObject> Parents => _parentHandles;
 
         protected MediaCollection()
         {
@@ -40,28 +43,34 @@ namespace Avalonia.Media
                    }
                },
                () => throw new NotSupportedException());
+        }
 
-            Parents.ForEachItem(
-                x =>
-                {
-                    foreach (var child in this)
-                    {
-                        MediaInvalidation.AddMediaChild(child, x);
-                    }
-                },
-                x =>
-                {
-                    foreach (var child in this)
-                    {
-                        MediaInvalidation.RemoveMediaChild(child, x);
-                    }
-                },
-               () => throw new NotSupportedException());
+        void IMediaCollection.AddParent(AvaloniaObject parent)
+        {
+            _parentHandles.Add(parent);
+
+            foreach (var child in this)
+            {
+                MediaInvalidation.AddMediaChild(child, parent);
+            }
+        }
+
+        void IMediaCollection.RemoveParent(AvaloniaObject parent)
+        {
+            foreach (var child in this)
+            {
+                MediaInvalidation.RemoveMediaChild(child, parent);
+            }
+
+            _parentHandles.Remove(parent);
         }
     }
 
-    public interface IMediaCollection
+    internal interface IMediaCollection : IEnumerable
     {
-        AvaloniaList<AvaloniaObject> Parents { get; }
+        IEnumerable<AvaloniaObject> Parents { get; }
+
+        void AddParent(AvaloniaObject parent);
+        void RemoveParent(AvaloniaObject parent);
     }
 }
