@@ -32,6 +32,7 @@ namespace Avalonia.iOS
             _touches = new TouchHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
             _inputDelegate = new TextInputHandler();
+            _tokenizer = new UITextInputStringTokenizer(this);
             
             _topLevel.Prepare();
             
