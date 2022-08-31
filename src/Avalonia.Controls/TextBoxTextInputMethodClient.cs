@@ -48,11 +48,13 @@ namespace Avalonia.Controls
         }
 
         public bool SupportsSurroundingText => false;
-
-
+        
         public event EventHandler? SurroundingTextChanged { add { } remove { } }
+        
         public TextInputMethodSurroundingText SurroundingText => throw new NotSupportedException();
+        
         public string? TextBeforeCursor => null;
+        
         public string? TextAfterCursor => null;
 
         private void OnCaretBoundsChanged(object? sender, EventArgs e) => CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
