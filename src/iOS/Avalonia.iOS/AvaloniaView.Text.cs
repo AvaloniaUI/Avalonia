@@ -137,6 +137,8 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         {
             IsSecureEntry = true;
         }
+
+        ReturnKeyType = (UIReturnKeyType)options.ReturnKeyType;
     }
 
 
