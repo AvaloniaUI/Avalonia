@@ -20,14 +20,15 @@ namespace Avalonia.Controls
                 {
                     return default;
                 }
+
                 var transform = _presenter.TransformToVisual(_parent);
-                
+
                 if (transform == null)
                 {
                     return default;
                 }
-                
-                var rect =  _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
+
+                var rect = _presenter.GetCursorRectangle().TransformToAABB(transform.Value);
 
                 return rect;
             }
@@ -37,9 +38,10 @@ namespace Avalonia.Controls
         public IVisual TextViewVisual => _presenter!;
         public event EventHandler? TextViewVisualChanged;
         public bool SupportsPreedit => true;
+
         public void SetPreeditText(string? text)
         {
-            if(_presenter == null)
+            if (_presenter == null)
             {
                 return;
             }
@@ -47,12 +49,12 @@ namespace Avalonia.Controls
             _presenter.PreeditText = text;
         }
 
-        public bool SupportsSurroundingText => false;
-        
+        public bool SupportsSurroundingText => true;
+
         public event EventHandler? SurroundingTextChanged { add { } remove { } }
-        
-        public TextInputMethodSurroundingText SurroundingText => throw new NotSupportedException();
-        
+
+        public TextInputMethodSurroundingText SurroundingText => new TextInputMethodSurroundingText { Text =  _presenter?.Text ?? "", CursorOffset = _presenter?.CaretIndex ?? 0, AnchorOffset = _presenter?.SelectionStart ?? 0};
+
         public string? TextBeforeCursor => null;
         
         public string? TextAfterCursor => null;
