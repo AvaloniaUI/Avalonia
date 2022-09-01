@@ -43,15 +43,10 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
     }
 
     private string _markedText = "";
-    private readonly IUITextInputDelegate _inputDelegate;
     private ITextInputMethodClient? _client;
     private NSDictionary? _markedTextStyle;
     private readonly UITextPosition _beginningOfDocument = new AvaloniaTextPosition(0);
     private readonly UITextInputStringTokenizer _tokenizer;
-
-    private class TextInputHandler : UITextInputDelegate
-    {
-    }
 
     public ITextInputMethodClient? Client => _client;
 
@@ -63,16 +58,40 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
 
     void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
     {
+        if (_client != null)
+        {
+            _client.CursorRectangleChanged -= ClientOnCursorRectangleChanged;
+        }
+        
         _client = client;
 
         if (_client is { })
         {
+            _client.CursorRectangleChanged += ClientOnCursorRectangleChanged;
+            _client.SurroundingTextChanged += ClientOnSurroundingTextChanged;
             BecomeFirstResponder();
         }
         else
         {
             ResignFirstResponder();
         }
+    }
+
+    private void ClientOnSurroundingTextChanged(object? sender, EventArgs e)
+    {
+        var _inputDelegate = UITextInputDelegate.FromObject(((IUITextInput)this).WeakInputDelegate) as IUITextInputDelegate;
+         
+        _inputDelegate?.TextWillChange(this);
+        _inputDelegate?.TextDidChange(this);
+    }
+
+    private void ClientOnCursorRectangleChanged(object? sender, EventArgs e)
+    {
+        var _inputDelegate = Runtime.GetINativeObject<IUITextInputDelegate>(((IUITextInput)this).WeakInputDelegate.Handle.Handle, true);
+        
+        
+        _inputDelegate?.SelectionWillChange(this);
+        _inputDelegate?.SelectionDidChange(this);
     }
 
     void ITextInputMethodImpl.SetCursorRect(Rect rect)
@@ -139,6 +158,7 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         }
 
         ReturnKeyType = (UIReturnKeyType)options.ReturnKeyType;
+        AutocorrectionType = UITextAutocorrectionType.Yes;
     }
 
 
@@ -148,11 +168,36 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
     }
 
     // Traits (Optional)
+    [Export("autocapitalizationType")] public UITextAutocapitalizationType AutocapitalizationType { get; private set; }
+    
+    [Export("autocorrectionType")] public UITextAutocorrectionType AutocorrectionType { get; private set; }
     [Export("keyboardType")] public UIKeyboardType KeyboardType { get; private set; } = UIKeyboardType.Default;
 
+    [Export("keyboardAppearance")]
+    public UIKeyboardAppearance KeyboardAppearance { get; private set; } = UIKeyboardAppearance.Default;
+    
+    [Export("returnKeyType")] public UIReturnKeyType ReturnKeyType { get; set; }
+    
+    [Export("enablesReturnKeyAutomatically")] public bool EnablesReturnKeyAutomatically { get; set; }
     [Export("isSecureTextEntry")] public bool IsSecureEntry { get; private set; }
 
-    [Export("returnKeyType")] public UIReturnKeyType ReturnKeyType { get; set; }
+    [Export("spellCheckingType")]
+    public UITextSpellCheckingType SpellCheckingType { get; set; } = UITextSpellCheckingType.Default;
+    
+    [Export("textContentType")]
+    public NSString TextContentType { get; set; }
+  
+    [Export("smartQuotesType")]
+    public UITextSmartQuotesType SmartQuotesType { get; set; } = UITextSmartQuotesType.Default;
+    
+    [Export("smartDashesType")]
+    public UITextSmartDashesType SmartDashesType { get; set; } = UITextSmartDashesType.Default;
+  
+    [Export("smartInsertDeleteType")]
+    public UITextSmartInsertDeleteType SmartInsertDeleteType { get; set; } = UITextSmartInsertDeleteType.Default;
+  
+    [Export("passwordRules")]
+    public UITextInputPasswordRules PasswordRules { get; set; }
 
     void IUIKeyInput.InsertText(string text)
     {
@@ -213,7 +258,9 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         var start = (range.Start as AvaloniaTextPosition).Offset;
         int end = (range.End as AvaloniaTextPosition).Offset;
 
-        return text[start .. end];
+        var result = text[start .. end];
+
+        return result;
     }
 
     void IUITextInput.ReplaceText(UITextRange range, string text)
@@ -246,7 +293,7 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         _markedText = "";
     }
 
-    UITextRange IUITextInput.GetTextRange(UITextPosition fromPosition, UITextPosition toPosition)
+    public UITextRange GetTextRange(UITextPosition fromPosition, UITextPosition toPosition)
     {
         if (fromPosition is AvaloniaTextPosition f && toPosition is AvaloniaTextPosition t)
         {
@@ -273,7 +320,7 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
             return new AvaloniaTextPosition(posPlusIndex);
         }
 
-        throw new Exception();
+        return null;
     }
 
     UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, UITextLayoutDirection inDirection, nint offset)
@@ -311,14 +358,19 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
             return NSComparisonResult.Same;
         }
 
-        throw new Exception();
+        return NSComparisonResult.Descending;
     }
 
     nint IUITextInput.GetOffsetFromPosition(UITextPosition fromPosition, UITextPosition toPosition)
     {
-        if (fromPosition is AvaloniaTextPosition f && toPosition is AvaloniaTextPosition t)
+        if (fromPosition is AvaloniaTextPosition f)
         {
-            return t.Offset - f.Offset;
+            if (toPosition is AvaloniaTextPosition t)
+            {
+                return t.Offset - f.Offset;
+            }
+
+            return f.Offset;
         }
 
         throw new Exception();
@@ -452,10 +504,11 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         }
     }
 
+    
     NSObject? IUITextInput.WeakInputDelegate
     {
-        get => _inputDelegate as TextInputHandler;
-        set => throw new NotSupportedException();
+        get;
+        set;
     }
 
     NSObject IUITextInput.WeakTokenizer => _tokenizer;
@@ -466,10 +519,15 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         {
             if (string.IsNullOrWhiteSpace(_markedText))
             {
-                return null;
+                //return null;
             }
 
-            return new AvaloniaTextRange(0, _markedText.Length);            
+            if (_client == null)
+            {
+                return null;
+            }
+            
+            return new AvaloniaTextRange(Math.Min(_client.SurroundingText.CursorOffset, _client.SurroundingText.AnchorOffset), Math.Max(_client.SurroundingText.CursorOffset, _client.SurroundingText.AnchorOffset));            
         }
     }
 }
