@@ -180,6 +180,12 @@ namespace Avalonia.iOS
                 _textResponder.BecomeFirstResponder();
 
                 var x = _textResponder.IsFirstResponder;
+
+                var keyWindow = UIApplication.SharedApplication.KeyWindow;
+
+                var windowNextResponder = keyWindow.NextResponder;
+
+                var nr1 = windowNextResponder.NextResponder;
             }
             else
             {

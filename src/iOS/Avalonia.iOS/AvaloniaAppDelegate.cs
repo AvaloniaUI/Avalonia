@@ -36,6 +36,8 @@ namespace Avalonia.iOS
             builder.AfterSetup(_ =>
             {
                 Window = new UIWindow();
+                
+                
                 var view = new AvaloniaView();
                 lifetime.View = view;
                 Window.RootViewController = new UIViewController
@@ -45,8 +47,9 @@ namespace Avalonia.iOS
             });
             
             builder.SetupWithLifetime(lifetime);
-            
-            Window.Hidden = false;
+
+            Window.MakeKeyAndVisible();
+
             return true;
         }
     }
