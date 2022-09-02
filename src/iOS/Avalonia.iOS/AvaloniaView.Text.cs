@@ -15,7 +15,7 @@ namespace Avalonia.iOS;
 [Adopts("UITextInput")]
 [Adopts("UITextInputTraits")]
 [Adopts("UIKeyInput")]
-public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
+public class AvaloniaResponder : UIResponder, IUITextInput
 {
     private class AvaloniaTextRange : UITextRange
     {
@@ -46,6 +46,23 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         
         //[Export("inputDelegate")]
         //public UITextInputDelegate InputDelegate { get; set; }
+
+        [Export("foo")]
+        public void Foo()
+        {
+            
+        }
+    }
+
+    public AvaloniaResponder()
+    {
+        _tokenizer = new UITextInputStringTokenizer(this);
+        
+    }
+
+    public override bool CanPerform(Selector action, NSObject? withSender)
+    {
+        return base.CanPerform(action, withSender);
     }
 
     private string _markedText = "";
@@ -62,27 +79,13 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
 
     public override bool CanBecomeFirstResponder => true;
 
-    void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
-    {
-        if (_client != null)
-        {
-            _client.CursorRectangleChanged -= ClientOnCursorRectangleChanged;
-        }
-        
-        _client = client;
+    public override UIEditingInteractionConfiguration EditingInteractionConfiguration =>
+        UIEditingInteractionConfiguration.Default;
 
-        if (_client is { })
-        {
-            _client.CursorRectangleChanged += ClientOnCursorRectangleChanged;
-            _client.SurroundingTextChanged += ClientOnSurroundingTextChanged;
-            BecomeFirstResponder();
-        }
-        else
-        {
-            ResignFirstResponder();
-        }
-    }
-    
+    public override NSString TextInputContextIdentifier => new NSString("Test");
+
+    public override UITextInputMode TextInputMode => UITextInputMode.CurrentInputMode;
+
     [DllImport("/usr/lib/libobjc.dylib")]
     extern static void objc_msgSend(IntPtr receiver, IntPtr selector, IntPtr arg);
 
@@ -101,79 +104,6 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
     {
         objc_msgSend(WeakInputDelegate.Handle.Handle, TextWillChange, Handle.Handle);
         objc_msgSend(WeakInputDelegate.Handle.Handle, TextDidChange, Handle.Handle);
-    }
-
-    void ITextInputMethodImpl.SetCursorRect(Rect rect)
-    {
-        // maybe this will be cursor / selection rect?
-    }
-
-    void ITextInputMethodImpl.SetOptions(TextInputOptions options)
-    {
-        IsSecureEntry = false;
-
-        switch (options.ContentType)
-        {
-            case TextInputContentType.Normal:
-                KeyboardType = UIKeyboardType.Default;
-                break;
-
-            case TextInputContentType.Alpha:
-                KeyboardType = UIKeyboardType.AsciiCapable;
-                break;
-
-            case TextInputContentType.Digits:
-                KeyboardType = UIKeyboardType.PhonePad;
-                break;
-
-            case TextInputContentType.Pin:
-                KeyboardType = UIKeyboardType.NumberPad;
-                IsSecureEntry = true;
-                break;
-
-            case TextInputContentType.Number:
-                KeyboardType = UIKeyboardType.PhonePad;
-                break;
-
-            case TextInputContentType.Email:
-                KeyboardType = UIKeyboardType.EmailAddress;
-                break;
-
-            case TextInputContentType.Url:
-                KeyboardType = UIKeyboardType.Url;
-                break;
-
-            case TextInputContentType.Name:
-                KeyboardType = UIKeyboardType.NamePhonePad;
-                break;
-
-            case TextInputContentType.Password:
-                KeyboardType = UIKeyboardType.Default;
-                IsSecureEntry = true;
-                break;
-
-            case TextInputContentType.Social:
-                KeyboardType = UIKeyboardType.Twitter;
-                break;
-
-            case TextInputContentType.Search:
-                KeyboardType = UIKeyboardType.WebSearch;
-                break;
-        }
-
-        if (options.IsSensitive)
-        {
-            IsSecureEntry = true;
-        }
-
-        ReturnKeyType = (UIReturnKeyType)options.ReturnKeyType;
-        AutocorrectionType = UITextAutocorrectionType.Yes;
-    }
-
-
-    void ITextInputMethodImpl.Reset()
-    {
-        ResignFirstResponder();
     }
 
     // Traits (Optional)
@@ -233,8 +163,8 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         // TODO replace this with _client.SetCommitText?
         if (KeyboardDevice.Instance is { })
         {
-            _topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance,
-                0, InputRoot, text));
+            /*_topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance,
+                0, InputRoot, text));*/
         }
     }
 
@@ -243,11 +173,11 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         if (KeyboardDevice.Instance is { })
         {
             // TODO: pass this through IME infrastructure instead of emulating a backspace press
-            _topLevelImpl.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance,
+            /*_topLevelImpl.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance,
                 0, InputRoot, RawKeyEventType.KeyDown, Key.Back, RawInputModifiers.None));
 
             _topLevelImpl.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance,
-                0, InputRoot, RawKeyEventType.KeyUp, Key.Back, RawInputModifiers.None));
+                0, InputRoot, RawKeyEventType.KeyUp, Key.Back, RawInputModifiers.None));*/
         }
     }
 
@@ -279,8 +209,8 @@ public partial class AvaloniaView : ITextInputMethodImpl, IUITextInput
         // todo _client.SetCommitText(text);
         if (KeyboardDevice.Instance is { })
         {
-            _topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance,
-                0, InputRoot, text));
+            /*_topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance,
+                0, InputRoot, text));*/
         }
     }
 

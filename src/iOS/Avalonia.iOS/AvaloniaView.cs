@@ -19,38 +19,47 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    public partial class AvaloniaView : UIView
+    public partial class AvaloniaView : UIView, ITextInputMethodImpl
     {
         internal IInputRoot InputRoot { get; private set; }
         private TopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
+        private ITextInputMethodClient _client;
+        private bool _isActive;
+        private AvaloniaResponder _textResponder;
 
         public AvaloniaView()
         {
+            _textResponder = new AvaloniaResponder();
             _topLevelImpl = new TopLevelImpl(this);
             _touches = new TouchHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
-            
-            _tokenizer = new UITextInputStringTokenizer(this);
-            
+
             _topLevel.Prepare();
-            
+
             _topLevel.Renderer.Start();
-            
-            var l = (CAEAGLLayer) Layer;
+
+            var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
             l.Opaque = true;
             l.DrawableProperties = new NSDictionary(
                 EAGLDrawableProperty.RetainedBacking, false,
                 EAGLDrawableProperty.ColorFormat, EAGLColorFormat.RGBA8
             );
-            _topLevelImpl.Surfaces = new[] {new EaglLayerSurface(l)};
+            _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(l) };
             MultipleTouchEnabled = true;
             AddSubviews(new UIView[] { new UIKit.UIButton(UIButtonType.InfoDark) });
         }
 
-        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+        public override bool CanBecomeFirstResponder => true;
+
+        public override bool CanResignFirstResponder => true;
+
+        public override UIResponder NextResponder => _textResponder;
+
+        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
+            ITopLevelImplWithStorageProvider
         {
             private readonly AvaloniaView _view;
             public AvaloniaView View => _view;
@@ -68,7 +77,7 @@ namespace Avalonia.iOS
             }
 
             public IRenderer CreateRenderer(IRenderRoot root) => new CompositingRenderer(root, Platform.Compositor);
-                    
+
 
             public void Invalidate(Rect rect)
             {
@@ -82,7 +91,7 @@ namespace Avalonia.iOS
 
             public Point PointToClient(PixelPoint point) => new Point(point.X, point.Y);
 
-            public PixelPoint PointToScreen(Point point) => new PixelPoint((int) point.X, (int) point.Y);
+            public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
 
             public void SetCursor(ICursorImpl _)
             {
@@ -121,7 +130,7 @@ namespace Avalonia.iOS
                 new AcrylicPlatformCompensationLevels();
 
             public ITextInputMethodImpl? TextInputMethod => _view;
-            public INativeControlHostImpl NativeControlHost { get; }            
+            public INativeControlHostImpl NativeControlHost { get; }
             public IStorageProvider StorageProvider { get; }
         }
 
@@ -149,6 +158,108 @@ namespace Avalonia.iOS
         {
             get => (Control)_topLevel.Content;
             set => _topLevel.Content = value;
+        }
+
+        ITextInputMethodClient ITextInputMethodImpl.Client => _client;
+
+        bool ITextInputMethodImpl.IsActive => _isActive;
+
+        void ITextInputMethodImpl.SetClient(ITextInputMethodClient client)
+        {
+            if (_client != null)
+            {
+                //_client.CursorRectangleChanged -= ClientOnCursorRectangleChanged;
+            }
+
+            _client = client;
+
+            if (_client is { })
+            {
+                //_client.CursorRectangleChanged += ClientOnCursorRectangleChanged;
+                //_client.SurroundingTextChanged += ClientOnSurroundingTextChanged;
+                _textResponder.BecomeFirstResponder();
+
+                var x = _textResponder.IsFirstResponder;
+            }
+            else
+            {
+                _textResponder.ResignFirstResponder();
+            }
+        }
+
+        void ITextInputMethodImpl.SetCursorRect(Rect rect)
+        {
+            // maybe this will be cursor / selection rect?
+        }
+
+        void ITextInputMethodImpl.SetOptions(TextInputOptions options)
+        {
+            /*IsSecureEntry = false;
+
+            switch (options.ContentType)
+            {
+                case TextInputContentType.Normal:
+                    KeyboardType = UIKeyboardType.Default;
+                    break;
+
+                case TextInputContentType.Alpha:
+                    KeyboardType = UIKeyboardType.AsciiCapable;
+                    break;
+
+                case TextInputContentType.Digits:
+                    KeyboardType = UIKeyboardType.PhonePad;
+                    break;
+
+                case TextInputContentType.Pin:
+                    KeyboardType = UIKeyboardType.NumberPad;
+                    IsSecureEntry = true;
+                    break;
+
+                case TextInputContentType.Number:
+                    KeyboardType = UIKeyboardType.PhonePad;
+                    break;
+
+                case TextInputContentType.Email:
+                    KeyboardType = UIKeyboardType.EmailAddress;
+                    break;
+
+                case TextInputContentType.Url:
+                    KeyboardType = UIKeyboardType.Url;
+                    break;
+
+                case TextInputContentType.Name:
+                    KeyboardType = UIKeyboardType.NamePhonePad;
+                    break;
+
+                case TextInputContentType.Password:
+                    KeyboardType = UIKeyboardType.Default;
+                    IsSecureEntry = true;
+                    break;
+
+                case TextInputContentType.Social:
+                    KeyboardType = UIKeyboardType.Twitter;
+                    break;
+
+                case TextInputContentType.Search:
+                    KeyboardType = UIKeyboardType.WebSearch;
+                    break;
+            }
+
+            if (options.IsSensitive)
+            {
+                IsSecureEntry = true;
+            }
+
+            ReturnKeyType = (UIReturnKeyType)options.ReturnKeyType;
+            AutocorrectionType = UITextAutocorrectionType.Yes;
+            SpellCheckingType = UITextSpellCheckingType.Yes;
+            KeyboardAppearance = UIKeyboardAppearance.Alert;*/
+        }
+
+
+        void ITextInputMethodImpl.Reset()
+        {
+            _textResponder?.ResignFirstResponder();
         }
     }
 }
